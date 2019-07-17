@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  "python-35":
+    working_directory: ~/evalml
+    docker:
+        - image: circleci/python:3.5
+    steps:
+      - checkout
+      - run: |
+          virtualenv venv_35 -q
+          source venv_35/bin/activate
+          make installdeps
+      - run: |
+          source venv_35/bin/activate
+          make lint
+      - run: |
+          source venv_35/bin/activate
+          coverage erase
+          make test
+          codecov
+
+workflows:
+  version: 2
+  test_all_python_versions:
+    jobs:
+      - "python-35"
