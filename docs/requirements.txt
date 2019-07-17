@@ -1,0 +1,4 @@
+git+https://github.com/FeatureLabs/evalml.git
+jupyter==1.0.0
+nbconvert==5.5.0
+nbsphinx==0.4.2
