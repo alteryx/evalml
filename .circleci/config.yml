@@ -15,7 +15,6 @@ jobs:
           make lint
       - run: |
           source venv_35/bin/activate
-          coverage erase
           make test
 
 workflows:
