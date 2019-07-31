@@ -12,14 +12,7 @@ from . import apply, render
 
 
 class Classifier:
-    def __init__(
-            self,
-            random_state=0,
-            options=None,
-            cost_function=None,
-            cost_function_holdout=.2,
-            **kwargs,
-    ):
+    def __init__(self, random_state=0, options=None, cost_function=None, cost_function_holdout=.2, **kwargs):
         self._label = None
         self._feature_importances = None
         self.selected_features = None
