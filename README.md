@@ -1,6 +1,6 @@
 # EvalML
 
-EvalML is an AutoML library that optimizes models for domain-specific evaluation.
+EvalML is an AutoML library that optimizes models for domain-specific evaluation metrics.
 
 [![CircleCI](https://circleci.com/gh/FeatureLabs/evalml/tree/master.svg?style=shield)](https://circleci.com/gh/FeatureLabs/evalml/tree/master)
 [![codecov](https://codecov.io/gh/FeatureLabs/evalml/branch/master/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/evalml)
