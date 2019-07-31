@@ -6,5 +6,3 @@ The usage of this software is governed by the Feature Labs End User License Agre
 # flake8:noqas
 from .apply import split_data, load_data
 from .classifier import Classifier
-
-__version__ = '0.0.0'
