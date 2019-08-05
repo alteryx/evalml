@@ -22,12 +22,12 @@ pip install evalml
     - `verbose (bool)` - whether to print while optimizing threshold
 
     Methods
-    - `fit` - fits data to optimize threshold
+    - `fit` - optimize threshold on probability estimates of the label
         ```
         fit(y_prob, y)
         ```
-        - `y_prob (DataFrame)` - probability estimates for each label
-        - `y (DataFrame)` - true labels
+        - `y_prob (DataFrame)` - probability estimates of each label in train test
+        - `y (DataFrame)` - true labels in train test
 
         Returns
         - `self` - instance of `LeadScoring`
@@ -39,7 +39,7 @@ pip install evalml
         - `y_prob (DataFrame)` - probability estimates for each label
 
         Returns
-        - `DataFrame` - predictions using the optimized threshold
+        - `Series` - estimated labels using the optimized threshold
     - `score` - the cost function on threshold-based predictions
         ```
         score(y, y_prob)
@@ -52,11 +52,14 @@ pip install evalml
 
 `evalml.models`
 
-- `Classifier` - 
+- `Classifier` - machine learning model for classification-based prediction problems
     ```
     Classifier(random_state=0, options=None, cost_function=None, cost_function_holdout=.2, **kwargs)
     ```
-    - `` - 
+    - `random_state (int)` - seed for the random number generator
+    - `options (dict)` - extra parameters for unders sampling and resloving missing values
+    - `cost_function (Metric)` - domin-specific metric to optimize model on
+    - `cost_function_holdout (float)` - percent to holdout from train set to optimize cost function
 
     Methods
     - `score` - returns final metrics to evalute model performance. Also, can compare final performance with estimated performance.
@@ -72,13 +75,55 @@ pip install evalml
         ```
         estimate_performance(X, y, options=None, verbose=True)
         ```
-        - `X (DataFrame)` - features in train set for model predictions
-        - `y (Series)` - true labels in test set for model evaluation
-        - `options (dict)` - extra parameters such as cross validation `folds`
+        - `X (DataFrame)` - features in train set
+        - `y (Series)` - true labels in train set
+        - `options (dict)` - extra parameters for cross validation such as `folds`
         - `verbose (bool)` - whether to print during model training
 
         Returns
         - `DataFrame` - estimated metrics of model performance
+    - `feature_importances` - return top k features. Model must be trained for feature selection.
+        ```
+        feature_importances(top_k=None, return_plot=True)
+        ```
+        - `top_k (int)` - number of top features to return
+        - `return_plot (bool)` - whether to plot top k features
+
+        Returns
+        - `DataFrame` or `Plot` - top k features
+    - `fit` - train model and select top features
+        ```
+        fit(X, y, verbose=True)
+        ```
+        - `X (DataFrame)` - features in train set
+        - `y (Series)` - true labels in train set
+        - `verbose (bool)` - whether to print during model training
+
+        Returns
+        - `self` - instance of `Classifier`
+    - `predict_proba` - returns probability estimates for each label
+        ```
+        predict_proba(X)
+        ```
+        - `X (DataFrame)` - features
+
+        Returns
+        - `DataFrame` - probability estimates for each label
+    - `predict` - predicts using the top selected features
+        ```
+        predict(X)
+        ```
+        - `X (DataFrame)` - features
+
+        Returns
+        - `Series` - estimated labels using the top selected features
+    - `explain` - print model performance
+        ```
+        explain()
+        ```
+        Returns
+        - `str` - performance report
+
 
 
 ## Built at Feature Labs
