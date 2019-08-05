@@ -123,7 +123,29 @@ pip install evalml
         ```
         Returns
         - `str` - performance report
+- `load_data` - returns features and labels from file(s)
+    ```
+    load_data(path, index, label, drop=None, verbose=True, **kwargs)
+    ```
+    - `path (str)` - path to file(s)
+    - `index (str)` - column for index
+    - `label (str)` - column for labels
+    - `drop (list)` - columns to drop
+    - `verbose (bool)` - whether to print information about features and labels
 
+    Returns
+    - `DataFrame`, `Series` - return features and labels
+- `split_data` - splits data into train and test sets
+    ```
+    split_data(x, y, holdout=.2, random_state=None)
+    ```
+    - `x (DataFrame)` - features
+    - `y (Series)` - labels
+    - `holdout (float)` - percent to holdout from train set for testing
+    - `random_state (int)` - seed for the random number generator
+
+    Returns
+    - `DataFrame`, `DataFrame`, `Series`, `Series` - returns features and labels each split into train and test sets
 
 
 ## Built at Feature Labs
