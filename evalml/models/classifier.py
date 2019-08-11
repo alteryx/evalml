@@ -28,7 +28,7 @@ class Classifier:
             **kwargs,
         )
         self.cost_function = cost_function
-        self.cost_function_extra = cost_function_extra
+        self.cost_function_extra = cost_function_extra or []
 
     def score(self, X, y):
         y_hat = self.predict(X)
