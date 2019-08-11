@@ -1,6 +1,3 @@
-import pandas as pd
-import pytest
-
 from evalml import FraudDetection
 
 
