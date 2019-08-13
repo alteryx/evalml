@@ -11,7 +11,9 @@ from . import apply, render
 
 
 class Classifier:
-    def __init__(self, random_state=0, options=None, cost_function=None, cost_function_holdout=.2, **kwargs):
+    def __init__(self, random_state=0, options=None, cost_function=None,
+                 cost_function_extra=None,
+                 cost_function_holdout=.2, **kwargs):
         self._label = None
         self._feature_importances = None
         self.selected_features = None
@@ -26,6 +28,7 @@ class Classifier:
             **kwargs,
         )
         self.cost_function = cost_function
+        self.cost_function_extra = cost_function_extra or []
 
     def score(self, X, y):
         y_hat = self.predict(X)
@@ -34,7 +37,9 @@ class Classifier:
         if self.cost_function is not None:
             y_prob = self.predict_proba(X)
             name = self.cost_function.__class__.__name__
-            scores[name] = self.cost_function.score(y, y_prob)
+
+            extra = [X[col] for col in self.cost_function_extra]
+            scores[name] = self.cost_function.score(y, y_prob, *extra)
 
         self.scores = render.scores(scores)
         if self.scores_estimate is not None:
@@ -183,7 +188,8 @@ class Classifier:
             self.model.fit(X_train[self.selected_features], y_train)
 
             y_prob = self.predict_proba(X_thresh[self.selected_features])
-            self.cost_function.fit(y_prob, y_thresh)
+            extra = [X_thresh[col] for col in self.cost_function_extra]
+            self.cost_function.fit(y_prob, y_thresh, *extra)
 
         return self
 
