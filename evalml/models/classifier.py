@@ -5,7 +5,6 @@ The usage of this software is governed by the Feature Labs End User License Agre
 """
 from pandas import DataFrame, Series
 from sklearn.model_selection import StratifiedKFold
-
 from xgboost import XGBClassifier
 
 from . import apply, render
