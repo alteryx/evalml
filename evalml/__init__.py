@@ -1,5 +1,5 @@
 # flake8:noqa
-from .lead_scoring import LeadScoring
-from .fraud_detection import FraudDetection
+import evalml.preprocessing
+from evalml.objectives import *
 
 __version__ = '0.2.0'
