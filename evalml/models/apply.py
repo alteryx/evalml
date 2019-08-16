@@ -14,6 +14,18 @@ from . import render
 
 
 def load_data(path, index, label, drop=None, verbose=True, **kwargs):
+    """Load features and labels from file(s).
+
+    Args:
+        path (str) : path to file(s)
+        index (str) : column for index
+        label (str) : column for labels
+        drop (list) : columns to drop
+        verbose (bool) : whether to print information about features and labels
+
+    Returns:
+        DataFrame, Series : features and labels
+    """
     if '*' in path:
         feature_matrix = dd.read_csv(path, **kwargs).set_index(index, sorted=True)
 
@@ -43,6 +55,17 @@ def load_data(path, index, label, drop=None, verbose=True, **kwargs):
 
 
 def split_data(x, y, holdout=.2, random_state=None):
+    """Splits data into train and test sets.
+
+    Args:
+        x (DataFrame) : features
+        y (Series) : labels
+        holdout (float) : percent to holdout from train set for testing
+        random_state (int) : seed for the random number generator
+
+    Returns:
+        DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
+    """
     stratified = StratifiedShuffleSplit(
         n_splits=1,
         test_size=holdout,
