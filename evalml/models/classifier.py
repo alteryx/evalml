@@ -11,9 +11,18 @@ from . import apply, render
 
 
 class Classifier:
+    """Machine learning model for classification-based prediction problems."""
     def __init__(self, random_state=0, options=None, cost_function=None,
                  cost_function_extra=None,
                  cost_function_holdout=.2, **kwargs):
+        """Create instance.
+
+        Args:
+            random_state (int) : seed for the random number generator
+            options (dict) : extra parameters for unders sampling and resloving missing values
+            cost_function (Metric) : domin-specific metric to optimize model on
+            cost_function_holdout (float) : percent to holdout from train set to optimize cost function
+        """
         self._label = None
         self._feature_importances = None
         self.selected_features = None
@@ -31,6 +40,15 @@ class Classifier:
         self.cost_function_extra = cost_function_extra or []
 
     def score(self, X, y):
+        """Evalute model performance and compare with cross-validation.
+
+        Args:
+            X (DataFrame) : features for model predictions
+            y (Series) : true labels
+
+        Returns:
+            DataFrame : evaluation metrics
+        """
         y_hat = self.predict(X)
         scores = apply.score(y, y_hat)
 
@@ -55,6 +73,17 @@ class Classifier:
         return self.scores
 
     def estimate_performance(self, X, y, options=None, verbose=True):
+        """Evaluates model performance by cross-validation.
+
+        Args:
+            X (DataFrame) : features in train set
+            y (Series) : true labels in train set
+            options (dict) : extra parameters such as `folds`
+            verbose (bool) : whether to print during model training
+
+        Returns:
+            DataFrame : evaluation metrics
+        """
         self.scores_estimate = None
         options = options or {}
         folds = options.get('folds', 2)
@@ -82,6 +111,15 @@ class Classifier:
         return self.scores_estimate.rename_axis(name, axis=1)
 
     def feature_importances(self, top_k=None, return_plot=True):
+        """Select top k features based on importances.
+
+        Args:
+            top_k (int) : number of top features
+            return_plot (bool) : whether to plot selected features
+
+        Returns:
+            DataFrame or Plot : selected features
+        """
         if self._feature_importances is not None:
             feature_importances = render.feature_importances(self._feature_importances)
 
@@ -194,6 +232,14 @@ class Classifier:
         return self
 
     def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Args:
+            X (DataFrame) : features
+
+        Returns:
+            DataFrame : probability estimates
+        """
         if self.selected_features is not None:
             X = X[self.selected_features]
 
@@ -203,6 +249,14 @@ class Classifier:
         return df
 
     def predict(self, X):
+        """Make predictions using selected features.
+
+        Args:
+            X (DataFrame) : features
+
+        Returns:
+            Series : estimated labels
+        """
         if self.cost_function is not None:
             y_prob = self.predict_proba(X)
             y_hat = self.cost_function.predict(y_prob)
@@ -217,6 +271,7 @@ class Classifier:
         return y_hat
 
     def explain(self):
+        """Print report for model performance."""
         report = []
         line = '\n\n{}\n\n'.format('-' * 70)
         report.append(str(self.scores_estimate))

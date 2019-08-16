@@ -32,13 +32,12 @@ class LeadScoring:
         Returns:
             LeadScoring : instance of self
         """
+        if self.verbose:
+            print('Searching for optimal threshold.')
 
         def cost(threshold):
             self.threshold = threshold
             return -self.score(y, y_prob)
-
-        if self.verbose:
-            print('Searching for optimal threshold.')
 
         self.optimal = minimize_scalar(cost, bounds=(0, 1), method='Bounded')
 
