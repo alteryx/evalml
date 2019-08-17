@@ -7,11 +7,10 @@ class PipelineBase:
         return self
 
     def predict(self, X):
-        self.pipeline.predict(X)
+        return self.pipeline.predict(X)
 
     def predict_proba(self, X):
-        self.pipeline.predict_proba(X)
+        return self.pipeline.predict_proba(X)
 
-    def score(self, y, X):
-        return .5
-        # self.pipeline.predict_proba(X)
+    def score(self, X, y):
+        return self.pipeline.score(X, y)

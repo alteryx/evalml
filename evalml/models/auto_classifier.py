@@ -4,11 +4,13 @@ import time
 import pandas as pd
 from tqdm import tqdm
 
+from skopt import Optimizer
+
 import evalml.pipelines
 
 
 class AutoClassifier:
-    def __init__(self, max_models=5, max_time=60 * 5, model_types=None, verbose=True):
+    def __init__(self, max_models=5, max_time=60 * 5, model_types=None, random_state=None, verbose=True):
         """Automated classifer search
 
         Arguments:
@@ -24,6 +26,10 @@ class AutoClassifier:
         self.verbose = verbose
         self.results = []
         self.trained_pipelines = {}
+        self.random_state = random_state
+
+        self.space = evalml.pipelines.RFPipeline.get_hyperparameters()
+        self.tuner = Tuner(self.space.values(), random_state=self.random_state)
 
     def fit(self, X, y, metric=None, feature_types=None):
         """Find best classifier
@@ -52,15 +58,19 @@ class AutoClassifier:
             parameters = self._propose_parameters(pipeline_class)
 
             # fit an score the piepline
-            pipeline = pipeline_class(**parameters)
+            pipeline = pipeline_class(n_jobs=-1, **parameters)
 
             # todo, how to provide metric. does it get optimize with the pipeline
             start = time.time()
-            pipeline.fit(X, y)
-            score = pipeline.score(X, y)
-            training_time = time.time() - start
+            pbar.write("Testing: %s" % parameters)
 
-            pbar.write("Best so far: %f" % score)
+            # todo improve CV
+
+            X_train, X_test, y_train, y_test = split_data(pd.DataFrame(X), pd.Series(y), test_size=.2, random_state=0)
+
+            pipeline.fit(X_train, y_train)
+            score = pipeline.score(X_test, y_test)
+            training_time = time.time() - start
 
             # save the result and continue
             self._add_result(
@@ -70,32 +80,29 @@ class AutoClassifier:
                 training_time=training_time
             )
 
+            pbar.write("Last: %f" % score)
+            pbar.write("Best so far: %f" % self.rankings.iloc[0]["score"])
+
     def _select_pipeline(self):
         # possible_pipelines = get_pipelines_by_model_type(self.model_types)
         return evalml.pipelines.RFPipeline
 
     def _propose_parameters(self, pipeline_class):
-        parameters = pipeline_class.get_hyperparameters()
-        _ = parameters
-
-        # proposal = {}
-        # for p in parameters:
-        #     proposal[p] = 10 # make this actually sample
-
-        proposal = {
-            "n_estimators": 10,
-            "strategy": "mean"
-        }
-
+        values = self.tuner.propose()
+        proposal = dict(zip(self.space.keys(), values))
         return proposal
 
     def _add_result(self, trained_pipeline, parameters, score, training_time):
+
+        self.tuner.add(parameters.values(), score)
+
         pipeline_name = trained_pipeline.__class__.__name__
         to_add = {
             "pipeline_name": pipeline_name,
             "parameters": parameters,
             "score": score,
             "training_time": training_time,
+            "result_number": len(self.results)
         }
 
         self.results.append(to_add)
@@ -113,8 +120,7 @@ class AutoClassifier:
     @property
     def rankings(self):
         """Returns the rankings of the models searched"""
-
-        rankings_df = pd.DataFrame(self.results).sort_values("score")
+        rankings_df = pd.DataFrame(self.results).sort_values("score", ascending=False).reset_index(drop=True)
         return rankings_df
 
     @property
@@ -122,6 +128,19 @@ class AutoClassifier:
         """Returns the best model found"""
         best = self.rankings.iloc[0]
         return self._get_pipeline(best["pipeline_name"], best["parameters"])
+
+
+
+class Tuner:
+    def __init__(self, space, random_state=None):
+        self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
+
+    def add(self, parameters, score):
+        return self.opt.tell(list(parameters), -score)
+
+    def propose(self):
+        return self.opt.ask()
+
 
 
 if __name__ == "__main__":
@@ -134,7 +153,12 @@ if __name__ == "__main__":
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     X = X.select_dtypes(include=numerics)
 
-    x_train, x_test, y_train, y_test = split_data(X, y, test_size=.2, random_state=0)
+
+    from sklearn.datasets import load_digits
+
+    digits = load_digits()
+
+    X_train, X_test, y_train, y_test = split_data(pd.DataFrame(digits.data), pd.Series(digits.target), test_size=.2, random_state=0)
 
     objective = FraudDetection(
         retry_percentage=.5,
@@ -142,10 +166,14 @@ if __name__ == "__main__":
         fraud_payout_percentage=.75
     )
 
-    clf = AutoClassifier(max_models=3)
+    clf = AutoClassifier(max_models=250, random_state=0)
 
-    clf.fit(X, y, objective)
+    clf.fit(X_train, y_train, objective)
+
 
     print(clf.rankings)
 
     print(clf.best_model)
+    print(clf.best_model.score(X_test, y_test))
+
+    clf.rankings.to_csv("rankings.csv")
