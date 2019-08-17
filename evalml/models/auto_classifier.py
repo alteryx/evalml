@@ -1,16 +1,17 @@
 # from evalml.pipelines import get_pipelines_by_model_type
+import random
 import time
 
 import pandas as pd
+from skopt import Optimizer
 from tqdm import tqdm
 
-from skopt import Optimizer
-
-import evalml.pipelines
+from evalml.pipelines import get_pipelines
+from evalml.preprocessing import split_data
 
 
 class AutoClassifier:
-    def __init__(self, max_models=5, max_time=60 * 5, model_types=None, random_state=None, verbose=True):
+    def __init__(self, max_models=5, max_time=60 * 5, model_types=None, random_state=0, verbose=True):
         """Automated classifer search
 
         Arguments:
@@ -28,8 +29,15 @@ class AutoClassifier:
         self.trained_pipelines = {}
         self.random_state = random_state
 
-        self.space = evalml.pipelines.RFPipeline.get_hyperparameters()
-        self.tuner = Tuner(self.space.values(), random_state=self.random_state)
+        self.possible_pipelines = get_pipelines(model_types=model_types)
+
+        self.tuners = {}
+        self.search_spaces = {}
+        for p in self.possible_pipelines:
+            space = p.hyperparameters.copy()
+            tuner = Tuner(space.values(), random_state=random_state)
+            self.tuners[p.name] = tuner
+            self.search_spaces[p.name] = space
 
     def fit(self, X, y, metric=None, feature_types=None):
         """Find best classifier
@@ -57,8 +65,8 @@ class AutoClassifier:
             # propose the next best parameters for this piepline
             parameters = self._propose_parameters(pipeline_class)
 
-            # fit an score the piepline
-            pipeline = pipeline_class(n_jobs=-1, **parameters)
+            # fit an score the pipeline
+            pipeline = pipeline_class(random_state=self.random_state, n_jobs=-1, **parameters)
 
             # todo, how to provide metric. does it get optimize with the pipeline
             start = time.time()
@@ -84,17 +92,17 @@ class AutoClassifier:
             pbar.write("Best so far: %f" % self.rankings.iloc[0]["score"])
 
     def _select_pipeline(self):
-        # possible_pipelines = get_pipelines_by_model_type(self.model_types)
-        return evalml.pipelines.RFPipeline
+        return random.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
-        values = self.tuner.propose()
-        proposal = dict(zip(self.space.keys(), values))
+        values = self.tuners[pipeline_class.name].propose()
+        space = self.search_spaces[pipeline_class.name]
+        proposal = dict(zip(space.keys(), values))
         return proposal
 
     def _add_result(self, trained_pipeline, parameters, score, training_time):
 
-        self.tuner.add(parameters.values(), score)
+        self.tuners[trained_pipeline.name].add(parameters.values(), score)
 
         pipeline_name = trained_pipeline.__class__.__name__
         to_add = {
@@ -130,9 +138,8 @@ class AutoClassifier:
         return self._get_pipeline(best["pipeline_name"], best["parameters"])
 
 
-
 class Tuner:
-    def __init__(self, space, random_state=None):
+    def __init__(self, space, random_state=0):
         self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
 
     def add(self, parameters, score):
@@ -142,17 +149,15 @@ class Tuner:
         return self.opt.ask()
 
 
-
 if __name__ == "__main__":
     from evalml.objectives import FraudDetection
-    from evalml.preprocessing import load_data, split_data
+    from evalml.preprocessing import load_data
 
     filepath = "/Users/kanter/Documents/lead_scoring_app/fraud_demo/data/transactions.csv"
     X, y = load_data(filepath, index="id", label="fraud")
 
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     X = X.select_dtypes(include=numerics)
-
 
     from sklearn.datasets import load_digits
 
@@ -169,7 +174,6 @@ if __name__ == "__main__":
     clf = AutoClassifier(max_models=250, random_state=0)
 
     clf.fit(X_train, y_train, objective)
-
 
     print(clf.rankings)
 
