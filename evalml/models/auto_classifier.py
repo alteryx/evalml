@@ -65,8 +65,8 @@ class AutoClassifier(AutoBase):
         self.tuners = {}
         self.search_spaces = {}
         for p in self.possible_pipelines:
-            space = p.hyperparameters.copy()
-            self.tuners[p.name] = tuner(space.values(), random_state=random_state)
+            space = list(p.hyperparameters.items())
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = space
 
         self.default_objectives = [
@@ -181,7 +181,7 @@ class AutoClassifier(AutoBase):
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
         space = self.search_spaces[pipeline_class.name]
-        proposal = dict(zip(space.keys(), values))
+        proposal = dict(zip([s[0] for s in space], values))
         return proposal
 
     def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):

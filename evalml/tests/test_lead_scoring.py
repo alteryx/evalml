@@ -12,7 +12,7 @@ def test_function(X_y):
         false_positives=-1
     )
 
-    clf = AutoClassifier(objective=objective, max_pipelines=1)
+    clf = AutoClassifier(objective=objective, max_pipelines=1, random_state=0)
 
     X = pd.DataFrame(X)
     clf.fit(X, y)
