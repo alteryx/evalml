@@ -6,7 +6,7 @@
 
 [![CircleCI](https://circleci.com/gh/FeatureLabs/evalml.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/FeatureLabs/evalml)
 
-EvalML is an AutoML library build optimized machine learning pipelines for domain-specific objective functions.
+EvalML is an AutoML library to build optimized machine learning pipelines for domain-specific objective functions.
 
 **Key Functionality**
 
