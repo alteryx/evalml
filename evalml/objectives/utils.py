@@ -7,7 +7,7 @@ def get_objective(objective):
         return objective
 
     options = {
-        "fl": standard_metrics.F1(),
+        "f1": standard_metrics.F1(),
         "precision": standard_metrics.Precision(),
         "recall": standard_metrics.Recall(),
         "auc": standard_metrics.AUC(),

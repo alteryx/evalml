@@ -47,7 +47,7 @@ class PipelineBase:
         """
         if self.objective and self.objective.needs_fitting:
             y_prob_predicted = self.predict_proba(X)
-            return self.objective.predict(y_prob_predicted)
+            return self.objective.predict(y_prob_predicted[:, 1])
 
         return self.pipeline.predict(X)
 
@@ -63,24 +63,43 @@ class PipelineBase:
 
         return self.pipeline.predict_proba(X)
 
-    def score(self, X, y):
+    def score(self, X, y, other_objectives=None):
         """Evaluate model performance
 
         Args:
             X (DataFrame) : features for model predictions
             y (Series) : true labels
+            other_objectives (list): list of other objectives to score
 
         Returns:
-            score
+            score, list of other objective scores
         """
+        other_objectives = other_objectives or []
 
-        # todo: anything to do here in the case of no objective?
-        if self.objective.needs_proba:
-            y_predicted = self.predict_proba(X)
-        else:
-            y_predicted = self.predict(X)
+        y_predicted_proba = None
+        y_predicted_label = None
 
-        if self.objective.uses_extra_columns:
-            return self.objective.score(y, y_predicted, X)
-        else:
-            return self.objective.score(y, y_predicted)
+        scores = []
+        for objective in [self.objective] + other_objectives:
+            # only call the predict methods once
+            if objective.needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+
+                y_predicted = y_predicted_proba
+
+            else:
+                if y_predicted_label is None:
+                    y_predicted_label = self.predict(X)
+
+                y_predicted = y_predicted_label
+
+            if objective.uses_extra_columns:
+                scores.append(objective.score(y, y_predicted, X))
+            else:
+                scores.append(objective.score(y, y_predicted))
+
+        if not other_objectives:
+            return scores[0]
+
+        return scores[0], scores[1:]

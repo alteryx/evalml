@@ -3,14 +3,14 @@ import random
 import time
 from sys import stdout
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective
+from evalml.objectives import get_objective, standard_metrics
 from evalml.pipelines import get_pipelines
 from evalml.preprocessing import split_data
 from evalml.tuners import SKOptTuner
@@ -69,6 +69,14 @@ class AutoClassifier(AutoBase):
             self.tuners[p.name] = tuner(space.values(), random_state=random_state)
             self.search_spaces[p.name] = space
 
+        self.default_objectives = [
+            standard_metrics.F1(),
+            standard_metrics.Precision(),
+            standard_metrics.Recall(),
+            standard_metrics.AUC(),
+            standard_metrics.LogLoss()
+        ]
+
     def fit(self, X, y, feature_types=None):
         """Find best classifier
 
@@ -95,7 +103,6 @@ class AutoClassifier(AutoBase):
 
             self._log("Searching up to %s pipelines.\n" % self.max_pipelines)
             self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
-
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 
@@ -131,6 +138,7 @@ class AutoClassifier(AutoBase):
 
         start = time.time()
         scores = []
+        all_objective_scores = []
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -144,11 +152,17 @@ class AutoClassifier(AutoBase):
 
             try:
                 pipeline.fit(X_train, y_train)
-                score = pipeline.score(X_test, y_test)
-            except:
+                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.default_objectives)
+                other_scores = dict(zip([n.name for n in self.default_objectives], other_scores))
+            except Exception as e:
+                pbar.write(str(e))
                 score = np.nan
+                other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
+
+            other_scores[self.objective.name] = score
 
             scores.append(score)
+            all_objective_scores.append(other_scores)
 
         training_time = time.time() - start
 
@@ -157,6 +171,7 @@ class AutoClassifier(AutoBase):
             trained_pipeline=pipeline,
             parameters=parameters,
             scores=scores,
+            all_objective_scores=all_objective_scores,
             training_time=training_time
         )
 
@@ -169,7 +184,7 @@ class AutoClassifier(AutoBase):
         proposal = dict(zip(space.keys(), values))
         return proposal
 
-    def _add_result(self, trained_pipeline, parameters, scores, training_time):
+    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
         if self.objective.greater_is_better:
             score = min(scores)  # take worst across folds
             score_to_minimize = -score
@@ -195,6 +210,7 @@ class AutoClassifier(AutoBase):
             "score": score,
             "high_variance_cv": high_variance_cv,
             "scores": scores,
+            "all_objective_scores": all_objective_scores,
             "training_time": training_time,
         }
 
@@ -241,21 +257,20 @@ class AutoClassifier(AutoBase):
         for item in pipeline_results["parameters"].items():
             self._log("• %s: %s" % item)
 
-
         self._log_subtitle("\nCross Validation")
 
         if pipeline_results["high_variance_cv"]:
-            self._log("Warning! High Variance cross validation scores. " +
+            self._log("Warning! High variance between cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
-        scores = pd.Series(pipeline_results["scores"])
-        self._log("Mean +/- std: %f +/- %f" % (scores.mean(), scores.std()))
+        all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
+        mean = all_objective_scores.mean(axis=0)
+        std = all_objective_scores.std(axis=0)
+        all_objective_scores.loc["mean"] = mean
+        all_objective_scores.loc["std"] = std
 
-
-        self._log("\nScores per fold")
-        for score in scores:
-            self._log("• %f" % score)
-
+        with pd.option_context('display.float_format', '{:.3f}'.format):
+            self._log(all_objective_scores)
 
         if return_dict:
             return pipeline_results

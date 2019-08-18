@@ -15,13 +15,13 @@ class RFPipeline(PipelineBase):
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 1000),
-        "strategy": ["mean", "median", "most_frequent"],
+        "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, strategy, percent_features,
+    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=1, random_state=0):
-        imputer = SimpleImputer(strategy=strategy)
+        imputer = SimpleImputer(strategy=impute_strategy)
 
         estimator = RandomForestClassifier(random_state=random_state,
                                            n_estimators=n_estimators,

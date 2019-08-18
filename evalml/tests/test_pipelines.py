@@ -16,7 +16,6 @@ def test_list_model_types():
     assert set(list_model_types()) == set(["random_forest", "xgboost", "linear_model"])
 
 
-
 # def test_all_pipelines(data):
 #     X, y = data
 #     # TODO figure how to get default parameters for pipeline

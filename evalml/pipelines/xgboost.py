@@ -16,13 +16,13 @@ class XGBoostPipeline(PipelineBase):
         "eta": Real(0, 1),
         "min_child_weight": Real(1, 10),
         "max_depth": Integer(1, 20),
-        "strategy": ["mean", "median", "most_frequent"],
+        "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, eta, min_child_weight, max_depth, strategy, percent_features,
+    def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=1, random_state=0):
-        imputer = SimpleImputer(strategy=strategy)
+        imputer = SimpleImputer(strategy=impute_strategy)
 
         estimator = XGBClassifier(
             random_state=random_state,

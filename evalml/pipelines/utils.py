@@ -1,6 +1,6 @@
+from .logistic_regression import LogisticRegressionPipeline
 from .random_forest import RFPipeline
 from .xgboost import XGBoostPipeline
-from .logistic_regression import LogisticRegressionPipeline
 
 ALL_PIPELINES = [RFPipeline, XGBoostPipeline, LogisticRegressionPipeline]
 
@@ -33,7 +33,6 @@ def get_pipelines(model_types=None):
             pipelines.append(p)
 
     return pipelines
-
 
 
 def list_model_types():
