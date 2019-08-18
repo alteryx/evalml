@@ -19,7 +19,8 @@ pip install evalml --index-url https://install.featurelabs.com/<KEY>
 
 ## Quick Start
 
-```
+#### Define objective
+```python
 from evalml import AutoClassifer
 from evalml.objectives import FraudDetection
 
@@ -28,23 +29,37 @@ fraud_objective = FraudDetection(
     retry_percentage=.5,
     interchange_fee=.02,
     fraud_payout_percentage=.75,
-    amount_col=10
+    amount_col="amount"
 )
+```
 
+#### Run automl
+```python
 clf = AutoClassifier(objective=fraud_objective,
                      max_pipelines=3)
 
 clf.fit(X_train, y_train)
+```
 
-# get best pipeline
-clf.best_pipeline)
-
-# predict on new data using best pipeline
-clf.best_pipeline.score(X_test, y_test)
-
-# see all pipeline ranks
+#### See all pipeline ranks
+```python
 clf.rankings
 ```
+
+#### Get best pipeline and predict on new data
+
+```python
+pipeline = clf.best_pipeline
+pipeline.predict(X_test)
+```
+
+## Next Steps
+
+* [Configuring AutoClassifer]()
+* [Defining your own objective functions]()
+* [API Reference]()
+
+Read more about EvalML in our [Documentation](evalml.featurelabs.com).
 
 ## Built at Feature Labs
 <a href="https://www.featurelabs.com/">
