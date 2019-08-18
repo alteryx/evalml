@@ -1,5 +1,7 @@
 # flake8:noqa
 from .fraud_detection import FraudDetection
 from .lead_scoring import LeadScoring
-from .standard_metrics import Precision
+from .standard_metrics import F1, Precision, Recall, AUC, LogLoss, MCC
 from .utils import get_objective
+
+

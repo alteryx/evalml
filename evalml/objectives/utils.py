@@ -1,5 +1,5 @@
+from . import standard_metrics
 from .objective_base import ObjectiveBase
-from .standard_metrics import Precision
 
 
 def get_objective(objective):
@@ -7,7 +7,12 @@ def get_objective(objective):
         return objective
 
     options = {
-        "precision": Precision()
+        "fl": standard_metrics.F1(),
+        "precision": standard_metrics.Precision(),
+        "recall": standard_metrics.Recall(),
+        "auc": standard_metrics.AUC(),
+        "log_loss": standard_metrics.LogLoss(),
+        "mcc": standard_metrics.MCC(),
     }
 
     return options[objective]

@@ -4,8 +4,11 @@ API Reference
 
 .. currentmodule:: evalml
 
-Cost Functions
-==============
+Objective Functions
+====================
+
+
+.. currentmodule:: evalml.objectives
 
 .. autosummary::
     :toctree: generated
@@ -14,6 +17,21 @@ Cost Functions
 
     FraudDetection
     LeadScoring
+
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    F1
+    Precision
+    Recall
+    AUC
+    LogLoss
+    MCC
+
+
 
 .. currentmodule:: evalml.models
 
