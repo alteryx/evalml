@@ -14,7 +14,7 @@ class LogisticRegressionPipeline(PipelineBase):
     model_type = "linear_model"
 
     hyperparameters = {
-        "penalty": ["l1", "l2"],
+        "penalty": ["l2", None],
         "C": Real(.01, 1),
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
