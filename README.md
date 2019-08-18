@@ -1,5 +1,3 @@
-# EvalML
-
 <p align="center">
 <img width=50% src="https://github.com/featurelabs/evalml/blob/master/docs/source/images/evalml_logo.png?raw=true" alt="Featuretools" />
 </p>
