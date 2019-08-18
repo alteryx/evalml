@@ -17,6 +17,35 @@ EvalML is an AutoML library to build optimized machine learning pipelines for do
 pip install evalml --index-url https://install.featurelabs.com/<KEY>
 ```
 
+## Quick Start
+
+```
+from evalml import AutoClassifer
+from evalml.objectives import FraudDetection
+
+
+fraud_objective = FraudDetection(
+    retry_percentage=.5,
+    interchange_fee=.02,
+    fraud_payout_percentage=.75,
+    amount_col=10
+)
+
+clf = AutoClassifier(objective=fraud_objective,
+                     max_pipelines=3)
+
+clf.fit(X_train, y_train)
+
+# get best pipeline
+clf.best_pipeline)
+
+# predict on new data using best pipeline
+clf.best_pipeline.score(X_test, y_test)
+
+# see all pipeline ranks
+clf.rankings
+```
+
 ## Built at Feature Labs
 <a href="https://www.featurelabs.com/">
     <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
