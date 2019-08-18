@@ -3,7 +3,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LassoCV
 from sklearn.pipeline import Pipeline
-from skopt.space import Integer, Real
+from skopt.space import Integer
 
 from .pipeline_base import PipelineBase
 
@@ -18,7 +18,7 @@ class RFPipeline(PipelineBase):
         "strategy": ["mean", "median", "most_frequent"],
     }
 
-    def __init__(self, n_estimators, max_depth, strategy, n_jobs=1, random_state=0):
+    def __init__(self, objective, n_estimators, max_depth, strategy, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=strategy)
 
         feature_selection = SelectFromModel(LassoCV(cv=3))
@@ -33,3 +33,5 @@ class RFPipeline(PipelineBase):
              ("feature_selection", feature_selection),
              ("forest", forest)]
         )
+
+        super().__init__(objective=objective, random_state=random_state)

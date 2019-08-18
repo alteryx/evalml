@@ -14,12 +14,12 @@ class XGBoostPipeline(PipelineBase):
 
     hyperparameters = {
         "eta": Real(0, 1),
-        "min_child_weight": Real(1, 1000),
+        "min_child_weight": Real(1, 10),
         "max_depth": Integer(1, 20),
         "strategy": ["mean", "median", "most_frequent"],
     }
 
-    def __init__(self, eta, min_child_weight, max_depth, strategy, n_jobs=1, random_state=0):
+    def __init__(self, objective, eta, min_child_weight, max_depth, strategy, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=strategy)
 
         feature_selection = SelectFromModel(LassoCV(cv=3))
@@ -29,7 +29,7 @@ class XGBoostPipeline(PipelineBase):
             eta=eta,
             max_depth=max_depth,
             min_child_weight=min_child_weight
-            )
+        )
 
         self.pipeline = Pipeline(
             [("imputer", imputer),
@@ -37,6 +37,4 @@ class XGBoostPipeline(PipelineBase):
              ("forest", forest)]
         )
 
-    @classmethod
-    def get_hyperparameters(cls):
-        return
+        super().__init__(objective=objective, random_state=random_state)

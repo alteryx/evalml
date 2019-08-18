@@ -1,6 +1,6 @@
 # flake8:noqa
 import evalml.preprocessing
-from evalml.objectives import *
+import evalml.objectives
 
 from evalml.models import AutoClassifier
 
