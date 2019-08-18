@@ -19,4 +19,4 @@ formats: all
 python:
   version: 3.5
   install:
-    - requirements: docs/requirements.txt
+    - requirements: dev-requirements.txt
