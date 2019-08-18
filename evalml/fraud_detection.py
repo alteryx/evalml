@@ -2,8 +2,15 @@ from scipy.optimize import minimize_scalar
 
 
 class FraudDetection():
+    """Finds the optimal threshold for fraud detection."""
     def __init__(self, label=1, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, threshold=.5, verbose=True):
+        """Create instance.
+
+        Args:
+            label (int) : label to optimize threshold for
+            verbose (bool) : whether to print while optimizing threshold
+        """
         self.label = label
         self.retry_percentage = retry_percentage
         self.interchange_fee = interchange_fee
@@ -12,6 +19,15 @@ class FraudDetection():
         self.verbose = verbose
 
     def fit(self, y_prob, y, value):
+        """Optimize threshold on probability estimates of the label.
+
+        Args:
+            y_prob (DataFrame) : probability estimates of labels in train set
+            y (DataFrame) : true labels in train set
+
+        Returns:
+            LeadScoring : instance of self
+        """
         def cost(threshold):
             self.threshold = threshold
             return -self.score(y, y_prob, value)
@@ -29,9 +45,23 @@ class FraudDetection():
         return self
 
     def predict(self, y_prob):
+        """Predicts using the optimized threshold.
+
+        Args:
+            y_prob (DataFrame) : probability estimates for each label
+
+        Returns:
+            Series : estimated labels using optimized threshold
+        """
         return y_prob[self.label].gt(self.threshold).astype(int)
 
     def score(self, y, y_prob, value):
+        """The cost function for threshold-based predictions.
+
+        Args:
+            y (DataFrame) : true labels
+            y_prob (DataFrame) : probability estimates of labels
+        """
         y_label = y.eq(self.label).astype(int)
 
         fraud_cost = value * self.fraud_payout_percentage

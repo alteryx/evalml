@@ -1,3 +1,8 @@
+===============
+What is EvalML?
+===============
+
+
 .. toctree::
     :caption: Table of Contents
     :hidden:
@@ -6,9 +11,12 @@
     install
 
 .. toctree::
-    :caption: Guides
+    :caption: Overview
+    :glob:
     :hidden:
     :includehidden:
+
+    overview/*
 
 .. toctree::
     :caption: Resources
@@ -16,7 +24,3 @@
 
     api_reference
     changelog
-
-==============================
-What is EvalML?
-==============================
