@@ -1,14 +1,18 @@
 # EvalML
 
+<p align="center">
+<img width=50% src="https://www.featuretools.com/wp-content/uploads/2017/12/FeatureLabs-Logo-Tangerine-800.png" alt="Featuretools" />
+</p>
+
 [![CircleCI](https://circleci.com/gh/FeatureLabs/evalml.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/FeatureLabs/evalml)
 
-EvalML is an AutoML library that constructions optimize machine learning pipelines for domain-specific objective functions.
+EvalML is an AutoML library build optimized machine learning pipelines for domain-specific objective functions.
 
 **Key Functionality**
 
-* Includes repository of domain-specific objective functions and interface to define your own
-* Constructs and optimize ML pipelines that include imputation, feature selection, and a variety of modeling techniques
-* Implements guardrails to prevent overfitting and raises warnings when training and testing results diverge
+* **Domain-specific** - Includes repository of domain-specific objective functions and interface to define your own
+* **End-to-end** - Constructs and optimizes pipelines that include imputation, feature selection, and a variety of modeling techniques
+* **Guardrails** - Carefully cross-validates to prevent overfitting and warns you if training and testing results diverge
 
 ## Install
 ```shell
