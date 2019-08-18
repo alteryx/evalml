@@ -197,8 +197,8 @@ class AutoClassifier(AutoBase):
         # calculate high_variance_cv
         s = pd.Series(scores)
         s_mean, s_std = s.mean(), s.std()
-        high, low = s_mean + s_std, s_mean - s_std
-        high_variance_cv = (~s.between(left=low, right=high)).sum() > 1
+        high, low = s_mean + 2*s_std, s_mean - 2*s_std
+        high_variance_cv = (~s.between(left=low, right=high)).sum() > 0
 
         pipeline_name = trained_pipeline.__class__.__name__
         pipeline_id = len(self.results)

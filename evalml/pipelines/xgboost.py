@@ -9,7 +9,7 @@ from .pipeline_base import PipelineBase
 
 
 class XGBoostPipeline(PipelineBase):
-    name = "XGBoost w/ Imputation"
+    name = "XGBoost w/ imputation"
     model_type = "xgboost"
 
     hyperparameters = {

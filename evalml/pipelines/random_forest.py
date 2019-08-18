@@ -9,7 +9,7 @@ from .pipeline_base import PipelineBase
 
 
 class RFPipeline(PipelineBase):
-    name = "Random Forest w/ Imputation"
+    name = "Random Forest w/ imputation"
     model_type = "random_forest"
 
     hyperparameters = {

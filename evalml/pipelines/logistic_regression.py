@@ -10,17 +10,16 @@ from .pipeline_base import PipelineBase
 
 
 class LogisticRegressionPipeline(PipelineBase):
-    name = "LogisticRegression w/ Imputation"
+    name = "LogisticRegression w/ imputation + scaling"
     model_type = "linear_model"
 
     hyperparameters = {
-        "penalty": ["l2", None],
-        "C": Real(.01, 1),
+        "penalty": ["l2"],
+        "C": Real(.01, 10),
         "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, penalty, C, impute_strategy, percent_features,
+    def __init__(self, objective, penalty, C, impute_strategy,
                  number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
 
@@ -30,16 +29,10 @@ class LogisticRegressionPipeline(PipelineBase):
                                        solver="lbfgs",
                                        n_jobs=-1)
 
-        feature_selection = SelectFromModel(
-            estimator=estimator,
-            max_features=min(1, int(percent_features * number_features)),
-            threshold=-np.inf
-        )
 
         self.pipeline = Pipeline(
             [("imputer", imputer),
              ("scaler", StandardScaler()),
-             ("feature_selection", feature_selection),
              ("estimator", estimator)]
         )
 
