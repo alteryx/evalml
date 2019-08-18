@@ -16,7 +16,7 @@ EvalML is an AutoML library build optimized machine learning pipelines for domai
 
 ## Install
 ```shell
-pip install evalml
+pip install evalml --index-url https://install.featurelabs.com/<KEY>
 ```
 
 ## Built at Feature Labs
