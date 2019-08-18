@@ -1,7 +1,7 @@
 # EvalML
 
 <p align="center">
-<img width=50% src="https://www.featuretools.com/wp-content/uploads/2017/12/FeatureLabs-Logo-Tangerine-800.png" alt="Featuretools" />
+<img width=50% src="https://github.com/Featuretools/featuretools/blob/master/docs/source/images/evalml_logo.png?raw=true" alt="Featuretools" />
 </p>
 
 [![CircleCI](https://circleci.com/gh/FeatureLabs/evalml.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/FeatureLabs/evalml)
