@@ -2,6 +2,6 @@
 Install
 =======
 
-EvalML is available for Python >= 3.5. To install, use :code:`pip` by running the following commmand::
+EvalML can be installed by running the following command.::
 
-    pip install evalml
+    pip install evaml --extra-index-url https://install.featurelabs.com/<license>/

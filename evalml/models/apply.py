@@ -8,6 +8,8 @@ from numpy import unique
 from sklearn import metrics
 from sklearn.utils.multiclass import type_of_target
 
+from . import render
+
 
 def resample_labels(x, y, weights, replace=False, label=None, random_state=None):
     if label is None:
