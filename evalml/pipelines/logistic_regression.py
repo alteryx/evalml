@@ -1,5 +1,3 @@
-import numpy as np
-from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -28,7 +26,6 @@ class LogisticRegressionPipeline(PipelineBase):
                                        C=C,
                                        solver="lbfgs",
                                        n_jobs=-1)
-
 
         self.pipeline = Pipeline(
             [("imputer", imputer),
