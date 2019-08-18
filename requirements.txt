@@ -6,3 +6,4 @@ pandas>=0.25.0
 xgboost>=0.82
 tqdm>=4.33.0
 scikit-optimize[plots]
+colorama

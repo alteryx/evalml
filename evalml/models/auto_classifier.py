@@ -1,18 +1,21 @@
 # from evalml.pipelines import get_pipelines_by_model_type
 import random
 import time
+from sys import stdout
 
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from skopt import Optimizer
 from tqdm import tqdm
+
+from .auto_base import AutoBase
 
 from evalml.objectives import get_objective
 from evalml.pipelines import get_pipelines
 from evalml.preprocessing import split_data
+from evalml.tuners import SKOptTuner
 
 
-class AutoClassifier:
+class AutoClassifier(AutoBase):
     def __init__(self,
                  objective=None,
                  max_pipelines=5,
@@ -20,8 +23,9 @@ class AutoClassifier:
                  model_types=None,
                  cv=None,
                  random_state=0,
+                 tuner=None,
                  verbose=True):
-        """Automated classifer search
+        """Automated classifier pipeline search
 
         Arguments:
             objective (Object): the objective to optimize
@@ -30,12 +34,16 @@ class AutoClassifier:
             model_types (list): The model types to search. By default searches over
                 model_types
             cv (): cross validation method to use. By default StratifiedKFold
+            tuner (): the tuner class to use. Defaults to scikit-optimize tuner
             random_state ():
             verbose (boolean): If True, turn verbosity on. Defaults to True
 
         """
         if objective is None:
             objective = "precision"
+
+        if tuner is None:
+            tuner = SKOptTuner
 
         self.objective = get_objective(objective)
         self.max_pipelines = max_pipelines
@@ -56,8 +64,7 @@ class AutoClassifier:
         self.search_spaces = {}
         for p in self.possible_pipelines:
             space = p.hyperparameters.copy()
-            tuner = Tuner(space.values(), random_state=random_state)
-            self.tuners[p.name] = tuner
+            self.tuners[p.name] = tuner(space.values(), random_state=random_state)
             self.search_spaces[p.name] = space
 
     def fit(self, X, y, feature_types=None):
@@ -76,7 +83,13 @@ class AutoClassifier:
             self
         """
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose)
+        if self.verbose:
+            self._log_title("Beginning pipeline search")
+            self._log("Searching up to %s pipelines" % self.max_pipelines)
+            self._log("Optimizing for %s" % self.objective.name)
+            self._log("")
+
+        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
         for n in pbar:
             # determine which pipeline to build
             pipeline_class = self._select_pipeline()
@@ -89,11 +102,16 @@ class AutoClassifier:
                 objective=self.objective,
                 random_state=self.random_state,
                 n_jobs=-1,
+                number_features=X.shape[1],
                 **parameters
             )
 
             # todo, how to provide metric. does it get optimize with the pipeline
-            pbar.write("Testing: %s" % parameters)
+            pbar.set_description("Testing %s" % (pipeline_class.name))
+            # pbar.write("Parameters")
+            # for item in parameters.items():
+            #     pbar.write("%s: %s" % item)
+
             start = time.time()
             # todo improve CV
             scores = []
@@ -103,8 +121,8 @@ class AutoClassifier:
                 else:
                     X_train, X_test = X[train], X[test]
 
-                if isinstance(y, pd.DataFrame):
-                    y_train, y_test = y[train].iloc, y.iloc[test]
+                if isinstance(y, pd.Series):
+                    y_train, y_test = y.iloc[train], y.iloc[test]
                 else:
                     y_train, y_test = y[train], y[test]
 
@@ -123,8 +141,9 @@ class AutoClassifier:
                 training_time=training_time
             )
 
-            pbar.write("Last: %f" % score)
-            pbar.write("Best so far: %f" % self.rankings.iloc[0]["score"])
+        pbar.set_description("Optimization finished!")
+        pbar.refresh()
+        pbar.close()
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
@@ -145,14 +164,21 @@ class AutoClassifier:
 
         self.tuners[trained_pipeline.name].add(parameters.values(), score_to_minimize)
 
+        # calculate high_variance_cv
+        s = pd.Series(scores)
+        s_mean, s_std = s.mean(), s.std()
+        high, low = s_mean + s_std, s_mean - s_std
+        high_variance_cv = (~s.between(left=low, right=high)).sum() > 1
+
         pipeline_name = trained_pipeline.__class__.__name__
         to_add = {
+            "id": len(self.results),
             "pipeline_name": pipeline_name,
             "parameters": parameters,
             "score": score,
             "scores": scores,
+            "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "result_number": len(self.results)
         }
 
         self.results.append(to_add)
@@ -163,8 +189,16 @@ class AutoClassifier:
         model_key = (pipeline_name, frozenset(parameters.items()))
         self.trained_pipelines[model_key] = trained_pipeline
 
-    def _get_pipeline(self, pipeline_name, parameters):
-        model_key = (pipeline_name, frozenset(parameters.items()))
+    def get_pipeline(self, id):
+        pipeline = None
+        for r in self.results:
+            if r["id"] == id:
+                pipeline = r
+
+        if pipeline is None:
+            raise RuntimeError("Pipeline not found")
+
+        model_key = (pipeline['pipeline_name'], frozenset(pipeline['parameters'].items()))
         return self.trained_pipelines[model_key]
 
     @property
@@ -184,18 +218,7 @@ class AutoClassifier:
     def best_pipeline(self):
         """Returns the best model found"""
         best = self.rankings.iloc[0]
-        return self._get_pipeline(best["pipeline_name"], best["parameters"])
-
-
-class Tuner:
-    def __init__(self, space, random_state=0):
-        self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
-
-    def add(self, parameters, score):
-        return self.opt.tell(list(parameters), score)
-
-    def propose(self):
-        return self.opt.ask()
+        return self.get_pipeline(best["id"])
 
 
 if __name__ == "__main__":

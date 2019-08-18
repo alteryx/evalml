@@ -2,11 +2,23 @@
 API Reference
 =============
 
-.. currentmodule:: evalml
+
+.. currentmodule:: evalml.models
+
+Models
+======
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    AutoClassifier
+    AutoRegressor
+
 
 Objective Functions
 ====================
-
 
 .. currentmodule:: evalml.objectives
 
@@ -33,9 +45,9 @@ Objective Functions
 
 
 
-.. currentmodule:: evalml.models
+.. currentmodule:: evalml.tuners
 
-Models
+Tuners
 ======
 
 .. autosummary::
@@ -43,4 +55,19 @@ Models
     :template: class.rst
     :nosignatures:
 
-    Classifier
+    SKOptTuner
+
+
+.. currentmodule:: evalml.pipelines
+
+Pipelines
+=========
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    get_pipelines
+    RFPipeline
+    XGBoostPipeline

@@ -8,6 +8,7 @@ class FraudDetection(ObjectiveBase):
     greater_is_better = False
     uses_extra_columns = True
     needs_proba = True
+    name = "Fraud Detection"
     """Finds the optimal threshold for fraud detection."""
 
     def __init__(self, label=1, retry_percentage=.5, interchange_fee=.02,
@@ -38,14 +39,7 @@ class FraudDetection(ObjectiveBase):
         def cost(threshold):
             return self.score_for_threshold(y, y_prob, extra_cols, threshold)
 
-        if self.verbose:
-            print('Searching for optimal threshold.')
-
         self.optimal = minimize_scalar(cost, bounds=(0, 1), method='Bounded')
-
-        if self.verbose:
-            info = 'Optimal threshold found at {:.2f}'
-            print(info.format(self.optimal.x))
 
         self.threshold = self.optimal.x
         return self
