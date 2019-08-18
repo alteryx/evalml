@@ -4,6 +4,7 @@ import time
 from sys import stdout
 
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
 
@@ -22,20 +23,21 @@ class AutoClassifier(AutoBase):
                  max_time=60 * 5,
                  model_types=None,
                  cv=None,
-                 random_state=0,
                  tuner=None,
+                 random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
 
         Arguments:
             objective (Object): the objective to optimize
-            max_pipelines (int): maximum number of models to search
-            max_time (int): maximum time in seconds to search for models
-            model_types (list): The model types to search. By default searches over
-                model_types
-            cv (): cross validation method to use. By default StratifiedKFold
-            tuner (): the tuner class to use. Defaults to scikit-optimize tuner
-            random_state ():
+            max_pipelines (int): maximum number of pipelines to search
+            max_time (int): maximum time in seconds to search for pipelines.
+                won't start new pipeline search after this duration has elapsed
+            model_types (list): The model types to search. By default searches over all
+                model_types. Run evalml.list_model_types() to see options.
+            cv: cross validation method to use. By default StratifiedKFold
+            tuner: the tuner class to use. Defaults to scikit-optimize tuner
+            random_state (int): the random_state
             verbose (boolean): If True, turn verbosity on. Defaults to True
 
         """
@@ -45,20 +47,20 @@ class AutoClassifier(AutoBase):
         if tuner is None:
             tuner = SKOptTuner
 
+        if cv is None:
+            cv = StratifiedKFold(n_splits=3, random_state=random_state)
+
         self.objective = get_objective(objective)
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
         self.verbose = verbose
-        self.results = []
+        self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
-
-        if cv is None:
-            cv = StratifiedKFold(n_splits=3, random_state=random_state)
         self.cv = cv
-
         self.possible_pipelines = get_pipelines(model_types=model_types)
+        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
         self.search_spaces = {}
@@ -82,68 +84,81 @@ class AutoClassifier(AutoBase):
 
             self
         """
-
         if self.verbose:
             self._log_title("Beginning pipeline search")
-            self._log("Searching up to %s pipelines" % self.max_pipelines)
-            self._log("Optimizing for %s" % self.objective.name)
-            self._log("")
+            self._log("Optimizing for %s. " % self.objective.name, new_line=False)
+
+            if self.objective.greater_is_better:
+                self._log("Greater score is better.\n")
+            else:
+                self._log("Lower score is better.\n")
+
+            self._log("Searching up to %s pipelines.\n" % self.max_pipelines)
+            self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
+
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
+
+        start = time.time()
         for n in pbar:
-            # determine which pipeline to build
-            pipeline_class = self._select_pipeline()
+            elapsed = time.time() - start
+            if elapsed > self.max_time:
+                self._log("\n\nMax time elapsed. Stopping search early.")
+                break
+            self._do_iteration(X, y, pbar)
 
-            # propose the next best parameters for this piepline
-            parameters = self._propose_parameters(pipeline_class)
-
-            # fit an score the pipeline
-            pipeline = pipeline_class(
-                objective=self.objective,
-                random_state=self.random_state,
-                n_jobs=-1,
-                number_features=X.shape[1],
-                **parameters
-            )
-
-            # todo, how to provide metric. does it get optimize with the pipeline
-            pbar.set_description("Testing %s" % (pipeline_class.name))
-            # pbar.write("Parameters")
-            # for item in parameters.items():
-            #     pbar.write("%s: %s" % item)
-
-            start = time.time()
-            # todo improve CV
-            scores = []
-            for train, test in self.cv.split(X, y):
-                if isinstance(X, pd.DataFrame):
-                    X_train, X_test = X.iloc[train], X.iloc[test]
-                else:
-                    X_train, X_test = X[train], X[test]
-
-                if isinstance(y, pd.Series):
-                    y_train, y_test = y.iloc[train], y.iloc[test]
-                else:
-                    y_train, y_test = y[train], y[test]
-
-                pipeline.fit(X_train, y_train)
-
-                score = pipeline.score(X_test, y_test)
-                scores.append(score)
-
-            training_time = time.time() - start
-
-            # save the result and continue
-            self._add_result(
-                trained_pipeline=pipeline,
-                parameters=parameters,
-                scores=scores,
-                training_time=training_time
-            )
-
-        pbar.set_description("Optimization finished!")
-        pbar.refresh()
         pbar.close()
+
+        self._log("\n✔ Optimization finished")
+
+    def _do_iteration(self, X, y, pbar):
+        # determine which pipeline to build
+        pipeline_class = self._select_pipeline()
+
+        # propose the next best parameters for this piepline
+        parameters = self._propose_parameters(pipeline_class)
+
+        # fit an score the pipeline
+        pipeline = pipeline_class(
+            objective=self.objective,
+            random_state=self.random_state,
+            n_jobs=-1,
+            number_features=X.shape[1],
+            **parameters
+        )
+
+        pbar.set_description("Testing %s" % (pipeline_class.name))
+
+        start = time.time()
+        scores = []
+        for train, test in self.cv.split(X, y):
+            if isinstance(X, pd.DataFrame):
+                X_train, X_test = X.iloc[train], X.iloc[test]
+            else:
+                X_train, X_test = X[train], X[test]
+
+            if isinstance(y, pd.Series):
+                y_train, y_test = y.iloc[train], y.iloc[test]
+            else:
+                y_train, y_test = y[train], y[test]
+
+            try:
+                pipeline.fit(X_train, y_train)
+                score = pipeline.score(X_test, y_test)
+            except:
+                score = np.nan
+
+            scores.append(score)
+
+        training_time = time.time() - start
+
+        # save the result and continue
+        self._add_result(
+            trained_pipeline=pipeline,
+            parameters=parameters,
+            scores=scores,
+            training_time=training_time
+        )
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
@@ -171,35 +186,79 @@ class AutoClassifier(AutoBase):
         high_variance_cv = (~s.between(left=low, right=high)).sum() > 1
 
         pipeline_name = trained_pipeline.__class__.__name__
-        to_add = {
-            "id": len(self.results),
+        pipeline_id = len(self.results)
+
+        self.results[pipeline_id] = {
+            "id": pipeline_id,
             "pipeline_name": pipeline_name,
             "parameters": parameters,
             "score": score,
-            "scores": scores,
             "high_variance_cv": high_variance_cv,
+            "scores": scores,
             "training_time": training_time,
         }
 
-        self.results.append(to_add)
+        self._save_pipeline(pipeline_id, trained_pipeline)
 
-        self._save_pipeline(pipeline_name, parameters, trained_pipeline)
+    def _save_pipeline(self, pipeline_id, trained_pipeline):
+        self.trained_pipelines[pipeline_id] = trained_pipeline
 
-    def _save_pipeline(self, pipeline_name, parameters, trained_pipeline):
-        model_key = (pipeline_name, frozenset(parameters.items()))
-        self.trained_pipelines[model_key] = trained_pipeline
-
-    def get_pipeline(self, id):
-        pipeline = None
-        for r in self.results:
-            if r["id"] == id:
-                pipeline = r
-
-        if pipeline is None:
+    def get_pipeline(self, pipeline_id):
+        if pipeline_id not in self.trained_pipelines:
             raise RuntimeError("Pipeline not found")
 
-        model_key = (pipeline['pipeline_name'], frozenset(pipeline['parameters'].items()))
-        return self.trained_pipelines[model_key]
+        return self.trained_pipelines[pipeline_id]
+
+    def describe_pipeline(self, pipeline_id, return_dict=False):
+        """Describe a pipeline
+
+        Arguments:
+            pipeline_id (int): pipeline to describe
+            return_dict (bool): If True, return dictionary of information
+                about pipeline. Defaults to false
+
+        Returns:
+            description
+        """
+        if pipeline_id not in self.results:
+            raise RuntimeError("Pipeline not found")
+
+        pipeline = self.get_pipeline(pipeline_id)
+        pipeline_results = self.results[pipeline_id]
+
+        self._log_title("Pipeline Description")
+
+        better_string = "lower is better"
+        if pipeline.objective.greater_is_better:
+            better_string = "greater is better"
+
+        self._log("Pipeline Name: %s" % pipeline.name)
+        self._log("Model type: %s" % pipeline.model_type)
+        self._log("Objective: %s (%s)" % (pipeline.objective.name, better_string))
+        self._log("Total training time (including CV): %.1f seconds\n" % pipeline_results["training_time"])
+
+        self._log_subtitle("Parameters")
+        for item in pipeline_results["parameters"].items():
+            self._log("• %s: %s" % item)
+
+
+        self._log_subtitle("\nCross Validation")
+
+        if pipeline_results["high_variance_cv"]:
+            self._log("Warning! High Variance cross validation scores. " +
+                      "Model may not perform as estimated on unseen data.")
+
+        scores = pd.Series(pipeline_results["scores"])
+        self._log("Mean +/- std: %f +/- %f" % (scores.mean(), scores.std()))
+
+
+        self._log("\nScores per fold")
+        for score in scores:
+            self._log("• %f" % score)
+
+
+        if return_dict:
+            return pipeline_results
 
     @property
     def rankings(self):
@@ -208,7 +267,8 @@ class AutoClassifier(AutoBase):
         if self.objective.greater_is_better:
             ascending = False
 
-        rankings_df = pd.DataFrame(self.results)
+        rankings_df = pd.DataFrame(self.results.values())
+        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
 

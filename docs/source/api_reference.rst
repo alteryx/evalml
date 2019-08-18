@@ -3,7 +3,7 @@ API Reference
 =============
 
 
-.. currentmodule:: evalml.models
+.. currentmodule:: evalml
 
 Models
 ======
@@ -15,6 +15,16 @@ Models
 
     AutoClassifier
     AutoRegressor
+
+Model Types
+===========
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    list_model_types
 
 
 Objective Functions

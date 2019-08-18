@@ -1,7 +1,8 @@
 from .random_forest import RFPipeline
 from .xgboost import XGBoostPipeline
+from .logistic_regression import LogisticRegressionPipeline
 
-ALL_PIPELINES = [RFPipeline, XGBoostPipeline]
+ALL_PIPELINES = [RFPipeline, XGBoostPipeline, LogisticRegressionPipeline]
 
 
 def get_pipelines(model_types=None):
@@ -20,6 +21,11 @@ def get_pipelines(model_types=None):
     if model_types is None:
         return ALL_PIPELINES
 
+    all_model_types = list_model_types()
+    for model_type in model_types:
+        if model_type not in all_model_types:
+            raise RuntimeError("Unrecognized model type: %s" % model_type)
+
     pipelines = []
 
     for p in ALL_PIPELINES:
@@ -27,3 +33,8 @@ def get_pipelines(model_types=None):
             pipelines.append(p)
 
     return pipelines
+
+
+
+def list_model_types():
+    return list(set([p.model_type for p in ALL_PIPELINES]))

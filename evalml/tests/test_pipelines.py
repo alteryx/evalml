@@ -1,7 +1,7 @@
 import pytest
 from sklearn import datasets
 
-# from evalml.pipelines import get_pipelines
+from evalml.pipelines import list_model_types
 
 
 @pytest.fixture
@@ -10,6 +10,11 @@ def data():
                                         n_informative=2, n_redundant=2, random_state=0)
 
     return X, y
+
+
+def test_list_model_types():
+    assert set(list_model_types()) == set(["random_forest", "xgboost", "linear_model"])
+
 
 
 # def test_all_pipelines(data):

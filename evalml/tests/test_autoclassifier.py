@@ -39,6 +39,10 @@ def test_init(X_y):
 
     assert isinstance(clf.best_pipeline, PipelineBase)
 
+    assert isinstance(clf.get_pipeline(0), PipelineBase)
+
+    clf.describe_pipeline(0)
+
 
 def test_cv(X_y):
     X, y = X_y
@@ -49,15 +53,15 @@ def test_cv(X_y):
 
     assert isinstance(clf.rankings, pd.DataFrame)
 
-    assert len(clf.rankings.iloc[0]["scores"]) == cv_folds
+    assert len(clf.results[0]["scores"]) == cv_folds
 
 
 def test_init_select_model_types():
     model_types = ["random_forest"]
     clf = AutoClassifier(model_types=model_types)
 
-    # todo also test get_pipelines
     assert get_pipelines(model_types=model_types) == clf.possible_pipelines
+    assert model_types == clf.possible_model_types
 
 
 def test_max_pipelines(X_y):
