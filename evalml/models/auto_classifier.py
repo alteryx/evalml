@@ -17,6 +17,8 @@ from evalml.tuners import SKOptTuner
 
 
 class AutoClassifier(AutoBase):
+    """Automatic pipeline search for classification problems"""
+
     def __init__(self,
                  objective=None,
                  max_pipelines=5,

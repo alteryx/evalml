@@ -2,6 +2,8 @@ from .auto_base import AutoBase
 
 
 class AutoRegressor(AutoBase):
+    """Automatic pipeline search for regression problems"""
+
     def __init__(self,
                  objective=None,
                  max_pipelines=5,

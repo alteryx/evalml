@@ -26,6 +26,20 @@ Model Types
 
     list_model_types
 
+.. currentmodule:: evalml.pipelines
+
+Pipelines
+=========
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    get_pipelines
+    RFPipeline
+    XGBoostPipeline
+    LogisticRegressionPipeline
 
 Objective Functions
 ====================
@@ -67,21 +81,6 @@ Tuners
 
     SKOptTuner
 
-
-.. currentmodule:: evalml.pipelines
-
-Pipelines
-=========
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    get_pipelines
-    RFPipeline
-    XGBoostPipeline
-    LogisticRegressionPipeline
 
 .. currentmodule:: evalml.demos
 
