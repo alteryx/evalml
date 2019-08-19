@@ -27,21 +27,3 @@ def scores_estimate(scores, title='Cross Validation'):
 def scores(scores):
     df = Series(scores).round(4).to_frame(name='Scores').sort_index()
     return df.rename_axis('Metrics')
-
-
-def label_distribution(labels):
-    return labels.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
-
-
-def number_of_features(dtypes):
-    dtype_to_vtype = {
-        'bool': 'Boolean',
-        'int32': 'Numeric',
-        'int64': 'Numeric',
-        'float64': 'Numeric',
-        'object': 'Categorical',
-        'datetime64[ns]': 'Datetime',
-    }
-
-    vtypes = dtypes.astype(str).map(dtype_to_vtype).value_counts()
-    return vtypes.sort_index().to_frame('Number of Features')

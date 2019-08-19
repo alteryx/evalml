@@ -4,79 +4,9 @@ Copyright (c) 2019 Feature Labs, Inc.
 The usage of this software is governed by the Feature Labs End User License Agreement available at https://www.featurelabs.com/eula/. If you do not agree to the terms set out in this agreement, do not use the software, and immediately contact Feature Labs or your supplier.
 """
 import pandas as pd
-from dask import dataframe as dd
 from numpy import unique
 from sklearn import metrics
-from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.utils.multiclass import type_of_target
-
-from . import render
-
-
-def load_data(path, index, label, drop=None, verbose=True, **kwargs):
-    """Load features and labels from file(s).
-
-    Args:
-        path (str) : path to file(s)
-        index (str) : column for index
-        label (str) : column for labels
-        drop (list) : columns to drop
-        verbose (bool) : whether to print information about features and labels
-
-    Returns:
-        DataFrame, Series : features and labels
-    """
-    if '*' in path:
-        feature_matrix = dd.read_csv(path, **kwargs).set_index(index, sorted=True)
-
-        labels = [label] + (drop or [])
-        y = feature_matrix[label].compute()
-        X = feature_matrix.drop(labels=labels, axis=1).compute()
-    else:
-        feature_matrix = pd.read_csv(path, index_col=index, **kwargs)
-
-        labels = [label] + (drop or [])
-        y = feature_matrix[label]
-        X = feature_matrix.drop(columns=labels)
-
-    if verbose:
-        # number of features
-        print(render.number_of_features(X.dtypes), end='\n\n')
-
-        # number of training examples
-        info = 'Number of training examples: {}'
-        print(info.format(len(X)), end='\n\n')
-
-        # label distribution
-        distribution = y.value_counts().div(len(y))
-        print(render.label_distribution(distribution))
-
-    return X, y
-
-
-def split_data(x, y, holdout=.2, random_state=None):
-    """Splits data into train and test sets.
-
-    Args:
-        x (DataFrame) : features
-        y (Series) : labels
-        holdout (float) : percent to holdout from train set for testing
-        random_state (int) : seed for the random number generator
-
-    Returns:
-        DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
-    """
-    stratified = StratifiedShuffleSplit(
-        n_splits=1,
-        test_size=holdout,
-        random_state=random_state,
-    )
-    train, test = next(stratified.split(x, y))
-    x_train = x.loc[x.index[train]]
-    x_test = x.loc[x.index[test]]
-    y_train = y.loc[y.index[train]]
-    y_test = y.loc[y.index[test]]
-    return x_train, x_test, y_train, y_test
 
 
 def resample_labels(x, y, weights, replace=False, label=None, random_state=None):

@@ -12,6 +12,7 @@ from . import apply, render
 
 class Classifier:
     """Machine learning model for classification-based prediction problems."""
+
     def __init__(self, random_state=0, options=None, cost_function=None,
                  cost_function_extra=None,
                  cost_function_holdout=.2, **kwargs):
