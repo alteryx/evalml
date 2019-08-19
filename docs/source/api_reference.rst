@@ -81,6 +81,7 @@ Pipelines
     get_pipelines
     RFPipeline
     XGBoostPipeline
+    LogisticRegressionPipeline
 
 .. currentmodule:: evalml.demos
 
