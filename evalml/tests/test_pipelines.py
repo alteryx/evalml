@@ -1,7 +1,7 @@
 import pytest
 from sklearn import datasets
 
-from evalml.pipelines import list_model_types
+from evalml.pipelines import get_pipelines, list_model_types
 
 
 @pytest.fixture
@@ -16,8 +16,7 @@ def test_list_model_types():
     assert set(list_model_types()) == set(["random_forest", "xgboost", "linear_model"])
 
 
-# def test_all_pipelines(data):
-#     X, y = data
-#     # TODO figure how to get default parameters for pipeline
-#     for p in get_pipelines():
-#         p
+def test_get_pipelines():
+    assert len(get_pipelines(problem_type="classification")) == 3
+    assert len(get_pipelines(problem_type="classification", model_types=["linear_model"])) == 1
+    assert len(get_pipelines(problem_type="regression")) == 1

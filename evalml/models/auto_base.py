@@ -7,8 +7,43 @@ import pandas as pd
 from colorama import Style
 from tqdm import tqdm
 
+from evalml.objectives import get_objective
+from evalml.pipelines import get_pipelines
+from evalml.tuners import SKOptTuner
+
 
 class AutoBase:
+    def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
+                 model_types, default_objectives, random_state, verbose):
+
+        if tuner is None:
+            tuner = SKOptTuner
+
+        self.objective = get_objective(objective)
+
+        self.max_pipelines = max_pipelines
+        self.max_time = max_time
+        self.model_types = model_types
+        self.cv = cv
+        self.verbose = verbose
+
+        self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
+
+        self.results = {}
+        self.trained_pipelines = {}
+        self.random_state = random_state
+
+        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+
+        self.tuners = {}
+        self.search_spaces = {}
+        for p in self.possible_pipelines:
+            space = list(p.hyperparameters.items())
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.search_spaces[p.name] = [s[0] for s in space]
+
+        self.default_objectives = default_objectives
+
     def _log(self, msg, color=None, new_line=True):
         if color:
             msg = color + msg + Style.RESET_ALL

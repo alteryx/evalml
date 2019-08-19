@@ -64,3 +64,13 @@ class MCC(ObjectiveBase):
 
     def score(self, y_true, y_predicted):
         return metrics.matthews_corrcoef(y_true, y_predicted)
+
+
+class R2(ObjectiveBase):
+    needs_fitting = False
+    greater_is_better = True
+    need_proba = False
+    name = "R2"
+
+    def score(self, y_true, y_predicted):
+        return metrics.r2_score(y_true, y_predicted)

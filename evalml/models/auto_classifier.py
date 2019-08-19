@@ -4,10 +4,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective, standard_metrics
-from evalml.pipelines import get_pipelines
-from evalml.preprocessing import split_data
-from evalml.tuners import SKOptTuner
+from evalml.objectives import standard_metrics
 
 
 class AutoClassifier(AutoBase):
@@ -40,32 +37,10 @@ class AutoClassifier(AutoBase):
         if objective is None:
             objective = "precision"
 
-        if tuner is None:
-            tuner = SKOptTuner
-
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        self.objective = get_objective(objective)
-        self.max_pipelines = max_pipelines
-        self.max_time = max_time
-        self.model_types = model_types
-        self.verbose = verbose
-        self.results = {}
-        self.trained_pipelines = {}
-        self.random_state = random_state
-        self.cv = cv
-        self.possible_pipelines = get_pipelines(model_types=model_types)
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
-
-        self.tuners = {}
-        self.search_spaces = {}
-        for p in self.possible_pipelines:
-            space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
-            self.search_spaces[p.name] = [s[0] for s in space]
-
-        self.default_objectives = [
+        default_objectives = [
             standard_metrics.F1(),
             standard_metrics.Precision(),
             standard_metrics.Recall(),
@@ -73,10 +48,26 @@ class AutoClassifier(AutoBase):
             standard_metrics.LogLoss()
         ]
 
+        problem_type = "classification"
+
+        super().__init__(
+            tuner=tuner,
+            objective=objective,
+            cv=cv,
+            max_pipelines=max_pipelines,
+            max_time=max_time,
+            model_types=model_types,
+            problem_type=problem_type,
+            default_objectives=default_objectives,
+            random_state=random_state,
+            verbose=verbose,
+        )
+
 
 if __name__ == "__main__":
     from evalml.objectives import FraudDetection
     from evalml.preprocessing import load_data
+    from evalml.preprocessing import split_data
 
     filepath = "/Users/kanter/Documents/lead_scoring_app/fraud_demo/data/transactions.csv"
     X, y = load_data(filepath, index="id", label="fraud")

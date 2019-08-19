@@ -37,9 +37,10 @@ Pipelines
     :nosignatures:
 
     get_pipelines
-    RFPipeline
+    RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
+    RFRegressionPipeline
 
 Objective Functions
 ====================

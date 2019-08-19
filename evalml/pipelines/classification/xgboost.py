@@ -1,32 +1,36 @@
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
+from xgboost import XGBClassifier
 
-from .pipeline_base import PipelineBase
+from evalml.pipelines import PipelineBase
 
 
-class RFPipeline(PipelineBase):
-    name = "Random Forest w/ imputation"
-    model_type = "random_forest"
+class XGBoostPipeline(PipelineBase):
+    name = "XGBoost w/ imputation"
+    model_type = "xgboost"
+    problem_type = "classification"
 
     hyperparameters = {
-        "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 1000),
+        "eta": Real(0, 1),
+        "min_child_weight": Real(1, 10),
+        "max_depth": Integer(1, 20),
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
+    def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
 
-        estimator = RandomForestClassifier(random_state=random_state,
-                                           n_estimators=n_estimators,
-                                           max_depth=max_depth,
-                                           n_jobs=n_jobs)
+        estimator = XGBClassifier(
+            random_state=random_state,
+            eta=eta,
+            max_depth=max_depth,
+            min_child_weight=min_child_weight
+        )
 
         feature_selection = SelectFromModel(
             estimator=estimator,
