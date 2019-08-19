@@ -95,3 +95,4 @@ Demo Datasets
     load_fraud
     load_wine
     load_breast_cancer
+    load_diabetes
