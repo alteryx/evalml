@@ -24,7 +24,7 @@ def test_init(X_y):
     clf = AutoClassifier()
 
     # check loads all pipelines
-    assert get_pipelines() == clf.possible_pipelines
+    assert get_pipelines(problem_type="classification") == clf.possible_pipelines
 
     clf.fit(X, y)
 
@@ -60,7 +60,7 @@ def test_init_select_model_types():
     model_types = ["random_forest"]
     clf = AutoClassifier(model_types=model_types)
 
-    assert get_pipelines(model_types=model_types) == clf.possible_pipelines
+    assert get_pipelines(problem_type="classification", model_types=model_types) == clf.possible_pipelines
     assert model_types == clf.possible_model_types
 
 

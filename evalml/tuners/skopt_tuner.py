@@ -1,3 +1,4 @@
+import pandas as pd
 from skopt import Optimizer
 
 
@@ -6,7 +7,9 @@ class SKOptTuner:
         self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
 
     def add(self, parameters, score):
-        return self.opt.tell(list(parameters), score)
+        # skip adding nan scores for
+        if not pd.isnull(score):
+            return self.opt.tell(list(parameters), score)
 
     def propose(self):
         return self.opt.ask()

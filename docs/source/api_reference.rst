@@ -37,14 +37,19 @@ Pipelines
     :nosignatures:
 
     get_pipelines
-    RFPipeline
+    RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
+    RFRegressionPipeline
 
 Objective Functions
 ====================
 
 .. currentmodule:: evalml.objectives
+
+
+Domain Specific
+~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -54,6 +59,9 @@ Objective Functions
     FraudDetection
     LeadScoring
 
+
+Classification
+~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -66,6 +74,16 @@ Objective Functions
     AUC
     LogLoss
     MCC
+
+Regression
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    R2
 
 
 
@@ -95,3 +113,4 @@ Demo Datasets
     load_fraud
     load_wine
     load_breast_cancer
+    load_diabetes

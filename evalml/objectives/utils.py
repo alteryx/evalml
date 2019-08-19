@@ -6,6 +6,8 @@ def get_objective(objective):
     if isinstance(objective, ObjectiveBase):
         return objective
 
+    objective = objective.lower()
+
     options = {
         "f1": standard_metrics.F1(),
         "precision": standard_metrics.Precision(),
@@ -13,6 +15,7 @@ def get_objective(objective):
         "auc": standard_metrics.AUC(),
         "log_loss": standard_metrics.LogLoss(),
         "mcc": standard_metrics.MCC(),
+        "r2": standard_metrics.R2(),
     }
 
     return options[objective]

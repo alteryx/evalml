@@ -1,4 +1,8 @@
+from sklearn.model_selection import KFold
+
 from .auto_base import AutoBase
+
+from evalml.objectives import standard_metrics
 
 
 class AutoRegressor(AutoBase):
@@ -7,66 +11,48 @@ class AutoRegressor(AutoBase):
     def __init__(self,
                  objective=None,
                  max_pipelines=5,
-                 max_time=60 * 5,
+                 max_time=None,
                  model_types=None,
                  cv=None,
-                 random_state=0,
                  tuner=None,
+                 random_state=0,
                  verbose=True):
-        """Automated regressor pipeline search
+        """Automated regressors pipeline search
 
         Arguments:
             objective (Object): the objective to optimize
-            max_pipelines (int): maximum number of models to search
-            max_time (int): maximum time in seconds to search for models
-            model_types (list): The model types to search. By default searches over
-                model_types
-            cv (): cross validation method to use. By default StratifiedKFold
-            tuner (): the tuner class to use. Defaults to scikit-optimize tuner
-            random_state ():
+            max_pipelines (int): maximum number of pipelines to search
+            max_time (int): maximum time in seconds to search for pipelines.
+                won't start new pipeline search after this duration has elapsed
+            model_types (list): The model types to search. By default searches over all
+                model_types. Run evalml.list_model_types("regression") to see options.
+            cv: cross validation method to use. By default StratifiedKFold
+            tuner: the tuner class to use. Defaults to scikit-optimize tuner
+            random_state (int): the random_state
             verbose (boolean): If True, turn verbosity on. Defaults to True
 
         """
-        raise NotImplementedError("")
+        if objective is None:
+            objective = "R2"
 
-    def fit(self, X, y, feature_types=None):
-        """Find best classifier
+        default_objectives = [
+            standard_metrics.R2(),
+        ]
 
-        Arguments:
-            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+        if cv is None:
+            cv = KFold(n_splits=3, random_state=random_state)
 
-            y (pd.Series): the target training labels of length [n_samples]
+        problem_type = "regression"
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
-
-        Returns:
-
-            self
-        """
-        raise NotImplementedError("")
-
-    def _select_pipeline(self):
-        raise NotImplementedError("")
-
-    def _propose_parameters(self, pipeline_class):
-        raise NotImplementedError("")
-
-    def _add_result(self, trained_pipeline, parameters, scores, training_time):
-        raise NotImplementedError("")
-
-    def _save_pipeline(self, pipeline_name, parameters, trained_pipeline):
-        raise NotImplementedError("")
-
-    def _get_pipeline(self, pipeline_name, parameters):
-        raise NotImplementedError("")
-
-    @property
-    def rankings(self):
-        """Returns the rankings of the models searched"""
-        raise NotImplementedError("")
-
-    @property
-    def best_pipeline(self):
-        """Returns the best model found"""
-        raise NotImplementedError("")
+        super().__init__(
+            tuner=tuner,
+            objective=objective,
+            cv=cv,
+            max_pipelines=max_pipelines,
+            max_time=max_time,
+            model_types=model_types,
+            problem_type=problem_type,
+            default_objectives=default_objectives,
+            random_state=random_state,
+            verbose=verbose,
+        )

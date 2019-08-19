@@ -4,12 +4,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Real
 
-from .pipeline_base import PipelineBase
+from evalml.pipelines import PipelineBase
 
 
 class LogisticRegressionPipeline(PipelineBase):
     name = "LogisticRegression w/ imputation + scaling"
     model_type = "linear_model"
+    problem_type = "classification"
 
     hyperparameters = {
         "penalty": ["l2"],
