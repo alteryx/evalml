@@ -135,7 +135,7 @@ class AutoClassifier(AutoBase):
             random_state=self.random_state,
             n_jobs=-1,
             number_features=X.shape[1],
-            **parameters
+            **dict(parameters)
         )
 
         pbar.set_description("Testing %s" % (pipeline_class.name))
@@ -185,8 +185,8 @@ class AutoClassifier(AutoBase):
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
         space = self.search_spaces[pipeline_class.name]
-        proposal = dict(zip(space, values))
-        return proposal
+        proposal = zip(space, values)
+        return list(proposal)
 
     def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
         if self.objective.greater_is_better:
@@ -196,7 +196,7 @@ class AutoClassifier(AutoBase):
             score = max(scores)  # take worst across folds
             score_to_minimize = score
 
-        self.tuners[trained_pipeline.name].add(parameters.values(), score_to_minimize)
+        self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
 
         # calculate high_variance_cv
         s = pd.Series(scores)
@@ -210,7 +210,7 @@ class AutoClassifier(AutoBase):
         self.results[pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
-            "parameters": parameters,
+            "parameters": dict(parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
             "scores": scores,
