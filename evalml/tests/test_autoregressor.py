@@ -14,7 +14,7 @@ def X_y():
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoRegressor(objective="R2")
+    clf = AutoRegressor(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
     assert get_pipelines(problem_type="regression") == clf.possible_pipelines

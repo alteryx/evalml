@@ -22,6 +22,7 @@ class RFRegressionPipeline(PipelineBase):
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=1, random_state=0):
+
         imputer = SimpleImputer(strategy=impute_strategy)
 
         estimator = RandomForestRegressor(random_state=random_state,
