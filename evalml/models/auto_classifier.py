@@ -27,7 +27,7 @@ class AutoClassifier(AutoBase):
             max_time (int): maximum time in seconds to search for pipelines.
                 won't start new pipeline search after this duration has elapsed
             model_types (list): The model types to search. By default searches over all
-                model_types. Run evalml.list_model_types() to see options.
+                model_types. Run evalml.list_model_types("classification") to see options.
             cv: cross validation method to use. By default StratifiedKFold
             tuner: the tuner class to use. Defaults to scikit-optimize tuner
             random_state (int): the random_state

@@ -13,7 +13,8 @@ def data():
 
 
 def test_list_model_types():
-    assert set(list_model_types()) == set(["random_forest", "xgboost", "linear_model"])
+    assert set(list_model_types("classification")) == set(["random_forest", "xgboost", "linear_model"])
+    assert set(list_model_types("regression")) == set(["random_forest"])
 
 
 def test_get_pipelines():

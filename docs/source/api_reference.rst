@@ -47,6 +47,10 @@ Objective Functions
 
 .. currentmodule:: evalml.objectives
 
+
+Domain Specific
+~~~~~~~~~~~~~~~
+
 .. autosummary::
     :toctree: generated
     :template: class.rst
@@ -55,6 +59,9 @@ Objective Functions
     FraudDetection
     LeadScoring
 
+
+Classification
+~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -67,6 +74,16 @@ Objective Functions
     AUC
     LogLoss
     MCC
+
+Regression
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    R2
 
 
 
