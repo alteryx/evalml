@@ -1,5 +1,6 @@
-from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
 import pandas as pd
+from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
+
 
 def load_breast_cancer():
     """Load wine dataset. Multiclass problem"""

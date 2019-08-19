@@ -1,5 +1,6 @@
-from sklearn.datasets import load_wine as load_wine_sk
 import pandas as pd
+from sklearn.datasets import load_wine as load_wine_sk
+
 
 def load_wine():
     """Load wine dataset. Multiclass problem"""

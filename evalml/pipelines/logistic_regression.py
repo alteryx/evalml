@@ -29,7 +29,7 @@ class LogisticRegressionPipeline(PipelineBase):
 
         self.pipeline = Pipeline(
             [("imputer", imputer),
-             # ("scaler", StandardScaler()),
+             ("scaler", StandardScaler()),
              ("estimator", estimator)]
         )
 
