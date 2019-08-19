@@ -81,3 +81,17 @@ Pipelines
     get_pipelines
     RFPipeline
     XGBoostPipeline
+
+.. currentmodule:: evalml.demos
+
+Demo Datasets
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    load_fraud
+    load_wine
+    load_breast_cancer

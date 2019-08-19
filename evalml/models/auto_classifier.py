@@ -20,7 +20,7 @@ class AutoClassifier(AutoBase):
     def __init__(self,
                  objective=None,
                  max_pipelines=5,
-                 max_time=60 * 5,
+                 max_time=None,
                  model_types=None,
                  cv=None,
                  tuner=None,
@@ -101,7 +101,11 @@ class AutoClassifier(AutoBase):
             else:
                 self._log("Lower score is better.\n")
 
-            self._log("Searching up to %s pipelines.\n" % self.max_pipelines)
+            self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+            if self.max_time:
+                self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+            else:
+                self._log("No time limit is set. Set one using max_time parameter.\n")
             self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
@@ -109,7 +113,7 @@ class AutoClassifier(AutoBase):
         start = time.time()
         for n in pbar:
             elapsed = time.time() - start
-            if elapsed > self.max_time:
+            if self.max_time and elapsed > self.max_time:
                 self._log("\n\nMax time elapsed. Stopping search early.")
                 break
             self._do_iteration(X, y, pbar)

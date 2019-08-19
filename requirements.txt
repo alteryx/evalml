@@ -8,3 +8,4 @@ tqdm>=4.33.0
 scikit-optimize[plots]
 colorama
 s3fs
+joblib>=0.10.3

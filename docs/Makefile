@@ -12,7 +12,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees source
 
 .PHONY: clean
 clean:
-# 	rm -rf $(BUILDDIR)/*
+	rm -rf $(BUILDDIR)/*
 # 	rm -rf $(GENDIR)/*
 
 .PHONY: html

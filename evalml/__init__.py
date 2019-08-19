@@ -1,5 +1,12 @@
 # flake8:noqa
-import evalml.models
+
+# hack to prevent warnings from skopt
+# must import sklearn first
+import sklearn
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# import evalml.models
 import evalml.preprocessing
 import evalml.objectives
 import evalml.tuners
