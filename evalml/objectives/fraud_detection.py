@@ -64,7 +64,7 @@ class FraudDetection(ObjectiveBase):
         """
         return self.score_for_threshold(y_predicted, y_true, extra_cols, self.threshold)
 
-    def score_for_threshold(self, y_predicted, y_true,  extra_cols, threshold):
+    def score_for_threshold(self, y_predicted, y_true, extra_cols, threshold):
         fraud_cost = extra_cols[self.amount_col] * self.fraud_payout_percentage
 
         interchange_cost = extra_cols[self.amount_col] * (1 - self.retry_percentage) * self.interchange_fee
