@@ -31,7 +31,7 @@ class RFClassificationPipeline(PipelineBase):
 
         feature_selection = SelectFromModel(
             estimator=estimator,
-            max_features=min(1, int(percent_features * number_features)),
+            max_features=max(1, int(percent_features * number_features)),
             threshold=-np.inf
         )
 
