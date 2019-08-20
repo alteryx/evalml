@@ -15,7 +15,7 @@ class RFClassificationPipeline(PipelineBase):
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 1000),
+        "max_depth": Integer(1, 32),
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
     }

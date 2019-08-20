@@ -22,6 +22,7 @@ class PipelineBase:
             self
 
         """
+
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size)
 
@@ -47,7 +48,7 @@ class PipelineBase:
         """
         if self.objective and self.objective.needs_fitting:
             y_prob_predicted = self.predict_proba(X)
-            return self.objective.predict(y_prob_predicted[:, 1])
+            return self.objective.predict(y_prob_predicted)
 
         return self.pipeline.predict(X)
 
@@ -61,7 +62,7 @@ class PipelineBase:
             DataFrame : probability estimates
         """
 
-        return self.pipeline.predict_proba(X)
+        return self.pipeline.predict_proba(X)[:, 1]
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
@@ -95,9 +96,9 @@ class PipelineBase:
                 y_predicted = y_predicted_label
 
             if objective.uses_extra_columns:
-                scores.append(objective.score(y, y_predicted, X))
+                scores.append(objective.score(y_predicted, y, X))
             else:
-                scores.append(objective.score(y, y_predicted))
+                scores.append(objective.score(y_predicted, y))
 
         if not other_objectives:
             return scores[0]
