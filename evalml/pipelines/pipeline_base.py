@@ -104,4 +104,3 @@ class PipelineBase:
             return scores[0]
 
         return scores[0], scores[1:]
-
