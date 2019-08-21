@@ -32,6 +32,8 @@ def test_init(X_y):
 
     assert isinstance(clf.best_pipeline, PipelineBase)
 
+    assert isinstance(clf.best_pipeline.feature_importances, pd.DataFrame)
+
     # test with datafarmes
     clf.fit(pd.DataFrame(X), pd.Series(y))
 
