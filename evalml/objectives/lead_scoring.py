@@ -23,12 +23,12 @@ class LeadScoring(ObjectiveBase):
         self.false_positives = false_positives
         self.verbose = verbose
 
-    def fit(self, y_prob, y):
+    def fit(self, y_predicted, y_true):
         """Optimize threshold on probability estimates of the label.
 
         Args:
-            y_prob (DataFrame) : probability estimates of labels in train set
-            y (DataFrame) : true labels in train set
+            y_predicted (DataFrame) : probability estimates of labels in train set
+            y_true (DataFrame) : true labels in train set
 
         Returns:
             LeadScoring : instance of self
@@ -38,7 +38,7 @@ class LeadScoring(ObjectiveBase):
             print('Searching for optimal threshold.')
 
         def cost(threshold):
-            return -self.score_for_threshold(y, y_prob, threshold)
+            return -self.score_for_threshold(y_predicted, y_true, threshold)
 
         self.optimal = minimize_scalar(cost, bounds=(0, 1), method='Bounded')
 
@@ -49,30 +49,30 @@ class LeadScoring(ObjectiveBase):
         self.threshold = self.optimal.x
         return self
 
-    def predict(self, y_prob):
+    def predict(self, y_predicted):
         """Predicts using the optimized threshold.
 
         Args:
-            y_prob (DataFrame) : probability estimates for each label
+            y_predicted (DataFrame) : probability estimates for each label
 
         Returns:
             Series : estimated labels using optimized threshold
         """
-        return y_prob > self.threshold
+        return y_predicted > self.threshold
 
-    def score(self, y_true, y_prob):
+    def score(self, y_predicted, y_true):
         """The cost function for threshold-based predictions.
 
         Args:
-            y (DataFrame) : true labels
-            y_prob (DataFrame) : probability estimates of labels
+            y_predicted (DataFrame) : probability estimates of labels
+            y_true (DataFrame) : true labels
         """
-        return self.score_for_threshold(y_true, y_prob, self.threshold)
+        return self.score_for_threshold(y_predicted, y_true, self.threshold)
 
-    def score_for_threshold(self, y_true, y_prob, threshold):
-        y_prob = y_prob[:, 1]  # get true column
+    def score_for_threshold(self, y_predicted, y_true, threshold):
+        y_predicted = y_predicted
 
-        y_hat_label = y_prob > threshold
+        y_hat_label = y_predicted > threshold
 
         true_positives = (y_true & y_hat_label).sum()
         false_positives = (~y_true & y_hat_label).sum()
