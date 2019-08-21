@@ -105,30 +105,3 @@ class PipelineBase:
 
         return scores[0], scores[1:]
 
-    def __eq__(self, other):
-        """Equality of pipelines
-
-        Args:
-            other (object): object to compare against
-
-        Returns:
-            boolean, whether the pipelines are equal
-        """
-        if isinstance(other, self.__class__):
-            return hash(self.__dict__, hash_name='md5') == hash(other.__dict__, hash_name='md5')
-            for k, v in self.__dict__.items():
-                # check if key exists in both
-                if k not in other.__dict__:
-                    return False
-                # if value is an object, check if object is the same
-                elif isinstance(self.__dict__[k], object):
-                    is_obj = self.__dict__[k] == other.__dict__[k]
-                    if not is_obj:
-                        return False
-                else:
-                    is_value = self.__dict__[k] == other.__dict__[k]
-                    if not is_value:
-                        return False
-            return True
-        else:
-            return False
