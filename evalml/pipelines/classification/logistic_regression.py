@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -35,3 +36,12 @@ class LogisticRegressionPipeline(PipelineBase):
         )
 
         super().__init__(objective=objective, random_state=random_state)
+
+    @property
+    def feature_importances(self):
+        """Return feature importances. Feature dropped by feaure selection are excluded"""
+        importances = list(zip(self.input_feature_names, self.pipeline["estimator"].coef_[0]))  # note: this only works for binary
+        importances.sort(key=lambda x: -abs(x[1]))
+
+        df = pd.DataFrame(importances, columns=["feature", "importance"])
+        return df
