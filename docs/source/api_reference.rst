@@ -37,6 +37,8 @@ Pipelines
     :nosignatures:
 
     get_pipelines
+    save_pipeline
+    load_pipeline
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
