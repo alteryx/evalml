@@ -32,17 +32,6 @@ def test_get_pipelines():
 
 
 @pytest.fixture
-def trained_model(X_y):
-    X, y = X_y
-
-    clf = AutoClassifier()
-
-    clf.fit(X, y)
-
-    return clf
-
-
-@pytest.fixture
 def path_management():
     path = CACHE
     try:
