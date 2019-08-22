@@ -69,9 +69,9 @@ class XGBoostPipeline(PipelineBase):
         return super().fit(X, y, objective_fit_size)
 
     def check_multiclass(self, y):
-        num_classes = y.unique()
+        num_classes = len(np.unique(y))
         if num_classes > 2:
-            orig_estimator = self.pipeline.steps[-1]
+            orig_estimator = self.pipeline.steps[-1][1]
             orig_params = orig_estimator.get_params()
 
             estimator = XGBClassifier(
@@ -83,7 +83,7 @@ class XGBoostPipeline(PipelineBase):
                 num_class=num_classes
             )
 
-            self.pipeline.steps[-1] = estimator
+            self.pipeline.steps[-1] = ('estimator', estimator)
 
     @property
     def feature_importances(self):

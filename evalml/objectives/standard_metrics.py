@@ -23,7 +23,7 @@ class Precision(ObjectiveBase):
     name = "Precision"
 
     def score(self, y_predicted, y_true):
-        return metrics.precision_score(y_true, y_predicted)
+        return metrics.precision_score(y_true, y_predicted, average='micro')
 
 
 class Recall(ObjectiveBase):
