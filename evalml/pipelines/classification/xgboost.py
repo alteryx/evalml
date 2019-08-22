@@ -47,6 +47,44 @@ class XGBoostPipeline(PipelineBase):
 
         super().__init__(objective=objective, random_state=random_state)
 
+    # Need to override fit for multiclass
+    def fit(self, X, y, objective_fit_size=.2):
+        """Build a model
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+
+            y (pd.Series): the target training labels of length [n_samples]
+
+            feature_types (list, optional): list of feature types. either numeric of categorical.
+                categorical features will automatically be encoded
+
+        Returns:
+
+            self
+
+        """
+        # make everything pandas objects
+        self.check_multiclass(y)
+        return super().fit(X, y, objective_fit_size)
+
+    def check_multiclass(self, y):
+        num_classes = y.unique()
+        if num_classes > 2:
+            orig_estimator = self.pipeline.steps[-1]
+            orig_params = orig_estimator.get_params()
+
+            estimator = XGBClassifier(
+                random_state=orig_params['random_state'],
+                eta=orig_params['eta'],
+                max_depth=orig_params['max_depth'],
+                min_child_weight=orig_params['min_child_weight'],
+                objective='multi:softprob',
+                num_class=num_classes
+            )
+
+            self.pipeline.steps[-1] = estimator
+
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""

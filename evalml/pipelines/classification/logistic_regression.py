@@ -26,6 +26,7 @@ class LogisticRegressionPipeline(PipelineBase):
         estimator = LogisticRegression(random_state=random_state,
                                        penalty=penalty,
                                        C=C,
+                                       multi_class='auto'
                                        solver="lbfgs",
                                        n_jobs=-1)
 
