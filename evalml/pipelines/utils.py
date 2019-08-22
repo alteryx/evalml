@@ -66,7 +66,7 @@ def list_model_types(problem_type):
     return list(set([p.model_type for p in problem_pipelines]))
 
 
-def save(pipeline, file_path):
+def save_pipeline(pipeline, file_path):
     """Saves pipeline at file path
 
     Args:
@@ -79,14 +79,14 @@ def save(pipeline, file_path):
         pickle.dump(pipeline, f)
 
 
-def load(file_path):
+def load_pipeline(file_path):
     """Loads pipeline at file path
 
     Args:
         file_path (str) : location to load file
 
     Returns:
-        Pipeline objß
+        Pipeline obj
     """
     with open(file_path, 'rb') as f:
         return pickle.load(f)

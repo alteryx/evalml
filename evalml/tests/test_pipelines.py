@@ -7,7 +7,7 @@ from sklearn import datasets
 
 import evalml.tests as tests
 from evalml import AutoClassifier
-from evalml.pipelines.utils import get_pipelines, list_model_types, load, save
+from evalml.pipelines.utils import get_pipelines, list_model_types, load_pipeline, save_pipeline
 
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
@@ -59,10 +59,10 @@ def test_serialization(X_y, trained_model, path_management):
     path = os.path.join(path_management, 'pipe.pkl')
     clf = trained_model
     pipeline = clf.best_pipeline
-    save(pipeline, path)
-    assert pipeline.score(X, y) == load(path).score(X, y)
+    save_pipeline(pipeline, path)
+    assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
     other_p = clf.get_pipeline(1)
     path = os.path.join(path_management, 'pipe1.pkl')
-    save(other_p, path)
-    assert pipeline.score(X, y) != load(path).score(X, y)
+    save_pipeline(other_p, path)
+    assert pipeline.score(X, y) != load_pipeline(path).score(X, y)
