@@ -6,7 +6,7 @@ import pytest
 from sklearn import datasets
 
 import evalml.tests as tests
-from evalml import AutoClassifier, load_pipeline, save_pipeline
+from evalml import load_pipeline, save_pipeline
 from evalml.pipelines.utils import get_pipelines, list_model_types
 
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')

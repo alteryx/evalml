@@ -11,6 +11,7 @@ def X_y():
 
     return X, y
 
+
 @pytest.fixture
 def trained_model(X_y):
     X, y = X_y
