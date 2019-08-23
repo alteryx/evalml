@@ -38,11 +38,15 @@ class PipelineBase:
         self.pipeline.fit(X, y)
 
         if self.objective.needs_fitting:
-            y_prob_predicted = self.predict_proba(X_objective)
-            if self.objective.uses_extra_columns:
-                self.objective.fit(y_prob_predicted, y_objective, X_objective)
+            if self.objective.needs_proba:
+                y_predicted = self.predict_proba(X_objective)
             else:
-                self.objective.fit(y_prob_predicted, y_objective)
+                y_predicted = self.predict(X_objective)
+
+            if self.objective.uses_extra_columns:
+                self.objective.fit(y_predicted, y_objective, X_objective)
+            else:
+                self.objective.fit(y_predicted, y_objective)
 
         return self
 
@@ -56,8 +60,15 @@ class PipelineBase:
             Series : estimated labels
         """
         if self.objective and self.objective.needs_fitting:
-            y_prob_predicted = self.predict_proba(X)
-            return self.objective.predict(y_prob_predicted)
+            if self.objective.needs_proba:
+                y_predicted = self.predict_proba(X)
+            else:
+                y_predicted = self.predict(X)
+
+            if self.objective.uses_extra_columns:
+                return self.objective.predict(y_predicted, X)
+
+            return self.objective.predict(y_predicted)
 
         return self.pipeline.predict(X)
 
@@ -86,24 +97,10 @@ class PipelineBase:
         """
         other_objectives = other_objectives or []
 
-        y_predicted_proba = None
-        y_predicted_label = None
+        y_predicted = self.predict(X)
 
         scores = []
         for objective in [self.objective] + other_objectives:
-            # only call the predict methods once
-            if objective.needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-
-                y_predicted = y_predicted_proba
-
-            else:
-                if y_predicted_label is None:
-                    y_predicted_label = self.predict(X)
-
-                y_predicted = y_predicted_label
-
             if objective.uses_extra_columns:
                 scores.append(objective.score(y_predicted, y, X))
             else:

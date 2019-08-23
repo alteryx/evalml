@@ -63,7 +63,7 @@ class AutoBase:
         self._log("%s" % title, color=color)
         self._log(underline * len(title), color=color)
 
-    def fit(self, X, y, feature_types=None):
+    def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
 
         Arguments:
@@ -73,6 +73,8 @@ class AutoBase:
 
             feature_types (list, optional): list of feature types. either numeric of categorical.
                 categorical features will automatically be encoded
+
+            raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
         Returns:
 
@@ -102,13 +104,13 @@ class AutoBase:
             if self.max_time and elapsed > self.max_time:
                 self._log("\n\nMax time elapsed. Stopping search early.")
                 break
-            self._do_iteration(X, y, pbar)
+            self._do_iteration(X, y, pbar, raise_errors)
 
         pbar.close()
 
         self._log("\n✔ Optimization finished")
 
-    def _do_iteration(self, X, y, pbar):
+    def _do_iteration(self, X, y, pbar, raise_errors):
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
@@ -145,6 +147,8 @@ class AutoBase:
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.default_objectives)
                 other_scores = dict(zip([n.name for n in self.default_objectives], other_scores))
             except Exception as e:
+                if raise_errors:
+                    raise e
                 pbar.write(str(e))
                 score = np.nan
                 other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
