@@ -1,6 +1,8 @@
+import numpy as np
 from sklearn import metrics
 
 from .objective_base import ObjectiveBase
+from .utils import binarize_y
 
 
 # todo does this need tuning?
@@ -11,8 +13,10 @@ class F1(ObjectiveBase):
     name = "F1"
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted)
-
+        if len(np.unique(y_true)) > 2:
+            return metrics.f1_score(y_true, y_predicted, average='micro')
+        else:
+            return metrics.f1_score(y_true, y_predicted)
 # todo does this need tuning?
 
 
@@ -23,7 +27,10 @@ class Precision(ObjectiveBase):
     name = "Precision"
 
     def score(self, y_predicted, y_true):
-        return metrics.precision_score(y_true, y_predicted, average='micro')
+        if len(np.unique(y_true)) > 2:
+            return metrics.precision_score(y_true, y_predicted, average='micro')
+        else:
+            return metrics.precision_score(y_true, y_predicted)
 
 
 class Recall(ObjectiveBase):
@@ -33,7 +40,10 @@ class Recall(ObjectiveBase):
     name = "Recall"
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted)
+        if len(np.unique(y_true)) > 2:
+            return metrics.f1_score(y_true, y_predicted, average='micro')
+        else:
+            return metrics.f1_score(y_true, y_predicted)
 
 
 class AUC(ObjectiveBase):
@@ -43,7 +53,11 @@ class AUC(ObjectiveBase):
     name = "AUC"
 
     def score(self, y_predicted, y_true):
-        return metrics.roc_auc_score(y_true, y_predicted)
+        if len(np.unique(y_true)) > 2:
+            y_true, y_predicted = binarize_y(y_true, y_predicted)
+            return metrics.roc_auc_score(y_true, y_predicted, average='micro')
+        else:
+            return metrics.roc_auc_score(y_true, y_predicted)
 
 
 class LogLoss(ObjectiveBase):
@@ -53,6 +67,8 @@ class LogLoss(ObjectiveBase):
     name = "Log Loss"
 
     def score(self, y_predicted, y_true):
+        if len(np.unique(y_true)) > 2:
+            y_true, y_predicted = binarize_y(y_true, y_predicted)
         return metrics.log_loss(y_true, y_predicted)
 
 

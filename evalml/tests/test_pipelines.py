@@ -2,14 +2,19 @@ import errno
 import os
 import shutil
 
+import numpy as np
 import pytest
-from sklearn import datasets
 
 import evalml.tests as tests
 from evalml import AutoClassifier, load_pipeline, save_pipeline
-from evalml.pipelines.utils import get_pipelines, list_model_types
-from evalml.pipelines import LogisticRegressionPipeline, XGBoostPipeline, RFClassificationPipeline
 from evalml.objectives import Precision
+from evalml.pipelines import (
+    LogisticRegressionPipeline,
+    RFClassificationPipeline,
+    XGBoostPipeline
+)
+from evalml.pipelines.utils import get_pipelines, list_model_types
+
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
 
@@ -24,6 +29,7 @@ def test_get_pipelines():
     assert len(get_pipelines(problem_type="regression")) == 1
 
 
+@pytest.fixture
 def path_management():
     path = CACHE
     try:
@@ -54,18 +60,25 @@ def test_multi(X_y_multi):
     clf = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
+    y_pred = clf.predict(X)
+    assert len(np.unique(y_pred)) == 3
 
     clf = XGBoostPipeline(objective=Precision(), eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
+    y_pred = clf.predict(X)
+    assert len(np.unique(y_pred)) == 3
 
     clf = RFClassificationPipeline(objective=Precision(), n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
+    y_pred = clf.predict(X)
+    assert len(np.unique(y_pred)) == 3
 
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    clf = AutoClassifier(verbose=True)
+    clf = AutoClassifier(objective="precision")
     clf.fit(X, y)
-    print(clf.rankings)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 3
