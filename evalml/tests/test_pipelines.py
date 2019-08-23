@@ -49,7 +49,7 @@ def test_serialization(X_y, trained_model, path_management):
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
-    other_p = clf.get_pipeline(1)
+    other_p = clf.get_pipeline(4)
     path = os.path.join(path_management, 'pipe1.pkl')
     save_pipeline(other_p, path)
     assert pipeline.score(X, y) != load_pipeline(path).score(X, y)
