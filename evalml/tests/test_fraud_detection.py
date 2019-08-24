@@ -23,3 +23,11 @@ def test_function(X_y):
     pipeline.predict(X)
     pipeline.predict_proba(X)
     pipeline.score(X, y)
+
+    fraud_detection = FraudDetection(amount_col="value")
+
+    probabilities = pd.Series([.1, .5, .5])
+    extra_columns = pd.DataFrame({"value": [100, 5, 25]})
+
+    out = fraud_detection.decision_function(probabilities, extra_columns, 5)
+    assert out.tolist() == [True, False, True]

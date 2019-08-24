@@ -2,24 +2,24 @@ from .objective_base import ObjectiveBase
 
 
 class LeadScoring(ObjectiveBase):
-    """Finds the optimal threshold for probability estimates of a label."""
+    """Lead scoring"""
+    name = "Lead Scoring"
     needs_fitting = True
     greater_is_better = True
     needs_proba = True
-    name = "Lead Scoring"
 
-    def __init__(self, true_positives=1, false_positives=1, verbose=True):
+    def __init__(self, true_positives=1, false_positives=-1, verbose=False):
         """Create instance.
 
         Args:
             label (int) : label to optimize threshold for
             true_positives (int) : reward for a true positive
-            false_positives (int) : cost for a false positive
-            verbose (bool) : whether to print while optimizing threshold
+            false_positives (int) : cost for a false positive. Should be negative.
         """
         self.true_positives = true_positives
         self.false_positives = false_positives
-        self.verbose = verbose
+
+        super().__init__(verbose=verbose)
 
     def decision_function(self, y_predicted, threshold):
         return y_predicted > threshold

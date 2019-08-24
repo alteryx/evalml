@@ -7,8 +7,8 @@ class ObjectiveBase:
     needs_proba = False
     uses_extra_columns = False
 
-    def __init__(self):
-        pass
+    def __init__(self, verbose=False):
+        self.verbose = verbose
 
     def fit(self, y_predicted, y_true, extra_cols=None):
         """Learn the objective function based on the predictions from a model.
@@ -27,6 +27,7 @@ class ObjectiveBase:
         Returns:
             self
         """
+
         def cost(threshold):
             if extra_cols is not None:
                 predictions = self.decision_function(y_predicted, extra_cols, threshold)
@@ -42,7 +43,10 @@ class ObjectiveBase:
 
         self.optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
         self.threshold = self.optimal.x
-        print("minimzed", self.threshold)
+
+        if self.verbose:
+            print("Best threshold found at: ", self.threshold)
+
         return self
 
     def predict(self, y_predicted, extra_cols=None):
