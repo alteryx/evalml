@@ -1,21 +1,9 @@
 import pandas as pd
-import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassifier
 from evalml.objectives import Precision
 from evalml.pipelines import PipelineBase, get_pipelines
-
-
-@pytest.fixture
-def trained_model(X_y):
-    X, y = X_y
-
-    clf = AutoClassifier()
-
-    clf.fit(X, y)
-
-    return clf
 
 
 def test_init(X_y):

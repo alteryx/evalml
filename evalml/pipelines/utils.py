@@ -1,3 +1,5 @@
+import pickle
+
 from .classification import (
     LogisticRegressionPipeline,
     RFClassificationPipeline,
@@ -62,3 +64,29 @@ def list_model_types(problem_type):
             problem_pipelines.append(p)
 
     return list(set([p.model_type for p in problem_pipelines]))
+
+
+def save_pipeline(pipeline, file_path):
+    """Saves pipeline at file path
+
+    Args:
+        file_path (str) : location to save file
+
+    Returns:
+        None
+    """
+    with open(file_path, 'wb') as f:
+        pickle.dump(pipeline, f)
+
+
+def load_pipeline(file_path):
+    """Loads pipeline at file path
+
+    Args:
+        file_path (str) : location to load file
+
+    Returns:
+        Pipeline obj
+    """
+    with open(file_path, 'rb') as f:
+        return pickle.load(f)
