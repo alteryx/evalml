@@ -145,7 +145,7 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.default_objectives)
-                other_scores = dict(zip([n.name for n in self.default_objectives], other_scores))
+
             except Exception as e:
                 if raise_errors:
                     raise e

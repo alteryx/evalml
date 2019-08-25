@@ -95,7 +95,7 @@ class PipelineBase:
             other_objectives (list): list of other objectives to score
 
         Returns:
-            score, list of other objective scores
+            score, dictionary of other objective scores
         """
         other_objectives = other_objectives or []
 
@@ -113,4 +113,6 @@ class PipelineBase:
         if not other_objectives:
             return scores[0]
 
-        return scores[0], scores[1:]
+        other_scores = dict(zip([n.name for n in other_objectives], scores[1:]))
+
+        return scores[0], other_scores
