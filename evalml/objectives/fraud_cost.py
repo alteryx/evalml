@@ -3,7 +3,7 @@ from .objective_base import ObjectiveBase
 
 class FraudCost(ObjectiveBase):
     """Score the percentage of money lost of the total transaction amount process due to fraud"""
-    name = "Fraud Detection"
+    name = "Fraud Cost"
     needs_fitting = True
     greater_is_better = False
     uses_extra_columns = True
