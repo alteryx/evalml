@@ -1,11 +1,15 @@
+from scipy.optimize import minimize_scalar
+
+
 class ObjectiveBase:
     needs_fitting = False
     greater_is_better = True
-    needs_proba = False
+    fit_needs_proba = True
+    score_needs_proba = False
     uses_extra_columns = False
 
-    def __init__(self):
-        pass
+    def __init__(self, verbose=False):
+        self.verbose = verbose
 
     def fit(self, y_predicted, y_true, extra_cols=None):
         """Learn the objective function based on the predictions from a model.
@@ -23,11 +27,30 @@ class ObjectiveBase:
 
         Returns:
             self
-
         """
-        pass
 
-    def predict(self, y_predicted):
+        def cost(threshold):
+            if extra_cols is not None:
+                predictions = self.decision_function(y_predicted, extra_cols, threshold)
+                cost = self.objective_function(predictions, y_true, extra_cols)
+            else:
+                predictions = self.decision_function(y_predicted, threshold)
+                cost = self.objective_function(predictions, y_true)
+
+            if self.greater_is_better:
+                return -cost
+
+            return cost
+
+        self.optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
+        self.threshold = self.optimal.x
+
+        if self.verbose:
+            print("Best threshold found at: ", self.threshold)
+
+        return self
+
+    def predict(self, y_predicted, extra_cols=None):
         """Apply the learned objective function to the output of a model.
 
         If needs_fitting is false, this method won't be called
@@ -39,9 +62,14 @@ class ObjectiveBase:
             predictions
         """
 
-        pass
+        if extra_cols is not None:
+            predictions = self.decision_function(y_predicted, extra_cols, self.threshold)
+        else:
+            predictions = self.decision_function(y_predicted, self.threshold)
 
-    def score(self, y_predicted, y_true, extra_cols):
+        return predictions
+
+    def score(self, y_predicted, y_true, extra_cols=None):
         """Calculate score from applying fitted objective to predicted values
 
         If a higher score is better than a lower score, set greater_is_better attribute to True
@@ -59,4 +87,7 @@ class ObjectiveBase:
             score
 
         """
-        pass
+        if extra_cols is not None:
+            return self.objective_function(y_predicted, y_true, extra_cols)
+        else:
+            return self.objective_function(y_predicted, y_true)

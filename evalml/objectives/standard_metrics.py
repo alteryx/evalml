@@ -39,7 +39,7 @@ class Recall(ObjectiveBase):
 class AUC(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
-    need_proba = True
+    score_needs_proba = True
     name = "AUC"
 
     def score(self, y_predicted, y_true):
@@ -49,7 +49,7 @@ class AUC(ObjectiveBase):
 class LogLoss(ObjectiveBase):
     needs_fitting = False
     greater_is_better = False
-    need_proba = True
+    score_needs_proba = True
     name = "Log Loss"
 
     def score(self, y_predicted, y_true):

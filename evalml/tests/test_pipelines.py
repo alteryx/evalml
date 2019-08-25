@@ -46,12 +46,6 @@ def path_management():
 def test_serialization(X_y, trained_model, path_management):
     X, y = X_y
     path = os.path.join(path_management, 'pipe.pkl')
-    clf = trained_model
-    pipeline = clf.best_pipeline
+    pipeline = trained_model.best_pipeline
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
-
-    other_p = clf.get_pipeline(1)
-    path = os.path.join(path_management, 'pipe1.pkl')
-    save_pipeline(other_p, path)
-    assert pipeline.score(X, y) != load_pipeline(path).score(X, y)

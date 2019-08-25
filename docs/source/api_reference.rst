@@ -58,7 +58,7 @@ Domain Specific
     :template: class.rst
     :nosignatures:
 
-    FraudDetection
+    FraudCost
     LeadScoring
 
 
