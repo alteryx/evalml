@@ -1,13 +1,13 @@
 import pandas as pd
 
 from evalml import AutoClassifier
-from evalml.objectives import FraudDetection
+from evalml.objectives import FraudCost
 
 
 def test_function(X_y):
     X, y = X_y
 
-    objective = FraudDetection(
+    objective = FraudCost(
         retry_percentage=.5,
         interchange_fee=.02,
         fraud_payout_percentage=.75,
@@ -24,7 +24,7 @@ def test_function(X_y):
     pipeline.predict_proba(X)
     pipeline.score(X, y)
 
-    fraud_detection = FraudDetection(amount_col="value")
+    fraud_detection = FraudCost(amount_col="value")
 
     probabilities = pd.Series([.1, .5, .5])
     extra_columns = pd.DataFrame({"value": [100, 5, 25]})

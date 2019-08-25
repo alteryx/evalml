@@ -1,8 +1,8 @@
 from .objective_base import ObjectiveBase
 
 
-class FraudDetection(ObjectiveBase):
-    """Score the money lost to transactional fraud"""
+class FraudCost(ObjectiveBase):
+    """Score the percentage of money lost of the total transaction amount process due to fraud"""
     name = "Fraud Detection"
     needs_fitting = True
     greater_is_better = False
@@ -11,7 +11,7 @@ class FraudDetection(ObjectiveBase):
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, amount_col='amount', verbose=False):
-        """Create instance of FraudDetection
+        """Create instance of FraudCost
 
         Args:
             retry_percentage (float): what percentage of customers will retry a transaction if it
@@ -59,4 +59,6 @@ class FraudDetection(ObjectiveBase):
 
         loss = false_negatives.sum() + false_positives.sum()
 
-        return loss
+        loss_per_total_processed = loss / transaction_amount.sum()
+
+        return loss_per_total_processed

@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from evalml.objectives import get_objective
+
 
 class PipelineBase:
     def __init__(self, objective, random_state=0):
@@ -101,6 +103,8 @@ class PipelineBase:
 
         scores = []
         for objective in [self.objective] + other_objectives:
+            objective = get_objective(objective)
+
             if objective.uses_extra_columns:
                 scores.append(objective.score(y_predicted, y, X))
             else:

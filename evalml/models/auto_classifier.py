@@ -65,7 +65,7 @@ class AutoClassifier(AutoBase):
 
 
 if __name__ == "__main__":
-    from evalml.objectives import FraudDetection
+    from evalml.objectives import FraudCost
     from evalml.preprocessing import load_data
     from evalml.preprocessing import split_data
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = split_data(pd.DataFrame(digits.data), pd.Series(digits.target), test_size=.2, random_state=0)
     print(X_train)
-    objective = FraudDetection(
+    objective = FraudCost(
         retry_percentage=.5,
         interchange_fee=.02,
         fraud_payout_percentage=.75,
