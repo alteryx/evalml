@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
 from evalml.objectives import Precision
@@ -38,6 +38,14 @@ def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
     clf = AutoClassifier(cv=StratifiedKFold(cv_folds), max_pipelines=1)
+
+    clf.fit(X, y)
+
+    assert isinstance(clf.rankings, pd.DataFrame)
+
+    assert len(clf.results[0]["scores"]) == cv_folds
+
+    clf = AutoClassifier(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
 
     clf.fit(X, y)
 

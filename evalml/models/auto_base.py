@@ -154,6 +154,8 @@ class AutoBase:
                 other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
 
             other_scores[self.objective.name] = score
+            other_scores["# Training"] = len(y_train)
+            other_scores["# Testing"] = len(y_test)
 
             scores.append(score)
             all_objective_scores.append(other_scores)
@@ -189,10 +191,9 @@ class AutoBase:
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
 
         # calculate high_variance_cv
+        # if the coefficient of variance is greater than .2
         s = pd.Series(scores)
-        s_mean, s_std = s.mean(), s.std()
-        high, low = s_mean + 2 * s_std, s_mean - 2 * s_std
-        high_variance_cv = (~s.between(left=low, right=high)).sum() > 0
+        high_variance_cv = (s.std() / s.mean()) > .2
 
         pipeline_name = trained_pipeline.__class__.__name__
         pipeline_id = len(self.results)
@@ -254,16 +255,25 @@ class AutoBase:
         self._log_subtitle("\nCross Validation")
 
         if pipeline_results["high_variance_cv"]:
-            self._log("Warning! High variance between cross validation scores. " +
+            self._log("Warning! High variance within cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
-        mean = all_objective_scores.mean(axis=0)
-        std = all_objective_scores.std(axis=0)
-        all_objective_scores.loc["mean"] = mean
-        all_objective_scores.loc["std"] = std
 
-        with pd.option_context('display.float_format', '{:.3f}'.format):
+        for c in all_objective_scores:
+            if c in ["# Training", "# Testing"]:
+                all_objective_scores[c] = all_objective_scores[c].astype("object")
+
+            mean = all_objective_scores[c].mean(axis=0)
+            std = all_objective_scores[c].std(axis=0)
+            all_objective_scores.loc["mean", c] = mean
+            all_objective_scores.loc["std", c] = std
+            all_objective_scores.loc["coef of var", c] = std / mean
+
+        all_objective_scores = all_objective_scores.fillna("-")
+
+
+        with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
 
         if return_dict:
