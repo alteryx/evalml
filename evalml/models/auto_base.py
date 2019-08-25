@@ -278,6 +278,7 @@ class AutoBase:
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
                 all_objective_scores[c] = all_objective_scores[c].astype("object")
+                continue
 
             mean = all_objective_scores[c].mean(axis=0)
             std = all_objective_scores[c].std(axis=0)
