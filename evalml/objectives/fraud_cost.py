@@ -7,7 +7,8 @@ class FraudCost(ObjectiveBase):
     needs_fitting = True
     greater_is_better = False
     uses_extra_columns = True
-    needs_proba = True
+    fit_needs_proba = True
+    score_needs_proba = False
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, amount_col='amount', verbose=False):

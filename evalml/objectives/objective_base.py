@@ -4,7 +4,8 @@ from scipy.optimize import minimize_scalar
 class ObjectiveBase:
     needs_fitting = False
     greater_is_better = True
-    needs_proba = False
+    fit_needs_proba = True
+    score_needs_proba = False
     uses_extra_columns = False
 
     def __init__(self, verbose=False):

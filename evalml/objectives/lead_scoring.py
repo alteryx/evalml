@@ -6,7 +6,9 @@ class LeadScoring(ObjectiveBase):
     name = "Lead Scoring"
     needs_fitting = True
     greater_is_better = True
-    needs_proba = True
+    fit_needs_proba = True
+    score_needs_proba = False
+    name = "Lead Scoring"
 
     def __init__(self, true_positives=1, false_positives=-1, verbose=False):
         """Create instance.

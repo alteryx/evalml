@@ -40,7 +40,7 @@ class PipelineBase:
         self.pipeline.fit(X, y)
 
         if self.objective.needs_fitting:
-            if self.objective.needs_proba:
+            if self.objective.fit_needs_proba:
                 y_predicted = self.predict_proba(X_objective)
             else:
                 y_predicted = self.predict(X_objective)
@@ -62,7 +62,7 @@ class PipelineBase:
             Series : estimated labels
         """
         if self.objective and self.objective.needs_fitting:
-            if self.objective.needs_proba:
+            if self.objective.fit_needs_proba:
                 y_predicted = self.predict_proba(X)
             else:
                 y_predicted = self.predict(X)
@@ -95,22 +95,32 @@ class PipelineBase:
             other_objectives (list): list of other objectives to score
 
         Returns:
-            score, list of other objective scores
+            score, dictionary of other objective scores
         """
         other_objectives = other_objectives or []
+        other_objectives = [get_objective(o) for o in other_objectives]
 
-        y_predicted = self.predict(X)
+        # calculate predictions only once
+        y_predicted = None
+        y_predicted_proba = None
 
         scores = []
         for objective in [self.objective] + other_objectives:
-            objective = get_objective(objective)
+            if objective.score_needs_proba and y_predicted_proba is None:
+                y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            elif y_predicted is None:
+                y_predicted = self.predict(X)
+                y_predictions = y_predicted
 
             if objective.uses_extra_columns:
-                scores.append(objective.score(y_predicted, y, X))
+                scores.append(objective.score(y_predictions, y, X))
             else:
-                scores.append(objective.score(y_predicted, y))
+                scores.append(objective.score(y_predictions, y))
 
         if not other_objectives:
             return scores[0]
 
-        return scores[0], scores[1:]
+        other_scores = dict(zip([n.name for n in other_objectives], scores[1:]))
+
+        return scores[0], other_scores
