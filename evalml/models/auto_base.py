@@ -7,6 +7,7 @@ import pandas as pd
 from colorama import Style
 from tqdm import tqdm
 
+from evalml import preprocessing
 from evalml.objectives import get_objective
 from evalml.pipelines import get_pipelines
 from evalml.tuners import SKOptTuner
@@ -14,7 +15,7 @@ from evalml.tuners import SKOptTuner
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 model_types, default_objectives, random_state, verbose):
+                 model_types, default_objectives, detect_label_leakage, random_state, verbose):
 
         if tuner is None:
             tuner = SKOptTuner
@@ -24,6 +25,7 @@ class AutoBase:
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
+        self.detect_label_leakage = detect_label_leakage
         self.cv = cv
         self.verbose = verbose
 
@@ -80,6 +82,13 @@ class AutoBase:
 
             self
         """
+        # make everything pandas objects
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         if self.verbose:
             self._log_title("Beginning pipeline search")
             self._log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -95,6 +104,12 @@ class AutoBase:
             else:
                 self._log("No time limit is set. Set one using max_time parameter.\n")
             self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
+
+        if self.detect_label_leakage:
+            leaked = preprocessing.detect_label_leakage(X, y)
+            if len(leaked) > 0:
+                leaked = [str(k) for k in leaked.keys()]
+                self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 
@@ -154,6 +169,8 @@ class AutoBase:
                 other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
 
             other_scores[self.objective.name] = score
+            other_scores["# Training"] = len(y_train)
+            other_scores["# Testing"] = len(y_test)
 
             scores.append(score)
             all_objective_scores.append(other_scores)
@@ -189,10 +206,9 @@ class AutoBase:
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
 
         # calculate high_variance_cv
+        # if the coefficient of variance is greater than .2
         s = pd.Series(scores)
-        s_mean, s_std = s.mean(), s.std()
-        high, low = s_mean + 2 * s_std, s_mean - 2 * s_std
-        high_variance_cv = (~s.between(left=low, right=high)).sum() > 0
+        high_variance_cv = (s.std() / s.mean()) > .2
 
         pipeline_name = trained_pipeline.__class__.__name__
         pipeline_id = len(self.results)
@@ -254,16 +270,25 @@ class AutoBase:
         self._log_subtitle("\nCross Validation")
 
         if pipeline_results["high_variance_cv"]:
-            self._log("Warning! High variance between cross validation scores. " +
+            self._log("Warning! High variance within cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
-        mean = all_objective_scores.mean(axis=0)
-        std = all_objective_scores.std(axis=0)
-        all_objective_scores.loc["mean"] = mean
-        all_objective_scores.loc["std"] = std
 
-        with pd.option_context('display.float_format', '{:.3f}'.format):
+        for c in all_objective_scores:
+            if c in ["# Training", "# Testing"]:
+                all_objective_scores[c] = all_objective_scores[c].astype("object")
+                continue
+
+            mean = all_objective_scores[c].mean(axis=0)
+            std = all_objective_scores[c].std(axis=0)
+            all_objective_scores.loc["mean", c] = mean
+            all_objective_scores.loc["std", c] = std
+            all_objective_scores.loc["coef of var", c] = std / mean
+
+        all_objective_scores = all_objective_scores.fillna("-")
+
+        with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
 
         if return_dict:

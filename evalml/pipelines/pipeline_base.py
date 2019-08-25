@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from evalml.objectives import get_objective
@@ -25,13 +24,6 @@ class PipelineBase:
             self
 
         """
-        # make everything pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
         self.input_feature_names = X.columns.tolist()
 
         if self.objective.needs_fitting:
@@ -106,11 +98,13 @@ class PipelineBase:
 
         scores = []
         for objective in [self.objective] + other_objectives:
-            if objective.score_needs_proba and y_predicted_proba is None:
-                y_predicted_proba = self.predict_proba(X)
+            if objective.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
                 y_predictions = y_predicted_proba
-            elif y_predicted is None:
-                y_predicted = self.predict(X)
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
                 y_predictions = y_predicted
 
             if objective.uses_extra_columns:
