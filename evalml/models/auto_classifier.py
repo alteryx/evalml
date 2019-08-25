@@ -1,5 +1,4 @@
 # from evalml.pipelines import get_pipelines_by_model_type
-import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
@@ -62,41 +61,3 @@ class AutoClassifier(AutoBase):
             random_state=random_state,
             verbose=verbose,
         )
-
-
-if __name__ == "__main__":
-    from evalml.objectives import FraudCost
-    from evalml.preprocessing import load_data
-    from evalml.preprocessing import split_data
-
-    filepath = "/Users/kanter/Documents/lead_scoring_app/fraud_demo/data/transactions.csv"
-    X, y = load_data(filepath, index="id", label="fraud")
-
-    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-    X = X.select_dtypes(include=numerics)
-
-    from sklearn.datasets import load_digits
-
-    digits = load_digits()
-
-    X_train, X_test, y_train, y_test = split_data(pd.DataFrame(digits.data), pd.Series(digits.target), test_size=.2, random_state=0)
-    print(X_train)
-    objective = FraudCost(
-        retry_percentage=.5,
-        interchange_fee=.02,
-        fraud_payout_percentage=.75,
-        amount_col=10
-    )
-
-    clf = AutoClassifier(objective="precision",
-                         max_pipelines=3,
-                         random_state=0)
-
-    clf.fit(X_train, y_train)
-
-    print(clf.rankings)
-
-    print(clf.best_pipeline)
-    print(clf.best_pipeline.score(X_test, y_test))
-
-    clf.rankings.to_csv("rankings.csv")

@@ -1,5 +1,5 @@
 # flake8:noqa
-from .fraud_detection import FraudCost
+from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
 from .standard_metrics import F1, Precision, Recall, AUC, LogLoss, MCC, R2
 from .objective_base import ObjectiveBase

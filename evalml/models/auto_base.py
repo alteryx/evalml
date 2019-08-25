@@ -179,11 +179,11 @@ class AutoBase:
         return list(proposal)
 
     def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
+        score = pd.Series(scores).mean()
+
         if self.objective.greater_is_better:
-            score = min(scores)  # take worst across folds
             score_to_minimize = -score
         else:
-            score = max(scores)  # take worst across folds
             score_to_minimize = score
 
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
