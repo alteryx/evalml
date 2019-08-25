@@ -7,6 +7,7 @@ import pandas as pd
 from colorama import Style
 from tqdm import tqdm
 
+from evalml import preprocessing
 from evalml.objectives import get_objective
 from evalml.pipelines import get_pipelines
 from evalml.tuners import SKOptTuner
@@ -14,7 +15,7 @@ from evalml.tuners import SKOptTuner
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 model_types, default_objectives, random_state, verbose):
+                 model_types, default_objectives, detect_label_leakage, random_state, verbose):
 
         if tuner is None:
             tuner = SKOptTuner
@@ -24,6 +25,7 @@ class AutoBase:
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
+        self.detect_label_leakage = detect_label_leakage
         self.cv = cv
         self.verbose = verbose
 
@@ -80,6 +82,13 @@ class AutoBase:
 
             self
         """
+        # make everything pandas objects
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         if self.verbose:
             self._log_title("Beginning pipeline search")
             self._log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -95,6 +104,12 @@ class AutoBase:
             else:
                 self._log("No time limit is set. Set one using max_time parameter.\n")
             self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
+
+        if self.detect_label_leakage:
+            leaked = preprocessing.detect_label_leakage(X, y)
+            if len(leaked) > 0:
+                leaked = [str(k) for k in leaked.keys()]
+                self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 
@@ -271,7 +286,6 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
-
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
