@@ -59,6 +59,14 @@ class AutoClassifier(AutoBase):
                     standard_metrics.Recall(average=average),
                     standard_metrics.AUC(average=average),
                 ]
+        elif objective.average is not None and objective.average is not 'binary':
+            average = objective.average
+            default_objectives = [
+                    standard_metrics.F1(average=average),
+                    standard_metrics.Precision(average=average),
+                    standard_metrics.Recall(average=average),
+                    standard_metrics.AUC(average=average),
+                ]
 
         problem_type = "classification"
 

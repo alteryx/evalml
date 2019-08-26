@@ -88,5 +88,11 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
+    objective = Precision(average='micro')
+    clf = AutoClassifier(objective=objective)
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 3
+
 
 # def test_serialization(trained_model)
