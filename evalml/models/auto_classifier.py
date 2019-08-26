@@ -40,6 +40,8 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
+        # Change arguments if multiclass
+
         default_objectives = [
             standard_metrics.F1(),
             standard_metrics.Precision(),
@@ -47,6 +49,16 @@ class AutoClassifier(AutoBase):
             standard_metrics.AUC(),
             standard_metrics.LogLoss()
         ]
+
+        if isinstance(objective, str):
+            if '_' in objective:
+                average = objective.split('_')[1]
+                default_objectives = [
+                    standard_metrics.F1(average=average),
+                    standard_metrics.Precision(average=average),
+                    standard_metrics.Recall(average=average),
+                    standard_metrics.AUC(average=average),
+                ]
 
         problem_type = "classification"
 

@@ -12,7 +12,7 @@ class F1(ObjectiveBase):
     need_proba = False
     name = "F1"
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='binary'):
         self.average = average
 
     def score(self, y_predicted, y_true):
@@ -26,7 +26,7 @@ class Precision(ObjectiveBase):
     need_proba = False
     name = "Precision"
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='binary'):
         self.average = average
 
     def score(self, y_predicted, y_true):
@@ -39,7 +39,7 @@ class Recall(ObjectiveBase):
     need_proba = False
     name = "Recall"
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='binary'):
         self.average = average
 
     def score(self, y_predicted, y_true):
@@ -52,7 +52,7 @@ class AUC(ObjectiveBase):
     need_proba = True
     name = "AUC"
 
-    def __init__(self, average='micro'):
+    def __init__(self, average=None):
         self.average = average
 
     def score(self, y_predicted, y_true):
