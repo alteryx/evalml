@@ -5,6 +5,7 @@ from evalml import AutoClassifier
 from evalml.objectives import Precision
 from evalml.pipelines import PipelineBase, get_pipelines
 
+import numpy as np
 
 def test_init(X_y):
     X, y = X_y
@@ -78,5 +79,13 @@ def test_specify_objective(X_y):
     X, y = X_y
     clf = AutoClassifier(objective=Precision(), max_pipelines=1)
     clf.fit(X, y)
+
+
+def test_multi_auto(X_y_multi):
+    X, y = X_y_multi
+    clf = AutoClassifier(objective="precision_micro")
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 3
 
 # def test_serialization(trained_model)
