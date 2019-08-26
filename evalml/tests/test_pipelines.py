@@ -44,12 +44,15 @@ def path_management():
 def test_serialization(X_y, trained_model, path_management):
     X, y = X_y
     path = os.path.join(path_management, 'pipe.pkl')
-    clf = trained_model
-    pipeline = clf.best_pipeline
+    objective = Precision(average='binary')
+
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    pipeline.fit(X,y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
-    other_p = clf.get_pipeline(4)
+    other_p = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
+    other_p.fit(X,y)
     path = os.path.join(path_management, 'pipe1.pkl')
     save_pipeline(other_p, path)
     assert pipeline.score(X, y) != load_pipeline(path).score(X, y)
@@ -57,19 +60,20 @@ def test_serialization(X_y, trained_model, path_management):
 
 def test_multi(X_y_multi):
     X, y = X_y_multi
-    clf = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    objective = Precision(average='micro')
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
     y_pred = clf.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    clf = XGBoostPipeline(objective=Precision(), eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
     y_pred = clf.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    clf = RFClassificationPipeline(objective=Precision(), n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
+    clf = RFClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
     clf.fit(X, y)
     clf.score(X, y)
     y_pred = clf.predict(X)
@@ -78,7 +82,8 @@ def test_multi(X_y_multi):
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    clf = AutoClassifier(objective="precision")
+    clf = AutoClassifier(objective="precision_micro")
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
+    print(clf.rankings)
     assert len(np.unique(y_pred)) == 3
