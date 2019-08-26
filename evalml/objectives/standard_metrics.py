@@ -12,11 +12,10 @@ class F1(ObjectiveBase):
     need_proba = False
     name = "F1"
 
+    def __init__(self, average='micro'):
+        self.average = average
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            return metrics.f1_score(y_true, y_predicted, average='micro')
-        else:
-            return metrics.f1_score(y_true, y_predicted)
+        return metrics.f1_score(y_true, y_predicted, average=self.average)
 # todo does this need tuning?
 
 
@@ -26,11 +25,11 @@ class Precision(ObjectiveBase):
     need_proba = False
     name = "Precision"
 
+    def __init__(self, average='micro'):
+        self.average = average
+
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            return metrics.precision_score(y_true, y_predicted, average='micro')
-        else:
-            return metrics.precision_score(y_true, y_predicted)
+        return metrics.precision_score(y_true, y_predicted, average=self.average)
 
 
 class Recall(ObjectiveBase):
@@ -39,11 +38,11 @@ class Recall(ObjectiveBase):
     need_proba = False
     name = "Recall"
 
+    def __init__(self, average='micro'):
+        self.average = average
+
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            return metrics.f1_score(y_true, y_predicted, average='micro')
-        else:
-            return metrics.f1_score(y_true, y_predicted)
+        return metrics.f1_score(y_true, y_predicted, average=self.average)
 
 
 class AUC(ObjectiveBase):
@@ -52,12 +51,13 @@ class AUC(ObjectiveBase):
     need_proba = True
     name = "AUC"
 
+    def __init__(self, average='micro'):
+        self.average = average
+
     def score(self, y_predicted, y_true):
         if len(np.unique(y_true)) > 2:
             y_true, y_predicted = binarize_y(y_true, y_predicted)
-            return metrics.roc_auc_score(y_true, y_predicted, average='micro')
-        else:
-            return metrics.roc_auc_score(y_true, y_predicted)
+        return metrics.roc_auc_score(y_true, y_predicted, average=self.average)
 
 
 class LogLoss(ObjectiveBase):

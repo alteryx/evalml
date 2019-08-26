@@ -8,18 +8,30 @@ from .objective_base import ObjectiveBase
 def get_objective(objective):
     if isinstance(objective, ObjectiveBase):
         return objective
-
     objective = objective.lower()
+    extra_param = None
 
-    options = {
-        "f1": standard_metrics.F1(),
-        "precision": standard_metrics.Precision(),
-        "recall": standard_metrics.Recall(),
-        "auc": standard_metrics.AUC(),
-        "log_loss": standard_metrics.LogLoss(),
-        "mcc": standard_metrics.MCC(),
-        "r2": standard_metrics.R2(),
-    }
+    if '_' in objective:
+        extra_param = objective.split('_')[1]
+        objective = objective.split('_')[0]
+
+    if extra_param:
+        options = {
+            "f1": standard_metrics.F1(average=extra_param),
+            "precision": standard_metrics.Precision(average=extra_param),
+            "recall": standard_metrics.Recall(average=extra_param),
+            "auc": standard_metrics.AUC(average=extra_param),
+        }
+    else:
+        options = {
+            "f1": standard_metrics.F1(),
+            "precision": standard_metrics.Precision(),
+            "recall": standard_metrics.Recall(),
+            "auc": standard_metrics.AUC(),
+            "log_loss": standard_metrics.LogLoss(),
+            "mcc": standard_metrics.MCC(),
+            "r2": standard_metrics.R2(),
+        }
 
     return options[objective]
 
