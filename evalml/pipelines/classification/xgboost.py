@@ -65,25 +65,21 @@ class XGBoostPipeline(PipelineBase):
 
         """
         # make everything pandas objects
-        self.check_multiclass(y)
-        return super().fit(X, y, objective_fit_size)
-
-    def check_multiclass(self, y):
+        # check if problem is multiclass
         num_classes = len(np.unique(y))
         if num_classes > 2:
-            orig_estimator = self.pipeline.steps[-1][1]
-            orig_params = orig_estimator.get_params()
+            params = self.pipeline['estimator'].get_params()
+            params.update({
+                    "objective" : 'multi:softprob',
+                    "num_class" : num_classes
+                })
 
-            estimator = XGBClassifier(
-                random_state=orig_params['random_state'],
-                eta=orig_params['eta'],
-                max_depth=orig_params['max_depth'],
-                min_child_weight=orig_params['min_child_weight'],
-                objective='multi:softprob',
-                num_class=num_classes
-            )
+            estimator = XGBClassifier(**params)
 
             self.pipeline.steps[-1] = ('estimator', estimator)
+
+        return super().fit(X, y, objective_fit_size)
+
 
     @property
     def feature_importances(self):
