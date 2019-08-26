@@ -3,6 +3,7 @@ from evalml.pipelines import XGBoostPipeline
 
 import numpy as np
 
+
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
     objective = Precision(average='micro')

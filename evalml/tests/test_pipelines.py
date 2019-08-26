@@ -2,17 +2,13 @@ import errno
 import os
 import shutil
 
-import numpy as np
 import pytest
 
 import evalml.tests as tests
-from evalml import AutoClassifier, load_pipeline, save_pipeline
+from evalml import load_pipeline, save_pipeline
 from evalml.objectives import Precision
-from evalml.pipelines import (
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline
-)
+from evalml.pipelines import LogisticRegressionPipeline
+
 from evalml.pipelines.utils import get_pipelines, list_model_types
 
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
@@ -50,9 +46,3 @@ def test_serialization(X_y, trained_model, path_management):
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
-
-    other_p = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
-    other_p.fit(X, y)
-    path = os.path.join(path_management, 'pipe1.pkl')
-    save_pipeline(other_p, path)
-    assert pipeline.score(X, y) != load_pipeline(path).score(X, y)

@@ -7,6 +7,7 @@ from evalml.pipelines import PipelineBase, get_pipelines
 
 import numpy as np
 
+
 def test_init(X_y):
     X, y = X_y
 
@@ -87,5 +88,6 @@ def test_multi_auto(X_y_multi):
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
+
 
 # def test_serialization(trained_model)
