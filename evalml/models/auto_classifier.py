@@ -68,7 +68,7 @@ class AutoClassifier(AutoBase):
                     standard_metrics.Recall(average=average),
                     standard_metrics.AUC(average=average),
                 ]
-        elif hasattr(objective, average):
+        elif hasattr(objective, 'average'):
             if objective.average is not None and objective.average != 'binary':
                 average = objective.average
                 default_objectives = [
