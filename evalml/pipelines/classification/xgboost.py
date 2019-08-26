@@ -69,17 +69,16 @@ class XGBoostPipeline(PipelineBase):
         num_classes = len(np.unique(y))
         if num_classes > 2:
             params = self.pipeline['estimator'].get_params()
-            params.update({
-                    "objective" : 'multi:softprob',
-                    "num_class" : num_classes
+            params.update(
+                {
+                    "objective": 'multi:softprob',
+                    "num_class": num_classes
                 })
 
             estimator = XGBClassifier(**params)
-
             self.pipeline.steps[-1] = ('estimator', estimator)
 
         return super().fit(X, y, objective_fit_size)
-
 
     @property
     def feature_importances(self):

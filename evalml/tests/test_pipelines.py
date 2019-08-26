@@ -47,12 +47,12 @@ def test_serialization(X_y, trained_model, path_management):
     objective = Precision(average='binary')
 
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
-    pipeline.fit(X,y)
+    pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
     other_p = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
-    other_p.fit(X,y)
+    other_p.fit(X, y)
     path = os.path.join(path_management, 'pipe1.pkl')
     save_pipeline(other_p, path)
     assert pipeline.score(X, y) != load_pipeline(path).score(X, y)

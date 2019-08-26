@@ -14,6 +14,7 @@ class F1(ObjectiveBase):
 
     def __init__(self, average='micro'):
         self.average = average
+
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average=self.average)
 # todo does this need tuning?
