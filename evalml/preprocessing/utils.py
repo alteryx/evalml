@@ -43,13 +43,13 @@ def load_data(path, index, label, drop=None, verbose=True, **kwargs):
     return X, y
 
 
-def split_data(x, y, test_size=.2, random_state=None):
+def split_data(X, y, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Args:
-        x (DataFrame) : features
+        X (DataFrame) : features
         y (Series) : labels
-        holdout (float) : percent to holdout from train set for testing
+        test_size (float) : percent of train set to holdout for testing
         random_state (int) : seed for the random number generator
 
     Returns:
@@ -60,12 +60,12 @@ def split_data(x, y, test_size=.2, random_state=None):
         test_size=test_size,
         random_state=random_state,
     )
-    train, test = next(stratified.split(x, y))
-    x_train = x.loc[x.index[train]]
-    x_test = x.loc[x.index[test]]
-    y_train = y.loc[y.index[train]]
-    y_test = y.loc[y.index[test]]
-    return x_train, x_test, y_train, y_test
+    train, test = next(stratified.split(X, y))
+    X_train = X.iloc[train]
+    X_test = X.iloc[test]
+    y_train = y.iloc[train]
+    y_test = y.iloc[test]
+    return X_train, X_test, y_train, y_test
 
 
 def number_of_features(dtypes):
@@ -85,3 +85,29 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
+
+
+def detect_label_leakage(X, y, threshold=.95):
+    """Check if any of the features are highly correlated with the target.
+
+    Currently only supports binary and numeric targets and features
+
+    Args:
+        X (pd.DataFrame): The input features to check
+        y (pd.Series): the labels
+        threshold (float): the correlation threshold to be considered leakage. Defaults to .95
+
+    Returns:
+        leakage, dictionary of features with leakage and corresponding threshold
+    """
+
+    # only select numeric
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
+    X = X.select_dtypes(include=numerics)
+
+    if len(X.columns) == 0:
+        return {}
+
+    corrs = X.corrwith(y).abs()
+    out = corrs[corrs >= threshold]
+    return out.to_dict()

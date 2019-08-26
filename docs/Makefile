@@ -5,6 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
+GENDIR        = source/generated
 BUILDDIR      = build
 
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees source
@@ -13,7 +14,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees source
 .PHONY: clean
 clean:
 	rm -rf $(BUILDDIR)/*
-# 	rm -rf $(GENDIR)/*
+	rm -rf $(GENDIR)/*
 
 .PHONY: html
 html:
