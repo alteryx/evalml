@@ -1,7 +1,7 @@
+import numpy as np
+
 from evalml.objectives import Precision
 from evalml.pipelines import XGBoostPipeline
-
-import numpy as np
 
 
 def test_xg_multi(X_y_multi):

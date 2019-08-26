@@ -1,11 +1,10 @@
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassifier
 from evalml.objectives import Precision
 from evalml.pipelines import PipelineBase, get_pipelines
-
-import numpy as np
 
 
 def test_init(X_y):

@@ -1,7 +1,7 @@
+import numpy as np
+
 from evalml.objectives import Precision
 from evalml.pipelines import RFClassificationPipeline
-
-import numpy as np
 
 
 def test_rf_multi(X_y_multi):
