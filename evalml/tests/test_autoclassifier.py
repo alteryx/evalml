@@ -89,15 +89,23 @@ def test_specify_objective(X_y):
     clf.fit(X, y)
 
 
+def test_binary_auto(X_y):
+    X, y = X_y
+    clf = AutoClassifier(objective="recall", multiclass=False)
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 2
+
+
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    clf = AutoClassifier(objective="precision_micro")
+    clf = AutoClassifier(objective="recall_micro", multiclass=True)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     objective = PrecisionMicro()
-    clf = AutoClassifier(objective=objective)
+    clf = AutoClassifier(objective=objective, multiclass=True)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
