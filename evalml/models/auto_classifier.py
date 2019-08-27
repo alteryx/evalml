@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective, standard_metrics
+from evalml.objectives import get_objective, get_objectives, standard_metrics
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 
@@ -47,10 +47,9 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        # Change arguments if multiclass
-
         objective = get_objective(objective)
-        default_objectives = get_objectives(objective.problem_type)
+        # what if objective is used for multi and binary??
+        default_objectives = get_objectives(objective.problem_types)
         problem_type = "classification"
 
         super().__init__(

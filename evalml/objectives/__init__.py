@@ -6,6 +6,6 @@ from .standard_metrics import (
     AUC, AUCMicro, AUCMacro, AUCWeighted, LogLoss, MCC, R2
     )
 from .objective_base import ObjectiveBase
-from .utils import get_objective
+from .utils import get_objective, get_objectives
 
 

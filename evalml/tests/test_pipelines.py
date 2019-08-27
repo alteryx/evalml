@@ -2,6 +2,7 @@ import errno
 import os
 import shutil
 
+import pandas as pd
 import pytest
 
 import evalml.tests as tests
@@ -38,8 +39,10 @@ def path_management():
 
 def test_serialization(X_y, trained_model, path_management):
     X, y = X_y
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
     path = os.path.join(path_management, 'pipe.pkl')
-    objective = Precision(average='binary')
+    objective = Precision()
 
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
     pipeline.fit(X, y)

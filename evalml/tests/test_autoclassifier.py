@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import Precision
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import PipelineBase, get_pipelines
 
 
@@ -96,7 +96,7 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    objective = Precision(average='micro')
+    objective = PrecisionMicro()
     clf = AutoClassifier(objective=objective)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
