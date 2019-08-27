@@ -202,7 +202,6 @@ class LogLoss(ObjectiveBase):
     problem_types = ['binary', 'multiclass']
 
     def score(self, y_predicted, y_true):
-        y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.log_loss(y_true, y_predicted)
 
 
@@ -232,6 +231,5 @@ def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:
         classes = np.unique(y_true)
         y_true = label_binarize(y_true, classes=classes)
-        y_pred = label_binarize(y_pred, classes=classes)
 
     return y_true, y_pred

@@ -76,7 +76,11 @@ class PipelineBase:
             DataFrame : probability estimates
         """
 
-        return self.pipeline.predict_proba(X)[:, 1]
+        proba = self.pipeline.predict_proba(X)
+        if proba.shape[1] < 2:
+            return proba[:, 1]
+        else:
+            return proba
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
