@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn import metrics
+from sklearn.preprocessing import label_binarize
 
 from .objective_base import ObjectiveBase
 
@@ -14,6 +15,7 @@ class F1(ObjectiveBase):
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted)
+
 
 class F1Micro(ObjectiveBase):
     needs_fitting = False

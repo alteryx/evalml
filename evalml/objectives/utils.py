@@ -1,6 +1,3 @@
-import numpy as np
-from sklearn.preprocessing import label_binarize
-
 from . import standard_metrics
 from .objective_base import ObjectiveBase
 
@@ -25,6 +22,7 @@ OPTIONS = {
     "mcc": standard_metrics.MCC(),
     "r2": standard_metrics.R2(),
 }
+
 
 def get_objective(objective):
     if isinstance(objective, ObjectiveBase):

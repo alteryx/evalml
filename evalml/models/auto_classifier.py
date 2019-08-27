@@ -3,7 +3,9 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective, get_objectives, standard_metrics
+from evalml.objectives import get_objective, get_objectives
+
+
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 
