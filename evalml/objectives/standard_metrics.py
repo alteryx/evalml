@@ -2,7 +2,6 @@ import numpy as np
 from sklearn import metrics
 
 from .objective_base import ObjectiveBase
-from .utils import _handle_predictions
 
 
 # todo does this need tuning?
@@ -157,7 +156,7 @@ class AUC(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted)
 
 
-class AUC_Micro(ObjectiveBase):
+class AUCMicro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -169,7 +168,7 @@ class AUC_Micro(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
 
-class AUC_Macro(ObjectiveBase):
+class AUCMacro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -181,7 +180,7 @@ class AUC_Macro(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
 
-class AUC_Weighted(ObjectiveBase):
+class AUCWeighted(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -198,6 +197,7 @@ class LogLoss(ObjectiveBase):
     greater_is_better = False
     score_needs_proba = True
     name = "Log Loss"
+    problem_types = ['binary', 'multiclass']
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -209,6 +209,7 @@ class MCC(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "MCC"
+    problem_types = ['binary', 'multiclass']
 
     def score(self, y_predicted, y_true):
         return metrics.matthews_corrcoef(y_true, y_predicted)
@@ -219,6 +220,16 @@ class R2(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "R2"
+    problem_types = ['regression']
 
     def score(self, y_predicted, y_true):
         return metrics.r2_score(y_true, y_predicted)
+
+
+def _handle_predictions(y_true, y_pred):
+    if len(np.unique(y_true)) > 2:
+        classes = np.unique(y_true)
+        y_true = label_binarize(y_true, classes=classes)
+        y_pred = label_binarize(y_pred, classes=classes)
+
+    return y_true, y_pred

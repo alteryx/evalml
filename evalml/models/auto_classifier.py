@@ -3,9 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import standard_metrics
-
-
+from evalml.objectives import get_objective, standard_metrics
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 
@@ -51,33 +49,8 @@ class AutoClassifier(AutoBase):
 
         # Change arguments if multiclass
 
-        default_objectives = [
-            standard_metrics.F1(),
-            standard_metrics.Precision(),
-            standard_metrics.Recall(),
-            standard_metrics.AUC(),
-            standard_metrics.LogLoss()
-        ]
-
-        if isinstance(objective, str):
-            if '_' in objective:
-                average = objective.split('_')[1]
-                default_objectives = [
-                    standard_metrics.F1(average=average),
-                    standard_metrics.Precision(average=average),
-                    standard_metrics.Recall(average=average),
-                    standard_metrics.AUC(average=average),
-                ]
-        elif hasattr(objective, 'average'):
-            if objective.average is not None and objective.average != 'binary':
-                average = objective.average
-                default_objectives = [
-                    standard_metrics.F1(average=average),
-                    standard_metrics.Precision(average=average),
-                    standard_metrics.Recall(average=average),
-                    standard_metrics.AUC(average=average),
-                ]
-
+        objective = get_objective(objective)
+        default_objectives = get_objectives(objective.problem_type)
         problem_type = "classification"
 
         super().__init__(
