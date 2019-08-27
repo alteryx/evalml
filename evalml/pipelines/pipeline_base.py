@@ -77,7 +77,7 @@ class PipelineBase:
         """
 
         proba = self.pipeline.predict_proba(X)
-        if proba.shape[1] < 2:
+        if proba.shape[1] <= 2:
             return proba[:, 1]
         else:
             return proba

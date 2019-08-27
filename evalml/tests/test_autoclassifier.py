@@ -65,7 +65,7 @@ def test_init_select_model_types():
 
 def test_max_pipelines(X_y):
     X, y = X_y
-    max_pipelines = 3
+    max_pipelines = 6
     clf = AutoClassifier(max_pipelines=max_pipelines)
 
     clf.fit(X, y)
