@@ -2,7 +2,7 @@ from sklearn.model_selection import KFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import standard_metrics
+from evalml.objectives import get_objective, get_objectives
 
 
 class AutoRegressor(AutoBase):
@@ -46,9 +46,8 @@ class AutoRegressor(AutoBase):
         if objective is None:
             objective = "R2"
 
-        default_objectives = [
-            standard_metrics.R2(),
-        ]
+        objective = get_objective(objective)
+        default_objectives = get_objectives('regression')
 
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)

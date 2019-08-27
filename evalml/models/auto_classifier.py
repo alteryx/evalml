@@ -11,6 +11,7 @@ class AutoClassifier(AutoBase):
 
     def __init__(self,
                  objective=None,
+                 multiclass=False,
                  max_pipelines=5,
                  max_time=None,
                  model_types=None,
@@ -23,6 +24,8 @@ class AutoClassifier(AutoBase):
 
         Arguments:
             objective (Object): the objective to optimize
+
+            multiclass (bool): If True, expecting multiclass data. By default: False.
 
             max_pipelines (int): maximum number of pipelines to search
 
@@ -50,8 +53,10 @@ class AutoClassifier(AutoBase):
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
         objective = get_objective(objective)
-        # what if objective is used for multi and binary??
-        default_objectives = get_objectives(objective.problem_types)
+        default_objectives = get_objectives('binary')
+        if multiclass:
+            default_objectives = get_objectives('multiclass')
+
         problem_type = "classification"
 
         super().__init__(

@@ -21,7 +21,6 @@ class AutoBase:
             tuner = SKOptTuner
 
         self.objective = get_objective(objective)
-
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
