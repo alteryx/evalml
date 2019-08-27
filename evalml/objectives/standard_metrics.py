@@ -2,7 +2,7 @@ import numpy as np
 from sklearn import metrics
 
 from .objective_base import ObjectiveBase
-from .utils import binarize_y
+from .utils import _handle_predictions
 
 
 # todo does this need tuning?
@@ -165,8 +165,7 @@ class AUC_Micro(ObjectiveBase):
     problem_types = ['multiclass']
 
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            y_true, y_predicted = binarize_y(y_true, y_predicted)
+        y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
 
@@ -178,8 +177,7 @@ class AUC_Macro(ObjectiveBase):
     problem_types = ['multiclass']
 
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            y_true, y_predicted = binarize_y(y_true, y_predicted)
+        y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
 
@@ -191,8 +189,7 @@ class AUC_Weighted(ObjectiveBase):
     problem_types = ['multiclass']
 
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            y_true, y_predicted = binarize_y(y_true, y_predicted)
+        y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='weighted')
 
 
@@ -203,8 +200,7 @@ class LogLoss(ObjectiveBase):
     name = "Log Loss"
 
     def score(self, y_predicted, y_true):
-        if len(np.unique(y_true)) > 2:
-            y_true, y_predicted = binarize_y(y_true, y_predicted)
+        y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.log_loss(y_true, y_predicted)
 
 
