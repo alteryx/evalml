@@ -85,7 +85,7 @@ class XGBoostPipeline(PipelineBase):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
         indices = self.pipeline["feature_selection"].get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))  # note: this only works for binary
+        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
