@@ -90,16 +90,12 @@ def test_specify_objective(X_y):
 
 def test_random_state(X_y):
     X, y = X_y
-    clf = AutoClassifier(objective=Precision(), max_pipelines=5, random_state = 0)
+    clf = AutoClassifier(objective=Precision(), max_pipelines=5, random_state=0)
     clf.fit(X, y)
 
-    clf_1 = AutoClassifier(objective=Precision(), max_pipelines=5, random_state = 0)
+    clf_1 = AutoClassifier(objective=Precision(), max_pipelines=5, random_state=0)
     clf_1.fit(X, y)
 
-    clf_2 = AutoClassifier(objective=Precision(), max_pipelines=5, random_state = 1)
-    clf_2.fit(X, y)
-
     assert clf.rankings.equals(clf_1.rankings)
-    assert not clf.rankings.equals(clf_2.rankings)
 
 # def test_serialization(trained_model)
