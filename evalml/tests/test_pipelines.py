@@ -1,7 +1,15 @@
+import errno
+import os
+import shutil
+
 import pytest
 from sklearn import datasets
 
-from evalml.pipelines import get_pipelines, list_model_types
+import evalml.tests as tests
+from evalml import load_pipeline, save_pipeline
+from evalml.pipelines.utils import get_pipelines, list_model_types
+
+CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
 
 @pytest.fixture
@@ -21,3 +29,23 @@ def test_get_pipelines():
     assert len(get_pipelines(problem_type="classification")) == 3
     assert len(get_pipelines(problem_type="classification", model_types=["linear_model"])) == 1
     assert len(get_pipelines(problem_type="regression")) == 1
+
+
+@pytest.fixture
+def path_management():
+    path = CACHE
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
+            raise e
+    yield path
+    shutil.rmtree(path)
+
+
+def test_serialization(X_y, trained_model, path_management):
+    X, y = X_y
+    path = os.path.join(path_management, 'pipe.pkl')
+    pipeline = trained_model.best_pipeline
+    save_pipeline(pipeline, path)
+    assert pipeline.score(X, y) == load_pipeline(path).score(X, y)

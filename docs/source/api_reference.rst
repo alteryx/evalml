@@ -2,6 +2,37 @@
 API Reference
 =============
 
+.. currentmodule:: evalml.demos
+
+Demo Datasets
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    load_fraud
+    load_wine
+    load_breast_cancer
+    load_diabetes
+
+
+.. currentmodule:: evalml.preprocessing
+
+
+Preprocessing
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    load_data
+    split_data
+    detect_label_leakage
+
 
 .. currentmodule:: evalml
 
@@ -37,10 +68,13 @@ Pipelines
     :nosignatures:
 
     get_pipelines
+    save_pipeline
+    load_pipeline
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
     RFRegressionPipeline
+
 
 Objective Functions
 ====================
@@ -56,7 +90,7 @@ Domain Specific
     :template: class.rst
     :nosignatures:
 
-    FraudDetection
+    FraudCost
     LeadScoring
 
 
@@ -100,17 +134,4 @@ Tuners
     SKOptTuner
 
 
-.. currentmodule:: evalml.demos
 
-Demo Datasets
-=============
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    load_fraud
-    load_wine
-    load_breast_cancer
-    load_diabetes

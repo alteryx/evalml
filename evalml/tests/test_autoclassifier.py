@@ -1,21 +1,9 @@
 import pandas as pd
-import pytest
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
 from evalml.objectives import Precision
 from evalml.pipelines import PipelineBase, get_pipelines
-
-
-@pytest.fixture
-def trained_model(X_y):
-    X, y = X_y
-
-    clf = AutoClassifier()
-
-    clf.fit(X, y)
-
-    return clf
 
 
 def test_init(X_y):
@@ -50,6 +38,14 @@ def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
     clf = AutoClassifier(cv=StratifiedKFold(cv_folds), max_pipelines=1)
+
+    clf.fit(X, y)
+
+    assert isinstance(clf.rankings, pd.DataFrame)
+
+    assert len(clf.results[0]["scores"]) == cv_folds
+
+    clf = AutoClassifier(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
 
     clf.fit(X, y)
 
