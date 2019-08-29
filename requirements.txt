@@ -7,5 +7,5 @@ xgboost>=0.82
 tqdm>=4.33.0
 scikit-optimize[plots]
 colorama
-s3fs
+s3fs>= 0.2.2
 joblib>=0.10.3
