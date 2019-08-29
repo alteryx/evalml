@@ -15,6 +15,7 @@ def test_breast_cancer():
     X, y = demos.load_breast_cancer()
     assert X.shape == (569, 30)
 
+
 def test_diabetes():
     X, y = demos.load_diabetes()
     assert X.shape == (442, 10)
