@@ -3,7 +3,7 @@ Road Map
 ========
 
 
-There are numerous new features and functionality planned for EvalML. Some of which are described below
+There are numerous new features and functionality planned for EvalML, some of which are described below:
 
 
 * Parallelize and distribute model search over cluster
