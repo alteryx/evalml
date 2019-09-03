@@ -46,7 +46,8 @@ def test_random_state(X_y):
     clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
     clf_1.fit(X, y)
 
-    assert clf.rankings.equals(clf_1.rankings)
+    # need to use assert_frame_equal as R2 could be different at the 10+ decimal
+    assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
 
 
 def test_callback(X_y):
