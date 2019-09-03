@@ -37,7 +37,8 @@ class AutoBase:
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
-        self.random_seed = random.seed(self.random_state)
+        random.seed(self.random_state)
+        np.random.seed(seed=self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
