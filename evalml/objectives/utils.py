@@ -25,6 +25,14 @@ OPTIONS = {
 
 
 def get_objective(objective):
+    """Returns the Objective object of the given objective name
+
+    Args:
+        objective (str) : name of the objective
+
+    Returns:
+        Objective
+    """
     if isinstance(objective, ObjectiveBase):
         return objective
     objective = objective.lower()
@@ -32,4 +40,12 @@ def get_objective(objective):
 
 
 def get_objectives(problem_type):
+    """Returns all objectives associated with the given problem type
+
+    Args:
+        problem_type (str) : type of machine learning problem
+
+    Returns:
+        List of Objectives
+    """
     return [obj for obj in OPTIONS if problem_type in OPTIONS[obj].problem_types]
