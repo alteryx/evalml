@@ -87,4 +87,26 @@ def test_specify_objective(X_y):
     clf = AutoClassifier(objective=Precision(), max_pipelines=1)
     clf.fit(X, y)
 
-# def test_serialization(trained_model)
+
+def test_callback(X_y):
+    X, y = X_y
+
+    counts = {
+        "start_iteration_callback": 0,
+        "add_result_callback": 0,
+    }
+
+    def start_iteration_callback(pipeline_class, parameters, counts=counts):
+        counts["start_iteration_callback"] += 1
+
+    def add_result_callback(results, trained_pipeline, counts=counts):
+        counts["add_result_callback"] += 1
+
+    max_pipelines = 3
+    clf = AutoClassifier(objective=Precision(), max_pipelines=max_pipelines,
+                         start_iteration_callback=start_iteration_callback,
+                         add_result_callback=add_result_callback)
+    clf.fit(X, y)
+
+    assert counts["start_iteration_callback"] == max_pipelines
+    assert counts["add_result_callback"] == max_pipelines
