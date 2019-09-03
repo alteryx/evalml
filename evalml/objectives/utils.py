@@ -39,7 +39,7 @@ def get_objective(objective):
     return OPTIONS[objective]
 
 
-def get_objectives(problem_type):
+def get_objectives(objective_type):
     """Returns all objectives associated with the given problem type
 
     Args:
@@ -48,4 +48,4 @@ def get_objectives(problem_type):
     Returns:
         List of Objectives
     """
-    return [obj for obj in OPTIONS if problem_type in OPTIONS[obj].problem_types]
+    return [obj for obj in OPTIONS if objective_type in OPTIONS[obj].objective_types]
