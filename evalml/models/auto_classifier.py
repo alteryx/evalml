@@ -41,6 +41,12 @@ class AutoClassifier(AutoBase):
             detect_label_leakage (bool): If True, check input features for label leakage and
                 warn if found. Defaults to true.
 
+            start_iteration_callback (callable): function called before each pipeline training iteration.
+                Passed two parameters: pipeline_class, parameters.
+
+            add_result_callback (callable): function called after each pipeline training iteration.
+                Passed two parameters: results, trained_pipeline.
+
             random_state (int): the random_state
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
