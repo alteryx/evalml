@@ -51,7 +51,7 @@ class LogisticRegressionPipeline(PipelineBase):
         else:
             # mutliclass classification case
             importances = list(zip(self.input_feature_names, np.linalg.norm(coef_, axis=0, ord=2)))
-            importances.sort(key=lambda x: -abs(x[1]))
+            importances.sort(key=lambda x: -(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
