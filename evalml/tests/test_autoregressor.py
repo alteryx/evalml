@@ -36,3 +36,14 @@ def test_init(X_y):
     assert isinstance(clf.get_pipeline(0), PipelineBase)
 
     clf.describe_pipeline(0)
+
+
+def test_random_state(X_y):
+    X, y = X_y
+    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf.fit(X, y)
+
+    clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf_1.fit(X, y)
+
+    assert clf.rankings.equals(clf_1.rankings)
