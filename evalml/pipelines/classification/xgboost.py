@@ -64,7 +64,6 @@ class XGBoostPipeline(PipelineBase):
             self
 
         """
-        # make everything pandas objects
         # check if problem is multiclass
         num_classes = len(np.unique(y))
         if num_classes > 2:
