@@ -98,7 +98,7 @@ def test_random_state(X_y):
 
     assert clf.rankings.equals(clf_1.rankings)
 
-    
+
 def test_callback(X_y):
     X, y = X_y
 

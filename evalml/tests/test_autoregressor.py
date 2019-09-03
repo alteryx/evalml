@@ -71,4 +71,3 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
->>>>>>> 67a640c4dfe7ee7d6e7bb6e786dff250e4c216c1
