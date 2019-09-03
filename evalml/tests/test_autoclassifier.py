@@ -87,6 +87,7 @@ def test_specify_objective(X_y):
     clf = AutoClassifier(objective=Precision(), max_pipelines=1)
     clf.fit(X, y)
 
+
 def test_callback(X_y):
     X, y = X_y
 
