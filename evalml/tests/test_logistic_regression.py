@@ -11,7 +11,7 @@ def test_lr_multi(X_y_multi):
     y = pd.Series(y)
 
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns))
     clf.fit(X, y)
     clf.score(X, y)
     y_pred = clf.predict(X)
