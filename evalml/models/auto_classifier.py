@@ -17,6 +17,8 @@ class AutoClassifier(AutoBase):
                  cv=None,
                  tuner=None,
                  detect_label_leakage=True,
+                 start_iteration_callback=None,
+                 add_result_callback=None,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -69,6 +71,8 @@ class AutoClassifier(AutoBase):
             problem_type=problem_type,
             default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
+            start_iteration_callback=start_iteration_callback,
+            add_result_callback=add_result_callback,
             random_state=random_state,
             verbose=verbose,
         )

@@ -33,4 +33,6 @@ class LeadScoring(ObjectiveBase):
         profit = self.true_positives * true_positives
         profit += self.false_positives * false_positives
 
-        return profit
+        profit_per_lead = profit / len(y_true)
+
+        return profit_per_lead
