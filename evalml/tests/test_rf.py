@@ -11,7 +11,7 @@ def test_rf_multi(X_y_multi):
     y = pd.Series(y)
 
     objective = PrecisionMicro()
-    clf = RFClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=0)
+    clf = RFClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
     clf.fit(X, y)
     clf.score(X, y)
     y_pred = clf.predict(X)
