@@ -1,19 +1,24 @@
 import pandas as pd
 
-import evalml.objectives.utils as objective_utils
-from evalml.objectives import Precision, PrecisionMacro, PrecisionMicro
+from evalml.objectives import (
+    Precision,
+    PrecisionMacro,
+    PrecisionMicro,
+    get_objective,
+    get_objectives
+)
 from evalml.pipelines import LogisticRegressionPipeline
 
 
 def test_get_objective():
-    assert isinstance(objective_utils.get_objective('precision'), Precision)
-    assert isinstance(objective_utils.get_objective(Precision()), Precision)
+    assert isinstance(get_objective('precision'), Precision)
+    assert isinstance(get_objective(Precision()), Precision)
 
 
 def test_get_objectives_types():
-    assert len(objective_utils.get_objectives('multiclass')) == 14
-    assert len(objective_utils.get_objectives('binary')) == 6
-    assert len(objective_utils.get_objectives('regression')) == 1
+    assert len(get_objectives('multiclass')) == 14
+    assert len(get_objectives('binary')) == 6
+    assert len(get_objectives('regression')) == 1
 
 
 def test_binary_average(X_y):

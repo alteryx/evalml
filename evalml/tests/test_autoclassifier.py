@@ -3,9 +3,14 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import Precision, PrecisionMicro
+from evalml.objectives import (
+    Precision,
+    PrecisionMicro,
+    get_objective,
+    get_objectives
+)
 from evalml.pipelines import PipelineBase, get_pipelines
-
+import evalml.objectives.utils as objective_utils
 
 def test_init(X_y):
     X, y = X_y
@@ -110,5 +115,6 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
+    assert clf.default_objectives == get_objectives('multiclass')
 
 # def test_serialization(trained_model)
