@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import LogisticRegressionPipeline

@@ -3,14 +3,9 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import (
-    Precision,
-    PrecisionMicro,
-    get_objective,
-    get_objectives
-)
+from evalml.objectives import Precision, PrecisionMicro, get_objectives
 from evalml.pipelines import PipelineBase, get_pipelines
-import evalml.objectives.utils as objective_utils
+
 
 def test_init(X_y):
     X, y = X_y
