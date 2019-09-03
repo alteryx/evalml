@@ -40,10 +40,10 @@ def get_objective(objective):
 
 
 def get_objectives(objective_type):
-    """Returns all objectives associated with the given problem type
+    """Returns all objectives associated with the given objective type
 
     Args:
-        problem_type (str) : type of machine learning problem
+        objective_type (str) : type of objective
 
     Returns:
         List of Objectives
