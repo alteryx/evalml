@@ -7,6 +7,7 @@ from evalml.pipelines import LogisticRegressionPipeline
 
 def test_get_objective():
     assert isinstance(objective_utils.get_objective('precision'), Precision)
+    assert isinstance(objective_utils.get_objective(Precision()), Precision)
 
 
 def test_get_objectives_types():
