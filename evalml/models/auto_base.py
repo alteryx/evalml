@@ -37,6 +37,7 @@ class AutoBase:
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
+        self.random_seed = random.seed(self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
@@ -194,8 +195,6 @@ class AutoBase:
         )
 
     def _select_pipeline(self):
-        # needs to be called to seed random.choice()
-        random.seed(self.random_state)
         return random.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
