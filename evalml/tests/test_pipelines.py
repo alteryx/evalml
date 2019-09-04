@@ -72,8 +72,4 @@ def test_reproducibility(X_y):
     clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf_1.fit(X, y)
 
-    clf_2 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=30)
-    clf_2.fit(X, y)
-
     assert clf_1.score(X, y) == clf.score(X, y)
-    assert clf.score(X, y) != clf_2.score(X, y)
