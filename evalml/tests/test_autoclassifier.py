@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import Precision
+from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import PipelineBase, get_pipelines
 
 
@@ -90,10 +90,26 @@ def test_specify_objective(X_y):
 
 def test_random_state(X_y):
     X, y = X_y
+
+    fc = FraudCost(
+        retry_percentage=.5,
+        interchange_fee=.02,
+        fraud_payout_percentage=.75,
+        amount_col=10
+    )
+
     clf = AutoClassifier(objective=Precision(), max_pipelines=5, random_state=0)
     clf.fit(X, y)
 
     clf_1 = AutoClassifier(objective=Precision(), max_pipelines=5, random_state=0)
+    clf_1.fit(X, y)
+    assert clf.rankings.equals(clf_1.rankings)
+
+    # test an objective that requires fitting
+    clf = AutoClassifier(objective=fc, max_pipelines=5, random_state=30)
+    clf.fit(X, y)
+
+    clf_1 = AutoClassifier(objective=fc, max_pipelines=5, random_state=30)
     clf_1.fit(X, y)
 
     assert clf.rankings.equals(clf_1.rankings)
