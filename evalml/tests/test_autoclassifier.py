@@ -5,15 +5,15 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 from evalml import AutoClassifier
 from evalml.objectives import Precision, PrecisionMicro, get_objectives
 from evalml.pipelines import PipelineBase, get_pipelines
-
+from evalml.problem_types import ProblemTypes
 
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoClassifier()
+    clf = AutoClassifier(multiclass=False)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type="classification") == clf.possible_pipelines
+    assert get_pipelines(problem_types=[ProblemTypes.BINARY]) == clf.possible_pipelines
 
     clf.fit(X, y)
 
@@ -59,7 +59,7 @@ def test_init_select_model_types():
     model_types = ["random_forest"]
     clf = AutoClassifier(model_types=model_types)
 
-    assert get_pipelines(problem_type="classification", model_types=model_types) == clf.possible_pipelines
+    assert get_pipelines(problem_types=[ProblemTypes.BINARY], model_types=model_types) == clf.possible_pipelines
     assert model_types == clf.possible_model_types
 
 

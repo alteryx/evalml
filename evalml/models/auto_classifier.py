@@ -4,7 +4,7 @@ from sklearn.model_selection import StratifiedKFold
 from .auto_base import AutoBase
 
 from evalml.objectives import get_objective, get_objectives
-
+from evalml.problem_types import ProblemTypes
 
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
@@ -57,8 +57,7 @@ class AutoClassifier(AutoBase):
         if multiclass:
             default_objectives = get_objectives('multiclass')
 
-        problem_type = "classification"
-
+        problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -66,7 +65,7 @@ class AutoClassifier(AutoBase):
             max_pipelines=max_pipelines,
             max_time=max_time,
             model_types=model_types,
-            problem_type=problem_type,
+            problem_types=problem_types,
             default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
             random_state=random_state,

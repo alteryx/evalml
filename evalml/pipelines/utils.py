@@ -10,12 +10,12 @@ from .regression import RFRegressionPipeline
 ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, RFRegressionPipeline]
 
 
-def get_pipelines(problem_type, model_types=None):
+def get_pipelines(problem_types, model_types=None):
     """Returns potential pipelines by model type
 
     Arguments:
 
-        problem_type (str): the problem type the pipelines work for. Either regression or classification
+        problem_types(str or list[str]): the problem type/s the pipelines work for.
         model_types(list[str]): model types to match. if none, return all pipelines
 
     Returns
@@ -27,8 +27,9 @@ def get_pipelines(problem_type, model_types=None):
     problem_pipelines = []
 
     for p in ALL_PIPELINES:
-        if p.problem_type == problem_type:
-            problem_pipelines.append(p)
+        for problem_type in problem_types:
+            if problem_type in p.problem_types and p not in problem_pipelines:
+                problem_pipelines.append(p)
 
     if model_types is None:
         return problem_pipelines
@@ -51,7 +52,7 @@ def list_model_types(problem_type):
     """List model type for a particular problem type
 
     Arguments:
-        problem_type (str): classification or regression
+        problem_types (str): classification or regression
 
     Returns:
         model_types, list of model types
@@ -60,7 +61,7 @@ def list_model_types(problem_type):
     problem_pipelines = []
 
     for p in ALL_PIPELINES:
-        if p.problem_type == problem_type:
+        if problem_type in p.problem_types:
             problem_pipelines.append(p)
 
     return list(set([p.model_type for p in problem_pipelines]))

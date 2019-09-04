@@ -4,6 +4,7 @@ import pytest
 from evalml import AutoRegressor
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture
@@ -17,7 +18,7 @@ def test_init(X_y):
     clf = AutoRegressor(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type="regression") == clf.possible_pipelines
+    assert get_pipelines(problem_types=[ProblemTypes.REGRESSION]) == clf.possible_pipelines
 
     clf.fit(X, y)
 

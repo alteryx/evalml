@@ -7,12 +7,13 @@ from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class XGBoostPipeline(PipelineBase):
     name = "XGBoost w/ imputation"
     model_type = "xgboost"
-    problem_type = "classification"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "eta": Real(0, 1),
