@@ -1,5 +1,6 @@
 from . import standard_metrics
 from .objective_base import ObjectiveBase
+from evalml.problem_types import handle_problem_types, ProblemTypes
 
 OPTIONS = {
     "f1": standard_metrics.F1(),
@@ -39,7 +40,7 @@ def get_objective(objective):
     return OPTIONS[objective]
 
 
-def get_objectives(objective_type):
+def get_objectives(problem_type):
     """Returns all objectives associated with the given objective type
 
     Args:
@@ -48,4 +49,15 @@ def get_objectives(objective_type):
     Returns:
         List of Objectives
     """
-    return [obj for obj in OPTIONS if objective_type in OPTIONS[obj].objective_types]
+    problem_type = handle_problem_types(problem_type)
+    return [obj for obj in OPTIONS if help_objectives(problem_type, obj)]
+
+
+def help_objectives(problem_type, obj):
+    if problem_type is OPTIONS[obj].problem_types:
+        return True
+    elif isinstance(OPTIONS[obj].problem_types, list):
+        if problem_type in OPTIONS[obj].problem_types:
+            return True
+    else:
+        return False
