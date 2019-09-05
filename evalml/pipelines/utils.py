@@ -25,6 +25,8 @@ def get_pipelines(problem_types, model_types=None):
     """
 
     problem_pipelines = []
+    if not isinstance(problem_types, list()):
+        problem_types = list(problem_types)
 
     for p in ALL_PIPELINES:
         for problem_type in problem_types:
@@ -52,7 +54,7 @@ def list_model_types(problem_type):
     """List model type for a particular problem type
 
     Arguments:
-        problem_types (ProblemTypes): classification or regression
+        problem_types (ProblemTypes): binary, multiclass, or regression
 
     Returns:
         model_types, list of model types
