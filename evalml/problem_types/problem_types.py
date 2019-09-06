@@ -1,12 +1,7 @@
-from enum import Enum, auto
+from enum import Enum
 
 
-class AutoName(Enum):
-    def _generate_next_value_(name, start, count, last_values):
-        return name
-
-
-class ProblemTypes(AutoName):
-    BINARY = auto()
-    MULTICLASS = auto()
-    REGRESSION = auto()
+class ProblemTypes(Enum):
+    BINARY = 'BINARY'
+    MULTICLASS = 'MULTICLASS'
+    REGRESSION = 'REGRESSION'
