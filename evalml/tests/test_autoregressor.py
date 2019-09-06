@@ -57,7 +57,6 @@ def test_categorical(X_y_categorical):
         clf.fit(X, y, raise_errors=True)
 
 
-
 def test_callback(X_y):
     X, y = X_y
 
