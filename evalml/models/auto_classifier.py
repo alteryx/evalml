@@ -19,6 +19,8 @@ class AutoClassifier(AutoBase):
                  cv=None,
                  tuner=None,
                  detect_label_leakage=True,
+                 start_iteration_callback=None,
+                 add_result_callback=None,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -42,6 +44,12 @@ class AutoClassifier(AutoBase):
 
             detect_label_leakage (bool): If True, check input features for label leakage and
                 warn if found. Defaults to true.
+
+            start_iteration_callback (callable): function called before each pipeline training iteration.
+                Passed two parameters: pipeline_class, parameters.
+
+            add_result_callback (callable): function called after each pipeline training iteration.
+                Passed two parameters: results, trained_pipeline.
 
             random_state (int): the random_state
 
@@ -69,6 +77,8 @@ class AutoClassifier(AutoBase):
             problem_types=problem_types,
             default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
+            start_iteration_callback=start_iteration_callback,
+            add_result_callback=add_result_callback,
             random_state=random_state,
             verbose=verbose,
         )

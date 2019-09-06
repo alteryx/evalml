@@ -37,3 +37,39 @@ def test_init(X_y):
     assert isinstance(clf.get_pipeline(0), PipelineBase)
 
     clf.describe_pipeline(0)
+
+
+def test_random_state(X_y):
+    X, y = X_y
+    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf.fit(X, y)
+
+    clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf_1.fit(X, y)
+
+    # need to use assert_frame_equal as R2 could be different at the 10+ decimal
+    assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
+
+
+def test_callback(X_y):
+    X, y = X_y
+
+    counts = {
+        "start_iteration_callback": 0,
+        "add_result_callback": 0,
+    }
+
+    def start_iteration_callback(pipeline_class, parameters, counts=counts):
+        counts["start_iteration_callback"] += 1
+
+    def add_result_callback(results, trained_pipeline, counts=counts):
+        counts["add_result_callback"] += 1
+
+    max_pipelines = 3
+    clf = AutoRegressor(objective="R2", max_pipelines=max_pipelines,
+                        start_iteration_callback=start_iteration_callback,
+                        add_result_callback=add_result_callback)
+    clf.fit(X, y)
+
+    assert counts["start_iteration_callback"] == max_pipelines
+    assert counts["add_result_callback"] == max_pipelines

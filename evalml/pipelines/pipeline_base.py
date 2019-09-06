@@ -33,7 +33,7 @@ class PipelineBase:
 
         self.input_feature_names = X.columns.tolist()
         if self.objective.needs_fitting:
-            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size)
+            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self.pipeline.fit(X, y)
 

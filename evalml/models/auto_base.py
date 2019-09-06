@@ -16,7 +16,6 @@ from evalml.tuners import SKOptTuner
 class AutoBase:
     def __init__(self, problem_types, tuner, cv, objective, max_pipelines, max_time,
                  model_types, default_objectives, detect_label_leakage, random_state, verbose):
-
         if tuner is None:
             tuner = SKOptTuner
 
@@ -25,6 +24,8 @@ class AutoBase:
         self.max_time = max_time
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
+        self.start_iteration_callback = start_iteration_callback
+        self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
 
@@ -33,7 +34,8 @@ class AutoBase:
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
-
+        random.seed(self.random_state)
+        np.random.seed(seed=self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
@@ -46,6 +48,9 @@ class AutoBase:
         self.default_objectives = default_objectives
 
     def _log(self, msg, color=None, new_line=True):
+        if not self.verbose:
+            return
+
         if color:
             msg = color + msg + Style.RESET_ALL
 
@@ -88,21 +93,20 @@ class AutoBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.verbose:
-            self._log_title("Beginning pipeline search")
-            self._log("Optimizing for %s. " % self.objective.name, new_line=False)
+        self._log_title("Beginning pipeline search")
+        self._log("Optimizing for %s. " % self.objective.name, new_line=False)
 
-            if self.objective.greater_is_better:
-                self._log("Greater score is better.\n")
-            else:
-                self._log("Lower score is better.\n")
+        if self.objective.greater_is_better:
+            self._log("Greater score is better.\n")
+        else:
+            self._log("Lower score is better.\n")
 
-            self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
-            if self.max_time:
-                self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-            else:
-                self._log("No time limit is set. Set one using max_time parameter.\n")
-            self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
+        self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+        if self.max_time:
+            self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+        else:
+            self._log("No time limit is set. Set one using max_time parameter.\n")
+        self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
 
         if self.detect_label_leakage:
             leaked = preprocessing.detect_label_leakage(X, y)
@@ -139,6 +143,9 @@ class AutoBase:
             number_features=X.shape[1],
             **dict(parameters)
         )
+
+        if self.start_iteration_callback:
+            self.start_iteration_callback(pipeline_class, parameters)
 
         pbar.set_description("Testing %s" % (pipeline_class.name))
 
@@ -222,6 +229,9 @@ class AutoBase:
             "all_objective_scores": all_objective_scores,
             "training_time": training_time,
         }
+
+        if self.add_result_callback:
+            self.add_result_callback(self.results[pipeline_id], trained_pipeline)
 
         self._save_pipeline(pipeline_id, trained_pipeline)
 

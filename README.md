@@ -21,11 +21,11 @@ pip install evalml --index-url https://install.featurelabs.com/<KEY>
 
 #### Define objective
 ```python
-from evalml import AutoClassifer
-from evalml.objectives import FraudDetection
+from evalml import AutoClassifier
+from evalml.objectives import FraudCost
 
 
-fraud_objective = FraudDetection(
+fraud_objective = FraudCost(
     retry_percentage=.5,
     interchange_fee=.02,
     fraud_payout_percentage=.75,

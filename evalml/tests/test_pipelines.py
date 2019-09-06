@@ -8,6 +8,7 @@ import pytest
 import evalml.tests as tests
 from evalml import load_pipeline, save_pipeline
 from evalml.objectives import Precision
+
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.pipelines.utils import get_pipelines, list_model_types
 from evalml.problem_types import ProblemTypes
@@ -49,3 +50,24 @@ def test_serialization(X_y, trained_model, path_management):
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
+
+
+def test_reproducibility(X_y):
+    X, y = X_y
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    objective = FraudCost(
+        retry_percentage=.5,
+        interchange_fee=.02,
+        fraud_payout_percentage=.75,
+        amount_col=10
+    )
+
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+
+    clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf_1.fit(X, y)
+
+    assert clf_1.score(X, y) == clf.score(X, y)
