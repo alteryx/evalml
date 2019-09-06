@@ -3,7 +3,12 @@ import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import Precision, PrecisionMicro, get_objectives
+from evalml.objectives import (
+    FraudCost,
+    Precision,
+    PrecisionMicro,
+    get_objectives
+)
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 
@@ -113,7 +118,7 @@ def test_multi_auto(X_y_multi):
 
     assert clf.default_objectives == get_objectives('multiclass')
 
-    
+
 def test_random_state(X_y):
     X, y = X_y
 

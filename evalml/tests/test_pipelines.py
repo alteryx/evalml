@@ -7,8 +7,7 @@ import pytest
 
 import evalml.tests as tests
 from evalml import load_pipeline, save_pipeline
-from evalml.objectives import Precision
-
+from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.pipelines.utils import get_pipelines, list_model_types
 from evalml.problem_types import ProblemTypes
