@@ -1,6 +1,7 @@
 from . import standard_metrics
 from .objective_base import ObjectiveBase
-from evalml.problem_types import handle_problem_types, ProblemTypes
+
+from evalml.problem_types import handle_problem_types
 
 OPTIONS = {
     "f1": standard_metrics.F1(),

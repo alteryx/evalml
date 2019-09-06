@@ -7,7 +7,7 @@ def handle_problem_types(problem_types):
     elif isinstance(problem_types, str):
         try:
             return ProblemTypes[problem_types.upper()]
-        except KeyError as e:
+        except KeyError:
             raise KeyError('Problem type \'{}\' does not exist'.format(problem_types))
     elif isinstance(problem_types, list):
         types = list()
@@ -17,6 +17,6 @@ def handle_problem_types(problem_types):
             elif isinstance(problem_type, str):
                 try:
                     types.append(ProblemTypes[problem_type.upper()])
-                except KeyError as e:
+                except KeyError:
                     raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
         return types

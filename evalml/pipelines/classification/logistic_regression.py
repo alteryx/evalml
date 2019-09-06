@@ -9,6 +9,7 @@ from skopt.space import Real
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 
+
 class LogisticRegressionPipeline(PipelineBase):
     name = "LogisticRegression w/ imputation + scaling"
     model_type = "linear_model"

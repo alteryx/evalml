@@ -3,7 +3,9 @@ from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
 from .objective_base import ObjectiveBase
+
 from evalml.problem_types import ProblemTypes
+
 
 # todo does this need tuning?
 class F1(ObjectiveBase):

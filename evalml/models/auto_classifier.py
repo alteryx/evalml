@@ -6,6 +6,7 @@ from .auto_base import AutoBase
 from evalml.objectives import get_objective, get_objectives
 from evalml.problem_types import ProblemTypes
 
+
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 

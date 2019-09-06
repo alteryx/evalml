@@ -6,6 +6,7 @@ from .classification import (
     XGBoostPipeline
 )
 from .regression import RFRegressionPipeline
+
 from evalml.problem_types import handle_problem_types
 
 ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, RFRegressionPipeline]
