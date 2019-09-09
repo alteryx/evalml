@@ -5,6 +5,7 @@ from sys import stdout
 import numpy as np
 import pandas as pd
 from colorama import Style
+from pandas.api.types import is_numeric_dtype
 from tqdm import tqdm
 
 from evalml import preprocessing
@@ -96,8 +97,9 @@ class AutoBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if not X.applymap(lambda x: isinstance(x, (int, float))).all().all():
-            raise ValueError("Input (X) contains non-numerical data")
+        for col in X.columns:
+            if not is_numeric_dtype(X[col]):
+                raise ValueError("Input (X) contains non-numerical data")
 
         self._log_title("Beginning pipeline search")
         self._log("Optimizing for %s. " % self.objective.name, new_line=False)
