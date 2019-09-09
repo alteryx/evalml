@@ -1,5 +1,7 @@
 from scipy.optimize import minimize_scalar
 
+from evalml.problem_types import handle_problem_types
+
 
 class ObjectiveBase:
     needs_fitting = False
@@ -11,6 +13,14 @@ class ObjectiveBase:
 
     def __init__(self, verbose=False):
         self.verbose = verbose
+
+    def supports_problem_types(self, problem_types):
+        problem_types = handle_problem_types(problem_types)
+        for problem_type in problem_types:
+            if problem_type in self.__class__.problem_types:
+                return True
+        else:
+            return False
 
     def fit(self, y_predicted, y_true, extra_cols=None):
         """Learn the objective function based on the predictions from a model.

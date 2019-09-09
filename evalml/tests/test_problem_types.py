@@ -8,6 +8,7 @@ def correct_pts():
     correct_pts = [[ProblemTypes.REGRESSION], [ProblemTypes.MULTICLASS], [ProblemTypes.BINARY], [ProblemTypes.MULTICLASS, ProblemTypes.BINARY]]
     yield correct_pts
 
+
 def test_handle_string(correct_pts):
     pts = [['regression'], ['multiclass'], ['binary'], ['multiclass', 'binary']]
     for pt in zip(pts, correct_pts):

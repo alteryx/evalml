@@ -5,7 +5,7 @@ def handle_problem_types(problem_types):
     if isinstance(problem_types, ProblemTypes):
         return problem_types
     if isinstance(problem_types, str):
-       problem_types = [problem_types]
+        problem_types = [problem_types]
     types = list()
     for problem_type in problem_types:
         if isinstance(problem_type, ProblemTypes):
