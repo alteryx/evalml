@@ -99,9 +99,6 @@ class AutoBase:
         if not X.applymap(lambda x: isinstance(x, (int, float))).all().all():
             raise ValueError("Test data (X) contains non-numerical data")
 
-        if not y.apply(lambda x: isinstance(x, (int, float))).all().all():
-            raise ValueError("Test labels (y) contains non-numerical data")
-
         self._log_title("Beginning pipeline search")
         self._log("Optimizing for %s. " % self.objective.name, new_line=False)
 
