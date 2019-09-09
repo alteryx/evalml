@@ -99,7 +99,7 @@ class AutoBase:
 
         for col in X.columns:
             if not is_numeric_dtype(X[col]):
-                raise ValueError("Input (X) contains non-numerical data")
+                raise ValueError("Input column '{}' contains non-numerical data".format(col))
 
         self._log_title("Beginning pipeline search")
         self._log("Optimizing for %s. " % self.objective.name, new_line=False)
