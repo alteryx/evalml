@@ -13,7 +13,7 @@ class F1(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "F1"
-    problem_types = ProblemTypes.BINARY
+    problem_types = [ProblemTypes.BINARY]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted)
@@ -24,7 +24,7 @@ class F1Micro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "F1_Micro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='micro')
@@ -35,7 +35,7 @@ class F1Macro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "F1_Macro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='macro')
@@ -46,7 +46,7 @@ class F1Weighted(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "F1_Weighted"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def __init__(self, average='binary'):
         self.average = average
@@ -60,7 +60,7 @@ class Precision(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Precision"
-    problem_types = ProblemTypes.BINARY
+    problem_types = [ProblemTypes.BINARY]
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted)
@@ -71,7 +71,7 @@ class PrecisionMicro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Precision_Micro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def __init__(self, average='binary'):
         self.average = average
@@ -85,7 +85,7 @@ class PrecisionMacro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Precision_Macro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='macro')
@@ -96,7 +96,7 @@ class PrecisionWeighted(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Precision_Weighted"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='weighted')
@@ -107,7 +107,7 @@ class Recall(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Recall"
-    problem_types = ProblemTypes.BINARY
+    problem_types = [ProblemTypes.BINARY]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted)
@@ -118,7 +118,7 @@ class RecallMicro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Recall_Micro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='micro')
@@ -129,7 +129,7 @@ class RecallMacro(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Recall_Macro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='macro')
@@ -140,7 +140,7 @@ class RecallWeighted(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "Recall"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
@@ -151,7 +151,7 @@ class AUC(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = True
     name = "AUC"
-    problem_types = ProblemTypes.BINARY
+    problem_types = [ProblemTypes.BINARY]
 
     def score(self, y_predicted, y_true):
         return metrics.roc_auc_score(y_true, y_predicted)
@@ -162,7 +162,7 @@ class AUCMicro(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = True
     name = "AUC_Micro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -174,7 +174,7 @@ class AUCMacro(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = True
     name = "AUC_Macro"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -186,7 +186,7 @@ class AUCWeighted(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = True
     name = "AUC"
-    problem_types = ProblemTypes.MULTICLASS
+    problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -220,7 +220,7 @@ class R2(ObjectiveBase):
     greater_is_better = True
     need_proba = False
     name = "R2"
-    problem_types = ProblemTypes.REGRESSION
+    problem_types = [ProblemTypes.REGRESSION]
 
     def score(self, y_predicted, y_true):
         return metrics.r2_score(y_true, y_predicted)

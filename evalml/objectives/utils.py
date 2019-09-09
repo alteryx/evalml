@@ -41,23 +41,21 @@ def get_objective(objective):
     return OPTIONS[objective]
 
 
-def get_objectives(problem_type):
-    """Returns all objectives associated with the given objective type
+def get_objectives(problem_types):
+    """Returns all objectives associated with the given problem types
 
     Args:
-        objective_type (str) : type of objective
+        problem_type (str/ProblemTypes) : type of problem
 
     Returns:
         List of Objectives
     """
-    problem_type = handle_problem_types(problem_type)
-    return [obj for obj in OPTIONS if help_objectives(problem_type, obj)]
+    problem_types = handle_problem_types(problem_types)
+    return [obj for obj in OPTIONS if help_objectives(problem_types, obj)]
 
 
-def help_objectives(problem_type, obj):
-    if problem_type is OPTIONS[obj].problem_types:
-        return True
-    elif isinstance(OPTIONS[obj].problem_types, list):
+def help_objectives(problem_types, obj):
+    for problem_type in problem_types:
         if problem_type in OPTIONS[obj].problem_types:
             return True
     else:
