@@ -14,7 +14,7 @@ def X_y():
 
 
 @pytest.fixture
-def X_y_categorical():
+def X_y_categorical_regression():
     flights = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv')
     y = flights['tip']
     X = flights.drop('tip', axis=1)
