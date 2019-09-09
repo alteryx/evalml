@@ -97,7 +97,7 @@ class AutoBase:
             y = pd.Series(y)
 
         if not X.applymap(lambda x: isinstance(x, (int, float))).all().all():
-            raise ValueError("Test data (X) contains non-numerical data")
+            raise ValueError("Input (X) contains non-numerical data")ƒ
 
         self._log_title("Beginning pipeline search")
         self._log("Optimizing for %s. " % self.objective.name, new_line=False)
