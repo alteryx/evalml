@@ -3,7 +3,6 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective, get_objectives
 from evalml.problem_types import ProblemTypes
 
 
@@ -61,7 +60,6 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        default_objectives = get_objectives(ProblemTypes.BINARY)
         problem_type = ProblemTypes.BINARY
         if multiclass:
             problem_type = ProblemTypes.MULTICLASS

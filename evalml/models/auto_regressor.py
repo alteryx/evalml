@@ -2,7 +2,6 @@ from sklearn.model_selection import KFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective, get_objectives
 from evalml.problem_types import ProblemTypes
 
 
@@ -55,7 +54,6 @@ class AutoRegressor(AutoBase):
         if objective is None:
             objective = "R2"
 
-        objective = get_objective(objective)
         problem_type = ProblemTypes.REGRESSION
 
         if cv is None:
