@@ -103,9 +103,21 @@ Classification
     :nosignatures:
 
     F1
+    F1_micro
+    F1_macro
+    F1_weighted
     Precision
+    Precision_micro
+    Precision_macro
+    Precision_weighted
     Recall
+    Recall_micro
+    Recall_macro
+    Recall_weighted
     AUC
+    AUC_micro
+    AUC_macro
+    AUC_weighted
     LogLoss
     MCC
 

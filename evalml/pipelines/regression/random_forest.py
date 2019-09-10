@@ -11,6 +11,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RFRegressionPipeline(PipelineBase):
+    """Random Forest Pipeline for regression"""
     name = "Random Forest w/ imputation"
     model_type = "random_forest"
     problem_types = [ProblemTypes.REGRESSION]

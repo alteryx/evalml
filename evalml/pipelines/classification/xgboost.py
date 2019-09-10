@@ -11,6 +11,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class XGBoostPipeline(PipelineBase):
+    """XGBoost Pipeline for both binary and multiclass classification"""
     name = "XGBoost w/ imputation"
     model_type = "xgboost"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
