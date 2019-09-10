@@ -17,7 +17,7 @@ def get_pipelines(problem_type, model_types=None):
 
     Arguments:
 
-        problem_types(ProblemTypes/str): the problem type the pipelines work for.
+        problem_type(ProblemTypes/str): the problem type the pipelines work for.
         model_types(list[str]): model types to match. if none, return all pipelines
 
     Returns
