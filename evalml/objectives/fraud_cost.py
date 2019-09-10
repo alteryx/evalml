@@ -35,7 +35,6 @@ class FraudCost(ObjectiveBase):
     def decision_function(self, y_predicted, extra_cols, threshold):
         """Determine if transaction is fraud given predicted probabilities,
             dataframe with transaction amount, and threshold"""
-
         transformed_probs = (y_predicted * extra_cols[self.amount_col])
         return transformed_probs > threshold
 
