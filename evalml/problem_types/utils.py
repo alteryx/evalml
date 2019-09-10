@@ -8,7 +8,7 @@ def handle_problem_types(problem_type):
         problem_types (str/ProblemTypes) : problem type that needs to be handled
 
     Returns:
-        ProblemType
+        ProblemTypes
     """
 
     if isinstance(problem_type, str):
