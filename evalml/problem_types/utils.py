@@ -2,6 +2,14 @@ from .problem_types import ProblemTypes
 
 
 def handle_problem_types(problem_types):
+    """Converts str/list(str) to ProblemTypes/list(ProblemTypes)
+
+    Args:
+        problem_types (str/list(str])/ProblemTypes/list(ProblemTypes)) : path to file(s)
+
+    Returns:
+        DataFrame, Series : features and labels
+    """
     if isinstance(problem_types, ProblemTypes):
         return problem_types
     if isinstance(problem_types, str):
