@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from evalml.objectives import get_objective
@@ -24,8 +25,13 @@ class PipelineBase:
             self
 
         """
-        self.input_feature_names = X.columns.tolist()
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        self.input_feature_names = X.columns.tolist()
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
@@ -76,7 +82,11 @@ class PipelineBase:
             DataFrame : probability estimates
         """
 
-        return self.pipeline.predict_proba(X)[:, 1]
+        proba = self.pipeline.predict_proba(X)
+        if proba.shape[1] <= 2:
+            return proba[:, 1]
+        else:
+            return proba
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance

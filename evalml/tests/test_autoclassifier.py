@@ -1,18 +1,25 @@
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import (
+    FraudCost,
+    Precision,
+    PrecisionMicro,
+    get_objectives
+)
 from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.problem_types import ProblemTypes
 
 
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoClassifier()
+    clf = AutoClassifier(multiclass=False)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type="classification") == clf.possible_pipelines
+    assert get_pipelines(problem_type=ProblemTypes.BINARY) == clf.possible_pipelines
 
     clf.fit(X, y)
 
@@ -58,13 +65,13 @@ def test_init_select_model_types():
     model_types = ["random_forest"]
     clf = AutoClassifier(model_types=model_types)
 
-    assert get_pipelines(problem_type="classification", model_types=model_types) == clf.possible_pipelines
+    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == clf.possible_pipelines
     assert model_types == clf.possible_model_types
 
 
 def test_max_pipelines(X_y):
     X, y = X_y
-    max_pipelines = 3
+    max_pipelines = 6
     clf = AutoClassifier(max_pipelines=max_pipelines)
 
     clf.fit(X, y)
@@ -86,6 +93,30 @@ def test_specify_objective(X_y):
     X, y = X_y
     clf = AutoClassifier(objective=Precision(), max_pipelines=1)
     clf.fit(X, y)
+
+
+def test_binary_auto(X_y):
+    X, y = X_y
+    clf = AutoClassifier(objective="recall", multiclass=False)
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 2
+
+
+def test_multi_auto(X_y_multi):
+    X, y = X_y_multi
+    clf = AutoClassifier(objective="recall_micro", multiclass=True)
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 3
+
+    objective = PrecisionMicro()
+    clf = AutoClassifier(objective=objective, multiclass=True)
+    clf.fit(X, y)
+    y_pred = clf.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 3
+
+    assert clf.default_objectives == get_objectives('multiclass')
 
 
 def test_random_state(X_y):

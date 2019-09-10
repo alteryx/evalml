@@ -7,12 +7,13 @@ from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class XGBoostPipeline(PipelineBase):
     name = "XGBoost w/ imputation"
     model_type = "xgboost"
-    problem_type = "classification"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "eta": Real(0, 1),
@@ -47,12 +48,41 @@ class XGBoostPipeline(PipelineBase):
 
         super().__init__(objective=objective, random_state=random_state)
 
+    # Need to override fit for multiclass
+    def fit(self, X, y, objective_fit_size=.2):
+        """Build a model
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+
+            y (pd.Series): the target training labels of length [n_samples]
+
+        Returns:
+
+            self
+
+        """
+        # check if problem is multiclass
+        num_classes = len(np.unique(y))
+        if num_classes > 2:
+            params = self.pipeline['estimator'].get_params()
+            params.update(
+                {
+                    "objective": 'multi:softprob',
+                    "num_class": num_classes
+                })
+
+            estimator = XGBClassifier(**params)
+            self.pipeline.steps[-1] = ('estimator', estimator)
+
+        return super().fit(X, y, objective_fit_size)
+
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
         indices = self.pipeline["feature_selection"].get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))  # note: this only works for binary
+        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])

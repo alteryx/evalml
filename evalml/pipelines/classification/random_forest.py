@@ -7,12 +7,13 @@ from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class RFClassificationPipeline(PipelineBase):
     name = "Random Forest w/ imputation"
     model_type = "random_forest"
-    problem_type = "classification"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
@@ -49,7 +50,7 @@ class RFClassificationPipeline(PipelineBase):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
         indices = self.pipeline["feature_selection"].get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))  # note: this only works for binary
+        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])

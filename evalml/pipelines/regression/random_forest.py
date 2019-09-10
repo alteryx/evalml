@@ -7,12 +7,13 @@ from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class RFRegressionPipeline(PipelineBase):
     name = "Random Forest w/ imputation"
     model_type = "random_forest"
-    problem_type = "regression"
+    problem_types = [ProblemTypes.REGRESSION]
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),

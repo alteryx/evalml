@@ -9,21 +9,19 @@ from pandas.api.types import is_numeric_dtype
 from tqdm import tqdm
 
 from evalml import preprocessing
-from evalml.objectives import get_objective
+from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.tuners import SKOptTuner
 
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 model_types, default_objectives, detect_label_leakage, start_iteration_callback,
+                 model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, random_state, verbose):
-
         if tuner is None:
             tuner = SKOptTuner
 
         self.objective = get_objective(objective)
-
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
@@ -34,6 +32,8 @@ class AutoBase:
         self.verbose = verbose
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
+        objective = get_objective(objective)
+        default_objectives = get_objectives(problem_type)
 
         self.results = {}
         self.trained_pipelines = {}

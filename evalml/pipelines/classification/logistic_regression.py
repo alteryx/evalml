@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
@@ -6,12 +7,13 @@ from sklearn.preprocessing import StandardScaler
 from skopt.space import Real
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionPipeline(PipelineBase):
     name = "LogisticRegression w/ imputation + scaling"
     model_type = "linear_model"
-    problem_type = "classification"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "penalty": ["l2"],
@@ -26,6 +28,7 @@ class LogisticRegressionPipeline(PipelineBase):
         estimator = LogisticRegression(random_state=random_state,
                                        penalty=penalty,
                                        C=C,
+                                       multi_class='auto',
                                        solver="lbfgs",
                                        n_jobs=-1)
 
@@ -40,8 +43,16 @@ class LogisticRegressionPipeline(PipelineBase):
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
-        importances = list(zip(self.input_feature_names, self.pipeline["estimator"].coef_[0]))  # note: this only works for binary
-        importances.sort(key=lambda x: -abs(x[1]))
+        coef_ = self.pipeline["estimator"].coef_
+
+        # binary classification case
+        if len(coef_) <= 2:
+            importances = list(zip(self.input_feature_names, coef_[0]))
+            importances.sort(key=lambda x: -abs(x[1]))
+        else:
+            # mutliclass classification case
+            importances = list(zip(self.input_feature_names, np.linalg.norm(coef_, axis=0, ord=2)))
+            importances.sort(key=lambda x: -(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df

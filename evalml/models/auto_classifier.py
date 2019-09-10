@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import standard_metrics
+from evalml.problem_types import ProblemTypes
 
 
 class AutoClassifier(AutoBase):
@@ -11,6 +11,7 @@ class AutoClassifier(AutoBase):
 
     def __init__(self,
                  objective=None,
+                 multiclass=False,
                  max_pipelines=5,
                  max_time=None,
                  model_types=None,
@@ -25,6 +26,8 @@ class AutoClassifier(AutoBase):
 
         Arguments:
             objective (Object): the objective to optimize
+
+            multiclass (bool): If True, expecting multiclass data. By default: False.
 
             max_pipelines (int): maximum number of pipelines to search
 
@@ -57,16 +60,9 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        default_objectives = [
-            standard_metrics.F1(),
-            standard_metrics.Precision(),
-            standard_metrics.Recall(),
-            standard_metrics.AUC(),
-            standard_metrics.LogLoss()
-        ]
-
-        problem_type = "classification"
-
+        problem_type = ProblemTypes.BINARY
+        if multiclass:
+            problem_type = ProblemTypes.MULTICLASS
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -75,7 +71,6 @@ class AutoClassifier(AutoBase):
             max_time=max_time,
             model_types=model_types,
             problem_type=problem_type,
-            default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
