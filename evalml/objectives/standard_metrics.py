@@ -9,6 +9,7 @@ from evalml.problem_types import ProblemTypes
 
 # todo does this need tuning?
 class F1(ObjectiveBase):
+    """F1 Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -20,6 +21,7 @@ class F1(ObjectiveBase):
 
 
 class F1Micro(ObjectiveBase):
+    """F1 Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -31,6 +33,7 @@ class F1Micro(ObjectiveBase):
 
 
 class F1Macro(ObjectiveBase):
+    """F1 Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -42,6 +45,7 @@ class F1Macro(ObjectiveBase):
 
 
 class F1Weighted(ObjectiveBase):
+    """F1 Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -53,6 +57,7 @@ class F1Weighted(ObjectiveBase):
 
 
 class Precision(ObjectiveBase):
+    """Precision Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -64,6 +69,7 @@ class Precision(ObjectiveBase):
 
 
 class PrecisionMicro(ObjectiveBase):
+    """Precision Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -75,6 +81,7 @@ class PrecisionMicro(ObjectiveBase):
 
 
 class PrecisionMacro(ObjectiveBase):
+    """Precision Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -86,6 +93,7 @@ class PrecisionMacro(ObjectiveBase):
 
 
 class PrecisionWeighted(ObjectiveBase):
+    """Precision Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -97,6 +105,7 @@ class PrecisionWeighted(ObjectiveBase):
 
 
 class Recall(ObjectiveBase):
+    """Recall Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -108,6 +117,7 @@ class Recall(ObjectiveBase):
 
 
 class RecallMicro(ObjectiveBase):
+    """Recall Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -119,6 +129,7 @@ class RecallMicro(ObjectiveBase):
 
 
 class RecallMacro(ObjectiveBase):
+    """Recall Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -130,6 +141,7 @@ class RecallMacro(ObjectiveBase):
 
 
 class RecallWeighted(ObjectiveBase):
+    """Recall Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -141,6 +153,7 @@ class RecallWeighted(ObjectiveBase):
 
 
 class AUC(ObjectiveBase):
+    """AUC Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -152,6 +165,7 @@ class AUC(ObjectiveBase):
 
 
 class AUCMicro(ObjectiveBase):
+    """AUC Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -164,6 +178,7 @@ class AUCMicro(ObjectiveBase):
 
 
 class AUCMacro(ObjectiveBase):
+    """AUC Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -176,6 +191,7 @@ class AUCMacro(ObjectiveBase):
 
 
 class AUCWeighted(ObjectiveBase):
+    """AUC Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -188,6 +204,7 @@ class AUCWeighted(ObjectiveBase):
 
 
 class LogLoss(ObjectiveBase):
+    """Log Loss for both binary and multiclass classification"""
     needs_fitting = False
     greater_is_better = False
     score_needs_proba = True
@@ -199,6 +216,7 @@ class LogLoss(ObjectiveBase):
 
 
 class MCC(ObjectiveBase):
+    """Matthews correlation coefficient for both binary and multiclass classification"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -210,6 +228,7 @@ class MCC(ObjectiveBase):
 
 
 class R2(ObjectiveBase):
+    """Coefficient of determination for regression"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False

@@ -11,6 +11,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RFClassificationPipeline(PipelineBase):
+    """Random Forest Pipeline for both binary and multiclass classification"""
     name = "Random Forest w/ imputation"
     model_type = "random_forest"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
