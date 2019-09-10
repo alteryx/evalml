@@ -21,7 +21,7 @@ class F1(ObjectiveBase):
 
 
 class F1Micro(ObjectiveBase):
-    """F1 Score for multiclass classification using `micro` averaging"""
+    """F1 Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -33,7 +33,7 @@ class F1Micro(ObjectiveBase):
 
 
 class F1Macro(ObjectiveBase):
-    """F1 Score for multiclass classification using `macro` averaging"""
+    """F1 Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -45,7 +45,7 @@ class F1Macro(ObjectiveBase):
 
 
 class F1Weighted(ObjectiveBase):
-    """F1 Score for multiclass classification using `weighted` averaging"""
+    """F1 Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -69,7 +69,7 @@ class Precision(ObjectiveBase):
 
 
 class PrecisionMicro(ObjectiveBase):
-    """Precision Score for multiclass classification using `micro` averaging"""
+    """Precision Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -81,7 +81,7 @@ class PrecisionMicro(ObjectiveBase):
 
 
 class PrecisionMacro(ObjectiveBase):
-    """Precision Score for multiclass classification using `macro` averaging"""
+    """Precision Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -93,7 +93,7 @@ class PrecisionMacro(ObjectiveBase):
 
 
 class PrecisionWeighted(ObjectiveBase):
-    """Precision Score for multiclass classification using `weighted` averaging"""
+    """Precision Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -117,7 +117,7 @@ class Recall(ObjectiveBase):
 
 
 class RecallMicro(ObjectiveBase):
-    """Recall Score for multiclass classification using `micro` averaging"""
+    """Recall Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -129,7 +129,7 @@ class RecallMicro(ObjectiveBase):
 
 
 class RecallMacro(ObjectiveBase):
-    """Recall Score for multiclass classification using `macro` averaging"""
+    """Recall Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -141,7 +141,7 @@ class RecallMacro(ObjectiveBase):
 
 
 class RecallWeighted(ObjectiveBase):
-    """Recall Score for multiclass classification using `weighted` averaging"""
+    """Recall Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     need_proba = False
@@ -165,7 +165,7 @@ class AUC(ObjectiveBase):
 
 
 class AUCMicro(ObjectiveBase):
-    """AUC Score for multiclass classification using `micro` averaging"""
+    """AUC Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -178,7 +178,7 @@ class AUCMicro(ObjectiveBase):
 
 
 class AUCMacro(ObjectiveBase):
-    """AUC Score for multiclass classification using `macro` averaging"""
+    """AUC Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -191,7 +191,7 @@ class AUCMacro(ObjectiveBase):
 
 
 class AUCWeighted(ObjectiveBase):
-    """AUC Score for multiclass classification using `weighted` averaging"""
+    """AUC Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True

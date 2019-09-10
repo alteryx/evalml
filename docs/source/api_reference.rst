@@ -103,21 +103,21 @@ Classification
     :nosignatures:
 
     F1
-    F1_micro
-    F1_macro
-    F1_weighted
+    F1Micro
+    F1Macro
+    F1Weighted
     Precision
-    Precision_micro
-    Precision_macro
-    Precision_weighted
+    PrecisionMicro
+    PrecisionMacro
+    PrecisionWeighted
     Recall
-    Recall_micro
-    Recall_macro
-    Recall_weighted
+    RecallMicro
+    RecallMacro
+    RecallWeighted
     AUC
-    AUC_micro
-    AUC_macro
-    AUC_weighted
+    AUCMicro
+    AUCMacro
+    AUCWeighted
     LogLoss
     MCC
 
@@ -131,7 +131,18 @@ Regression
 
     R2
 
+.. currentmodule:: evalml.problem_types
 
+Problem Types
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ProblemTypes
+    handle_problem_types
 
 .. currentmodule:: evalml.tuners
 
