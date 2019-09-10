@@ -51,7 +51,7 @@ def test_serialization(X_y, trained_model, path_management):
 
 def test_reproducibility(X_y):
     X, y = X_y
-    X = pd.DataFrame(X)  # TODO: FraudCost.decision_function breaks when given np.array(). Need to standardize input as pd or adjust function.
+    X = pd.DataFrame(X)
 
     objective = FraudCost(
         retry_percentage=.5,
