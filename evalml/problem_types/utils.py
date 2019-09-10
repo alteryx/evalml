@@ -5,7 +5,7 @@ def handle_problem_types(problem_type):
     """Handles problem_type by either returning the ProblemTypes or converting to a str
 
     Args:
-        problem_types (str/ProblemTypes) : problem type that needs to be handled
+        problem_types (str or ProblemTypes) : problem type that needs to be handled
 
     Returns:
         ProblemTypes
