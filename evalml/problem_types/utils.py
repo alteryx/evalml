@@ -12,7 +12,8 @@ def handle_problem_types(problem_types):
             types.append(problem_type)
         elif isinstance(problem_type, str):
             try:
-                types.append(ProblemTypes[problem_type.upper()])
+                tp = ProblemTypes[problem_type.upper()]
             except KeyError:
                 raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
+            types.append(tp)
     return types
