@@ -23,7 +23,7 @@ class F1Micro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "F1_Micro"
+    name = "F1 Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -34,7 +34,7 @@ class F1Macro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "F1_Macro"
+    name = "F1 Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -45,11 +45,8 @@ class F1Weighted(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "F1_Weighted"
+    name = "F1 Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
-
-    def __init__(self, average='binary'):
-        self.average = average
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
@@ -70,11 +67,8 @@ class PrecisionMicro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "Precision_Micro"
+    name = "Precision Micro"
     problem_types = [ProblemTypes.MULTICLASS]
-
-    def __init__(self, average='binary'):
-        self.average = average
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='micro')
@@ -84,7 +78,7 @@ class PrecisionMacro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "Precision_Macro"
+    name = "Precision Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -95,7 +89,7 @@ class PrecisionWeighted(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "Precision_Weighted"
+    name = "Precision Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -117,7 +111,7 @@ class RecallMicro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "Recall_Micro"
+    name = "Recall Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -128,7 +122,7 @@ class RecallMacro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "Recall_Macro"
+    name = "Recall Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -161,7 +155,7 @@ class AUCMicro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC_Micro"
+    name = "AUC Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
@@ -173,7 +167,7 @@ class AUCMacro(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC_Macro"
+    name = "AUC Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):

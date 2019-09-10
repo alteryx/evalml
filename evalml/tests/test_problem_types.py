@@ -20,7 +20,7 @@ def test_handle_string(correct_pts):
         handle_problem_types(pts) == ProblemTypes.REGRESSION
 
 
-def test_handle_problemtypes(correct_pts):
+def test_handle_problem_types(correct_pts):
     for pt in zip(correct_pts, correct_pts):
         assert handle_problem_types(pt[0]) == pt[1]
 
@@ -28,4 +28,4 @@ def test_handle_problemtypes(correct_pts):
 def test_handle_incorrect_type():
     error_msg = '`handle_problem_types` was not passed a str or ProblemTypes object'
     with pytest.raises(ValueError, match=error_msg):
-        handle_problem_types(5)s
+        handle_problem_types(5)
