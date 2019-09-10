@@ -56,12 +56,10 @@ class AutoRegressor(AutoBase):
             objective = "R2"
 
         objective = get_objective(objective)
-        default_objectives = get_objectives(ProblemTypes.REGRESSION)
+        problem_type = ProblemTypes.REGRESSION
 
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
-
-        problem_type = ProblemTypes.REGRESSION
 
         super().__init__(
             tuner=tuner,
@@ -71,7 +69,6 @@ class AutoRegressor(AutoBase):
             max_time=max_time,
             model_types=model_types,
             problem_type=problem_type,
-            default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
