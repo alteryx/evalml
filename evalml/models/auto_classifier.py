@@ -62,9 +62,9 @@ class AutoClassifier(AutoBase):
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
         objective = get_objective(objective)
-        default_objectives = get_objectives('binary')
+        default_objectives = get_objectives(ProblemTypes.BINARY)
         if multiclass:
-            default_objectives = get_objectives('multiclass')
+            default_objectives = get_objectives(ProblemTypes.MULTICLASS)
 
         problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         super().__init__(

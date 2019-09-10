@@ -56,7 +56,7 @@ class AutoRegressor(AutoBase):
             objective = "R2"
 
         objective = get_objective(objective)
-        default_objectives = get_objectives('regression')
+        default_objectives = get_objectives(ProblemTypes.REGRESSION)
 
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
