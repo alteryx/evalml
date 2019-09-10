@@ -21,8 +21,8 @@ def test_handle_string(correct_problem_types):
 
 
 def test_handle_problem_types(correct_problem_types):
-    for problem_type in zip(correct_problem_types, correct_problem_types):
-        assert handle_problem_types(problem_type[0]) == problem_type[1]
+    for problem_type in correct_problem_types:
+        assert handle_problem_types(problem_type) == problem_type
 
 
 def test_handle_incorrect_type():
