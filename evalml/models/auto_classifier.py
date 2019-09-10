@@ -63,10 +63,10 @@ class AutoClassifier(AutoBase):
 
         objective = get_objective(objective)
         default_objectives = get_objectives(ProblemTypes.BINARY)
+        problem_type = ProblemTypes.BINARY
         if multiclass:
             default_objectives = get_objectives(ProblemTypes.MULTICLASS)
-
-        problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+            problem_type = ProblemTypes.MULTICLASS
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -74,7 +74,7 @@ class AutoClassifier(AutoBase):
             max_pipelines=max_pipelines,
             max_time=max_time,
             model_types=model_types,
-            problem_types=problem_types,
+            problem_type=problem_type,
             default_objectives=default_objectives,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,

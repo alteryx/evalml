@@ -12,12 +12,12 @@ from evalml.problem_types import handle_problem_types
 ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, RFRegressionPipeline]
 
 
-def get_pipelines(problem_types, model_types=None):
+def get_pipelines(problem_type, model_types=None):
     """Returns potential pipelines by model type
 
     Arguments:
 
-        problem_types(ProblemTypes/str or list[ProblemTypes/str]): the problem type/s the pipelines work for.
+        problem_types(ProblemTypes/str): the problem type the pipelines work for.
         model_types(list[str]): model types to match. if none, return all pipelines
 
     Returns
@@ -27,14 +27,11 @@ def get_pipelines(problem_types, model_types=None):
     """
 
     problem_pipelines = []
-    if not isinstance(problem_types, list):
-        problem_types = list(problem_types)
 
-    problem_types = handle_problem_types(problem_types)
+    problem_type = handle_problem_types(problem_type)
     for p in ALL_PIPELINES:
-        for problem_type in problem_types:
-            if problem_type in p.problem_types and p not in problem_pipelines:
-                problem_pipelines.append(p)
+        if problem_type in p.problem_types:
+            problem_pipelines.append(p)
 
     if model_types is None:
         return problem_pipelines

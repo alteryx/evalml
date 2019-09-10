@@ -21,9 +21,9 @@ def test_list_model_types():
 
 
 def test_get_pipelines():
-    assert len(get_pipelines(problem_types=[ProblemTypes.BINARY])) == 3
-    assert len(get_pipelines(problem_types=[ProblemTypes.BINARY], model_types=["linear_model"])) == 1
-    assert len(get_pipelines(problem_types=[ProblemTypes.REGRESSION])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=["linear_model"])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 1
 
 
 @pytest.fixture

@@ -1,27 +1,22 @@
 from .problem_types import ProblemTypes
 
 
-def handle_problem_types(problem_types):
-    """Converts str/list(str) to ProblemTypes/list(ProblemTypes)
+def handle_problem_types(problem_type):
+    """Handles problem_type by either returning the ProblemTypes or converting to a str
 
     Args:
-        problem_types (str/list(str])/ProblemTypes/list(ProblemTypes)) : path to file(s)
+        problem_types (str/ProblemTypes) : problem type that needs to be handled
 
     Returns:
-        DataFrame, Series : features and labels
+        ProblemType
     """
-    if isinstance(problem_types, ProblemTypes):
-        return problem_types
-    if isinstance(problem_types, str):
-        problem_types = [problem_types]
-    types = list()
-    for problem_type in problem_types:
-        if isinstance(problem_type, ProblemTypes):
-            types.append(problem_type)
-        elif isinstance(problem_type, str):
-            try:
-                tp = ProblemTypes[problem_type.upper()]
-            except KeyError:
-                raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
-            types.append(tp)
-    return types
+
+    if isinstance(problem_type, str):
+        try:
+            tp = ProblemTypes[problem_type.upper()]
+        except KeyError:
+            raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
+        return tp
+    if isinstance(problem_type, ProblemTypes):
+        return problem_type
+    assert ValueError('`handle_problem_types` was not passed a str or ProblemTypes object')
