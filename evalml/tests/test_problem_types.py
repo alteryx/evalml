@@ -4,25 +4,25 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 @pytest.fixture
-def correct_pts():
-    correct_pts = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS, ProblemTypes.BINARY]
-    yield correct_pts
+def correct_problem_types():
+    correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS, ProblemTypes.BINARY]
+    yield correct_problem_types
 
 
-def test_handle_string(correct_pts):
-    pts = ['regression', 'multiclass', 'binary']
-    for pt in zip(pts, correct_pts):
-        assert handle_problem_types(pt[0]) == pt[1]
+def test_handle_string(correct_problem_types):
+    problem_types = ['regression', 'multiclass', 'binary']
+    for problem_type in zip(problem_types, correct_problem_types):
+        assert handle_problem_types(problem_type[0]) == problem_type[1]
 
-    pts = 'fake'
+    problem_type = 'fake'
     error_msg = 'Problem type \'fake\' does not exist'
     with pytest.raises(KeyError, match=error_msg):
-        handle_problem_types(pts) == ProblemTypes.REGRESSION
+        handle_problem_types(problem_type) == ProblemTypes.REGRESSION
 
 
-def test_handle_problem_types(correct_pts):
-    for pt in zip(correct_pts, correct_pts):
-        assert handle_problem_types(pt[0]) == pt[1]
+def test_handle_problem_types(correct_problem_types):
+    for problem_type in zip(correct_problem_types, correct_problem_types):
+        assert handle_problem_types(problem_type[0]) == problem_type[1]
 
 
 def test_handle_incorrect_type():
