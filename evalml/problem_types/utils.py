@@ -13,10 +13,10 @@ def handle_problem_types(problem_type):
 
     if isinstance(problem_type, str):
         try:
-            tp = ProblemTypes[problem_type.upper()]
+            tpe = ProblemTypes[problem_type.upper()]
         except KeyError:
             raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
-        return tp
+        return tpe
     if isinstance(problem_type, ProblemTypes):
         return problem_type
     raise ValueError('`handle_problem_types` was not passed a str or ProblemTypes object')
