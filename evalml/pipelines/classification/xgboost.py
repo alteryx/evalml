@@ -57,9 +57,6 @@ class XGBoostPipeline(PipelineBase):
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
-
         Returns:
 
             self
