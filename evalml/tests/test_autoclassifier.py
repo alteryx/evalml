@@ -16,7 +16,7 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoClassifier(multiclass=False)
+    clf = AutoClassifier(multiclass=False, max_pipelines=1)
 
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.BINARY) == clf.possible_pipelines
@@ -97,7 +97,7 @@ def test_specify_objective(X_y):
 
 def test_binary_auto(X_y):
     X, y = X_y
-    clf = AutoClassifier(objective="recall", multiclass=False)
+    clf = AutoClassifier(objective="recall", multiclass=False, max_pipelines=2)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 2
@@ -105,13 +105,13 @@ def test_binary_auto(X_y):
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    clf = AutoClassifier(objective="recall_micro", multiclass=True)
+    clf = AutoClassifier(objective="recall_micro", multiclass=True, max_pipelines=1)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     objective = PrecisionMicro()
-    clf = AutoClassifier(objective=objective, multiclass=True)
+    clf = AutoClassifier(objective=objective, multiclass=True, max_pipelines=1)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3

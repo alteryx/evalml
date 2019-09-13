@@ -73,6 +73,8 @@ class AutoBase:
         self._log("%s" % title, color=color)
         self._log(underline * len(title), color=color)
 
+    # def _log_error(self, msg, color=None, new_line=True):
+
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
 
@@ -109,11 +111,16 @@ class AutoBase:
         else:
             self._log("Lower score is better.\n")
 
-        self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
-        if self.max_time:
+        no_limit_msg = "No time limit is set. Set using max_time or max_pipelines.\n"
+        assert (self.max_pipelines or self.max_time), no_limit_msg
+
+        if self.max_pipelines and self.max_time:
+            self._log("Will stop searching when max_time or max_pipelines is reached.")
+        elif self.max_pipelines:
+            self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line = False)
+        elif self.max_time:
             self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        else:
-            self._log("No time limit is set. Set one using max_time parameter.\n")
+
         self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
 
         if self.detect_label_leakage:
@@ -122,18 +129,29 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
+        if self.max_time and self.max_pipelines is None:
+            start = time.time()
+            elapsed = 0
+            last_time = start
+            with tqdm(total=self.max_time, disable=not self.verbose, file=stdout) as pbar:
+                while elapsed <= self.max_time:
+                    self._do_iteration(X, y, pbar, raise_errors)
+                    new_time = time.time()
+                    elapsed = new_time - start
+                    last_diff = round(new_time - last_time, 2)
+                    pbar.update(last_diff)
+                    last_time = new_time
+        else:
+            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 
-        start = time.time()
-        for n in pbar:
-            elapsed = time.time() - start
-            if self.max_time and elapsed > self.max_time:
-                self._log("\n\nMax time elapsed. Stopping search early.")
-                break
-            self._do_iteration(X, y, pbar, raise_errors)
-
-        pbar.close()
-
+            start = time.time()
+            for n in pbar:
+                elapsed = time.time() - start
+                if self.max_time and elapsed > self.max_time:
+                    self._log("\n\nMax time elapsed. Stopping search early.")
+                    break
+                self._do_iteration(X, y, pbar, raise_errors)
+            pbar.close()
         self._log("\n✔ Optimization finished")
 
     def _do_iteration(self, X, y, pbar, raise_errors):
@@ -155,7 +173,8 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        pbar.set_description("Testing %s" % (pipeline_class.name))
+        if pbar:
+            pbar.set_description("Testing %s" % (pipeline_class.name))
 
         start = time.time()
         scores = []
@@ -178,7 +197,8 @@ class AutoBase:
             except Exception as e:
                 if raise_errors:
                     raise e
-                pbar.write(str(e))
+                if pbar:
+                    pbar.write(str(e))
                 score = np.nan
                 other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
 

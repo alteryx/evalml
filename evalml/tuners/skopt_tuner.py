@@ -4,6 +4,7 @@ from skopt import Optimizer
 
 class SKOptTuner:
     """Bayesian Optimizer"""
+
     def __init__(self, space, random_state=0):
         self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
 
