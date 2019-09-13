@@ -53,8 +53,8 @@ def test_random_state(X_y):
 
 def test_categorical(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0, model_types=["random_forest"])
-    clf.fit(X.values, y, raise_errors=True)
+    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf.fit(X.values, y)
     assert not clf.rankings['score'].isnull().all()
 
 
