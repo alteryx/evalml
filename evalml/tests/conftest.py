@@ -29,6 +29,14 @@ def X_y_categorical_regression():
 
 
 @pytest.fixture
+def X_y_categorical_classification():
+    titanic = pd.read_csv('https://featuretools-static.s3.amazonaws.com/evalml/Titanic/train.csv')
+    y = titanic['Survived']
+    X = titanic.drop('Survived', axis=1)
+    return X, y
+
+
+@pytest.fixture
 def trained_model(X_y):
     X, y = X_y
 
