@@ -117,7 +117,7 @@ class AutoBase:
         if self.max_pipelines and self.max_time:
             self._log("Will stop searching when max_time or max_pipelines is reached.")
         elif self.max_pipelines:
-            self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line = False)
+            self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
         elif self.max_time:
             self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
 
