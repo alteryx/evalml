@@ -252,13 +252,15 @@ class AutoBase:
 
         return self.trained_pipelines[pipeline_id]
 
-    def describe_pipeline(self, pipeline_id, return_dict=False):
+    def describe_pipeline(self, pipeline_id, return_dict=False, scores=None):
         """Describe a pipeline
 
         Arguments:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to false
+            scores(list): A list of scores to output. If none, prints all
+                available scores
 
         Returns:
             description
@@ -290,23 +292,31 @@ class AutoBase:
             self._log("Warning! High variance within cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
-        all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
+        scores_to_display = pd.DataFrame(pipeline_results["all_objective_scores"])
 
-        for c in all_objective_scores:
+        if scores is not None:
+            for score in scores:
+                if score not in scores_to_display.columns:
+                    raise Exception("Score not in all objective scores.")
+            scores.append("# Training")
+            scores.append("# Testing")
+            scores_to_display = scores_to_display[scores]
+
+        for c in scores_to_display:
             if c in ["# Training", "# Testing"]:
-                all_objective_scores[c] = all_objective_scores[c].astype("object")
+                scores_to_display[c] = scores_to_display[c].astype("object")
                 continue
 
-            mean = all_objective_scores[c].mean(axis=0)
-            std = all_objective_scores[c].std(axis=0)
-            all_objective_scores.loc["mean", c] = mean
-            all_objective_scores.loc["std", c] = std
-            all_objective_scores.loc["coef of var", c] = std / mean
+            mean = scores_to_display[c].mean(axis=0)
+            std = scores_to_display[c].std(axis=0)
+            scores_to_display.loc["mean", c] = mean
+            scores_to_display.loc["std", c] = std
+            scores_to_display.loc["coef of var", c] = std / mean
 
-        all_objective_scores = all_objective_scores.fillna("-")
+        scores_to_display = scores_to_display.fillna("-")
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            self._log(all_objective_scores)
+            self._log(scores_to_display)
 
         if return_dict:
             return pipeline_results
