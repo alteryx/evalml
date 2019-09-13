@@ -1,9 +1,11 @@
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 from skopt.space import Integer, Real
 
 from evalml.pipelines import PipelineBase
@@ -20,13 +22,15 @@ class RFRegressionPipeline(PipelineBase):
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
         "impute_strategy": ["mean", "median", "most_frequent"],
+        "drop_invariant": [True, False],
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
+    def __init__(self, objective, n_estimators, max_depth, impute_strategy, drop_invariant, percent_features,
                  number_features, n_jobs=1, random_state=0):
 
         imputer = SimpleImputer(strategy=impute_strategy)
+        enc = ce.OneHotEncoder(drop_invariant=drop_invariant, return_df=False)
 
         estimator = RandomForestRegressor(random_state=random_state,
                                           n_estimators=n_estimators,
@@ -40,9 +44,10 @@ class RFRegressionPipeline(PipelineBase):
         )
 
         self.pipeline = Pipeline(
-            [("imputer", imputer),
+            [("encoder", enc),
+             ("imputer", imputer),
              ("feature_selection", feature_selection),
-             ("estimator", estimator)]
+             ("estimator", estimator)],
         )
 
         super().__init__(objective=objective, random_state=random_state)
