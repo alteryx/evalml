@@ -5,7 +5,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
 from skopt.space import Integer, Real
 
 from evalml.pipelines import PipelineBase

@@ -27,7 +27,7 @@ class XGBoostPipeline(PipelineBase):
     }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy, drop_invariant,
-        percent_features,number_features, n_jobs=1, random_state=0):
+                 percent_features, number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
         enc = ce.OneHotEncoder(drop_invariant=drop_invariant, return_df=False)
 

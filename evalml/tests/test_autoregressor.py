@@ -55,7 +55,7 @@ def test_categorical(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0, model_types=["random_forest"])
     clf.fit(X.values, y, raise_errors=True)
-    assert clf.rankings['score'].isnull().any() == False
+    assert clf.rankings['score'].isnull().any() is False
 
 
 def test_callback(X_y):

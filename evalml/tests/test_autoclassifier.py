@@ -124,7 +124,7 @@ def test_categorical_auto(X_y_categorical_classification):
     clf = AutoClassifier(objective="recall", max_pipelines=5, multiclass=False)
     clf.fit(X.values, y, raise_errors=True)
     print(clf.rankings)
-    assert clf.rankings['score'].isnull().any() == False
+    assert clf.rankings['score'].isnull().any() is False
 
 
 def test_random_state(X_y):
