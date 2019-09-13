@@ -153,9 +153,6 @@ class AutoBase:
         pbar.set_description("Testing %s" % (pipeline_class.name))
 
         start = time.time()
-        # print(X)
-        # print(y)
-        # print(pipeline.pipeline)
         scores = []
         all_objective_scores = []
         for train, test in self.cv.split(X, y):
