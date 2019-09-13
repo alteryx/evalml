@@ -73,8 +73,6 @@ class AutoBase:
         self._log("%s" % title, color=color)
         self._log(underline * len(title), color=color)
 
-    # def _log_error(self, msg, color=None, new_line=True):
-
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
 
@@ -129,7 +127,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if self.max_time and self.max_pipelines is None:
+        if self.max_pipelines is None:
             start = time.time()
             elapsed = 0
             last_time = start
