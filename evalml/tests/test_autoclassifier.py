@@ -97,7 +97,7 @@ def test_specify_objective(X_y):
 
 def test_binary_auto(X_y):
     X, y = X_y
-    clf = AutoClassifier(objective="recall", multiclass=False, max_pipelines=2)
+    clf = AutoClassifier(objective="recall", multiclass=False, max_pipelines=5)
     clf.fit(X, y)
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 2
