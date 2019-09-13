@@ -43,7 +43,7 @@ def test_serialization(X_y, trained_model, path_management):
     path = os.path.join(path_management, 'pipe.pkl')
     objective = Precision()
 
-    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', drop_invariant=False, number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
@@ -60,10 +60,10 @@ def test_reproducibility(X_y):
         amount_col=10
     )
 
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', drop_invariant=False, number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', drop_invariant=False, number_features=len(X[0]), random_state=0)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
