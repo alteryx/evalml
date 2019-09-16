@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
-from evalml import AutoClassifier, demos, preprocessing
+from evalml import AutoClassifier, demos
 from evalml.objectives import (
     FraudCost,
     Precision,
