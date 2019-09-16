@@ -33,12 +33,14 @@ class AutoBase:
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
         objective = get_objective(objective)
-        default_objectives = get_objectives(problem_type)
 
         if additional_objectives is not None:
+            default_objectives = list()
             for objective in additional_objectives:
                 obj_object = get_objective(objective)
                 default_objectives.append(obj_object)
+        else:
+            default_objectives = get_objectives(problem_type)
 
         self.results = {}
         self.trained_pipelines = {}
