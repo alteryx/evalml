@@ -22,13 +22,12 @@ class RFClassificationPipeline(PipelineBase):
         "max_depth": Integer(1, 32),
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1),
-        "drop_invariant": [True, False]
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, drop_invariant,
+    def __init__(self, objective, n_estimators, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(drop_invariant=drop_invariant, return_df=True)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = RandomForestClassifier(random_state=random_state,
                                            n_estimators=n_estimators,

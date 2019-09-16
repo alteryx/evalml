@@ -56,6 +56,8 @@ def test_categorical(X_y_categorical_regression):
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
     clf.fit(X.values, y)
     assert not clf.rankings['score'].isnull().all()
+    assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
+
 
 
 def test_callback(X_y):

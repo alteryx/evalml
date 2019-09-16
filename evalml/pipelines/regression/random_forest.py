@@ -21,15 +21,14 @@ class RFRegressionPipeline(PipelineBase):
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
         "impute_strategy": ["mean", "median", "most_frequent"],
-        "drop_invariant": [True, False],
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, drop_invariant, percent_features,
+    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=1, random_state=0):
 
         imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(drop_invariant=drop_invariant, return_df=True)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = RandomForestRegressor(random_state=random_state,
                                           n_estimators=n_estimators,
@@ -55,6 +54,7 @@ class RFRegressionPipeline(PipelineBase):
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
         indices = self.pipeline["feature_selection"].get_support(indices=True)
+        # need to fix inpujt_feature_names as it takes from orignal columns
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
         importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))  # note: this only works for binary
         importances.sort(key=lambda x: -abs(x[1]))

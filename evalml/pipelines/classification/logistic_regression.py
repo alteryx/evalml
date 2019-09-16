@@ -21,13 +21,12 @@ class LogisticRegressionPipeline(PipelineBase):
         "penalty": ["l2"],
         "C": Real(.01, 10),
         "impute_strategy": ["mean", "median", "most_frequent"],
-        "drop_invariant": [True, False]
     }
 
-    def __init__(self, objective, penalty, C, impute_strategy, drop_invariant,
+    def __init__(self, objective, penalty, C, impute_strategy,
                  number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(drop_invariant=drop_invariant, return_df=True)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = LogisticRegression(random_state=random_state,
                                        penalty=penalty,
