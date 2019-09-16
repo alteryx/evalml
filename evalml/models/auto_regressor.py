@@ -19,7 +19,8 @@ class AutoRegressor(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  random_state=0,
-                 verbose=True):
+                 verbose=True,
+                 additional_objectives=None):
         """Automated regressors pipeline search
 
         Arguments:
@@ -72,4 +73,5 @@ class AutoRegressor(AutoBase):
             add_result_callback=add_result_callback,
             random_state=random_state,
             verbose=verbose,
+            additional_objectives=additional_objectives
         )
