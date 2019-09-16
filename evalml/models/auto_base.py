@@ -17,7 +17,7 @@ from evalml.tuners import SKOptTuner
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, random_state, verbose, additional_objectives):
+                 add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
 
