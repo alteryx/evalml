@@ -81,3 +81,13 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
+def test_select_scores(X_y):
+    X, y = X_y
+
+    clf = AutoRegressor(objective="R2", max_pipelines=3)
+
+    clf.fit(X, y)
+
+    clf.describe_pipeline(0, scores=['R2'])

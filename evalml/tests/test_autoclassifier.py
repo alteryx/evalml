@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
-from evalml import AutoClassifier
+from evalml import AutoClassifier, demos, preprocessing
 from evalml.objectives import (
     FraudCost,
     Precision,
@@ -168,5 +168,17 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
+def test_select_scores():
+    X, y = demos.load_breast_cancer()
+
+    clf = AutoClassifier(objective="f1", max_pipelines=5)
+    X_train, X_holdout, y_train, y_holdout = preprocessing.split_data(X, y, test_size=.2)
+
+    clf.fit(X_train, y_train)
+
+    clf.describe_pipeline(0, scores=['F1', 'AUC'])
+
 
 # def test_serialization(trained_model)
