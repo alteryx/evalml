@@ -116,7 +116,7 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    assert clf.default_objectives == get_objectives('multiclass')
+    assert clf.additional_objectives == get_objectives('multiclass')
 
 
 def test_random_state(X_y):
@@ -169,4 +169,21 @@ def test_callback(X_y):
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
 
+
+def test_additional_objectives(X_y):
+    X, y = X_y
+
+    objective = FraudCost(
+        retry_percentage=.5,
+        interchange_fee=.02,
+        fraud_payout_percentage=.75,
+        amount_col=10
+    )
+
+    clf = AutoClassifier(objective='F1', max_pipelines=2, additional_objectives=[objective])
+
+    clf.fit(X, y)
+
+    results = clf.describe_pipeline(0, return_dict=True)
+    assert 'Fraud Cost' in list(results['all_objective_scores'][0].keys())
 # def test_serialization(trained_model)
