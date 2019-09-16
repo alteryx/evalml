@@ -292,15 +292,23 @@ class AutoBase:
             self._log("Warning! High variance within cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
-        scores_to_display = pd.DataFrame(pipeline_results["all_objective_scores"])
+        all_objective_scores = pipeline_results["all_objective_scores"]
 
         if scores is not None:
             for score in scores:
-                if score not in scores_to_display.columns:
-                    raise Exception("Score not in all objective scores.")
+                if score not in all_objective_scores[0]:
+                    raise ValueError("{} not found in pipeline scores.".format(score))
             scores.append("# Training")
             scores.append("# Testing")
-            scores_to_display = scores_to_display[scores]
+            new_obj_scores = list()
+            for fold in all_objective_scores:
+                new_fold = dict()
+                for score in scores:
+                    new_fold[score] = fold[score]
+                new_obj_scores.append(new_fold)
+            pipeline_results['all_objective_scores'] = new_obj_scores
+
+        scores_to_display = pd.DataFrame(pipeline_results["all_objective_scores"])
 
         for c in scores_to_display:
             if c in ["# Training", "# Testing"]:

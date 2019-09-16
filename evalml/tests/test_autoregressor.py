@@ -90,4 +90,12 @@ def test_select_scores(X_y):
 
     clf.fit(X, y)
 
-    clf.describe_pipeline(0, scores=['R2'])
+    ret_dict = clf.describe_pipeline(0, scores=['R2'], return_dict=True)
+    dict_keys = ret_dict['all_objective_scores'][0].keys()
+    assert 'R2' in dict_keys
+    assert '# Training' in dict_keys
+    assert '# Testing' in dict_keys
+
+    error_msg = "fraud_objective not found in pipeline scores."
+    with pytest.raises(Exception, match=error_msg):
+        ret_dict = clf.describe_pipeline(0, scores=['R2', 'fraud_objective'])

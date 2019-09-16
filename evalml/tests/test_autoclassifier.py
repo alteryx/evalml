@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier, demos, preprocessing
@@ -178,7 +179,15 @@ def test_select_scores():
 
     clf.fit(X_train, y_train)
 
-    clf.describe_pipeline(0, scores=['F1', 'AUC'])
+    ret_dict = clf.describe_pipeline(0, scores=['F1', 'AUC'], return_dict=True)
+    dict_keys = ret_dict['all_objective_scores'][0].keys()
+    assert 'F1' in dict_keys
+    assert 'AUC' in dict_keys
+    assert '# Training' in dict_keys
+    assert '# Testing' in dict_keys
 
+    error_msg = "fraud_objective not found in pipeline scores."
+    with pytest.raises(Exception, match=error_msg):
+        ret_dict = clf.describe_pipeline(0, scores=['F1', 'fraud_objective'])
 
 # def test_serialization(trained_model)
