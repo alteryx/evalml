@@ -116,7 +116,7 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    assert clf.default_objectives == get_objectives('multiclass')
+    assert clf.additional_objectives == get_objectives('multiclass')
 
 
 def test_random_state(X_y):
