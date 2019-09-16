@@ -252,15 +252,15 @@ class AutoBase:
 
         return self.trained_pipelines[pipeline_id]
 
-    def describe_pipeline(self, pipeline_id, return_dict=False, scores=None):
+    def describe_pipeline(self, pipeline_id, return_dict=False, show_objectives=None):
         """Describe a pipeline
 
         Arguments:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to false
-            scores(list): A list of scores to output. If none, prints all
-                available scores
+            show_objectives(list): A list of objectives to output. If none, prints all
+                available objectives
 
         Returns:
             description
@@ -270,6 +270,9 @@ class AutoBase:
 
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
+
+        if return_dict is not None and show_objectives is not None:
+            return_results = pipeline_results.copy()
 
         self._log_title("Pipeline Description")
 
@@ -292,23 +295,20 @@ class AutoBase:
             self._log("Warning! High variance within cross validation scores. " +
                       "Model may not perform as estimated on unseen data.")
 
-        all_objective_scores = pipeline_results["all_objective_scores"]
-
-        if scores is not None:
-            for score in scores:
-                if score not in all_objective_scores[0]:
-                    raise ValueError("{} not found in pipeline scores.".format(score))
-            scores.append("# Training")
-            scores.append("# Testing")
-            new_obj_scores = list()
-            for fold in all_objective_scores:
-                new_fold = dict()
-                for score in scores:
-                    new_fold[score] = fold[score]
-                new_obj_scores.append(new_fold)
-            pipeline_results['all_objective_scores'] = new_obj_scores
-
         scores_to_display = pd.DataFrame(pipeline_results["all_objective_scores"])
+
+        if show_objectives is not None:
+            show_objectives.append("# Training")
+            show_objectives.append("# Testing")
+
+            # Check that all show_objectives are valid
+            invalid_objectives = set(show_objectives) - set(scores_to_display.columns)
+            if len(invalid_objectives) > 0:
+                raise ValueError("{} not found in pipeline scores.".format(invalid_objectives))
+
+            scores_to_display = scores_to_display[show_objectives]
+            if return_dict:
+                return_results['all_objective_scores'] = scores_to_display.to_dict('records')
 
         for c in scores_to_display:
             if c in ["# Training", "# Testing"]:
@@ -326,7 +326,9 @@ class AutoBase:
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(scores_to_display)
 
-        if return_dict:
+        if return_dict and show_objectives:
+            return return_results
+        elif return_dict:
             return pipeline_results
 
     @property

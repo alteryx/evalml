@@ -175,19 +175,23 @@ def test_select_scores():
     X, y = demos.load_breast_cancer()
 
     clf = AutoClassifier(objective="f1", max_pipelines=5)
-    X_train, X_holdout, y_train, y_holdout = preprocessing.split_data(X, y, test_size=.2)
 
-    clf.fit(X_train, y_train)
+    clf.fit(X, y)
 
-    ret_dict = clf.describe_pipeline(0, scores=['F1', 'AUC'], return_dict=True)
+    ret_dict = clf.describe_pipeline(0, show_objectives=['F1', 'AUC'], return_dict=True)
     dict_keys = ret_dict['all_objective_scores'][0].keys()
     assert 'F1' in dict_keys
     assert 'AUC' in dict_keys
     assert '# Training' in dict_keys
     assert '# Testing' in dict_keys
 
-    error_msg = "fraud_objective not found in pipeline scores."
+    # Make sure that show_objectives only filters output and return_dict
+    ret_dict_2 = clf.describe_pipeline(0, return_dict=True)
+    dict_keys_2 = ret_dict_2['all_objective_scores'][0].keys()
+    assert 'Precision' in dict_keys_2
+
+    error_msg = "{'fraud_objective'} not found in pipeline scores."
     with pytest.raises(Exception, match=error_msg):
-        ret_dict = clf.describe_pipeline(0, scores=['F1', 'fraud_objective'])
+        ret_dict = clf.describe_pipeline(0, show_objectives=['F1', 'fraud_objective'])
 
 # def test_serialization(trained_model)
