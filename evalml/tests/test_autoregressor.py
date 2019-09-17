@@ -59,7 +59,6 @@ def test_categorical(X_y_categorical_regression):
     assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
 
 
-
 def test_callback(X_y):
     X, y = X_y
 
