@@ -16,7 +16,7 @@ from evalml.tuners import SKOptTuner
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, random_state, verbose):
+                 add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
 
@@ -32,7 +32,11 @@ class AutoBase:
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
         objective = get_objective(objective)
-        default_objectives = get_objectives(problem_type)
+
+        if additional_objectives is not None:
+            additional_objectives = [get_objective(o) for o in additional_objectives]
+        else:
+            additional_objectives = get_objectives(problem_type)
 
         self.results = {}
         self.trained_pipelines = {}
@@ -48,7 +52,7 @@ class AutoBase:
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
 
-        self.default_objectives = default_objectives
+        self.additional_objectives = additional_objectives
 
     def _log(self, msg, color=None, new_line=True):
         if not self.verbose:
@@ -167,14 +171,14 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.default_objectives)
+                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 
             except Exception as e:
                 if raise_errors:
                     raise e
                 pbar.write(str(e))
                 score = np.nan
-                other_scores = dict(zip([n.name for n in self.default_objectives], [np.nan] * len(self.default_objectives)))
+                other_scores = dict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
             other_scores[self.objective.name] = score
             other_scores["# Training"] = len(y_train)

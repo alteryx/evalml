@@ -18,6 +18,7 @@ class AutoRegressor(AutoBase):
                  detect_label_leakage=True,
                  start_iteration_callback=None,
                  add_result_callback=None,
+                 additional_objectives=None,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -46,6 +47,9 @@ class AutoRegressor(AutoBase):
             add_result_callback (callable): function called after each pipeline training iteration.
                 Passed two parameters: results, trained_pipeline.
 
+            additional_objectives (list): Custom set of objectives to score on.
+                Will override default objectives for problem type if not empty.
+
             random_state (int): the random_state
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
@@ -72,4 +76,5 @@ class AutoRegressor(AutoBase):
             add_result_callback=add_result_callback,
             random_state=random_state,
             verbose=verbose,
+            additional_objectives=additional_objectives
         )
