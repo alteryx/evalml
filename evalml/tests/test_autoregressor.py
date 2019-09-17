@@ -51,7 +51,7 @@ def test_random_state(X_y):
     assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
 
 
-def test_categorical(X_y_categorical_regression):
+def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
     clf.fit(X, y)

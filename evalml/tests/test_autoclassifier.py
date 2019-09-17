@@ -119,7 +119,7 @@ def test_multi_auto(X_y_multi):
     assert clf.default_objectives == get_objectives('multiclass')
 
 
-def test_categorical_auto(X_y_categorical_classification):
+def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     clf = AutoClassifier(objective="recall", max_pipelines=5, multiclass=False)
     clf.fit(X, y)
