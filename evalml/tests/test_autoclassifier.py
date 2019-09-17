@@ -122,8 +122,9 @@ def test_multi_auto(X_y_multi):
 def test_categorical_auto(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     clf = AutoClassifier(objective="recall", max_pipelines=5, multiclass=False)
-    clf.fit(X.values, y)
+    clf.fit(X, y)
     assert not clf.rankings['score'].isnull().all()
+    assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
 
 
 def test_random_state(X_y):

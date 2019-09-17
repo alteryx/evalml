@@ -160,7 +160,6 @@ class AutoBase:
                 X_train, X_test = X.iloc[train], X.iloc[test]
             else:
                 X_train, X_test = X[train], X[test]
-
             if isinstance(y, pd.Series):
                 y_train, y_test = y.iloc[train], y.iloc[test]
             else:

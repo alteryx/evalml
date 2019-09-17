@@ -35,7 +35,7 @@ class PipelineBase:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self.pipeline.fit(X, y)
-        self.input_feature_names = self.pipeline['encoder'].get_feature_names()
+        self.input_feature_names = self.pipeline['encoder'].feature_names
 
         if self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
