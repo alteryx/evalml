@@ -51,12 +51,12 @@ def test_random_state(X_y):
     assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
 
 
-def test_categorical(X_y_categorical_regression):
+def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    error_msg = 'contains non-numerical data'
-    with pytest.raises(ValueError, match=error_msg):
-        clf.fit(X, y, raise_errors=True)
+    clf.fit(X, y)
+    assert not clf.rankings['score'].isnull().all()
+    assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
 
 
 def test_callback(X_y):

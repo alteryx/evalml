@@ -1,3 +1,4 @@
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
@@ -27,6 +28,7 @@ class RFRegressionPipeline(PipelineBase):
                  number_features, n_jobs=1, random_state=0):
 
         imputer = SimpleImputer(strategy=impute_strategy)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = RandomForestRegressor(random_state=random_state,
                                           n_estimators=n_estimators,
@@ -40,9 +42,10 @@ class RFRegressionPipeline(PipelineBase):
         )
 
         self.pipeline = Pipeline(
-            [("imputer", imputer),
+            [("encoder", enc),
+             ("imputer", imputer),
              ("feature_selection", feature_selection),
-             ("estimator", estimator)]
+             ("estimator", estimator)],
         )
 
         super().__init__(objective=objective, random_state=random_state)
