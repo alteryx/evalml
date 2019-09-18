@@ -302,6 +302,8 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
+        # Make main objective first column in table
+        all_objective_scores = all_objective_scores[[pipeline.objective.name] + [c for c in all_objective_scores if c != pipeline.objective.name]]
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
