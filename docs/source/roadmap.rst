@@ -12,4 +12,7 @@ There are numerous new features and functionality planned for EvalML, some of wh
 * Instructions for adding your own modeling pipelines for EvalML to tune
 * Add additional hyperparameter tuning methods
 * Handle categorical data natively within EvalML
+
+    * One-hot encoding has been incorparted natively within EvalMl
+
 * Visualizations for understanding model search
