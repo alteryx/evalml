@@ -16,10 +16,6 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/tests
-
-.PHONY: testcoverage
-testcoverage: lint
 	pytest evalml/tests --cov=evalml
 
 .PHONY: installdeps
