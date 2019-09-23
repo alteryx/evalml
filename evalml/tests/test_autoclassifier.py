@@ -129,6 +129,7 @@ def test_multi_objective(X_y_multi):
     clf = AutoClassifier(objective='recall_micro')
     assert clf.problem_type == ProblemTypes.MULTICLASS
 
+
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     clf = AutoClassifier(objective="recall", max_pipelines=5, multiclass=False)

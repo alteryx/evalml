@@ -6,6 +6,7 @@ from .auto_base import AutoBase
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
 
+
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 
@@ -77,7 +78,6 @@ class AutoClassifier(AutoBase):
             problem_type = ProblemTypes.MULTICLASS
         elif problem_type is None:
             problem_type = ProblemTypes.BINARY
-
 
         super().__init__(
             tuner=tuner,
