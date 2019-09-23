@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
-import pytest
 
 from evalml import AutoClassifier
 from evalml.objectives import (
@@ -204,7 +203,6 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
     expected_objective_order = 'AUC F1 Precision Recall Log Loss MCC'
     clf.describe_pipeline(0)
-    
     out, err = capsys.readouterr()
     out_stripped = " ".join(out.split())
     assert err == ''
