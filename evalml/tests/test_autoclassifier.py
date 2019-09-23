@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import pytest
+
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
@@ -118,6 +120,14 @@ def test_multi_auto(X_y_multi):
 
     assert clf.additional_objectives == get_objectives('multiclass')
 
+
+def test_multi_objective(X_y_multi):
+    error_msg = 'Provided objective is not a multiclass objective'
+    with pytest.raises(ValueError, match=error_msg):
+        clf = AutoClassifier(objective="recall", multiclass=True)
+
+    clf = AutoClassifier(objective='recall_micro')
+    assert clf.problem_type == ProblemTypes.MULTICLASS
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification

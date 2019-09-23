@@ -21,6 +21,7 @@ class AutoBase:
             tuner = SKOptTuner
 
         self.objective = get_objective(objective)
+        self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
@@ -30,13 +31,13 @@ class AutoBase:
         self.cv = cv
         self.verbose = verbose
 
-        self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         objective = get_objective(objective)
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
-            additional_objectives = get_objectives(problem_type)
+            additional_objectives = get_objectives(self.problem_type)
 
         self.results = {}
         self.trained_pipelines = {}

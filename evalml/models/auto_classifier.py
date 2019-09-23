@@ -3,15 +3,15 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
+from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
-
 
 class AutoClassifier(AutoBase):
     """Automatic pipeline search for classification problems"""
 
     def __init__(self,
                  objective=None,
-                 multiclass=False,
+                 multiclass=None,
                  max_pipelines=5,
                  max_time=None,
                  model_types=None,
@@ -58,15 +58,27 @@ class AutoClassifier(AutoBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
-        if objective is None:
-            objective = "precision"
 
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        problem_type = ProblemTypes.BINARY
+        problem_type = None
+
+        if objective is not None:
+            if multiclass is None:
+                if ProblemTypes.MULTICLASS in get_objective(objective).problem_types:
+                    problem_type = ProblemTypes.MULTICLASS
+            elif multiclass and ProblemTypes.MULTICLASS not in get_objective(objective).problem_types:
+                raise ValueError("Provided objective is not a multiclass objective")
+
+        if objective is None:
+            objective = "precision"
         if multiclass:
             problem_type = ProblemTypes.MULTICLASS
+        elif problem_type is None:
+            problem_type = ProblemTypes.BINARY
+
+
         super().__init__(
             tuner=tuner,
             objective=objective,
