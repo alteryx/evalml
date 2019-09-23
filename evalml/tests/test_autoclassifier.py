@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
@@ -129,6 +128,12 @@ def test_multi_objective(X_y_multi):
     clf = AutoClassifier(objective='recall_micro')
     assert clf.problem_type == ProblemTypes.MULTICLASS
 
+    clf = AutoClassifier(objective='recall')
+    assert clf.problem_type == ProblemTypes.BINARY
+
+    clf = AutoClassifier(multiclass=True)
+    assert clf.problem_type == ProblemTypes.MULTICLASS
+
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
@@ -205,4 +210,3 @@ def test_additional_objectives(X_y):
 
     results = clf.describe_pipeline(0, return_dict=True)
     assert 'Fraud Cost' in list(results['all_objective_scores'][0].keys())
-# def test_serialization(trained_model)

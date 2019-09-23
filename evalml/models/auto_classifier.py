@@ -12,7 +12,7 @@ class AutoClassifier(AutoBase):
 
     def __init__(self,
                  objective=None,
-                 multiclass=None,
+                 multiclass=False,
                  max_pipelines=5,
                  max_time=None,
                  model_types=None,
@@ -63,21 +63,22 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        problem_type = None
+        problem_type = ProblemTypes.BINARY
 
         if objective is not None:
-            if multiclass is None:
+            if multiclass is False:
                 if ProblemTypes.MULTICLASS in get_objective(objective).problem_types:
                     problem_type = ProblemTypes.MULTICLASS
             elif multiclass and ProblemTypes.MULTICLASS not in get_objective(objective).problem_types:
                 raise ValueError("Provided objective is not a multiclass objective")
+            elif multiclass:
+                problem_type = ProblemTypes.MULTICLASS
 
-        if objective is None:
+        if objective is None and not multiclass:
             objective = "precision"
-        if multiclass:
+        elif objective is None and multiclass:
+            objective = "precision_micro"
             problem_type = ProblemTypes.MULTICLASS
-        elif problem_type is None:
-            problem_type = ProblemTypes.BINARY
 
         super().__init__(
             tuner=tuner,
