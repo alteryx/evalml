@@ -239,6 +239,42 @@ class R2(ObjectiveBase):
         return metrics.r2_score(y_true, y_predicted)
 
 
+class MSE(ObjectiveBase):
+    """Mean squared error for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "MSE"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.mean_squared_error(y_true, y_predicted)
+
+
+class MaxError(ObjectiveBase):
+    """Maximum residual error for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "MaxError"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.max_error(y_true, y_predicted)
+
+
+class ExpVariance(ObjectiveBase):
+    """Explained variance score for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "ExpVariance"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.explained_variance_score(y_true, y_predicted)
+
+
 def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:
         classes = np.unique(y_true)
