@@ -206,11 +206,12 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out, err = capsys.readouterr()
     out_stripped = " ".join(out.split())
 
-    other_objectives = [get_objective(o) for o in clf.additional_objectives]
-    other_objectives_names = [clf.objective.name] + [obj.name for obj in other_objectives if obj.name != clf.objective.name]
-    expected_objective_order = " ".join(other_objectives_names)
+    objectives = [get_objective(obj) for obj in clf.additional_objectives]
+    objectives_names = [clf.objective.name] + [obj.name for obj in objectives if obj.name != clf.objective.name]
+    expected_objective_order = " ".join(objectives_names)
 
     assert err == ''
     assert expected_objective_order in out_stripped
+
 
 # def test_serialization(trained_model)

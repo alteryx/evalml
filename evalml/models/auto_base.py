@@ -1,5 +1,6 @@
 import random
 import time
+from collections import OrderedDict
 from sys import stdout
 
 import numpy as np
@@ -178,7 +179,7 @@ class AutoBase:
                     raise e
                 pbar.write(str(e))
                 score = np.nan
-                other_scores = dict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
             other_scores[self.objective.name] = score
             other_scores["# Training"] = len(y_train)
@@ -304,7 +305,6 @@ class AutoBase:
         all_objective_scores = all_objective_scores.fillna("-")
         # Make main objective first column in table
         all_objective_scores = all_objective_scores[[pipeline.objective.name] + [c for c in all_objective_scores if c != pipeline.objective.name]]
-
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
 
