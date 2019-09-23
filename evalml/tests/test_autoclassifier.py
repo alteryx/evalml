@@ -7,6 +7,7 @@ from evalml.objectives import (
     FraudCost,
     Precision,
     PrecisionMicro,
+    get_objective,
     get_objectives
 )
 from evalml.pipelines import PipelineBase, get_pipelines
@@ -201,10 +202,14 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     clf = AutoClassifier(objective='AUC', max_pipelines=2)
     clf.fit(X, y)
 
-    expected_objective_order = 'AUC F1 Precision Recall Log Loss MCC'
     clf.describe_pipeline(0)
     out, err = capsys.readouterr()
     out_stripped = " ".join(out.split())
+
+    other_objectives = [get_objective(o) for o in clf.additional_objectives]
+    other_objectives_names = [clf.objective.name] + [obj.name for obj in other_objectives if obj.name != clf.objective.name]
+    expected_objective_order = " ".join(other_objectives_names)
+
     assert err == ''
     assert expected_objective_order in out_stripped
 
