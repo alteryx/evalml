@@ -1,4 +1,3 @@
-import pandas as pd
 
 
 class ComponentBase:
@@ -8,7 +7,6 @@ class ComponentBase:
         self.hyperparameters = hyperparameters
         self._needs_fitting = needs_fitting
         self._component_obj = component_obj
-
 
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
@@ -25,7 +23,6 @@ class ComponentBase:
         """
         pass
 
-
     def predict(self, X):
         """Make predictions using selected features.
 
@@ -37,7 +34,6 @@ class ComponentBase:
         """
         pass
 
-
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
@@ -48,7 +44,6 @@ class ComponentBase:
             DataFrame : probability estimates
         """
         pass
-
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
