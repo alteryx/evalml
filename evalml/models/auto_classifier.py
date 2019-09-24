@@ -66,10 +66,10 @@ class AutoClassifier(AutoBase):
         problem_type = ProblemTypes.BINARY
 
         """
-        If there is an objective:
-            1. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
-            2. Check if objective and multiclass is compatible
-            3. Set problem_type to MUTLiCLASS
+        If there is an objective either:
+            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
+            b. Check if objective and multiclass is compatible
+            c. Set problem_type to MUTLiCLASS
         """
         if objective is not None:
             if multiclass is False:
