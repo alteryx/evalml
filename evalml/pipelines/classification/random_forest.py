@@ -1,3 +1,4 @@
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -23,9 +24,10 @@ class RFClassificationPipeline(PipelineBase):
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
-                 number_features, n_jobs=1, random_state=0):
+    def __init__(self, objective, n_estimators, max_depth, impute_strategy,
+                 percent_features, number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = RandomForestClassifier(random_state=random_state,
                                            n_estimators=n_estimators,
@@ -39,7 +41,8 @@ class RFClassificationPipeline(PipelineBase):
         )
 
         self.pipeline = Pipeline(
-            [("imputer", imputer),
+            [("encoder", enc),
+             ("imputer", imputer),
              ("feature_selection", feature_selection),
              ("estimator", estimator)]
         )

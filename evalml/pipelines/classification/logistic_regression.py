@@ -1,3 +1,4 @@
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
@@ -25,6 +26,7 @@ class LogisticRegressionPipeline(PipelineBase):
     def __init__(self, objective, penalty, C, impute_strategy,
                  number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(strategy=impute_strategy)
+        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
         estimator = LogisticRegression(random_state=random_state,
                                        penalty=penalty,
@@ -34,7 +36,8 @@ class LogisticRegressionPipeline(PipelineBase):
                                        n_jobs=-1)
 
         self.pipeline = Pipeline(
-            [("imputer", imputer),
+            [("encoder", enc),
+             ("imputer", imputer),
              ("scaler", StandardScaler()),
              ("estimator", estimator)]
         )
