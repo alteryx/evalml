@@ -11,6 +11,7 @@ from evalml import preprocessing
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.tuners import SKOptTuner
+from evalml.problem_types import ProblemTypes
 
 
 class AutoBase:
@@ -171,6 +172,14 @@ class AutoBase:
                 y_train, y_test = y[train], y[test]
 
             try:
+                num_classes = len(np.unique(y))
+                multiclass_problem = False
+                if num_classes > 2:
+                    multiclass_problem = True
+                for obj in self.additional_objectives:
+                    if ProblemTypes.REGRESSION not in obj.problem_types:
+                        if multiclass_problem and ProblemTypes.MULTICLASS not in obj.problem_types:
+                            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(obj.name))
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 
