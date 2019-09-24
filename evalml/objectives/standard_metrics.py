@@ -239,6 +239,18 @@ class R2(ObjectiveBase):
         return metrics.r2_score(y_true, y_predicted)
 
 
+class MAE(ObjectiveBase):
+    """Mean absolute error for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "MAE"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.mean_absolute_error(y_true, y_predicted)
+
+
 class MSE(ObjectiveBase):
     """Mean squared error for regression"""
     needs_fitting = False
@@ -249,6 +261,30 @@ class MSE(ObjectiveBase):
 
     def score(self, y_predicted, y_true):
         return metrics.mean_squared_error(y_true, y_predicted)
+
+
+class MSLE(ObjectiveBase):
+    """Mean squared log error for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "MSLE"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.mean_squared_log_error(y_true, y_predicted)
+
+
+class MedianAE(ObjectiveBase):
+    """Median absolute error for regression"""
+    needs_fitting = False
+    greater_is_better = False
+    need_proba = False
+    name = "MedAE"
+    problem_types = [ProblemTypes.REGRESSION]
+
+    def score(self, y_predicted, y_true):
+        return metrics.median_absolute_error(y_true, y_predicted)
 
 
 class MaxError(ObjectiveBase):
