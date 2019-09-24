@@ -185,12 +185,13 @@ class AutoBase:
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
-            other_scores[self.objective.name] = score
-            other_scores["# Training"] = len(y_train)
-            other_scores["# Testing"] = len(y_test)
-
+            ordered_scores = OrderedDict()
+            ordered_scores[self.objective.name] = score
+            ordered_scores.update(other_scores)
+            ordered_scores.update({"# Training": len(y_train)})
+            ordered_scores.update({"# Testing": len(y_test)})
             scores.append(score)
-            all_objective_scores.append(other_scores)
+            all_objective_scores.append(ordered_scores)
 
         training_time = time.time() - start
 
@@ -307,8 +308,6 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
-        # Make main objective first column in table
-        all_objective_scores = all_objective_scores[[pipeline.objective.name] + [c for c in all_objective_scores if c != pipeline.objective.name]]
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
 

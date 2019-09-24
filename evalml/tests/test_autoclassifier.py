@@ -216,5 +216,4 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     assert err == ''
     assert expected_objective_order in out_stripped
 
-
 # def test_serialization(trained_model)
