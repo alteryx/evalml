@@ -10,8 +10,8 @@ from tqdm import tqdm
 from evalml import preprocessing
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
-from evalml.tuners import SKOptTuner
 from evalml.problem_types import ProblemTypes
+from evalml.tuners import SKOptTuner
 
 
 class AutoBase:
