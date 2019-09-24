@@ -32,12 +32,16 @@ class AutoBase:
         self.verbose = verbose
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
-        objective = get_objective(objective)
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
             additional_objectives = get_objectives(problem_type)
+
+            # if our main objective is part of default set of objectives for problem_type, remove it
+            existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
+            if existing_main_objective is not None:
+                additional_objectives.remove(existing_main_objective)
 
         self.results = {}
         self.trained_pipelines = {}
