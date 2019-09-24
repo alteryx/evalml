@@ -1,5 +1,3 @@
-
-
 class ComponentBase:
     def __init__(self, name, component_type, hyperparameters, needs_fitting=False, component_obj=None):
         self.name = name
