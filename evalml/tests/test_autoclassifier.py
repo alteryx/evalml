@@ -121,7 +121,7 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Provided objective is not a multiclass objective'
+    error_msg = 'Multiclass is set to true and provided objective is not a multiclass objective'
     with pytest.raises(ValueError, match=error_msg):
         clf = AutoClassifier(objective="recall", multiclass=True)
 
@@ -133,6 +133,9 @@ def test_multi_objective(X_y_multi):
 
     clf = AutoClassifier(multiclass=True)
     assert clf.problem_type == ProblemTypes.MULTICLASS
+
+    clf = AutoClassifier()
+    assert clf.problem_type == ProblemTypes.BINARY
 
 
 def test_categorical_classification(X_y_categorical_classification):

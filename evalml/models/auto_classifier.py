@@ -65,15 +65,22 @@ class AutoClassifier(AutoBase):
 
         problem_type = ProblemTypes.BINARY
 
+        """
+        If there is an objective:
+            1. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
+            2. Check if objective and multiclass is compatible
+            3. Set problem_type to MUTLiCLASS
+        """
         if objective is not None:
             if multiclass is False:
-                if ProblemTypes.MULTICLASS in get_objective(objective).problem_types:
+                if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
                     problem_type = ProblemTypes.MULTICLASS
             elif multiclass and ProblemTypes.MULTICLASS not in get_objective(objective).problem_types:
-                raise ValueError("Provided objective is not a multiclass objective")
+                raise ValueError("Multiclass is set to true and provided objective is not a multiclass objective")
             elif multiclass:
                 problem_type = ProblemTypes.MULTICLASS
 
+        # if there is no provided objective set to precision or precision_micro if multiclass was set to True.
         if objective is None and not multiclass:
             objective = "precision"
         elif objective is None and multiclass:
