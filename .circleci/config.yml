@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 jobs:
   test_python:
@@ -8,18 +8,18 @@ jobs:
         default: "3.7"
     working_directory: ~/evalml
     docker:
-      - image: circleci/python:<< parameters.python_version >>
+        - image: circleci/python:<< parameters.python_version >>
     steps:
       - checkout
       - run: |
-          virtualenv venv -q
-          source venv/bin/activate
+          virtualenv test_python -q
+          source test_python/bin/activate
           make installdeps
       - run: |
-          source venv/bin/activate
+          source test_python/bin/activate
           make lint
       - run: |
-          source venv/bin/activate
+          source test_python/bin/activate
           coverage erase
           make test
           codecov
