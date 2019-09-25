@@ -32,6 +32,7 @@ class AutoBase:
         self.verbose = verbose
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
+        objective = get_objective(objective)
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
@@ -186,7 +187,7 @@ class AutoBase:
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
             ordered_scores = OrderedDict()
-            ordered_scores[self.objective.name] = score
+            ordered_scores.update({self.objective.name: score})
             ordered_scores.update(other_scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
@@ -222,7 +223,6 @@ class AutoBase:
             score_to_minimize = score
 
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
-
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         s = pd.Series(scores)
