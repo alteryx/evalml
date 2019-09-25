@@ -1,20 +1,25 @@
 version: 2
+
 jobs:
-  "python-35":
+  test_python:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
     working_directory: ~/evalml
     docker:
-        - image: circleci/python:3.5
+      - image: circleci/python:3.7
     steps:
       - checkout
       - run: |
-          virtualenv venv_35 -q
-          source venv_35/bin/activate
+          virtualenv venv -q
+          source venv/bin/activate
           make installdeps
       - run: |
-          source venv_35/bin/activate
+          source venv/bin/activate
           make lint
       - run: |
-          source venv_35/bin/activate
+          source venv/bin/activate
           coverage erase
           make test
           codecov
@@ -23,4 +28,12 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "python-35"
+      - test_python:
+          name: "python 3.5"
+          python_version: "3.5"
+      - test_python:
+          name: "python 3.6"
+          python_version: "3.6"
+      - test_python:
+          name: "python 3.7"
+          python_version: "3.7"
