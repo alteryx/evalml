@@ -2,17 +2,14 @@ from transformer import Transformer
 
 from sklearn.preprocessing import StandardScaler
 
-class OneHotEncoder(Transformer):
-    def __init__(self, impute_strategy="most_frequent", hyperparameters=None):
+class StandardScaler(Transformer):
+    def __init__(self):
         name = 'Standard Scaler'
         component_type = 'scaler'
-        potential_parameters = Noneqq
+        hyper_parameters = None
 
         scaler = StandardScaler()
-        if hyperparameters:
-            scaler = StandardScaler()
-
-        super().__init__(name=name, component_type=component_type, potential_parameters=potential_parameters, hyperparameters=hyperparameters, needs_fitting=True, component_obj=encoder)
+        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=encoder)
 
     def fit(self, X, objective_fit_size=.2):
         self.component_obj.fit(X)

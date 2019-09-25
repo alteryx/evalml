@@ -3,16 +3,13 @@ from transformer import Transformer
 from sklearn.impute import SimpleImputer
 
 class SimpleImputer(Transformer):
-    def __init__(self, impute_strategy="most_frequent", hyperparameters=None):
+    def __init__(self, impute_strategy="most_frequent"):
         name = 'Simple Imputer'
         component_type = 'imputer'
-        potential_parameters = {"impute_strategy": ["mean", "median", "most_frequent"]}
+        hyper_parameters = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
-        if hyperparameters:
-            imputer = SimpleImputer(**hyperparameters)
-
-        super().__init__(name=name, component_type=component_type, potential_parameters=potential_parameters, hyperparameters=hyperparameters, needs_fitting=True, component_obj=imputer)
+        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=imputer)
 
     def fit(self, X, objective_fit_size=.2):
         self.component_obj.fit(X)
