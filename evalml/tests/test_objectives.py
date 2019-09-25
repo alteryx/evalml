@@ -18,7 +18,7 @@ def test_get_objective():
 def test_get_objectives_types():
     assert len(get_objectives('multiclass')) == 14
     assert len(get_objectives('binary')) == 6
-    assert len(get_objectives('regression')) == 1
+    assert len(get_objectives('regression')) == 7
 
 
 def test_binary_average(X_y):

@@ -23,6 +23,12 @@ OPTIONS = {
     "log_loss": standard_metrics.LogLoss(),
     "mcc": standard_metrics.MCC(),
     "r2": standard_metrics.R2(),
+    "mae": standard_metrics.MAE(),
+    "mse": standard_metrics.MSE(),
+    "msle": standard_metrics.MSLE(),
+    "median_ae": standard_metrics.MedianAE(),
+    "max_error": standard_metrics.MaxError(),
+    "exp_var": standard_metrics.ExpVariance()
 }
 
 
