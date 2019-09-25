@@ -6,6 +6,9 @@ jobs:
       python_version:
         type: string
         default: "3.7"
+      codecov:
+        type: boolean
+        default: false
     working_directory: ~/evalml
     docker:
         - image: circleci/python:<< parameters.python_version >>
@@ -22,7 +25,12 @@ jobs:
           source test_python/bin/activate
           coverage erase
           make test
-          codecov
+      - when:
+          conditional: <<parameters.codecov>>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                codecov
 
 
 workflows:
@@ -38,3 +46,4 @@ workflows:
       - test_python:
           name: "python 3.7"
           python_version: "3.7"
+          codecov: true
