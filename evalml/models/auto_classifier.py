@@ -63,24 +63,9 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        problem_type = ProblemTypes.BINARY
+        problem_type = self.set_problem_type(objective, multiclass)
 
-        """
-        If there is an objective either:
-            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
-            b. Check if objective and multiclass is compatible
-            c. Set problem_type to MUTLiCLASS
-        """
-        if objective is not None:
-            if multiclass is False:
-                if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
-                    problem_type = ProblemTypes.MULTICLASS
-            elif multiclass and ProblemTypes.MULTICLASS not in get_objective(objective).problem_types:
-                raise ValueError("Multiclass is set to true and provided objective is not a multiclass objective")
-            elif multiclass:
-                problem_type = ProblemTypes.MULTICLASS
-
-        # if there is no provided objective set to precision or precision_micro if multiclass was set to True.
+        # set default objective if none provided
         if objective is None and not multiclass:
             objective = "precision"
         elif objective is None and multiclass:
@@ -102,3 +87,21 @@ class AutoClassifier(AutoBase):
             verbose=verbose,
             additional_objectives=additional_objectives
         )
+
+    def set_problem_type(self, objective, multiclass):
+        """
+        If there is an objective either:
+            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
+            b. Check if objective and multiclass is compatible
+            c. Set problem_type to MUTLiCLASS
+        """
+        problem_type = ProblemTypes.BINARY
+        if objective is not None:
+            if multiclass is False:
+                if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
+                    problem_type = ProblemTypes.MULTICLASS
+            elif multiclass and ProblemTypes.MULTICLASS not in get_objective(objective).problem_types:
+                raise ValueError("Multiclass is set to true and provided objective is not a multiclass objective")
+            elif multiclass:
+                problem_type = ProblemTypes.MULTICLASS
+        return problem_type

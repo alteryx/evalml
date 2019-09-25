@@ -137,6 +137,16 @@ class AutoBase:
 
         self._log("\n✔ Optimization finished")
 
+    def check_multiclass(self, y):
+        num_classes = len(np.unique(y))
+        multiclass_problem = False
+        if num_classes > 2:
+            multiclass_problem = True
+        for obj in self.additional_objectives:
+            if ProblemTypes.REGRESSION not in obj.problem_types:
+                if multiclass_problem and ProblemTypes.MULTICLASS not in obj.problem_types:
+                    raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(obj.name))
+
     def _do_iteration(self, X, y, pbar, raise_errors):
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
@@ -172,14 +182,7 @@ class AutoBase:
                 y_train, y_test = y[train], y[test]
 
             try:
-                num_classes = len(np.unique(y))
-                multiclass_problem = False
-                if num_classes > 2:
-                    multiclass_problem = True
-                for obj in self.additional_objectives:
-                    if ProblemTypes.REGRESSION not in obj.problem_types:
-                        if multiclass_problem and ProblemTypes.MULTICLASS not in obj.problem_types:
-                            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(obj.name))
+                self.check_multiclass(y)
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 
