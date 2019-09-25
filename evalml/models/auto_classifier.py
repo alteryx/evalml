@@ -91,9 +91,9 @@ class AutoClassifier(AutoBase):
     def set_problem_type(self, objective, multiclass):
         """
         If there is an objective either:
-            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass was false
+            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
             b. Check if objective and multiclass is compatible
-            c. Set problem_type to MUTLiCLASS
+            c. Set problem_type to MUTLiCLASS if multiclass is true
         """
         problem_type = ProblemTypes.BINARY
         if objective is not None:
