@@ -102,6 +102,8 @@ class AutoBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
+        self.check_multiclass(y)
+
         self._log_title("Beginning pipeline search")
         self._log("Optimizing for %s. " % self.objective.name, new_line=False)
 
@@ -139,9 +141,7 @@ class AutoBase:
 
     def check_multiclass(self, y):
         num_classes = len(np.unique(y))
-        multiclass_problem = False
-        if num_classes > 2:
-            multiclass_problem = True
+        multiclass_problem = (num_classes > 2)
         for obj in self.additional_objectives:
             if ProblemTypes.REGRESSION not in obj.problem_types:
                 if multiclass_problem and ProblemTypes.MULTICLASS not in obj.problem_types:
@@ -182,7 +182,6 @@ class AutoBase:
                 y_train, y_test = y[train], y[test]
 
             try:
-                self.check_multiclass(y)
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 

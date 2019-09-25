@@ -63,14 +63,13 @@ class AutoClassifier(AutoBase):
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        problem_type = self.set_problem_type(objective, multiclass)
-
         # set default objective if none provided
         if objective is None and not multiclass:
             objective = "precision"
         elif objective is None and multiclass:
             objective = "precision_micro"
-            problem_type = ProblemTypes.MULTICLASS
+
+        problem_type = self.set_problem_type(objective, multiclass)
 
         super().__init__(
             tuner=tuner,
