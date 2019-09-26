@@ -43,7 +43,6 @@ jobs:
       codecov:
         type: boolean
         default: false
-    working_directory: ~/evalml
     executor:
         name: python
         python_version: << parameters.python_version >>
