@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -97,11 +99,10 @@ class PipelineBase:
             other_objectives (list): list of other objectives to score
 
         Returns:
-            score, dictionary of other objective scores
+            score, ordered dictionary of other objective scores
         """
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
-
         # calculate predictions only once
         y_predicted = None
         y_predicted_proba = None
@@ -121,10 +122,9 @@ class PipelineBase:
                 scores.append(objective.score(y_predictions, y, X))
             else:
                 scores.append(objective.score(y_predictions, y))
-
         if not other_objectives:
-            return scores[0]
+            return scores[0], {}
 
-        other_scores = dict(zip([n.name for n in other_objectives], scores[1:]))
+        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
