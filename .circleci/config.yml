@@ -55,7 +55,7 @@ jobs:
           coverage erase
           make test
       - when:
-          conditional: << parameters.codecov >>
+          condition: << parameters.codecov >>
           steps:
             - run: |
                 source test_python/bin/activate
