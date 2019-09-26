@@ -9,7 +9,7 @@ class StandardScaler(Transformer):
         hyper_parameters = None
 
         scaler = StandardScaler()
-        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=encoder)
+        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=scaler)
 
     def fit(self, X, objective_fit_size=.2):
         self.component_obj.fit(X)
