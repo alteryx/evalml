@@ -1,6 +1,7 @@
+from sklearn.impute import SimpleImputer as SkImputer
+
 from .transformer import Transformer
 
-from sklearn.impute import SimpleImputer as SkImputer
 
 class SimpleImputer(Transformer):
     def __init__(self, impute_strategy="most_frequent"):
@@ -15,7 +16,7 @@ class SimpleImputer(Transformer):
         self.component_obj.fit(X)
 
     def transform(self, X):
-        self.component_obj.transform(x)
+        self.component_obj.transform(X)
 
     def fit_transform(self, X, y, objective_fit_size=.2):
-        self.component_obj.fit_transform(x)
+        self.component_obj.fit_transform(X)

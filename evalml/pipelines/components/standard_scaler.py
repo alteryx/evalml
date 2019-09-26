@@ -1,6 +1,7 @@
+from sklearn.preprocessing import StandardScaler as SkScaler
+
 from .transformer import Transformer
 
-from sklearn.preprocessing import StandardScaler as SkScaler
 
 class StandardScaler(Transformer):
     def __init__(self):
@@ -15,7 +16,7 @@ class StandardScaler(Transformer):
         self.component_obj.fit(X)
 
     def transform(self, X):
-        self.component_obj.transform(x)
+        self.component_obj.transform(X)
 
     def fit_transform(self, X, y, objective_fit_size=.2):
-        self.component_obj.fit_transform(x)
+        self.component_obj.fit_transform(X)

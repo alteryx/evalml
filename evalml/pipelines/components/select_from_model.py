@@ -1,8 +1,9 @@
-from .transformer import Transformer
-
 import numpy as np
 from sklearn.feature_selection import SelectFromModel as SkSelect
-from skopt.space import Integer, Real
+from skopt.space import Real
+
+from .transformer import Transformer
+
 
 # TODO: AutoML must know to pass in the same estimator and number_features
 class SelectFromModel(Transformer):
@@ -26,7 +27,7 @@ class SelectFromModel(Transformer):
         self.component_obj.fit(X)
 
     def transform(self, X):
-        self.component_obj.transform(x)
+        self.component_obj.transform(X)
 
     def fit_transform(self, X, y, objective_fit_size=.2):
-        self.component_obj.fit_transform(x)
+        self.component_obj.fit_transform(X)

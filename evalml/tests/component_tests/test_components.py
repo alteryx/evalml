@@ -1,6 +1,12 @@
-from evalml.pipelines.components import OneHotEncoder, SelectFromModel, StandardScaler, SimpleImputer
-
 from sklearn.ensemble import RandomForestClassifier
+
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    SelectFromModel,
+    SimpleImputer,
+    StandardScaler
+)
+
 
 def test_init():
     enc = OneHotEncoder()

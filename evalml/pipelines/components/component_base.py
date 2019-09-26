@@ -15,7 +15,6 @@ class ComponentBase:
     #         elif hyperparameters[parameter_name] not in potential_parameters[parameter_name]:
     #             raise valueError("Value {} is not valid for paramater {}".format(hyperparameters[parameter_name]), parameter_name)
 
-
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
 

@@ -1,6 +1,7 @@
+import category_encoders as ce
+
 from .transformer import Transformer
 
-import category_encoders as ce
 
 class OneHotEncoder(Transformer):
     def __init__(self):
@@ -15,7 +16,7 @@ class OneHotEncoder(Transformer):
         self.component_obj.fit(X)
 
     def transform(self, X):
-        self.component_obj.transform(x)
+        self.component_obj.transform(X)
 
     def fit_transform(self, X, y, objective_fit_size=.2):
-        self.component_obj.fit_transform(x)
+        self.component_obj.fit_transform(X)
