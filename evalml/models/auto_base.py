@@ -1,5 +1,6 @@
 import random
 import time
+from collections import OrderedDict
 from sys import stdout
 
 import numpy as np
@@ -39,6 +40,11 @@ class AutoBase:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
             additional_objectives = get_objectives(self.problem_type)
+
+            # if our main objective is part of default set of objectives for problem_type, remove it
+            existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
+            if existing_main_objective is not None:
+                additional_objectives.remove(existing_main_objective)
 
         self.results = {}
         self.trained_pipelines = {}
@@ -190,14 +196,15 @@ class AutoBase:
                     raise e
                 pbar.write(str(e))
                 score = np.nan
-                other_scores = dict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
-            other_scores[self.objective.name] = score
-            other_scores["# Training"] = len(y_train)
-            other_scores["# Testing"] = len(y_test)
-
+            ordered_scores = OrderedDict()
+            ordered_scores.update({self.objective.name: score})
+            ordered_scores.update(other_scores)
+            ordered_scores.update({"# Training": len(y_train)})
+            ordered_scores.update({"# Testing": len(y_test)})
             scores.append(score)
-            all_objective_scores.append(other_scores)
+            all_objective_scores.append(ordered_scores)
 
         training_time = time.time() - start
 
@@ -228,7 +235,6 @@ class AutoBase:
             score_to_minimize = score
 
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
-
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         s = pd.Series(scores)
@@ -314,7 +320,6 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
-
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self._log(all_objective_scores)
 
