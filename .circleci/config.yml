@@ -1,26 +1,86 @@
-version: 2
-jobs:
-  "python-35":
+version: 2.1
+
+
+executors:
+  python:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
     working_directory: ~/evalml
     docker:
-        - image: circleci/python:3.5
+      - image: circleci/python:<< parameters.python_version >>
+
+commands:
+  install_dependencies:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps      
+      
+jobs:
+  lint_test:
+      parameters:
+        python_version:
+          type: string
+          default: "3.7"
+      executor:
+        name: python
+        python_version: << parameters.python_version >>
+      steps:
+        - checkout
+        - install_dependencies
+        - run: |
+            source test_python/bin/activate
+            make lint
+            
+  unit_tests:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+      codecov:
+        type: boolean
+        default: false
+    executor:
+        name: python
+        python_version: << parameters.python_version >>
     steps:
       - checkout
+      - install_dependencies
       - run: |
-          virtualenv venv_35 -q
-          source venv_35/bin/activate
-          make installdeps
-      - run: |
-          source venv_35/bin/activate
-          make lint
-      - run: |
-          source venv_35/bin/activate
+          source test_python/bin/activate
           coverage erase
           make test
-          codecov
+      - when:
+          condition: << parameters.codecov >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                codecov
+
 
 workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "python-35"
+      - lint_test:
+          name: "python 3.5 lint test"
+          python_version: "3.5"
+      - lint_test:
+          name: "python 3.6 lint test"
+          python_version: "3.6"
+      - lint_test:
+          name: "python 3.7 lint test"
+          python_version: "3.7"
+      - unit_tests:
+          name: "python 3.5 unit tests"
+          python_version: "3.5"
+      - unit_tests:
+          name: "python 3.6 unit tests"
+          python_version: "3.6"
+      - unit_tests:
+          name: "python 3.7 unit tests"
+          python_version: "3.7"
+          codecov: true
