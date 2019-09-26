@@ -1,4 +1,4 @@
-from transformer import Transformer
+from .transformer import Transformer
 
 import category_encoders as ce
 
@@ -6,10 +6,10 @@ class OneHotEncoder(Transformer):
     def __init__(self):
         name = 'One Hot Encoder'
         component_type = 'encoder'
-        hyper_parameters = None
+        hyperparameters = None
 
         encoder = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=encoder)
+        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, needs_fitting=True, component_obj=encoder)
 
     def fit(self, X, objective_fit_size=.2):
         self.component_obj.fit(X)

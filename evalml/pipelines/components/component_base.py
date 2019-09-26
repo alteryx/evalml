@@ -5,7 +5,7 @@ class ComponentBase:
         self.hyperparameters = hyperparameters
         self._needs_fitting = needs_fitting
         self._component_obj = component_obj
-        self.validate_parameters()
+        # self.validate_parameters()
 
     # TODO need to fix with new hyper-parameter
     # def validate_parameters(self):

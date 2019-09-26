@@ -1,15 +1,15 @@
-from transformer import Transformer
+from .transformer import Transformer
 
-from sklearn.impute import SimpleImputer
+from sklearn.impute import SimpleImputer as SkImputer
 
 class SimpleImputer(Transformer):
     def __init__(self, impute_strategy="most_frequent"):
         name = 'Simple Imputer'
         component_type = 'imputer'
-        hyper_parameters = {"impute_strategy": ["mean", "median", "most_frequent"]}
+        hyperparameters = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-        imputer = SimpleImputer(impute_strategy=impute_strategy)
-        super().__init__(name=name, component_type=component_type, hyper_parameters=hyper_parameters, needs_fitting=True, component_obj=imputer)
+        imputer = SkImputer(strategy=impute_strategy)
+        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, needs_fitting=True, component_obj=imputer)
 
     def fit(self, X, objective_fit_size=.2):
         self.component_obj.fit(X)
