@@ -13,6 +13,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
+from evalml.models.model_types import ModelTypes
 
 
 def test_init(X_y):
@@ -64,7 +65,7 @@ def test_cv(X_y):
 
 
 def test_init_select_model_types():
-    model_types = ["random_forest"]
+    model_types = [ModelTypes.RANDOM_FOREST]
     clf = AutoClassifier(model_types=model_types)
 
     assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == clf.possible_pipelines
@@ -220,7 +221,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
 def test_model_types_as_list():
     with pytest.raises(Exception) as excinfo:
-        AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
+        AutoClassifier(objective='AUC', model_types=ModelTypes.LINEAR_MODEL, max_pipelines=2)
     assert "model_types parameter is not a list." in str(excinfo.value)
 
 

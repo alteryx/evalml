@@ -11,18 +11,19 @@ from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.pipelines.utils import get_pipelines, list_model_types
 from evalml.problem_types import ProblemTypes
+from evalml.models.model_types import ModelTypes
 
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
 
 def test_list_model_types():
-    assert set(list_model_types(ProblemTypes.BINARY)) == set(["random_forest", "xgboost", "linear_model"])
-    assert set(list_model_types(ProblemTypes.REGRESSION)) == set(["random_forest"])
+    assert set(list_model_types(ProblemTypes.BINARY)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.XGBOOST, ModelTypes.LINEAR_MODEL])
+    assert set(list_model_types(ProblemTypes.REGRESSION)) == set([ModelTypes.RANDOM_FOREST])
 
 
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=["linear_model"])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 1
 
 
