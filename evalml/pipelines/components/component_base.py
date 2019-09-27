@@ -20,16 +20,14 @@ class ComponentBase:
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-
             y (pd.Series): the target training labels of length [n_samples]
 
         Returns:
-
             self
-
         """
-        pass
+        self._component_obj.fit(X, y)
 
+        
     def predict(self, X):
         """Make predictions using selected features.
 
@@ -39,7 +37,7 @@ class ComponentBase:
         Returns:
             Series : estimated labels
         """
-        pass
+        self._component_obj.predict(X)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -50,7 +48,7 @@ class ComponentBase:
         Returns:
             DataFrame : probability estimates
         """
-        pass
+        self._component_obj.predict_proba(X)
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
@@ -63,4 +61,4 @@ class ComponentBase:
         Returns:
             score, dictionary of other objective scores
         """
-        pass
+        self._component_obj.score(X, y)

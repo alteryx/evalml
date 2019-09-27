@@ -8,6 +8,7 @@ from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
 from evalml.pipelines import PipelineBase
+from evalml.pipelines.components import XGBoostClassifier
 from evalml.problem_types import ProblemTypes
 
 
@@ -30,12 +31,16 @@ class XGBoostPipeline(PipelineBase):
         imputer = SimpleImputer(strategy=impute_strategy)
         enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
-        estimator = XGBClassifier(
-            random_state=random_state,
-            eta=eta,
-            max_depth=max_depth,
-            min_child_weight=min_child_weight
-        )
+        # estimator = XGBClassifier(
+        #     random_state=random_state,
+        #     eta=eta,
+        #     max_depth=max_depth,
+        #     min_child_weight=min_child_weight
+        # )
+        estimator = XGBoostClassifier(random_state=random_state,
+                                      eta=eta,
+                                      max_depth=max_depth,
+                                      min_child_weight=min_child_weight)._component_obj
 
         feature_selection = SelectFromModel(
             estimator=estimator,
