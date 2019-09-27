@@ -5,6 +5,8 @@ from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
+
+from .component_types import ComponentTypes
 from .component_base import ComponentBase
 
 
@@ -17,7 +19,7 @@ class Estimator(ComponentBase):
 class LogisticRegressionClassifier(Estimator):
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         self.name = "Logistic Regression Classifier"
-        self.component_type = "classifier"
+        self.component_type = ComponentTypes.CLASSIFIER
         self.penalty = penalty
         self.C = C
         self.n_jobs = n_jobs
@@ -38,7 +40,7 @@ class LogisticRegressionClassifier(Estimator):
 class RandomForestClassifier(Estimator):
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Classifier"
-        self.component_type = "classifier"
+        self.component_type = ComponentTypes.CLASSIFIER
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.n_jobs = n_jobs
@@ -57,7 +59,7 @@ class RandomForestClassifier(Estimator):
 class XGBoostClassifier(Estimator):
     def __init__(self, eta, max_depth, min_child_weight, random_state=0):
         self.name = "XGBoost Classifier"
-        self.component_type = "classifier"
+        self.component_type = ComponentTypes.CLASSIFIER
         self.eta = eta
         self.max_depth = max_depth
         self.min_child_weight = min_child_weight
@@ -77,7 +79,7 @@ class XGBoostClassifier(Estimator):
 class RandomForestRegressor(Estimator):
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Regressor"
-        self.component_type = "regressor"
+        self.component_type = ComponentTypes.REGRESSOR
         self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.n_jobs = n_jobs
@@ -96,7 +98,7 @@ class RandomForestRegressor(Estimator):
 class LinearRegressor(Estimator):
     def __init__(self, n_jobs=-1):
         self.name = "Linear Regressor"
-        self.component_type = "regressor"
+        self.component_type = ComponentTypes.REGRESSOR
         self.hyperparameters = {}
         self._component_obj = SKLinearRegression()
         super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)

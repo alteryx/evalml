@@ -1,5 +1,6 @@
 # flake8:noqa
 from .component_base import ComponentBase
+from .component_types import ComponentTypes
 from .transformer import Transformer
 from .onehot_encoder import OneHotEncoder
 from .select_from_model import SelectFromModel
