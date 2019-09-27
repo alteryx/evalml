@@ -38,7 +38,7 @@ class RFRegressionPipeline(PipelineBase):
                                           n_estimators=n_estimators,
                                           max_depth=max_depth,
                                           n_jobs=n_jobs)._component_obj
-                                          
+
         feature_selection = SelectFromModel(
             estimator=estimator,
             max_features=max(1, int(percent_features * number_features)),

@@ -1,4 +1,3 @@
-from .component_base import ComponentBase
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.linear_model import LinearRegression as SKLinearRegression
@@ -6,10 +5,12 @@ from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
+from .component_base import ComponentBase
+
 
 class Estimator(ComponentBase):
-    def __init__(self, name, component_type, needs_fitting=False, component_obj=None, random_state=0):
-        super().__init__(name=name, component_type=component_type, needs_fitting=needs_fitting,
+    def __init__(self, name, component_type, hyperparameters=None, needs_fitting=False, component_obj=None, random_state=0):
+        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, needs_fitting=needs_fitting,
                          component_obj=component_obj, random_state=random_state)
 
 
@@ -31,7 +32,7 @@ class LogisticRegressionClassifier(Estimator):
                                                  multi_class="auto",
                                                  solver="lbfgs",
                                                  n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
 
 
 class RandomForestClassifier(Estimator):
@@ -50,7 +51,7 @@ class RandomForestClassifier(Estimator):
                                                        n_estimators=self.n_estimators,
                                                        max_depth=self.max_depth,
                                                        n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
 
 
 class XGBoostClassifier(Estimator):
@@ -70,7 +71,7 @@ class XGBoostClassifier(Estimator):
                                             eta=self.eta,
                                             max_depth=self.max_depth,
                                             min_child_weight=self.min_child_weight)
-        super().__init__(name=self.name, component_type=self.component_type, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
 
 
 class RandomForestRegressor(Estimator):
@@ -89,7 +90,7 @@ class RandomForestRegressor(Estimator):
                                                       n_estimators=self.n_estimators,
                                                       max_depth=self.max_depth,
                                                       n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
 
 
 class LinearRegressor(Estimator):
@@ -98,4 +99,4 @@ class LinearRegressor(Estimator):
         self.component_type = "regressor"
         self.hyperparameters = {}
         self._component_obj = SKLinearRegression()
-        super().__init__(name=self.name, component_type=self.component_type, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)

@@ -1,8 +1,9 @@
 class ComponentBase:
-    def __init__(self, name, component_type, hyperparameters, needs_fitting=False, component_obj=None):
+    def __init__(self, name, component_type, hyperparameters, needs_fitting=False, component_obj=None, random_state=0):
         self.name = name
         self.component_type = component_type
         self.hyperparameters = hyperparameters
+        self.random_state = random_state
         self._needs_fitting = needs_fitting
         self._component_obj = component_obj
         # self.validate_parameters()
@@ -27,7 +28,6 @@ class ComponentBase:
         """
         self._component_obj.fit(X, y)
 
-        
     def predict(self, X):
         """Make predictions using selected features.
 
