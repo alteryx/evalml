@@ -1,6 +1,8 @@
 import category_encoders as ce
+
 from .component_types import ComponentTypes
 from .transformer import Transformer
+
 
 class OneHotEncoder(Transformer):
     def __init__(self):

@@ -5,9 +5,8 @@ from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
-
-from .component_types import ComponentTypes
 from .component_base import ComponentBase
+from .component_types import ComponentTypes
 
 
 class Estimator(ComponentBase):

@@ -6,13 +6,12 @@ from evalml.pipelines import (
     XGBoostClassifier
 )
 from evalml.pipelines.components import (
+    ComponentTypes,
     OneHotEncoder,
     SelectFromModel,
     SimpleImputer,
-    StandardScaler,
-    ComponentTypes
+    StandardScaler
 )
-
 
 # Tests to include:
 #   for each specific estimator
