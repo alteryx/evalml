@@ -1,11 +1,10 @@
+from .component_base import ComponentBase
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Integer, Real
 from xgboost import XGBClassifier
-
-from .component_base import ComponentBase
 
 
 class Estimator(ComponentBase):

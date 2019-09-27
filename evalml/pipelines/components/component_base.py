@@ -1,10 +1,19 @@
 class ComponentBase:
-    def __init__(self, name, component_type, needs_fitting=False, component_obj=None, random_state=0):
+    def __init__(self, name, component_type, hyperparameters, needs_fitting=False, component_obj=None):
         self.name = name
         self.component_type = component_type
+        self.hyperparameters = hyperparameters
         self._needs_fitting = needs_fitting
         self._component_obj = component_obj
-        self.random_state = random_state
+        # self.validate_parameters()
+
+    # TODO need to fix with new hyper-parameter
+    # def validate_parameters(self):
+    #     for parameter_name in hyperparameters:
+    #         if hyperparameters[parameter_name] not in potential_parameters:
+    #             raise ValueError("Paremeter {}: is not valid".format(parameter_name))
+    #         elif hyperparameters[parameter_name] not in potential_parameters[parameter_name]:
+    #             raise valueError("Value {} is not valid for paramater {}".format(hyperparameters[parameter_name]), parameter_name)
 
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
@@ -18,6 +27,7 @@ class ComponentBase:
         """
         self._component_obj.fit(X, y)
 
+        
     def predict(self, X):
         """Make predictions using selected features.
 
