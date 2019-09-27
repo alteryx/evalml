@@ -1,4 +1,4 @@
-from component_base import ComponentBase
+from .component_base import ComponentBase
 
 
 class Transformer(ComponentBase):
