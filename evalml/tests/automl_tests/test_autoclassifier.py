@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
+from evalml.models.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
     Precision,
@@ -13,7 +13,6 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
-from evalml.models.model_types import ModelTypes
 
 
 def test_init(X_y):
@@ -217,12 +216,6 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
     assert err == ''
     assert expected_objective_order in out_stripped
-
-
-def test_model_types_as_list():
-    with pytest.raises(Exception) as excinfo:
-        AutoClassifier(objective='AUC', model_types=ModelTypes.LINEAR_MODEL, max_pipelines=2)
-    assert "model_types parameter is not a list." in str(excinfo.value)
 
 
 # def test_serialization(trained_model)

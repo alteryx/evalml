@@ -7,9 +7,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from skopt.space import Real
 
+from evalml.models.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.models.model_types import ModelTypes
 
 
 class LogisticRegressionPipeline(PipelineBase):
