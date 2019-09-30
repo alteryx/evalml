@@ -24,6 +24,8 @@ def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=["linear_model"])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 1
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
 
 
 @pytest.fixture
