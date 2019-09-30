@@ -112,6 +112,11 @@ def test_multi_auto(X_y_multi):
     y_pred = clf.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
+    error_msg = 'not compatible with a multiclass problem.'
+    with pytest.raises(ValueError, match=error_msg):
+        clf = AutoClassifier(objective='recall')
+        clf.fit(X, y)
+
     objective = PrecisionMicro()
     clf = AutoClassifier(objective=objective, multiclass=True)
     clf.fit(X, y)
@@ -125,9 +130,12 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Multiclass is set to true and provided objective is not a multiclass objective'
+    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
     with pytest.raises(ValueError, match=error_msg):
         clf = AutoClassifier(objective="recall", multiclass=True)
+
+    clf = AutoClassifier(objective="log_loss")
+    assert clf.problem_type == ProblemTypes.BINARY
 
     clf = AutoClassifier(objective='recall_micro')
     assert clf.problem_type == ProblemTypes.MULTICLASS
