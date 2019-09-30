@@ -57,4 +57,4 @@ def get_objectives(problem_type):
         List of Objectives
     """
     problem_type = handle_problem_types(problem_type)
-    return [obj for obj in OPTIONS if OPTIONS[obj].supports_problem_type(problem_type)]
+    return [OPTIONS[obj] for obj in OPTIONS if OPTIONS[obj].supports_problem_type(problem_type)]
