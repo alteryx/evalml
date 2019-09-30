@@ -1,9 +1,12 @@
 from .objective_base import ObjectiveBase
+from evalml.problem_types import ProblemTypes
 
 
 class LeadScoring(ObjectiveBase):
     """Lead scoring"""
     name = "Lead Scoring"
+    problem_types = [ProblemTypes.BINARY]
+
     needs_fitting = True
     greater_is_better = True
     fit_needs_proba = True
