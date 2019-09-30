@@ -26,7 +26,7 @@ def get_pipelines(problem_type, model_types=None):
 
     """
     if model_types is not None and not isinstance(model_types, list):
-        raise Exception("model_types parameter is not a list.")
+        raise TypeError("model_types parameter is not a list.")
 
     problem_pipelines = []
 

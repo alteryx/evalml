@@ -219,9 +219,8 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
 
 def test_model_types_as_list():
-    with pytest.raises(Exception) as excinfo:
+    with pytest.raises(TypeError, match="model_types parameter is not a list."):
         AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
-    assert "model_types parameter is not a list." in str(excinfo.value)
 
 
 # def test_serialization(trained_model)
