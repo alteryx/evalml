@@ -27,4 +27,3 @@ class ComponentBase:
             self
         """
         self._component_obj.fit(X, y)
-
