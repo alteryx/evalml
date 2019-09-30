@@ -28,37 +28,3 @@ class ComponentBase:
         """
         self._component_obj.fit(X, y)
 
-    def predict(self, X):
-        """Make predictions using selected features.
-
-        Args:
-            X (DataFrame) : features
-
-        Returns:
-            Series : estimated labels
-        """
-        self._component_obj.predict(X)
-
-    def predict_proba(self, X):
-        """Make probability estimates for labels.
-
-        Args:
-            X (DataFrame) : features
-
-        Returns:
-            DataFrame : probability estimates
-        """
-        self._component_obj.predict_proba(X)
-
-    def score(self, X, y, other_objectives=None):
-        """Evaluate model performance
-
-        Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
-            other_objectives (list): list of other objectives to score
-
-        Returns:
-            score, dictionary of other objective scores
-        """
-        self._component_obj.score(X, y)
