@@ -302,7 +302,7 @@ class MaxError(ObjectiveBase):
 class ExpVariance(ObjectiveBase):
     """Explained variance score for regression"""
     needs_fitting = False
-    greater_is_better = False
+    greater_is_better = True
     need_proba = False
     name = "ExpVariance"
     problem_types = [ProblemTypes.REGRESSION]
