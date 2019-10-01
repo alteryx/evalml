@@ -59,6 +59,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
+        self.max_len = max([len(pipeline.name) for pipeline in self.possible_pipelines])
 
     def _log(self, msg, color=None, new_line=True):
         if not self.verbose:
@@ -160,7 +161,9 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        pbar.set_description("Testing %s" % (pipeline_class.name))
+        num_spaces = self.max_len - len(pipeline_class.name)
+        pbar.set_description("Testing %s" % (pipeline_class.name) + " " * num_spaces)
+        print('\n')
 
         start = time.time()
         scores = []
