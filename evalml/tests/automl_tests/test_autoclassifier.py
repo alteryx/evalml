@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
@@ -216,6 +217,11 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
     assert err == ''
     assert expected_objective_order in out_stripped
+
+
+def test_model_types_as_list():
+    with pytest.raises(TypeError, match="model_types parameter is not a list."):
+        AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
 
 
 # def test_serialization(trained_model)
