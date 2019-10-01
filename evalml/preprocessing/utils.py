@@ -1,6 +1,6 @@
 import pandas as pd
 from dask import dataframe as dd
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit, ShuffleSplit
 
 
 def load_data(path, index, label, drop=None, verbose=True, **kwargs):
@@ -55,12 +55,19 @@ def split_data(X, y, test_size=.2, random_state=None):
     Returns:
         DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
     """
-    stratified = StratifiedShuffleSplit(
-        n_splits=1,
-        test_size=test_size,
-        random_state=random_state,
-    )
-    train, test = next(stratified.split(X, y))
+    class_counts = y.value_counts()
+    if class_counts.min() < 2:
+        CV_method = ShuffleSplit(n_splits=1,
+                                 test_size=test_size,
+                                 random_state=0
+        )
+    else:
+        CV_method = StratifiedShuffleSplit(
+            n_splits=1,
+            test_size=test_size,
+            random_state=random_state,
+        )
+    train, test = next(CV_method.split(X, y))
     X_train = X.iloc[train]
     X_test = X.iloc[test]
     y_train = y.iloc[train]
