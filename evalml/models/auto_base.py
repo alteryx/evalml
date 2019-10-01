@@ -128,8 +128,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
-
+        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}{percentage:3.0f}%|{bar}{r_bar}')
         start = time.time()
         for n in pbar:
             elapsed = time.time() - start
@@ -161,8 +160,8 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        num_spaces = self.max_len - len(pipeline_class.name)
-        pbar.set_description("Testing %s" % (pipeline_class.name) + " " * num_spaces)
+        num_spaces = self.max_len - len(pipeline_class.name) + 1
+        pbar.set_description_str(desc="Testing %s:" % (pipeline_class.name) + " " * num_spaces, refresh=True)
         print('\n')
 
         start = time.time()
