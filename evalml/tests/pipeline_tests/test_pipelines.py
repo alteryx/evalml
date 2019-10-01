@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 import evalml.tests as tests
-from evalml.models.model_types import ModelTypes
+from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.pipelines.utils import (

@@ -7,7 +7,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
 
-from evalml.models.model_types import ModelTypes
+from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 

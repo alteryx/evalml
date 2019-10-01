@@ -4,7 +4,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
-from evalml.models.model_types import ModelTypes
+from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
     Precision,
