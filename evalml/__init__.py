@@ -13,6 +13,7 @@ import evalml.tuners
 import evalml.demos
 import evalml.problem_types
 import evalml.pipelines
+import evalml.model_types
 
 from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
 from evalml.models import AutoClassifier, AutoRegressor
