@@ -1,6 +1,7 @@
+import os
+
 import pandas as pd
 import pytest
-import os
 from sklearn import datasets
 
 from evalml import AutoClassifier
