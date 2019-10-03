@@ -9,7 +9,7 @@ class Transformer(ComponentBase):
         self._component_obj.fit(X)
 
     def transform(self, X):
-        self._component_obj.transform(X)
+        return self._component_obj.transform(X)
 
-    def fit_transform(self, X, y, objective_fit_size=.2):
+    def fit_transform(self, X, objective_fit_size=.2):
         return self._component_obj.fit_transform(X)

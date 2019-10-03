@@ -68,8 +68,14 @@ class Pipeline:
         X_t = X
         y_t = y
         for component in self.component_list[:-1]:
-            X_t = component.fit_transform(X_t, y_t)
+            X_t = component.fit_transform(X_t)
         self.component_list[-1].fit(X_t, y_t)
+
+    def _transform(self, X):
+        X_t = X
+        for component in self.component_list[:-1]:
+            X_t = component.transform(X_t)
+        return X_t
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -80,17 +86,18 @@ class Pipeline:
         Returns:
             Series : estimated labels
         """
+        X_t = self._transform(X)
         if self.objective and self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
                 y_predicted = self.predict_proba(X)
             else:
-                y_predicted = self.predict(X)
+                y_predicted = self.component_list[-1].predict(X_t)
 
             if self.objective.uses_extra_columns:
-                return self.objective.predict(y_predicted, X)
+                return self.objective.predict(y_predicted, X_t)
 
             return self.objective.predict(y_predicted)
-        return self.component_list[-1].predict(X)
+        return self.component_list[-1].predict(X_t)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -101,7 +108,7 @@ class Pipeline:
         Returns:
             DataFrame : probability estimates
         """
-
+        X = self._transform(X)
         proba = self.component_list[-1].predict_proba(X)
         if proba.shape[1] <= 2:
             return proba[:, 1]

@@ -5,7 +5,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline as SKPipeline
 from sklearn.preprocessing import StandardScaler as SkScaler
 
-
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import LogisticRegressionPipeline
 
@@ -34,7 +33,7 @@ def test_lr_multi(X_y_multi):
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
-    # assert((y_pred == sk_pipeline.predict(X)).all())
+    assert((y_pred == sk_pipeline.predict(X)).all())
     assert (sk_score == clf_score[0])
     assert len(np.unique(y_pred)) == 3
     # assert len(clf.feature_importances) == len(X[0])
