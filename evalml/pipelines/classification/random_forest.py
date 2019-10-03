@@ -3,11 +3,15 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
 
-from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import RandomForestClassifier
+from evalml.pipelines import Pipeline, PipelineBase
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    RandomForestClassifier,
+    SelectFromModel,
+    SimpleImputer
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -26,30 +30,22 @@ class RFClassificationPipeline(PipelineBase):
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=1, random_state=0):
-        imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
-        # estimator = RandomForestClassifier(random_state=random_state,
-        #                                    n_estimators=n_estimators,
-        #                                    max_depth=max_depth,
-        #                                    n_jobs=n_jobs)
+        imputer = SimpleImputer(impute_strategy=impute_strategy)
+        enc = OneHotEncoder()
         estimator = RandomForestClassifier(random_state=random_state,
                                            n_estimators=n_estimators,
                                            max_depth=max_depth,
-                                           n_jobs=n_jobs)._component_obj
+                                           n_jobs=n_jobs)
+
         feature_selection = SelectFromModel(
-            estimator=estimator,
-            max_features=max(1, int(percent_features * number_features)),
+            estimator=estimator._component_obj,
+            number_features=number_features,
+            percent_features=percent_features,
             threshold=-np.inf
         )
 
-        self.pipeline = Pipeline(
-            [("encoder", enc),
-             ("imputer", imputer),
-             ("feature_selection", feature_selection),
-             ("estimator", estimator)]
-        )
-
+        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, feature_selection, estimator])
         super().__init__(objective=objective, random_state=random_state)
 
     @property

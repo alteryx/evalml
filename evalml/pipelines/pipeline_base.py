@@ -68,7 +68,7 @@ class Pipeline:
         X_t = X
         y_t = y
         for component in self.component_list[:-1]:
-            X_t = component.fit_transform(X_t)
+            X_t = component.fit_transform(X_t, y_t)
         self.component_list[-1].fit(X_t, y_t)
 
     def _transform(self, X):
