@@ -49,6 +49,12 @@ def test_serialization(X_y, trained_model, path_management):
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
 
+def test_serialization_unloaded_class(rootdir):
+    path = os.path.join(rootdir, "pipeline_tests/precision_dummy_pipeline_pickled.pkl")
+    with pytest.raises(RuntimeError, match="Pipeline to load requires a custom objective class that cannot be found."):
+        load_pipeline(path)
+
+
 def test_reproducibility(X_y):
     X, y = X_y
     X = pd.DataFrame(X)

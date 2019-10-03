@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import os
 from sklearn import datasets
 
 from evalml import AutoClassifier
@@ -48,3 +49,8 @@ def trained_model(X_y):
     clf.fit(X, y)
 
     return clf
+
+
+@pytest.fixture
+def rootdir():
+    return os.path.dirname(os.path.abspath(__file__))
