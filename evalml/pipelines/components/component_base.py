@@ -26,4 +26,4 @@ class ComponentBase:
         Returns:
             self
         """
-        self._component_obj.fit(X, y)
+        return self._component_obj.fit(X, y)
