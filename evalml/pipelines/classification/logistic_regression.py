@@ -1,13 +1,18 @@
-import category_encoders as ce
+# import category_encoders as ce
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+# from sklearn.impute import SimpleImputer
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.pipeline import Pipeline
+# from sklearn.preprocessing import StandardScaler
 from skopt.space import Real
 
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import Pipeline, PipelineBase
+from evalml.pipelines.components import (
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    SimpleImputer
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -25,23 +30,20 @@ class LogisticRegressionPipeline(PipelineBase):
 
     def __init__(self, objective, penalty, C, impute_strategy,
                  number_features, n_jobs=1, random_state=0):
-        imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
+        imputer = SimpleImputer(impute_strategy=impute_strategy)
+        enc = OneHotEncoder()
+        estimator = LogisticRegressionClassifier(random_state=random_state,
+                                                 penalty=penalty,
+                                                 C=C,
+                                                 n_jobs=-1)
 
-        estimator = LogisticRegression(random_state=random_state,
-                                       penalty=penalty,
-                                       C=C,
-                                       multi_class='auto',
-                                       solver="lbfgs",
-                                       n_jobs=-1)
-
-        self.pipeline = Pipeline(
-            [("encoder", enc),
-             ("imputer", imputer),
-             ("scaler", StandardScaler()),
-             ("estimator", estimator)]
-        )
-
+        # self.pipeline = Pipeline(
+        #     [("encoder", enc),
+        #      ("imputer", imputer),
+        #      ("scaler", StandardScaler()),
+        #      ("estimator", estimator)]
+        # )
+        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[imputer, enc, estimator])
         super().__init__(objective=objective, random_state=random_state)
 
     @property

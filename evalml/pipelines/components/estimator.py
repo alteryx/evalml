@@ -23,7 +23,7 @@ class Estimator(ComponentBase):
         Returns:
             Series : estimated labels
         """
-        self._component_obj.predict(X)
+        return self._component_obj.predict(X)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -34,7 +34,7 @@ class Estimator(ComponentBase):
         Returns:
             DataFrame : probability estimates
         """
-        self._component_obj.predict_proba(X)
+        return self._component_obj.predict_proba(X)
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
@@ -47,7 +47,7 @@ class Estimator(ComponentBase):
         Returns:
             score, dictionary of other objective scores
         """
-        self._component_obj.score(X, y)
+        return self._component_obj.score(X, y)
 
 
 class LogisticRegressionClassifier(Estimator):
