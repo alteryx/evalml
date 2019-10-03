@@ -11,7 +11,8 @@ from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
-    SimpleImputer
+    SimpleImputer,
+    StandardScaler
 )
 from evalml.problem_types import ProblemTypes
 
@@ -32,18 +33,14 @@ class LogisticRegressionPipeline(PipelineBase):
                  number_features, n_jobs=1, random_state=0):
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
+        scaler = StandardScaler()
+
         estimator = LogisticRegressionClassifier(random_state=random_state,
                                                  penalty=penalty,
                                                  C=C,
                                                  n_jobs=-1)
 
-        # self.pipeline = Pipeline(
-        #     [("encoder", enc),
-        #      ("imputer", imputer),
-        #      ("scaler", StandardScaler()),
-        #      ("estimator", estimator)]
-        # )
-        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[imputer, enc, estimator])
+        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, scaler, estimator])
         super().__init__(objective=objective, random_state=random_state)
 
     @property
