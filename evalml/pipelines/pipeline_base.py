@@ -123,6 +123,7 @@ class Pipeline:
         Returns:
             score, ordered dictionary of other objective scores
         """
+
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
         # calculate predictions only once
@@ -249,4 +250,30 @@ class PipelineBase:
         Returns:
             score, ordered dictionary of other objective scores
         """
-        return self.pipeline.score(X, y, other_objectives)
+        other_objectives = other_objectives or []
+        other_objectives = [get_objective(o) for o in other_objectives]
+        # calculate predictions only once
+        y_predicted = None
+        y_predicted_proba = None
+
+        scores = []
+        for objective in [self.objective] + other_objectives:
+            if objective.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
+                y_predictions = y_predicted
+
+            if objective.uses_extra_columns:
+                scores.append(objective.score(y_predictions, y, X))
+            else:
+                scores.append(objective.score(y_predictions, y))
+        if not other_objectives:
+            return scores[0], {}
+
+        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
+
+        return scores[0], other_scores
