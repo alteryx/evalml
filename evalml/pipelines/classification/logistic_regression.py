@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from skopt.space import Real
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
@@ -15,7 +16,7 @@ from evalml.problem_types import ProblemTypes
 class LogisticRegressionPipeline(PipelineBase):
     """Logistic Regression Pipeline for both binary and multiclass classification"""
     name = "LogisticRegression w/ imputation + scaling"
-    model_type = "linear_model"
+    model_type = ModelTypes.LINEAR_MODEL
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {

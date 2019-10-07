@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from skopt.space import Integer, Real
-
+from evalml.model_types import ModelTypes
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
@@ -15,7 +15,7 @@ from evalml.problem_types import ProblemTypes
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
     name = "XGBoost w/ imputation"
-    model_type = "xgboost"
+    model_type = ModelTypes.XGBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {

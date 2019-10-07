@@ -6,24 +6,31 @@ import pandas as pd
 import pytest
 
 import evalml.tests as tests
-from evalml import load_pipeline, save_pipeline
+from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline
-from evalml.pipelines.utils import get_pipelines, list_model_types
+from evalml.pipelines.utils import (
+    get_pipelines,
+    list_model_types,
+    load_pipeline,
+    save_pipeline
+)
 from evalml.problem_types import ProblemTypes
 
 CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
 
 def test_list_model_types():
-    assert set(list_model_types(ProblemTypes.BINARY)) == set(["random_forest", "xgboost", "linear_model"])
-    assert set(list_model_types(ProblemTypes.REGRESSION)) == set(["random_forest"])
+    assert set(list_model_types(ProblemTypes.BINARY)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.XGBOOST, ModelTypes.LINEAR_MODEL])
+    assert set(list_model_types(ProblemTypes.REGRESSION)) == set([ModelTypes.RANDOM_FOREST])
 
 
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=["linear_model"])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 1
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
 
 
 @pytest.fixture

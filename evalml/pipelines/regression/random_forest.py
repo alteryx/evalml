@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from skopt.space import Integer, Real
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
@@ -15,7 +16,7 @@ from evalml.problem_types import ProblemTypes
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression"""
     name = "Random Forest w/ imputation"
-    model_type = "random_forest"
+    model_type = ModelTypes.RANDOM_FOREST
     problem_types = [ProblemTypes.REGRESSION]
 
     hyperparameters = {
