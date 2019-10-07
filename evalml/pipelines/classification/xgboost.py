@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-# from skopt.space import Integer, Real
+from skopt.space import Integer, Real
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
@@ -18,13 +18,13 @@ class XGBoostPipeline(PipelineBase):
     model_type = "xgboost"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    # hyperparameters = {
-    #     "eta": Real(0, 1),
-    #     "min_child_weight": Real(1, 10),
-    #     "max_depth": Integer(1, 20),
-    #     "impute_strategy": ["mean", "median", "most_frequent"],
-    #     "percent_features": Real(.01, 1)
-    # }
+    hyperparameters = {
+        "eta": Real(0, 1),
+        "min_child_weight": Real(1, 10),
+        "max_depth": Integer(1, 20),
+        "impute_strategy": ["mean", "median", "most_frequent"],
+        "percent_features": Real(.01, 1)
+    }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=1, random_state=0):
@@ -81,9 +81,9 @@ class XGBoostPipeline(PipelineBase):
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
-        indices = self.pipeline["feature_selection"].get_support(indices=True)
+        indices = self.pipeline.get_component('Select From Model')._component_obj.get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline["estimator"].feature_importances_))
+        importances = list(zip(feature_names, self.pipeline.get_component("XGBoost Classifier")._component_obj.feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
