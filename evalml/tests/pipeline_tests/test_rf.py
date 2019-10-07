@@ -1,10 +1,10 @@
+import category_encoders as ce
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-import category_encoders as ce
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import RFClassificationPipeline
 
@@ -26,12 +26,11 @@ def test_rf_multi(X_y_multi):
     )
 
     sk_pipeline = Pipeline(
-            [("encoder", enc),
-            ("imputer", imputer),
-            ("feature_selection", feature_selection),
-            ("estimator", estimator)]
-       )
-    
+        [("encoder", enc),
+         ("imputer", imputer),
+         ("feature_selection", feature_selection),
+         ("estimator", estimator)])
+
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
 

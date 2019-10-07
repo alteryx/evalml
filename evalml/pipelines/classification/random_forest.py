@@ -1,10 +1,7 @@
-import category_encoders as ce
 import numpy as np
 import pandas as pd
-from sklearn.feature_selection import SelectFromModel
-from sklearn.impute import SimpleImputer
-from skopt.space import Integer, Real
 
+# from skopt.space import Integer, Real
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
@@ -21,12 +18,12 @@ class RFClassificationPipeline(PipelineBase):
     model_type = "random_forest"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    hyperparameters = {
-        "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 32),
-        "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
-    }
+    # hyperparameters = {
+    #     "n_estimators": Integer(10, 1000),
+    #     "max_depth": Integer(1, 32),
+    #     "impute_strategy": ["mean", "median", "most_frequent"],
+    #     "percent_features": Real(.01, 1)
+    # }
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=1, random_state=0):
