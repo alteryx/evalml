@@ -43,7 +43,6 @@ class XGBoostPipeline(PipelineBase):
             percent_features=percent_features,
             threshold=-np.inf
         )
-
         self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, feature_selection, estimator])
 
         super().__init__(objective=objective, random_state=random_state)

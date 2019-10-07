@@ -49,7 +49,6 @@ class Pipeline:
         # if self.objective.needs_fitting:
         #     X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
         # self.pipeline.fit(X, y)
-        self.input_feature_names = self.pipeline.get_component('One Hot Encoder').feature_names
         self._fit(X, y)
         # if self.objective.needs_fitting:
         #     if self.objective.fit_needs_proba:
@@ -110,10 +109,8 @@ class Pipeline:
         """
         X = self._transform(X)
         proba = self.component_list[-1].predict_proba(X)
-        if proba.shape[1] <= 2:
-            return proba[:, 1]
-        else:
-            return proba
+        return proba
+        
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance
@@ -188,6 +185,7 @@ class PipelineBase:
         self.pipeline.fit(X, y)
 
         # self.input_feature_names = self.pipeline['encoder'].feature_names
+        self.input_feature_names = self.pipeline.get_component('One Hot Encoder')._component_obj.feature_names
 
         if self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
@@ -251,30 +249,4 @@ class PipelineBase:
         Returns:
             score, ordered dictionary of other objective scores
         """
-        other_objectives = other_objectives or []
-        other_objectives = [get_objective(o) for o in other_objectives]
-        # calculate predictions only once
-        y_predicted = None
-        y_predicted_proba = None
-
-        scores = []
-        for objective in [self.objective] + other_objectives:
-            if objective.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
-            else:
-                if y_predicted is None:
-                    y_predicted = self.predict(X)
-                y_predictions = y_predicted
-
-            if objective.uses_extra_columns:
-                scores.append(objective.score(y_predictions, y, X))
-            else:
-                scores.append(objective.score(y_predictions, y))
-        if not other_objectives:
-            return scores[0], {}
-
-        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
-
-        return scores[0], other_scores
+        return self.pipeline.score(X, y, other_objectives)
