@@ -29,8 +29,7 @@ def test_rf_multi(X_y_multi):
         [("encoder", enc),
          ("imputer", imputer),
          ("feature_selection", feature_selection),
-         ("estimator", estimator)]
-       )
+         ("estimator", estimator)])
 
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)

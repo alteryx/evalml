@@ -18,8 +18,8 @@ class Pipeline:
         self.problem_type = problem_type
         self.n_jobs = n_jobs
 
-    def get_component(self, index):
-        return self.component_list[index]
+    def get_component(self, name):
+        return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self):
         pass

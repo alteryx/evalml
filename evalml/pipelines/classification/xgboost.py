@@ -1,14 +1,14 @@
-import category_encoders as ce
 import numpy as np
 import pandas as pd
-from sklearn.feature_selection import SelectFromModel
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from skopt.space import Integer, Real
-from xgboost import XGBClassifier
 
-from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import XGBoostClassifier
+# from skopt.space import Integer, Real
+from evalml.pipelines import Pipeline, PipelineBase
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    SelectFromModel,
+    SimpleImputer,
+    XGBoostClassifier
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -18,42 +18,33 @@ class XGBoostPipeline(PipelineBase):
     model_type = "xgboost"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    hyperparameters = {
-        "eta": Real(0, 1),
-        "min_child_weight": Real(1, 10),
-        "max_depth": Integer(1, 20),
-        "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
-    }
+    # hyperparameters = {
+    #     "eta": Real(0, 1),
+    #     "min_child_weight": Real(1, 10),
+    #     "max_depth": Integer(1, 20),
+    #     "impute_strategy": ["mean", "median", "most_frequent"],
+    #     "percent_features": Real(.01, 1)
+    # }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=1, random_state=0):
-        imputer = SimpleImputer(strategy=impute_strategy)
-        enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
 
-        # estimator = XGBClassifier(
-        #     random_state=random_state,
-        #     eta=eta,
-        #     max_depth=max_depth,
-        #     min_child_weight=min_child_weight
-        # )
-        estimator = XGBoostClassifier(random_state=random_state,
-                                      eta=eta,
-                                      max_depth=max_depth,
-                                      min_child_weight=min_child_weight)._component_obj
-
+        imputer = SimpleImputer(impute_strategy=impute_strategy)
+        enc = OneHotEncoder()
+        estimator = XGBoostClassifier(
+            random_state=random_state,
+            eta=eta,
+            max_depth=max_depth,
+            min_child_weight=min_child_weight
+        )
         feature_selection = SelectFromModel(
-            estimator=estimator,
-            max_features=max(1, int(percent_features * number_features)),
+            estimator=estimator._component_obj,
+            number_features=number_features,
+            percent_features=percent_features,
             threshold=-np.inf
         )
 
-        self.pipeline = Pipeline(
-            [("encoder", enc),
-             ("imputer", imputer),
-             ("feature_selection", feature_selection),
-             ("estimator", estimator)]
-        )
+        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, feature_selection, estimator])
 
         super().__init__(objective=objective, random_state=random_state)
 
@@ -74,15 +65,16 @@ class XGBoostPipeline(PipelineBase):
         # check if problem is multiclass
         num_classes = len(np.unique(y))
         if num_classes > 2:
-            params = self.pipeline['estimator'].get_params()
+            params = self.pipeline.get_component('XGBoost Classifier')._component_obj.get_params()
+            # params = self.pipeline['estimator'].get_params()
             params.update(
                 {
                     "objective": 'multi:softprob',
                     "num_class": num_classes
                 })
 
-            estimator = XGBClassifier(**params)
-            self.pipeline.steps[-1] = ('estimator', estimator)
+            estimator = XGBoostClassifier(**params)
+            self.pipeline.component_list[-1] = estimator
 
         return super().fit(X, y, objective_fit_size)
 

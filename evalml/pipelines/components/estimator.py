@@ -91,7 +91,7 @@ class RandomForestClassifier(Estimator):
 
 
 class XGBoostClassifier(Estimator):
-    def __init__(self, eta, max_depth, min_child_weight, random_state=0):
+    def __init__(self, eta, max_depth, min_child_weight, random_state=0, **kwargs):
         self.name = "XGBoost Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
         self.eta = eta
