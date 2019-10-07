@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-
 from skopt.space import Integer, Real
+
 from evalml.pipelines import Pipeline, PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,

@@ -110,7 +110,6 @@ class Pipeline:
         X = self._transform(X)
         proba = self.component_list[-1].predict_proba(X)
         return proba
-        
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance

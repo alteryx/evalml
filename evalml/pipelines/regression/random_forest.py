@@ -1,4 +1,3 @@
-import category_encoders as ce
 import numpy as np
 import pandas as pd
 from skopt.space import Integer, Real

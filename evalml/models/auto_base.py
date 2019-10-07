@@ -142,7 +142,7 @@ class AutoBase:
         self._log("\n✔ Optimization finished")
 
     def _do_iteration(self, X, y, pbar, raise_errors):
-        
+
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
