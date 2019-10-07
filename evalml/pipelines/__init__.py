@@ -1,11 +1,23 @@
 # flake8:noqa
-from .pipeline_base import PipelineBase, Pipeline
-from .classification import RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline
+from .components import (
+    Estimator,
+    LinearRegressor,
+    LogisticRegressionClassifier,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    XGBoostClassifier
+)
+from .pipeline_base import Pipeline, PipelineBase
 from .regression import RFRegressionPipeline
-from .utils import get_pipelines, list_model_types, save_pipeline, load_pipeline
-from .components import (Estimator,
-                         LogisticRegressionClassifier,
-                         RandomForestClassifier,
-                         XGBoostClassifier,
-                         RandomForestRegressor,
-                         LinearRegressor)
+from .utils import (
+    get_pipelines,
+    list_model_types,
+    load_pipeline,
+    save_pipeline
+)
+
+from .classification import (
+    LogisticRegressionPipeline,
+    RFClassificationPipeline,
+    XGBoostPipeline
+)

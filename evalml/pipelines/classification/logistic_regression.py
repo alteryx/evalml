@@ -1,10 +1,5 @@
-# import category_encoders as ce
 import numpy as np
 import pandas as pd
-# from sklearn.impute import SimpleImputer
-# from sklearn.linear_model import LogisticRegression
-# from sklearn.pipeline import Pipeline
-# from sklearn.preprocessing import StandardScaler
 from skopt.space import Real
 
 from evalml.pipelines import Pipeline, PipelineBase
