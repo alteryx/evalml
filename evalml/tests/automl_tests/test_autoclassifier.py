@@ -4,6 +4,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
+from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
     Precision,
@@ -64,7 +65,7 @@ def test_cv(X_y):
 
 
 def test_init_select_model_types():
-    model_types = ["random_forest"]
+    model_types = [ModelTypes.RANDOM_FOREST]
     clf = AutoClassifier(model_types=model_types)
 
     assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == clf.possible_pipelines
