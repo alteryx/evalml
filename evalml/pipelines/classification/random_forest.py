@@ -51,7 +51,7 @@ class RFClassificationPipeline(PipelineBase):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
         indices = self.pipeline.get_component('Select From Model')._component_obj.get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline.get_component("Logistic Regression Classifier")._component_obj.feature_importances_))
+        importances = list(zip(feature_names, self.pipeline.get_component("Random Forest Classifier")._component_obj.feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
