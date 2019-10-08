@@ -97,4 +97,4 @@ def load_pipeline(file_path):
         try:
             return pickle.load(f)
         except AttributeError as error:
-            raise RuntimeError("Pipeline to load requires a custom objective class that cannot be found.") from error
+            raise RuntimeError("Pipeline to load requires a custom objective class that cannot be found:", str(error)) from error
