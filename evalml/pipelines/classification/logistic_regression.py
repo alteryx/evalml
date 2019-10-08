@@ -3,7 +3,7 @@ import pandas as pd
 from skopt.space import Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import Pipeline, PipelineBase
+from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -36,8 +36,7 @@ class LogisticRegressionPipeline(PipelineBase):
                                                  C=C,
                                                  n_jobs=-1)
 
-        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, scaler, estimator])
-        super().__init__(objective=objective, random_state=random_state)
+        super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, scaler, estimator])
 
     @property
     def feature_importances(self):

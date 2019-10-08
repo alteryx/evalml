@@ -7,7 +7,7 @@ from .components import (
     RandomForestRegressor,
     XGBoostClassifier
 )
-from .pipeline_base import Pipeline, PipelineBase
+from .pipeline_base import PipelineBase
 from .regression import RFRegressionPipeline
 from .utils import (
     get_pipelines,

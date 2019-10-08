@@ -3,7 +3,7 @@ import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import Pipeline, PipelineBase
+from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
     SelectFromModel,
@@ -44,11 +44,10 @@ class XGBoostPipeline(PipelineBase):
             percent_features=percent_features,
             threshold=-np.inf
         )
-        self.pipeline = Pipeline(objective=objective, name="", problem_type=None, component_list=[enc, imputer, feature_selection, estimator])
-
-        super().__init__(objective=objective, random_state=random_state)
+        super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, feature_selection, estimator])
 
     # Need to override fit for multiclass
+
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
 
@@ -65,8 +64,7 @@ class XGBoostPipeline(PipelineBase):
         # check if problem is multiclass
         num_classes = len(np.unique(y))
         if num_classes > 2:
-            params = self.pipeline.get_component('XGBoost Classifier')._component_obj.get_params()
-            # params = self.pipeline['estimator'].get_params()
+            params = self.get_component('XGBoost Classifier')._component_obj.get_params()
             params.update(
                 {
                     "objective": 'multi:softprob',
@@ -74,16 +72,16 @@ class XGBoostPipeline(PipelineBase):
                 })
 
             estimator = XGBoostClassifier(**params)
-            self.pipeline.component_list[-1] = estimator
+            self.component_list[-1] = estimator
 
         return super().fit(X, y, objective_fit_size)
 
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
-        indices = self.pipeline.get_component('Select From Model')._component_obj.get_support(indices=True)
+        indices = self.get_component('Select From Model')._component_obj.get_support(indices=True)
         feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-        importances = list(zip(feature_names, self.pipeline.get_component("XGBoost Classifier")._component_obj.feature_importances_))
+        importances = list(zip(feature_names, self.get_component("XGBoost Classifier")._component_obj.feature_importances_))
         importances.sort(key=lambda x: -abs(x[1]))
 
         df = pd.DataFrame(importances, columns=["feature", "importance"])
