@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
-from evalml import AutoClassifier
+from evalml import AutoClassifier, demos
 from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
@@ -182,8 +182,6 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
-
-
 def test_additional_objectives(X_y):
     X, y = X_y
 
@@ -223,5 +221,27 @@ def test_model_types_as_list():
     with pytest.raises(TypeError, match="model_types parameter is not a list."):
         AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
 
+def test_select_scores():
+    X, y = demos.load_breast_cancer()
+
+    clf = AutoClassifier(objective="f1", max_pipelines=5)
+
+    clf.fit(X, y)
+
+    ret_dict = clf.describe_pipeline(0, show_objectives=['F1', 'AUC'], return_dict=True)
+    dict_keys = ret_dict['all_objective_scores'][0].keys()
+    assert 'F1' in dict_keys
+    assert 'AUC' in dict_keys
+    assert '# Training' in dict_keys
+    assert '# Testing' in dict_keys
+
+    # Make sure that show_objectives only filters output and return_dict
+    ret_dict_2 = clf.describe_pipeline(0, return_dict=True)
+    dict_keys_2 = ret_dict_2['all_objective_scores'][0].keys()
+    assert 'Precision' in dict_keys_2
+
+    error_msg = "{'fraud_objective'} not found in pipeline scores."
+    with pytest.raises(Exception, match=error_msg):
+        ret_dict = clf.describe_pipeline(0, show_objectives=['F1', 'fraud_objective'])
 
 # def test_serialization(trained_model)
