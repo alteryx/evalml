@@ -43,7 +43,7 @@ def X_y_categorical_classification():
 def trained_model(X_y):
     X, y = X_y
 
-    clf = AutoClassifier()
+    clf = AutoClassifier(max_pipelines=1)
 
     clf.fit(X, y)
 
