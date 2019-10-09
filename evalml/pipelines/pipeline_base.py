@@ -50,7 +50,7 @@ class PipelineBase:
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):
-      """Outputs pipeline details including component parameters and cross validation information
+        """Outputs pipeline details including component parameters and cross validation information
 
         Returns:
 
