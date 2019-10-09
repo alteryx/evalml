@@ -10,8 +10,8 @@ from .component_types import ComponentTypes
 
 
 class Estimator(ComponentBase):
-    def __init__(self, name, component_type, hyperparameters=None, needs_fitting=False, component_obj=None, random_state=0):
-        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, needs_fitting=needs_fitting,
+    def __init__(self, name, component_type, hyperparameters={}, parameters={}, needs_fitting=False, component_obj=None, random_state=0):
+        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, parameters=parameters, needs_fitting=needs_fitting,
                          component_obj=component_obj, random_state=random_state)
 
     def predict(self, X):
@@ -68,7 +68,9 @@ class LogisticRegressionClassifier(Estimator):
                                                  multi_class="auto",
                                                  solver="lbfgs",
                                                  n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
+    
+        self.parameters = {"penalty": self.penalty, "C": self.C}
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)
 
 
 class RandomForestClassifier(Estimator):
@@ -87,7 +89,8 @@ class RandomForestClassifier(Estimator):
                                                        n_estimators=self.n_estimators,
                                                        max_depth=self.max_depth,
                                                        n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
+        self.parameters = {"n_estimators": self.n_estimators, "max_depth": self.max_depth}
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)
 
 
 class XGBoostClassifier(Estimator):
@@ -103,11 +106,12 @@ class XGBoostClassifier(Estimator):
             "max_depth": Integer(1, 20),
             "min_child_weight": Real(1, 10),
         }
+        self.parameters = {"eta": self.eta, "max_depth": self.max_depth, "min_child_weight": self.min_child_weight}
         self._component_obj = XGBClassifier(random_state=self.random_state,
                                             eta=self.eta,
                                             max_depth=self.max_depth,
                                             min_child_weight=self.min_child_weight)
-        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)
 
 
 class RandomForestRegressor(Estimator):
@@ -126,7 +130,8 @@ class RandomForestRegressor(Estimator):
                                                       n_estimators=self.n_estimators,
                                                       max_depth=self.max_depth,
                                                       n_jobs=self.n_jobs)
-        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
+        self.parameters = {"n_estimators": self.n_estimators, "max_depth": self.max_depth}
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)
 
 
 class LinearRegressor(Estimator):
@@ -134,5 +139,6 @@ class LinearRegressor(Estimator):
         self.name = "Linear Regressor"
         self.component_type = ComponentTypes.REGRESSOR
         self.hyperparameters = {}
-        self._component_obj = SKLinearRegression()
-        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, component_obj=self._component_obj)
+        self._component_obj = SKLinearRegression() 
+        self.parameters = {}
+        super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)

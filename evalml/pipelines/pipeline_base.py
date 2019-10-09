@@ -17,12 +17,37 @@ class PipelineBase:
         # todo: check if estimator_type and problem_type are compatible
         self.problem_type = problem_type
         self.n_jobs = n_jobs
+        self.parameters = {}
+        for component in self.component_list:
+            self.parameters.update(component.parameters)
 
     def get_component(self, name):
         return next((component for component in self.component_list if component.name == name), None)
 
-    def describe(self):
-        pass
+
+    def describe(self, return_dict=False):
+        title = "Pipeline: " + self.name
+        print(title)
+        print("=" * len(title))
+
+        better_string = "lower is better"
+        if self.objective.greater_is_better:
+            better_string = "greater is better"
+        objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
+        print (objective_string)
+
+        # Summary
+        for number, component in enumerate(self.component_list, 1):
+            component_string = str(number) + ". " + component.name
+            print(component_string)
+        print("\n")
+
+        for component in self.component_list:
+            component.describe()
+        
+        if return_dict:
+            return self.parameters
+
 
     def _transform(self, X):
         X_t = X
