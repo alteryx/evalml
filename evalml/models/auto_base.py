@@ -160,10 +160,11 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        num_spaces = self.max_len - len(pipeline_class.name) + 1
-        desc = "Testing %s:" % (pipeline_class.name) + " " * num_spaces
-        pbar.set_description_str(desc=desc, refresh=True)
-        self.verbose and print('\n')
+        if self.verbose:
+            num_spaces = self.max_len - len(pipeline_class.name) + 1
+            desc = "Testing %s:" % (pipeline_class.name) + " " * num_spaces
+            pbar.set_description_str(desc=desc, refresh=True)
+            print('\n')
 
         start = time.time()
         scores = []
