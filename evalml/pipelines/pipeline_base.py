@@ -46,6 +46,9 @@ class PipelineBase:
         else:
             return self.get_component(index)
 
+    def __setitem__(self, index, value):
+        raise NotImplementedError('Setting pipeline components is not supported.')
+
     def get_component(self, name):
         return next((component for component in self.component_list if component.name == name), None)
 

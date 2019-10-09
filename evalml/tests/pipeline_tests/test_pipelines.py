@@ -85,3 +85,7 @@ def test_indexing(X_y):
     assert isinstance(clf[0], OneHotEncoder)
     assert isinstance(clf['One Hot Encoder'], OneHotEncoder)
     assert isinstance(clf[:1], PipelineBase)
+
+    err_msg = 'Setting pipeline components is not supported.'
+    with pytest.raises(NotImplementedError, match=err_msg):
+        clf[1] = OneHotEncoder()
