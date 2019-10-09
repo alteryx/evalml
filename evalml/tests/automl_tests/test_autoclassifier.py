@@ -182,6 +182,8 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
 def test_additional_objectives(X_y):
     X, y = X_y
 
@@ -220,6 +222,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 def test_model_types_as_list():
     with pytest.raises(TypeError, match="model_types parameter is not a list."):
         AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
+
 
 def test_select_scores():
     X, y = demos.load_breast_cancer()
