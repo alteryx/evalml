@@ -48,7 +48,7 @@ class PipelineBase:
 
     def get_component(self, name):
         return next((component for component in self.component_list if component.name == name), None)
-      
+
     def describe(self, return_dict=False):
       """Outputs pipeline details including component parameters and cross validation information
 
@@ -78,7 +78,7 @@ class PipelineBase:
 
         if return_dict:
             return self.parameters
-          
+
     def _transform(self, X):
         X_t = X
         for component in self.component_list[:-1]:
