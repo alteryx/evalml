@@ -3,8 +3,8 @@ from .component_base import ComponentBase
 
 class Transformer(ComponentBase):
     "A component that may or may not need fitting that transforms data. These components are used before an estimator."
-    def __init__(self, name, component_type, hyperparameters, needs_fitting=False, component_obj=None):
-        super().__init__(name, component_type, hyperparameters, needs_fitting, component_obj)
+    def __init__(self, name, component_type, hyperparameters={}, parameters={}, needs_fitting=False, component_obj=None):
+        super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, parameters=parameters, needs_fitting=needs_fitting, component_obj=component_obj)
 
     def transform(self, X):
         """Transforms data X
