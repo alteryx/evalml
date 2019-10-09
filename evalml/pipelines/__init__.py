@@ -5,7 +5,8 @@ from .components import (
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier
+    XGBoostClassifier,
+    ComponentTypes
 )
 from .pipeline_base import PipelineBase
 from .regression import RFRegressionPipeline
