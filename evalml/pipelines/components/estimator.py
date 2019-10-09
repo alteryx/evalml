@@ -68,7 +68,7 @@ class LogisticRegressionClassifier(Estimator):
                                                  multi_class="auto",
                                                  solver="lbfgs",
                                                  n_jobs=self.n_jobs)
-    
+
         self.parameters = {"penalty": self.penalty, "C": self.C}
         super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)
 
@@ -139,6 +139,6 @@ class LinearRegressor(Estimator):
         self.name = "Linear Regressor"
         self.component_type = ComponentTypes.REGRESSOR
         self.hyperparameters = {}
-        self._component_obj = SKLinearRegression() 
+        self._component_obj = SKLinearRegression()
         self.parameters = {}
         super().__init__(name=self.name, component_type=self.component_type, hyperparameters=self.hyperparameters, parameters=self.parameters, component_obj=self._component_obj)

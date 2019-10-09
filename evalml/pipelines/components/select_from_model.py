@@ -19,7 +19,7 @@ class SelectFromModel(Transformer):
         self.percent_features = percent_features
         self.max_features = max(1, int(percent_features * number_features))
         self.threshold = threshold
-        self.feature_selection = SkSelect(
+        feature_selection = SkSelect(
             estimator=estimator,
             max_features=self.max_features,
             threshold=self.threshold

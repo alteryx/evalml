@@ -17,7 +17,6 @@ class ComponentBase:
     #         elif hyperparameters[parameter_name] not in potential_parameters[parameter_name]:
     #             raise valueError("Value {} is not valid for paramater {}".format(hyperparameters[parameter_name]), parameter_name)
 
-
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
 
@@ -30,14 +29,13 @@ class ComponentBase:
         """
         return self._component_obj.fit(X, y)
 
-
     def describe(self, return_dict=False):
         # (ideally could use _log in the future)
         title = self.name
-        print (title)
-        print ("-" * len(title))
+        print(title)
+        print("-" * len(title))
         for parameter in self.parameters:
             print("* ", parameter, ":", self.parameters[parameter])
-        print ("\n")
+        print("\n")
         if return_dict:
             return self.parameters
