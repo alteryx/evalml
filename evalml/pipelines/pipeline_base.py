@@ -12,11 +12,21 @@ class PipelineBase:
         self.objective = objective
         self.random_state = random_state
         self.component_list = component_list
+        self.component_names = [comp.name for comp in component_list]
         # self.estimator_type --> get from estimator
         self.results = {}
         # todo: check if estimator_type and problem_type are compatible
         self.problem_type = problem_type
         self.n_jobs = n_jobs
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return self.__class__(self.name, self.objective, self.component_list[index], self.random_state,self.n_jobs)
+        elif isinstance(index, int):
+            return self.component_list[index]
+        else:
+            return self.get_component(index)
+        
 
     def get_component(self, name):
         return next((component for component in self.component_list if component.name == name), None)
