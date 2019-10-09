@@ -120,7 +120,7 @@ class AutoBase:
             self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         else:
             self._log("No time limit is set. Set one using max_time parameter.\n")
-        self._log("Possible model types: %s\n" % ", ".join(self.possible_model_types))
+        self._log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
             leaked = preprocessing.detect_label_leakage(X, y)
