@@ -10,6 +10,7 @@ from .component_types import ComponentTypes
 
 
 class Estimator(ComponentBase):
+    "A component that predicts and scores "
     def __init__(self, name, component_type, hyperparameters=None, needs_fitting=False, component_obj=None, random_state=0):
         super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, needs_fitting=needs_fitting,
                          component_obj=component_obj, random_state=random_state)
@@ -36,21 +37,9 @@ class Estimator(ComponentBase):
         """
         return self._component_obj.predict_proba(X)
 
-    def score(self, X, y, other_objectives=None):
-        """Evaluate model performance
-
-        Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
-            other_objectives (list): list of other objectives to score
-
-        Returns:
-            score, dictionary of other objective scores
-        """
-        return self._component_obj.score(X, y)
-
 
 class LogisticRegressionClassifier(Estimator):
+    "Logistic Regression Classifier"
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         self.name = "Logistic Regression Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
@@ -72,6 +61,7 @@ class LogisticRegressionClassifier(Estimator):
 
 
 class RandomForestClassifier(Estimator):
+    "Random Forest Classifier"
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
@@ -91,6 +81,7 @@ class RandomForestClassifier(Estimator):
 
 
 class XGBoostClassifier(Estimator):
+    "XGBoost Classifier"
     def __init__(self, eta, max_depth, min_child_weight, random_state=0, **kwargs):
         self.name = "XGBoost Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
@@ -111,6 +102,7 @@ class XGBoostClassifier(Estimator):
 
 
 class RandomForestRegressor(Estimator):
+    "Random Forest Regressor"
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Regressor"
         self.component_type = ComponentTypes.REGRESSOR
@@ -130,6 +122,7 @@ class RandomForestRegressor(Estimator):
 
 
 class LinearRegressor(Estimator):
+    "Linear Regressor"
     def __init__(self, n_jobs=-1):
         self.name = "Linear Regressor"
         self.component_type = ComponentTypes.REGRESSOR
