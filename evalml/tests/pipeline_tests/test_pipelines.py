@@ -8,7 +8,8 @@ import pytest
 import evalml.tests as tests
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
+from evalml.pipelines.components import OneHotEncoder
 from evalml.pipelines.utils import (
     get_pipelines,
     list_model_types,
@@ -74,3 +75,17 @@ def test_reproducibility(X_y):
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
+
+
+def test_indexing(X_y):
+    X, y = X_y
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+
+    assert isinstance(clf[0], OneHotEncoder)
+    assert isinstance(clf['One Hot Encoder'], OneHotEncoder)
+    assert isinstance(clf[:1], PipelineBase)
+
+    err_msg = 'Setting pipeline components is not supported.'
+    with pytest.raises(NotImplementedError, match=err_msg):
+        clf[1] = OneHotEncoder()
