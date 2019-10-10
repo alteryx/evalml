@@ -1,10 +1,5 @@
-import warnings
-
 import pandas as pd
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", DeprecationWarning)
-    from skopt import Optimizer
+from skopt import Optimizer
 
 
 class SKOptTuner:

@@ -1,20 +1,15 @@
-import warnings
-
 import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", DeprecationWarning)
-    from skopt.space import Integer, Real
 
 
 class XGBoostPipeline(PipelineBase):
