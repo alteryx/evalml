@@ -59,7 +59,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
-        self._max_pipeline_name_length = max([len(pipeline.name) for pipeline in self.possible_pipelines])
+        self._MAX_NAME_LEN = 40
 
     def _log(self, msg, color=None, new_line=True):
         if not self.verbose:
@@ -128,7 +128,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}{percentage:3.0f}%|{bar}{r_bar}')
+        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
             elapsed = time.time() - start
@@ -160,11 +160,12 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        if self.verbose:
-            num_spaces = self._max_pipeline_name_length - len(pipeline_class.name) + 1
-            desc = "Testing %s:" % (pipeline_class.name) + " " * num_spaces
-            pbar.set_description_str(desc=desc, refresh=True)
-            print('\n')  # To force new line between progress bar iterations
+        desc = "▹ {}: ".format(pipeline_class.name)
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = list(desc)[:self._MAX_NAME_LEN][:-3]
+            desc = "".join(desc) + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
 
         start = time.time()
         scores = []
@@ -208,6 +209,11 @@ class AutoBase:
             all_objective_scores=all_objective_scores,
             training_time=training_time
         )
+
+        if self.verbose:
+            desc = "✔" + desc[1:]
+            pbar.set_description_str(desc=desc, refresh=True)
+            print('')  # To force new line between progress bar iterations
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
