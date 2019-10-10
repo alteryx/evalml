@@ -95,3 +95,10 @@ def test_describe(X_y):
     X, y = X_y
     lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
+
+
+def test_name(X_y):
+    X, y = X_y
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+
+    print(clf.name)
