@@ -19,4 +19,4 @@ def handle_model_types(model_type):
         return tpe
     if isinstance(model_type, ModelTypes):
         return model_type
-    raise ValueError('`handle_model_types` was not passed a str or Model types object')
+    raise ValueError('`handle_model_types` was not passed a str or ModelTypes object')
