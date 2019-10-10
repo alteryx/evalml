@@ -95,10 +95,10 @@ class AutoClassifier(AutoBase):
             c. Default to BINARY
         """
         problem_type = ProblemTypes.BINARY
-        if objective is not None:
-            if multiclass is False:
-                if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
-                    problem_type = ProblemTypes.MULTICLASS
+        if objective:
+            # if exclusively multiclass: infer
+            if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
+                problem_type = ProblemTypes.MULTICLASS
             elif multiclass:
                 problem_type = ProblemTypes.MULTICLASS
         return problem_type

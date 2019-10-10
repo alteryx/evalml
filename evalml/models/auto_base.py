@@ -35,7 +35,9 @@ class AutoBase:
 
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
-        self.validate_problem_type()
+
+        if self.problem_type not in self.objective.problem_types:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
@@ -62,10 +64,6 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
-
-    def validate_problem_type(self):
-        if self.problem_type not in self.objective.problem_types:
-            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
     def _log(self, msg, color=None, new_line=True):
         if not self.verbose:
@@ -152,11 +150,12 @@ class AutoBase:
         self._log("\n✔ Optimization finished")
 
     def check_multiclass(self, y):
-        multiclass_problem = (len(np.unique(y)) > 2)
-        if multiclass_problem and ProblemTypes.MULTICLASS not in self.objective.problem_types:
+        if y.nunique() <= 2:
+            return
+        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
-            if multiclass_problem and ProblemTypes.MULTICLASS not in obj.problem_types:
+            if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
