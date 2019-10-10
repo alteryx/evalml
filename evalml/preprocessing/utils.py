@@ -111,3 +111,19 @@ def detect_label_leakage(X, y, threshold=.95):
     corrs = X.corrwith(y).abs()
     out = corrs[corrs >= threshold]
     return out.to_dict()
+
+
+def drop_null(X, percent_threshold=.95, inplace=False):
+    """ Removes highly null columns from a dataframe.
+
+    Args:
+        X (DataFrame) : features
+        percent_threshold(float): Require that percentage of non-null values to keep column
+        inplace(bool): If True, do operation inplace and return None
+
+    Returns:
+        X with columns considered highly null dropped or None if inplace is True
+    """
+
+    threshold = len(X) * percent_threshold
+    return X.dropna(thresh=threshold, axis=1, inplace=inplace)
