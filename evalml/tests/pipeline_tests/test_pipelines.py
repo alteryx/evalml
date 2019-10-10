@@ -89,3 +89,9 @@ def test_indexing(X_y):
     err_msg = 'Setting pipeline components is not supported.'
     with pytest.raises(NotImplementedError, match=err_msg):
         clf[1] = OneHotEncoder()
+
+
+def test_describe(X_y):
+    X, y = X_y
+    lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
