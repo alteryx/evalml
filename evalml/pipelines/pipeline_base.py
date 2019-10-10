@@ -29,7 +29,7 @@ class PipelineBase:
         self.random_state = random_state
 
         # check if one and only estimator in pipeline is the last element in component_list
-        estimator = next(component for component in component_list if (isinstance(component, Estimator)), None)
+        estimator = next((component for component in component_list if (isinstance(component, Estimator))), None)
         if estimator is not None:
             estimator_index = component_list.index(estimator)
             if estimator_index != len(component_list) - 1:
