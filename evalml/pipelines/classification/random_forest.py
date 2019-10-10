@@ -17,7 +17,6 @@ with warnings.catch_warnings():
     from skopt.space import Integer, Real
 
 
-
 class RFClassificationPipeline(PipelineBase):
     """Random Forest Pipeline for both binary and multiclass classification"""
     name = "Random Forest w/ imputation"

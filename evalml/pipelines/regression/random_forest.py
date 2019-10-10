@@ -17,7 +17,6 @@ with warnings.catch_warnings():
     from skopt.space import Integer, Real
 
 
-
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression"""
     name = "Random Forest w/ imputation"

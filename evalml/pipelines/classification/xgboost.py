@@ -17,7 +17,6 @@ with warnings.catch_warnings():
     from skopt.space import Integer, Real
 
 
-
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
     name = "XGBoost w/ imputation"

@@ -17,7 +17,6 @@ with warnings.catch_warnings():
     from skopt.space import Real
 
 
-
 class LogisticRegressionPipeline(PipelineBase):
     """Logistic Regression Pipeline for both binary and multiclass classification"""
     name = "LogisticRegression w/ imputation + scaling"
