@@ -59,7 +59,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
-        self.max_len = max([len(pipeline.name) for pipeline in self.possible_pipelines])
+        self._max_pipeline_name_length = max([len(pipeline.name) for pipeline in self.possible_pipelines])
 
     def _log(self, msg, color=None, new_line=True):
         if not self.verbose:
@@ -161,10 +161,10 @@ class AutoBase:
             self.start_iteration_callback(pipeline_class, parameters)
 
         if self.verbose:
-            num_spaces = self.max_len - len(pipeline_class.name) + 1
+            num_spaces = self._max_pipeline_name_length - len(pipeline_class.name) + 1
             desc = "Testing %s:" % (pipeline_class.name) + " " * num_spaces
             pbar.set_description_str(desc=desc, refresh=True)
-            print('\n')
+            print('\n')  # To force new line between progress bar iterations
 
         start = time.time()
         scores = []
