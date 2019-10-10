@@ -5,7 +5,7 @@ from .transformer import Transformer
 
 
 class StandardScaler(Transformer):
-    "Standardize features: removes mean and scales to unit variance"
+    """Standardize features: removes mean and scales to unit variance"""
 
     def __init__(self):
         self.name = 'Standard Scaler'

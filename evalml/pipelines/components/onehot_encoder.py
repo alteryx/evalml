@@ -5,7 +5,8 @@ from .transformer import Transformer
 
 
 class OneHotEncoder(Transformer):
-    "Creates one-hot encoding for non-numeric data"
+
+    """Creates one-hot encoding for non-numeric data"""
 
     def __init__(self):
         self.name = 'One Hot Encoder'

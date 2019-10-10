@@ -10,7 +10,7 @@ from .component_types import ComponentTypes
 
 
 class Estimator(ComponentBase):
-    "A component that fits and predicts given data "
+    """A component that fits and predicts given data"""
 
     def __init__(self, name, component_type, hyperparameters={}, parameters={}, needs_fitting=False, component_obj=None, random_state=0):
         super().__init__(name=name, component_type=component_type, hyperparameters=hyperparameters, parameters=parameters, needs_fitting=needs_fitting,
@@ -40,7 +40,9 @@ class Estimator(ComponentBase):
 
 
 class LogisticRegressionClassifier(Estimator):
-    "Logistic Regression Classifier"
+    """
+    Logistic Regression Classifier
+    """
 
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         self.name = "Logistic Regression Classifier"
@@ -65,7 +67,7 @@ class LogisticRegressionClassifier(Estimator):
 
 
 class RandomForestClassifier(Estimator):
-    "Random Forest Classifier"
+    """Random Forest Classifier"""
 
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Classifier"
@@ -87,7 +89,7 @@ class RandomForestClassifier(Estimator):
 
 
 class XGBoostClassifier(Estimator):
-    "XGBoost Classifier"
+    """XGBoost Classifier"""
 
     def __init__(self, eta, max_depth, min_child_weight, random_state=0, **kwargs):
         self.name = "XGBoost Classifier"
@@ -110,7 +112,7 @@ class XGBoostClassifier(Estimator):
 
 
 class RandomForestRegressor(Estimator):
-    "Random Forest Regressor"
+    """Random Forest Regressor"""
 
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Regressor"
@@ -132,7 +134,7 @@ class RandomForestRegressor(Estimator):
 
 
 class LinearRegressor(Estimator):
-    "Linear Regressor"
+    """Linear Regressor"""
 
     def __init__(self, n_jobs=-1):
         self.name = "Linear Regressor"

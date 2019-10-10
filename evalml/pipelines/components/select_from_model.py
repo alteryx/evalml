@@ -8,7 +8,7 @@ from .transformer import Transformer
 
 # TODO: AutoML must know to pass in the same estimator and number_features
 class SelectFromModel(Transformer):
-    "Selects top features based on importance weights"
+    """Selects top features based on importance weights"""
 
     def __init__(self, estimator, number_features, percent_features=0.5, threshold=-np.inf):
         self.name = 'Select From Model'

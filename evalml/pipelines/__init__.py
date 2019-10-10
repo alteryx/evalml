@@ -1,6 +1,11 @@
 # flake8:noqa
 from .components import (
     Estimator,
+    OneHotEncoder,
+    SelectFromModel,
+    SimpleImputer,
+    StandardScaler,
+    Transformer,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
@@ -8,6 +13,7 @@ from .components import (
     XGBoostClassifier,
     ComponentTypes
 )
+
 from .pipeline_base import PipelineBase
 from .regression import RFRegressionPipeline
 from .utils import (

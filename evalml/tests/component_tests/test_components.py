@@ -1,16 +1,14 @@
 from evalml.pipelines import (
+    ComponentTypes,
     LinearRegressor,
     LogisticRegressionClassifier,
+    OneHotEncoder,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier
-)
-from evalml.pipelines.components import (
-    ComponentTypes,
-    OneHotEncoder,
     SelectFromModel,
     SimpleImputer,
-    StandardScaler
+    StandardScaler,
+    XGBoostClassifier
 )
 
 # Tests to include:
