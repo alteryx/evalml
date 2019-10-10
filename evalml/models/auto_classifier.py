@@ -22,7 +22,9 @@ class AutoClassifier(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
-                 verbose=True):
+                 verbose=True,
+                 drop_null=True,
+                 drop_threshold=0.95):
         """Automated classifier pipeline search
 
         Arguments:
@@ -80,5 +82,7 @@ class AutoClassifier(AutoBase):
             add_result_callback=add_result_callback,
             random_state=random_state,
             verbose=verbose,
-            additional_objectives=additional_objectives
+            additional_objectives=additional_objectives,
+            drop_null=drop_null,
+            drop_threshold=drop_threshold
         )
