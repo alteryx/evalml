@@ -4,6 +4,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassifier
+from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
     Precision,
@@ -64,7 +65,7 @@ def test_cv(X_y):
 
 
 def test_init_select_model_types():
-    model_types = ["random_forest"]
+    model_types = [ModelTypes.RANDOM_FOREST]
     clf = AutoClassifier(model_types=model_types)
 
     assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == clf.possible_pipelines
@@ -242,3 +243,11 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
     assert err == ''
     assert expected_objective_order in out_stripped
+
+
+def test_model_types_as_list():
+    with pytest.raises(TypeError, match="model_types parameter is not a list."):
+        AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
+
+
+# def test_serialization(trained_model)

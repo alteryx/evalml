@@ -7,6 +7,7 @@ from sklearn.pipeline import Pipeline
 from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 
@@ -14,7 +15,7 @@ from evalml.problem_types import ProblemTypes
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
     name = "XGBoost w/ imputation"
-    model_type = "xgboost"
+    model_type = ModelTypes.XGBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     hyperparameters = {
