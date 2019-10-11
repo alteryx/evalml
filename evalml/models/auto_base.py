@@ -34,7 +34,7 @@ class AutoBase:
         self.verbose = verbose
         self.detect_highly_null = detect_highly_null
         self.null_threshold = null_threshold
-        
+
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
@@ -118,7 +118,7 @@ class AutoBase:
 
         if self.detect_highly_null:
             highly_null_columns = preprocessing.detect_highly_null(X, percent_threshold=self.null_threshold)
-            self._log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
+            self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 
