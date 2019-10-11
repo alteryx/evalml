@@ -66,10 +66,12 @@ class AutoClassifier(AutoBase):
         # set default objective if none provided
         if objective is None and not multiclass:
             objective = "precision"
+            problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
             objective = "precision_micro"
-
-        problem_type = self.set_problem_type(objective, multiclass)
+            problem_type = ProblemTypes.MULTICLASS
+        else:
+            problem_type = self.set_problem_type(objective, multiclass)
 
         super().__init__(
             tuner=tuner,
@@ -95,10 +97,9 @@ class AutoClassifier(AutoBase):
             c. Default to BINARY
         """
         problem_type = ProblemTypes.BINARY
-        if objective:
-            # if exclusively multiclass: infer
-            if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
-                problem_type = ProblemTypes.MULTICLASS
-            elif multiclass:
-                problem_type = ProblemTypes.MULTICLASS
+        # if exclusively multiclass: infer
+        if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
+            problem_type = ProblemTypes.MULTICLASS
+        elif multiclass:
+            problem_type = ProblemTypes.MULTICLASS
         return problem_type
