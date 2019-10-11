@@ -60,10 +60,8 @@ class PipelineBase:
 
     def _generate_name(self):
         name = "{}".format(self.component_list[-1].name)
-        for index, component in enumerate(self.component_list):
-            if index == len(self.component_list) - 1:
-                continue
-            elif index == 0:
+        for index, component in enumerate(self.component_list[:-1]):
+            if index == 0:
                 name += " w/ {}".format(component.name)
             else:
                 name += " + {}".format(component.name)
