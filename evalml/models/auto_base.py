@@ -12,7 +12,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger
+from evalml.utils import Logger, convert_to_seconds
 
 
 class AutoBase:
@@ -25,7 +25,6 @@ class AutoBase:
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.max_time = max_time
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -52,6 +51,12 @@ class AutoBase:
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
 
+        if max_time is None or isinstance(max_time, (int, float)):
+            self.max_time = max_time
+        elif isinstance(max_time, str):
+            self.max_time = convert_to_seconds(max_time)
+        else:
+            raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
