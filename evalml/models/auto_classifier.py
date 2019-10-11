@@ -3,6 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
+from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
 
 
@@ -60,15 +61,20 @@ class AutoClassifier(AutoBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
-        if objective is None:
-            objective = "precision"
 
         if cv is None:
             cv = StratifiedKFold(n_splits=3, random_state=random_state)
 
-        problem_type = ProblemTypes.BINARY
-        if multiclass:
+        # set default objective if none provided
+        if objective is None and not multiclass:
+            objective = "precision"
+            problem_type = ProblemTypes.BINARY
+        elif objective is None and multiclass:
+            objective = "precision_micro"
             problem_type = ProblemTypes.MULTICLASS
+        else:
+            problem_type = self.set_problem_type(objective, multiclass)
+
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -86,3 +92,18 @@ class AutoClassifier(AutoBase):
             detect_highly_null=detect_highly_null,
             null_threshold=null_threshold
         )
+
+    def set_problem_type(self, objective, multiclass):
+        """
+        If there is an objective either:
+            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
+            b. Set problem_type to MUTLICLASS if multiclass is true
+            c. Default to BINARY
+        """
+        problem_type = ProblemTypes.BINARY
+        # if exclusively multiclass: infer
+        if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
+            problem_type = ProblemTypes.MULTICLASS
+        elif multiclass:
+            problem_type = ProblemTypes.MULTICLASS
+        return problem_type

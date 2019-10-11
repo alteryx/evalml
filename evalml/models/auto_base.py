@@ -5,13 +5,14 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-from colorama import Style
 from tqdm import tqdm
 
 from evalml import preprocessing
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
+from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
+from evalml.utils import Logger
 
 
 class AutoBase:
@@ -21,8 +22,8 @@ class AutoBase:
                  detect_highly_null, null_threshold):
         if tuner is None:
             tuner = SKOptTuner
-
         self.objective = get_objective(objective)
+        self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
@@ -33,14 +34,18 @@ class AutoBase:
         self.verbose = verbose
         self.detect_highly_null = detect_highly_null
         self.null_threshold = null_threshold
+        
+        self.logger = Logger(self.verbose)
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.objective = get_objective(objective)
 
-        self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
-        objective = get_objective(objective)
+        if self.problem_type not in self.objective.problem_types:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
-            additional_objectives = get_objectives(problem_type)
+            additional_objectives = get_objectives(self.problem_type)
 
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
@@ -62,28 +67,6 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
-
-    def _log(self, msg, color=None, new_line=True):
-        if not self.verbose:
-            return
-
-        if color:
-            msg = color + msg + Style.RESET_ALL
-
-        if new_line:
-            print(msg)
-        else:
-            print(msg, end="")
-
-    def _log_title(self, title):
-        self._log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self._log("* %s *" % title, color=Style.BRIGHT)
-        self._log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self._log("")
-
-    def _log_subtitle(self, title, underline="=", color=None):
-        self._log("%s" % title, color=color)
-        self._log(underline * len(title), color=color)
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
@@ -109,26 +92,29 @@ class AutoBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self._log_title("Beginning pipeline search")
-        self._log("Optimizing for %s. " % self.objective.name, new_line=False)
+        if self.problem_type != ProblemTypes.REGRESSION:
+            self.check_multiclass(y)
+
+        self.logger.log_title("Beginning pipeline search")
+        self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
 
         if self.objective.greater_is_better:
-            self._log("Greater score is better.\n")
+            self.logger.log("Greater score is better.\n")
         else:
-            self._log("Lower score is better.\n")
+            self.logger.log("Lower score is better.\n")
 
-        self._log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+        self.logger.log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
         if self.max_time:
-            self._log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+            self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         else:
-            self._log("No time limit is set. Set one using max_time parameter.\n")
-        self._log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
+            self.logger.log("No time limit is set. Set one using max_time parameter.\n")
+        self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
             leaked = preprocessing.detect_label_leakage(X, y)
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
-                self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+                self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         if self.detect_highly_null:
             highly_null_columns = preprocessing.detect_highly_null(X, percent_threshold=self.null_threshold)
@@ -140,13 +126,22 @@ class AutoBase:
         for n in pbar:
             elapsed = time.time() - start
             if self.max_time and elapsed > self.max_time:
-                self._log("\n\nMax time elapsed. Stopping search early.")
+                self.logger.log("\n\nMax time elapsed. Stopping search early.")
                 break
             self._do_iteration(X, y, pbar, raise_errors)
 
         pbar.close()
 
-        self._log("\n✔ Optimization finished")
+        self.logger.log("\n✔ Optimization finished")
+
+    def check_multiclass(self, y):
+        if y.nunique() <= 2:
+            return
+        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
+            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
+        for obj in self.additional_objectives:
+            if ProblemTypes.MULTICLASS not in obj.problem_types:
+                raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         # determine which pipeline to build
@@ -280,26 +275,26 @@ class AutoBase:
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
 
-        self._log_title("Pipeline Description")
+        self.logger.log_title("Pipeline Description")
 
         better_string = "lower is better"
         if pipeline.objective.greater_is_better:
             better_string = "greater is better"
 
-        self._log("Pipeline Name: %s" % pipeline.name)
-        self._log("Model type: %s" % pipeline.model_type)
-        self._log("Objective: %s (%s)" % (pipeline.objective.name, better_string))
-        self._log("Total training time (including CV): %.1f seconds\n" % pipeline_results["training_time"])
+        self.logger.log("Pipeline Name: %s" % pipeline.name)
+        self.logger.log("Model type: %s" % pipeline.model_type)
+        self.logger.log("Objective: %s (%s)" % (pipeline.objective.name, better_string))
+        self.logger.log("Total training time (including CV): %.1f seconds\n" % pipeline_results["training_time"])
 
-        self._log_subtitle("Parameters")
+        self.logger.log_subtitle("Parameters")
         for item in pipeline_results["parameters"].items():
-            self._log("• %s: %s" % item)
+            self.logger.log("• %s: %s" % item)
 
-        self._log_subtitle("\nCross Validation")
+        self.logger.log_subtitle("\nCross Validation")
 
         if pipeline_results["high_variance_cv"]:
-            self._log("Warning! High variance within cross validation scores. " +
-                      "Model may not perform as estimated on unseen data.")
+            self.logger.log("Warning! High variance within cross validation scores. " +
+                            "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
 
@@ -316,7 +311,7 @@ class AutoBase:
 
         all_objective_scores = all_objective_scores.fillna("-")
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            self._log(all_objective_scores)
+            self.logger.log(all_objective_scores)
 
         if return_dict:
             return pipeline_results
