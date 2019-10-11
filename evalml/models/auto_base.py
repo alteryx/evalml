@@ -10,6 +10,7 @@ from tqdm import tqdm
 from evalml import preprocessing
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
+from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger
 
@@ -21,6 +22,7 @@ class AutoBase:
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
+        self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.max_time = max_time
         self.model_types = model_types
@@ -31,13 +33,16 @@ class AutoBase:
         self.verbose = verbose
         self.logger = Logger(self.verbose)
 
-        self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
-        objective = get_objective(objective)
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.objective = get_objective(objective)
+
+        if self.problem_type not in self.objective.problem_types:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
-            additional_objectives = get_objectives(problem_type)
+            additional_objectives = get_objectives(self.problem_type)
 
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
@@ -59,6 +64,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
+        self._MAX_NAME_LEN = 40
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
@@ -84,6 +90,9 @@ class AutoBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
+        if self.problem_type != ProblemTypes.REGRESSION:
+            self.check_multiclass(y)
+
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
 
@@ -105,8 +114,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
-
+        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
             elapsed = time.time() - start
@@ -118,6 +126,15 @@ class AutoBase:
         pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
+
+    def check_multiclass(self, y):
+        if y.nunique() <= 2:
+            return
+        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
+            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
+        for obj in self.additional_objectives:
+            if ProblemTypes.MULTICLASS not in obj.problem_types:
+                raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
 
@@ -139,7 +156,11 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        pbar.set_description("Testing %s" % (pipeline_class.name))
+        desc = "▹ {}: ".format(pipeline_class.name)
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
 
         start = time.time()
         scores = []
@@ -183,6 +204,11 @@ class AutoBase:
             all_objective_scores=all_objective_scores,
             training_time=training_time
         )
+
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)

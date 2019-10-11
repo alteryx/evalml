@@ -6,6 +6,10 @@ import warnings
 # must import sklearn first
 import sklearn
 
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", DeprecationWarning)
+    import skopt
+
 import evalml.demos
 import evalml.objectives
 import evalml.pipelines
