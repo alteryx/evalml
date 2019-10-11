@@ -162,8 +162,7 @@ class AutoBase:
 
         desc = "▹ {}: ".format(pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
-            desc = desc[:self._MAX_NAME_LEN - 3]
-            desc = "".join(desc) + "..."
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
 
