@@ -1,7 +1,7 @@
 # flake8:noqa
 from .component_base import ComponentBase
 from .component_types import ComponentTypes
-from .estimator import (
+from .estimators import (
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -9,8 +9,4 @@ from .estimator import (
     RandomForestRegressor,
     XGBoostClassifier
 )
-from .onehot_encoder import OneHotEncoder
-from .select_from_model import SelectFromModel
-from .simple_imputer import SimpleImputer
-from .standard_scaler import StandardScaler
-from .transformer import Transformer
+from .transformers import OneHotEncoder, SelectFromModel, SimpleImputer, StandardScaler, Transformer

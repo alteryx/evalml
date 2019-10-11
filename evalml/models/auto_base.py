@@ -137,7 +137,6 @@ class AutoBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
-
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
