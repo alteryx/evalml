@@ -118,17 +118,17 @@ def detect_label_leakage(X, y, threshold=.95):
     return out.to_dict()
 
 
-def drop_null(X, percent_threshold=.95, inplace=False):
-    """ Removes highly null columns from a dataframe.
+def detect_highly_null(X, percent_threshold=.95):
+    """ Checks if there are any highly-null columns in a dataframe.
 
     Args:
         X (DataFrame) : features
-        percent_threshold(float): Require that percentage of non-null values to keep column
-        inplace(bool): If True, do operation inplace and return None
+        percent_threshold(float): Require that percentage of non-null values to not be considered "highly-null", defaults to .95
 
     Returns:
-        X with columns considered highly null dropped or None if inplace is True
+        a set of features that are highly-null
     """
-
     threshold = len(X) * percent_threshold
-    return X.dropna(thresh=threshold, axis=1, inplace=inplace)
+    num_nonnan = X.count()
+    filtered = num_nonnan[num_nonnan < threshold]
+    return (set(filtered.index))

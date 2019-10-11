@@ -18,7 +18,7 @@ class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose,
-                 drop_null, drop_threshold):
+                 detect_highly_null, null_threshold):
         if tuner is None:
             tuner = SKOptTuner
 
@@ -31,8 +31,8 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        self.drop_null = drop_null
-        self.drop_threshold = drop_threshold
+        self.detect_highly_null = detect_highly_null
+        self.null_threshold = null_threshold
 
         self.possible_pipelines = get_pipelines(problem_type=problem_type, model_types=model_types)
         objective = get_objective(objective)
@@ -130,9 +130,9 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self._log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if self.drop_null:
-            preprocessing.drop_null(X, percent_threshold=self.drop_threshold, inplace=True)
-            self._log("Dropped columns that were {}% null.".format(self.drop_threshold * 100))
+        if self.detect_highly_null:
+            highly_null_columns = preprocessing.detect_highly_null(X, percent_threshold=self.null_threshold)
+            self._log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
 

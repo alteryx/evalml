@@ -21,8 +21,8 @@ class AutoRegressor(AutoBase):
                  additional_objectives=None,
                  random_state=0,
                  verbose=True,
-                 drop_null=True,
-                 drop_threshold=0.95):
+                 detect_highly_null=True,
+                 null_threshold=0.95):
         """Automated regressors pipeline search
 
         Arguments:
@@ -79,6 +79,6 @@ class AutoRegressor(AutoBase):
             random_state=random_state,
             verbose=verbose,
             additional_objectives=additional_objectives,
-            drop_null=drop_null,
-            drop_threshold=drop_threshold
+            detect_highly_null=detect_highly_null,
+            null_threshold=null_threshold
         )
