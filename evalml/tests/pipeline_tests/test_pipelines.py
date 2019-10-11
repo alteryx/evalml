@@ -101,4 +101,4 @@ def test_name(X_y):
     X, y = X_y
     clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
 
-    assert clf.name == 'Logistic Regression Classifier with One Hot Encoder, Simple Imputer, and Standard Scaler'
+    assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'

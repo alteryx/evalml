@@ -59,14 +59,14 @@ class PipelineBase:
         raise NotImplementedError('Setting pipeline components is not supported.')
 
     def _generate_name(self):
-        name = "{} with ".format(self.component_list[-1].name)
+        name = "{}".format(self.component_list[-1].name)
         for index, component in enumerate(self.component_list):
             if index == len(self.component_list) - 1:
                 continue
-            elif index == len(self.component_list) - 2:
-                name += "and {}".format(component.name)
+            elif index == 0:
+                name += " w/ {}".format(component.name)
             else:
-                name += "{}, ".format(component.name)
+                name += " + {}".format(component.name)
 
         return name
 
