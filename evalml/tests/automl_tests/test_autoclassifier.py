@@ -106,6 +106,15 @@ def test_binary_auto(X_y):
     assert len(np.unique(y_pred)) == 2
 
 
+def test_multi_error(X_y_multi):
+    X, y = X_y_multi
+    error_clfs = [AutoClassifier(objective='recall'), AutoClassifier(objective='recall_micro', additional_objectives=['recall'], multiclass=True)]
+    error_msg = 'not compatible with a multiclass problem.'
+    for clf in error_clfs:
+        with pytest.raises(ValueError, match=error_msg):
+            clf.fit(X, y)
+
+
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
     clf = AutoClassifier(objective="recall_micro", multiclass=True)
@@ -123,6 +132,27 @@ def test_multi_auto(X_y_multi):
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
     assert clf.additional_objectives == expected_additional_objectives
+
+
+def test_multi_objective(X_y_multi):
+    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
+    with pytest.raises(ValueError, match=error_msg):
+        clf = AutoClassifier(objective="recall", multiclass=True)
+
+    clf = AutoClassifier(objective="log_loss")
+    assert clf.problem_type == ProblemTypes.BINARY
+
+    clf = AutoClassifier(objective='recall_micro')
+    assert clf.problem_type == ProblemTypes.MULTICLASS
+
+    clf = AutoClassifier(objective='recall')
+    assert clf.problem_type == ProblemTypes.BINARY
+
+    clf = AutoClassifier(multiclass=True)
+    assert clf.problem_type == ProblemTypes.MULTICLASS
+
+    clf = AutoClassifier()
+    assert clf.problem_type == ProblemTypes.BINARY
 
 
 def test_categorical_classification(X_y_categorical_classification):
@@ -224,4 +254,19 @@ def test_model_types_as_list():
         AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
 
 
+def test_max_time_units():
+    str_max_time = AutoClassifier(objective='F1', max_time='60 seconds')
+    assert str_max_time.max_time == 60
+
+    hour_max_time = AutoClassifier(objective='F1', max_time='1 hour')
+    assert hour_max_time.max_time == 3600
+
+    min_max_time = AutoClassifier(objective='F1', max_time='30 mins')
+    assert min_max_time.max_time == 1800
+
+    with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
+        AutoClassifier(objective='F1', max_time='30 years')
+
+    with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
+        AutoClassifier(objective='F1', max_time=(30, 'minutes'))
 # def test_serialization(trained_model)
