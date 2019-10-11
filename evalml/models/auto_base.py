@@ -162,7 +162,7 @@ class AutoBase:
 
         desc = "▹ {}: ".format(pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
-            desc = list(desc)[:self._MAX_NAME_LEN][:-3]
+            desc = desc[:self._MAX_NAME_LEN - 3]
             desc = "".join(desc) + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -210,10 +210,10 @@ class AutoBase:
             training_time=training_time
         )
 
-        if self.verbose:
-            desc = "✔" + desc[1:]
-            pbar.set_description_str(desc=desc, refresh=True)
-            print('')  # To force new line between progress bar iterations
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
