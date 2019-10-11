@@ -57,7 +57,7 @@ class PipelineBase:
 
     def __setitem__(self, index, value):
         raise NotImplementedError('Setting pipeline components is not supported.')
-    
+
     def _generate_name(self):
         name = "{} with ".format(self.component_list[-1].name)
         for index, component in enumerate(self.component_list):
@@ -67,9 +67,8 @@ class PipelineBase:
                 name += "and {}".format(component.name)
             else:
                 name += "{}, ".format(component.name)
-        
-        return name
 
+        return name
 
     def get_component(self, name):
         return next((component for component in self.component_list if component.name == name), None)
