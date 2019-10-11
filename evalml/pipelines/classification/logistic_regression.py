@@ -15,7 +15,7 @@ from evalml.problem_types import ProblemTypes
 
 class LogisticRegressionPipeline(PipelineBase):
     """Logistic Regression Pipeline for both binary and multiclass classification"""
-    name = "LogisticRegression w/ imputation + scaling"
+    name = "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
