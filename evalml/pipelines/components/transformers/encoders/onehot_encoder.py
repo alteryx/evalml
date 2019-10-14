@@ -1,7 +1,5 @@
 import category_encoders as ce
-
-from .transformer import Transformer
-
+from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components import ComponentTypes
 
 

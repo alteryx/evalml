@@ -1,9 +1,6 @@
 from sklearn.preprocessing import StandardScaler as SkScaler
-
-from .transformer import Transformer
-
+from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components import ComponentTypes
-
 
 class StandardScaler(Transformer):
     """Standardize features: removes mean and scales to unit variance"""

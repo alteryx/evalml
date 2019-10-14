@@ -9,4 +9,9 @@ from .estimators import (
     RandomForestRegressor,
     XGBoostClassifier
 )
-from .transformers import OneHotEncoder, SelectFromModel, SimpleImputer, StandardScaler, Transformer
+from .transformers import (
+    Transformer,
+    OneHotEncoder,
+    SelectFromModel,
+    SimpleImputer,
+    StandardScaler)

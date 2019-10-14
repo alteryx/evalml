@@ -1,9 +1,6 @@
 from sklearn.impute import SimpleImputer as SkImputer
-
-from .transformer import Transformer
-
+from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components import ComponentTypes
-
 
 class SimpleImputer(Transformer):
     """Imputes missing data with either mean, median and most_frequent for numerical data or most_frequent for categorical data"""
