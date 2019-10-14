@@ -57,22 +57,23 @@ def test_serialization(X_y, path_management):
 
 
 @pytest.fixture
-def make_pickled_pipeline(X_y, path_management):
+def pickled_pipeline_path(X_y, path_management):
     X, y = X_y
-    path = os.path.join(path_management, 'pickledpipe.pkl')
-    PrecisionDummy = type('PrecisionDummy', (Precision,), {})
-    objective = PrecisionDummy()
+    path = os.path.join(path_management, 'pickled_pipe.pkl')
+    MockPrecision = type('MockPrecision', (Precision,), {})
+    objective = MockPrecision()
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
 
-def test_serialize(X_y, make_pickled_pipeline):
+
+def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path):
     X, y = X_y
     objective = Precision()
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
-    assert load_pipeline(make_pickled_pipeline).score(X, y) ==  pipeline.score(X,y)
+    assert load_pipeline(pickled_pipeline_path).score(X, y) ==  pipeline.score(X,y)
 
 
 def test_reproducibility(X_y):
