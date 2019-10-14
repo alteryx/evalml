@@ -23,8 +23,7 @@ class Transformer(ComponentBase):
         except AttributeError:
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
 
-
-    def fit_transform(self, X):
+    def fit_transform(self, X, y=None):
         """Fits on X and transforms X
 
         Arguments:

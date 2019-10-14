@@ -11,7 +11,6 @@ class ComponentBase:
         self.parameters = parameters
         self.logger = Logger()
 
-
     def fit(self, X, y):
         """Build a model
 
@@ -26,7 +25,6 @@ class ComponentBase:
             return self._component_obj.fit(X, y)
         except AttributeError:
             raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
-
 
     def describe(self, return_dict=False):
         """Describe a component and its parameters

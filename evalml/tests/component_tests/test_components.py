@@ -1,9 +1,7 @@
 import pytest
 
 from evalml.pipelines import (
-    ComponentTypes,
     Estimator,
-    Transformer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -12,9 +10,9 @@ from evalml.pipelines import (
     SelectFromModel,
     SimpleImputer,
     StandardScaler,
+    Transformer,
     XGBoostClassifier
 )
-
 from evalml.pipelines.components import ComponentTypes
 
 
@@ -63,6 +61,7 @@ def test_describe_component():
     assert xgb_classifier.describe(True) == {"eta": 0.1, "max_depth": 3, "min_child_weight": 1}
     assert rf_regressor.describe(True) == {"n_estimators": 10, "max_depth": 3}
     assert linear_regressor.describe(True) == {}
+
 
 def test_missing_methods_on_components(X_y):
     # test that estimator doesn't have

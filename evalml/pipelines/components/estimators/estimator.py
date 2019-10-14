@@ -22,7 +22,7 @@ class Estimator(ComponentBase):
             return self._component_obj.predict(X)
         except AttributeError:
             raise RuntimeError("Estimator requires a predict method or a component_obj that implements predict")
-        
+
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
@@ -36,4 +36,3 @@ class Estimator(ComponentBase):
             return self._component_obj.predict_proba(X)
         except AttributeError:
             raise RuntimeError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
-        
