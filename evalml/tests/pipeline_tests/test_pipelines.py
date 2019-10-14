@@ -45,7 +45,7 @@ def path_management():
     shutil.rmtree(path)
 
 
-def test_serialization(X_y, trained_model, path_management):
+def test_serialization(X_y, path_management):
     X, y = X_y
     path = os.path.join(path_management, 'pipe.pkl')
     objective = Precision()
@@ -56,10 +56,23 @@ def test_serialization(X_y, trained_model, path_management):
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
 
-def test_serialization_unloaded_class(rootdir):
-    path = os.path.join(rootdir, "pipeline_tests/precision_dummy_pipeline_pickled.pkl")
-    with pytest.raises(RuntimeError, match="Pipeline to load requires a custom objective class that cannot be found."):
-        load_pipeline(path)
+@pytest.fixture
+def make_pickled_pipeline(X_y, path_management):
+    X, y = X_y
+    path = os.path.join(path_management, 'pickledpipe.pkl')
+    PrecisionDummy = type('PrecisionDummy', (Precision,), {})
+    objective = PrecisionDummy()
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline.fit(X, y)
+    save_pipeline(pipeline, path)
+    return path
+
+def test_serialize(X_y, make_pickled_pipeline):
+    X, y = X_y
+    objective = Precision()
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline.fit(X, y)
+    assert load_pipeline(make_pickled_pipeline).score(X, y) ==  pipeline.score(X,y)
 
 
 def test_reproducibility(X_y):

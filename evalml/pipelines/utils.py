@@ -1,4 +1,4 @@
-import pickle
+import cloudpickle
 
 from .classification import (
     LogisticRegressionPipeline,
@@ -81,7 +81,7 @@ def save_pipeline(pipeline, file_path):
         None
     """
     with open(file_path, 'wb') as f:
-        pickle.dump(pipeline, f)
+        cloudpickle.dump(pipeline, f)
 
 
 def load_pipeline(file_path):
@@ -94,7 +94,4 @@ def load_pipeline(file_path):
         Pipeline obj
     """
     with open(file_path, 'rb') as f:
-        try:
-            return pickle.load(f)
-        except AttributeError as error:
-            raise RuntimeError("Pipeline to load requires a custom objective class that cannot be found:", str(error)) from error
+        return cloudpickle.load(f)
