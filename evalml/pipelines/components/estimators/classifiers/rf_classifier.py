@@ -2,7 +2,7 @@ from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from skopt.space import Integer
 
 from evalml.pipelines.components import ComponentTypes
-from evalml.pipelines.components.estimator import Estimator
+from evalml.pipelines.components.estimators import Estimator
 
 
 class RandomForestClassifier(Estimator):

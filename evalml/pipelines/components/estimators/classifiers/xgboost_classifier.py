@@ -2,7 +2,7 @@ from skopt.space import Integer, Real
 from xgboost import XGBClassifier
 
 from evalml.pipelines.components import ComponentTypes
-from evalml.pipelines.components.estimator import Estimator
+from evalml.pipelines.components.estimators import Estimator
 
 
 class XGBoostClassifier(Estimator):

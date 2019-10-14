@@ -1,7 +1,7 @@
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
 from evalml.pipelines.components import ComponentTypes
-from evalml.pipelines.components.estimator import Estimator
+from evalml.pipelines.components.estimators import Estimator
 
 
 class LinearRegressor(Estimator):
