@@ -7,6 +7,7 @@ from .classification import (
 )
 from .regression import RFRegressionPipeline
 
+from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
 ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, RFRegressionPipeline]
@@ -18,7 +19,7 @@ def get_pipelines(problem_type, model_types=None):
     Arguments:
 
         problem_type(ProblemTypes or str): the problem type the pipelines work for.
-        model_types(list[str]): model types to match. if none, return all pipelines
+        model_types(list[ModelTypes or str]): model types to match. if none, return all pipelines
 
     Returns
 
@@ -29,6 +30,9 @@ def get_pipelines(problem_type, model_types=None):
         raise TypeError("model_types parameter is not a list.")
 
     problem_pipelines = []
+
+    if model_types:
+        model_types = [handle_model_types(model_type) for model_type in model_types]
 
     problem_type = handle_problem_types(problem_type)
     for p in ALL_PIPELINES:

@@ -1,11 +1,26 @@
 # flake8:noqa
 from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
-from .standard_metrics import (
-    F1, F1Micro, F1Macro, F1Weighted, Precision, PrecisionMicro, PrecisionMacro, PrecisionWeighted, Recall, RecallMicro, RecallMacro, RecallWeighted,
-    AUC, AUCMicro, AUCMacro, AUCWeighted, LogLoss, MCC, R2
-    )
 from .objective_base import ObjectiveBase
+from .standard_metrics import (
+    AUC,
+    F1,
+    MCC,
+    R2,
+    AUCMacro,
+    AUCMicro,
+    AUCWeighted,
+    F1Macro,
+    F1Micro,
+    F1Weighted,
+    LogLoss,
+    Precision,
+    PrecisionMacro,
+    PrecisionMicro,
+    PrecisionWeighted,
+    Recall,
+    RecallMacro,
+    RecallMicro,
+    RecallWeighted
+)
 from .utils import get_objective, get_objectives
-
-
