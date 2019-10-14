@@ -1,5 +1,9 @@
+import pytest
+
 from evalml.pipelines import (
     ComponentTypes,
+    Estimator,
+    Transformer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -11,9 +15,7 @@ from evalml.pipelines import (
     XGBoostClassifier
 )
 
-# Tests to include:
-#   for each specific estimator
-#   for an user-defined estimator
+from evalml.pipelines.components import ComponentTypes
 
 
 def test_init():
@@ -61,3 +63,21 @@ def test_describe_component():
     assert xgb_classifier.describe(True) == {"eta": 0.1, "max_depth": 3, "min_child_weight": 1}
     assert rf_regressor.describe(True) == {"n_estimators": 10, "max_depth": 3}
     assert linear_regressor.describe(True) == {}
+
+def test_missing_methods_on_components(X_y):
+    # test that estimator doesn't have
+    X, y = X_y
+
+    estimator = Estimator("Dummy Estimator", ComponentTypes.CLASSIFIER)
+    with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
+        estimator.predict(X)
+    with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
+        estimator.predict_proba(X)
+
+    transformer = Transformer("Dummy Transformer", ComponentTypes.IMPUTER)
+    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+        transformer.fit(X, y)
+    with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
+        transformer.transform(X)
+    with pytest.raises(RuntimeError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+        transformer.fit_transform(X)

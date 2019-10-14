@@ -9,12 +9,17 @@ import evalml.tests as tests
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
-from evalml.pipelines.components import OneHotEncoder
 from evalml.pipelines.utils import (
     get_pipelines,
     list_model_types,
     load_pipeline,
     save_pipeline
+)
+from evalml.pipelines.components import (
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    SimpleImputer,
+    StandardScaler
 )
 from evalml.problem_types import ProblemTypes
 
@@ -102,3 +107,25 @@ def test_name(X_y):
     clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
 
     assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+
+
+def test_estimator_not_last(X_y):
+    X, y = X_y
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    class MockLogisticRegressionPipeline(PipelineBase):
+        name = "Mock Logistic Regression Pipeline"
+        def __init__(self, objective, penalty, C, impute_strategy,
+                 number_features, n_jobs=1, random_state=0):
+            imputer = SimpleImputer(impute_strategy=impute_strategy)
+            enc = OneHotEncoder()
+            scaler = StandardScaler()
+
+            estimator = LogisticRegressionClassifier(random_state=random_state,
+                                                    penalty=penalty,
+                                                    C=C,
+                                                    n_jobs=-1)
+            super().__init__(objective=objective, name=self.name, problem_type=[ProblemTypes.BINARY, ProblemTypes.MULTICLASS], component_list=[enc, imputer, estimator, scaler])
+
+    err_msg = "Estimator must be the last component in the pipeline."
+    with pytest.raises(RuntimeError, match=err_msg):
+        pipeline = MockLogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)

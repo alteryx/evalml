@@ -18,9 +18,13 @@ class Transformer(ComponentBase):
         Returns:
             DataFrame: Transformed X
         """
-        return self._component_obj.transform(X)
+        try:
+            return self._component_obj.transform(X)
+        except AttributeError:
+            raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
 
-    def fit_transform(self, X, objective_fit_size=.2):
+
+    def fit_transform(self, X):
         """Fits on X and transforms X
 
         Arguments:
@@ -29,4 +33,7 @@ class Transformer(ComponentBase):
         Returns:
             DataFrame: Transformed X
         """
-        return self._component_obj.fit_transform(X)
+        try:
+            return self._component_obj.fit_transform(X)
+        except AttributeError:
+            raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
