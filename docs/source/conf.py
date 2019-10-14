@@ -15,10 +15,11 @@
 import os
 import sys
 
+import evalml
+
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
 
-import evalml
 
 # -- Project information -----------------------------------------------------
 
