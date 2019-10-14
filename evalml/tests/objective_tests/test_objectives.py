@@ -1,6 +1,4 @@
 import pandas as pd
-from evalml.problem_types import ProblemTypes
-
 
 from evalml.objectives import (
     Precision,
@@ -10,6 +8,7 @@ from evalml.objectives import (
     get_objectives
 )
 from evalml.pipelines import LogisticRegressionPipeline
+from evalml.problem_types import ProblemTypes
 
 
 def test_get_objective():
