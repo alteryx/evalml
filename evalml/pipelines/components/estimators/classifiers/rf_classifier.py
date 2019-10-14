@@ -1,7 +1,9 @@
+from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
+from skopt.space import Integer
+
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimator import Estimator
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
-from skopt.space import Integer, Real
+
 
 class RandomForestClassifier(Estimator):
     """Random Forest Classifier"""
@@ -24,4 +26,3 @@ class RandomForestClassifier(Estimator):
                                                        n_jobs=self.n_jobs)
         self.parameters = {"n_estimators": self.n_estimators, "max_depth": self.max_depth}
         super().__init__(name=self.name, component_type=self.component_type, parameters=self.parameters, component_obj=self._component_obj)
-

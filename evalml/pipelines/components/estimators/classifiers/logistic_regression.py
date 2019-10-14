@@ -1,7 +1,9 @@
+from sklearn.linear_model import LogisticRegression as LogisticRegression
+from skopt.space import Real
+
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimator import Estimator
-from sklearn.linear_model import LogisticRegression as LogisticRegression
-from skopt.space import Integer, Real
+
 
 class LogisticRegressionClassifier(Estimator):
     """

@@ -1,6 +1,7 @@
 import category_encoders as ce
-from evalml.pipelines.components.transformers import Transformer
+
 from evalml.pipelines.components import ComponentTypes
+from evalml.pipelines.components.transformers import Transformer
 
 
 class OneHotEncoder(Transformer):

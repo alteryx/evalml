@@ -1,5 +1,5 @@
 
-from evalml.pipelines.components import ComponentBase, ComponentTypes
+from evalml.pipelines.components import ComponentBase
 
 
 class Estimator(ComponentBase):
@@ -30,6 +30,3 @@ class Estimator(ComponentBase):
             DataFrame : probability estimates
         """
         return self._component_obj.predict_proba(X)
-
-
-
