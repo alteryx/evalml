@@ -43,3 +43,5 @@ def test_rf_multi(X_y_multi):
     assert((y_pred == sk_pipeline.predict(X)).all())
     assert (sk_score == clf_score[0])
     assert len(np.unique(y_pred)) == 3
+    assert len(clf.feature_importances) == len(X[0])
+    assert not clf.feature_importances.isnull().all().all()

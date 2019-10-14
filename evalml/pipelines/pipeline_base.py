@@ -173,8 +173,6 @@ class PipelineBase:
                 X_t = self._transform(X)
                 y_predicted = self.component_list[-1].predict(X_t)
 
-                # y_predicted = self._predict(X)
-
             if self.objective.uses_extra_columns:
                 return self.objective.predict(y_predicted, X)
 
