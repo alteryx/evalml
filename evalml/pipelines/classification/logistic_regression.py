@@ -41,7 +41,7 @@ class LogisticRegressionPipeline(PipelineBase):
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
-        coef_ = self.pipeline["estimator"].coef_
+        coef_ = self.get_component("Logistic Regression Classifier")._component_obj.coef_
 
         # binary classification case
         if len(coef_) <= 2:
