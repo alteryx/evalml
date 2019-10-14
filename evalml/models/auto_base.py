@@ -129,17 +129,16 @@ class AutoBase:
             start = time.time()
             elapsed = 0
             last_time = start
-            with tqdm(total=self.max_time, disable=not self.verbose, file=stdout) as pbar:
-                while elapsed <= self.max_time:
-                    self._do_iteration(X, y, pbar, raise_errors)
-                    new_time = time.time()
-                    elapsed = new_time - start
-                    last_diff = round(new_time - last_time, 2)
-                    pbar.update(last_diff)
-                    last_time = new_time
+            pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
+            while elapsed <= self.max_time:
+                self._do_iteration(X, y, pbar, raise_errors)
+                new_time = time.time()
+                elapsed = new_time - start
+                last_diff = round(new_time - last_time, 2)
+                pbar.update(last_diff)
+                last_time = new_time
         else:
-            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
-
+            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             start = time.time()
             for n in pbar:
                 elapsed = time.time() - start
