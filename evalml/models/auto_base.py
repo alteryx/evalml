@@ -12,7 +12,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger
+from evalml.utils import Logger, convert_to_seconds
 
 
 class AutoBase:
@@ -24,7 +24,6 @@ class AutoBase:
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.max_time = max_time
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -49,6 +48,12 @@ class AutoBase:
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
 
+        if max_time is None or isinstance(max_time, (int, float)):
+            self.max_time = max_time
+        elif isinstance(max_time, str):
+            self.max_time = convert_to_seconds(max_time)
+        else:
+            raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
@@ -64,6 +69,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
+        self._MAX_NAME_LEN = 40
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
@@ -113,8 +119,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout)
-
+        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
             elapsed = time.time() - start
@@ -155,7 +160,11 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        pbar.set_description("Testing %s" % (pipeline_class.name))
+        desc = "▹ {}: ".format(pipeline_class.name)
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
 
         start = time.time()
         scores = []
@@ -199,6 +208,11 @@ class AutoBase:
             all_objective_scores=all_objective_scores,
             training_time=training_time
         )
+
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)

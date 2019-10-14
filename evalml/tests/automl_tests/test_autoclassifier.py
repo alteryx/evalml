@@ -254,4 +254,19 @@ def test_model_types_as_list():
         AutoClassifier(objective='AUC', model_types='linear_model', max_pipelines=2)
 
 
+def test_max_time_units():
+    str_max_time = AutoClassifier(objective='F1', max_time='60 seconds')
+    assert str_max_time.max_time == 60
+
+    hour_max_time = AutoClassifier(objective='F1', max_time='1 hour')
+    assert hour_max_time.max_time == 3600
+
+    min_max_time = AutoClassifier(objective='F1', max_time='30 mins')
+    assert min_max_time.max_time == 1800
+
+    with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
+        AutoClassifier(objective='F1', max_time='30 years')
+
+    with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
+        AutoClassifier(objective='F1', max_time=(30, 'minutes'))
 # def test_serialization(trained_model)
