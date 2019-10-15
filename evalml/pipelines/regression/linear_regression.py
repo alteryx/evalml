@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-from skopt.space import Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
