@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from evalml.preprocessing import detect_highly_null
+from evalml.guardrails import detect_highly_null
 
 
 def test_detect_highly_null():
@@ -10,8 +10,8 @@ def test_detect_highly_null():
     df.loc[:9, 'B'] = np.nan
     df.loc[:30, 'C'] = np.nan
     df.loc[:, 'D'] = np.nan
-    df.loc[:9, 'E'] = np.nan
+    df.loc[:89, 'E'] = np.nan
 
-    expected = {'B', 'D'}
-    nan_dropped_df = detect_highly_null(df, percent_threshold=.9)
-    assert expected == nan_dropped_df
+    expected = {'D', 'E'}
+    highly_null_set = detect_highly_null(df, percent_threshold=.9)
+    assert expected == highly_null_set

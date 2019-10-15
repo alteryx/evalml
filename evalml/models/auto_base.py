@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from evalml import preprocessing
+from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -31,8 +31,6 @@ class AutoBase:
         self.cv = cv
         self.null_threshold = null_threshold
         self.verbose = verbose
-
-
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
@@ -116,13 +114,13 @@ class AutoBase:
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
-            leaked = preprocessing.detect_label_leakage(X, y)
+            leaked = guardrails.detect_label_leakage(X, y)
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         if self.null_threshold is not None:
-            highly_null_columns = preprocessing.detect_highly_null(X, percent_threshold=self.null_threshold)
+            highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
             self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
