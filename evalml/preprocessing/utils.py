@@ -56,6 +56,11 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     Returns:
         DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
     """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    if not isinstance(y, pd.Series):
+        y = pd.Series(y)
+
     if regression:
         CV_method = ShuffleSplit(n_splits=1,
                                  test_size=test_size,
@@ -105,6 +110,10 @@ def detect_label_leakage(X, y, threshold=.95):
     Returns:
         leakage, dictionary of features with leakage and corresponding threshold
     """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    if not isinstance(y, pd.Series):
+        y = pd.Series(y)
 
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']

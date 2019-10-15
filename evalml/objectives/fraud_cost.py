@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
@@ -38,12 +40,26 @@ class FraudCost(ObjectiveBase):
     def decision_function(self, y_predicted, extra_cols, threshold):
         """Determine if transaction is fraud given predicted probabilities,
             dataframe with transaction amount, and threshold"""
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
         transformed_probs = (y_predicted * extra_cols[self.amount_col])
         return transformed_probs > threshold
 
     def objective_function(self, y_predicted, y_true, extra_cols):
         """Calculate amount lost to fraud given predictions, true values, and dataframe
             with transaction amount"""
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
 
         # extract transaction using the amount columns in users data
         transaction_amount = extra_cols[self.amount_col]

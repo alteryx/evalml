@@ -61,6 +61,9 @@ class PipelineBase:
         Returns:
             Series : estimated labels
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         if self.objective and self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
                 y_predicted = self.predict_proba(X)
@@ -83,6 +86,8 @@ class PipelineBase:
         Returns:
             DataFrame : probability estimates
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         proba = self.pipeline.predict_proba(X)
         if proba.shape[1] <= 2:
@@ -101,6 +106,12 @@ class PipelineBase:
         Returns:
             score, ordered dictionary of other objective scores
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
         # calculate predictions only once

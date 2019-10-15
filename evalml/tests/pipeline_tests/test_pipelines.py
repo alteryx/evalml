@@ -2,7 +2,6 @@ import errno
 import os
 import shutil
 
-import pandas as pd
 import pytest
 
 import evalml.tests as tests
@@ -58,8 +57,6 @@ def test_serialization(X_y, trained_model, path_management):
 
 def test_reproducibility(X_y):
     X, y = X_y
-    X = pd.DataFrame(X)
-
     objective = FraudCost(
         retry_percentage=.5,
         interchange_fee=.02,
