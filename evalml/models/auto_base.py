@@ -18,8 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, verbose,
-                 detect_highly_null, null_threshold):
+                 add_result_callback, additional_objectives, null_threshold, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -30,9 +29,9 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
-        self.verbose = verbose
-        self.detect_highly_null = detect_highly_null
         self.null_threshold = null_threshold
+        self.verbose = verbose
+
 
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -122,7 +121,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if self.detect_highly_null:
+        if self.null_threshold is not None:
             highly_null_columns = preprocessing.detect_highly_null(X, percent_threshold=self.null_threshold)
             self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 

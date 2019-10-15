@@ -123,12 +123,12 @@ def detect_highly_null(X, percent_threshold=.95):
 
     Args:
         X (DataFrame) : features
-        percent_threshold(float): Require that percentage of non-null values to not be considered "highly-null", defaults to .95
+        percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
 
     Returns:
         a set of features that are highly-null
     """
     threshold = len(X) * percent_threshold
-    num_nonnan = X.count()
-    filtered = num_nonnan[num_nonnan < threshold]
-    return (set(filtered.index))
+    is_highly_null_df = (df.isnull().sum() >= threshold)
+    highly_null_indices = set(is_highly_null_df[is_highly_null_df].index)
+    return highly_null_indices
