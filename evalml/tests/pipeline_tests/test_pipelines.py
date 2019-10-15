@@ -2,9 +2,10 @@ import errno
 import os
 import shutil
 
-import matplotlib
 import pandas as pd
 import pytest
+
+import matplotlib
 
 import evalml.tests as tests
 from evalml.model_types import ModelTypes
