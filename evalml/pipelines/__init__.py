@@ -20,7 +20,7 @@ from .classification import (
     RFClassificationPipeline,
     XGBoostPipeline
 )
-from .regression import RFRegressionPipeline
+from .regression import LinearRegressionPipeline, RFRegressionPipeline
 from .utils import (
     get_pipelines,
     list_model_types,

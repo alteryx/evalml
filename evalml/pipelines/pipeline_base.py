@@ -111,7 +111,10 @@ class PipelineBase:
         X_t = X
         y_t = y
         for component in self.component_list[:-1]:
-            X_t = component.fit_transform(X_t, y_t)
+            if component._needs_fitting:
+                X_t = component.fit_transform(X_t, y_t)
+            else:
+                X_t = component.transform(X_t, y_t)
         self.component_list[-1].fit(X_t, y_t)
 
     def fit(self, X, y, objective_fit_size=.2):
