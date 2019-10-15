@@ -20,10 +20,14 @@ def test_function(X_y):
     pipeline.predict_proba(X)
     pipeline.score(X, y)
 
-    predicted = pd.Series([1, 10, .5])
+    predicted = pd.Series([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)
-    assert out.tolist() == [False, True, False]
+    y_true = [False, True, False, True]
+    assert out.tolist() == [False, True, False, True]
 
-    predicted = np.array([1, 10, .5])
+    predicted = np.array([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)
-    assert out.tolist() == [False, True, False]
+    assert out.tolist() == y_true
+
+    score = objective.score(out, y_true)
+    assert (score == 0.5)
