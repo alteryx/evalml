@@ -60,7 +60,7 @@ def test_describe_component():
     assert rf_classifier.describe(True) == {"n_estimators": 10, "max_depth": 3}
     assert xgb_classifier.describe(True) == {"eta": 0.1, "max_depth": 3, "min_child_weight": 1}
     assert rf_regressor.describe(True) == {"n_estimators": 10, "max_depth": 3}
-    assert linear_regressor.describe(True) == {}
+    assert linear_regressor.describe(True) == {"fit_intercept": True, 'normalize': False}
 
 
 def test_missing_methods_on_components(X_y):
