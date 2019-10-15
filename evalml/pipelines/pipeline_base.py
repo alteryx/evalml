@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 from evalml.objectives import get_objective
 
@@ -128,3 +129,11 @@ class PipelineBase:
         other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
+
+    def plot_feature_importance(self):
+        features = self.feature_importances.sort_values(['importance'], ascending=False)
+        title = 'Pipeline \'{}\' Feature Importance'.format(self.name)
+        ax = features.plot(kind='bar', x='feature', y='importance', title=title, legend=False)
+        ax.set_ylabel('feature importance')
+        plt.show()
+        return ax

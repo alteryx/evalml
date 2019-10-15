@@ -3,7 +3,7 @@ def convert_to_seconds(input_str):
     minutes = {'m', 'minute', 'min'}
     seconds = {'s', 'second', 'sec'}
     value, unit = input_str.split()
-    if unit[-1] == 's':
+    if unit[-1] == 's' and len(unit) != 1:
         unit = unit[:-1]
     if unit in seconds:
         return float(value)

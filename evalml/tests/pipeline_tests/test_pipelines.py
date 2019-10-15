@@ -2,6 +2,7 @@ import errno
 import os
 import shutil
 
+import matplotlib
 import pandas as pd
 import pytest
 
@@ -74,3 +75,10 @@ def test_reproducibility(X_y):
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
+
+
+def test_feature_importance_plot(X_y):
+    X, y = X_y
+    clf = LogisticRegressionPipeline(objective=Precision, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+    assert type(clf.plot_feature_importance()) is matplotlib.axes._subplots.Subplot
