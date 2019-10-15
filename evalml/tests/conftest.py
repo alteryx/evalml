@@ -57,8 +57,3 @@ def trained_model(X_y):
     clf.fit(X, y)
 
     return clf
-
-
-@pytest.fixture
-def rootdir():
-    return os.path.dirname(os.path.abspath(__file__))
