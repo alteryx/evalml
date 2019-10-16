@@ -13,6 +13,8 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
+from IPython.display import display
+import matplotlib.pyplot as plt
 
 
 class AutoBase:
@@ -71,7 +73,7 @@ class AutoBase:
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
-    def fit(self, X, y, feature_types=None, raise_errors=False):
+    def fit(self, X, y, feature_types=None, raise_errors=False, plot_iterations=False):
         """Find best classifier
 
         Arguments:
@@ -127,8 +129,15 @@ class AutoBase:
                 self.logger.log("\n\nMax time elapsed. Stopping search early.")
                 break
             self._do_iteration(X, y, pbar, raise_errors)
-
         pbar.close()
+        if plot_iterations:
+            plot_data = self.rankings[['id', 'score']]
+            plot_data = plot_data.sort_values('id')
+            title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
+            ax = plot_data.plot(x='id', y='score', xticks=plot_data['id'], legend=False, style='-o', title=title)
+            ax.set_xlabel('iteration')
+            ax.set_ylabel(self.objective.name)
+            plt.show()
 
         self.logger.log("\n✔ Optimization finished")
 
