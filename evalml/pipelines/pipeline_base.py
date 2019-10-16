@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -135,5 +134,4 @@ class PipelineBase:
         title = 'Pipeline \'{}\' Feature Importance'.format(self.name)
         ax = features.plot(kind='bar', x='feature', y='importance', title=title, legend=False)
         ax.set_ylabel('feature importance')
-        plt.show()
         return ax
