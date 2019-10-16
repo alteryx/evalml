@@ -108,3 +108,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Pytest Configuration Files
+pytest.ini
