@@ -3,6 +3,8 @@ import time
 from collections import OrderedDict
 from sys import stdout
 
+import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -13,8 +15,6 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
-from IPython.display import display
-import matplotlib.pyplot as plt
 
 
 class AutoBase:
@@ -86,10 +86,23 @@ class AutoBase:
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
+            plot_iterations (boolean, False): Show interactive plot of iteration vs. score
+                during fitting. Can only be ran in Jupyter Notebook.
+
         Returns:
 
             self
         """
+        def update_plot(fig, ax):
+            ax.clear()
+            plot_data = self.rankings[['id', 'score']]
+            plot_data = plot_data.sort_values('id')
+            title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
+            plot_data.plot(x='id', y='score', xticks=plot_data['id'], legend=False, style='-o', ax=ax, title=title)
+            ax.set_xlabel('iteration')
+            ax.set_ylabel(self.objective.name)
+            fig.canvas.draw()
+
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -120,7 +133,12 @@ class AutoBase:
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
-
+        if plot_iterations:
+            matplotlib.use('nbagg')
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            fig.canvas.draw()
+            plt.show()
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
@@ -129,15 +147,9 @@ class AutoBase:
                 self.logger.log("\n\nMax time elapsed. Stopping search early.")
                 break
             self._do_iteration(X, y, pbar, raise_errors)
+            if plot_iterations:
+                update_plot(fig, ax)
         pbar.close()
-        if plot_iterations:
-            plot_data = self.rankings[['id', 'score']]
-            plot_data = plot_data.sort_values('id')
-            title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
-            ax = plot_data.plot(x='id', y='score', xticks=plot_data['id'], legend=False, style='-o', title=title)
-            ax.set_xlabel('iteration')
-            ax.set_ylabel(self.objective.name)
-            plt.show()
 
         self.logger.log("\n✔ Optimization finished")
 
