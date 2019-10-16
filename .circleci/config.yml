@@ -60,13 +60,12 @@ jobs:
                 source test_python/bin/activate
                 codecov
   
-   changelog_updated:
-    working_directory: ~/featuretools
-    docker:
-      - image: busybox:latest
-    steps:
-      - checkout
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
+  changelog_updated:
+  docker:
+    - image: busybox:latest
+  steps:
+    - checkout
+    - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\`"
 
 
 workflows:
