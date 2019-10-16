@@ -1,11 +1,10 @@
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-
-import category_encoders as ce
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
