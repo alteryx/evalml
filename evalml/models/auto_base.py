@@ -18,7 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, verbose):
+                 add_result_callback, additional_objectives, id_cols_threshold, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -29,9 +29,9 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
+        self.id_cols_threshold = id_cols_threshold
         self.verbose = verbose
         self.logger = Logger(self.verbose)
-
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
 
@@ -118,6 +118,10 @@ class AutoBase:
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+        if self.id_cols_threshold is not None:
+            id_cols = preprocessing.detect_id_columns(X, self.id_cols_threshold)
+            if len(id_cols) > 0:
+                self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
