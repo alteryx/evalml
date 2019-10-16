@@ -61,11 +61,12 @@ jobs:
                 codecov
   
   changelog_updated:
-  docker:
-    - image: busybox:latest
-  steps:
-    - checkout
-    - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\`"
+    executor:
+      name: python
+      python_version: "3.7"
+    steps:
+      - checkout
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\`"
 
 
 workflows:
