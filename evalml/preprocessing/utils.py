@@ -134,16 +134,17 @@ def detect_id_columns(X, threshold=1.0):
         A dictionary of features with column name or index and their corresponding probability
     """
     id_cols = {}
-    cols_named_id = (X.columns[X.columns.str.match('id', case=False)])  # columns whose name is "id"
+    col_names = [str(col) for col in X.columns.tolist()]
+    cols_named_id = [col for col in col_names if (col.lower() == "id")] # columns whose name is "id"
     id_cols.update([(col, 0.95) for col in cols_named_id])
 
     check_all_unique = (X.nunique() == len(X))
+    #### TODO: check if float (for rounding error purposes)
     cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
-    id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in cols_with_all_unique])
+    id_cols.update([(str(col), 1.0) if col in id_cols else (str(col), 0.95) for col in cols_with_all_unique])
 
-    col_ends_with_id = (X.columns[X.columns.str.lower().str.endswith('_id')])  # columns whose name ends with "_id"
+    col_ends_with_id = [col for col in col_names if str(col).lower().endswith("_id")] # columns whose name ends with "_id"
     id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in col_ends_with_id])
 
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
-
     return id_cols_above_threshold
