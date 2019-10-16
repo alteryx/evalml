@@ -39,3 +39,5 @@ def test_function(X_y):
     extra_columns = {"value": [100, 5, 25]}
     out = fraud_cost.decision_function(y_predicted, extra_columns, 5)
     assert out.tolist() == y_true
+    score = fraud_cost.score(out, y_true, extra_columns)
+    assert (score == 0.0)
