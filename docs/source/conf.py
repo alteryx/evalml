@@ -196,4 +196,10 @@ def setup(app):
     app.add_stylesheet("style.css")
 
 
+extlinks = {
+    'issue': ('https://github.com/featurelabs/evalml/issues/%s', 'GH#'),
+    'pr': ('https://github.com/featurelabs/evalml/pull/%s', 'GH#'),
+    'user': ('https://github.com/%s', '@')
+}
+
 html_show_sphinx = False
