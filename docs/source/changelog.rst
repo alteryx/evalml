@@ -11,7 +11,7 @@ Changelog
     * Changes
         *
     * Documentation Changes
-        *
+        * Added Changlog (:pr:`136`)
     * Testing Changes
         *
 
