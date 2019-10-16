@@ -116,3 +116,34 @@ def detect_label_leakage(X, y, threshold=.95):
     corrs = X.corrwith(y).abs()
     out = corrs[corrs >= threshold]
     return out.to_dict()
+
+
+def detect_id_columns(X, threshold=1.0):
+    """Check if any of the features are ID columns.
+
+    Currently only performs these simple checks:
+        - column name is "id"
+        - column name ends in "_id"
+        - column contains all unique values
+
+    Args:
+        X (pd.DataFrame): The input features to check
+        threshold (float): the probability threshold to be considered an ID column. Defaults to 1.0
+
+    Returns:
+        A dictionary of features with column name or index and their corresponding probability
+    """
+    id_cols = {}
+    cols_named_id = (X.columns[X.columns.str.match('id', case=False)])  # columns whose name is "id"
+    id_cols.update([(col, 0.95) for col in cols_named_id])
+
+    check_all_unique = (X.nunique() == len(X))
+    cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
+    id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in cols_with_all_unique])
+
+    col_ends_with_id = (X.columns[X.columns.str.lower().str.endswith('_id')])  # columns whose name ends with "_id"
+    id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in col_ends_with_id])
+
+    id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
+
+    return id_cols_above_threshold
