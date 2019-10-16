@@ -121,7 +121,8 @@ class AutoBase:
 
         if self.null_threshold is not None:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
-            self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
+            if len(highly_null_columns) > 0:
+                self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
