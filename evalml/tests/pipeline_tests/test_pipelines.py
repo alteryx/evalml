@@ -30,7 +30,7 @@ def test_get_pipelines():
 
 def test_serialization(X_y, tmpdir):
     X, y = X_y
-    path = os.path.join(tmpdir, 'pipe.pkl')
+    path = os.path.join(str(tmpdir), 'pipe.pkl')
     objective = Precision()
 
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
@@ -42,14 +42,14 @@ def test_serialization(X_y, tmpdir):
 @pytest.fixture
 def pickled_pipeline_path(X_y, tmpdir):
     X, y = X_y
-    path = os.path.join(tmpdir, 'pickled_pipe.pkl')
+    path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
     objective = MockPrecision()
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
-
+ 
 
 def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path):
     X, y = X_y
