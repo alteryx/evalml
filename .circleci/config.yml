@@ -63,7 +63,7 @@ jobs:
   changelog_updated:
     working_directory: ~/evalml
     docker:
-      - image: busybox:latest
+      - image: docker:stable-git
     steps:
       - checkout
       - run: git diff-index --name-only origin/master  | grep "docs/source/changelog.rst"
