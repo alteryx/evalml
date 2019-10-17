@@ -264,6 +264,9 @@ def test_max_time_units():
     min_max_time = AutoClassifier(objective='F1', max_time='30 mins')
     assert min_max_time.max_time == 1800
 
+    min_max_time = AutoClassifier(objective='F1', max_time='30 s')
+    assert min_max_time.max_time == 30
+
     with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
         AutoClassifier(objective='F1', max_time='30 years')
 
