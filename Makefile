@@ -19,7 +19,7 @@ test:
 	pytest evalml/tests --cov=evalml
 
 .PHONY: circleci-test
-test:
+circleci-test:
 	pytest evalml/tests -n 2 --cov=evalml --junitxml=test-reports/junit.xml
 
 .PHONY: installdeps
