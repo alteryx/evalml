@@ -121,7 +121,7 @@ class AutoBase:
         if self.id_cols_threshold is not None:
             id_cols = preprocessing.detect_id_columns(X, self.id_cols_threshold)
             if len(id_cols) > 0:
-                self.logger.log("WARNING: {} columns may be id columns.".format(', '.join(id_cols.keys())))
+                self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
