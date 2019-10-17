@@ -60,13 +60,14 @@ jobs:
                 source test_python/bin/activate
                 codecov
   
+  # TODO: Needs update after changelog format change
   changelog_updated:
     working_directory: ~/evalml
     docker:
       - image: docker:stable-git
     steps:
       - checkout
-      - run: cat docs/source/changelog.rst | grep "\<.*${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\>"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`.*<${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\>.*\`" 
 
 workflows:
   version: 2
