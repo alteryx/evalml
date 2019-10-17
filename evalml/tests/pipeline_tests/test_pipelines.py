@@ -49,7 +49,7 @@ def pickled_pipeline_path(X_y, tmpdir):
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
- 
+
 
 def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path):
     X, y = X_y
