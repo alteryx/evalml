@@ -11,6 +11,6 @@ Changelog
     * Changes
         *
     * Documentation Changes
-        * Added Changlog
+        * Added Changelog
     * Testing Changes
         *
