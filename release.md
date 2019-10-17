@@ -13,10 +13,10 @@ The PR should include the following:
 
 ## Create GitHub Release
 After the release pull request has been merged into the master branch, it is time draft the github release.
-* The target should be the master branch
-* The tag should be the version number with a v prefix (e.g. v0.1.2)
-* Release title is the same as the tag
-* Release description should be the full changelog updates for the release.
+    * The target should be the master branch
+    * The tag should be the version number with a v prefix (e.g. v0.1.2)
+    * Release title is the same as the tag
+    * Release description should be the full changelog updates for the release.
 
 ## Release using Release-tools
 Run the following assuming you have release-tools installed:
