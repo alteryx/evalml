@@ -68,7 +68,9 @@ jobs:
     steps:
       - checkout
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
-      - run: cat docs/source/changelog.rst | grep ":pr:\`"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`\<"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`\<{CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`\<${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\>"
       - run: cat docs/source/changelog.rst | grep ":pr:\`\<${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\>\`"
 
 workflows:
