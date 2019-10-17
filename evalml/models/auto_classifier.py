@@ -57,7 +57,7 @@ class AutoClassifier(AutoBase):
                 Will override default objectives for problem type if not empty.
 
             null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
-                null values for the feature to be considered "highly-null".
+                null values for the feature to be considered "highly-null". Default is 0.95.
 
             random_state (int): the random_state
 
