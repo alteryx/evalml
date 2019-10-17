@@ -116,3 +116,28 @@ def detect_label_leakage(X, y, threshold=.95):
     corrs = X.corrwith(y).abs()
     out = corrs[corrs >= threshold]
     return out.to_dict()
+
+
+def detect_multicollinearity(X, threshold=.95):
+    """Check if multicollinearity exists.
+
+    Currently only supports numeric features.
+
+    Args:
+        X (pd.DataFrame): The input features to check
+        threshold (float): the correlation threshold to be considered correlated . Defaults to .95
+
+    Returns:
+        dictionary
+    """
+
+    # only select numeric
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    X = X.select_dtypes(include=numerics)
+
+    if len(X.columns) == 0:
+        return {}
+
+    corrs = X.corr().abs()
+    out = corrs[corrs >= threshold]
+    return out.to_dict()
