@@ -67,6 +67,8 @@ jobs:
       - image: docker:stable-git
     steps:
       - checkout
+      - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`"
       - run: cat docs/source/changelog.rst | grep ":pr:\`\<${CIRCLE_PULL_REQUEST##https://github.com/Featurelabs/evalml/pull/}\>\`" 
 
 workflows:
