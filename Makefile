@@ -17,6 +17,7 @@ lint-fix:
 .PHONY: test
 test:
 	pytest evalml/tests --cov=evalml
+	pytest --nbval-lax --ignore=docs/source/demos/fraud.ipynb docs/source/
 
 .PHONY: installdeps
 installdeps:
