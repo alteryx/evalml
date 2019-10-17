@@ -35,7 +35,7 @@ def detect_highly_null(X, percent_threshold=.95):
         percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
 
     Returns:
-        A dictionary of features with column name or index and their percentage of null values 
+        A dictionary of features with column name or index and their percentage of null values
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
