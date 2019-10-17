@@ -18,6 +18,10 @@ lint-fix:
 test:
 	pytest evalml/tests --cov=evalml
 
+.PHONY: circleci-test
+test:
+	pytest evalml/tests -n 2 --cov=evalml --junitxml=test-reports/junit.xml
+
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q

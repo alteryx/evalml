@@ -52,7 +52,11 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
-          make test
+          make circleci-test
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports  
       - when:
           condition: << parameters.codecov >>
           steps:
