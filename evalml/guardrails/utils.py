@@ -77,7 +77,7 @@ def detect_multicollinearity(X, threshold=.95):
 
     Args:
         X (pd.DataFrame): The input features to check
-        threshold (float): the correlation threshold to be considered correlated . Defaults to .95
+        threshold (float): the correlation threshold to be considered correlated. Defaults to .95
 
     Returns:
         dictionary
@@ -89,5 +89,12 @@ def detect_multicollinearity(X, threshold=.95):
 
     if len(X.columns) == 0:
         return {}
+
+    # vif > 5, 10
+    vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns).to_dict()
+    X_arr = X.to_numpy()
+
+    # condition index > 30
+    condition_num = np.linalg.cond(X_arr)
 
     return
