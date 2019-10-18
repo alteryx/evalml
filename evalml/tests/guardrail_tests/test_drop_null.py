@@ -13,5 +13,5 @@ def test_detect_highly_null():
     df.loc[:89, 'E'] = np.nan
 
     expected = {'D': 1.0, 'E': 0.9}
-    highly_null_set = detect_highly_null(df, percent_threshold=.9)
+    highly_null_set = detect_highly_null(df, percent_threshold=.90)
     assert expected == highly_null_set
