@@ -280,7 +280,7 @@ class MedianAE(ObjectiveBase):
     needs_fitting = False
     greater_is_better = False
     need_proba = False
-    name = "MedAE"
+    name = "MedianAE"
     problem_types = [ProblemTypes.REGRESSION]
 
     def score(self, y_predicted, y_true):
