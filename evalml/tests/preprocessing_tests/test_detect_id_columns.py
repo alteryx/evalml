@@ -1,6 +1,6 @@
 import pandas as pd
 
-from evalml.preprocessing import detect_id_columns
+from evalml.guardrails import detect_id_columns
 
 
 def test_detect_id_columns():

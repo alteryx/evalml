@@ -120,7 +120,7 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
         if self.id_cols_threshold is not None:
-            id_cols = preprocessing.detect_id_columns(X, self.id_cols_threshold)
+            id_cols = guardrails.detect_id_columns(X, self.id_cols_threshold)
             if len(id_cols) > 0:
                 self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
 
