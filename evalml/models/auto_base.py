@@ -93,12 +93,12 @@ class AutoBase:
 
             self
         """
-        def update_plot(fig, ax):
+        def update_plot(fig, ax, iter_scores):
             ax.clear()
-            plot_data = self.rankings[['id', 'score']]
-            plot_data = plot_data.sort_values('id')
             title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
-            plot_data.plot(x='id', y='score', xticks=plot_data['id'], legend=False, style='-o', ax=ax, title=title)
+            iter_numbers = list(range(len(iter_scores)))
+            plt.plot(iter_numbers, iter_scores, '-o')
+            plt.title(title)
             ax.set_xlabel('iteration')
             ax.set_ylabel(self.objective.name)
             fig.canvas.draw()
@@ -139,6 +139,7 @@ class AutoBase:
             ax = fig.add_subplot(111)
             fig.canvas.draw()
             plt.show()
+            iter_scores = list()
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
@@ -148,7 +149,9 @@ class AutoBase:
                 break
             self._do_iteration(X, y, pbar, raise_errors)
             if plot_iterations:
-                update_plot(fig, ax)
+                new_score = self.rankings['score'].max()
+                iter_scores.append(new_score)
+                update_plot(fig, ax, iter_scores)
         pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
