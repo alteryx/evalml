@@ -15,3 +15,9 @@ def test_detect_highly_null():
     expected = {'D': 1.0, 'E': 0.9}
     highly_null_set = detect_highly_null(df, percent_threshold=.90)
     assert expected == highly_null_set
+
+    # testing np input
+    nan_arr = np.full((10, 5), np.nan)
+    expected = {0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 1.0}
+    highly_null_set = detect_highly_null(nan_arr, percent_threshold=1.0)
+    assert expected == highly_null_set
