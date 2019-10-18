@@ -17,6 +17,7 @@ import evalml.preprocessing
 import evalml.problem_types
 import evalml.model_types
 import evalml.utils
+import evalml.guardrails
 
 from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
 from evalml.models import AutoClassifier, AutoRegressor
