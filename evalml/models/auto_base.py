@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from evalml import preprocessing
+from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -18,7 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, id_cols_threshold, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, id_cols_threshold, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -30,6 +30,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.id_cols_threshold = id_cols_threshold
+        self.null_threshold = null_threshold
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -114,7 +115,7 @@ class AutoBase:
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
-            leaked = preprocessing.detect_label_leakage(X, y)
+            leaked = guardrails.detect_label_leakage(X, y)
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
@@ -122,6 +123,11 @@ class AutoBase:
             id_cols = preprocessing.detect_id_columns(X, self.id_cols_threshold)
             if len(id_cols) > 0:
                 self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
+
+        if self.null_threshold is not None:
+            highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
+            if len(highly_null_columns) > 0:
+                self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
