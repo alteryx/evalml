@@ -67,13 +67,13 @@ def test_missing_methods_on_components(X_y):
     # test that estimator doesn't have
     X, y = X_y
 
-    estimator = Estimator("Dummy Estimator", ComponentTypes.CLASSIFIER)
+    estimator = Estimator("Dummy Estimator", component_type=ComponentTypes.CLASSIFIER, hyperparameters={}, component_obj=None, needs_fitting=False, random_state=0)
     with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
-    transformer = Transformer("Dummy Transformer", ComponentTypes.IMPUTER)
+    transformer = Transformer("Dummy Transformer", ComponentTypes.IMPUTER, hyperparameters={}, component_obj=None, needs_fitting=False, random_state=0)
     with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):

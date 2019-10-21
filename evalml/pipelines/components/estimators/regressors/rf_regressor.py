@@ -1,27 +1,33 @@
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 
 
 class RandomForestRegressor(Estimator):
     """Random Forest Regressor"""
-    hyperparameters = {
+    hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
     }
+    model_type = ModelTypes.RANDOM_FOREST
 
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
-        self.name = "Random Forest Regressor"
-        self.component_type = ComponentTypes.REGRESSOR
-        self.n_estimators = n_estimators
-        self.max_depth = max_depth
-        self.n_jobs = n_jobs
-        self.random_state = random_state
-        self._component_obj = SKRandomForestRegressor(random_state=self.random_state,
-                                                      n_estimators=self.n_estimators,
-                                                      max_depth=self.max_depth,
-                                                      n_jobs=self.n_jobs)
-        self.parameters = {"n_estimators": self.n_estimators, "max_depth": self.max_depth}
-        super().__init__(name=self.name, component_type=self.component_type, parameters=self.parameters, component_obj=self._component_obj)
+        name = "Random Forest Regressor"
+        component_type = ComponentTypes.REGRESSOR
+        hyperparameters = {"n_estimators": n_estimators,
+                           "max_depth": max_depth}
+        n_jobs = n_jobs
+        random_state = random_state
+        rf_regressor = SKRandomForestRegressor(random_state=random_state,
+                                               n_estimators=n_estimators,
+                                               max_depth=max_depth,
+                                               n_jobs=n_jobs)
+        super().__init__(name=name,
+                         component_type=component_type,
+                         hyperparameters=hyperparameters,
+                         component_obj=rf_regressor,
+                         needs_fitting=True,
+                         random_state=0)

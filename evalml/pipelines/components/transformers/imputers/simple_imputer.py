@@ -6,12 +6,16 @@ from evalml.pipelines.components.transformers import Transformer
 
 class SimpleImputer(Transformer):
     """Imputes missing data with either mean, median and most_frequent for numerical data or most_frequent for categorical data"""
-    hyperparameters = {"impute_strategy": ["mean", "median", "most_frequent"]}
+    hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
     def __init__(self, impute_strategy="most_frequent"):
-        self.name = 'Simple Imputer'
-        self.component_type = ComponentTypes.IMPUTER
-        self.impute_strategy = impute_strategy
-        self.parameters = {"impute_strategy": self.impute_strategy}
+        name = 'Simple Imputer'
+        component_type = ComponentTypes.IMPUTER
+        parameters = {"impute_strategy": impute_strategy}
         imputer = SkImputer(strategy=impute_strategy)
-        super().__init__(name=self.name, component_type=self.component_type, parameters=self.parameters, needs_fitting=True, component_obj=imputer)
+        super().__init__(name=name,
+                         component_type=component_type,
+                         parameters=parameters,
+                         component_obj=imputer,
+                         needs_fitting=True,
+                         random_state=0)

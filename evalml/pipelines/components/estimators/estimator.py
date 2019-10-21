@@ -5,10 +5,6 @@ from evalml.pipelines.components import ComponentBase
 class Estimator(ComponentBase):
     """A component that fits and predicts given data"""
 
-    def __init__(self, name, component_type, parameters={}, needs_fitting=False, component_obj=None, random_state=0):
-        super().__init__(name=name, component_type=component_type, parameters=parameters, needs_fitting=needs_fitting,
-                         component_obj=component_obj, random_state=random_state)
-
     def predict(self, X):
         """Make predictions using selected features.
 

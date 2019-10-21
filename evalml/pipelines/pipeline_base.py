@@ -6,10 +6,11 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator
 
 from evalml.objectives import get_objective
+from evalml.utils import Logger
 
 
 class PipelineBase:
-    def __init__(self, name, objective, component_list=[], problem_type=None, random_state=0, n_jobs=-1):
+    def __init__(self, name, objective, component_list, problem_type=None, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -45,11 +46,15 @@ class PipelineBase:
         self.parameters = {}
         for component in self.component_list:
             self.parameters.update(component.parameters)
+        self.logger = Logger()
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return PipelineBase(name=self.name, objective=self.objective, component_list=self.component_list[index],
-                                random_state=self.random_state, n_jobs=self.n_jobs)
+            return PipelineBase(name=self.name,
+                                objective=self.objective,
+                                component_list=self.component_list[index],
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs)
         elif isinstance(index, int):
             return self.component_list[index]
         else:
@@ -80,20 +85,18 @@ class PipelineBase:
 
         """
         title = "Pipeline: " + self.name
-        print(title)
-        print("=" * len(title))
+        self.logger.log_title(title)
 
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
         objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
-        print(objective_string)
+        self.logger.log_subtitle(objective_string)
 
         # Summary
         for number, component in enumerate(self.component_list, 1):
             component_string = str(number) + ". " + component.name
-            print(component_string)
-        print("\n")
+            self.logger.log(component_string)
 
         for component in self.component_list:
             component.describe()

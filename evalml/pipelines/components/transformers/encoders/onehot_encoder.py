@@ -7,12 +7,16 @@ from evalml.pipelines.components.transformers import Transformer
 class OneHotEncoder(Transformer):
 
     """Creates one-hot encoding for non-numeric data"""
-    hyperparameters = {}
+    hyperparameter_ranges = {}
 
     def __init__(self):
-        self.name = 'One Hot Encoder'
-        self.component_type = ComponentTypes.ENCODER
-        self.parameters = {}
-
+        name = 'One Hot Encoder'
+        component_type = ComponentTypes.ENCODER
+        parameters = {}
         encoder = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-        super().__init__(name=self.name, component_type=self.component_type, parameters=self.parameters, needs_fitting=True, component_obj=encoder)
+        super().__init__(name=name,
+                         component_type=component_type,
+                         parameters=parameters,
+                         component_obj=encoder,
+                         needs_fitting=True,
+                         random_state=0)

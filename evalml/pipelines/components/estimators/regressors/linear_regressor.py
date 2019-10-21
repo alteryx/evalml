@@ -1,24 +1,31 @@
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 
 
 class LinearRegressor(Estimator):
     """Linear Regressor"""
-    hyperparameters = {
+    hyperparameter_ranges = {
         'fit_intercept': [True, False],
         'normalize': [True, False]
     }
+    model_type = ModelTypes.LINEAR_MODEL
 
     def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1):
-        self.name = "Linear Regressor"
-        self.component_type = ComponentTypes.REGRESSOR
-        self._component_obj = SKLinearRegression(fit_intercept=fit_intercept, normalize=normalize, n_jobs=n_jobs)
-        self.fit_intercept = fit_intercept
-        self.normalize = normalize
-        self.parameters = {
-            'fit_intercept': self.fit_intercept,
-            'normalize': self.normalize
+        name = "Linear Regressor"
+        component_type = ComponentTypes.REGRESSOR
+        parameters = {
+            'fit_intercept': fit_intercept,
+            'normalize': normalize
         }
-        super().__init__(name=self.name, component_type=self.component_type, parameters=self.parameters, component_obj=self._component_obj)
+        linear_regressor = SKLinearRegression(fit_intercept=fit_intercept,
+                                              normalize=normalize,
+                                              n_jobs=n_jobs)
+        super().__init__(name=name,
+                         component_type=component_type,
+                         parameters=parameters,
+                         component_obj=linear_regressor,
+                         needs_fitting=True,
+                         random_state=0)
