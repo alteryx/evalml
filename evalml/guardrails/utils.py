@@ -55,7 +55,7 @@ def detect_collinearity(X, threshold=.95):
         threshold (float): the correlation threshold to be considered correlated  Defaults to .95
 
     Returns:
-        dictionary
+        dictionary of potentially collinear features and their percent chance of being collinear
     """
 
     # only select numeric
@@ -66,11 +66,12 @@ def detect_collinearity(X, threshold=.95):
         return {}
 
     corrs = X.corr().abs()
-    out = corrs[corrs >= threshold]
-    return out.to_dict()
+    corrs = corrs.mask(np.tril(np.ones(corrs.shape)).astype(bool)).stack()
+    out = {key: value for (key, value) in corrs.items() if value >= threshold}
+    return out
 
 
-def detect_multicollinearity(X, threshold=.95):
+def detect_multicollinearity(X, vif_threshold=10, index_threshold=30):
     """Check if multicollinearity exists.
 
     Currently only supports numeric features.
@@ -90,11 +91,14 @@ def detect_multicollinearity(X, threshold=.95):
     if len(X.columns) == 0:
         return {}
 
+    multicollinear_cols = {}
     # vif > 5, 10
-    vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns).to_dict()
-    X_arr = X.to_numpy()
+    vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns)
+    vif = vif[vif >= threshold]
+    multicollinear_cols = vif.to_dict()
 
-    # condition index > 30
-    condition_num = np.linalg.cond(X_arr)
+    corr = np.corrcoef(X, rowvar=0)
+    eig_vals, eig_vecs = np.linalg.eig(corr)
+    print np.linalg.cond(corr)
 
-    return
+    return multicollinear_cols
