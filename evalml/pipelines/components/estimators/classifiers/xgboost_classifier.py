@@ -31,3 +31,4 @@ class XGBoostClassifier(Estimator):
                          component_obj=xgb_classifier,
                          needs_fitting=True,
                          random_state=0)
+
