@@ -13,7 +13,7 @@ class XGBoostClassifier(Estimator):
         "min_child_weight": Real(1, 10),
     }
 
-    def __init__(self, eta, max_depth, min_child_weight, random_state=0, **kwargs):
+    def __init__(self, eta, max_depth, min_child_weight, random_state=0):
         self.name = "XGBoost Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
         self.eta = eta
