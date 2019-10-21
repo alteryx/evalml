@@ -16,7 +16,7 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/tests --cov=evalml
+	pytest evalml/tests
 
 .PHONY: circleci-test
 circleci-test:
