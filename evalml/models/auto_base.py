@@ -149,7 +149,10 @@ class AutoBase:
                 break
             self._do_iteration(X, y, pbar, raise_errors)
             if plot_iterations:
-                new_score = self.rankings['score'].max()
+                if self.objective.greater_is_better:
+                    new_score = self.rankings['score'].max()
+                else:
+                    new_score = self.rankings['score'].min()
                 iter_scores.append(new_score)
                 update_plot(fig, ax, iter_scores)
         pbar.close()
