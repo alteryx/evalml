@@ -91,15 +91,14 @@ class PipelineBase:
         if self.objective.greater_is_better:
             better_string = "greater is better"
         objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
-        self.logger.log_subtitle(objective_string)
+        self.logger.log(objective_string)
 
-        # Summary
+        # Summary of steps
+        self.logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_list, 1):
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
-
-        for component in self.component_list:
-            component.describe()
+            component.describe(print_name=False)
 
         if return_dict:
             return self.parameters
