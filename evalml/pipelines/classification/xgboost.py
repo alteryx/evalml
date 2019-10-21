@@ -46,36 +46,6 @@ class XGBoostPipeline(PipelineBase):
         )
         super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, feature_selection, estimator])
 
-    # Need to override fit for multiclass
-
-    def fit(self, X, y, objective_fit_size=.2):
-        """Build a model
-
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-
-            y (pd.Series): the target training labels of length [n_samples]
-
-        Returns:
-
-            self
-
-        """
-        # check if problem is multiclass
-        num_classes = len(np.unique(y))
-        if num_classes > 2:
-            params = self.get_component('XGBoost Classifier')._component_obj.get_params()
-            params.update(
-                {
-                    "objective": 'multi:softprob',
-                    "num_class": num_classes
-                })
-
-            estimator = XGBoostClassifier(**params)
-            self.component_list[-1] = estimator
-
-        return super().fit(X, y, objective_fit_size)
-
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
