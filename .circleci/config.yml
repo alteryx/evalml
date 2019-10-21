@@ -17,8 +17,8 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps      
-      
+            make installdeps
+
 jobs:
   lint_test:
       parameters:
@@ -34,8 +34,9 @@ jobs:
         - run: |
             source test_python/bin/activate
             make lint
-            
+
   unit_tests:
+    resource_class: large
     parameters:
       python_version:
         type: string
@@ -56,7 +57,7 @@ jobs:
       - store_test_results:
           path: test-reports
       - store_artifacts:
-          path: test-reports  
+          path: test-reports
       - when:
           condition: << parameters.codecov >>
           steps:
