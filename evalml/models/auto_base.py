@@ -36,6 +36,8 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
+        self.best_score_by_iter_fig = None
+        self.best_score_by_iter_ax = None
 
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -93,15 +95,6 @@ class AutoBase:
 
             self
         """
-        def update_plot(fig, ax, iter_scores):
-            ax.clear()
-            title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
-            iter_numbers = list(range(len(iter_scores)))
-            plt.plot(iter_numbers, iter_scores, '-o')
-            plt.title(title)
-            ax.set_xlabel('iteration')
-            ax.set_ylabel(self.objective.name)
-            fig.canvas.draw()
 
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
@@ -133,19 +126,12 @@ class AutoBase:
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
-        if plot_iterations:
-            matplotlib.use('nbagg')
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            fig.canvas.draw()
-            plt.show()
-            iter_scores = list()
 
         if self.null_threshold is not None:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
             if len(highly_null_columns) > 0:
                 self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
-
+        self.best_score_by_iteration = list()
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
         for n in pbar:
@@ -154,13 +140,13 @@ class AutoBase:
                 self.logger.log("\n\nMax time elapsed. Stopping search early.")
                 break
             self._do_iteration(X, y, pbar, raise_errors)
+            if self.objective.greater_is_better:
+                new_score = self.rankings['score'].max()
+            else:
+                new_score = self.rankings['score'].min()
+            self.best_score_by_iteration.append(new_score)
             if plot_iterations:
-                if self.objective.greater_is_better:
-                    new_score = self.rankings['score'].max()
-                else:
-                    new_score = self.rankings['score'].min()
-                iter_scores.append(new_score)
-                update_plot(fig, ax, iter_scores)
+                self.plot_best_score_by_iteration(interactive_plot=True)
         pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
@@ -355,6 +341,27 @@ class AutoBase:
 
         if return_dict:
             return pipeline_results
+
+    def plot_best_score_by_iteration(self, interactive_plot=False):
+        if interactive_plot:
+            matplotlib.use('nbagg')
+        no_plot_made = self.best_score_by_iter_fig is None and self.best_score_by_iter_ax is None
+        if no_plot_made or interactive_plot is False:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            self.best_score_by_iter_fig = fig
+            self.best_score_by_iter_ax = ax
+            plt.show()
+            self.best_score_by_iter_fig.canvas.draw()
+        if interactive_plot:
+            self.best_score_by_iter_ax.clear()
+        title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
+        iter_numbers = list(range(len(self.best_score_by_iteration)))
+        plt.plot(iter_numbers, self.best_score_by_iteration, '-o')
+        plt.title(title)
+        self.best_score_by_iter_ax.set_xlabel('iteration')
+        self.best_score_by_iter_ax.set_ylabel(self.objective.name)
+        self.best_score_by_iter_fig.canvas.draw()
 
     @property
     def rankings(self):
