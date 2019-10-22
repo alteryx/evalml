@@ -20,7 +20,7 @@ After the release pull request has been merged into the master branch, it is tim
 
 ## Release using Release-tools
 Run the following assuming you have release-tools installed:
-* flrelease build-package
-* flrelease upload-package <--url or --license> <install.featurelabs.com or licenses/user.json>
+* `flrelease build-package`
+* `flrelease upload-package <--url or --license> <install.featurelabs.com or licenses/user.json>`
 
 More details can be found here: https://github.com/FeatureLabs/release-tools
