@@ -1,4 +1,7 @@
 import pandas as pd
+import numpy as np
+
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 def detect_label_leakage(X, y, threshold=.95):
@@ -52,10 +55,10 @@ def detect_collinearity(X, threshold=.95):
 
     Args:
         X (pd.DataFrame): The input features to check
-        threshold (float): the correlation threshold to be considered correlated  Defaults to .95
+        threshold (float): the correlation threshold to be considered correlated. Defaults to .95.
 
     Returns:
-        dictionary of potentially collinear features and their percent chance of being collinear
+        A dictionary mapping potentially collinear features and their corresponding correlation coefficient
     """
 
     # only select numeric
@@ -71,17 +74,17 @@ def detect_collinearity(X, threshold=.95):
     return out
 
 
-def detect_multicollinearity(X, vif_threshold=10, index_threshold=30):
+def detect_multicollinearity(X, threshold=10):
     """Check if multicollinearity exists.
 
     Currently only supports numeric features.
 
     Args:
         X (pd.DataFrame): The input features to check
-        threshold (float): the correlation threshold to be considered correlated. Defaults to .95
+        threshold (float): the VIF threshold to use to determine multicollinearity. Defaults to 10
 
     Returns:
-        dictionary
+        A dictionary of features with VIF scores greater than threshold mapped to their corresponding VIF score
     """
 
     # only select numeric
@@ -92,13 +95,8 @@ def detect_multicollinearity(X, vif_threshold=10, index_threshold=30):
         return {}
 
     multicollinear_cols = {}
-    # vif > 5, 10
     vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns)
     vif = vif[vif >= threshold]
     multicollinear_cols = vif.to_dict()
-
-    corr = np.corrcoef(X, rowvar=0)
-    eig_vals, eig_vecs = np.linalg.eig(corr)
-    print np.linalg.cond(corr)
 
     return multicollinear_cols
