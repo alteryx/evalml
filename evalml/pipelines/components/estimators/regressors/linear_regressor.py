@@ -32,5 +32,4 @@ class LinearRegressor(Estimator):
 
     @property
     def feature_importances(self):
-        coef_ = self._component_obj.coef_
-        return coef_
+        return self._component_obj.coef_

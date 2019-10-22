@@ -30,7 +30,7 @@ class XGBoostClassifier(Estimator):
                          parameters=parameters,
                          component_obj=xgb_classifier,
                          needs_fitting=True,
-                         random_state=0)
+                         random_state=random_state)
 
     @property
     def feature_importances(self):

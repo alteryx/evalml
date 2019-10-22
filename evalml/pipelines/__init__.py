@@ -2,7 +2,6 @@
 from .components import (
     Estimator,
     OneHotEncoder,
-    SelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -13,7 +12,8 @@ from .components import (
     XGBoostClassifier,
     ComponentTypes,
     FeatureSelector,
-    Encoder
+    Encoder,
+    RFFeatureSelector
 )
 
 from .pipeline_base import PipelineBase

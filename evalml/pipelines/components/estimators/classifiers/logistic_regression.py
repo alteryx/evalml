@@ -29,18 +29,15 @@ class LogisticRegressionClassifier(Estimator):
                                            multi_class="auto",
                                            solver="lbfgs",
                                            n_jobs=n_jobs)
-        n_jobs = n_jobs
-        random_state = random_state
         super().__init__(name=name,
                          component_type=component_type,
                          parameters=parameters,
                          component_obj=lr_classifier,
                          needs_fitting=True,
-                         random_state=0)
+                         random_state=random_state)
 
     @property
     def feature_importances(self):
-        """Return feature importances. Feature dropped by feaure selection are excluded"""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:

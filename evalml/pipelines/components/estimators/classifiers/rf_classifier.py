@@ -20,18 +20,16 @@ class RandomForestClassifier(Estimator):
         component_type = ComponentTypes.CLASSIFIER
         parameters = {"n_estimators": n_estimators,
                       "max_depth": max_depth}
-        rf_classifier = SKRandomForestClassifier(random_state=random_state,
-                                                 n_estimators=n_estimators,
+        rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
                                                  max_depth=max_depth,
-                                                 n_jobs=n_jobs)
-        n_jobs = n_jobs
-        random_state = random_state
+                                                 n_jobs=n_jobs,
+                                                 random_state=random_state)
         super().__init__(name=name,
                          component_type=component_type,
                          parameters=parameters,
                          component_obj=rf_classifier,
                          needs_fitting=True,
-                         random_state=0)
+                         random_state=random_state)
 
     @property
     def feature_importances(self):

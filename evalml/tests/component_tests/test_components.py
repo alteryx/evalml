@@ -1,13 +1,13 @@
 import pytest
 
-from evalml.pipelines import (
+from evalml.pipelines import (  # SelectFromModel,
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
     RandomForestRegressor,
-    SelectFromModel,
+    RFFeatureSelector,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -21,7 +21,7 @@ def test_init():
     enc = OneHotEncoder()
     imputer = SimpleImputer()
     scaler = StandardScaler()
-    feature_selection = SelectFromModel(estimator=RandomForestClassifier(n_estimators=10), number_features=5)
+    feature_selection = RFFeatureSelector(n_estimators=10, number_features=5)
     assert enc.component_type == ComponentTypes.ENCODER
     assert imputer.component_type == ComponentTypes.IMPUTER
     assert scaler.component_type == ComponentTypes.SCALER
@@ -44,7 +44,7 @@ def test_describe_component():
     enc = OneHotEncoder()
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
-    feature_selection = SelectFromModel(estimator=RandomForestClassifier(n_estimators=10), number_features=5, percent_features=0.3, threshold=10)
+    feature_selection = RFFeatureSelector(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
     assert enc.describe(return_dict=True) == {}
     assert imputer.describe(return_dict=True) == {"impute_strategy": "mean"}
     assert scaler.describe(return_dict=True) == {}

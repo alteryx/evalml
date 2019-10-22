@@ -34,4 +34,7 @@ class LogisticRegressionPipeline(PipelineBase):
                                                  C=C,
                                                  n_jobs=-1)
 
-        super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, scaler, estimator])
+        super().__init__(objective=objective,
+                         name=self.name,
+                         problem_type=self.problem_types,
+                         component_list=[enc, imputer, scaler, estimator])
