@@ -20,6 +20,7 @@ class AutoRegressor(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  null_threshold=0.95,
+                 check_collinearity=False,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -54,9 +55,11 @@ class AutoRegressor(AutoBase):
             null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
                 null values for the feature to be considered "highly-null". Default is 0.95.
 
+            check_collinearity(bool): If true, runs checks for collinearity and multicollinearity
+
             random_state (int): the random_state
 
-            verbose (boolean): If True, turn verbosity on. Defaults to True
+            verbose (bool): If True, turn verbosity on. Defaults to True
 
         """
         if objective is None:
@@ -80,6 +83,7 @@ class AutoRegressor(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             null_threshold=null_threshold,
+            check_collinearity=check_collinearity,
             random_state=random_state,
             verbose=verbose
         )

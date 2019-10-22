@@ -129,10 +129,11 @@ class AutoBase:
             collinear_cols = guardrails.detect_collinearity(X)
             if len(collinear_cols) > 0:
                 collinear_col_str = ', '.join('({},{})'.format(*el) for el in list(collinear_cols.keys()))
-                self.logger.log("WARNING: Columns {} may be collinear".format(collinear_col_str))
+                self.logger.log("WARNING: {} columns may be collinear".format(collinear_col_str))
             multicollinear_cols = guardrails.detect_multicollinearity(X)
             if len(multicollinear_cols) > 0:
-                self.logger.log("WARNING: {} columns may be multicollinear.".format(', '.join(multicollinear_cols)))
+                multicollinear_col_str = (", ").join(str(key) for key in multicollinear_cols.keys())
+                self.logger.log("WARNING: {} columns may be multicollinear.".format(multicollinear_col_str))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
