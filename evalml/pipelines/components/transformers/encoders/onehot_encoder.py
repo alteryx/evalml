@@ -1,10 +1,10 @@
 import category_encoders as ce
 
 from evalml.pipelines.components import ComponentTypes
-from evalml.pipelines.components.transformers import Transformer
+from .encoder import Encoder
 
 
-class OneHotEncoder(Transformer):
+class OneHotEncoder(Encoder):
 
     """Creates one-hot encoding for non-numeric data"""
     hyperparameter_ranges = {}

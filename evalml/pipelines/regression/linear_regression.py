@@ -32,12 +32,12 @@ class LinearRegressionPipeline(PipelineBase):
 
         super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, scaler, estimator])
 
-    @property
-    def feature_importances(self):
-        """Return feature importances. Feature dropped by feaure selection are excluded"""
-        coef_ = self.get_component("Linear Regressor")._component_obj.coef_
-        importances = list(zip(self.input_feature_names, coef_))
-        importances.sort(key=lambda x: -abs(x[1]))
+    # @property
+    # def feature_importances(self):
+    #     """Return feature importances. Feature dropped by feaure selection are excluded"""
+    #     coef_ = self.get_component("Linear Regressor")._component_obj.coef_
+    #     importances = list(zip(self.input_feature_names, coef_))
+    #     importances.sort(key=lambda x: -abs(x[1]))
 
-        df = pd.DataFrame(importances, columns=["feature", "importance"])
-        return df
+    #     df = pd.DataFrame(importances, columns=["feature", "importance"])
+    #     return df

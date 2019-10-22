@@ -14,4 +14,7 @@ from .transformers import (
     OneHotEncoder,
     SelectFromModel,
     SimpleImputer,
-    StandardScaler)
+    StandardScaler,
+    FeatureSelector,
+    Encoder
+    )

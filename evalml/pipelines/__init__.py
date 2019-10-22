@@ -11,7 +11,9 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    ComponentTypes
+    ComponentTypes,
+    FeatureSelector,
+    Encoder
 )
 
 from .pipeline_base import PipelineBase

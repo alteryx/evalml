@@ -29,3 +29,8 @@ class LinearRegressor(Estimator):
                          component_obj=linear_regressor,
                          needs_fitting=True,
                          random_state=0)
+
+    @property
+    def feature_importances(self):
+        coef_ = self._component_obj.coef_
+        return coef_

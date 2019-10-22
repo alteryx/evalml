@@ -17,7 +17,7 @@ class RandomForestRegressor(Estimator):
     def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
         name = "Random Forest Regressor"
         component_type = ComponentTypes.REGRESSOR
-        hyperparameters = {"n_estimators": n_estimators,
+        parameters = {"n_estimators": n_estimators,
                            "max_depth": max_depth}
         n_jobs = n_jobs
         random_state = random_state
@@ -27,7 +27,11 @@ class RandomForestRegressor(Estimator):
                                                n_jobs=n_jobs)
         super().__init__(name=name,
                          component_type=component_type,
-                         hyperparameters=hyperparameters,
+                         parameters=parameters,
                          component_obj=rf_regressor,
                          needs_fitting=True,
                          random_state=0)
+
+    @property
+    def feature_importances(self):
+        return self._component_obj.feature_importances_

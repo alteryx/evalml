@@ -2,12 +2,12 @@ import numpy as np
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
 
+from .feature_selector import FeatureSelector
+
 from evalml.pipelines.components import ComponentTypes
-# from .feature_selector import FeatureSelector
-from evalml.pipelines.components.transformers import Transformer
 
 
-class SelectFromModel(Transformer):
+class SelectFromModel(FeatureSelector):
     """Selects top features based on importance weights"""
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),

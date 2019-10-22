@@ -32,3 +32,7 @@ class RandomForestClassifier(Estimator):
                          component_obj=rf_classifier,
                          needs_fitting=True,
                          random_state=0)
+
+    @property
+    def feature_importances(self):
+        return self._component_obj.feature_importances_
