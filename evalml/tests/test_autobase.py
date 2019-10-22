@@ -21,7 +21,7 @@ def test_pipeline_limits(capsys, X_y):
     out, err = capsys.readouterr()
     assert "Will stop searching when max_time or max_pipelines is reached." in out
 
-    error_msg = "No time limit is set. Set using max_time or max_pipelines."
+    error_msg = "No search limit is set. Set using max_time or max_pipelines."
     with pytest.raises(Exception, match=error_msg):
         clf = AutoClassifier(multiclass=False)
         clf.fit(X, y)

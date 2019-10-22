@@ -106,7 +106,7 @@ class AutoBase:
         else:
             self.logger.log("Lower score is better.\n")
 
-        no_limit_msg = "No time limit is set. Set using max_time or max_pipelines.\n"
+        no_limit_msg = "No search limit is set. Set using max_time or max_pipelines.\n"
         assert (self.max_pipelines or self.max_time), no_limit_msg
 
         if self.max_pipelines and self.max_time:
@@ -115,8 +115,6 @@ class AutoBase:
             self.logger.log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
         elif self.max_time:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        else:
-            self.logger.log("No time limit is set. Set one using max_time parameter.\n")
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
@@ -133,15 +131,10 @@ class AutoBase:
         if self.max_pipelines is None:
             start = time.time()
             elapsed = 0
-            last_time = start
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             while elapsed <= self.max_time:
                 self._do_iteration(X, y, pbar, raise_errors)
-                new_time = time.time()
-                elapsed = new_time - start
-                last_diff = round(new_time - last_time, 2)
-                pbar.update(last_diff)
-                last_time = new_time
+                elapsed = time.time() - start
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             start = time.time()
