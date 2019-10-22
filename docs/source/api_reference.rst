@@ -128,6 +128,12 @@ Regression
     :nosignatures:
 
     R2
+    MAE
+    MSE
+    MSLE
+    MedianAE
+    MaxError
+    ExpVariance
 
 
 .. currentmodule:: evalml.problem_types
