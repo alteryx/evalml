@@ -8,7 +8,7 @@ from .feature_selector import FeatureSelector
 from evalml.pipelines.components import ComponentTypes
 
 
-class RFFeatureSelector(FeatureSelector):
+class RFSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier"""
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),
