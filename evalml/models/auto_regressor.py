@@ -19,6 +19,7 @@ class AutoRegressor(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
+                 null_threshold=0.95,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -50,6 +51,9 @@ class AutoRegressor(AutoBase):
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
+            null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
+                null values for the feature to be considered "highly-null". Default is 0.95.
+
             random_state (int): the random_state
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
@@ -74,7 +78,8 @@ class AutoRegressor(AutoBase):
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
+            additional_objectives=additional_objectives,
+            null_threshold=null_threshold,
             random_state=random_state,
-            verbose=verbose,
-            additional_objectives=additional_objectives
+            verbose=verbose
         )
