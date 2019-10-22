@@ -13,7 +13,7 @@ from .transformers import (
     Transformer,
     OneHotEncoder,
     SelectFromModel,
-    RFFeatureSelector,
+    RFSelectFromModel,
     SimpleImputer,
     StandardScaler,
     FeatureSelector,
