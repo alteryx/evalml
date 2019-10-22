@@ -1,7 +1,8 @@
 import category_encoders as ce
 
-from evalml.pipelines.components import ComponentTypes
 from .encoder import Encoder
+
+from evalml.pipelines.components import ComponentTypes
 
 
 class OneHotEncoder(Encoder):

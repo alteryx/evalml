@@ -1,8 +1,3 @@
-import numpy as np
-from sklearn.feature_selection import SelectFromModel as SkSelect
-from skopt.space import Real
-
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.transformers import Transformer
 
 

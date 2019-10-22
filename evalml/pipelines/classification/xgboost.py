@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
@@ -45,14 +44,3 @@ class XGBoostPipeline(PipelineBase):
             threshold=-np.inf
         )
         super().__init__(objective=objective, name=self.name, problem_type=self.problem_types, component_list=[enc, imputer, feature_selection, estimator])
-
-    # @property
-    # def feature_importances(self):
-    #     """Return feature importances. Feature dropped by feaure selection are excluded"""
-    #     indices = self.get_component('Select From Model')._component_obj.get_support(indices=True)
-    #     feature_names = list(map(lambda i: self.input_feature_names[i], indices))
-    #     importances = list(zip(feature_names, self.get_component("XGBoost Classifier")._component_obj.feature_importances_))
-    #     importances.sort(key=lambda x: -abs(x[1]))
-
-    #     df = pd.DataFrame(importances, columns=["feature", "importance"])
-    #     return df

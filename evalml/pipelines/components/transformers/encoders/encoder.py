@@ -1,5 +1,4 @@
 
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.transformers import Transformer
 
 

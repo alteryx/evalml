@@ -1,9 +1,9 @@
 from collections import OrderedDict
-import numpy as np
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Estimator, FeatureSelector, Encoder
+from .components import Encoder, Estimator, FeatureSelector
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
@@ -147,7 +147,7 @@ class PipelineBase:
 
         self._fit(X, y)
         # todo: what if no encoder?
-        encoder = next((component for component in component_list if (isinstance(component, Encoder))), None)
+        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
         if encoder is not None:
             self.input_feature_names = self.encoder.get_feature_names()
 

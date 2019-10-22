@@ -1,6 +1,7 @@
+import numpy as np
 from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Real
-import numpy as np
+
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator

@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (

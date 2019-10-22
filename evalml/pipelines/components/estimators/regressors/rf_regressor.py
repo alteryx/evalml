@@ -18,7 +18,7 @@ class RandomForestRegressor(Estimator):
         name = "Random Forest Regressor"
         component_type = ComponentTypes.REGRESSOR
         parameters = {"n_estimators": n_estimators,
-                           "max_depth": max_depth}
+                      "max_depth": max_depth}
         n_jobs = n_jobs
         random_state = random_state
         rf_regressor = SKRandomForestRegressor(random_state=random_state,
