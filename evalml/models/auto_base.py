@@ -351,8 +351,9 @@ class AutoBase:
             ax = fig.add_subplot(111)
             self.best_score_by_iter_fig = fig
             self.best_score_by_iter_ax = ax
-            plt.show()
-            self.best_score_by_iter_fig.canvas.draw()
+            if interactive_plot:
+                plt.show()
+                self.best_score_by_iter_fig.canvas.draw()
         if interactive_plot:
             self.best_score_by_iter_ax.clear()
         title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
@@ -361,7 +362,10 @@ class AutoBase:
         plt.title(title)
         self.best_score_by_iter_ax.set_xlabel('iteration')
         self.best_score_by_iter_ax.set_ylabel(self.objective.name)
-        self.best_score_by_iter_fig.canvas.draw()
+        if interactive_plot is False:
+            return self.best_score_by_iter_fig
+        else:
+            self.best_score_by_iter_fig.canvas.draw()
 
     @property
     def rankings(self):
