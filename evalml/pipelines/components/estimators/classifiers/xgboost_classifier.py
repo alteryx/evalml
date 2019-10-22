@@ -15,7 +15,7 @@ class XGBoostClassifier(Estimator):
     }
     model_type = ModelTypes.XGBOOST
 
-    def __init__(self, eta, max_depth, min_child_weight, random_state=0):
+    def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, random_state=0):
         name = "XGBoost Classifier"
         component_type = ComponentTypes.CLASSIFIER
         parameters = {"eta": eta,

@@ -15,7 +15,7 @@ class RFSelectFromModel(FeatureSelector):
         "threshold": ['mean', -np.inf]
     }
 
-    def __init__(self, number_features, n_estimators, max_depth=None,
+    def __init__(self, number_features=None, n_estimators=10, max_depth=None,
                  percent_features=0.5, threshold=-np.inf, random_state=0):
         name = 'Select From Model'
         component_type = ComponentTypes.FEATURE_SELECTION
