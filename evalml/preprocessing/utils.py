@@ -90,29 +90,3 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
-
-
-def detect_label_leakage(X, y, threshold=.95):
-    """Check if any of the features are highly correlated with the target.
-
-    Currently only supports binary and numeric targets and features
-
-    Args:
-        X (pd.DataFrame): The input features to check
-        y (pd.Series): the labels
-        threshold (float): the correlation threshold to be considered leakage. Defaults to .95
-
-    Returns:
-        leakage, dictionary of features with leakage and corresponding threshold
-    """
-
-    # only select numeric
-    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
-    X = X.select_dtypes(include=numerics)
-
-    if len(X.columns) == 0:
-        return {}
-
-    corrs = X.corrwith(y).abs()
-    out = corrs[corrs >= threshold]
-    return out.to_dict()
