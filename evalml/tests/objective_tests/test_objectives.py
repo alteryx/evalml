@@ -6,6 +6,7 @@ from evalml.objectives import (
     get_objectives
 )
 from evalml.pipelines import LogisticRegressionPipeline
+from evalml.problem_types import ProblemTypes
 
 
 def test_get_objective():
@@ -14,9 +15,9 @@ def test_get_objective():
 
 
 def test_get_objectives_types():
-    assert len(get_objectives('multiclass')) == 14
-    assert len(get_objectives('binary')) == 6
-    assert len(get_objectives('regression')) == 1
+    assert len(get_objectives(ProblemTypes.MULTICLASS)) == 14
+    assert len(get_objectives(ProblemTypes.BINARY)) == 6
+    assert len(get_objectives(ProblemTypes.REGRESSION)) == 7
 
 
 def test_binary_average(X_y):
