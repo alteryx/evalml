@@ -278,10 +278,11 @@ def test_max_time_units():
 def test_plot_iterations(X_y):
     X, y = X_y
 
-    clf = AutoClassifier(multiclass=False, max_pipelines=1)
+    clf = AutoClassifier(multiclass=False, max_pipelines=3)
 
     clf.fit(X, y)
 
     figure = clf.plot_best_score_by_iteration()
     assert isinstance(figure, type(plt.figure()))
+    clf.plot_best_score_by_iteration(interactive_plot=True)
 # def test_serialization(trained_model)
