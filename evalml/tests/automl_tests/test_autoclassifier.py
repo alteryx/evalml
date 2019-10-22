@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -272,4 +273,15 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
+
+
+def test_plot_iterations(X_y):
+    X, y = X_y
+
+    clf = AutoClassifier(multiclass=False, max_pipelines=1)
+
+    clf.fit(X, y)
+
+    figure = clf.plot_best_score_by_iteration()
+    assert isinstance(figure, type(plt.figure()))
 # def test_serialization(trained_model)
