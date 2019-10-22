@@ -13,7 +13,7 @@ class RandomForestClassifier(Estimator):
         "max_depth": Integer(1, 32),
     }
 
-    def __init__(self, n_estimators, max_depth=None, n_jobs=-1, random_state=0):
+    def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
         self.name = "Random Forest Classifier"
         self.component_type = ComponentTypes.CLASSIFIER
         self.n_estimators = n_estimators

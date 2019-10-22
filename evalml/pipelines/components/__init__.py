@@ -15,3 +15,5 @@ from .transformers import (
     SelectFromModel,
     SimpleImputer,
     StandardScaler)
+
+from .utils import components_dict
