@@ -3,13 +3,14 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Estimator
+from .components import Encoder, Estimator, FeatureSelector
 
 from evalml.objectives import get_objective
+from evalml.utils import Logger
 
 
 class PipelineBase:
-    def __init__(self, name, objective, component_list=[], problem_type=None, random_state=0, n_jobs=-1):
+    def __init__(self, name, objective, component_list, problem_type=None, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -30,6 +31,7 @@ class PipelineBase:
         # check if one and only estimator in pipeline is the last element in component_list
         estimator = next((component for component in component_list if (isinstance(component, Estimator))), None)
         if estimator is not None:
+            self.estimator = estimator
             estimator_index = component_list.index(estimator)
             if estimator_index != len(component_list) - 1:
                 raise RuntimeError("Estimator must be the last component in the pipeline.")
@@ -45,11 +47,15 @@ class PipelineBase:
         self.parameters = {}
         for component in self.component_list:
             self.parameters.update(component.parameters)
+        self.logger = Logger()
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return PipelineBase(name=self.name, objective=self.objective, component_list=self.component_list[index],
-                                random_state=self.random_state, n_jobs=self.n_jobs)
+            return PipelineBase(name=self.name,
+                                objective=self.objective,
+                                component_list=self.component_list[index],
+                                random_state=self.random_state,
+                                n_jobs=self.n_jobs)
         elif isinstance(index, int):
             return self.component_list[index]
         else:
@@ -80,23 +86,20 @@ class PipelineBase:
 
         """
         title = "Pipeline: " + self.name
-        print(title)
-        print("=" * len(title))
+        self.logger.log_title(title)
 
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
         objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
-        print(objective_string)
+        self.logger.log(objective_string)
 
-        # Summary
+        # Summary of steps
+        self.logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_list, 1):
             component_string = str(number) + ". " + component.name
-            print(component_string)
-        print("\n")
-
-        for component in self.component_list:
-            component.describe()
+            self.logger.log(component_string)
+            component.describe(print_name=False)
 
         if return_dict:
             return self.parameters
@@ -143,7 +146,12 @@ class PipelineBase:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
-        self.input_feature_names = self.get_component('One Hot Encoder')._component_obj.feature_names
+        # todo: what if no encoder?
+        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
+        if encoder is not None:
+            self.input_feature_names = encoder.get_feature_names()
+        else:
+            self.input_feature_names = X.columns.tolist()
 
         if self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
@@ -237,3 +245,16 @@ class PipelineBase:
         other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
+
+    @property
+    def feature_importances(self):
+        """Return feature importances. Feature dropped by feaure selection are excluded"""
+        feature_selector = next((component for component in self.component_list if (isinstance(component, FeatureSelector))), None)
+        feature_names = self.input_feature_names
+        if feature_selector is not None:
+            indices = feature_selector.get_indices()
+            feature_names = list(map(lambda i: self.input_feature_names[i], indices))
+        importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
+        importances.sort(key=lambda x: -abs(x[1]))
+        df = pd.DataFrame(importances, columns=["feature", "importance"])
+        return df

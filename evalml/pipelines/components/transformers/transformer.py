@@ -6,9 +6,6 @@ class Transformer(ComponentBase):
     These components are used before an estimator.
     """
 
-    def __init__(self, name, component_type, parameters={}, needs_fitting=False, component_obj=None):
-        super().__init__(name=name, component_type=component_type, parameters=parameters, needs_fitting=needs_fitting, component_obj=component_obj)
-
     def transform(self, X):
         """Transforms data X
 
@@ -33,6 +30,6 @@ class Transformer(ComponentBase):
             DataFrame: Transformed X
         """
         try:
-            return self._component_obj.fit_transform(X)
+            return self._component_obj.fit_transform(X, y)
         except AttributeError:
             raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")

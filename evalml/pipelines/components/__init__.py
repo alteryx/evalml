@@ -13,5 +13,9 @@ from .transformers import (
     Transformer,
     OneHotEncoder,
     SelectFromModel,
+    RFSelectFromModel,
     SimpleImputer,
-    StandardScaler)
+    StandardScaler,
+    FeatureSelector,
+    Encoder
+    )
