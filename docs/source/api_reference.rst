@@ -20,7 +20,6 @@ Demo Datasets
 
 .. currentmodule:: evalml.preprocessing
 
-
 Preprocessing
 =============
 
@@ -31,7 +30,6 @@ Preprocessing
 
     load_data
     split_data
-    detect_label_leakage
 
 
 .. currentmodule:: evalml
@@ -57,6 +55,7 @@ Model Types
 
     list_model_types
 
+
 .. currentmodule:: evalml.pipelines
 
 Pipelines
@@ -76,11 +75,10 @@ Pipelines
     RFRegressionPipeline
 
 
-Objective Functions
-====================
-
 .. currentmodule:: evalml.objectives
 
+Objective Functions
+====================
 
 Domain Specific
 ~~~~~~~~~~~~~~~
@@ -130,6 +128,13 @@ Regression
     :nosignatures:
 
     R2
+    MAE
+    MSE
+    MSLE
+    MedianAE
+    MaxError
+    ExpVariance
+
 
 .. currentmodule:: evalml.problem_types
 
@@ -144,6 +149,7 @@ Problem Types
     ProblemTypes
     handle_problem_types
 
+
 .. currentmodule:: evalml.tuners
 
 Tuners
@@ -157,4 +163,15 @@ Tuners
     SKOptTuner
 
 
+.. currentmodule:: evalml.guardrails
 
+Guardrails
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    detect_highly_null
+    detect_label_leakage

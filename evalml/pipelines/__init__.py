@@ -2,7 +2,6 @@
 from .components import (
     Estimator,
     OneHotEncoder,
-    SelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -11,7 +10,10 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    ComponentTypes
+    ComponentTypes,
+    FeatureSelector,
+    Encoder,
+    RFSelectFromModel
 )
 
 from .pipeline_base import PipelineBase

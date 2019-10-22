@@ -13,7 +13,11 @@ from .transformers import (
     Transformer,
     OneHotEncoder,
     SelectFromModel,
+    RFSelectFromModel,
     SimpleImputer,
-    StandardScaler)
+    StandardScaler,
+    FeatureSelector,
+    Encoder
+    )
 
 from .utils import components_dict
