@@ -17,7 +17,7 @@ class RFSelectFromModel(FeatureSelector):
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
                  percent_features=0.5, threshold=-np.inf, random_state=0):
-        name = 'Select From Model'
+        name = 'RF Select From Model'
         component_type = ComponentTypes.FEATURE_SELECTION
         max_features = max(1, int(percent_features * number_features))
         parameters = {"percent_features": percent_features,

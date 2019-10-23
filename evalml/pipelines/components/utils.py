@@ -1,4 +1,6 @@
-import sys, inspect
+# flake8:noqa
+import inspect
+import sys
 
 from .estimators import (
     Estimator,
@@ -9,15 +11,15 @@ from .estimators import (
     XGBoostClassifier
 )
 from .transformers import (
-    Transformer,
+    Encoder,
+    FeatureSelector,
     OneHotEncoder,
-    SelectFromModel,
     RFSelectFromModel,
+    SelectFromModel,
     SimpleImputer,
     StandardScaler,
-    FeatureSelector,
-    Encoder
-    )
+    Transformer
+)
 
 
 def components_dict():
@@ -31,6 +33,7 @@ def components_dict():
     return COMPONENTS
 
 COMPONENTS = components_dict()
+
 
 def handle_component(component_str):
     try:
