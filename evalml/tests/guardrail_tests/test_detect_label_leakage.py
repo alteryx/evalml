@@ -1,6 +1,6 @@
 import pandas as pd
 
-from evalml.preprocessing import detect_label_leakage
+from evalml.guardrails import detect_label_leakage
 
 
 def test_detect_label_leakage():
