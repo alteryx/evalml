@@ -3,6 +3,6 @@
     opacity: 0
 }
 
-a[href^="https://github.com/"] {
+a[href^="https://github.com/Featurelabs/evalml/"] {
     visibility: hidden;
 }
