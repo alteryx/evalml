@@ -106,8 +106,10 @@ class AutoBase:
         else:
             self.logger.log("Lower score is better.\n")
 
-        no_limit_msg = "No search limit is set. Set using max_time or max_pipelines.\n"
-        assert (self.max_pipelines or self.max_time), no_limit_msg
+        # Set default max_pipeline if none specified
+        if self.max_pipelines is None and self.max_time is None:
+            self.max_pipelines = 5
+            self.logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
 
         if self.max_pipelines and self.max_time:
             self.logger.log("Will stop searching when max_time or max_pipelines is reached.")
