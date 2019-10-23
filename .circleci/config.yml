@@ -36,7 +36,6 @@ jobs:
             make lint
 
   unit_tests:
-    resource_class: large
     parameters:
       python_version:
         type: string
