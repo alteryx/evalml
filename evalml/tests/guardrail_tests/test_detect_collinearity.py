@@ -19,6 +19,7 @@ def test_detect_collinearity():
 
 def test_detect_multicollinearity():
     col = pd.Series([1, 0, 2, 3, 4])
+    noise = np.random.randn(100)
     X = pd.DataFrame()
     X["a"] = col * 3
     X["b"] = ~col
@@ -32,9 +33,10 @@ def test_detect_multicollinearity():
 
 def test_detect_multicollinearity_only():
     # test detect_multicollinearity on data that is only multicollinear (not collinear)
-    identity_matrix = np.identity(9)
-    X = pd.DataFrame(data=identity_matrix)
-    X[10] = X.iloc[:, 0] + X.iloc[:, 3] + X.iloc[:, 5]
-    expected = set([0, 3, 5, 10])
+    col = np.random.randn(100, 10)
+    noise = np.random.randn(100)
+    col[:,9] = 3 * col[:,2] + 2 * col[:,3] + 5 * col[:,6] + .5 * noise
+    X = pd.DataFrame(data=col)
+    expected = set([2, 3, 6, 9])
     result = detect_multicollinearity(X)
     assert expected == set(result.keys())
