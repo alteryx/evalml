@@ -94,7 +94,6 @@ def detect_multicollinearity(X, threshold=10):
         return {}
 
     multicollinear_cols = {}
-    corr = X.corr()
     vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns)
     vif = vif[vif >= threshold]
     multicollinear_cols = vif.to_dict()
