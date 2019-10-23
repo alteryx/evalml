@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.ensemble import IsolationForest
 
 
 def detect_label_leakage(X, y, threshold=.95):
@@ -43,3 +44,32 @@ def detect_highly_null(X, percent_threshold=.95):
     percent_null = (X.isnull().mean()).to_dict()
     highly_null_cols = {key: value for key, value in percent_null.items() if value >= percent_threshold}
     return highly_null_cols
+
+
+def detect_outliers(X):
+    """ Checks if there are any outliers in a dataframe.
+
+    Args:
+        X (DataFrame) : features
+
+    Returns:
+        A set of indices that may have outlier data.
+    """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+
+    def get_IQR(df, k=2.0):
+        q1 = df.quantile(0.25)
+        q3 = df.quantile(0.75)
+        iqr = q3 - q1
+        lower_bound = q1 - (k * iqr)
+        upper_bound = q3 + (k * iqr)
+        return (lower_bound, upper_bound)
+
+    clf = IsolationForest(random_state=0, behaviour="new", contamination=0.01)
+    clf.fit(X)
+    scores = pd.Series(clf.decision_function(X))
+    lower_bound, upper_bound = get_IQR(scores, k=2)
+    outliers = (scores < lower_bound) | (scores > upper_bound)
+    outliers_indices = outliers[outliers].index.values
+    return outliers_indices

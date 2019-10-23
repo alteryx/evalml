@@ -23,6 +23,7 @@ class AutoClassifier(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  null_threshold=0.95,
+                 detect_outliers=False,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -59,6 +60,8 @@ class AutoClassifier(AutoBase):
             null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
                 null values for the feature to be considered "highly-null". Default is 0.95.
 
+            detect_outliers(bool): If True, checks if there are any outliers in data. Default is False.
+
             random_state (int): the random_state
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
@@ -90,6 +93,7 @@ class AutoClassifier(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             null_threshold=null_threshold,
+            detect_outliers=detect_outliers,
             random_state=random_state,
             verbose=verbose,
         )
