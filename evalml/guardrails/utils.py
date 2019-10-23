@@ -73,7 +73,7 @@ def detect_collinearity(X, threshold=.95):
     return out
 
 
-def detect_multicollinearity(X, threshold=10):
+def detect_multicollinearity(X, threshold=5):
     """Check if multicollinearity exists.
 
     Currently only supports numeric features.
@@ -89,13 +89,14 @@ def detect_multicollinearity(X, threshold=10):
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     X = X.select_dtypes(include=numerics)
+    from statsmodels.tools.tools import add_constant
 
     if len(X.columns) == 0:
         return {}
 
     multicollinear_cols = {}
+    X = add_constant(X)  # since variance_inflation_factor doesn't add intercept
     vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns)
     vif = vif[vif >= threshold]
     multicollinear_cols = vif.to_dict()
-
     return multicollinear_cols
