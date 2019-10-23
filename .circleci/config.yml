@@ -63,8 +63,9 @@ jobs:
   # TODO: Needs update after changelog format change
   changelog_updated:
     working_directory: ~/evalml
-    docker:
-      - image: docker:stable-git
+    executor:
+        name: python
+        python_version: "3.7"
     steps:
       - checkout
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
