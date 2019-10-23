@@ -2,6 +2,7 @@
 import inspect
 import sys
 
+from .component_base import ComponentBase
 from .estimators import (
     Estimator,
     LinearRegressor,
@@ -37,7 +38,12 @@ COMPONENTS = components_dict()
 
 def handle_component(component_str):
     try:
-        component = COMPONENTS[component_str]
+        if isinstance(component_str, str):
+            component = COMPONENTS[component_str]
+        elif isinstance(component_str, ComponentBase):
+            return component_str
+        else:
+            raise ValueError("handle_component only takes in str or ComponentBase")
     except KeyError:
         raise ValueError("Component {} has required parameters and string initialization is not supproted".format(component_str))
     return component
