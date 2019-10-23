@@ -124,7 +124,7 @@ class AutoBase:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
             if len(highly_null_columns) > 0:
                 self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
-        
+
         if self.detect_outliers:
             outlier_indices = guardrails.detect_outliers(X)
             if len(outlier_indices) > 0:

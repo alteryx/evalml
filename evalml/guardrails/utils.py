@@ -58,6 +58,13 @@ def detect_outliers(X):
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
+    # only select numeric
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    X = X.select_dtypes(include=numerics)
+
+    if len(X.columns) == 0:
+        return {}
+
     def get_IQR(df, k=2.0):
         q1 = df.quantile(0.25)
         q3 = df.quantile(0.75)

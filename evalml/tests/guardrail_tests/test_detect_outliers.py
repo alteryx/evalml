@@ -6,7 +6,6 @@ from evalml.guardrails import detect_outliers
 
 def test_outliers():
     data = np.random.randn(100, 100)
-    outliers = np.random.randn(10, 100) * 1000
     X = pd.DataFrame(data=data)
     X.iloc[3, :] = pd.Series(np.random.randn(100) * 10)
     X.iloc[25, :] = pd.Series(np.random.randn(100) * 20)
