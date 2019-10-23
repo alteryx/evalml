@@ -60,7 +60,6 @@ jobs:
                 source test_python/bin/activate
                 codecov
   
-  # TODO: Needs update after changelog format change
   changelog_updated:
     working_directory: ~/evalml
     executor:

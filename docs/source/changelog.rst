@@ -1,5 +1,4 @@
 .. _changelog:
-.. TODO: Remove `<` and `>` to unhide
 
 Changelog
 ---------
