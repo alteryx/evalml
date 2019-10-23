@@ -57,10 +57,9 @@ def detect_id_columns(X, threshold=1.0):
     Returns:
         A dictionary of features with column name or index and their probability of being ID columns
     """
-    id_cols = {}
     col_names = [str(col) for col in X.columns.tolist()]
     cols_named_id = [col for col in col_names if (col.lower() == "id")]  # columns whose name is "id"
-    id_cols.update([(col, 0.95) for col in cols_named_id])
+    id_cols = {col: 0.95 for col in cols_named_id}
 
     non_id_types = ['float16', 'float32', 'float64', 'bool']
     X = X.select_dtypes(exclude=non_id_types)
