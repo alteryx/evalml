@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import scipy.stats as scipy_stats
+
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
@@ -45,6 +47,57 @@ def detect_highly_null(X, percent_threshold=.95):
     percent_null = (X.isnull().mean()).to_dict()
     highly_null_cols = {key: value for key, value in percent_null.items() if value >= percent_threshold}
     return highly_null_cols
+
+
+def detect_correlation(X, threshold=.90):
+    """Check if correlation exists between features.
+
+    Args:
+        X (pd.DataFrame): The input features to check
+        threshold (float): the correlation threshold to be considered correlated. Defaults to .95.
+
+    Returns:
+        A dictionary mapping potentially correlated features and their corresponding correlation coefficient
+    """
+    correlated = {}
+    correlated.update(detect_categorical_correlation(X))
+    correlated.update(detect_collinearity(X))
+    return correlated
+
+
+def detect_categorical_correlation(X, threshold=.95):
+    """Check if correlation exists between categorical features.
+
+    Args:
+        X (pd.DataFrame): The input features to check
+        threshold (float): the correlation threshold to be considered correlated. Defaults to .95.
+
+    Returns:
+        A dictionary mapping potentially collinear features and their corresponding correlation coefficient
+    """
+    def cramers_v_bias_corrected(confusion_matrix):
+        """ Calculate Cramer's V statistic for categorial-categorial correlation with bias correction."""
+        chi2 = scipy_stats.chi2_contingency(confusion_matrix)[0]
+        n = confusion_matrix.sum().sum()  # grand total of observations
+        phi2 = chi2/n
+        r, k = confusion_matrix.shape
+        phi2corr = max(0, phi2 - ((k-1)*(r-1))/(n-1))
+        rcorr = r - np.square(r-1)/(n-1)
+        kcorr = k - np.square(k-1)/(n-1)
+        return np.sqrt(phi2corr / min((kcorr-1), (rcorr-1)))
+
+    cramers_corr = {}
+    X = X.select_dtypes(include=['category'])
+    num_cols = X.shape[1]
+    for i in num_cols:
+        for j in range(i+1, num_cols):
+            # only calculate Cramer's V for upper triangle since Cramer's V produces symmetric scores
+            confusion_matrix = pd.crosstab(X.iloc[:, i], X.iloc[:, j])
+            col_names = (X.columns[i], X.columns[j])
+            cramers_v = cramers_v_bias_corrected(confusion_matrix)
+            cramers_corr.update({col_names: cramers_v})
+    out = {key: value for (key, value) in cramers_corr.items() if value >= threshold}
+    return out
 
 
 def detect_collinearity(X, threshold=.95):
