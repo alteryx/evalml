@@ -24,8 +24,8 @@ def test_handle_component():
     component_strs = ['Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Select From Model', 'Simple Imputer', 'Standard Scaler']
     components = [LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFSelectFromModel, SimpleImputer, StandardScaler]
 
-    for c in zip(component_strs, components):
-        assert isinstance(handle_component(c[0]), c[1])
+    for component_str, component in zip(component_strs, components):
+        assert isinstance(handle_component(component_str), component)
 
     bad_str = 'Select From Model'
     with pytest.raises(ValueError):
@@ -35,8 +35,8 @@ def test_handle_component():
 def test_default_component():
     component_type_strs = ['classifier', 'encoder', 'imputer', 'regressor', 'scaler', 'feature_selection']
     components = [LogisticRegressionClassifier, OneHotEncoder, SimpleImputer, LinearRegressor, StandardScaler, RFSelectFromModel]
-    for c in zip(component_type_strs, components):
-        assert isinstance(handle_component(c[0]), c[1])
+    for component_type_str, component in zip(component_type_strs, components):
+        assert isinstance(handle_component(component_type_str), component)
 
 
 @pytest.fixture
@@ -54,8 +54,8 @@ def correct_component_types():
 
 def test_handle_string(correct_component_types):
     component_types = ['classifier', 'encoder', 'feature_selection', 'imputer', 'regressor', 'scaler']
-    for component_type in zip(component_types, correct_component_types):
-        assert handle_component_types(component_type[0]) == component_type[1]
+    for component_type, correct_component_type in zip(component_types, correct_component_types):
+        assert handle_component_types(component_type) == correct_component_type
 
     component_type = 'fake'
     error_msg = 'Component type \'fake\' does not exist'

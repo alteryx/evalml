@@ -26,10 +26,10 @@ from .transformers import (
 
 def components_dict():
     COMPONENTS = dict()
-    for name, obj in inspect.getmembers(sys.modules[__name__]):
+    for _, obj in inspect.getmembers(sys.modules[__name__]):
         if inspect.isclass(obj):
             try:
-                COMPONENTS[obj().name] = obj()
+                COMPONENTS[obj().name] = obj
             except Exception:
                 pass
     return COMPONENTS
@@ -67,7 +67,8 @@ def handle_component(component):
 def handle_component_str(component):
     try:
         if isinstance(component, str):
-            return COMPONENTS[component]
+            component_class = COMPONENTS[component]
+            return component_class()
         elif isinstance(component, ComponentBase):
             return component
         else:
