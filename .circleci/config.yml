@@ -17,8 +17,8 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps      
-      
+            make installdeps
+
 jobs:
   lint_test:
       parameters:
@@ -34,7 +34,7 @@ jobs:
         - run: |
             source test_python/bin/activate
             make lint
-            
+
   unit_tests:
     parameters:
       python_version:
@@ -52,7 +52,11 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
-          make test
+          make circleci-test
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports
       - when:
           condition: << parameters.codecov >>
           steps:
