@@ -49,7 +49,7 @@ def correct_component_types():
         ComponentTypes.REGRESSOR,
         ComponentTypes.SCALER
     ]
-    yield correct_component_types
+    return correct_component_types
 
 
 def test_handle_string(correct_component_types):

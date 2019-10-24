@@ -46,8 +46,8 @@ DEFAULT_COMPONENTS = {
 }
 
 
-def handle_component(component_str):
-    """Handles component_str by either returning the ComponentBase object or converts the str
+def handle_component(component):
+    """Handles component by either returning the ComponentBase object or converts the str
 
         Args:
             component_type (str or ComponentBase) : component that needs to be handled
@@ -56,20 +56,24 @@ def handle_component(component_str):
             ComponentBase
     """
     try:
-        component_type = handle_component_types(component_str)
+        component_type = handle_component_types(component)
         component_class = DEFAULT_COMPONENTS[component_type]
         component = component_class()
     except ValueError:
-        try:
-            if isinstance(component_str, str):
-                component = COMPONENTS[component_str]
-            elif isinstance(component_str, ComponentBase):
-                return component_str
-            else:
-                raise ValueError("handle_component only takes in str or ComponentBase")
-        except KeyError:
-            raise ValueError("Component {} has required parameters and string initialization is not supproted".format(component_str))
+        component = handle_component_str(component)
     return component
+
+
+def handle_component_str(component):
+    try:
+        if isinstance(component, str):
+            return COMPONENTS[component]
+        elif isinstance(component, ComponentBase):
+            return component
+        else:
+            raise ValueError("handle_component only takes in str or ComponentBase")
+    except KeyError:
+        raise ValueError("Component {} has required parameters and string initialization is not supproted".format(component))
 
 
 def handle_component_types(component_type):
