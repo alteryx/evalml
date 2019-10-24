@@ -23,15 +23,18 @@ from .transformers import (
     Transformer
 )
 
-
+# When adding new components please import above.
+# components_dict() automatically generates dict of components without required parameters
 def components_dict():
     COMPONENTS = dict()
-    for _, obj in inspect.getmembers(sys.modules[__name__]):
-        if inspect.isclass(obj):
-            try:
-                COMPONENTS[obj().name] = obj
-            except Exception:
-                pass
+    for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
+        params = inspect.getargspec(obj.__init__)
+        if issubclass(obj, ComponentBase):
+            if params.defaults:
+                if len(params.args) - 1 == len(params.defaults):
+                    COMPONENTS[obj.name] = obj
+            elif len(params.args) == 1:
+                COMPONENTS[obj.name] = obj
     return COMPONENTS
 
 COMPONENTS = components_dict()
