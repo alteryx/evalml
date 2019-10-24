@@ -18,7 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, check_collinearity, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, check_correlation, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -30,7 +30,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.null_threshold = null_threshold
-        self.check_collinearity = check_collinearity
+        self.check_correlation = check_correlation
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -125,11 +125,11 @@ class AutoBase:
             if len(highly_null_columns) > 0:
                 self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
-        if self.check_collinearity:
-            collinear_cols = guardrails.detect_collinearity(X)
-            if len(collinear_cols) > 0:
-                collinear_col_str = ', '.join('({},{})'.format(*el) for el in list(collinear_cols.keys()))
-                self.logger.log("WARNING: {} columns may be collinear".format(collinear_col_str))
+        if self.check_correlation:
+            correlated_cols = guardrails.detect_correlation(X)
+            if len(correlated_cols) > 0:
+                correlated_cols_str = ', '.join('({},{})'.format(*el) for el in list(correlated_cols.keys()))
+                self.logger.log("WARNING: {} columns may be correlated.".format(correlated_cols_str))
             multicollinear_cols = guardrails.detect_multicollinearity(X)
             if len(multicollinear_cols) > 0:
                 multicollinear_col_str = (", ").join(str(key) for key in multicollinear_cols.keys())

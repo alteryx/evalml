@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import scipy.stats as scipy_stats
-
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
@@ -56,6 +55,8 @@ def detect_correlation(X, threshold=.90):
         X (pd.DataFrame): The input features to check
         threshold (float): the correlation threshold to be considered correlated. Defaults to .95.
 
+    Currently only supports checking between numeric-numeric and categorical-categorical features
+
     Returns:
         A dictionary mapping potentially correlated features and their corresponding correlation coefficient
     """
@@ -79,18 +80,20 @@ def detect_categorical_correlation(X, threshold=.95):
         """ Calculate Cramer's V statistic for categorial-categorial correlation with bias correction."""
         chi2 = scipy_stats.chi2_contingency(confusion_matrix)[0]
         n = confusion_matrix.sum().sum()  # grand total of observations
-        phi2 = chi2/n
+        phi2 = chi2 / n
         r, k = confusion_matrix.shape
-        phi2corr = max(0, phi2 - ((k-1)*(r-1))/(n-1))
-        rcorr = r - np.square(r-1)/(n-1)
-        kcorr = k - np.square(k-1)/(n-1)
-        return np.sqrt(phi2corr / min((kcorr-1), (rcorr-1)))
+        phi2corr = max(0, phi2 - ((k - 1) * (r - 1)) / (n - 1))
+        rcorr = r - np.square(r - 1) / (n - 1)
+        kcorr = k - np.square(k - 1) / (n - 1)
+        return np.sqrt(phi2corr / min((kcorr - 1), (rcorr - 1)))
+
+    # only select categorical features
+    X = X.select_dtypes(include=['category'])
 
     cramers_corr = {}
-    X = X.select_dtypes(include=['category'])
     num_cols = X.shape[1]
-    for i in num_cols:
-        for j in range(i+1, num_cols):
+    for i in range(num_cols):
+        for j in range(i + 1, num_cols):
             # only calculate Cramer's V for upper triangle since Cramer's V produces symmetric scores
             confusion_matrix = pd.crosstab(X.iloc[:, i], X.iloc[:, j])
             col_names = (X.columns[i], X.columns[j])
@@ -127,9 +130,7 @@ def detect_collinearity(X, threshold=.95):
 
 
 def detect_multicollinearity(X, threshold=5):
-    """Check if multicollinearity exists.
-
-    Currently only supports numeric features.
+    """Check if multicollinearity exists amongst numerical features.
 
     Args:
         X (pd.DataFrame): The input features to check
