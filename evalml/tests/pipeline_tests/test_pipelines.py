@@ -136,8 +136,8 @@ def test_multi_format_creation(X_y):
     X, y = X_y
     clf = PipelineBase('test', 'precision', component_list=['Simple Imputer', 'encoder', StandardScaler(), ComponentTypes.CLASSIFIER])
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    for component in zip(clf.component_list, correct_components):
-        assert isinstance(component[0], component[1])
+    for component, correct_components in zip(clf.component_list, correct_components):
+        assert isinstance(component, correct_components)
 
     clf.fit(X, y)
     clf.score(X, y)
