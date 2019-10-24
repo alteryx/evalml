@@ -11,7 +11,8 @@ class LogisticRegressionClassifier(Estimator):
     """
     Logistic Regression Classifier
     """
-
+    name = "Logistic Regression Classifier"
+    component_type = ComponentTypes.CLASSIFIER
     hyperparameter_ranges = {
         "penalty": ["l2"],
         "C": Real(.01, 10),
@@ -19,8 +20,6 @@ class LogisticRegressionClassifier(Estimator):
     model_type = ModelTypes.LINEAR_MODEL
 
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
-        name = "Logistic Regression Classifier"
-        component_type = ComponentTypes.CLASSIFIER
         parameters = {"penalty": penalty,
                       "C": C}
         lr_classifier = LogisticRegression(penalty=penalty,
@@ -29,8 +28,8 @@ class LogisticRegressionClassifier(Estimator):
                                            multi_class="auto",
                                            solver="lbfgs",
                                            n_jobs=n_jobs)
-        super().__init__(name=name,
-                         component_type=component_type,
+        super().__init__(name=self.name,
+                         component_type=self.component_type,
                          parameters=parameters,
                          component_obj=lr_classifier,
                          needs_fitting=True,

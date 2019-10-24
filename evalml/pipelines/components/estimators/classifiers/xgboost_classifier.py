@@ -8,6 +8,8 @@ from evalml.pipelines.components.estimators import Estimator
 
 class XGBoostClassifier(Estimator):
     """XGBoost Classifier"""
+    name = "XGBoost Classifier"
+    component_type = ComponentTypes.CLASSIFIER
     hyperparameter_ranges = {
         "eta": Real(0, 1),
         "max_depth": Integer(1, 20),
@@ -15,9 +17,7 @@ class XGBoostClassifier(Estimator):
     }
     model_type = ModelTypes.XGBOOST
 
-    def __init__(self, eta, max_depth, min_child_weight, random_state=0):
-        name = "XGBoost Classifier"
-        component_type = ComponentTypes.CLASSIFIER
+    def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, random_state=0):
         parameters = {"eta": eta,
                       "max_depth": max_depth,
                       "min_child_weight": min_child_weight}
@@ -25,8 +25,8 @@ class XGBoostClassifier(Estimator):
                                        eta=eta,
                                        max_depth=max_depth,
                                        min_child_weight=min_child_weight)
-        super().__init__(name=name,
-                         component_type=component_type,
+        super().__init__(name=self.name,
+                         component_type=self.component_type,
                          parameters=parameters,
                          component_obj=xgb_classifier,
                          needs_fitting=True,
