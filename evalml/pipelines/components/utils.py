@@ -61,15 +61,15 @@ def handle_component(component):
             ComponentBase
     """
     try:
-        component_type = handle_component_types(component)
+        component_type = str_to_component_type(component)
         component_class = DEFAULT_COMPONENTS[component_type]
         component = component_class()
     except ValueError:
-        component = handle_component_str(component)
+        component = str_to_component(component)
     return component
 
 
-def handle_component_str(component):
+def str_to_component(component):
     try:
         if isinstance(component, str):
             component_class = COMPONENTS[component]
@@ -79,10 +79,10 @@ def handle_component_str(component):
         else:
             raise ValueError("handle_component only takes in str or ComponentBase")
     except KeyError:
-        raise ValueError("Component {} has required parameters and string initialization is not supproted".format(component))
+        raise ValueError("Component {} has required parameters and string initialization is not supported".format(component))
 
 
-def handle_component_types(component_type):
+def str_to_component_type(component_type):
     """Handles component_type by either returning the ComponentTypes object or converts the str
 
         Args:
