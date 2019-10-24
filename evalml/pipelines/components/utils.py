@@ -25,6 +25,8 @@ from .transformers import (
 
 # When adding new components please import above.
 # components_dict() automatically generates dict of components without required parameters
+
+
 def components_dict():
     COMPONENTS = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):

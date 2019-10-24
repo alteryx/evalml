@@ -11,7 +11,7 @@ class OneHotEncoder(Encoder):
     name = 'One Hot Encoder'
     component_type = ComponentTypes.ENCODER
     hyperparameter_ranges = {}
-    
+
     def __init__(self):
         parameters = {}
         encoder = ce.OneHotEncoder(use_cat_names=True, return_df=True)

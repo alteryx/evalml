@@ -29,7 +29,7 @@ def test_handle_component():
 
     bad_str = 'Select From Model'
     with pytest.raises(ValueError):
-        c = handle_component(bad_str)
+        handle_component(bad_str)
 
 
 def test_default_component():
