@@ -16,7 +16,12 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/tests --cov=evalml
+	pytest evalml/tests
+
+.PHONY: circleci-test
+circleci-test:
+	pytest evalml/tests -n 2 --cov=evalml --junitxml=test-reports/junit.xml
+	pytest --nbval-lax --ignore=docs/source/demos/fraud.ipynb docs/source/
 
 .PHONY: installdeps
 installdeps:
