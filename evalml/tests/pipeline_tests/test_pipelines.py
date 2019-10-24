@@ -10,6 +10,7 @@ from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
+    ComponentTypes,
     LogisticRegressionClassifier,
     OneHotEncoder,
     SimpleImputer,
@@ -129,3 +130,14 @@ def test_estimator_not_last(X_y):
     err_msg = "Estimator must be the last component in the pipeline."
     with pytest.raises(RuntimeError, match=err_msg):
         MockLogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+
+
+def test_multi_format_creation(X_y):
+    X, y = X_y
+    clf = PipelineBase('test', 'precision', component_list=['Simple Imputer', 'encoder', StandardScaler(), ComponentTypes.CLASSIFIER])
+    correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    for component in zip(clf.component_list, correct_components):
+        assert isinstance(component[0], component[1])
+
+    clf.fit(X, y)
+    clf.score(X, y)

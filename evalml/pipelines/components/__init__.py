@@ -20,4 +20,4 @@ from .transformers import (
     Encoder
     )
 
-from .utils import components_dict, handle_component, COMPONENTS
+from .utils import components_dict, handle_component, handle_component_types, COMPONENTS
