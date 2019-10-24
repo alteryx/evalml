@@ -41,7 +41,8 @@ DEFAULT_COMPONENTS = {
    ComponentTypes.ENCODER: OneHotEncoder,
    ComponentTypes.IMPUTER: SimpleImputer,
    ComponentTypes.REGRESSOR: LinearRegressor,
-   ComponentTypes.SCALER: StandardScaler
+   ComponentTypes.SCALER: StandardScaler,
+   ComponentTypes.FEATURE_SELECTION: RFSelectFromModel
 }
 
 
