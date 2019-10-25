@@ -36,7 +36,6 @@ class PipelineBase:
         if estimator is not None:
             self.estimator = estimator
             self.problem_types = estimator.problem_types
-            print ("MODELTPE", estimator.model_type)
             self.model_type = estimator.model_type
             estimator_index = self.component_list.index(estimator)
             if estimator_index != len(self.component_list) - 1:
