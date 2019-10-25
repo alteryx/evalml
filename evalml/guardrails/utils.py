@@ -78,5 +78,5 @@ def detect_outliers(X):
     scores = pd.Series(clf.decision_function(X))
     lower_bound, upper_bound = get_IQR(scores, k=2)
     outliers = (scores < lower_bound) | (scores > upper_bound)
-    outliers_indices = outliers[outliers].index.values
+    outliers_indices = outliers[outliers].index.values.tolist()
     return outliers_indices
