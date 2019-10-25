@@ -280,9 +280,9 @@ def test_guardrail_warnings(X_y, capsys):
     y = pd.Series(y)
 
     # create correlated, highly-null, and multicollinear columns
-    X.iloc[:,1] = X.iloc[:,3] * 3
-    X.iloc[:,2] = X.iloc[:,4] * 3 + X.iloc[:,8] * 4 + X.iloc[:,10] / 2
-    X.iloc[:,17] = np.nan
+    X.iloc[:, 1] = X.iloc[:, 3] * 3
+    X.iloc[:, 2] = X.iloc[:, 4] * 3 + X.iloc[:, 8] * 4 + X.iloc[:, 10] / 2
+    X.iloc[:, 17] = np.nan
 
     # create categorical data and append to X
     X_cat = {'col_1': [1, 1, 2, 3, 1, 2, 3, 4, 1, 3] * 10,
@@ -306,4 +306,3 @@ def test_guardrail_warnings(X_y, capsys):
     assert null_warning in out_stripped
     assert correlation_warning in out_stripped
     assert multicollinearity_warning in out_stripped
-
