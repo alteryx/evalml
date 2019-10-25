@@ -284,6 +284,7 @@ def test_guardrail_warnings(X_y, capsys):
     X.iloc[:,2] = X.iloc[:,4] * 3 + X.iloc[:,8] * 4 + X.iloc[:,10] / 2
     X.iloc[:,17] = np.nan
 
+    # create categorical data and append to X
     X_cat = {'col_1': [1, 1, 2, 3, 1, 2, 3, 4, 1, 3] * 10,
              'col_2': ['a', 'a', 'b', 'c', 'a', 'b', 'c', 'd', 'a', 'c'] * 10,
              'col_3': ['w', 'w', 'x', 'y', 'w', 'x', 'y', 'z', 'w', 'y'] * 10,
