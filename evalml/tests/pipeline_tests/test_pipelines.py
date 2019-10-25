@@ -139,7 +139,7 @@ def test_multi_format_creation(X_y):
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_type == ModelTypes.LINEAR_MODEL
-    assert clf.problem_type == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)
