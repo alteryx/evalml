@@ -66,9 +66,8 @@ jobs:
   
   changelog_updated:
     working_directory: ~/evalml
-    executor:
-        name: python
-        python_version: "3.7"
+    docker:
+      - image: busybox:latest
     steps:
       - checkout
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
