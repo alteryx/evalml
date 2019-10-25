@@ -5,6 +5,7 @@ from skopt.space import Real
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
+from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionClassifier(Estimator):
@@ -18,6 +19,7 @@ class LogisticRegressionClassifier(Estimator):
         "C": Real(.01, 10),
     }
     model_type = ModelTypes.LINEAR_MODEL
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         parameters = {"penalty": penalty,

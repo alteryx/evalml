@@ -4,6 +4,7 @@ from xgboost import XGBClassifier
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
+from evalml.problem_types import ProblemTypes
 
 
 class XGBoostClassifier(Estimator):
@@ -16,6 +17,7 @@ class XGBoostClassifier(Estimator):
         "min_child_weight": Real(1, 10),
     }
     model_type = ModelTypes.XGBOOST
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, random_state=0):
         parameters = {"eta": eta,
