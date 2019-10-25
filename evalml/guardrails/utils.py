@@ -147,6 +147,7 @@ def detect_multicollinearity(X, threshold=5):
         return {}
 
     multicollinear_cols = {}
+    X = X.dropna(axis=1, how='any')
     X = X.assign(const=1)  # since variance_inflation_factor doesn't add intercept
     vif = pd.Series([variance_inflation_factor(X.values, i) for i in range(X.shape[1])], index=X.columns)
     vif = vif[vif >= threshold]

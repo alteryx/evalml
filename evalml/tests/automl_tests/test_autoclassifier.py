@@ -272,4 +272,37 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
-# def test_serialization(trained_model)
+
+
+def test_guardrail_warnings(X_y, capsys):
+    X, y = X_y
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    # create correlated, highly-null, and multicollinear columns
+    X.iloc[:,1] = X.iloc[:,3] * 3
+    X.iloc[:,2] = X.iloc[:,4] * 3 + X.iloc[:,8] * 4 + X.iloc[:,10] / 2
+    X.iloc[:,17] = np.nan
+
+    X_cat = {'col_1': [1, 1, 2, 3, 1, 2, 3, 4, 1, 3] * 10,
+             'col_2': ['a', 'a', 'b', 'c', 'a', 'b', 'c', 'd', 'a', 'c'] * 10,
+             'col_3': ['w', 'w', 'x', 'y', 'w', 'x', 'y', 'z', 'w', 'y'] * 10,
+             'col_4': [1, 1, 4, 3, 1, 3, 3, 1, 2, 3] * 10}
+    X_cat = pd.DataFrame(data=X_cat)
+    for col in X_cat:
+        X_cat[col] = X_cat[col].astype('category')
+    X = pd.concat([X, X_cat], axis=1)
+
+    clf = AutoClassifier(check_correlation=True)
+    clf.fit(X, y)
+    clf.describe_pipeline(0)
+    out, err = capsys.readouterr()
+    out_stripped = " ".join(out.split())
+    assert err == ''
+    null_warning = "WARNING: Columns (17) are at least 95.0% null."
+    correlation_warning = "columns may be correlated."
+    multicollinearity_warning = "may be multicollinear."
+    assert null_warning in out_stripped
+    assert correlation_warning in out_stripped
+    assert multicollinearity_warning in out_stripped
+

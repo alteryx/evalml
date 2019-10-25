@@ -123,8 +123,8 @@ class AutoBase:
         if self.null_threshold is not None:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
             if len(highly_null_columns) > 0:
-                self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
-
+                highly_null_columns = [str(k) for k in highly_null_columns.keys()]
+                self.logger.log("WARNING: Columns ({}) are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
         if self.check_correlation:
             correlated_cols = guardrails.detect_correlation(X)
             if len(correlated_cols) > 0:
@@ -133,7 +133,7 @@ class AutoBase:
             multicollinear_cols = guardrails.detect_multicollinearity(X)
             if len(multicollinear_cols) > 0:
                 multicollinear_col_str = (", ").join(str(key) for key in multicollinear_cols.keys())
-                self.logger.log("WARNING: {} columns may be multicollinear.".format(multicollinear_col_str))
+                self.logger.log("WARNING: Columns ({}) may be multicollinear.".format(multicollinear_col_str))
 
         pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
         start = time.time()
