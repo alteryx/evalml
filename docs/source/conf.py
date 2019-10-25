@@ -190,12 +190,11 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-# If evalml is open-sourced: change empty string to '(GH#)' etc.
-# and replace github specific style.css
+# If evalml is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', ''),
-    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', ''),
-    'user': ('https://github.com/%s', '')
+    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', '#'),
+    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', '#'),
+    'user': ('https://github.com/%s', '@')
 }
 
 autosummary_generate = ["api_reference.rst"]
