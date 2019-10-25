@@ -4,6 +4,7 @@ from skopt.space import Integer
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
+from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
@@ -15,6 +16,7 @@ class RandomForestClassifier(Estimator):
         "max_depth": Integer(1, 32),
     }
     model_type = ModelTypes.RANDOM_FOREST
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
         parameters = {"n_estimators": n_estimators,

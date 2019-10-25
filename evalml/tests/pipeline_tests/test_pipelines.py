@@ -138,6 +138,8 @@ def test_multi_format_creation(X_y):
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
+    assert clf.model_type == ModelTypes.LINEAR_MODEL
+    assert clf.problem_type == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)

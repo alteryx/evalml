@@ -32,6 +32,8 @@ class PipelineBase:
         estimator = next((component for component in component_list if (isinstance(component, Estimator))), None)
         if estimator is not None:
             self.estimator = estimator
+            self.problem_type = estimator.problem_type
+            self.model_type = estimator.model_type
             estimator_index = component_list.index(estimator)
             if estimator_index != len(component_list) - 1:
                 raise RuntimeError("Estimator must be the last component in the pipeline.")
