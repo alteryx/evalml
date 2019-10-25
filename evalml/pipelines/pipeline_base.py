@@ -145,7 +145,7 @@ class PipelineBase:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
-        # todo: what if no encoder?
+
         encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
         if encoder is not None:
             self.input_feature_names = encoder.get_feature_names()
@@ -219,7 +219,6 @@ class PipelineBase:
         """
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
-        # calculate predictions only once
         y_predicted = None
         y_predicted_proba = None
 
