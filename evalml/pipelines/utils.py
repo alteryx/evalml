@@ -1,4 +1,4 @@
-import pickle
+import cloudpickle
 
 from .classification import (
     LogisticRegressionPipeline,
@@ -85,7 +85,7 @@ def save_pipeline(pipeline, file_path):
         None
     """
     with open(file_path, 'wb') as f:
-        pickle.dump(pipeline, f)
+        cloudpickle.dump(pipeline, f)
 
 
 def load_pipeline(file_path):
@@ -98,4 +98,4 @@ def load_pipeline(file_path):
         Pipeline obj
     """
     with open(file_path, 'rb') as f:
-        return pickle.load(f)
+        return cloudpickle.load(f)
