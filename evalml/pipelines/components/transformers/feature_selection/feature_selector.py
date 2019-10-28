@@ -8,7 +8,15 @@ class FeatureSelector(Transformer):
         indices = self._component_obj.get_support(indices=True)
         return indices
 
-    def get_names(self, X):
-        # WIP
+
+    def get_names(self, all_feature_names):
+        """Get names of selected features.
+
+        Args:
+            all_feature_names: feature names
+
+        Returns:
+            list of the names of features selected
+        """
         indices = self.get_indices()
-        return X.columns[indices].tolist()
+        return list(map(lambda i: all_feature_names[i], indices))
