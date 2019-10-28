@@ -48,6 +48,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -189,11 +190,17 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
+# If evalml is open-sourced: replace github specific style.css
+extlinks = {
+    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', '#'),
+    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', '#'),
+    'user': ('https://github.com/%s', '@')
+}
+
 autosummary_generate = ["api_reference.rst"]
 templates_path = ["_templates"]
 
+html_show_sphinx = False
+
 def setup(app):
     app.add_stylesheet("style.css")
-
-
-html_show_sphinx = False
