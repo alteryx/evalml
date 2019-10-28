@@ -22,6 +22,7 @@ Changelog
         * Moved logging to its own module :pr:`119`
         * Show progress bar history :pr:`111`
         * Using cloudpickle instead of pickle to allow unloading of custom objectives :pr:`113`
+        * Removed render.py :pr:`154`
     * Documentation Changes
         * Update release instructions :pr:`140`
         * Include additional_objectives parameter :pr:`124`
