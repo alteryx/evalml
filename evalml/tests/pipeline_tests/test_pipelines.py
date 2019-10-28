@@ -1,12 +1,9 @@
-import errno
 import os
-import shutil
 
 import matplotlib
 import pandas as pd
 import pytest
 
-import evalml.tests as tests
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline
@@ -17,8 +14,6 @@ from evalml.pipelines.utils import (
     save_pipeline
 )
 from evalml.problem_types import ProblemTypes
-
-CACHE = os.path.join(os.path.dirname(tests.__file__), '.cache')
 
 
 def test_list_model_types():
@@ -34,27 +29,38 @@ def test_get_pipelines():
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
 
 
-@pytest.fixture
-def path_management():
-    path = CACHE
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
-            raise e
-    yield path
-    shutil.rmtree(path)
-
-
-def test_serialization(X_y, trained_model, path_management):
+def test_serialization(X_y, tmpdir):
     X, y = X_y
-    path = os.path.join(path_management, 'pipe.pkl')
+    path = os.path.join(str(tmpdir), 'pipe.pkl')
     objective = Precision()
 
     pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
+
+
+@pytest.fixture
+def pickled_pipeline_path(X_y, tmpdir):
+    X, y = X_y
+    path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
+    MockPrecision = type('MockPrecision', (Precision,), {})
+    objective = MockPrecision()
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline.fit(X, y)
+    save_pipeline(pipeline, path)
+    return path
+
+
+def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path):
+    X, y = X_y
+    # checks that class is not defined before loading in pipeline
+    with pytest.raises(NameError):
+        MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
+    objective = Precision()
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline.fit(X, y)
+    assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
 
 def test_reproducibility(X_y):

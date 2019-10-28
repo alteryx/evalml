@@ -2,3 +2,7 @@
     display: none;
     opacity: 0
 }
+
+a[href^="https://github.com/Featurelabs/evalml/"] {
+    visibility: hidden;
+}
