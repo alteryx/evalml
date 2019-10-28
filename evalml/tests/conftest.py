@@ -2,8 +2,6 @@ import pandas as pd
 import pytest
 from sklearn import datasets
 
-from evalml import AutoClassifier
-
 
 @pytest.fixture
 def X_y():
@@ -44,14 +42,3 @@ def X_y_categorical_classification():
     y = titanic['Survived']
     X = titanic.drop('Survived', axis=1)
     return X, y
-
-
-@pytest.fixture
-def trained_model(X_y):
-    X, y = X_y
-
-    clf = AutoClassifier(max_pipelines=1)
-
-    clf.fit(X, y)
-
-    return clf

@@ -17,8 +17,8 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps      
-      
+            make installdeps
+
 jobs:
   lint_test:
       parameters:
@@ -34,7 +34,7 @@ jobs:
         - run: |
             source test_python/bin/activate
             make lint
-            
+
   unit_tests:
     parameters:
       python_version:
@@ -52,14 +52,26 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
-          make test
+          make circleci-test
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports
       - when:
           condition: << parameters.codecov >>
           steps:
             - run: |
                 source test_python/bin/activate
                 codecov
-
+  
+  changelog_updated:
+    working_directory: ~/evalml
+    docker:
+      - image: busybox:latest
+    steps:
+      - checkout
+      - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
 workflows:
   version: 2
@@ -84,3 +96,8 @@ workflows:
           name: "python 3.7 unit tests"
           python_version: "3.7"
           codecov: true
+      - changelog_updated:
+          name: "changelog updated"
+          filters:
+            branches:
+              ignore: /^master?/
