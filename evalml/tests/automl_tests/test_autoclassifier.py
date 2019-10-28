@@ -285,4 +285,3 @@ def test_plot_iterations(X_y):
     figure = clf.plot_best_score_by_iteration()
     assert isinstance(figure, type(plt.figure()))
     clf.plot_best_score_by_iteration(interactive_plot=True)
-# def test_serialization(trained_model)
