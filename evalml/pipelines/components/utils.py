@@ -16,8 +16,7 @@ from .transformers import (
     Encoder,
     FeatureSelector,
     OneHotEncoder,
-    RFSelectFromModel,
-    SelectFromModel,
+    RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer
@@ -47,7 +46,7 @@ DEFAULT_COMPONENTS = {
    ComponentTypes.IMPUTER: SimpleImputer,
    ComponentTypes.REGRESSOR: LinearRegressor,
    ComponentTypes.SCALER: StandardScaler,
-   ComponentTypes.FEATURE_SELECTION: RFSelectFromModel
+   ComponentTypes.FEATURE_SELECTION: RFClassifierSelectFromModel
 }
 
 

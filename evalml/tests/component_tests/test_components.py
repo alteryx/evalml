@@ -7,7 +7,7 @@ from evalml.pipelines import (  # SelectFromModel,
     OneHotEncoder,
     RandomForestClassifier,
     RandomForestRegressor,
-    RFSelectFromModel,
+    RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -21,11 +21,11 @@ def test_init():
     enc = OneHotEncoder()
     imputer = SimpleImputer()
     scaler = StandardScaler()
-    feature_selection = RFSelectFromModel(n_estimators=10, number_features=5)
+    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5)
     assert enc.component_type == ComponentTypes.ENCODER
     assert imputer.component_type == ComponentTypes.IMPUTER
     assert scaler.component_type == ComponentTypes.SCALER
-    assert feature_selection.component_type == ComponentTypes.FEATURE_SELECTION
+    assert feature_selection.component_type == ComponentTypes.FEATURE_SELECTION_CLASSIFIER
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
@@ -44,7 +44,7 @@ def test_describe_component():
     enc = OneHotEncoder()
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
-    feature_selection = RFSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
+    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
     assert enc.describe(return_dict=True) == {}
     assert imputer.describe(return_dict=True) == {"impute_strategy": "mean"}
     assert scaler.describe(return_dict=True) == {}

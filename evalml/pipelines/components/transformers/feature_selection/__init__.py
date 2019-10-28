@@ -1,4 +1,4 @@
 # flake8:noqa
 from .feature_selector import FeatureSelector
-from .select_from_model import SelectFromModel
-from .rf_feature_selector import RFSelectFromModel
+from .rf_classifier_feature_selector import RFClassifierSelectFromModel
+from .rf_regressor_feature_selector import RFRegressorSelectFromModel

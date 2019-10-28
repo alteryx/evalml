@@ -13,7 +13,8 @@ from .components import (
     ComponentTypes,
     FeatureSelector,
     Encoder,
-    RFSelectFromModel
+    RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel
 )
 
 from .pipeline_base import PipelineBase

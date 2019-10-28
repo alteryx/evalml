@@ -6,7 +6,7 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    RFSelectFromModel,
+    RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
     handle_component,
@@ -20,7 +20,7 @@ def test_components_dict():
 
 def test_handle_component():
     component_strs = ['Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Select From Model', 'Simple Imputer', 'Standard Scaler']
-    components = [LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFSelectFromModel, SimpleImputer, StandardScaler]
+    components = [LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFClassifierSelectFromModel, SimpleImputer, StandardScaler]
 
     for component_str, component in zip(component_strs, components):
         assert isinstance(handle_component(component_str), component)
@@ -32,7 +32,7 @@ def test_handle_component():
 
 def test_default_component():
     component_type_strs = ['classifier', 'encoder', 'imputer', 'regressor', 'scaler', 'feature_selection']
-    components = [LogisticRegressionClassifier, OneHotEncoder, SimpleImputer, LinearRegressor, StandardScaler, RFSelectFromModel]
+    components = [LogisticRegressionClassifier, OneHotEncoder, SimpleImputer, LinearRegressor, StandardScaler, RFClassifierSelectFromModel]
     for component_type_str, component in zip(component_type_strs, components):
         assert isinstance(handle_component(component_type_str), component)
 

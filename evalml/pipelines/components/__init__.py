@@ -12,8 +12,8 @@ from .estimators import (
 from .transformers import (
     Transformer,
     OneHotEncoder,
-    SelectFromModel,
-    RFSelectFromModel,
+    RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SimpleImputer,
     StandardScaler,
     FeatureSelector,

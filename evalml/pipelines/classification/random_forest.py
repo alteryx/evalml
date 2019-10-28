@@ -6,7 +6,7 @@ from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestClassifier,
-    RFSelectFromModel,
+    RFClassifierSelectFromModel,
     SimpleImputer
 )
 from evalml.problem_types import ProblemTypes
@@ -34,7 +34,7 @@ class RFClassificationPipeline(PipelineBase):
                                            max_depth=max_depth,
                                            n_jobs=n_jobs,
                                            random_state=random_state)
-        feature_selection = RFSelectFromModel(
+        feature_selection = RFClassifierSelectFromModel(
             n_estimators=n_estimators,
             max_depth=max_depth,
             number_features=number_features,

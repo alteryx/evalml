@@ -6,7 +6,7 @@ from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestRegressor,
-    SelectFromModel,
+    RFRegressorSelectFromModel,
     SimpleImputer
 )
 from evalml.problem_types import ProblemTypes
@@ -14,7 +14,7 @@ from evalml.problem_types import ProblemTypes
 
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression"""
-    name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + Select From Model"
+    name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -30,18 +30,15 @@ class RFRegressionPipeline(PipelineBase):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
-
+        feature_selection = RFRegressorSelectFromModel(n_estimators=n_estimators,
+                                                       max_depth=max_depth,
+                                                       number_features=number_features,
+                                                       percent_features=percent_features,
+                                                       threshold=-np.inf)
         estimator = RandomForestRegressor(random_state=random_state,
                                           n_estimators=n_estimators,
                                           max_depth=max_depth,
                                           n_jobs=n_jobs)
-
-        feature_selection = SelectFromModel(
-            estimator=estimator._component_obj,
-            number_features=number_features,
-            percent_features=percent_features,
-            threshold=-np.inf
-        )
 
         super().__init__(objective=objective,
                          name=self.name,
