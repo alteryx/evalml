@@ -11,6 +11,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
+        * Show an interactive iteration vs. score plot when using fit() :pr:`134`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`
@@ -59,9 +60,9 @@ Changelog
 **v0.2.0 Aug. 13, 2019**
     * Enhancements
         * Created fraud detection objective :pr:`4`
-    
+
 **v0.1.0 July. 31, 2019**
-    * *First Release* 
+    * *First Release*
     * Enhancements
         * Added lead scoring objecitve :pr:`1`
         * Added basic classifier :pr:`1`
