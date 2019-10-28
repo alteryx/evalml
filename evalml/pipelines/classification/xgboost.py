@@ -47,5 +47,4 @@ class XGBoostPipeline(PipelineBase):
 
         super().__init__(objective=objective,
                          name=self.name,
-                         problem_type=self.problem_types,
                          component_list=[enc, imputer, feature_selection, estimator])

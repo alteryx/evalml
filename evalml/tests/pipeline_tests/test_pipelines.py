@@ -131,7 +131,7 @@ def test_estimator_not_last(X_y):
                                                      penalty=penalty,
                                                      C=C,
                                                      n_jobs=-1)
-            super().__init__(objective=objective, name=self.name, problem_type=[ProblemTypes.BINARY, ProblemTypes.MULTICLASS], component_list=[enc, imputer, estimator, scaler])
+            super().__init__(objective=objective, name=self.name, component_list=[enc, imputer, estimator, scaler])
 
     err_msg = "Estimator must be the last component in the pipeline."
     with pytest.raises(RuntimeError, match=err_msg):

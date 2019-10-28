@@ -45,10 +45,10 @@ def test_describe_component():
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
-    assert enc.describe(return_dict=True) == {}
-    assert imputer.describe(return_dict=True) == {"impute_strategy": "mean"}
-    assert scaler.describe(return_dict=True) == {}
-    assert feature_selection.describe(return_dict=True) == {"percent_features": 0.3, "threshold": 10}
+    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {}}
+    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
+    assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
+    assert feature_selection.describe(return_dict=True) == {'name': 'RF Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': 10}}
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
@@ -56,11 +56,11 @@ def test_describe_component():
     xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
-    assert lr_classifier.describe(return_dict=True) == {"penalty": "l2", "C": 1.0}
-    assert rf_classifier.describe(return_dict=True) == {"n_estimators": 10, "max_depth": 3}
-    assert xgb_classifier.describe(return_dict=True) == {"eta": 0.1, "max_depth": 3, "min_child_weight": 1}
-    assert rf_regressor.describe(return_dict=True) == {"n_estimators": 10, "max_depth": 3}
-    assert linear_regressor.describe(return_dict=True) == {"fit_intercept": True, 'normalize': False}
+    assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
+    assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1}}
+    assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
 
 
 def test_missing_methods_on_components(X_y):

@@ -10,15 +10,13 @@ from evalml.utils import Logger
 
 
 class PipelineBase:
-    def __init__(self, name, objective, component_list, problem_type=None, n_jobs=-1, random_state=0):
+    def __init__(self, name, objective, component_list, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
             objective (Object): the objective to optimize
 
             component_list (list): List of components in order
-
-            problem_type (ProblemTypes): Machine learning problem associated with the pipeline
 
             random_state (int): random seed/state
 
@@ -64,7 +62,7 @@ class PipelineBase:
         raise NotImplementedError('Setting pipeline components is not supported.')
 
     def _generate_name(self):
-        name = "{}".format(self.component_list[-1].name)
+        name = "{}".format(self.estimator.name)
         for index, component in enumerate(self.component_list[:-1]):
             if index == 0:
                 name += " w/ {}".format(component.name)
@@ -117,7 +115,7 @@ class PipelineBase:
                 X_t = component.fit_transform(X_t, y_t)
             else:
                 X_t = component.transform(X_t, y_t)
-        self.component_list[-1].fit(X_t, y_t)
+        self.estimator.fit(X_t, y_t)
 
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
@@ -145,12 +143,6 @@ class PipelineBase:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
-
-        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
-        if encoder is not None:
-            self.input_feature_names = encoder.get_feature_names()
-        else:
-            self.input_feature_names = X.columns.tolist()
 
         if self.objective.needs_fitting:
             if self.objective.fit_needs_proba:
@@ -181,14 +173,14 @@ class PipelineBase:
                 y_predicted = self.predict_proba(X)
             else:
                 X_t = self._transform(X)
-                y_predicted = self.component_list[-1].predict(X_t)
+                y_predicted = self.estimator.predict(X_t)
 
             if self.objective.uses_extra_columns:
                 return self.objective.predict(y_predicted, X)
 
             return self.objective.predict(y_predicted)
 
-        return self.component_list[-1].predict(X_t)
+        return self.estimator.predict(X_t)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -200,7 +192,7 @@ class PipelineBase:
             DataFrame : probability estimates
         """
         X = self._transform(X)
-        proba = self.component_list[-1].predict_proba(X)
+        proba = self.estimator.predict_proba(X)
         if proba.shape[1] <= 2:
             return proba[:, 1]
         else:
@@ -247,11 +239,14 @@ class PipelineBase:
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
+        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
+        if encoder is not None:
+            feature_names = encoder.get_feature_names()
+
         feature_selector = next((component for component in self.component_list if (isinstance(component, FeatureSelector))), None)
-        feature_names = self.input_feature_names
         if feature_selector is not None:
             indices = feature_selector.get_indices()
-            feature_names = list(map(lambda i: self.input_feature_names[i], indices))
+            feature_names = list(map(lambda i: feature_names[i], indices))
         importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
