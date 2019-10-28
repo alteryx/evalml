@@ -291,4 +291,3 @@ def test_guardrail_warnings(X_y, capsys):
     assert err == ''
     outlier_warning = "may contain outlier data."
     assert outlier_warning in out_stripped
-
