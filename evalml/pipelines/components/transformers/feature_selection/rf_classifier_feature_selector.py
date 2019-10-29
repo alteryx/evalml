@@ -10,7 +10,7 @@ from evalml.pipelines.components import ComponentTypes
 
 class RFClassifierSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier"""
-    name = 'RF Select From Model'
+    name = 'RF Classifier Select From Model'
     component_type = ComponentTypes.FEATURE_SELECTION_CLASSIFIER
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),

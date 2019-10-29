@@ -22,7 +22,7 @@ def test_init():
     imputer = SimpleImputer()
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5)
-    assert enc.component_type == ComponentTypes.ENCODER
+    assert enc.component_type == ComponentTypes.CATEGORICAL_ENCODER
     assert imputer.component_type == ComponentTypes.IMPUTER
     assert scaler.component_type == ComponentTypes.SCALER
     assert feature_selection.component_type == ComponentTypes.FEATURE_SELECTION_CLASSIFIER
