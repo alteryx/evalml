@@ -1,6 +1,6 @@
 import pytest
 
-from evalml.pipelines import (  # SelectFromModel,
+from evalml.pipelines import (
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -13,7 +13,7 @@ from evalml.pipelines import (  # SelectFromModel,
     Transformer,
     XGBoostClassifier
 )
-from evalml.pipelines.components import ComponentTypes
+from evalml.pipelines.components import ComponentBase, ComponentTypes
 
 
 def test_init():
@@ -63,17 +63,50 @@ def test_describe_component():
     assert linear_regressor.describe(return_dict=True) == {"fit_intercept": True, 'normalize': False}
 
 
+
+def test_missing_attributes(X_y):
+    class mockComponentFitting(ComponentBase):
+        name = "mock"
+        component_type = ComponentTypes.REGRESSOR
+    
+    class mockComponentName(ComponentBase):
+        component_type = ComponentTypes.REGRESSOR
+        _needs_fitting = True
+
+    class mockComponentType(ComponentBase):
+        name = "mock"
+        _needs_fitting = True
+
+    with pytest.raises(AttributeError, match = "Component missing attribute: `name`"):
+        mockComponentName(parameters={}, component_obj=None, random_state=0)
+        
+    with pytest.raises(AttributeError, match = "Component missing attribute: `_needs_fitting`"):
+        mockComponentFitting(parameters={}, component_obj=None, random_state=0)
+
+    with pytest.raises(AttributeError, match = "Component missing attribute: `component_type`"):
+        mockComponentType(parameters={}, component_obj=None, random_state=0)
+
 def test_missing_methods_on_components(X_y):
     # test that estimator doesn't have
     X, y = X_y
 
-    estimator = Estimator("Dummy Estimator", component_type=ComponentTypes.CLASSIFIER, parameters={}, component_obj=None, needs_fitting=False, random_state=0)
+    class mockEstimator(Estimator):
+        name = "mock Estimator"
+        component_type = ComponentTypes.REGRESSOR
+        _needs_fitting = True
+
+    class mockTransformer(Transformer):
+        name = "mock Transformer"
+        component_type = ComponentTypes.IMPUTER
+        _needs_fitting = False
+
+    estimator = mockEstimator(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
-    transformer = Transformer("Dummy Transformer", ComponentTypes.IMPUTER, parameters={}, component_obj=None, needs_fitting=False, random_state=0)
+    transformer = mockTransformer(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):

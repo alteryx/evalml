@@ -11,6 +11,7 @@ class RandomForestClassifier(Estimator):
     """Random Forest Classifier"""
     name = "Random Forest Classifier"
     component_type = ComponentTypes.CLASSIFIER
+    _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
@@ -25,11 +26,8 @@ class RandomForestClassifier(Estimator):
                                                  max_depth=max_depth,
                                                  n_jobs=n_jobs,
                                                  random_state=random_state)
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=rf_classifier,
-                         needs_fitting=True,
                          random_state=random_state)
 
     @property

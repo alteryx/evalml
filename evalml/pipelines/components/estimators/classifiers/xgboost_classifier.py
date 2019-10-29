@@ -11,6 +11,7 @@ class XGBoostClassifier(Estimator):
     """XGBoost Classifier"""
     name = "XGBoost Classifier"
     component_type = ComponentTypes.CLASSIFIER
+    _needs_fitting = True
     hyperparameter_ranges = {
         "eta": Real(0, 1),
         "max_depth": Integer(1, 20),
@@ -27,11 +28,8 @@ class XGBoostClassifier(Estimator):
                                        eta=eta,
                                        max_depth=max_depth,
                                        min_child_weight=min_child_weight)
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
-                         needs_fitting=True,
                          random_state=random_state)
 
     @property

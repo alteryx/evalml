@@ -10,6 +10,7 @@ class LinearRegressor(Estimator):
     """Linear Regressor"""
     name = "Linear Regressor"
     component_type = ComponentTypes.REGRESSOR
+    _needs_fitting = True
     hyperparameter_ranges = {
         'fit_intercept': [True, False],
         'normalize': [True, False]
@@ -25,11 +26,8 @@ class LinearRegressor(Estimator):
         linear_regressor = SKLinearRegression(fit_intercept=fit_intercept,
                                               normalize=normalize,
                                               n_jobs=n_jobs)
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=linear_regressor,
-                         needs_fitting=True,
                          random_state=0)
 
     @property
