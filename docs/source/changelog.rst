@@ -4,6 +4,13 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.5.0 Oct. 29, 2019**
+    * Enhancements
         * Added basic one hot encoding :pr:`73`
         * Use enums for model_type :pr:`110`
         * Support for splitting regression datasets :pr:`112`
@@ -32,7 +39,7 @@ Changelog
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
 
-**v0.4.1 Sep. 16, 2019**
+**v0.5.0 Sep. 16, 2019**
     * Enhancements
         * Added AutoML for classification and regressor using Autobase and Skopt :pr:`7` :pr:`9`
         * Implemented standard classification and regression metrics :pr:`7`
