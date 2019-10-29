@@ -1,4 +1,3 @@
-
 from evalml.pipelines.components import ComponentBase
 
 

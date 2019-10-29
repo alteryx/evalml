@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Encoder, Estimator, FeatureSelector, handle_component
+from .components import Estimator, handle_component
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
@@ -27,7 +27,7 @@ class PipelineBase:
         self.random_state = random_state
         self.component_list = [handle_component(component) for component in component_list]
         self.component_names = [comp.name for comp in self.component_list]
-
+        self.input_feature_names = {}
         # check if one and only estimator in pipeline is the last element in component_list
         self.estimator = next((component for component in self.component_list if (isinstance(component, Estimator))), None)
         if self.estimator is not None:
@@ -113,10 +113,12 @@ class PipelineBase:
         X_t = X
         y_t = y
         for component in self.component_list[:-1]:
+            self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
             if component._needs_fitting:
                 X_t = component.fit_transform(X_t, y_t)
             else:
                 X_t = component.transform(X_t, y_t)
+        self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
     def fit(self, X, y, objective_fit_size=.2):
@@ -241,13 +243,7 @@ class PipelineBase:
     @property
     def feature_importances(self):
         """Return feature importances. Feature dropped by feaure selection are excluded"""
-        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
-        if encoder is not None:
-            feature_names = encoder.get_feature_names()
-
-        feature_selector = next((component for component in self.component_list if (isinstance(component, FeatureSelector))), None)
-        if feature_selector is not None:
-            feature_names = feature_selector.get_names(feature_names)
+        feature_names = self.input_feature_names[self.estimator.name]
         importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
