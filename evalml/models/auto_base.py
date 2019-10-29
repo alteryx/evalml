@@ -114,7 +114,7 @@ class AutoBase:
         if self.max_pipelines and self.max_time:
             self.logger.log("Will stop searching when max_time or max_pipelines is reached.")
         elif self.max_pipelines:
-            self.logger.log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+            self.logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         elif self.max_time:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
@@ -144,6 +144,7 @@ class AutoBase:
                 elapsed = time.time() - start
                 if self.max_time and elapsed > self.max_time:
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
+                    pbar.close()
                     break
                 self._do_iteration(X, y, pbar, raise_errors)
             pbar.close()
