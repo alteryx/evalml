@@ -20,7 +20,7 @@ from .transformers import (
     SimpleImputer,
     StandardScaler,
     FeatureSelector,
-    Encoder
+    CategoricalEncoder
     )
 
 # When adding new components please import above.

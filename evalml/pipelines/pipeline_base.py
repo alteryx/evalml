@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Encoder, Estimator, FeatureSelector, handle_component
+from .components import CategoricalEncoder, Estimator, FeatureSelector, handle_component
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
@@ -146,7 +146,7 @@ class PipelineBase:
 
         self._fit(X, y)
 
-        encoder = next((component for component in self.component_list if (isinstance(component, Encoder))), None)
+        encoder = next((component for component in self.component_list if (isinstance(component, CategoricalEncoder))), None)
         if encoder is not None:
             self.input_feature_names = encoder.get_feature_names()
         else:

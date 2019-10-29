@@ -1,11 +1,11 @@
 import category_encoders as ce
 
-from .encoder import Encoder
+from .encoder import CategoricalEncoder
 
 from evalml.pipelines.components import ComponentTypes
 
 
-class OneHotEncoder(Encoder):
+class OneHotEncoder(CategoricalEncoder):
 
     """Creates one-hot encoding for non-numeric data"""
     name = 'One Hot Encoder'
