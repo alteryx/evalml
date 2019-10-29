@@ -29,12 +29,11 @@ class PipelineBase:
         self.component_names = [comp.name for comp in self.component_list]
 
         # check if one and only estimator in pipeline is the last element in component_list
-        estimator = next((component for component in self.component_list if (isinstance(component, Estimator))), None)
-        if estimator is not None:
-            self.estimator = estimator
-            self.problem_types = estimator.problem_types
-            self.model_type = estimator.model_type
-            estimator_index = self.component_list.index(estimator)
+        self.estimator = next((component for component in self.component_list if (isinstance(component, Estimator))), None)
+        if self.estimator is not None:
+            self.problem_types = self.estimator.problem_types
+            self.model_type = self.estimator.model_type
+            estimator_index = self.component_list.index(self.estimator)
             if estimator_index != len(self.component_list) - 1:
                 raise RuntimeError("Estimator must be the last component in the pipeline.")
 
