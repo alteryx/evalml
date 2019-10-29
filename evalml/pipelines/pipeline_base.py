@@ -3,7 +3,12 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import CategoricalEncoder, Estimator, FeatureSelector, handle_component
+from .components import (
+    CategoricalEncoder,
+    Estimator,
+    FeatureSelector,
+    handle_component
+)
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger

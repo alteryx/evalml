@@ -12,7 +12,6 @@ from evalml.pipelines.components import (
     handle_component,
     str_to_component_type
 )
-
 from evalml.pipelines.components.utils import __COMPONENTS, __components_dict
 
 
@@ -23,11 +22,11 @@ def test_components_dict():
 
 def test_handle_component():
     component_strs = [
-        'Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Classifier Select From Model', 
+        'Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Classifier Select From Model',
         'RF Regressor Select From Model', 'Simple Imputer', 'Standard Scaler'
     ]
     components = [
-        LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFClassifierSelectFromModel, 
+        LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFClassifierSelectFromModel,
         RFRegressorSelectFromModel, SimpleImputer, StandardScaler
     ]
 

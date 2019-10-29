@@ -1,6 +1,7 @@
 
 from evalml.pipelines.components.transformers import Transformer
 
+
 class CategoricalEncoder(Transformer):
 
     def get_feature_names(self):

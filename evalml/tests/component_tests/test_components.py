@@ -63,12 +63,11 @@ def test_describe_component():
     assert linear_regressor.describe(return_dict=True) == {"fit_intercept": True, 'normalize': False}
 
 
-
 def test_missing_attributes(X_y):
     class mockComponentFitting(ComponentBase):
         name = "mock"
         component_type = ComponentTypes.REGRESSOR
-    
+
     class mockComponentName(ComponentBase):
         component_type = ComponentTypes.REGRESSOR
         _needs_fitting = True
@@ -77,14 +76,15 @@ def test_missing_attributes(X_y):
         name = "mock"
         _needs_fitting = True
 
-    with pytest.raises(AttributeError, match = "Component missing attribute: `name`"):
+    with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
         mockComponentName(parameters={}, component_obj=None, random_state=0)
-        
-    with pytest.raises(AttributeError, match = "Component missing attribute: `_needs_fitting`"):
+
+    with pytest.raises(AttributeError, match="Component missing attribute: `_needs_fitting`"):
         mockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
-    with pytest.raises(AttributeError, match = "Component missing attribute: `component_type`"):
+    with pytest.raises(AttributeError, match="Component missing attribute: `component_type`"):
         mockComponentType(parameters={}, component_obj=None, random_state=0)
+
 
 def test_missing_methods_on_components(X_y):
     # test that estimator doesn't have

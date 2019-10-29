@@ -13,15 +13,15 @@ from .estimators import (
     XGBoostClassifier
 )
 from .transformers import (
-    Transformer,
+    CategoricalEncoder,
+    FeatureSelector,
     OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
     StandardScaler,
-    FeatureSelector,
-    CategoricalEncoder
-    )
+    Transformer
+)
 
 # When adding new components please import above.
 # components_dict() automatically generates dict of components without required parameters
@@ -31,7 +31,7 @@ def __components_dict():
     """components_dict() looks through all imported modules and returns all components
         that only have default parameters and can be instantiated"""
 
-    COMPONENTS = dict() 
+    COMPONENTS = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
         if issubclass(obj, ComponentBase):
