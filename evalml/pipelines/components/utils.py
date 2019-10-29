@@ -46,7 +46,7 @@ __COMPONENTS = __components_dict()
 
 DEFAULT_COMPONENTS = {
    ComponentTypes.CLASSIFIER: LogisticRegressionClassifier,
-   ComponentTypes.ENCODER: OneHotEncoder,
+   ComponentTypes.CATEGORICAL_ENCODER: OneHotEncoder,
    ComponentTypes.IMPUTER: SimpleImputer,
    ComponentTypes.REGRESSOR: LinearRegressor,
    ComponentTypes.SCALER: StandardScaler,

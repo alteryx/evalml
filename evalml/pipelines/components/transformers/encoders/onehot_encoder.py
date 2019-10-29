@@ -9,7 +9,7 @@ class OneHotEncoder(Encoder):
 
     """Creates one-hot encoding for non-numeric data"""
     name = 'One Hot Encoder'
-    component_type = ComponentTypes.ENCODER
+    component_type = ComponentTypes.CATEGORICAL_ENCODER
     hyperparameter_ranges = {}
 
     def __init__(self):
