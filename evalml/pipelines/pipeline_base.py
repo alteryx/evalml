@@ -62,7 +62,10 @@ class PipelineBase:
         raise NotImplementedError('Setting pipeline components is not supported.')
 
     def _generate_name(self):
-        name = "{}".format(self.estimator.name)
+        if self.estimator is not None:
+            name = "{}".format(self.estimator.name)
+        else:
+            name = "Pipeline"
         for index, component in enumerate(self.component_list[:-1]):
             if index == 0:
                 name += " w/ {}".format(component.name)
