@@ -75,6 +75,13 @@ jobs:
 
 workflows:
   version: 2
+  changelog_updated:
+    jobs:
+      - changelog_updated:
+          name: "changelog updated"
+          filters:
+            branches:
+              ignore: /^master?/
   test_all_python_versions:
     jobs:
       - lint_test:
@@ -96,8 +103,3 @@ workflows:
           name: "python 3.7 unit tests"
           python_version: "3.7"
           codecov: true
-      - changelog_updated:
-          name: "changelog updated"
-          filters:
-            branches:
-              ignore: /^master?/

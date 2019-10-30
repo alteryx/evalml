@@ -1,26 +1,34 @@
 import pytest
 
 from evalml.pipelines.components import (
-    COMPONENTS,
     ComponentTypes,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SimpleImputer,
     StandardScaler,
     handle_component,
     str_to_component_type
 )
+from evalml.pipelines.components.utils import __COMPONENTS, __components_dict
 
 
 def test_components_dict():
-    assert len(COMPONENTS) == 9
+    assert len(__components_dict()) == 10
+    assert len(__COMPONENTS) == 10
 
 
 def test_handle_component():
-    component_strs = ['Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Select From Model', 'Simple Imputer', 'Standard Scaler']
-    components = [LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFClassifierSelectFromModel, SimpleImputer, StandardScaler]
+    component_strs = [
+        'Linear Regressor', 'Logistic Regression Classifier', 'One Hot Encoder', 'RF Classifier Select From Model',
+        'RF Regressor Select From Model', 'Simple Imputer', 'Standard Scaler'
+    ]
+    components = [
+        LinearRegressor, LogisticRegressionClassifier, OneHotEncoder, RFClassifierSelectFromModel,
+        RFRegressorSelectFromModel, SimpleImputer, StandardScaler
+    ]
 
     for component_str, component in zip(component_strs, components):
         assert isinstance(handle_component(component_str), component)
@@ -31,7 +39,7 @@ def test_handle_component():
 
 
 def test_default_component():
-    component_type_strs = ['classifier', 'encoder', 'imputer', 'regressor', 'scaler', 'feature_selection']
+    component_type_strs = ['classifier', 'categorical_encoder', 'imputer', 'regressor', 'scaler', 'feature_selection']
     components = [LogisticRegressionClassifier, OneHotEncoder, SimpleImputer, LinearRegressor, StandardScaler, RFClassifierSelectFromModel]
     for component_type_str, component in zip(component_type_strs, components):
         assert isinstance(handle_component(component_type_str), component)
@@ -41,7 +49,7 @@ def test_default_component():
 def correct_component_types():
     correct_component_types = [
         ComponentTypes.CLASSIFIER,
-        ComponentTypes.ENCODER,
+        ComponentTypes.CATEGORICAL_ENCODER,
         ComponentTypes.FEATURE_SELECTION,
         ComponentTypes.IMPUTER,
         ComponentTypes.REGRESSOR,
@@ -51,7 +59,7 @@ def correct_component_types():
 
 
 def test_handle_string(correct_component_types):
-    component_types = ['classifier', 'encoder', 'feature_selection', 'imputer', 'regressor', 'scaler']
+    component_types = ['classifier', 'categorical_encoder', 'feature_selection', 'imputer', 'regressor', 'scaler']
     for component_type, correct_component_type in zip(component_types, correct_component_types):
         assert str_to_component_type(component_type) == correct_component_type
 

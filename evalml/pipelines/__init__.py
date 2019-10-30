@@ -12,7 +12,7 @@ from .components import (
     XGBoostClassifier,
     ComponentTypes,
     FeatureSelector,
-    Encoder,
+    CategoricalEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel
 )

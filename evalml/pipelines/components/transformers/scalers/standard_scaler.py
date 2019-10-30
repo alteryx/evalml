@@ -8,14 +8,12 @@ class StandardScaler(Transformer):
     """Standardize features: removes mean and scales to unit variance"""
     name = "Standard Scaler"
     component_type = ComponentTypes.SCALER
+    _needs_fitting = True
     hyperparameter_ranges = {}
 
     def __init__(self):
         parameters = {}
         scaler = SkScaler()
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=scaler,
-                         needs_fitting=True,
                          random_state=0)

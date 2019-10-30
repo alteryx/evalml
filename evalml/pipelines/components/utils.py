@@ -13,10 +13,11 @@ from .estimators import (
     XGBoostClassifier
 )
 from .transformers import (
-    Encoder,
+    CategoricalEncoder,
     FeatureSelector,
     OneHotEncoder,
     RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer
@@ -26,7 +27,10 @@ from .transformers import (
 # components_dict() automatically generates dict of components without required parameters
 
 
-def components_dict():
+def __components_dict():
+    """components_dict() looks through all imported modules and returns all components
+        that only have default parameters and can be instantiated"""
+
     COMPONENTS = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
@@ -38,11 +42,11 @@ def components_dict():
                 COMPONENTS[obj.name] = obj
     return COMPONENTS
 
-COMPONENTS = components_dict()
+__COMPONENTS = __components_dict()
 
 DEFAULT_COMPONENTS = {
    ComponentTypes.CLASSIFIER: LogisticRegressionClassifier,
-   ComponentTypes.ENCODER: OneHotEncoder,
+   ComponentTypes.CATEGORICAL_ENCODER: OneHotEncoder,
    ComponentTypes.IMPUTER: SimpleImputer,
    ComponentTypes.REGRESSOR: LinearRegressor,
    ComponentTypes.SCALER: StandardScaler,
@@ -71,7 +75,7 @@ def handle_component(component):
 def str_to_component(component):
     try:
         if isinstance(component, str):
-            component_class = COMPONENTS[component]
+            component_class = __COMPONENTS[component]
             return component_class()
         elif isinstance(component, ComponentBase):
             return component

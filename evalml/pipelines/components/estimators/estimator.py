@@ -32,3 +32,10 @@ class Estimator(ComponentBase):
             return self._component_obj.predict_proba(X)
         except AttributeError:
             raise RuntimeError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
+
+    @property
+    def feature_importances(self):
+        try:
+            return self._component_obj.feature_importances_
+        except AttributeError:
+            raise RuntimeError("Estimator requires a feature_importances property or a component_obj that implements feature_importances_")

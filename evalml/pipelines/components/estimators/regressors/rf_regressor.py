@@ -11,6 +11,7 @@ class RandomForestRegressor(Estimator):
     """Random Forest Regressor"""
     name = "Random Forest Regressor"
     component_type = ComponentTypes.REGRESSOR
+    _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
@@ -25,11 +26,8 @@ class RandomForestRegressor(Estimator):
                                                n_estimators=n_estimators,
                                                max_depth=max_depth,
                                                n_jobs=n_jobs)
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=rf_regressor,
-                         needs_fitting=True,
                          random_state=random_state)
 
     @property

@@ -2,14 +2,17 @@ from evalml.utils import Logger
 
 
 class ComponentBase:
-    def __init__(self, name, component_type, parameters, component_obj, needs_fitting, random_state):
-        self.name = name
-        self.component_type = component_type
+    def __init__(self, parameters, component_obj, random_state):
         self.random_state = random_state
         self._component_obj = component_obj
-        self._needs_fitting = needs_fitting
         self.parameters = parameters
         self.logger = Logger()
+
+        attributes_to_check = ['_needs_fitting', "name", "component_type"]
+
+        for attribute in attributes_to_check:
+            if not hasattr(self, attribute):
+                raise AttributeError("Component missing attribute: `{}`".format(attribute))
 
     def fit(self, X, y=None):
         """Build a model

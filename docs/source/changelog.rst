@@ -28,7 +28,7 @@ Changelog
         * Include additional_objectives parameter :pr:`124`
         * Added Changelog :pr:`136`
     * Testing Changes
-        * Code coverage pr:`90`
+        * Code coverage :pr:`90`
         * Added CircleCI tests for other Python versions :pr:`104`
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
