@@ -38,4 +38,4 @@ class Estimator(ComponentBase):
         try:
             return self._component_obj.feature_importances_
         except AttributeError:
-            raise RuntimeError("Estimator requires a feature_importances method or a component_obj that implements feature_importances")
+            raise RuntimeError("Estimator requires a feature_importances property or a component_obj that implements feature_importances_")
