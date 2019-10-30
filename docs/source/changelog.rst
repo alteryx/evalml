@@ -22,12 +22,13 @@ Changelog
         * Show progress bar history :pr:`111`
         * Using cloudpickle instead of pickle to allow unloading of custom objectives :pr:`113`
         * Refactoring pipelines :pr:`108`
+        * Removed render.py :pr:`154`
     * Documentation Changes
         * Update release instructions :pr:`140`
         * Include additional_objectives parameter :pr:`124`
         * Added Changelog :pr:`136`
     * Testing Changes
-        * Code coverage pr:`90`
+        * Code coverage :pr:`90`
         * Added CircleCI tests for other Python versions :pr:`104`
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
@@ -60,9 +61,9 @@ Changelog
 **v0.2.0 Aug. 13, 2019**
     * Enhancements
         * Created fraud detection objective :pr:`4`
-    
+
 **v0.1.0 July. 31, 2019**
-    * *First Release* 
+    * *First Release*
     * Enhancements
         * Added lead scoring objecitve :pr:`1`
         * Added basic classifier :pr:`1`
