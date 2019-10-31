@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Adding ROC charts :pr:`169`
     * Fixes
     * Changes
     * Documentation Changes
