@@ -28,4 +28,4 @@ with warnings.catch_warnings():
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.4.1'
+__version__ = '0.5.0'
