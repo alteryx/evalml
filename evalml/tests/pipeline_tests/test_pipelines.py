@@ -10,6 +10,7 @@ from evalml.pipelines.components import (
     ComponentTypes,
     LogisticRegressionClassifier,
     OneHotEncoder,
+    RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler
 )
@@ -149,3 +150,18 @@ def test_multi_format_creation(X_y):
 
     clf.fit(X, y)
     clf.score(X, y)
+    assert not clf.feature_importances.isnull().all().all()
+
+
+def test_multiple_feature_selectors(X_y):
+    X, y = X_y
+    clf = PipelineBase('test', 'precision', component_list=['Simple Imputer', 'categorical_encoder', ComponentTypes.FEATURE_SELECTION_CLASSIFIER, StandardScaler(), ComponentTypes.FEATURE_SELECTION_CLASSIFIER, ComponentTypes.CLASSIFIER])
+    correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
+    for component, correct_components in zip(clf.component_list, correct_components):
+        assert isinstance(component, correct_components)
+    assert clf.model_type == ModelTypes.LINEAR_MODEL
+    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    clf.fit(X, y)
+    clf.score(X, y)
+    assert not clf.feature_importances.isnull().all().all()
