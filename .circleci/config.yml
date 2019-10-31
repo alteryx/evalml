@@ -63,10 +63,25 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov
-
+  
+  changelog_updated:
+    working_directory: ~/evalml
+    docker:
+      - image: busybox:latest
+    steps:
+      - checkout
+      - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
 workflows:
   version: 2
+  changelog_updated:
+    jobs:
+      - changelog_updated:
+          name: "changelog updated"
+          filters:
+            branches:
+              ignore: /^master?/
   test_all_python_versions:
     jobs:
       - lint_test:
