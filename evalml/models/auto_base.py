@@ -111,13 +111,12 @@ class AutoBase:
             self.max_pipelines = 5
             self.logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
 
-        if self.max_pipelines and self.max_time:
-            self.logger.log("Will stop searching when max_time or max_pipelines is reached.")
-        elif self.max_pipelines:
+        if self.max_pipelines:
             self.logger.log("Searching up to %s pipelines. " % self.max_pipelines)
-        elif self.max_time:
+        if self.max_time:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
+
 
         if self.detect_label_leakage:
             leaked = guardrails.detect_label_leakage(X, y)
@@ -139,12 +138,13 @@ class AutoBase:
                 elapsed = time.time() - start
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
+            pbar._instances.clear()
             start = time.time()
             for n in pbar:
                 elapsed = time.time() - start
                 if self.max_time and elapsed > self.max_time:
-                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     pbar.close()
+                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
                 self._do_iteration(X, y, pbar, raise_errors)
             pbar.close()
