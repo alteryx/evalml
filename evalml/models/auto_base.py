@@ -3,8 +3,10 @@ import time
 from collections import OrderedDict
 from sys import stdout
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.metrics import auc, roc_curve
 from tqdm import tqdm
 
 from evalml import guardrails
@@ -174,6 +176,7 @@ class AutoBase:
         start = time.time()
         scores = []
         all_objective_scores = []
+        i = 0
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -186,7 +189,12 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
+                probas_ = pipeline.predict_proba(X_test)
+                fpr, tpr, thresholds = roc_curve(y_test, probas_)
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC fold %d (AUC = %0.2f)' % (i, roc_auc))
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+                i += 1
 
             except Exception as e:
                 if raise_errors:
@@ -204,7 +212,12 @@ class AutoBase:
             all_objective_scores.append(ordered_scores)
 
         training_time = time.time() - start
-
+        plt.xlim([-0.05, 1.05])
+        plt.ylim([-0.05, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver operating characteristic of {}'.format(pipeline.name))
+        plt.legend(loc="lower right")
         # save the result and continue
         self._add_result(
             trained_pipeline=pipeline,

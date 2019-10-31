@@ -25,7 +25,6 @@ with warnings.catch_warnings():
     import skopt
 
 
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
