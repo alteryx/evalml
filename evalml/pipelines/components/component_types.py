@@ -4,7 +4,7 @@ from enum import Enum
 class ComponentTypes(Enum):
     """Enum for type of component in our ML Pipeline"""
     CLASSIFIER = 'classifier'
-    ENCODER = 'encoder'
+    CATEGORICAL_ENCODER = 'categorical_encoder'
     IMPUTER = 'imputer'
     FEATURE_SELECTION = 'feature_selection'
     FEATURE_SELECTION_CLASSIFIER = 'feature_selection_classifier'

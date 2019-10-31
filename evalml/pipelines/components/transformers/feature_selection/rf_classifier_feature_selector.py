@@ -10,8 +10,9 @@ from evalml.pipelines.components import ComponentTypes
 
 class RFClassifierSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier"""
-    name = 'RF Select From Model'
+    name = 'RF Classifier Select From Model'
     component_type = ComponentTypes.FEATURE_SELECTION_CLASSIFIER
+    _needs_fitting = True
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),
         "threshold": ['mean', -np.inf]
@@ -33,9 +34,6 @@ class RFClassifierSelectFromModel(FeatureSelector):
             threshold=threshold
         )
 
-        super().__init__(name=self.name,
-                         component_type=self.component_type,
-                         parameters=parameters,
+        super().__init__(parameters=parameters,
                          component_obj=feature_selection,
-                         needs_fitting=True,
                          random_state=random_state)

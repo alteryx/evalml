@@ -17,7 +17,7 @@ from .transformers import (
     SimpleImputer,
     StandardScaler,
     FeatureSelector,
-    Encoder
+    CategoricalEncoder
     )
 
-from .utils import handle_component, str_to_component_type, COMPONENTS
+from .utils import handle_component, str_to_component_type
