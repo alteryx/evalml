@@ -117,7 +117,6 @@ class AutoBase:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
-
         if self.detect_label_leakage:
             leaked = guardrails.detect_label_leakage(X, y)
             if len(leaked) > 0:
