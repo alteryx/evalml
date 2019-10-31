@@ -50,7 +50,9 @@ DEFAULT_COMPONENTS = {
    ComponentTypes.IMPUTER: SimpleImputer,
    ComponentTypes.REGRESSOR: LinearRegressor,
    ComponentTypes.SCALER: StandardScaler,
-   ComponentTypes.FEATURE_SELECTION: RFClassifierSelectFromModel
+   ComponentTypes.FEATURE_SELECTION: RFClassifierSelectFromModel,
+   ComponentTypes.FEATURE_SELECTION_CLASSIFIER: RFClassifierSelectFromModel,
+   ComponentTypes.FEATURE_SELECTION_REGRESSOR: RFRegressorSelectFromModel
 }
 
 

@@ -34,7 +34,8 @@ class RFRegressionPipeline(PipelineBase):
                                                        max_depth=max_depth,
                                                        number_features=number_features,
                                                        percent_features=percent_features,
-                                                       threshold=-np.inf)
+                                                       threshold=-np.inf,
+                                                       random_state=random_state)
         estimator = RandomForestRegressor(random_state=random_state,
                                           n_estimators=n_estimators,
                                           max_depth=max_depth,
@@ -42,5 +43,4 @@ class RFRegressionPipeline(PipelineBase):
 
         super().__init__(objective=objective,
                          name=self.name,
-                         problem_type=self.problem_types,
                          component_list=[enc, imputer, feature_selection, estimator])

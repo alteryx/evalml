@@ -39,4 +39,6 @@ class ComponentBase:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
             self.logger.log(parameter_str)
         if return_dict:
-            return self.parameters
+            component_dict = {"name": self.name}
+            component_dict.update({"parameters": self.parameters})
+            return component_dict

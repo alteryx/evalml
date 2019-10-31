@@ -1,5 +1,6 @@
 import category_encoders as ce
 import numpy as np
+import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline as SKPipeline
@@ -20,11 +21,10 @@ def test_lr_multi(X_y_multi):
                                    multi_class='auto',
                                    solver="lbfgs",
                                    n_jobs=-1)
-    sk_pipeline = SKPipeline(
-        [("encoder", enc),
-         ("imputer", imputer),
-         ("scaler", scaler),
-         ("estimator", estimator)])
+    sk_pipeline = SKPipeline([("encoder", enc),
+                              ("imputer", imputer),
+                              ("scaler", scaler),
+                              ("estimator", estimator)])
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
 
@@ -38,3 +38,16 @@ def test_lr_multi(X_y_multi):
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_lor_input_feature_names(X_y):
+    X, y = X_y
+    # create a list of column names
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    objective = PrecisionMicro()
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns), random_state=0)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not clf.feature_importances.isnull().all().all()
+    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
