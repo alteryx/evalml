@@ -130,11 +130,11 @@ class AutoBase:
 
         if self.max_pipelines is None:
             start = time.time()
-            elapsed = 0
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
-            while elapsed <= self.max_time:
+            pbar._instances.clear()
+            while time.time() - start <= self.max_time:
                 self._do_iteration(X, y, pbar, raise_errors)
-                elapsed = time.time() - start
+            pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
