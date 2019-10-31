@@ -4,12 +4,17 @@
 Before creating a release EvalML integration tests should be run. Instructions can be found here:
 https://github.com/FeatureLabs/evalml-integration-tests
 
+## Documentation
+Documentation automatically updates using readthedocs so no need to manually compile.
+
 ## Create Release PR
-A release PR should have the version number as the title and the changelog updates as the PR body text. 
-The PR should include the following:
+A release PR should have the version number as the title and the changelog updates as the PR body text.
+The PR should *merge off master* and include the following:
 * Changes to `setup.py` and `evalml/__init__.py` to bump `__version__` to the correct version
 * Move changelog items from `Future Releases` into the correct version number
 * Confirm that all release items are in the changelog
+
+An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
 ## Create GitHub Release
 After the release pull request has been merged into the master branch, it is time draft the github release.
