@@ -34,13 +34,12 @@ class RFClassificationPipeline(PipelineBase):
                                            max_depth=max_depth,
                                            n_jobs=n_jobs,
                                            random_state=random_state)
-        feature_selection = RFClassifierSelectFromModel(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            number_features=number_features,
-            percent_features=percent_features,
-            threshold=-np.inf
-        )
+        feature_selection = RFClassifierSelectFromModel(n_estimators=n_estimators,
+                                                        max_depth=max_depth,
+                                                        number_features=number_features,
+                                                        percent_features=percent_features,
+                                                        threshold=-np.inf,
+                                                        random_state=random_state)
 
         super().__init__(objective=objective,
                          name=self.name,

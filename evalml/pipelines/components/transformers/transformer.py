@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.pipelines.components import ComponentBase
 
 
@@ -16,7 +18,10 @@ class Transformer(ComponentBase):
             DataFrame: Transformed X
         """
         try:
-            return self._component_obj.transform(X)
+            X_t = self._component_obj.transform(X)
+            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+                X_t = pd.DataFrame(X_t, columns=X.columns)
+            return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
 
@@ -30,6 +35,9 @@ class Transformer(ComponentBase):
             DataFrame: Transformed X
         """
         try:
-            return self._component_obj.fit_transform(X, y)
+            X_t = self._component_obj.fit_transform(X, y)
+            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+                X_t = pd.DataFrame(X_t, columns=X.columns)
+            return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")

@@ -31,19 +31,16 @@ class XGBoostPipeline(PipelineBase):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
-        feature_selection = RFClassifierSelectFromModel(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            number_features=number_features,
-            percent_features=percent_features,
-            threshold=-np.inf
-        )
-        estimator = XGBoostClassifier(
-            random_state=random_state,
-            eta=eta,
-            max_depth=max_depth,
-            min_child_weight=min_child_weight
-        )
+        feature_selection = RFClassifierSelectFromModel(n_estimators=n_estimators,
+                                                        max_depth=max_depth,
+                                                        number_features=number_features,
+                                                        percent_features=percent_features,
+                                                        threshold=-np.inf,
+                                                        random_state=random_state)
+        estimator = XGBoostClassifier(random_state=random_state,
+                                      eta=eta,
+                                      max_depth=max_depth,
+                                      min_child_weight=min_child_weight)
 
         super().__init__(objective=objective,
                          name=self.name,

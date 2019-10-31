@@ -158,7 +158,6 @@ class PipelineBase:
                 self.objective.fit(y_predicted, y_objective, X_objective)
             else:
                 self.objective.fit(y_predicted, y_objective)
-
         return self
 
     def predict(self, X):
