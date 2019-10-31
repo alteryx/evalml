@@ -46,8 +46,9 @@ def detect_highly_null(X, percent_threshold=.95):
     return highly_null_cols
 
 
-def detect_outliers(X):
-    """ Checks if there are any outliers in a dataframe.
+def detect_outliers(X, random_state=0):
+    """ Checks if there are any outliers in a dataframe by using first Isolation Forest to obtain the anomaly score
+    of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
 
     Args:
         X (DataFrame) : features
@@ -73,7 +74,7 @@ def detect_outliers(X):
         upper_bound = q3 + (k * iqr)
         return (lower_bound, upper_bound)
 
-    clf = IsolationForest(random_state=0, behaviour="new", contamination=0.01)
+    clf = IsolationForest(random_state=random_state, behaviour="new", contamination=0.1)
     clf.fit(X)
     scores = pd.Series(clf.decision_function(X))
     lower_bound, upper_bound = get_IQR(scores, k=2)
