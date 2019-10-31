@@ -1,5 +1,6 @@
 import category_encoders as ce
 import numpy as np
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
@@ -12,11 +13,6 @@ from evalml.pipelines import XGBoostPipeline
 
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
-    objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
-    clf.fit(X, y)
-    clf_score = clf.score(X, y)
-    y_pred = clf.predict(X)
 
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
@@ -32,11 +28,30 @@ def test_xg_multi(X_y_multi):
                             ("imputer", imputer),
                             ("feature_selection", feature_selection),
                             ("estimator", estimator)])
-
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
+
+    objective = PrecisionMicro()
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
+    clf.fit(X, y)
+    clf_score = clf.score(X, y)
+    y_pred = clf.predict(X)
+
     assert((y_pred == sk_pipeline.predict(X)).all())
     assert (sk_score == clf_score[0])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_xg_input_feature_names(X_y):
+    X, y = X_y
+    # create a list of column names
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    objective = PrecisionMicro()
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not clf.feature_importances.isnull().all().all()
+    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
