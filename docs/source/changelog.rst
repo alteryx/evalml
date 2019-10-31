@@ -4,6 +4,13 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.5.0 Oct. 29, 2019**
+    * Enhancements
         * Added basic one hot encoding :pr:`73`
         * Use enums for model_type :pr:`110`
         * Support for splitting regression datasets :pr:`112`
