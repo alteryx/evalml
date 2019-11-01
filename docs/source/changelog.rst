@@ -4,6 +4,14 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added basic correlation guardrail :pr:`141`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.5.0 Oct. 29, 2019**
+    * Enhancements
         * Added basic one hot encoding :pr:`73`
         * Use enums for model_type :pr:`110`
         * Support for splitting regression datasets :pr:`112`
@@ -11,7 +19,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
-        * Added basic correlation guardrail :pr:`141`
+        * Added support for unlimited pipelines with a max_time limit :pr:`70`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`
@@ -22,12 +30,13 @@ Changelog
         * Moved logging to its own module :pr:`119`
         * Show progress bar history :pr:`111`
         * Using cloudpickle instead of pickle to allow unloading of custom objectives :pr:`113`
+        * Removed render.py :pr:`154`
     * Documentation Changes
         * Update release instructions :pr:`140`
         * Include additional_objectives parameter :pr:`124`
         * Added Changelog :pr:`136`
     * Testing Changes
-        * Code coverage pr:`90`
+        * Code coverage :pr:`90`
         * Added CircleCI tests for other Python versions :pr:`104`
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
@@ -60,9 +69,9 @@ Changelog
 **v0.2.0 Aug. 13, 2019**
     * Enhancements
         * Created fraud detection objective :pr:`4`
-    
+
 **v0.1.0 July. 31, 2019**
-    * *First Release* 
+    * *First Release*
     * Enhancements
         * Added lead scoring objecitve :pr:`1`
         * Added basic classifier :pr:`1`
