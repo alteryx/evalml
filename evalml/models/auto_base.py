@@ -5,6 +5,7 @@ from sys import stdout
 
 import matplotlib.pyplot as plt
 import numpy as np
+matplotlib.use('nbagg')  # to move somewhere else?
 import pandas as pd
 from sklearn.metrics import auc, roc_curve
 from tqdm import tqdm
