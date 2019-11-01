@@ -3,6 +3,7 @@ import time
 from collections import OrderedDict
 from sys import stdout
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 matplotlib.use('nbagg')  # to move somewhere else?
