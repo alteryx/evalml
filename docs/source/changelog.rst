@@ -4,6 +4,8 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added basic outlier detection guardrail :pr:`151`
+
     * Fixes
     * Changes
     * Documentation Changes
@@ -18,7 +20,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
-        * Added basic outlier detection guardrail :pr:`151`
+        * Added support for unlimited pipelines with a max_time limit :pr:`70`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`
