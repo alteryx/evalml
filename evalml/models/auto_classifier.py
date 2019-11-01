@@ -13,7 +13,7 @@ class AutoClassifier(AutoBase):
     def __init__(self,
                  objective=None,
                  multiclass=False,
-                 max_pipelines=5,
+                 max_pipelines=None,
                  max_time=None,
                  model_types=None,
                  cv=None,

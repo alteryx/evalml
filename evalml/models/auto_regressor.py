@@ -10,7 +10,7 @@ class AutoRegressor(AutoBase):
 
     def __init__(self,
                  objective=None,
-                 max_pipelines=5,
+                 max_pipelines=None,
                  max_time=None,
                  model_types=None,
                  cv=None,
