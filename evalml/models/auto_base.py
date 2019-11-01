@@ -156,7 +156,6 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
-
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
