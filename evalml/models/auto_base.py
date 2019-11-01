@@ -4,11 +4,7 @@ from collections import OrderedDict
 from sys import stdout
 
 import matplotlib
-matplotlib.use('nbagg')
-
-import matplotlib.pyplot as plt
 import numpy as np
-
 import pandas as pd
 from sklearn.metrics import auc, roc_curve
 from tqdm import tqdm
@@ -40,7 +36,6 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
-
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
@@ -165,6 +160,9 @@ class AutoBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
+        # matplotlib.use('nbagg')
+        import matplotlib.pyplot as plt
+
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
@@ -191,7 +189,11 @@ class AutoBase:
         start = time.time()
         scores = []
         all_objective_scores = []
-        i = 0
+        from scipy import interp
+        fold_num = 0
+        mean_fpr = np.linspace(0, 1, 100)
+        tprs = []
+        aucs = []
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -207,9 +209,12 @@ class AutoBase:
                 if self.problem_type == ProblemTypes.BINARY:
                     probas_ = pipeline.predict_proba(X_test)
                     fpr, tpr, thresholds = roc_curve(y_test, probas_)
+                    tprs.append(interp(mean_fpr, fpr, tpr))
+                    tprs[-1][0] = 0.0
                     roc_auc = auc(fpr, tpr)
-                    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC fold %d (AUC = %0.2f)' % (i, roc_auc))
-                    i += 1
+                    aucs.append(roc_auc)
+                    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
+                    fold_num += 1
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 
             except Exception as e:
@@ -229,8 +234,16 @@ class AutoBase:
             all_objective_scores.append(ordered_scores)
 
         training_time = time.time() - start
-        
+
         if self.problem_type == ProblemTypes.BINARY:
+            mean_tpr = np.mean(tprs, axis=0)
+            mean_tpr[-1] = 1.0
+            mean_auc = auc(mean_fpr, mean_tpr)
+            std_auc = np.std(aucs)
+            plt.plot(mean_fpr, mean_tpr, color='b',
+         label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
+         lw=2, alpha=.8)
+            plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Chance', alpha=.8)
             plt.xlim([-0.05, 1.05])
             plt.ylim([-0.05, 1.05])
             plt.xlabel('False Positive Rate')
