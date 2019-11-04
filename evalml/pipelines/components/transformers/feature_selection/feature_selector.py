@@ -29,9 +29,9 @@ class FeatureSelector(Transformer):
             DataFrame: Transformed X
         """
         if isinstance(X, pd.DataFrame):
-            self.all_feature_names = list(X.columns.values)
+            self.input_feature_names = list(X.columns.values)
         else:
-            self.all_feature_names = range(len(X.shape[1]))
+            self.input_feature_names = range(len(X.shape[1]))
 
         try:
             X_t = self._component_obj.transform(X)
@@ -51,12 +51,11 @@ class FeatureSelector(Transformer):
             DataFrame: Transformed X
         """
         if isinstance(X, pd.DataFrame):
-            self.all_feature_names = list(X.columns.values)
+            self.input_feature_names = list(X.columns.values)
         else:
-            self.all_feature_names = range(len(X.shape[1]))
+            self.input_feature_names = range(len(X.shape[1]))
 
         try:
-            self.all_feature_names = list(X.columns.values)
             X_t = self._component_obj.fit_transform(X, y)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
                 X_t = pd.DataFrame(X_t, index=X.index, columns=self.get_names())
