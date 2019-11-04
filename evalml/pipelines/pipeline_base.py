@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -130,8 +131,14 @@ class PipelineBase:
         return scores[0], other_scores
 
     def plot_feature_importance(self):
-        features = self.feature_importances.sort_values(['importance'], ascending=False)
-        title = 'Pipeline \'{}\' Feature Importance'.format(self.name)
-        ax = features.plot(kind='bar', x='feature', y='importance', title=title, legend=False)
-        ax.set_ylabel('feature importance')
-        return ax
+        fig = plt.figure()
+        plt.axes([.1, .1, .8, .7])
+        plt.xticks(rotation=90)
+        plt.figtext(.5, .9, 'Pipeline \'XGBoost\' Feature Importance', fontsize=16, ha='center')
+        plt.figtext(.5, .85, 'Displaying only features chosen during feature selection', fontsize=8, ha='center')
+        plt.xlabel('Feature Name')
+        plt.ylabel('Feature Importance')
+        features = abs(self.feature_importances).sort_values(['importance'], ascending=False)
+        plt.bar(features['feature'].astype(int).astype(str), features['importance'])
+        plt.close(fig)
+        return fig
