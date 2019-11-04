@@ -42,5 +42,4 @@ class RFRegressionPipeline(PipelineBase):
                                           n_jobs=n_jobs)
 
         super().__init__(objective=objective,
-                         name=self.name,
                          component_list=[enc, imputer, feature_selection, estimator])

@@ -42,5 +42,4 @@ class RFClassificationPipeline(PipelineBase):
                                                         random_state=random_state)
 
         super().__init__(objective=objective,
-                         name=self.name,
                          component_list=[enc, imputer, feature_selection, estimator])

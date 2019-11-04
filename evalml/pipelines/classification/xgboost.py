@@ -43,5 +43,4 @@ class XGBoostPipeline(PipelineBase):
                                       min_child_weight=min_child_weight)
 
         super().__init__(objective=objective,
-                         name=self.name,
                          component_list=[enc, imputer, feature_selection, estimator])

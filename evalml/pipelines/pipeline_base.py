@@ -10,7 +10,7 @@ from evalml.utils import Logger
 
 
 class PipelineBase:
-    def __init__(self, name, objective, component_list, n_jobs=-1, random_state=0):
+    def __init__(self, objective, component_list, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -47,8 +47,7 @@ class PipelineBase:
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return PipelineBase(name=self.name,
-                                objective=self.objective,
+            return PipelineBase(objective=self.objective,
                                 component_list=self.component_list[index],
                                 random_state=self.random_state,
                                 n_jobs=self.n_jobs)

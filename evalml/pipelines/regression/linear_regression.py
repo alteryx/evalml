@@ -31,5 +31,4 @@ class LinearRegressionPipeline(PipelineBase):
                                     n_jobs=-1)
 
         super().__init__(objective=objective,
-                         name=self.name,
                          component_list=[enc, imputer, scaler, estimator])
