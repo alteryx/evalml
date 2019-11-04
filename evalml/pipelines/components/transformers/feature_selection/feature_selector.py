@@ -17,7 +17,7 @@ class FeatureSelector(Transformer):
             list of the names of features selected
         """
         selected_masks = self._component_obj.get_support()
-        return [feature_name for (selected, feature_name) in zip(selected_masks, self.all_feature_names) if selected]
+        return [feature_name for (selected, feature_name) in zip(selected_masks, self.input_feature_names) if selected]
 
     def transform(self, X):
         """Transforms data X
