@@ -6,6 +6,7 @@ from sys import stdout
 import matplotlib
 import numpy as np
 import pandas as pd
+from scipy import interp
 from sklearn.metrics import auc, roc_curve
 from tqdm import tqdm
 
@@ -20,7 +21,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, generate_graphs, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -32,6 +33,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.null_threshold = null_threshold
+        self.generate_graphs = generate_graphs
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -161,7 +163,8 @@ class AutoBase:
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         # matplotlib.use('nbagg')
-        import matplotlib.pyplot as plt
+        # import matplotlib.pyplot as plt
+
 
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
@@ -189,11 +192,9 @@ class AutoBase:
         start = time.time()
         scores = []
         all_objective_scores = []
-        from scipy import interp
         fold_num = 0
-        mean_fpr = np.linspace(0, 1, 100)
-        tprs = []
-        aucs = []
+
+        cv_data = {}
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -206,17 +207,13 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
-                if self.problem_type == ProblemTypes.BINARY:
-                    probas_ = pipeline.predict_proba(X_test)
-                    fpr, tpr, thresholds = roc_curve(y_test, probas_)
-                    tprs.append(interp(mean_fpr, fpr, tpr))
-                    tprs[-1][0] = 0.0
-                    roc_auc = auc(fpr, tpr)
-                    aucs.append(roc_auc)
-                    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
+                if self.generate_graphs and self.problem_type == ProblemTypes.BINARY:
+                    proba = pipeline.predict_proba(X_test)
+                    fpr, tpr, _ = roc_curve(y_test, proba)
+                    cv_data[fold_num] = {"fpr": fpr, "tpr": tpr}
                     fold_num += 1
-                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
 
+                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
             except Exception as e:
                 if raise_errors:
                     raise e
@@ -235,35 +232,70 @@ class AutoBase:
 
         training_time = time.time() - start
 
-        if self.problem_type == ProblemTypes.BINARY:
-            mean_tpr = np.mean(tprs, axis=0)
-            mean_tpr[-1] = 1.0
-            mean_auc = auc(mean_fpr, mean_tpr)
-            std_auc = np.std(aucs)
-            plt.plot(mean_fpr, mean_tpr, color='b',
-         label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
-         lw=2, alpha=.8)
-            plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', label='Chance', alpha=.8)
-            plt.xlim([-0.05, 1.05])
-            plt.ylim([-0.05, 1.05])
-            plt.xlabel('False Positive Rate')
-            plt.ylabel('True Positive Rate')
-            plt.title('Receiver operating characteristic of {}'.format(pipeline.name))
-            plt.legend(loc="lower right")
-
         # save the result and continue
         self._add_result(
             trained_pipeline=pipeline,
             parameters=parameters,
             scores=scores,
             all_objective_scores=all_objective_scores,
-            training_time=training_time
+            training_time=training_time,
+            cv_data=cv_data
         )
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
+
+
+    def generate_roc_plots(self, save_plots=False):
+        # matplotlib.use('Agg')
+        matplotlib.use('nbagg')
+        # plt.switch_backend('nbagg')
+
+        import matplotlib.pyplot as plt
+        num_plots = len(self.results)
+        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 6*num_plots))
+        mean_fpr = np.linspace(0, 1, 100)
+        for i, result in enumerate(self.results):
+            tprs = []
+            aucs = []
+
+            if len(self.results) == 1:
+                subplot = ax
+            else:
+                subplot = ax[i]
+
+            for fold_num, cv_data in self.results[result]["cv_data"].items():
+                fpr = cv_data["fpr"]
+                tpr = cv_data["tpr"]
+                tprs.append(interp(mean_fpr, fpr, tpr))
+                tprs[-1][0] = 0.0
+                roc_auc = auc(fpr, tpr)
+                aucs.append(roc_auc)
+                subplot.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc));
+            mean_tpr = np.mean(tprs, axis=0)
+            mean_auc = auc(mean_fpr, mean_tpr)
+            std_auc = np.std(aucs)
+
+            subplot.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance');
+            subplot.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2);
+            subplot.title.set_text('Receiver Operating Characteristic of {} w/ ID={}'.format(self.results[result]["pipeline_name"], self.results[result]["id"]))
+            subplot.set_xlim([-0.05, 1.05])
+            subplot.set_ylim([-0.05, 1.05])
+            subplot.set_xlabel('False Positive Rate')
+            subplot.set_ylabel('True Positive Rate')
+            subplot.legend(loc="lower right")
+
+        if save_plots:
+            fig.savefig('foo.png')
+            plt.clf()
+            plt.close('all')
+
+        else:
+            print ('changing backends...')
+            # matplotlib.use('nbagg', force=True)
+            plt.show()
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
@@ -274,7 +306,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
+    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time, cv_data):
         score = pd.Series(scores).mean()
 
         if self.objective.greater_is_better:
@@ -300,6 +332,7 @@ class AutoBase:
             "scores": scores,
             "all_objective_scores": all_objective_scores,
             "training_time": training_time,
+            "cv_data": cv_data
         }
 
         if self.add_result_callback:

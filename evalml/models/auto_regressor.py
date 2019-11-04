@@ -20,6 +20,7 @@ class AutoRegressor(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  null_threshold=0.95,
+                 generate_graphs=False,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -80,6 +81,7 @@ class AutoRegressor(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             null_threshold=null_threshold,
+            generate_graphs=False,
             random_state=random_state,
             verbose=verbose
         )
