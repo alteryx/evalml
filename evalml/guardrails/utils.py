@@ -1,5 +1,5 @@
 import pandas as pd
-
+import scipy as sp
 
 def detect_label_leakage(X, y, threshold=.95):
     """Check if any of the features are highly correlated with the target.
@@ -27,6 +27,12 @@ def detect_label_leakage(X, y, threshold=.95):
     return out.to_dict()
 
 
+def detect_numerical_categorical_correlation(num_col, cat_col):
+    cats = cat_col.unique()
+    
+    return sp.stats.f_oneway()
+
+
 def detect_highly_null(X, percent_threshold=.95):
     """ Checks if there are any highly-null columns in a dataframe.
 
@@ -35,7 +41,7 @@ def detect_highly_null(X, percent_threshold=.95):
         percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
 
     Returns:
-        A dictionary of features with column name or index and their percentage of null values
+        A dictionary of features with column name or† index and their percentage of null values
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
