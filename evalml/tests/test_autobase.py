@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from evalml import AutoClassifier
 
 
@@ -24,3 +25,10 @@ def test_pipeline_limits(capsys, X_y):
     clf.fit(X, y)
     out, err = capsys.readouterr()
     assert "No search limit is set. Set using max_time or max_pipelines." in out
+
+def test_generate_roc(X_y):
+    X, y = X_y
+    clf = AutoClassifier(multiclass=False, max_pipelines=2, random_state=2)
+    clf.fit(X, y)
+    fig = clf.generate_roc_plots()
+    assert isinstance(fig, type(plt.figure()))

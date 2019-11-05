@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Adding ROC charts for binary classification :pr:`169`
+        * Added ROC charts for binary classification :pr:`169`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
     * Fixes
     * Changes

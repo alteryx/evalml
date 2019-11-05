@@ -21,7 +21,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, generate_graphs, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -33,7 +33,6 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.null_threshold = null_threshold
-        self.generate_graphs = generate_graphs
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -162,10 +161,6 @@ class AutoBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
-        # matplotlib.use('nbagg')
-        # import matplotlib.pyplot as plt
-
-
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
@@ -207,7 +202,7 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
-                if self.generate_graphs and self.problem_type == ProblemTypes.BINARY:
+                if self.problem_type == ProblemTypes.BINARY:
                     proba = pipeline.predict_proba(X_test)
                     fpr, tpr, _ = roc_curve(y_test, proba)
                     cv_data[fold_num] = {"fpr": fpr, "tpr": tpr}
@@ -247,15 +242,15 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
+    def generate_roc_plots(self):
+        if self.problem_type != ProblemTypes.BINARY:
+            raise RuntimeError("ROC plots are only available for binary classification problems.")
 
-    def generate_roc_plots(self, save_plots=False):
-        # matplotlib.use('Agg')
         matplotlib.use('nbagg')
-        # plt.switch_backend('nbagg')
-
         import matplotlib.pyplot as plt
+
         num_plots = len(self.results)
-        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 6*num_plots))
+        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 5*num_plots))
         mean_fpr = np.linspace(0, 1, 100)
         for i, result in enumerate(self.results):
             tprs = []
@@ -273,13 +268,13 @@ class AutoBase:
                 tprs[-1][0] = 0.0
                 roc_auc = auc(fpr, tpr)
                 aucs.append(roc_auc)
-                subplot.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc));
+                subplot.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
             mean_tpr = np.mean(tprs, axis=0)
             mean_auc = auc(mean_fpr, mean_tpr)
             std_auc = np.std(aucs)
 
-            subplot.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance');
-            subplot.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2);
+            subplot.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance')
+            subplot.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2)
             subplot.title.set_text('Receiver Operating Characteristic of {} w/ ID={}'.format(self.results[result]["pipeline_name"], self.results[result]["id"]))
             subplot.set_xlim([-0.05, 1.05])
             subplot.set_ylim([-0.05, 1.05])
@@ -287,15 +282,8 @@ class AutoBase:
             subplot.set_ylabel('True Positive Rate')
             subplot.legend(loc="lower right")
 
-        if save_plots:
-            fig.savefig('foo.png')
-            plt.clf()
-            plt.close('all')
-
-        else:
-            print ('changing backends...')
-            # matplotlib.use('nbagg', force=True)
-            plt.show()
+        plt.close()
+        return fig
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
