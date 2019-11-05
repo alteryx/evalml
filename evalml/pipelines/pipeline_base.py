@@ -134,7 +134,7 @@ class PipelineBase:
         fig = plt.figure()
         plt.axes([.1, .1, .8, .7])
         plt.xticks(rotation=90)
-        plt.figtext(.5, .9, 'Pipeline \'XGBoost\' Feature Importance', fontsize=16, ha='center')
+        plt.figtext(.5, .9, 'Pipeline Feature Importance'.format(self.name), fontsize=16, ha='center')
         plt.figtext(.5, .85, 'Displaying only features chosen during feature selection', fontsize=8, ha='center')
         plt.xlabel('Feature Name')
         plt.ylabel('Feature Importance')
