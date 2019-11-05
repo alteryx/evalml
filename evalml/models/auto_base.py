@@ -5,7 +5,6 @@ from sys import stdout
 
 import matplotlib
 import matplotlib.pyplot as plt
-
 import numpy as np
 import pandas as pd
 from scipy import interp
@@ -257,7 +256,7 @@ class AutoBase:
         matplotlib.use('nbagg')
 
         num_plots = len(self.results)
-        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 5*num_plots))
+        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 5 * num_plots))
         mean_fpr = np.linspace(0, 1, 100)
         for i, result in enumerate(self.results):
             tprs = []
