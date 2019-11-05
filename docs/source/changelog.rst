@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added basic outlier detection guardrail :pr:`151`
+        * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
     * Fixes
     * Changes

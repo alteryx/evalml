@@ -18,7 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, check_outliers, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, id_cols_threshold, check_outliers, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -29,6 +29,7 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
+        self.id_cols_threshold = id_cols_threshold
         self.null_threshold = null_threshold
         self.check_outliers = check_outliers
         self.verbose = verbose
@@ -123,6 +124,10 @@ class AutoBase:
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+        if self.id_cols_threshold is not None:
+            id_cols = guardrails.detect_id_columns(X, self.id_cols_threshold)
+            if len(id_cols) > 0:
+                self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
 
         if self.null_threshold is not None:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
