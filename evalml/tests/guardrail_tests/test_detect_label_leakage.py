@@ -36,3 +36,9 @@ def test_detect_num_cat():
 
     stat, pvalue = detect_numerical_categorical_correlation(num, cat)
     assert pvalue == 1.0
+
+    num = [10, 9, 11, 10, 11, 10, 9, 11, 10, 11]
+    cat = ['A', 'A', 'A', 'A', 'A', 'B', 'B', 'B', 'B', 'B']
+
+    stat, pvalue = detect_numerical_categorical_correlation(num, cat)
+    assert pvalue == 1.0

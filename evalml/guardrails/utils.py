@@ -35,17 +35,22 @@ def detect_numerical_categorical_correlation(num_col, cat_col):
         a statistically significant difference in mean.
 
     Args:
-        num_col (pd.Series) : numerical column
-        cat_col (pd.Series) : categorical column
+        num_col (pd.Series or list) : numerical column
+        cat_col (pd.Series or list) : categorical column
 
     Returns:
         chisquare statistic, p-value
     """
-    num_col = pd.Series(num_col, name='num')
-    cat_col = pd.Series(cat_col, name='cat')
-    df = pd.concat([num_col, cat_col], axis=1)
+    if not isinstance(num_col, pd.Series):
+        num_col = pd.Series(num_col)
+    if not isinstance(cat_col, pd.Series):
+        cat_col = pd.Series(cat_col)
 
+    num_col = num_col.rename('num')
+    cat_col = cat_col.rename('cat')
+    df = pd.concat([num_col, cat_col], axis=1)
     num_per_cat = []
+    
     for _, cat_df in df.groupby('cat'):
         num_per_cat.append(cat_df['num'].tolist())
 
