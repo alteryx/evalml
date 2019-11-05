@@ -50,7 +50,7 @@ def detect_numerical_categorical_correlation(num_col, cat_col):
     cat_col = cat_col.rename('cat')
     df = pd.concat([num_col, cat_col], axis=1)
     num_per_cat = []
-    
+
     for _, cat_df in df.groupby('cat'):
         num_per_cat.append(cat_df['num'].tolist())
 
