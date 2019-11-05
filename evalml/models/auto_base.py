@@ -170,7 +170,6 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
-
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
@@ -205,7 +204,6 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
-
             except Exception as e:
                 if raise_errors:
                     raise e
