@@ -207,7 +207,6 @@ class AutoBase:
                     fpr, tpr, _ = roc_curve(y_test, proba)
                     cv_data[fold_num] = {"fpr": fpr, "tpr": tpr}
                     fold_num += 1
-
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
             except Exception as e:
                 if raise_errors:
