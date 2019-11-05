@@ -4,6 +4,8 @@ from collections import OrderedDict
 from sys import stdout
 
 import matplotlib
+import matplotlib.pyplot as plt
+
 import numpy as np
 import pandas as pd
 from scipy import interp
@@ -242,11 +244,17 @@ class AutoBase:
             print('')
 
     def generate_roc_plots(self):
+        """Generate Receiver Operating Characteristic (ROC) plots using cross-validation.
+
+        Returns:
+
+            matplotlib.figure.Figure representing ROC plots generated
+
+        """
         if self.problem_type != ProblemTypes.BINARY:
             raise RuntimeError("ROC plots are only available for binary classification problems.")
 
         matplotlib.use('nbagg')
-        import matplotlib.pyplot as plt
 
         num_plots = len(self.results)
         fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 5*num_plots))
