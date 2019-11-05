@@ -8,6 +8,7 @@ Changelog
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
     * Fixes
     * Changes
+        * Refactoring pipelines :pr:`108`
     * Documentation Changes
     * Testing Changes
 
