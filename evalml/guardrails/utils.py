@@ -27,6 +27,33 @@ def detect_label_leakage(X, y, threshold=.95):
     return out.to_dict()
 
 
+def detect_numerical_categorical_correlation(num_col, cat_col):
+    """ Compares a numerical and a categorical column for correlation using a one-way ANOVA test.
+        The null hypothesis is that the mean between samples is the same.
+        Thus rejecting the null implies that the num_col correlates with the cat_col as each category has
+        a statistically significant difference in mean.
+
+    Args:
+        num_col (pd.Series) : numerical column
+        cat_col (pd.Series) : categorical column
+
+    Returns:
+        chisquare statistic, p-value
+    """
+    num_col = pd.Series(num_col, name='num')
+    cat_col = pd.Series(cat_col, name='cat')
+    df = pd.concat([num_col, cat_col], axis=1)
+
+    cats = cat_col.unique()  
+    num_per_cat = []
+
+    for _, cat_df in df.groupby('cat'):
+        num_per_cat.append(cat_df['num'].tolist())
+
+    statistic, pvalue = sp.stats.f_oneway(*num_per_cat)
+    return statistic, pvalue
+
+
 def detect_highly_null(X, percent_threshold=.95):
     """ Checks if there are any highly-null columns in a dataframe.
 
