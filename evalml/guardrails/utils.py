@@ -1,4 +1,5 @@
 import pandas as pd
+import scipy as sp
 
 
 def detect_label_leakage(X, y, threshold=.95):
@@ -44,9 +45,7 @@ def detect_numerical_categorical_correlation(num_col, cat_col):
     cat_col = pd.Series(cat_col, name='cat')
     df = pd.concat([num_col, cat_col], axis=1)
 
-    cats = cat_col.unique()  
     num_per_cat = []
-
     for _, cat_df in df.groupby('cat'):
         num_per_cat.append(cat_df['num'].tolist())
 
