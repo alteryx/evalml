@@ -10,7 +10,6 @@ def handle_problem_types(problem_type):
     Returns:
         ProblemTypes
     """
-
     if isinstance(problem_type, str):
         try:
             tpe = ProblemTypes[problem_type.upper()]
