@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
+        * Implemented correlation between categorical and numerical columns :pr:`182`
     * Fixes
     * Changes
         * Refactoring pipelines :pr:`108`
