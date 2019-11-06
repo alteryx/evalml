@@ -15,3 +15,6 @@ def test_outliers():
     expected = {3, 55, 25, 72}
     result = detect_outliers(X)
     assert expected.issubset(set(result))
+
+    result = detect_outliers(X.values)
+    assert expected.issubset(set(result))
