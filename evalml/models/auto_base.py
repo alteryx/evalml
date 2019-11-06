@@ -304,7 +304,7 @@ class AutoBase:
         pipeline_results = self.results[pipeline_id]
 
         pipeline.describe()
-        
+
         self.logger.log("\nTotal training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         self.logger.log_subtitle("\nCross Validation")
 
