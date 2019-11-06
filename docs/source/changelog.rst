@@ -7,6 +7,7 @@ Changelog
         * Added basic outlier detection guardrail :pr:`151`
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
+        * Updating .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
     * Changes
         * Refactoring pipelines :pr:`108`
