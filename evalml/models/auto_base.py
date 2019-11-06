@@ -22,7 +22,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, id_cols_threshold, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, id_cols_threshold, check_outliers, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -35,6 +35,7 @@ class AutoBase:
         self.cv = cv
         self.id_cols_threshold = id_cols_threshold
         self.null_threshold = null_threshold
+        self.check_outliers = check_outliers
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -136,6 +137,11 @@ class AutoBase:
             if len(highly_null_columns) > 0:
                 self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
 
+        if self.check_outliers:
+            outlier_indices = guardrails.detect_outliers(X)
+            if len(outlier_indices) > 0:
+                outlier_indices = [str(index) for index in outlier_indices]
+                self.logger.log("WARNING: Indices ({}) may contain outlier data.".format(','.join(outlier_indices)))
         if self.max_pipelines is None:
             start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')

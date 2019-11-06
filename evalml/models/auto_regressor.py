@@ -21,6 +21,7 @@ class AutoRegressor(AutoBase):
                  additional_objectives=None,
                  id_cols_threshold=1.0,
                  null_threshold=0.95,
+                 check_outliers=False,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -55,6 +56,8 @@ class AutoRegressor(AutoBase):
             null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
                 null values for the feature to be considered "highly-null". Default is 0.95.
 
+            check_outliers(bool): If True, checks if there are any outliers in data. Default is False.
+
             id_cols_threshold(float): Float in range [0,1] that represents the probability threshold for
             a feature to be considered an ID column. Default is 1.0.
 
@@ -85,6 +88,7 @@ class AutoRegressor(AutoBase):
             id_cols_threshold=id_cols_threshold,
             additional_objectives=additional_objectives,
             null_threshold=null_threshold,
+            check_outliers=check_outliers,
             random_state=random_state,
             verbose=verbose
         )
