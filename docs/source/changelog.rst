@@ -10,7 +10,7 @@ Changelog
     * Fixes
     * Changes
         * Refactoring pipelines :pr:`108`
-        * Pulling information for describe_pipeline from pipeline's new describe method :pr:``
+        * Pulling information for describe_pipeline from pipeline's new describe method :pr:`190`
     * Documentation Changes
     * Testing Changes
 
