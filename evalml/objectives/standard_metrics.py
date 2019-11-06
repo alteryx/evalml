@@ -12,7 +12,7 @@ class F1(ObjectiveBase):
     """F1 Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "F1"
     problem_types = [ProblemTypes.BINARY]
 
@@ -24,7 +24,7 @@ class F1Micro(ObjectiveBase):
     """F1 Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "F1 Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -36,7 +36,7 @@ class F1Macro(ObjectiveBase):
     """F1 Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "F1 Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -48,7 +48,7 @@ class F1Weighted(ObjectiveBase):
     """F1 Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "F1 Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -60,7 +60,7 @@ class Precision(ObjectiveBase):
     """Precision Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Precision"
     problem_types = [ProblemTypes.BINARY]
 
@@ -72,7 +72,7 @@ class PrecisionMicro(ObjectiveBase):
     """Precision Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Precision Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -84,7 +84,7 @@ class PrecisionMacro(ObjectiveBase):
     """Precision Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Precision Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -96,7 +96,7 @@ class PrecisionWeighted(ObjectiveBase):
     """Precision Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Precision Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -108,7 +108,7 @@ class Recall(ObjectiveBase):
     """Recall Score for binary classification"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Recall"
     problem_types = [ProblemTypes.BINARY]
 
@@ -120,7 +120,7 @@ class RecallMicro(ObjectiveBase):
     """Recall Score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Recall Micro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -132,7 +132,7 @@ class RecallMacro(ObjectiveBase):
     """Recall Score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Recall Macro"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -144,7 +144,7 @@ class RecallWeighted(ObjectiveBase):
     """Recall Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Recall"
     problem_types = [ProblemTypes.MULTICLASS]
 
@@ -219,7 +219,7 @@ class MCC(ObjectiveBase):
     """Matthews correlation coefficient for both binary and multiclass classification"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "MCC"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
@@ -231,7 +231,7 @@ class R2(ObjectiveBase):
     """Coefficient of determination for regression"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "R2"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -243,7 +243,7 @@ class MAE(ObjectiveBase):
     """Mean absolute error for regression"""
     needs_fitting = False
     greater_is_better = False
-    need_proba = False
+    score_needs_proba = False
     name = "MAE"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -255,7 +255,7 @@ class MSE(ObjectiveBase):
     """Mean squared error for regression"""
     needs_fitting = False
     greater_is_better = False
-    need_proba = False
+    score_needs_proba = False
     name = "MSE"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -267,7 +267,7 @@ class MSLE(ObjectiveBase):
     """Mean squared log error for regression"""
     needs_fitting = False
     greater_is_better = False
-    need_proba = False
+    score_needs_proba = False
     name = "MSLE"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -279,7 +279,7 @@ class MedianAE(ObjectiveBase):
     """Median absolute error for regression"""
     needs_fitting = False
     greater_is_better = False
-    need_proba = False
+    score_needs_proba = False
     name = "MedianAE"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -291,7 +291,7 @@ class MaxError(ObjectiveBase):
     """Maximum residual error for regression"""
     needs_fitting = False
     greater_is_better = False
-    need_proba = False
+    score_needs_proba = False
     name = "MaxError"
     problem_types = [ProblemTypes.REGRESSION]
 
@@ -303,12 +303,25 @@ class ExpVariance(ObjectiveBase):
     """Explained variance score for regression"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "ExpVariance"
     problem_types = [ProblemTypes.REGRESSION]
 
     def score(self, y_predicted, y_true):
         return metrics.explained_variance_score(y_true, y_predicted)
+
+
+class ROC(ObjectiveBase):
+    ##### todo: check these values
+    """Receiver Operating Characteristic score for binary classification."""
+    needs_fitting = False
+    greater_is_better = True
+    score_needs_proba = True
+    name = "ROC"
+    problem_types = [ProblemTypes.BINARY]
+
+    def score(self, y_predicted, y_true):
+        return metrics.roc_curve(y_true, y_predicted)
 
 
 def _handle_predictions(y_true, y_pred):

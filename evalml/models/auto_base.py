@@ -193,9 +193,9 @@ class AutoBase:
         start = time.time()
         scores = []
         all_objective_scores = []
-        fold_num = 0
 
         cv_data = {}
+        fold_num = 0
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -212,8 +212,8 @@ class AutoBase:
                     proba = pipeline.predict_proba(X_test)
                     fpr, tpr, _ = roc_curve(y_test, proba)
                     cv_data[fold_num] = {"fpr": fpr, "tpr": tpr}
-                    fold_num += 1
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+                fold_num += 1
             except Exception as e:
                 if raise_errors:
                     raise e
@@ -255,6 +255,8 @@ class AutoBase:
             matplotlib.figure.Figure representing ROC plots generated
 
         """
+        import pdb; pdb.set_trace()
+        # self.results["all_objective_scores"]["ROC"]
         if self.problem_type != ProblemTypes.BINARY:
             raise RuntimeError("ROC plots are only available for binary classification problems.")
 
