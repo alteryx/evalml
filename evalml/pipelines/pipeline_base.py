@@ -5,11 +5,21 @@ from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
 
+from evalml.model_types import ModelTypes
 from evalml.objectives import get_objective
+from evalml.problem_types import ProblemTypes
 from evalml.utils import Logger
 
 
 class PipelineBase:
+
+    model_type_dict = {ModelTypes.RANDOM_FOREST: "Random Forest",
+                       ModelTypes.XGBOOST: "XGBoost Classifier",
+                       ModelTypes.LINEAR_MODEL: "Linear Model"}
+    problem_type_dict = {ProblemTypes.BINARY: "Binary Classification",
+                         ProblemTypes.MULTICLASS: "Multiclass Classification",
+                         ProblemTypes.REGRESSION: "Regression"}
+
     def __init__(self, objective, component_list, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -85,14 +95,13 @@ class PipelineBase:
         Returns:
             dictionary of all component parameters if return_dict is True, else None
         """
-        title = "Pipeline Name: {}".format(self.name)
-        self.logger.log_title(title)
-        self.logger.log("Model type: {}".format(self.model_type))
-
+        self.logger.log_title(self.name)
+        self.logger.log("Problem Types: {}".format(', '.join([self.problem_type_dict[problem_type] for problem_type in self.problem_types])))
+        self.logger.log("Model Type: {}".format(self.model_type_dict[self.model_type]))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
-        objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
+        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
         self.logger.log(objective_string)
 
         # Summary of steps
