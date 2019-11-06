@@ -214,8 +214,6 @@ class AutoBase:
                     raise e
                 if pbar:
                     pbar.write(str(e))
-                score = np.nan
-                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})

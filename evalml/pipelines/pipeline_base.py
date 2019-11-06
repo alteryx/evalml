@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -227,10 +228,14 @@ class PipelineBase:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
 
-            if objective.uses_extra_columns:
-                scores.append(objective.score(y_predictions, y, X))
-            else:
-                scores.append(objective.score(y_predictions, y))
+            try:
+                if objective.uses_extra_columns:
+                    scores.append(objective.score(y_predictions, y, X))
+                else:
+                    scores.append(objective.score(y_predictions, y))
+            except Exception:
+                scores.append(np.nan)
+
         if not other_objectives:
             return scores[0], {}
 
