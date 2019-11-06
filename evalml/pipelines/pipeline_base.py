@@ -76,15 +76,18 @@ class PipelineBase:
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters and cross validation information
+        """Outputs pipeline details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information
+                about pipeline. Defaults to false
 
         Returns:
-
-            None
-
+            dictionary of all component parameters if return_dict is True, else None
         """
-        title = "Pipeline: " + self.name
+        title = "Pipeline Name: {}".format(self.name)
         self.logger.log_title(title)
+        self.logger.log("Model type: {}".format(self.model_type))
 
         better_string = "lower is better"
         if self.objective.greater_is_better:
@@ -93,7 +96,7 @@ class PipelineBase:
         self.logger.log(objective_string)
 
         # Summary of steps
-        self.logger.log_subtitle("Pipeline Steps")
+        self.logger.log_subtitle("\nPipeline Steps")
         for number, component in enumerate(self.component_list, 1):
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
