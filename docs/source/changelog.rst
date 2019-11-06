@@ -11,6 +11,7 @@ Changelog
     * Fixes
     * Changes
         * Refactoring pipelines :pr:`108`
+        * NaN objective scoring without aborting in AutoML :pr:`192`
     * Documentation Changes
     * Testing Changes
 
