@@ -1,10 +1,11 @@
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from evalml.model_types import ModelTypes
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import FraudCost, ObjectiveBase, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
     ComponentTypes,
@@ -164,3 +165,27 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_objectives_error(X_y):
+    class mockObj(ObjectiveBase):
+        name = "Mock Objective"
+        problem_types = [ProblemTypes.BINARY]
+
+        needs_fitting = False
+        greater_is_better = True
+        fit_needs_proba = False
+        score_needs_proba = False
+
+        def score(self, y_predicted, y_true, extra_cols=None):
+            raise Exception
+
+    X, y = X_y
+    clf = LogisticRegressionPipeline(objective='precision', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    clf.fit(X, y)
+
+    prec, other = clf.score(X, y, other_objectives=[mockObj()], raise_errors=False)
+    assert other['Mock Objective'] is np.nan
+
+    with pytest.raises(Exception):
+        clf.score(X, y, other_objectives=[mockObj()], raise_errors=True)

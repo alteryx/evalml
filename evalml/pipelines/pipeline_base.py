@@ -219,7 +219,7 @@ class PipelineBase:
         y_predicted_proba = None
 
         scores = []
-    
+
         for objective in [self.objective] + other_objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
@@ -236,9 +236,9 @@ class PipelineBase:
                 else:
                     scores.append(objective.score(y_predictions, y))
             except Exception as e:
+                scores.append(np.nan)
                 if raise_errors:
                     raise e
-                scores.append(np.nan)
 
         if not other_objectives:
             return scores[0], {}
