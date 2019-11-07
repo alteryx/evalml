@@ -241,7 +241,7 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def generate_roc_plot(self, pipeline_id, return_dict):
+    def generate_roc_plot(self, pipeline_id, return_dict=False):
         """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation.
 
         Returns:
@@ -258,11 +258,13 @@ class AutoBase:
         matplotlib.use('nbagg')
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
+        cv_data = pipeline_results["cv_data"]
         mean_fpr = np.linspace(0, 1, 100)
         tprs = []
         aucs = []
         fig = plt.figure(figsize=(8, 6))
-        for fold_num, fold in enumerate(pipeline_results["cv_data"]):
+
+        for fold_num, fold in enumerate(cv_data):
             fpr = fold["all_objective_scores"]["ROC"][0]
             tpr = fold["all_objective_scores"]["ROC"][1]
             tprs.append(interp(mean_fpr, fpr, tpr))
@@ -285,9 +287,11 @@ class AutoBase:
 
         plt.close()
 
-        # if return_dict:
-        #     roc_data = {"tprs": tprs, "fprs": fpr}
-        #     return roc_data, fig
+        if return_dict:
+            fprs = [cv_data[fold]["all_objective_scores"]["ROC"][0] for fold in cv_data]
+            tprs = [cv_data[fold]["all_objective_scores"]["ROC"][1] for fold in cv_data]
+            roc_data = {"tprs": tprs, "fprs": fprs}
+            return roc_data, fig
         return fig
 
     def _select_pipeline(self):
