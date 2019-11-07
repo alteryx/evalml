@@ -21,11 +21,12 @@ After the release pull request has been merged into the master branch, it is tim
 * Release description should be the full changelog updates for the release.
 
 ## Documentation
-After creating the GitHub release, using the GitHub tag and activate the current version on ReadTheDocs.
-This can be found here: https://readthedocs.com/projects/feature-labs-inc-evalml/versions/
+After creating the GitHub release, use the GitHub tag and activate the current version on ReadTheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
+
 Please do the following:
 * Activate `vX.X.X`
-* Set privacy level of that build to `Public` by clicking edit on the build
+* Check the `Active` checkbox
+* Set privacy level to `Public`
 
 Documentation automatically updates using readthedocs so no need to manually compile.
 

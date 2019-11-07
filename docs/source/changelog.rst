@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Refactoring pipelines :pr:`108`
     * Documentation Changes
+        * Update release instructions for RTd :pr:`193`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
