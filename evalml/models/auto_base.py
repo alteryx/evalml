@@ -208,7 +208,7 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives, raise_errors=raise_errors)
             except Exception as e:
                 if raise_errors:
                     raise e

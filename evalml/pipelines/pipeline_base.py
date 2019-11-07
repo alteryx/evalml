@@ -201,13 +201,14 @@ class PipelineBase:
         else:
             return proba
 
-    def score(self, X, y, other_objectives=None):
+    def score(self, X, y, other_objectives=None, raise_errors=True):
         """Evaluate model performance on current and additional objectives
 
         Args:
             X (DataFrame) : features for model predictions
             y (Series) : true labels
             other_objectives (list): list of other objectives to score
+            raise_errors (bool) : raise errors when scoring pipeline
 
         Returns:
             score, ordered dictionary of other objective scores
@@ -218,6 +219,7 @@ class PipelineBase:
         y_predicted_proba = None
 
         scores = []
+    
         for objective in [self.objective] + other_objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
@@ -233,7 +235,9 @@ class PipelineBase:
                     scores.append(objective.score(y_predictions, y, X))
                 else:
                     scores.append(objective.score(y_predictions, y))
-            except Exception:
+            except Exception as e:
+                if raise_errors:
+                    raise e
                 scores.append(np.nan)
 
         if not other_objectives:
