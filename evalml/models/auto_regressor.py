@@ -29,10 +29,13 @@ class AutoRegressor(AutoBase):
         Arguments:
             objective (Object): the objective to optimize
 
-            max_pipelines (int): maximum number of pipelines to search
+            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
-            max_time (int): maximum time in seconds to search for pipelines.
-                won't start new pipeline search after this duration has elapsed
+            max_time (int, str): Maximum time to search for pipelines.
+                This will not start a new pipeline search after the duration
+                has elapsed. If it is an integer, then the time will be in seconds.
+                For strings, time can be specified as seconds, minutes, or hours.
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("regression") to see options.
