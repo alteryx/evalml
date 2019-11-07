@@ -13,6 +13,7 @@ Changelog
     * Changes
         * Refactoring pipelines :pr:`108`
     * Documentation Changes
+        * Updated documentation to show max_time enhancements :pr:`189`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
