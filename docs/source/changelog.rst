@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Refactoring pipelines :pr:`108`
     * Documentation Changes
+        * Updated documentation to show max_time enhancements :pr:`189`
         * Update release instructions for RTd :pr:`193`
     * Testing Changes
 
