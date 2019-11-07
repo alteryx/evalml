@@ -53,7 +53,7 @@ def test_cv(X_y):
 
     assert isinstance(clf.rankings, pd.DataFrame)
 
-    assert len(clf.results[0]["scores"]) == cv_folds
+    assert len(clf.results[0]["cv_data"]) == cv_folds
 
     clf = AutoClassifier(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
 
@@ -61,7 +61,7 @@ def test_cv(X_y):
 
     assert isinstance(clf.rankings, pd.DataFrame)
 
-    assert len(clf.results[0]["scores"]) == cv_folds
+    assert len(clf.results[0]["cv_data"]) == cv_folds
 
 
 def test_init_select_model_types():
@@ -217,19 +217,15 @@ def test_callback(X_y):
 def test_additional_objectives(X_y):
     X, y = X_y
 
-    objective = FraudCost(
-        retry_percentage=.5,
-        interchange_fee=.02,
-        fraud_payout_percentage=.75,
-        amount_col=10
-    )
-
+    objective = FraudCost(retry_percentage=.5,
+                          interchange_fee=.02,
+                          fraud_payout_percentage=.75,
+                          amount_col=10)
     clf = AutoClassifier(objective='F1', max_pipelines=2, additional_objectives=[objective])
-
     clf.fit(X, y)
 
     results = clf.describe_pipeline(0, return_dict=True)
-    assert 'Fraud Cost' in list(results['all_objective_scores'][0].keys())
+    assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
 def test_describe_pipeline_objective_ordered(X_y, capsys):
@@ -242,7 +238,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in clf.additional_objectives]
-    objectives_names = [clf.objective.name] + [obj.name for obj in objectives]
+    objectives_names = [clf.objective.name] + [obj.name for obj in objectives if obj.name != "ROC"]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''

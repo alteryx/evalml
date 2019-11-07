@@ -312,10 +312,7 @@ class ExpVariance(ObjectiveBase):
 
 
 class ROC(ObjectiveBase):
-    ##### todo: check these values
     """Receiver Operating Characteristic score for binary classification."""
-    needs_fitting = False
-    greater_is_better = True
     score_needs_proba = True
     name = "ROC"
     problem_types = [ProblemTypes.BINARY]

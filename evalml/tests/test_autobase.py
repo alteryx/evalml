@@ -32,5 +32,5 @@ def test_generate_roc(X_y):
     X, y = X_y
     clf = AutoClassifier(multiclass=False, max_pipelines=2, random_state=2)
     clf.fit(X, y)
-    fig = clf.generate_roc_plots()
+    fig = clf.generate_roc_plot(0)
     assert isinstance(fig, type(plt.figure()))

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import interp
-from sklearn.metrics import auc, roc_curve
+from sklearn.metrics import auc
 from tqdm import tqdm
 
 from evalml import guardrails
@@ -197,10 +197,7 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
 
         start = time.time()
-        scores = []
-        all_objective_scores = []
-
-        cv_data = {}
+        cv_data = []
         fold_num = 0
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
@@ -214,12 +211,7 @@ class AutoBase:
 
             try:
                 pipeline.fit(X_train, y_train)
-                if self.problem_type == ProblemTypes.BINARY:
-                    proba = pipeline.predict_proba(X_test)
-                    fpr, tpr, _ = roc_curve(y_test, proba)
-                    cv_data[fold_num] = {"fpr": fpr, "tpr": tpr}
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
-                fold_num += 1
             except Exception as e:
                 if raise_errors:
                     raise e
@@ -233,75 +225,69 @@ class AutoBase:
             ordered_scores.update(other_scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
-            scores.append(score)
-            all_objective_scores.append(ordered_scores)
+            cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+            fold_num += 1
 
         training_time = time.time() - start
 
         # save the result and continue
-        self._add_result(
-            trained_pipeline=pipeline,
-            parameters=parameters,
-            scores=scores,
-            all_objective_scores=all_objective_scores,
-            training_time=training_time,
-            cv_data=cv_data
-        )
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=training_time,
+                         cv_data=cv_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def generate_roc_plots(self):
-        """Generate Receiver Operating Characteristic (ROC) plots using cross-validation.
+    def generate_roc_plot(self, pipeline_id, return_dict):
+        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation.
 
         Returns:
 
-            matplotlib.figure.Figure representing ROC plots generated
+            matplotlib.figure.Figure representing the ROC plot generated
 
         """
-        import pdb; pdb.set_trace()
-        # self.results["all_objective_scores"]["ROC"]
         if self.problem_type != ProblemTypes.BINARY:
             raise RuntimeError("ROC plots are only available for binary classification problems.")
 
+        if pipeline_id not in self.results:
+            raise RuntimeError("Pipeline not found")
+
         matplotlib.use('nbagg')
-
-        num_plots = len(self.results)
-        fig, ax = plt.subplots(nrows=num_plots, ncols=1, figsize=(8, 5 * num_plots))
+        pipeline = self.get_pipeline(pipeline_id)
+        pipeline_results = self.results[pipeline_id]
         mean_fpr = np.linspace(0, 1, 100)
-        for i, result in enumerate(self.results):
-            tprs = []
-            aucs = []
+        tprs = []
+        aucs = []
+        fig = plt.figure(figsize=(8, 6))
+        for fold_num, fold in enumerate(pipeline_results["cv_data"]):
+            fpr = fold["all_objective_scores"]["ROC"][0]
+            tpr = fold["all_objective_scores"]["ROC"][1]
+            tprs.append(interp(mean_fpr, fpr, tpr))
+            tprs[-1][0] = 0.0
+            roc_auc = auc(fpr, tpr)
+            aucs.append(roc_auc)
+            plt.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
+        mean_tpr = np.mean(tprs, axis=0)
+        mean_auc = auc(mean_fpr, mean_tpr)
+        std_auc = np.std(aucs)
 
-            if len(self.results) == 1:
-                subplot = ax
-            else:
-                subplot = ax[i]
-
-            for fold_num, cv_data in self.results[result]["cv_data"].items():
-                fpr = cv_data["fpr"]
-                tpr = cv_data["tpr"]
-                tprs.append(interp(mean_fpr, fpr, tpr))
-                tprs[-1][0] = 0.0
-                roc_auc = auc(fpr, tpr)
-                aucs.append(roc_auc)
-                subplot.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
-            mean_tpr = np.mean(tprs, axis=0)
-            mean_auc = auc(mean_fpr, mean_tpr)
-            std_auc = np.std(aucs)
-
-            subplot.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance')
-            subplot.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2)
-            subplot.title.set_text('Receiver Operating Characteristic of {} w/ ID={}'.format(self.results[result]["pipeline_name"], self.results[result]["id"]))
-            subplot.set_xlim([-0.05, 1.05])
-            subplot.set_ylim([-0.05, 1.05])
-            subplot.set_xlabel('False Positive Rate')
-            subplot.set_ylabel('True Positive Rate')
-            subplot.legend(loc="lower right")
+        plt.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance')
+        plt.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2)
+        plt.title('Receiver Operating Characteristic of {} w/ ID={}'.format(pipeline.name, pipeline_id))
+        plt.xlim([-0.05, 1.05])
+        plt.ylim([-0.05, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.legend(loc="lower right")
 
         plt.close()
+
+        # if return_dict:
+        #     roc_data = {"tprs": tprs, "fprs": fpr}
+        #     return roc_data, fig
         return fig
 
     def _select_pipeline(self):
@@ -313,8 +299,10 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time, cv_data):
-        score = pd.Series(scores).mean()
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
+        scores = [fold["score"] for fold in cv_data]
+        scores = pd.Series(scores)
+        score = scores.mean()
 
         if self.objective.greater_is_better:
             score_to_minimize = -score
@@ -324,8 +312,7 @@ class AutoBase:
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
-        s = pd.Series(scores)
-        high_variance_cv = (s.std() / s.mean()) > .2
+        high_variance_cv = (scores.std() / scores.mean()) > .2
 
         pipeline_name = trained_pipeline.__class__.__name__
         pipeline_id = len(self.results)
@@ -336,8 +323,6 @@ class AutoBase:
             "parameters": dict(parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
-            "scores": scores,
-            "all_objective_scores": all_objective_scores,
             "training_time": training_time,
             "cv_data": cv_data
         }
@@ -394,7 +379,11 @@ class AutoBase:
             self.logger.log("Warning! High variance within cross validation scores. " +
                             "Model may not perform as estimated on unseen data.")
 
-        all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
+        all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
+        all_objective_scores = pd.DataFrame(all_objective_scores)
+
+        if "ROC" in all_objective_scores.columns:
+            all_objective_scores = all_objective_scores.drop(["ROC"], axis=1)
 
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
@@ -408,6 +397,7 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
+
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self.logger.log(all_objective_scores)
 
