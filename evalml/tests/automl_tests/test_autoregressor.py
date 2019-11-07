@@ -3,6 +3,7 @@ import pytest
 
 from evalml import AutoRegressor
 from evalml.demos import load_diabetes
+from evalml.objectives import ObjectiveBase
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 
@@ -81,3 +82,26 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
+def test_scoring_error(X_y_categorical_regression):
+    class mockObj(ObjectiveBase):
+        name = "Mock Objective"
+        problem_types = [ProblemTypes.BINARY]
+
+        needs_fitting = False
+        greater_is_better = True
+        fit_needs_proba = False
+        score_needs_proba = False
+
+        def score(self, y_predicted, y_true, extra_cols=None):
+            raise Exception
+
+    X, y = X_y_categorical_regression
+    clf = AutoRegressor(objective="R2", max_pipelines=1, random_state=0, additional_objectives=[mockObj()])
+
+    with pytest.warns(RuntimeWarning, match='Failed to score objective: Mock Objective'):
+        clf.fit(X, y)
+
+    with pytest.raises(Exception):
+        clf.fit(X, y, raise_errors=True)

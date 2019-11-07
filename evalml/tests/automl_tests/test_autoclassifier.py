@@ -7,6 +7,7 @@ from evalml import AutoClassifier
 from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
+    ObjectiveBase,
     Precision,
     PrecisionMicro,
     get_objective,
@@ -291,3 +292,26 @@ def test_guardrail_warnings(X_y, capsys):
     assert err == ''
     outlier_warning = "may contain outlier data."
     assert outlier_warning in out_stripped
+
+
+def test_scoring_error(X_y):
+    class mockObj(ObjectiveBase):
+        name = "Mock Objective"
+        problem_types = [ProblemTypes.BINARY]
+
+        needs_fitting = False
+        greater_is_better = True
+        fit_needs_proba = False
+        score_needs_proba = False
+
+        def score(self, y_predicted, y_true, extra_cols=None):
+            raise Exception
+
+    X, y = X_y
+    clf = AutoClassifier(objective="recall", max_pipelines=1, random_state=0, additional_objectives=[mockObj()])
+
+    with pytest.warns(RuntimeWarning, match='Failed to score objective: Mock Objective'):
+        clf.fit(X, y)
+
+    with pytest.raises(Exception):
+        clf.fit(X, y, raise_errors=True)

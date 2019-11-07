@@ -184,8 +184,13 @@ def test_objectives_error(X_y):
     clf = LogisticRegressionPipeline(objective='precision', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     clf.fit(X, y)
 
-    prec, other = clf.score(X, y, other_objectives=[mockObj()], raise_errors=False)
-    assert other['Mock Objective'] is np.nan
+    # try every objective if raise_errors is False but raise warnings
+    with pytest.warns(RuntimeWarning, match='Failed to score objective: Mock Objective'):
+        prec, other = clf.score(X, y, other_objectives=[mockObj(), 'recall'], raise_errors=False)
+        assert prec is not np.nan
+        assert other['Mock Objective'] is np.nan
+        assert other['Recall'] is not np.nan
 
+    # raise error if raise_error is True
     with pytest.raises(Exception):
         clf.score(X, y, other_objectives=[mockObj()], raise_errors=True)

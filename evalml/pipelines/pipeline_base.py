@@ -1,3 +1,4 @@
+import warnings
 from collections import OrderedDict
 
 import numpy as np
@@ -236,9 +237,11 @@ class PipelineBase:
                 else:
                     scores.append(objective.score(y_predictions, y))
             except Exception as e:
-                scores.append(np.nan)
                 if raise_errors:
                     raise e
+                else:
+                    scores.append(np.nan)
+                    warnings.warn('Failed to score objective: {}'.format(objective.name), RuntimeWarning)
 
         if not other_objectives:
             return scores[0], {}
