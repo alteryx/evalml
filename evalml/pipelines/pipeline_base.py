@@ -13,13 +13,6 @@ from evalml.utils import Logger
 
 class PipelineBase:
 
-    model_type_dict = {ModelTypes.RANDOM_FOREST: "Random Forest",
-                       ModelTypes.XGBOOST: "XGBoost Classifier",
-                       ModelTypes.LINEAR_MODEL: "Linear Model"}
-    problem_type_dict = {ProblemTypes.BINARY: "Binary Classification",
-                         ProblemTypes.MULTICLASS: "Multiclass Classification",
-                         ProblemTypes.REGRESSION: "Regression"}
-
     def __init__(self, objective, component_list, n_jobs=-1, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -96,8 +89,8 @@ class PipelineBase:
             dictionary of all component parameters if return_dict is True, else None
         """
         self.logger.log_title(self.name)
-        self.logger.log("Problem Types: {}".format(', '.join([self.problem_type_dict[problem_type] for problem_type in self.problem_types])))
-        self.logger.log("Model Type: {}".format(self.model_type_dict[self.model_type]))
+        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"

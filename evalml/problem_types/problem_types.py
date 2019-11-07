@@ -6,3 +6,8 @@ class ProblemTypes(Enum):
     BINARY = 'binary'
     MULTICLASS = 'multiclass'
     REGRESSION = 'regression'
+
+    def __str__(self):
+        if self.value in [ProblemTypes.BINARY.value, ProblemTypes.MULTICLASS.value]:
+            return "{} Classifier".format(self.value.title())
+        return self.value.title()
