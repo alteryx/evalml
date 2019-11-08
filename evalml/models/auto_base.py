@@ -252,7 +252,6 @@ class AutoBase:
         if pipeline_id not in self.results:
             raise RuntimeError("Pipeline not found")
 
-        pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
         cv_data = pipeline_results["cv_data"]
         mean_fpr = np.linspace(0, 1, 100)
