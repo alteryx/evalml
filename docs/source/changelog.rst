@@ -14,6 +14,7 @@ Changelog
         * Pulling information for describe_pipeline from pipeline's new describe method :pr:`190`
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
+        * Update release instructions for RTd :pr:`193`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
