@@ -198,7 +198,6 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
-        fold_num = 0
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -226,7 +225,6 @@ class AutoBase:
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
             cv_data.append({"all_objective_scores": ordered_scores, "score": score})
-            fold_num += 1
 
         training_time = time.time() - start
 
@@ -241,41 +239,71 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def generate_roc_plot(self, pipeline_id, return_dict=False):
-        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation.
+    def get_roc_data(self, pipeline_id):
+        """Gets data that can be used to create a ROC plot.
 
         Returns:
-
-            matplotlib.figure.Figure representing the ROC plot generated
-
+            Dictionary containing metrics used to generate an ROC plot.
         """
+
         if self.problem_type != ProblemTypes.BINARY:
             raise RuntimeError("ROC plots are only available for binary classification problems.")
 
         if pipeline_id not in self.results:
             raise RuntimeError("Pipeline not found")
 
-        matplotlib.use('nbagg')
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
         cv_data = pipeline_results["cv_data"]
         mean_fpr = np.linspace(0, 1, 100)
         tprs = []
-        aucs = []
-        fig = plt.figure(figsize=(8, 6))
+        roc_aucs = []
+        fpr_tpr_data = []
 
-        for fold_num, fold in enumerate(cv_data):
+        for fold in cv_data:
             fpr = fold["all_objective_scores"]["ROC"][0]
             tpr = fold["all_objective_scores"]["ROC"][1]
             tprs.append(interp(mean_fpr, fpr, tpr))
             tprs[-1][0] = 0.0
             roc_auc = auc(fpr, tpr)
-            aucs.append(roc_auc)
-            plt.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
+            roc_aucs.append(roc_auc)
+            fpr_tpr_data.append((fpr, tpr))
+
         mean_tpr = np.mean(tprs, axis=0)
         mean_auc = auc(mean_fpr, mean_tpr)
-        std_auc = np.std(aucs)
+        std_auc = np.std(roc_aucs)
 
+        roc_data = {"fpr_tpr_data": fpr_tpr_data,
+                    "mean_fpr": mean_fpr,
+                    "mean_tpr": mean_tpr,
+                    "roc_aucs": roc_aucs,
+                    "mean_auc": mean_auc,
+                    "std_auc": std_auc}
+        return roc_data
+
+    def generate_roc_plot(self, pipeline_id):
+        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation.
+
+        Returns:
+            matplotlib.figure.Figure representing the ROC plot generated
+
+        """
+        matplotlib.use('nbagg')
+        pipeline = self.get_pipeline(pipeline_id)
+        roc_data = self.get_roc_data(pipeline_id)
+        fig = plt.figure(figsize=(8, 6))
+        fpr_tpr_data = roc_data["fpr_tpr_data"]
+        roc_aucs = roc_data["roc_aucs"]
+        mean_fpr = roc_data["mean_fpr"]
+        mean_tpr = roc_data["mean_tpr"]
+        mean_auc = roc_data["mean_auc"]
+        std_auc = roc_data["std_auc"]
+
+        for fold_num, fold in enumerate(fpr_tpr_data):
+            fpr = fold[0]
+            tpr = fold[1]
+            roc_auc = roc_aucs[fold_num]
+            plt.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
         plt.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance')
         plt.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2)
         plt.title('Receiver Operating Characteristic of {} w/ ID={}'.format(pipeline.name, pipeline_id))
@@ -284,14 +312,8 @@ class AutoBase:
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.legend(loc="lower right")
-
         plt.close()
 
-        if return_dict:
-            fprs = [cv_data[fold]["all_objective_scores"]["ROC"][0] for fold in cv_data]
-            tprs = [cv_data[fold]["all_objective_scores"]["ROC"][1] for fold in cv_data]
-            roc_data = {"tprs": tprs, "fprs": fprs}
-            return roc_data, fig
         return fig
 
     def _select_pipeline(self):
