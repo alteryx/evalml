@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import interp
-from sklearn.metrics import auc
+import sklearn.metrics
 from tqdm import tqdm
 
 from evalml import guardrails
@@ -264,12 +264,12 @@ class AutoBase:
             tpr = fold["all_objective_scores"]["ROC"][1]
             tprs.append(interp(mean_fpr, fpr, tpr))
             tprs[-1][0] = 0.0
-            roc_auc = auc(fpr, tpr)
+            roc_auc = sklearn.metrics.auc(fpr, tpr)
             roc_aucs.append(roc_auc)
             fpr_tpr_data.append((fpr, tpr))
 
         mean_tpr = np.mean(tprs, axis=0)
-        mean_auc = auc(mean_fpr, mean_tpr)
+        mean_auc = sklearn.metrics.auc(mean_fpr, mean_tpr)
         std_auc = np.std(roc_aucs)
 
         roc_data = {"fpr_tpr_data": fpr_tpr_data,
@@ -281,7 +281,8 @@ class AutoBase:
         return roc_data
 
     def generate_roc_plot(self, pipeline_id):
-        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation.
+        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation
+        using the data returned from generate_roc_plot().
 
         Returns:
             matplotlib.figure.Figure representing the ROC plot generated

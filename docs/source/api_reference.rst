@@ -118,6 +118,7 @@ Classification
     AUCWeighted
     LogLoss
     MCC
+    ROC
 
 Regression
 ~~~~~~~~~~
