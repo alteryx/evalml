@@ -7,8 +7,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy import interp
 import sklearn.metrics
+from scipy import interp
 from tqdm import tqdm
 
 from evalml import guardrails
