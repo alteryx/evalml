@@ -8,6 +8,7 @@ class ProblemTypes(Enum):
     REGRESSION = 'regression'
 
     def __str__(self):
-        if self.value in [ProblemTypes.BINARY.value, ProblemTypes.MULTICLASS.value]:
-            return "{} Classifier".format(self.value.title())
-        return self.value.title()
+        problem_type_dict = {ProblemTypes.BINARY.name: "Binary Classification",
+                             ProblemTypes.MULTICLASS.name: "Multiclass Classification",
+                             ProblemTypes.REGRESSION.name: "Regression"}
+        return problem_type_dict[self.name]

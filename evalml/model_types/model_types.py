@@ -8,6 +8,7 @@ class ModelTypes(Enum):
     LINEAR_MODEL = 'linear_model'
 
     def __str__(self):
-        if self.value in [ModelTypes.XGBOOST.value]:
-            return "XGBoost Classifier"
-        return self.value.replace(" ", "_").title()
+        model_type_dict = {ModelTypes.RANDOM_FOREST.name: "Random Forest",
+                           ModelTypes.XGBOOST.name: "XGBoost Classifier",
+                           ModelTypes.LINEAR_MODEL.name: "Linear Model"}
+        return model_type_dict[self.name]
