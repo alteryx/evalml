@@ -5,9 +5,7 @@ from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
 
-from evalml.model_types import ModelTypes
 from evalml.objectives import get_objective
-from evalml.problem_types import ProblemTypes
 from evalml.utils import Logger
 
 

@@ -310,10 +310,11 @@ class AutoBase:
         pipeline_results = self.results[pipeline_id]
 
         pipeline.describe()
-        self.logger.log_subtitle("\nTraining")
-
+        self.logger.log_subtitle("Training")
+        # Ideally, we want this information available on pipeline instead
+        self.logger.log("Training for {} problems.".format(self.problem_type))
         self.logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
-        self.logger.log_subtitle("\nCross Validation", underline="-")
+        self.logger.log_subtitle("Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
             self.logger.log("Warning! High variance within cross validation scores. " +
