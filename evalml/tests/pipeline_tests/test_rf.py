@@ -1,6 +1,7 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
@@ -8,6 +9,17 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import RFClassificationPipeline
+
+
+def test_rf_init(X_y):
+    X, y = X_y
+
+    objective = PrecisionMicro()
+    clf = RFClassificationPipeline(objective=objective, n_estimators=20, max_depth=5, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), random_state=2)
+    expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0, 
+                           'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
+    assert clf.parameters == expected_parameters
+    assert clf.random_state == 2
 
 
 def test_rf_multi(X_y_multi):
