@@ -36,7 +36,9 @@ class FeatureSelector(Transformer):
         try:
             X_t = self._component_obj.transform(X)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, index=X.index, columns=self.get_names())
+                X_dtypes = X.dtypes.to_dict()
+                col_types = {key: X_dtypes[key] for key in self.get_names()}
+                X_t = pd.DataFrame(X_t, index=X.index, columns=self.get_names()).astype(col_types)
             return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
@@ -58,7 +60,9 @@ class FeatureSelector(Transformer):
         try:
             X_t = self._component_obj.fit_transform(X, y)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, index=X.index, columns=self.get_names())
+                X_dtypes = X.dtypes.to_dict()
+                col_types = {key: X_dtypes[key] for key in self.get_names()}
+                X_t = pd.DataFrame(X_t, index=X.index, columns=self.get_names()).astype(col_types)
             return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")

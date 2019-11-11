@@ -20,7 +20,7 @@ class Transformer(ComponentBase):
         try:
             X_t = self._component_obj.transform(X)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, columns=X.columns)
+                X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
             return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
@@ -37,7 +37,7 @@ class Transformer(ComponentBase):
         try:
             X_t = self._component_obj.fit_transform(X, y)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, columns=X.columns)
+                X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
             return X_t
         except AttributeError:
             raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
