@@ -21,7 +21,6 @@ def test_linear_regression(X_y_categorical_regression):
                             ("scaler", scaler),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
-    
     sk_score = sk_pipeline.score(X, y)
 
     objective = R2()
