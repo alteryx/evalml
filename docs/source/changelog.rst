@@ -11,7 +11,7 @@ Changelog
     * Fixes
     * Changes
         * Refactored pipelines :pr:`108`
-        * Removed guardrails from Auto(*) 
+        * Removed guardrails from Auto(*) :pr:`202`
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
         * Updated release instructions for RTd :pr:`193`
