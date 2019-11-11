@@ -132,7 +132,7 @@ def test_multi_auto(X_y_multi):
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
     for expected, additional in zip(expected_additional_objectives, clf.additional_objectives):
-        assert type(additional) is  type(expected)
+        assert type(additional) is type(expected)
 
 
 def test_multi_objective(X_y_multi):
