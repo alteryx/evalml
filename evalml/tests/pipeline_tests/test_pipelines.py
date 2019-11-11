@@ -131,7 +131,7 @@ def test_estimator_not_last(X_y):
                                                      penalty=penalty,
                                                      C=C,
                                                      n_jobs=-1)
-            super().__init__(objective=objective, component_list=[enc, imputer, estimator, scaler], n_jobs=n_jobs, random_state=random_state)
+            super().__init__(objective=objective, component_list=[enc, imputer, estimator, scaler])
 
     err_msg = "Estimator must be the last component in the pipeline."
     with pytest.raises(RuntimeError, match=err_msg):
@@ -140,7 +140,7 @@ def test_estimator_not_last(X_y):
 
 def test_multi_format_creation(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', StandardScaler(), ComponentTypes.CLASSIFIER], n_jobs=-1, random_state=0)
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', StandardScaler(), ComponentTypes.CLASSIFIER])
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
@@ -154,7 +154,7 @@ def test_multi_format_creation(X_y):
 
 def test_multiple_feature_selectors(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', ComponentTypes.FEATURE_SELECTION_CLASSIFIER, StandardScaler(), ComponentTypes.FEATURE_SELECTION_CLASSIFIER, ComponentTypes.CLASSIFIER],  n_jobs=-1, random_state=0)
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', ComponentTypes.FEATURE_SELECTION_CLASSIFIER, StandardScaler(), ComponentTypes.FEATURE_SELECTION_CLASSIFIER, ComponentTypes.CLASSIFIER])
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
