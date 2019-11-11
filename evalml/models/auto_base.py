@@ -20,7 +20,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, random_state, verbose):
+                 add_result_callback, additional_objectives, null_threshold, id_cols_threshold, check_outliers, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -31,7 +31,9 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
+        self.id_cols_threshold = id_cols_threshold
         self.null_threshold = null_threshold
+        self.check_outliers = check_outliers
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -114,11 +116,15 @@ class AutoBase:
         else:
             self.logger.log("Lower score is better.\n")
 
-        self.logger.log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+        # Set default max_pipeline if none specified
+        if self.max_pipelines is None and self.max_time is None:
+            self.max_pipelines = 5
+            self.logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
+
+        if self.max_pipelines:
+            self.logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        else:
-            self.logger.log("No time limit is set. Set one using max_time parameter.\n")
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
@@ -126,6 +132,10 @@ class AutoBase:
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+        if self.id_cols_threshold is not None:
+            id_cols = guardrails.detect_id_columns(X, self.id_cols_threshold)
+            if len(id_cols) > 0:
+                self.logger.log("WARNING: columns '{}' may be id columns.".format(", ".join(id_cols.keys())))
 
         if self.null_threshold is not None:
             highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
@@ -166,7 +176,6 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
-
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
@@ -201,11 +210,11 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
-
             except Exception as e:
                 if raise_errors:
                     raise e
-                pbar.write(str(e))
+                if pbar:
+                    pbar.write(str(e))
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 

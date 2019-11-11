@@ -4,6 +4,20 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added basic outlier detection guardrail :pr:`151`
+        * Added basic ID column guardrail :pr:`135`
+        * Added support for unlimited pipelines with a max_time limit :pr:`70`
+        * Updating .readthedocs.yaml to successfully build :pr:`188`
+    * Fixes
+    * Changes
+        * Refactoring pipelines :pr:`108`
+    * Documentation Changes
+        * Updated documentation to show max_time enhancements :pr:`189`
+        * Update release instructions for RTd :pr:`193`
+    * Testing Changes
+
+**v0.5.0 Oct. 29, 2019**
+    * Enhancements
         * Added basic one hot encoding :pr:`73`
         * Use enums for model_type :pr:`110`
         * Support for splitting regression datasets :pr:`112`
@@ -22,12 +36,13 @@ Changelog
         * Moved logging to its own module :pr:`119`
         * Show progress bar history :pr:`111`
         * Using cloudpickle instead of pickle to allow unloading of custom objectives :pr:`113`
+        * Removed render.py :pr:`154`
     * Documentation Changes
         * Update release instructions :pr:`140`
         * Include additional_objectives parameter :pr:`124`
         * Added Changelog :pr:`136`
     * Testing Changes
-        * Code coverage pr:`90`
+        * Code coverage :pr:`90`
         * Added CircleCI tests for other Python versions :pr:`104`
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
