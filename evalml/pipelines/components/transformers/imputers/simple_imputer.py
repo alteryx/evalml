@@ -20,14 +20,6 @@ class SimpleImputer(Transformer):
                          random_state=0)
 
     def transform(self, X):
-        """Transforms data X
-
-        Arguments:
-            X (DataFrame): Data to transform
-
-        Returns:
-            DataFrame: Transformed X
-        """
         try:
             X_t = self._component_obj.transform(X)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
@@ -38,14 +30,6 @@ class SimpleImputer(Transformer):
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
 
     def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
-
-        Arguments:
-            X (DataFrame): Data to fit and transform
-
-        Returns:
-            DataFrame: Transformed X
-        """
         try:
             X_t = self._component_obj.fit_transform(X, y)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
