@@ -96,7 +96,7 @@ class PipelineBase:
         self.logger.log(objective_string)
 
         # Summary of steps
-        self.logger.log_subtitle("\nPipeline Steps")
+        self.logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_list, 1):
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
