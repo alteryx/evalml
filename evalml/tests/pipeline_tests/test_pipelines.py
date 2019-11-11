@@ -154,7 +154,7 @@ def test_multi_format_creation(X_y):
 
 def test_multiple_feature_selectors(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', ComponentTypes.FEATURE_SELECTION_CLASSIFIER, StandardScaler(), ComponentTypes.FEATURE_SELECTION_CLASSIFIER, ComponentTypes.CLASSIFIER],  n_jobs=-1, random_state=0)
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', ComponentTypes.FEATURE_SELECTION_CLASSIFIER, StandardScaler(), ComponentTypes.FEATURE_SELECTION_CLASSIFIER, ComponentTypes.CLASSIFIER], n_jobs=-1, random_state=0)
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
