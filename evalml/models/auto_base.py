@@ -5,9 +5,9 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 import plotly.graph_objects as go
 from IPython.display import display
+from tqdm import tqdm
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
