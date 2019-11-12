@@ -10,7 +10,17 @@ from evalml.objectives import PrecisionMicro
 from evalml.pipelines import LogisticRegressionPipeline
 
 
-def test_lr_multi(X_y_multi):
+def test_lor_init(X_y):
+    X, y = X_y
+
+    objective = PrecisionMicro()
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+    expected_parameters = {'impute_strategy': 'mean', 'penalty': 'l2', 'C': 0.5}
+    assert clf.parameters == expected_parameters
+    assert clf.random_state == 1
+
+
+def test_lor_multi(X_y_multi):
     X, y = X_y_multi
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
