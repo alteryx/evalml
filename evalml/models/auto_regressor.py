@@ -19,9 +19,6 @@ class AutoRegressor(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
-                 id_cols_threshold=1.0,
-                 null_threshold=0.95,
-                 check_outliers=False,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -88,10 +85,7 @@ class AutoRegressor(AutoBase):
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
-            id_cols_threshold=id_cols_threshold,
             additional_objectives=additional_objectives,
-            null_threshold=null_threshold,
-            check_outliers=check_outliers,
             random_state=random_state,
             verbose=verbose
         )

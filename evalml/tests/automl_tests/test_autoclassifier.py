@@ -268,22 +268,3 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
-
-
-def test_guardrail_warnings(X_y, capsys):
-    X, y = X_y
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    # create outliers
-    X.iloc[2, :] = -1000
-    X.iloc[5, :] = 1000
-
-    clf = AutoClassifier(check_outliers=True)
-    clf.fit(X, y)
-    clf.describe_pipeline(0)
-    out, err = capsys.readouterr()
-    out_stripped = " ".join(out.split())
-    assert err == ''
-    outlier_warning = "may contain outlier data."
-    assert outlier_warning in out_stripped
