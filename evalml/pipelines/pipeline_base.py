@@ -95,6 +95,9 @@ class PipelineBase:
         objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
         self.logger.log(objective_string)
 
+        if self.estimator.name in self.input_feature_names:
+            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+
         # Summary of steps
         self.logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_list, 1):

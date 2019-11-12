@@ -20,21 +20,15 @@ class SimpleImputer(Transformer):
                          random_state=0)
 
     def transform(self, X):
-        try:
-            X_t = self._component_obj.transform(X)
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                # skLearn's SimpleImputer loses track of column type, so we need to restore
-                X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
-            return X_t
-        except AttributeError:
-            raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
+        X_t = self._component_obj.transform(X)
+        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+            # skLearn's SimpleImputer loses track of column type, so we need to restore
+            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
+        return X_t
 
     def fit_transform(self, X, y=None):
-        try:
-            X_t = self._component_obj.fit_transform(X, y)
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                # skLearn's SimpleImputer loses track of column type, so we need to restore
-                X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
-            return X_t
-        except AttributeError:
-            raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
+        X_t = self._component_obj.fit_transform(X, y)
+        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+            # skLearn's SimpleImputer loses track of column type, so we need to restore
+            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
+        return X_t
