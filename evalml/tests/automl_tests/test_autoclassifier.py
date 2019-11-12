@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -280,27 +279,5 @@ def test_plot_iterations(X_y):
 
     clf = AutoClassifier(multiclass=False, max_pipelines=3)
 
-    clf.fit(X, y)
-
-    figure = clf.plot_best_score_by_iteration()
-    assert isinstance(figure, type(plt.figure()))
-    clf.plot_best_score_by_iteration(interactive_plot=True)
-
-
-def test_guardrail_warnings(X_y, capsys):
-    X, y = X_y
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    # create outliers
-    X.iloc[2, :] = -1000
-    X.iloc[5, :] = 1000
-
-    clf = AutoClassifier(check_outliers=True)
-    clf.fit(X, y)
-    clf.describe_pipeline(0)
-    out, err = capsys.readouterr()
-    out_stripped = " ".join(out.split())
-    assert err == ''
-    outlier_warning = "may contain outlier data."
-    assert outlier_warning in out_stripped
+    clf.fit(X, y, plot_iterations=True)
+    clf.plot_best_score_by_iteration()
