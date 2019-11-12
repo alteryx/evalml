@@ -5,11 +5,19 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`
+        * Added basic outlier detection guardrail :pr:`151`
+        * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
+        * Updated .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
+        * Fixed random_state passed in pipelines :pr:`204`
+        * Fixed slow down in RFRegressor :pr:`206`
     * Changes
-        * Refactoring pipelines :pr:`108`
+        * Refactored pipelines :pr:`108`
+        * Removed guardrails from Auto(*) :pr:`202`
     * Documentation Changes
+        * Updated documentation to show max_time enhancements :pr:`189`
+        * Updated release instructions for RTd :pr:`193`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
