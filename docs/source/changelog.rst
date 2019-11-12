@@ -9,6 +9,7 @@ Changelog
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
         * Updated .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
+        * Fixed slow down in RFRegressor :pr:`206`
     * Changes
         * Refactored pipelines :pr:`108`
         * Removed guardrails from Auto(*) :pr:`202`
