@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -249,14 +249,28 @@ class PipelineBase:
         return df
 
     def plot_feature_importance(self):
-        fig = plt.figure()
-        plt.axes([.1, .1, .8, .7])
-        plt.xticks(rotation=90)
-        plt.figtext(.5, .9, 'Pipeline Feature Importance', fontsize=16, ha='center')
-        plt.figtext(.5, .85, "May display fewer features due to feature selection", fontsize=7, ha='center')
-        plt.ylabel('Feature Name')
-        plt.xlabel('Feature Importance')
-        features = abs(self.feature_importances).sort_values(['importance'])
-        plt.barh(features['feature'].astype(int).astype(str), features['importance'])
-        plt.close(fig)
-        return fig
+        feat_imp = self.feature_importances
+        feat_imp['feature'] = feat_imp['feature'].astype('category')
+        # feat_imp['feature'] = feat_imp['feature'].add('_')
+        feat_imp['importance'] = abs(feat_imp['importance'])
+        feat_imp = feat_imp.sort_values(by='importance', ascending=True)
+        title = 'Feature Importance for Selected Pipeline'
+        subtitle = 'May display fewer features due to feature selection'
+        data = [go.Bar(
+            x=feat_imp['importance'],
+            y=feat_imp['feature'],
+            orientation='h'
+        )]
+
+        layout = {
+            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+            'height': 800,
+            'xaxis_title': 'Feature Importance',
+            'yaxis_title': 'Feature',
+            'yaxis': {
+                'type': 'category'
+            }
+        }
+
+        fig = go.FigureWidget(data=data, layout=layout)
+        fig.show()
