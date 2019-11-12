@@ -10,6 +10,7 @@ Changelog
         * Updated .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
         * Removed MSLE from default additional objectives :pr:`203`
+        * Fixed slow down in RFRegressor :pr:`206`
     * Changes
         * Refactored pipelines :pr:`108`
         * Removed guardrails from Auto(*) :pr:`202`
