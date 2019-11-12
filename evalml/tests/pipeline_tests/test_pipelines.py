@@ -123,7 +123,7 @@ def test_estimator_not_last(X_y):
         name = "Mock Logistic Regression Pipeline"
 
         def __init__(self, objective, penalty, C, impute_strategy,
-                     number_features, n_jobs=1, random_state=0):
+                     number_features, n_jobs=-1, random_state=0):
             imputer = SimpleImputer(impute_strategy=impute_strategy)
             enc = OneHotEncoder()
             scaler = StandardScaler()
