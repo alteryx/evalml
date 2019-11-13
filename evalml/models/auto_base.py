@@ -3,10 +3,9 @@ import time
 from collections import OrderedDict
 from sys import stdout
 
-import plotly.graph_objects as go
-
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import sklearn.metrics
 from scipy import interp
 from tqdm import tqdm
@@ -263,7 +262,6 @@ class AutoBase:
                     "std_auc": std_auc}
         return roc_data
 
-
     def generate_roc_plot(self, pipeline_id):
         """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation
         using the data returned from generate_roc_plot().
@@ -281,7 +279,7 @@ class AutoBase:
         mean_auc = roc_data["mean_auc"]
         std_auc = roc_data["std_auc"]
 
-        layout = go.Layout(title={'text':'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline.name, pipeline_id)},
+        layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline.name, pipeline_id)},
                            xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
                            yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
         data = []
