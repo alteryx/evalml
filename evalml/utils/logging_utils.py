@@ -24,5 +24,6 @@ class Logger:
         self.log("")
 
     def log_subtitle(self, title, underline="=", color=None):
+        self.log("")
         self.log("%s" % title, color=color)
         self.log(underline * len(title), color=color)

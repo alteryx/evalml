@@ -12,6 +12,7 @@ Changelog
         * Fixed random_state passed in pipelines :pr:`204`
         * Fixed slow down in RFRegressor :pr:`206`
     * Changes
+        * Pulled information for describe_pipeline from pipeline's new describe method :pr:`190`
         * Refactored pipelines :pr:`108`
         * Removed guardrails from Auto(*) :pr:`202`
     * Documentation Changes

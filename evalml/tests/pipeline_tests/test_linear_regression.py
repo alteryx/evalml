@@ -22,9 +22,8 @@ def test_lr_init(X_y_categorical_regression):
 
 def test_linear_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-
-    imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
+    imputer = SimpleImputer(strategy='mean')
     scaler = StandardScaler()
     estimator = LinearRegression(normalize=False, fit_intercept=True, n_jobs=-1)
     sk_pipeline = Pipeline([("encoder", enc),
@@ -35,7 +34,13 @@ def test_linear_regression(X_y_categorical_regression):
     sk_score = sk_pipeline.score(X, y)
 
     objective = R2()
-    clf = LinearRegressionPipeline(objective=objective, number_features=len(X.columns), random_state=0, impute_strategy='mean', normalize=False, fit_intercept=True, n_jobs=-1)
+    clf = LinearRegressionPipeline(objective=objective,
+                                   number_features=len(X.columns),
+                                   impute_strategy='mean',
+                                   normalize=False,
+                                   fit_intercept=True,
+                                   random_state=0,
+                                   n_jobs=-1)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
