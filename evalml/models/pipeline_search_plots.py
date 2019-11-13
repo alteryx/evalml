@@ -1,7 +1,8 @@
-import plotly.graph_objects as go
 import numpy as np
-from scipy import interp
+import plotly.graph_objects as go
 import sklearn.metrics
+from scipy import interp
+
 
 class PipelineSearchPlots:
 

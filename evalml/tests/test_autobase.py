@@ -36,9 +36,9 @@ def test_generate_roc(X_y):
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)
     clf = AutoClassifier(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
     clf.fit(X, y)
-    roc_data = clf.get_roc_data(0)
+    roc_data = clf.plot.get_roc_data(0)
     assert len(roc_data["fpr_tpr_data"]) == 5
     assert len(roc_data["roc_aucs"]) == 5
 
-    fig = clf.generate_roc_plot(0)
+    fig = clf.plot.generate_roc_plot(0)
     assert isinstance(fig, type(go.FigureWidget()))

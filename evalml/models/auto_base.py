@@ -5,9 +5,9 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import sklearn.metrics
 from tqdm import tqdm
+
+from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
@@ -15,7 +15,7 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
-from .pipeline_search_plots import PipelineSearchPlots
+
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
