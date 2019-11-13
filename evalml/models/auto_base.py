@@ -5,6 +5,8 @@ from sys import stdout
 
 import matplotlib
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
 import numpy as np
 import pandas as pd
 import sklearn.metrics
@@ -263,18 +265,23 @@ class AutoBase:
                     "std_auc": std_auc}
         return roc_data
 
+
     def generate_roc_plot(self, pipeline_id):
         """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation
         using the data returned from generate_roc_plot().
 
         Returns:
-            matplotlib.figure.Figure representing the ROC plot generated
+            plotly.FigureWidget representing the ROC plot generated
 
         """
-        matplotlib.use('nbagg')
         pipeline = self.get_pipeline(pipeline_id)
         roc_data = self.get_roc_data(pipeline_id)
-        fig = plt.figure(figsize=(8, 6))
+        # todo: put some logic for long names?
+        title = 'Receiver Operating Characteristic of <br> {} w/ ID={}'.format(pipeline.name, pipeline_id)
+        
+        layout = go.Layout(title=title)
+
+        fig = go.Figure(layout=layout)
         fpr_tpr_data = roc_data["fpr_tpr_data"]
         roc_aucs = roc_data["roc_aucs"]
         mean_fpr = roc_data["mean_fpr"]
@@ -286,18 +293,14 @@ class AutoBase:
             fpr = fold[0]
             tpr = fold[1]
             roc_auc = roc_aucs[fold_num]
-            plt.plot(fpr, tpr, lw=1, label='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc))
-        plt.plot([0, 1], [0, 1], linestyle='--', lw=1, color='r', label='Chance')
-        plt.plot(mean_fpr, mean_tpr, color='b', label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc), lw=2)
-        plt.title('Receiver Operating Characteristic of {} w/ ID={}'.format(pipeline.name, pipeline_id))
-        plt.xlim([-0.05, 1.05])
-        plt.ylim([-0.05, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.legend(loc="lower right")
-        plt.close()
+            fig.add_trace(go.Scatter(x=fpr, y=tpr, name='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc), mode='lines+markers'))
+        fig.add_trace(go.Scatter(x=mean_fpr, y=mean_tpr, name='Mean ROC (AUC = %0.2f &plusmn; %0.2f)' % (mean_auc, std_auc), line=dict(width=3)))
+        fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], name='Chance', line=dict(dash='dash')))
+        fig.update_xaxes(title_text='False Positive Rate', range=[-0.05, 1.05])
+        fig.update_yaxes(title_text='True Positive Rate', range=[-0.05, 1.05])
+        f2 = go.FigureWidget(fig)
+        f2.show()
 
-        return fig
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
