@@ -11,6 +11,18 @@ from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
 
 
+def test_xg_init(X_y):
+    X, y = X_y
+
+    objective = PrecisionMicro()
+    clf = XGBoostPipeline(objective=objective, eta=0.2, min_child_weight=3, max_depth=5, impute_strategy='median',
+                          percent_features=1.0, number_features=len(X[0]), random_state=1)
+    expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
+                           'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3}
+    assert clf.parameters == expected_parameters
+    assert clf.random_state == 1
+
+
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
