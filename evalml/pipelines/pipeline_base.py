@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-import plotly.graph_objects as go
 import pandas as pd
+import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
