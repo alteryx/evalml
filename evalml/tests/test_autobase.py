@@ -1,5 +1,5 @@
 
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassifier
@@ -41,4 +41,4 @@ def test_generate_roc(X_y):
     assert len(roc_data["roc_aucs"]) == 5
 
     fig = clf.generate_roc_plot(0)
-    assert isinstance(fig, type(plt.figure()))
+    assert isinstance(fig, type(go.FigureWidget()))
