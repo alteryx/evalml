@@ -10,15 +10,16 @@ Changelog
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
         * Updated .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
+        * Removed MSLE from default additional objectives :pr:`203`
         * Fixed random_state passed in pipelines :pr:`204`
         * Fixed slow down in RFRegressor :pr:`206`
     * Changes
         * Pulled information for describe_pipeline from pipeline's new describe method :pr:`190`
         * Refactored pipelines :pr:`108`
-        * Removed guardrails from Auto(*) :pr:`202`
+        * Removed guardrails from Auto(*) :pr:`202`, :pr:`208`
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
-        * Updated release instructions for RTd :pr:`193`
+        * Updated release instructions for RTD :pr:`193`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
