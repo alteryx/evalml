@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added ROC charts for binary classification :pr:`169`
+        * Added ROC plots for binary classification problems :pr:`169`
         * Added basic outlier detection guardrail :pr:`151`
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
