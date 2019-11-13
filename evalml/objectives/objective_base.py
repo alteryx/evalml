@@ -14,9 +14,10 @@ class ObjectiveBase:
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def supports_problem_type(self, problem_type):
+    @classmethod
+    def supports_problem_type(cls, problem_type):
         problem_type = handle_problem_types(problem_type)
-        if problem_type in self.__class__.problem_types:
+        if problem_type in cls.problem_types:
             return True
         return False
 
