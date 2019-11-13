@@ -10,11 +10,20 @@ from evalml.objectives import R2
 from evalml.pipelines import LinearRegressionPipeline
 
 
-def test_linear_regression(X_y_categorical_regression):
+def test_lr_init(X_y_categorical_regression):
     X, y = X_y_categorical_regression
 
-    imputer = SimpleImputer(strategy='mean')
+    objective = R2()
+    clf = LinearRegressionPipeline(objective=objective, number_features=len(X.columns), random_state=2, impute_strategy='mean', normalize=True, fit_intercept=True, n_jobs=-1)
+    expected_parameters = {'impute_strategy': 'mean', 'fit_intercept': True, 'normalize': True}
+    assert clf.parameters == expected_parameters
+    assert clf.random_state == 2
+
+
+def test_linear_regression(X_y_categorical_regression):
+    X, y = X_y_categorical_regression
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
+    imputer = SimpleImputer(strategy='mean')
     scaler = StandardScaler()
     estimator = LinearRegression(normalize=False, fit_intercept=True, n_jobs=-1)
     sk_pipeline = Pipeline([("encoder", enc),
@@ -25,7 +34,13 @@ def test_linear_regression(X_y_categorical_regression):
     sk_score = sk_pipeline.score(X, y)
 
     objective = R2()
-    clf = LinearRegressionPipeline(objective=objective, number_features=len(X.columns), random_state=0, impute_strategy='mean', normalize=False, fit_intercept=True, n_jobs=-1)
+    clf = LinearRegressionPipeline(objective=objective,
+                                   number_features=len(X.columns),
+                                   impute_strategy='mean',
+                                   normalize=False,
+                                   fit_intercept=True,
+                                   random_state=0,
+                                   n_jobs=-1)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
