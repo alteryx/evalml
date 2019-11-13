@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import sklearn.metrics
-from scipy import interp
 from tqdm import tqdm
 
 from evalml import guardrails
@@ -16,7 +15,7 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
-
+from .pipeline_search_plots import PipelineSearchPlots
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
@@ -71,6 +70,8 @@ class AutoBase:
 
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
+
+        self.plot = PipelineSearchPlots({})
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
@@ -143,6 +144,8 @@ class AutoBase:
                     break
                 self._do_iteration(X, y, pbar, raise_errors)
             pbar.close()
+
+        self.plot.insert_data({"results": self.results})
         self.logger.log("\n✔ Optimization finished")
 
     def check_multiclass(self, y):
@@ -221,87 +224,6 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def get_roc_data(self, pipeline_id):
-        """Gets data that can be used to create a ROC plot.
-
-        Returns:
-            Dictionary containing metrics used to generate an ROC plot.
-        """
-
-        if self.problem_type != ProblemTypes.BINARY:
-            raise RuntimeError("ROC plots are only available for binary classification problems.")
-
-        if pipeline_id not in self.results:
-            raise RuntimeError("Pipeline not found")
-
-        pipeline_results = self.results[pipeline_id]
-        cv_data = pipeline_results["cv_data"]
-        mean_fpr = np.linspace(0, 1, 100)
-        tprs = []
-        roc_aucs = []
-        fpr_tpr_data = []
-
-        for fold in cv_data:
-            fpr = fold["all_objective_scores"]["ROC"][0]
-            tpr = fold["all_objective_scores"]["ROC"][1]
-            tprs.append(interp(mean_fpr, fpr, tpr))
-            tprs[-1][0] = 0.0
-            roc_auc = sklearn.metrics.auc(fpr, tpr)
-            roc_aucs.append(roc_auc)
-            fpr_tpr_data.append((fpr, tpr))
-
-        mean_tpr = np.mean(tprs, axis=0)
-        mean_auc = sklearn.metrics.auc(mean_fpr, mean_tpr)
-        std_auc = np.std(roc_aucs)
-
-        roc_data = {"fpr_tpr_data": fpr_tpr_data,
-                    "mean_fpr": mean_fpr,
-                    "mean_tpr": mean_tpr,
-                    "roc_aucs": roc_aucs,
-                    "mean_auc": mean_auc,
-                    "std_auc": std_auc}
-        return roc_data
-
-    def generate_roc_plot(self, pipeline_id):
-        """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation
-        using the data returned from generate_roc_plot().
-
-        Returns:
-            plotly.FigureWidget representing the ROC plot generated
-
-        """
-        pipeline = self.get_pipeline(pipeline_id)
-        roc_data = self.get_roc_data(pipeline_id)
-        fpr_tpr_data = roc_data["fpr_tpr_data"]
-        roc_aucs = roc_data["roc_aucs"]
-        mean_fpr = roc_data["mean_fpr"]
-        mean_tpr = roc_data["mean_tpr"]
-        mean_auc = roc_data["mean_auc"]
-        std_auc = roc_data["std_auc"]
-
-        layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline.name, pipeline_id)},
-                           xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
-                           yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
-        data = []
-        for fold_num, fold in enumerate(fpr_tpr_data):
-            fpr = fold[0]
-            tpr = fold[1]
-            roc_auc = roc_aucs[fold_num]
-            data.append(go.Scatter(x=fpr, y=tpr,
-                                   name='ROC fold %d (AUC = %0.2f)' % (fold_num, roc_auc),
-                                   mode='lines+markers'))
-
-        data.append(go.Scatter(x=mean_fpr, y=mean_tpr,
-                               name='Mean ROC (AUC = %0.2f &plusmn; %0.2f)' % (mean_auc, std_auc),
-                               line=dict(width=3)))
-        data.append(go.Scatter(x=[0, 1], y=[0, 1],
-                               name='Chance',
-                               line=dict(dash='dash')))
-
-        figure = go.Figure(layout=layout, data=data)
-        fig_wid = go.FigureWidget(figure)
-        return fig_wid
-
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
 
@@ -326,11 +248,13 @@ class AutoBase:
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
 
-        pipeline_name = trained_pipeline.__class__.__name__
+        pipeline_class_name = trained_pipeline.__class__.__name__
+        pipeline_name = trained_pipeline.name
         pipeline_id = len(self.results)
 
         self.results[pipeline_id] = {
             "id": pipeline_id,
+            "pipeline_class_name": pipeline_class_name,
             "pipeline_name": pipeline_name,
             "parameters": dict(parameters),
             "score": score,
@@ -414,7 +338,7 @@ class AutoBase:
             ascending = False
 
         rankings_df = pd.DataFrame(self.results.values())
-        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
 
