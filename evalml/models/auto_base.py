@@ -308,6 +308,7 @@ class AutoBase:
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
 
+        # note: we need to think about how to better handle metrics we don't want to display in our chart
         if "ROC" in all_objective_scores.columns:
             all_objective_scores = all_objective_scores.drop(["ROC"], axis=1)
 
