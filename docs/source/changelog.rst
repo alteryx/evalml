@@ -15,7 +15,7 @@ Changelog
     * Changes
         * Pulled information for describe_pipeline from pipeline's new describe method :pr:`190`
         * Refactored pipelines :pr:`108`
-        * Removed guardrails from Auto(*) :pr:`202`
+        * Removed guardrails from Auto(*) :pr:`202`, :pr:`208`
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
         * Updated release instructions for RTD :pr:`193`
