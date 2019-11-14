@@ -18,7 +18,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 * install in edit mode with:
     ```bash
     cd evalml  # move to directory
-    pip install -e . # install in edit mode
+    make installdeps # install in edit mode
     ```
 
 
@@ -36,7 +36,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
   # will fix some common linting issues automatically
   make lint-fix
   ```
-* If you made changes to the documentation, build the documentation locally.
+* If you made changes to the documentation, build the documentation to view locally.
   ```bash
   # go to docs and build
   cd docs
