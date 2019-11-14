@@ -202,6 +202,7 @@ templates_path = ["_templates"]
 
 html_show_sphinx = False
 nbsphinx_execute = 'always'
+nbsphinx_timeout = 600
 
 def setup(app):
     app.add_stylesheet("style.css")
