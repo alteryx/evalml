@@ -8,6 +8,7 @@ Changelog
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
         * Updated .readthedocs.yaml to successfully build :pr:`188`
+        * Adding basic pipeline structure visualization :pr:`211`
     * Fixes
         * Removed MSLE from default additional objectives :pr:`203`
         * Fixed random_state passed in pipelines :pr:`204`
