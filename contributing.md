@@ -16,9 +16,10 @@ More details about ZenHub and it's best practices can be found [here](https://bi
 The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
 * clone with `git clone https://github.com/FeatureLabs/evalml.git`
 * install in edit mode with:
-    ```
+    ```bash
     cd evalml  # move to directory
-    pip install -e . # install in edit mode```
+    pip install -e . # install in edit mode
+    ```
 
 
 #### 2. Implement your Pull Request
