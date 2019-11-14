@@ -248,13 +248,11 @@ class PipelineBase:
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
 
-    def plot_feature_importance(self):
+    def plot_feature_importances(self):
         feat_imp = self.feature_importances
-        feat_imp['feature'] = feat_imp['feature'].astype('category')
-        # feat_imp['feature'] = feat_imp['feature'].add('_')
         feat_imp['importance'] = abs(feat_imp['importance'])
-        feat_imp = feat_imp.sort_values(by='importance', ascending=True)
-        title = 'Feature Importance for Selected Pipeline'
+        feat_imp = feat_imp.iloc[::-1]
+        title = 'Feature Importances'
         subtitle = 'May display fewer features due to feature selection'
         data = [go.Bar(
             x=feat_imp['importance'],
@@ -273,4 +271,4 @@ class PipelineBase:
         }
 
         fig = go.FigureWidget(data=data, layout=layout)
-        fig.show()
+        return fig
