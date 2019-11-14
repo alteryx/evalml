@@ -11,6 +11,7 @@ from evalml.utils import Logger
 
 
 class PipelineBase:
+
     def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -77,21 +78,26 @@ class PipelineBase:
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters and cross validation information
+        """Outputs pipeline details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information
+                about pipeline. Defaults to false
 
         Returns:
-
-            None
-
+            dictionary of all component parameters if return_dict is True, else None
         """
-        title = "Pipeline: " + self.name
-        self.logger.log_title(title)
-
+        self.logger.log_title(self.name)
+        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
-        objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
+        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
         self.logger.log(objective_string)
+
+        if self.estimator.name in self.input_feature_names:
+            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
 
         # Summary of steps
         self.logger.log_subtitle("Pipeline Steps")
