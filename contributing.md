@@ -47,6 +47,14 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 #### 3. Submit your Pull Request
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
+
+* Be sure to include unit tests for your changes; the unit tests you write will also be run as part of the continuous integration.
+
+* If your changes alter the following please fix them as well:
+    * Docstrings - if your changes render docstrings invalid
+    * API changes - if you change the API update `docs/source/api_reference.rst`
+    * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
+
 * Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
     * Enhancements: new features or additions to Featuretools.
     * Fixes: things like bugfixes or adding more descriptive error messages.
@@ -54,8 +62,3 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     * Documentation Changes
     * Testing Changes
 
-   Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
-* We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
-
-## Report issues
-When reporting issues please include as much detail as possible about your operating system, featuretools version and python version. Whenever possible, please also include a brief, self-contained code example that demonstrates the problem.
