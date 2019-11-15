@@ -78,6 +78,7 @@ jobs:
     docker:
       - image: circleci/python:3.7
     steps:
+      - run: sudo apt update && sudo apt install -y pandoc
       - checkout
       - install_dependencies
       - run: source test_python/bin/activate
