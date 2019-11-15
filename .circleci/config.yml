@@ -47,7 +47,6 @@ jobs:
         name: python
         python_version: << parameters.python_version >>
     steps:
-      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - install_dependencies
       - run: |
