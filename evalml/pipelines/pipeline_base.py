@@ -73,7 +73,7 @@ class PipelineBase:
 
         return name
 
-    def plot(self, to_file=None):
+    def visualize(self, to_file=None):
         """
         Create a UML diagram-ish graph of our pipeline.
         Args:
@@ -83,7 +83,10 @@ class PipelineBase:
             graphviz.Digraph : Graph object that can directly be displayed in
                 Jupyter notebooks.
         """
-        import graphviz
+        try:
+            import graphviz
+        except ImportError:
+            raise ImportError('Please install graphviz to visualize pipelines.')
 
         # Try rendering a dummy graph to see if a working backend is installed
         try:

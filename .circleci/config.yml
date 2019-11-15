@@ -18,6 +18,7 @@ commands:
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps
+            pip install -r test-requirements.txt
 
 jobs:
   lint_test:
