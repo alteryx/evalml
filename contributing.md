@@ -1,15 +1,17 @@
 ## Contributing to the Codebase
 
 #### 0. Access ZenHub
-We currently utilize ZenHub as our project management tool for EvalML. Please follow the following:
+We currently utilize ZenHub as our project management tool for EvalML. Please do the following:
 * Access ZenHub directly through GitHub (using the [extension](https://www.zenhub.com/extension)) or [here](https://app.zenhub.com/)
 * Be assigned or assign yourself work from the `Sprint Backlog` and then `Development Backlog`
+* Connect your PR to your issue so it behaves as one
+    * Hit `Connect this pull request with an existing issue` at the bottom of the PR and attach the issue
 * Move your issue to the correct pipeline(column)
     * In Progress for issues in progress (including work after review)
     * Review/QA when needing review or QA
     * Closed when finished
 
-More details about ZenHub and it's best practices can be found [here](https://bit.ly/379iFB9).
+More details about ZenHub and its best practices can be found [here](https://bit.ly/379iFB9).
 
 
 #### 1. Clone repo
@@ -57,10 +59,10 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     * API changes - if you change the API update `docs/source/api_reference.rst`
     * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
 
-* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
-    * Enhancements: new features or additions to Featuretools.
+* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request. Add a description of your PR to the subsection that most closely matches your contribution:
+    * Enhancements: new features or additions to EvalML.
     * Fixes: things like bugfixes or adding more descriptive error messages.
-    * Changes: modifications to an existing part of Featuretools.
+    * Changes: modifications to an existing part of EvalML.
     * Documentation Changes
     * Testing Changes
 
