@@ -1,7 +1,7 @@
 from evalml.preprocessing import load_data
 
 
-def load_fraud(n_rows):
+def load_fraud(n_rows=None):
     """Load credit card fraud dataset. Binary classification problem
 
     Args:
