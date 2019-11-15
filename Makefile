@@ -24,6 +24,6 @@ circleci-test:
 
 .PHONY: installdeps
 installdeps:
-	pip install --upgrade pip -q
-	pip install -e . -q
-	pip install -r dev-requirements.txt -q
+	pip install --upgrade pip 
+	pip install -e . 
+	pip install -r dev-requirements.txt 
