@@ -80,6 +80,7 @@ jobs:
     steps:
       - checkout
       - install_dependencies
+      - run: source test_python/bin/activate
       - run: make -C docs/ html
 
 workflows:
