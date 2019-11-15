@@ -24,9 +24,6 @@ class PipelineSearchPlots:
             raise RuntimeError("You must first call fit() on the AutoClassifier to generate ROC data.")
 
         results = self.data["results"]
-        # if self.problem_type != ProblemTypes.BINARY:
-        #     raise RuntimeError("ROC plots are only available for binary classification problems.")
-
         if pipeline_id not in results:
             raise RuntimeError("Pipeline not found")
 

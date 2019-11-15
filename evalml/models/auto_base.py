@@ -71,7 +71,7 @@ class AutoBase:
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
-        self.plot = PipelineSearchPlots({})
+        self.plot = PipelineSearchPlots({"results": self.results})
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
@@ -145,7 +145,6 @@ class AutoBase:
                 self._do_iteration(X, y, pbar, raise_errors)
             pbar.close()
 
-        self.plot.insert_data({"results": self.results})
         self.logger.log("\n✔ Optimization finished")
 
     def check_multiclass(self, y):
@@ -234,8 +233,7 @@ class AutoBase:
         return list(proposal)
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
-        scores = [fold["score"] for fold in cv_data]
-        scores = pd.Series(scores)
+        scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
         if self.objective.greater_is_better:
