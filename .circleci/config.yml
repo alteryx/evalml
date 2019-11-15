@@ -76,11 +76,10 @@ jobs:
   build_docs:
     working_directory: ~/evalml/
     docker:
-      - image: circleci/python:3.7-stretch
+      - image: circleci/python:3.7
     steps:
       - checkout
       - install_dependencies
-      - run: sudo make installdeps
       - run: make -C docs/ html
 
 workflows:
