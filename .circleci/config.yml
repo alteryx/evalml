@@ -80,8 +80,8 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - run: apt-get install python3-sphinx
-      - run:  make -C docs/ html
+      - run: sudo apt-get install python3-sphinx
+      - run: make -C docs/ html
 
 workflows:
   version: 2
