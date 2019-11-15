@@ -92,10 +92,7 @@ workflows:
           filters:
             branches:
               ignore: /^master?/
-  build_docs:
-    jobs:
-      - build_docs:
-        name: "build docs"
+              
   test_all_python_versions:
     jobs:
       - lint_test:
