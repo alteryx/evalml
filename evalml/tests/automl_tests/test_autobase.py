@@ -4,6 +4,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassifier
 
+
 def test_pipeline_limits(capsys, X_y):
     X, y = X_y
 
