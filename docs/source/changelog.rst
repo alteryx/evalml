@@ -20,6 +20,7 @@ Changelog
         * Updated documentation to show max_time enhancements :pr:`189`
         * Updated release instructions for RTD :pr:`193`
         * Added notebooks to build process :pr:`212`
+        * Added contributing instructions :pr:`213`
     * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
