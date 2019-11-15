@@ -80,7 +80,7 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - run: sudo apt-get install python3-sphinx
+      - run: sudo make installdeps
       - run: make -C docs/ html
 
 workflows:
