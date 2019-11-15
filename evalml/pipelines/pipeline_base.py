@@ -119,11 +119,12 @@ class PipelineBase:
         # Initialize a new directed graph
         graph = graphviz.Digraph(name=self.name, format=format,
                                  graph_attr={'splines': 'ortho'})
+        graph.attr(rankdir='LR')
 
         # Draw components
         for component in self.component_list:
             parameters = '\l'.join([key + ' : ' + str(val) for key, val in component.parameters.items()])  # noqa: W605
-            label = '{%s |%s\l}' % (component.name, parameters)  # noqa: W605
+            label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
             graph.node(component.name, shape='record', label=label)
 
         # Draw edges
