@@ -80,8 +80,7 @@ jobs:
     steps:
       - checkout
       - install_dependencies
-      - run: cd docs
-      - run: make html
+      - run:  make -C docs/ html
 
 workflows:
   version: 2
