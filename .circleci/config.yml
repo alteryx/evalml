@@ -81,7 +81,7 @@ jobs:
       - checkout
       - install_dependencies
       - run: source test_python/bin/activate
-      - run: make -C docs/ html
+             make -C docs/ html
 
 workflows:
   version: 2
