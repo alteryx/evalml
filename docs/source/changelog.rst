@@ -12,6 +12,8 @@ Changelog
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
         * Adding basic pipeline structure visualization :pr:`211`
+    * Documentation Changes
+        * Added notebooks to build process :pr:`212`
 
 **v0.5.1 Nov. 15, 2019**
     * Enhancements
