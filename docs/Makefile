@@ -8,7 +8,7 @@ SOURCEDIR     = source
 GENDIR        = source/generated
 BUILDDIR      = build
 
-ALLSPHINXOPTS   = -v -d $(BUILDDIR)/doctrees source
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees source
 
 
 .PHONY: clean

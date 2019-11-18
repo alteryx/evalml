@@ -81,8 +81,7 @@ jobs:
       - checkout
       - install_dependencies
       - run: sudo apt update && sudo apt install -y pandoc
-      - run: source test_python/bin/activate
-             make -C docs/ html
+      - run: source test_python/bin/activate ; make -C docs/ html
 
 workflows:
   version: 2
