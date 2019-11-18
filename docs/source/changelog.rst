@@ -5,10 +5,18 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added ROC charts for binary classification :pr:`169`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.5.1 Nov. 15, 2019**
+    * Enhancements
         * Added basic outlier detection guardrail :pr:`151`
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
         * Updated .readthedocs.yaml to successfully build :pr:`188`
+        * Adding basic pipeline structure visualization :pr:`211`
     * Fixes
         * Removed MSLE from default additional objectives :pr:`203`
         * Fixed random_state passed in pipelines :pr:`204`
@@ -21,7 +29,6 @@ Changelog
         * Updated documentation to show max_time enhancements :pr:`189`
         * Updated release instructions for RTD :pr:`193`
         * Added contributing instructions :pr:`213`
-    * Testing Changes
 
 **v0.5.0 Oct. 29, 2019**
     * Enhancements
