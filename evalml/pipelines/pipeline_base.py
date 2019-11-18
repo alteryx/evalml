@@ -123,8 +123,12 @@ class PipelineBase:
 
         # Draw components
         for component in self.component_list:
-            parameters = '\l'.join([key + ' : ' + str(val) for key, val in component.parameters.items()])  # noqa: W605
-            label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
+            label = '%s\l' % (component.name)  # noqa: W605
+            if len(component.parameters) > 0:
+                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
+                                        else key + ' : ' + str(val)
+                                        for key, val in component.parameters.items()])  # noqa: W605
+                label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
             graph.node(component.name, shape='record', label=label)
 
         # Draw edges
