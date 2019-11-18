@@ -23,8 +23,12 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
         labels = [label] + (drop or [])
         y = feature_matrix[label].compute()
         X = feature_matrix.drop(labels=labels, axis=1).compute()
+
+        if n_rows:
+            X = X.head(n_rows)
+            y = y.head(n_rows)
     else:
-        feature_matrix = pd.read_csv(path, index_col=index, **kwargs)
+        feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
         labels = [label] + (drop or [])
         y = feature_matrix[label]
@@ -38,17 +42,8 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
         info = 'Number of training examples: {}'
         print(info.format(len(X)), end='\n')
 
-        if n_rows:
-            # number of training examples selected
-            info = 'Number of selected examples: {}'
-            print(info.format(n_rows), end='\n\n')
-
         # label distribution
         print(label_distribution(y))
-
-    if n_rows:
-        X = X.head(n_rows)
-        y = y.head(n_rows)
 
     return X, y
 
