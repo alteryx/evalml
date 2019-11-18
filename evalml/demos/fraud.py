@@ -1,12 +1,17 @@
 from evalml.preprocessing import load_data
 
 
-def load_fraud():
-    """Load credit card fraud dataset. Binary classification problem"""
+def load_fraud(n_rows=None):
+    """Load credit card fraud dataset. Binary classification problem
+
+    Args:
+        n_rows (int) : number of rows to return
+    """
     X, y = load_data(
         path="s3://featuretools-static/evalml/fraud_transactions.csv.tar.gz",
         index="id",
-        label="fraud"
+        label="fraud",
+        n_rows=n_rows
     )
 
     return X, y
