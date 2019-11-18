@@ -27,4 +27,4 @@ from evalml.pipelines import list_model_types, load_pipeline, save_pipeline
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
