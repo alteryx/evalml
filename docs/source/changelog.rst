@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Updating demo datasets to retain column names 
+        * Updating demo datasets to retain column names :pr:`214`
     * Documentation Changes
     * Testing Changes
 
