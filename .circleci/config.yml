@@ -75,6 +75,17 @@ jobs:
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
       - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
+  build_docs:
+    working_directory: ~/evalml/
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - install_dependencies
+      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
+      - run: source test_python/bin/activate ; make -C docs/ html
+      - run: ls docs/build/html
+
 workflows:
   version: 2
   changelog_updated:
@@ -84,6 +95,10 @@ workflows:
           filters:
             branches:
               ignore: /^master?/
+  build_docs:
+    jobs:
+      - build_docs:
+          name: "build docs"
   test_all_python_versions:
     jobs:
       - lint_test:
