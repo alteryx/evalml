@@ -8,7 +8,10 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoClassifier(AutoBase):
-    """Automatic pipeline search for classification problems"""
+    """Automatic pipeline search for classification problems
+
+    :ivar plot: PipelineSearchPlots object used for plotting
+    """
 
     def __init__(self,
                  objective=None,

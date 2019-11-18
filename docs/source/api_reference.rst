@@ -45,6 +45,16 @@ Models
     AutoClassifier
     AutoRegressor
 
+Plotting
+~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+    
+    PipelineSearchPlots
+
 Model Types
 ===========
 

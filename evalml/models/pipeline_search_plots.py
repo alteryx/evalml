@@ -5,14 +5,11 @@ from scipy import interp
 
 
 class PipelineSearchPlots:
-
+    """Make plots for the AutoClassifier/AutoRegressor class.
+    """
+    
     def __init__(self, data):
         self.data = data
-
-    def insert_data(self, data):
-        '''Add dictionary of data to the preexisting data.
-        '''
-        self.data.update(data)
 
     def get_roc_data(self, pipeline_id):
         """Gets data that can be used to create a ROC plot.
@@ -20,10 +17,10 @@ class PipelineSearchPlots:
         Returns:
             Dictionary containing metrics used to generate an ROC plot.
         """
-        if "results" not in self.data:
+        results = self.data.results
+        if len(results) == 0:
             raise RuntimeError("You must first call fit() on the AutoClassifier to generate ROC data.")
 
-        results = self.data["results"]
         if pipeline_id not in results:
             raise RuntimeError("Pipeline not found")
 
@@ -63,10 +60,13 @@ class PipelineSearchPlots:
             plotly.FigureWidget representing the ROC plot generated
 
         """
-        if "results" not in self.data:
+        results = self.data.results
+        if len(results) == 0:
             raise RuntimeError("You must first call fit() on the AutoClassifier to generate a ROC plot.")
 
-        results = self.data["results"]
+        if pipeline_id not in results:
+            raise RuntimeError("Pipeline not found")
+
         pipeline_name = results[pipeline_id]["pipeline_name"]
         roc_data = self.get_roc_data(pipeline_id)
         fpr_tpr_data = roc_data["fpr_tpr_data"]

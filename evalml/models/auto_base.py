@@ -71,7 +71,7 @@ class AutoBase:
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
-        self.plot = PipelineSearchPlots({"results": self.results})
+        self.plot = PipelineSearchPlots(self)
 
     def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
