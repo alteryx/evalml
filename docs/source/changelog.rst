@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Updating demo datasets to retain column names 
     * Documentation Changes
     * Testing Changes
 
