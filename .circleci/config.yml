@@ -72,14 +72,14 @@ jobs:
           name: Install make
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda config --add channels conda-forge
               conda activate curr_py
-              conda install make
+              conda install make -q -y
       - run:
           name: Install Graphviz
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
-              conda config --add channels conda-forge
               conda install python-graphviz -q -y
       - run:
           name: Install EvalML
