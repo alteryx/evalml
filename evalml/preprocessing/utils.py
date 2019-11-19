@@ -3,13 +3,14 @@ from dask import dataframe as dd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
-def load_data(path, index, label, drop=None, verbose=True, **kwargs):
+def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs):
     """Load features and labels from file(s).
 
     Args:
         path (str) : path to file(s)
         index (str) : column for index
         label (str) : column for labels
+        n_rows (int) : number of rows to return
         drop (list) : columns to drop
         verbose (bool) : whether to print information about features and labels
 
@@ -22,8 +23,12 @@ def load_data(path, index, label, drop=None, verbose=True, **kwargs):
         labels = [label] + (drop or [])
         y = feature_matrix[label].compute()
         X = feature_matrix.drop(labels=labels, axis=1).compute()
+
+        if n_rows:
+            X = X.head(n_rows)
+            y = y.head(n_rows)
     else:
-        feature_matrix = pd.read_csv(path, index_col=index, **kwargs)
+        feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
         labels = [label] + (drop or [])
         y = feature_matrix[label]
@@ -33,9 +38,9 @@ def load_data(path, index, label, drop=None, verbose=True, **kwargs):
         # number of features
         print(number_of_features(X.dtypes), end='\n\n')
 
-        # number of training examples
+        # number of total training examples
         info = 'Number of training examples: {}'
-        print(info.format(len(X)), end='\n\n')
+        print(info.format(len(X)), end='\n')
 
         # label distribution
         print(label_distribution(y))

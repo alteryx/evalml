@@ -5,6 +5,19 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.5.2 Nov. 18, 2019**
+    * Enhancements
+        * Adding basic pipeline structure visualization :pr:`211`
+    * Documentation Changes
+        * Added notebooks to build process :pr:`212`
+
+**v0.5.1 Nov. 15, 2019**
+    * Enhancements
         * Added basic outlier detection guardrail :pr:`151`
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
@@ -20,7 +33,8 @@ Changelog
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
         * Updated release instructions for RTD :pr:`193`
-    * Testing Changes
+        * Added notebooks to build process :pr:`212`
+        * Added contributing instructions :pr:`213`
 
 **v0.5.0 Oct. 29, 2019**
     * Enhancements
