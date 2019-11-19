@@ -19,10 +19,10 @@ class PipelineSearchPlots:
         """
         results = self.data.results
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() on the AutoClassifier to generate ROC data.")
+            raise RuntimeError("You must first call fit() to generate ROC data.")
 
         if pipeline_id not in results:
-            raise RuntimeError("Pipeline not found")
+            raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
         pipeline_results = results[pipeline_id]
         cv_data = pipeline_results["cv_data"]
@@ -60,14 +60,14 @@ class PipelineSearchPlots:
             plotly.FigureWidget representing the ROC plot generated
 
         """
+
         results = self.data.results
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() on the AutoClassifier to generate a ROC plot.")
+            raise RuntimeError("You must first call fit() to generate a ROC plot.")
 
         if pipeline_id not in results:
-            raise RuntimeError("Pipeline not found")
+            raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
-        pipeline_name = results[pipeline_id]["pipeline_name"]
         roc_data = self.get_roc_data(pipeline_id)
         fpr_tpr_data = roc_data["fpr_tpr_data"]
         roc_aucs = roc_data["roc_aucs"]
@@ -75,6 +75,8 @@ class PipelineSearchPlots:
         mean_tpr = roc_data["mean_tpr"]
         mean_auc = roc_data["mean_auc"]
         std_auc = roc_data["std_auc"]
+
+        pipeline_name = results[pipeline_id]["pipeline_name"]
 
         layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},

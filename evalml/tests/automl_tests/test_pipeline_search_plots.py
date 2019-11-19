@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import pandas as pd
 import plotly.graph_objects as go
+import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import PipelineSearchPlots
@@ -16,11 +17,12 @@ def test_generate_roc(X_y):
 
     class MockAuto(AutoBase):
         def __init__(self):
+            self.results = {}
 
+        def fit(self):
             pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
-            results = {}
             cv_data = []
             for train, test in cv.split(X, y):
                 if isinstance(X, pd.DataFrame):
@@ -41,13 +43,23 @@ def test_generate_roc(X_y):
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
-            results.update({"results": {0: {"cv_data": cv_data,
-                                            "pipeline_name": pipeline.name}}})
-            self.results = results
+            self.results.update({0: {"cv_data": cv_data,
+                                     "pipeline_name": pipeline.name}})
 
     mock_clf = MockAuto()
-
     search_plots = PipelineSearchPlots(mock_clf)
+
+    with pytest.raises(RuntimeError, match="You must first call fit"):
+        search_plots.get_roc_data(0)
+    with pytest.raises(RuntimeError, match="You must first call fit"):
+        search_plots.generate_roc_plot(0)
+
+    mock_clf.fit()
+
+    with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
+        search_plots.get_roc_data(1)
+    with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
+        search_plots.generate_roc_plot(1)
 
     roc_data = search_plots.get_roc_data(0)
     assert len(roc_data["fpr_tpr_data"]) == 5
