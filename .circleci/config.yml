@@ -173,7 +173,7 @@ workflows:
         - win_unit_tests:
             name: "windows python 3.7 unit tests"
             python_version: "3.7"
-  linux_test_all_python_versions:
+  test_all_python_versions:
     jobs:
         - lint_test:
             name: "python 3.5 lint test"

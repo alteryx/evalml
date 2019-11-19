@@ -9,6 +9,7 @@ Changelog
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
     * Testing Changes
+        * Added support for testing on Windows with CircleCI :pr:`226`
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
