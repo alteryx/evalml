@@ -7,6 +7,7 @@ Changelog
         * Added ROC charts for binary classification :pr:`169`
     * Fixes
     * Changes
+        * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
     * Testing Changes
 
