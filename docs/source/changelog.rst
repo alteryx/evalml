@@ -7,6 +7,7 @@ Changelog
     * Fixes
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
+        * Moving pipeline visualization to PipelinePlots class :pr:`228`
     * Documentation Changes
     * Testing Changes
 
