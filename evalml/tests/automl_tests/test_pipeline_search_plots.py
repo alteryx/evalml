@@ -47,7 +47,7 @@ def test_generate_roc(X_y):
 
     mock_clf = MockAuto()
 
-    search_plots = PipelineSearchPlots(mock_clf.results)
+    search_plots = PipelineSearchPlots(mock_clf)
 
     roc_data = search_plots.get_roc_data(0)
     assert len(roc_data["fpr_tpr_data"]) == 5

@@ -7,7 +7,7 @@ from scipy import interp
 class PipelineSearchPlots:
     """Make plots for the AutoClassifier/AutoRegressor class.
     """
-    
+
     def __init__(self, data):
         self.data = data
 
