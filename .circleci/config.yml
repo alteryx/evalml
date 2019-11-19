@@ -1,5 +1,7 @@
 version: 2.1
 
+orbs:
+  windows: circleci/windows@2.0.0
 
 executors:
   python:
@@ -35,7 +37,62 @@ jobs:
         - run: |
             source test_python/bin/activate
             make lint
-
+  win_unit_tests:
+    working_directory: C:/evalml
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+    executor:
+      name: windows/default
+    steps:
+      - checkout
+      - run:
+          name: Download Miniconda
+          command: |
+              $File = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
+              $Uri = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
+              $ProgressPreference = "silentlyContinue"
+              Invoke-WebRequest -Uri $Uri -Outfile $File
+              $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
+              $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+              if ($hashFromFile.Hash -ne "$hashFromUrl") {
+                Throw "File hashes did not match!"
+              }
+      - run:
+          name: Install Miniconda
+          command: start /wait C:\featuretools\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
+          shell: cmd.exe
+      - run:
+          name: Set Python Version
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda create -n curr_py python=<< parameters.python_version >> anaconda
+      - run:
+          name: Install Graphviz
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda config --add channels conda-forge
+              conda install python-graphviz -q -y
+      - run:
+          name: Install EvalML
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              python -m pip install --upgrade pip
+              python -m pip install .
+              python -m pip install -r test-requirements.txt
+      - run:
+          name: Run Unit Tests
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              pytest
+      - store_test_results:
+          path: C:/evalml/test-reports
+      - store_artifacts:
+          path: C:/evalml/test-reports
   unit_tests:
     parameters:
       python_version:
@@ -65,7 +122,7 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov
-  
+
   changelog_updated:
     working_directory: ~/evalml
     docker:
@@ -101,22 +158,31 @@ workflows:
           name: "build docs"
   test_all_python_versions:
     jobs:
-      - lint_test:
-          name: "python 3.5 lint test"
-          python_version: "3.5"
-      - lint_test:
-          name: "python 3.6 lint test"
-          python_version: "3.6"
-      - lint_test:
-          name: "python 3.7 lint test"
-          python_version: "3.7"
-      - unit_tests:
-          name: "python 3.5 unit tests"
-          python_version: "3.5"
-      - unit_tests:
-          name: "python 3.6 unit tests"
-          python_version: "3.6"
-      - unit_tests:
-          name: "python 3.7 unit tests"
-          python_version: "3.7"
-          codecov: true
+        - lint_test:
+            name: "python 3.5 lint test"
+            python_version: "3.5"
+        - lint_test:
+            name: "python 3.6 lint test"
+            python_version: "3.6"
+        - lint_test:
+            name: "python 3.7 lint test"
+            python_version: "3.7"
+        - win_unit_tests:
+            name: "Windows python 3.5 unit tests"
+            python_version: "3.5"
+        - win_unit_tests:
+            name: "Windows python 3.6 unit tests"
+            python_version: "3.6"
+        - win_unit_tests:
+            name: "Windows python 3.7 unit tests"
+            python_version: "3.7"
+        - unit_tests:
+            name: "Linux python 3.5 unit tests"
+            python_version: "3.5"
+        - unit_tests:
+            name: "Linux python 3.6 unit tests"
+            python_version: "3.6"
+        - unit_tests:
+            name: "Linux python 3.7 unit tests"
+            python_version: "3.7"
+            codecov: true
