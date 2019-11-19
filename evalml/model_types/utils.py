@@ -13,7 +13,7 @@ def handle_model_types(model_type):
 
     if isinstance(model_type, str):
         try:
-            tpe = ModelType[model_type.upper()]
+            tpe = ModelTypes[model_type.upper()]
         except KeyError:
             raise KeyError('Model type \'{}\' does not exist'.format(model_type))
         return tpe
