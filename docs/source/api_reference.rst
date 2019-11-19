@@ -9,7 +9,6 @@ Demo Datasets
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     load_fraud
@@ -73,6 +72,7 @@ Pipelines
     XGBoostPipeline
     LogisticRegressionPipeline
     RFRegressionPipeline
+    LinearRegressionPipeline
 
 
 .. currentmodule:: evalml.objectives

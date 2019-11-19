@@ -72,7 +72,7 @@ def test_missing_attributes(X_y):
         component_type = ComponentTypes.REGRESSOR
         _needs_fitting = True
 
-    class mockComponentType(ComponentBase):
+    class mockComponentTypes(ComponentBase):
         name = "mock"
         _needs_fitting = True
 
@@ -83,7 +83,7 @@ def test_missing_attributes(X_y):
         mockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
     with pytest.raises(AttributeError, match="Component missing attribute: `component_type`"):
-        mockComponentType(parameters={}, component_obj=None, random_state=0)
+        mockComponentTypes(parameters={}, component_obj=None, random_state=0)
 
 
 def test_missing_methods_on_components(X_y):
