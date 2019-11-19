@@ -93,7 +93,7 @@ class PipelineBase:
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To plot pipelines, a graphviz backend is required.\n" +
+                "To plot entity sets, a graphviz backend is required.\n" +
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
