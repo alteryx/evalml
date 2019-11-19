@@ -69,6 +69,12 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda create -n curr_py python=<< parameters.python_version >>
       - run:
+          name: Install make
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda install make
+      - run:
           name: Install Graphviz
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
@@ -159,13 +165,13 @@ workflows:
   windows_test_all_python_versions:
     jobs:
         - win_unit_tests:
-            name: "python 3.5 unit tests"
+            name: "windows python 3.5 unit tests"
             python_version: "3.5"
         - win_unit_tests:
-            name: "python 3.6 unit tests"
+            name: "windows python 3.6 unit tests"
             python_version: "3.6"
         - win_unit_tests:
-            name: "python 3.7 unit tests"
+            name: "windows python 3.7 unit tests"
             python_version: "3.7"
   linux_test_all_python_versions:
     jobs:
@@ -179,12 +185,12 @@ workflows:
             name: "python 3.7 lint test"
             python_version: "3.7"
         - unit_tests:
-            name: "python 3.5 unit tests"
+            name: "linux python 3.5 unit tests"
             python_version: "3.5"
         - unit_tests:
-            name: "python 3.6 unit tests"
+            name: "linux python 3.6 unit tests"
             python_version: "3.6"
         - unit_tests:
-            name: "python 3.7 unit tests"
+            name: "linux python 3.7 unit tests"
             python_version: "3.7"
             codecov: true
