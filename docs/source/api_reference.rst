@@ -69,7 +69,6 @@ Pipelines
     get_pipelines
     save_pipeline
     load_pipeline
-    plot_feature_importances
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline

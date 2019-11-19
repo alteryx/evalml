@@ -347,5 +347,5 @@ class PipelineBase:
             }
         }
 
-        fig = go.FigureWidget(data=data, layout=layout)
+        fig = go.Figure(data=data, layout=layout)
         return fig
