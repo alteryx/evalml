@@ -39,7 +39,7 @@ Models
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: test.rst
     :nosignatures:
 
     AutoClassifier

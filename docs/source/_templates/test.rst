@@ -17,6 +17,12 @@
       ~{{ name }}.{{ item }}
    {%- endif %}
    {%- endfor %}
+
+      
+   {{ ([objname] + ["plot"] + ["get_roc_data"]) | join('.') }}
+
    {% endif %}
+
    {% endblock %}
+
 
