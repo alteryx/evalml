@@ -14,10 +14,7 @@
 
 import os
 import sys
-import sphinx
 from sphinx.util import rpartition
-
-from sphinx.ext.autosummary import _import_by_name
 from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 import evalml
 
