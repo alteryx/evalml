@@ -18,6 +18,9 @@ from evalml.utils import Logger, convert_to_seconds
 
 
 class AutoBase:
+
+    plot = PipelineSearchPlots
+
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):

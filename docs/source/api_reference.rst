@@ -45,15 +45,20 @@ Models
     AutoClassifier
     AutoRegressor
 
+
 Plotting
-~~~~~~~~~~~~~~~
+~~~~~~~~
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: accessor_method.rst
     :nosignatures:
-    
-    PipelineSearchPlots
+
+    AutoClassifier.plot.get_roc_data
+    AutoClassifier.plot.generate_roc_plot
+    AutoRegressor.plot.get_roc_data
+    AutoRegressor.plot.generate_roc_plot
+
 
 Model Types
 ===========

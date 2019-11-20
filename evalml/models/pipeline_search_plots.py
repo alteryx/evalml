@@ -5,10 +5,16 @@ from scipy import interp
 
 
 class PipelineSearchPlots:
-    """Make plots for the AutoClassifier/AutoRegressor class.
+    """Plots for the AutoClassifier/AutoRegressor class.
     """
 
+
     def __init__(self, data):
+        """Make plots for the AutoClassifier/AutoRegressor class.
+
+        Args:
+            data (AutoClassifier or AutoRegressor): Automated pipeline search object
+        """
         self.data = data
 
     def get_roc_data(self, pipeline_id):
@@ -57,7 +63,7 @@ class PipelineSearchPlots:
         using the data returned from generate_roc_plot().
 
         Returns:
-            plotly.FigureWidget representing the ROC plot generated
+            plotly.Figure representing the ROC plot generated
 
         """
 
@@ -98,5 +104,4 @@ class PipelineSearchPlots:
                                line=dict(dash='dash')))
 
         figure = go.Figure(layout=layout, data=data)
-        fig_wid = go.FigureWidget(figure)
-        return fig_wid
+        return figure
