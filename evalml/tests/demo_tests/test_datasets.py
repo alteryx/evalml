@@ -5,6 +5,9 @@ def test_fraud():
     X, y = demos.load_fraud()
     assert X.shape == (99992, 12)
 
+    X, y = demos.load_fraud(1000)
+    assert X.shape == (1000, 12)
+
 
 def test_wine():
     X, y = demos.load_wine()

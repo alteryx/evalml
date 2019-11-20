@@ -4,5 +4,7 @@ from sklearn.datasets import load_diabetes as load_diabetes_sk
 
 def load_diabetes():
     """Load diabetes dataset. Regression problem"""
-    X, y = load_diabetes_sk(return_X_y=True)
-    return pd.DataFrame(X), pd.Series(y)
+    data = load_diabetes_sk()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    return X, y
