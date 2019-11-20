@@ -67,7 +67,7 @@ jobs:
               }
       - run:
           name: Install Miniconda
-          command: start /wait C:\evalml\<< parameters.miniconda_pkg_name >>/InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
+          command: start /wait "C:\evalml\<< parameters.miniconda_pkg_name >>" /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
           name: Set Python Version
@@ -157,17 +157,17 @@ jobs:
 
 workflows:
   version: 2
-  changelog_updated:
-    jobs:
-      - changelog_updated:
-          name: "changelog updated"
-          filters:
-            branches:
-              ignore: /^master?/
-  build_docs:
-    jobs:
-      - build_docs:
-          name: "build docs"
+  # changelog_updated:
+  #   jobs:
+  #     - changelog_updated:
+  #         name: "changelog updated"
+  #         filters:
+  #           branches:
+  #             ignore: /^master?/
+  # build_docs:
+  #   jobs:
+  #     - build_docs:
+  #         name: "build docs"
   windows_test_all_python_versions:
     jobs:
         - win_unit_tests:
@@ -176,36 +176,36 @@ workflows:
             # filters:
             #   branches:
             #     only: master
-        - win_unit_tests:
-            name: "windows python 3.6 unit tests"
-            python_version: "3.6"
-            # filters:
-            #   branches:
-            #     only: master
-        - win_unit_tests:
-            name: "windows python 3.7 unit tests"
-            python_version: "3.7"
-            # filters:
-            #   branches:
-            #     only: master
-  test_all_python_versions:
-    jobs:
-        - lint_test:
-            name: "python 3.5 lint test"
-            python_version: "3.5"
-        - lint_test:
-            name: "python 3.6 lint test"
-            python_version: "3.6"
-        - lint_test:
-            name: "python 3.7 lint test"
-            python_version: "3.7"
-        - unit_tests:
-            name: "linux python 3.5 unit tests"
-            python_version: "3.5"
-        - unit_tests:
-            name: "linux python 3.6 unit tests"
-            python_version: "3.6"
-        - unit_tests:
-            name: "linux python 3.7 unit tests"
-            python_version: "3.7"
-            codecov: true
+  #       - win_unit_tests:
+  #           name: "windows python 3.6 unit tests"
+  #           python_version: "3.6"
+  #           # filters:
+  #           #   branches:
+  #           #     only: master
+  #       - win_unit_tests:
+  #           name: "windows python 3.7 unit tests"
+  #           python_version: "3.7"
+  #           # filters:
+  #           #   branches:
+  #           #     only: master
+  # test_all_python_versions:
+  #   jobs:
+  #       - lint_test:
+  #           name: "python 3.5 lint test"
+  #           python_version: "3.5"
+  #       - lint_test:
+  #           name: "python 3.6 lint test"
+  #           python_version: "3.6"
+  #       - lint_test:
+  #           name: "python 3.7 lint test"
+  #           python_version: "3.7"
+  #       - unit_tests:
+  #           name: "linux python 3.5 unit tests"
+  #           python_version: "3.5"
+  #       - unit_tests:
+  #           name: "linux python 3.6 unit tests"
+  #           python_version: "3.6"
+  #       - unit_tests:
+  #           name: "linux python 3.7 unit tests"
+  #           python_version: "3.7"
+  #           codecov: true
