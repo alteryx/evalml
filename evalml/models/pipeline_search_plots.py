@@ -8,7 +8,6 @@ class PipelineSearchPlots:
     """Plots for the AutoClassifier/AutoRegressor class.
     """
 
-
     def __init__(self, data):
         """Make plots for the AutoClassifier/AutoRegressor class.
 
