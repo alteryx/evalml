@@ -67,7 +67,7 @@ jobs:
               }
       - run:
           name: Install Miniconda
-          command: start /wait "C:\evalml\<< parameters.miniconda_pkg_name >>" /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
+          command: start /wait C:\evalml\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
           name: Set Python Version
