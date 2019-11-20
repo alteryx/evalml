@@ -179,15 +179,15 @@ workflows:
         - win_unit_tests:
             name: "windows python 3.6 unit tests"
             python_version: "3.6"
-            # filters:
-            #   branches:
-            #     only: master
+            filters:
+              branches:
+                only: master
         - win_unit_tests:
             name: "windows python 3.7 unit tests"
             python_version: "3.7"
-            # filters:
-            #   branches:
-            #     only: master
+            filters:
+              branches:
+                only: master
   test_all_python_versions:
     jobs:
         - lint_test:
