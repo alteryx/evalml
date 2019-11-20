@@ -284,10 +284,11 @@ class AutoBase:
         Arguments:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
-                about pipeline. Defaults to false
+                about pipeline. Defaults to False.
 
         Returns:
-            description
+            Description of specified pipeline. Includes information such as
+            type of pipeline components, problem, training time, cross validation, etc.
         """
         if pipeline_id not in self.results:
             raise RuntimeError("Pipeline not found")
