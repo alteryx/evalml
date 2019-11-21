@@ -12,6 +12,9 @@ from evalml.utils import Logger
 
 class PipelineBase:
 
+    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
+    plot = PipelinePlots
+
     def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -77,6 +80,14 @@ class PipelineBase:
         return name
 
     def get_component(self, name):
+        """Get the first component object in the pipeline with a specific name.
+
+        Arguments:
+            name (str): name of component to get
+
+        Returns:
+            Component in pipeline with the specified name if it exists, else None
+        """
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):

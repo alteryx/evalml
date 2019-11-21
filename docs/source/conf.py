@@ -17,6 +17,8 @@ import sys
 
 import evalml
 
+from sphinx.ext.autodoc import MethodDocumenter, Documenter
+
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
 
@@ -204,5 +206,36 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
+
+class AccessorLevelDocumenter(Documenter):
+    """
+    Specialized Documenter subclass for objects on accessor level (methods,
+    attributes).
+    """
+    def resolve_name(self, modname, parents, path, base):
+        modname = 'evalml'
+        mod_cls = path.rstrip('.')
+        mod_cls = mod_cls.split('.')
+        return modname, mod_cls + [base]
+
+
+class AccessorCallableDocumenter(AccessorLevelDocumenter, MethodDocumenter):
+    """
+    This documenter lets us removes .__call__ from the method signature for
+    callable accessors like Series.plot
+    """
+
+    objtype = "accessorcallable"
+    directivetype = "method"
+
+    # lower than MethodDocumenter; otherwise the doc build prints warnings
+    priority = 0.5
+
+    def format_name(self):
+        return MethodDocumenter.format_name(self).rstrip(".__call__")
+
+
+
 def setup(app):
     app.add_stylesheet("style.css")
+    app.add_autodocumenter(AccessorCallableDocumenter)
