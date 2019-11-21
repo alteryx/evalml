@@ -5,7 +5,6 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
-        * Add python-dateutil to requirements :pr:`234`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
