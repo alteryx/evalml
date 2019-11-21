@@ -10,6 +10,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
+        * Added support for doctests :pr:`233`
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
