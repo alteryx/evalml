@@ -5,11 +5,13 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
+        * Lower botocore requirement :pr:`235`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
+        * Added support for doctests :pr:`233`
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
