@@ -230,5 +230,6 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def setup(app):
+    app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorMethodDocumenter)
