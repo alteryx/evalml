@@ -13,7 +13,7 @@ class AutoClassifier(AutoBase):
     def __init__(self,
                  objective=None,
                  multiclass=False,
-                 max_pipelines=5,
+                 max_pipelines=None,
                  max_time=None,
                  model_types=None,
                  cv=None,
@@ -22,7 +22,6 @@ class AutoClassifier(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
-                 null_threshold=0.95,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -32,10 +31,13 @@ class AutoClassifier(AutoBase):
 
             multiclass (bool): If True, expecting multiclass data. By default: False.
 
-            max_pipelines (int): maximum number of pipelines to search
+            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
-            max_time (int): maximum time in seconds to search for pipelines.
-                won't start new pipeline search after this duration has elapsed
+            max_time (int, str): Maximum time to search for pipelines.
+                This will not start a new pipeline search after the duration
+                has elapsed. If it is an integer, then the time will be in seconds.
+                For strings, time can be specified as seconds, minutes, or hours.
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("classification") to see options.
@@ -55,9 +57,6 @@ class AutoClassifier(AutoBase):
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
-
-            null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
-                null values for the feature to be considered "highly-null". Default is 0.95.
 
             random_state (int): the random_state
 
@@ -89,9 +88,8 @@ class AutoClassifier(AutoBase):
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
-            null_threshold=null_threshold,
             random_state=random_state,
-            verbose=verbose,
+            verbose=verbose
         )
 
     def set_problem_type(self, objective, multiclass):

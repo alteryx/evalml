@@ -18,7 +18,7 @@ from evalml.utils import Logger, convert_to_seconds
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, null_threshold, random_state, verbose):
+                 add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -29,7 +29,6 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
-        self.null_threshold = null_threshold
         self.verbose = verbose
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
@@ -106,11 +105,15 @@ class AutoBase:
         else:
             self.logger.log("Lower score is better.\n")
 
-        self.logger.log("Searching up to %s pipelines. " % self.max_pipelines, new_line=False)
+        # Set default max_pipeline if none specified
+        if self.max_pipelines is None and self.max_time is None:
+            self.max_pipelines = 5
+            self.logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
+
+        if self.max_pipelines:
+            self.logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
             self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        else:
-            self.logger.log("No time limit is set. Set one using max_time parameter.\n")
         self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
@@ -119,22 +122,25 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if self.null_threshold is not None:
-            highly_null_columns = guardrails.detect_highly_null(X, percent_threshold=self.null_threshold)
-            if len(highly_null_columns) > 0:
-                self.logger.log("WARNING: {} columns are at least {}% null.".format(', '.join(highly_null_columns), self.null_threshold * 100))
-
-        pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
-        start = time.time()
-        for n in pbar:
-            elapsed = time.time() - start
-            if self.max_time and elapsed > self.max_time:
-                self.logger.log("\n\nMax time elapsed. Stopping search early.")
-                break
-            self._do_iteration(X, y, pbar, raise_errors)
-
-        pbar.close()
-
+        if self.max_pipelines is None:
+            start = time.time()
+            pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
+            pbar._instances.clear()
+            while time.time() - start <= self.max_time:
+                self._do_iteration(X, y, pbar, raise_errors)
+            pbar.close()
+        else:
+            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
+            pbar._instances.clear()
+            start = time.time()
+            for n in pbar:
+                elapsed = time.time() - start
+                if self.max_time and elapsed > self.max_time:
+                    pbar.close()
+                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
+                    break
+                self._do_iteration(X, y, pbar, raise_errors)
+            pbar.close()
         self.logger.log("\n✔ Optimization finished")
 
     def check_multiclass(self, y):
@@ -152,7 +158,6 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
-
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
@@ -187,11 +192,11 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train)
                 score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
-
             except Exception as e:
                 if raise_errors:
                     raise e
-                pbar.write(str(e))
+                if pbar:
+                    pbar.write(str(e))
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
@@ -287,22 +292,12 @@ class AutoBase:
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
 
-        self.logger.log_title("Pipeline Description")
-
-        better_string = "lower is better"
-        if pipeline.objective.greater_is_better:
-            better_string = "greater is better"
-
-        self.logger.log("Pipeline Name: %s" % pipeline.name)
-        self.logger.log("Model type: %s" % pipeline.model_type)
-        self.logger.log("Objective: %s (%s)" % (pipeline.objective.name, better_string))
-        self.logger.log("Total training time (including CV): %.1f seconds\n" % pipeline_results["training_time"])
-
-        self.logger.log_subtitle("Parameters")
-        for item in pipeline_results["parameters"].items():
-            self.logger.log("• %s: %s" % item)
-
-        self.logger.log_subtitle("\nCross Validation")
+        pipeline.describe()
+        self.logger.log_subtitle("Training")
+        # Ideally, we want this information available on pipeline instead
+        self.logger.log("Training for {} problems.".format(self.problem_type))
+        self.logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
+        self.logger.log_subtitle("Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
             self.logger.log("Warning! High variance within cross validation scores. " +

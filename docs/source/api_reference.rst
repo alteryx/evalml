@@ -175,3 +175,5 @@ Guardrails
 
     detect_highly_null
     detect_label_leakage
+    detect_outliers
+    detect_id_columns

@@ -4,6 +4,43 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Updating demo datasets to retain column names :pr:`223`
+        * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
+    * Documentation Changes
+    * Testing Changes
+        * Added support for testing on Windows with CircleCI :pr:`226`
+        * Added support for doctests :pr:`233`
+
+**v0.5.2 Nov. 18, 2019**
+    * Enhancements
+        * Adding basic pipeline structure visualization :pr:`211`
+    * Documentation Changes
+        * Added notebooks to build process :pr:`212`
+
+**v0.5.1 Nov. 15, 2019**
+    * Enhancements
+        * Added basic outlier detection guardrail :pr:`151`
+        * Added basic ID column guardrail :pr:`135`
+        * Added support for unlimited pipelines with a max_time limit :pr:`70`
+        * Updated .readthedocs.yaml to successfully build :pr:`188`
+    * Fixes
+        * Removed MSLE from default additional objectives :pr:`203`
+        * Fixed random_state passed in pipelines :pr:`204`
+        * Fixed slow down in RFRegressor :pr:`206`
+    * Changes
+        * Pulled information for describe_pipeline from pipeline's new describe method :pr:`190`
+        * Refactored pipelines :pr:`108`
+        * Removed guardrails from Auto(*) :pr:`202`, :pr:`208`
+    * Documentation Changes
+        * Updated documentation to show max_time enhancements :pr:`189`
+        * Updated release instructions for RTD :pr:`193`
+        * Added notebooks to build process :pr:`212`
+        * Added contributing instructions :pr:`213`
+
+**v0.5.0 Oct. 29, 2019**
+    * Enhancements
         * Added basic one hot encoding :pr:`73`
         * Use enums for model_type :pr:`110`
         * Support for splitting regression datasets :pr:`112`
@@ -21,13 +58,13 @@ Changelog
         * Moved logging to its own module :pr:`119`
         * Show progress bar history :pr:`111`
         * Using cloudpickle instead of pickle to allow unloading of custom objectives :pr:`113`
-        * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
+        * Removed render.py :pr:`154`
     * Documentation Changes
         * Update release instructions :pr:`140`
         * Include additional_objectives parameter :pr:`124`
         * Added Changelog :pr:`136`
     * Testing Changes
-        * Code coverage pr:`90`
+        * Code coverage :pr:`90`
         * Added CircleCI tests for other Python versions :pr:`104`
         * Added doc notebooks as tests :pr:`139`
         * Test metadata for CircleCI and 2 core parallelism :pr:`137`
@@ -60,9 +97,9 @@ Changelog
 **v0.2.0 Aug. 13, 2019**
     * Enhancements
         * Created fraud detection objective :pr:`4`
-    
+
 **v0.1.0 July. 31, 2019**
-    * *First Release* 
+    * *First Release*
     * Enhancements
         * Added lead scoring objecitve :pr:`1`
         * Added basic classifier :pr:`1`
