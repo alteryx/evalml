@@ -19,6 +19,7 @@ from evalml.utils import Logger, convert_to_seconds
 
 class AutoBase:
 
+    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,

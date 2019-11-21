@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added ROC charts for binary classification :pr:`169`
+        * Added ROC charts for binary classification and introduce PipelineSearchPlots class :pr:`169`
     * Fixes
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
