@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
+        * Lower botocore requirement :pr:`235`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
