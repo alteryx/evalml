@@ -5,7 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
-        * Add python-dateutil to requirements :pr:`234`
+        * Lower botocore requirement :pr:`235`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
