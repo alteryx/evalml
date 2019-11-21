@@ -16,11 +16,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/tests
+	pytest evalml/ --doctest-modules --doctest-continue-on-failure
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/tests -n 2 --cov=evalml --junitxml=test-reports/junit.xml
+	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
