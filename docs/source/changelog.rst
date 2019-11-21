@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added ROC charts for binary classification and introduce PipelineSearchPlots class :pr:`169`
     * Fixes
+        * Add python-dateutil to requirements :pr:`234`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes

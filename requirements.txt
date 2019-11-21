@@ -1,3 +1,4 @@
+python-dateutil>=2.1,<2.8.1
 scipy>=1.2.1
 scikit-learn>=0.21.3
 dask[complete]>=2.1.0
