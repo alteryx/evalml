@@ -52,8 +52,8 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Args:
-        X (DataFrame) : features
-        y (Series) : labels
+        X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+        y (Series) : labels of length [n_samples]
         regression (bool): if true, do not use stratified split
         test_size (float) : percent of train set to holdout for testing
         random_state (int) : seed for the random number generator
@@ -61,6 +61,11 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     Returns:
         DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
     """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    if not isinstance(y, pd.Series):
+        y = pd.Series(y)
+
     if regression:
         CV_method = ShuffleSplit(n_splits=1,
                                  test_size=test_size,

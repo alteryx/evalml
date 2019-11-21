@@ -1,6 +1,5 @@
 import os
 
-import pandas as pd
 import pytest
 
 from evalml.model_types import ModelTypes
@@ -72,8 +71,6 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path)
 
 def test_reproducibility(X_y):
     X, y = X_y
-    X = pd.DataFrame(X)
-
     objective = FraudCost(
         retry_percentage=.5,
         interchange_fee=.02,
