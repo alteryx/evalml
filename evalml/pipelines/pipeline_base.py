@@ -240,7 +240,7 @@ class PipelineBase:
         """Make predictions using selected features.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             Series : estimated labels
@@ -268,7 +268,7 @@ class PipelineBase:
         """Make probability estimates for labels.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             DataFrame : probability estimates
@@ -288,8 +288,8 @@ class PipelineBase:
         """Evaluate model performance on current and additional objectives
 
         Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (Series) : true labels of length [n_samples]
             other_objectives (list): list of other objectives to score
 
         Returns:
