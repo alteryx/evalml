@@ -103,4 +103,4 @@ class PipelineSearchPlots:
                                line=dict(dash='dash')))
 
         figure = go.Figure(layout=layout, data=data)
-        return figure
+        return go.FigureWidget(figure)
