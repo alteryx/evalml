@@ -46,20 +46,6 @@ Models
     AutoRegressor
 
 
-Plotting
-~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: accessor_method.rst
-    :nosignatures:
-
-    AutoClassifier.plot.get_roc_data
-    AutoClassifier.plot.generate_roc_plot
-    AutoRegressor.plot.get_roc_data
-    AutoRegressor.plot.generate_roc_plot
-
-
 Model Types
 ===========
 

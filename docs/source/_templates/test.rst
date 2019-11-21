@@ -18,8 +18,11 @@
    {%- endif %}
    {%- endfor %}
 
+      .. autosummary::
+         :nosignatures:
+         :toctree: methods
       
-   {{ ([objname] + ["plot"] + ["get_roc_data"]) | join('.') }}
+      {{ ([objname] + ["plot"] + ["get_roc_data"]) | join('.') }}
 
    {% endif %}
 
