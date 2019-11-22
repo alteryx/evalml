@@ -270,6 +270,14 @@ class AutoBase:
         self.trained_pipelines[pipeline_id] = trained_pipeline
 
     def get_pipeline(self, pipeline_id):
+        """Retrives trained pipeline
+
+        Arguments:
+            pipeline_id (int): pipeline to retrieve
+        
+        Returns:
+            Pipeline: pipeline associated with id
+        """
         if pipeline_id not in self.trained_pipelines:
             raise RuntimeError("Pipeline not found")
 

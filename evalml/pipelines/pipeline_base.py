@@ -74,14 +74,13 @@ class PipelineBase:
         return name
 
     def visualize(self, to_file=None):
-        """
-        Create a UML diagram-ish graph of our pipeline.
-        Args:
-            to_file (str, optional) : Path to where the plot should be saved.
-                If set to None (as by default), the plot will not be saved.
-        Returns:
-            graphviz.Digraph : Graph object that can directly be displayed in
-                Jupyter notebooks.
+        """Create a UML diagram-ish graph of our pipeline.
+        
+        Arguments: 
+            to_file (str, optional) : Path to where the plot should be saved. If set to None (as by default), the plot will not be saved.
+       
+        Returns: 
+            graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
         """
         try:
             import graphviz
