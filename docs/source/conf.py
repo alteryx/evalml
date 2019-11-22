@@ -14,6 +14,7 @@
 
 import os
 import sys
+import subprocess
 
 import evalml
 
@@ -204,5 +205,11 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
+
 def setup(app):
     app.add_stylesheet("style.css")
+    app.connect('build-finished', post_build)
+
+
+def post_build(app, Exception):
+    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "_build/html/_static/js/theme.js"])
