@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class LinearRegressionPipeline(PipelineBase):
-    """Linear Regression Pipeline for regression problems."""
+    """Linear Regression Pipeline for regression problems"""
     name = "Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
     problem_types = [ProblemTypes.REGRESSION]
