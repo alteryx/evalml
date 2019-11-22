@@ -10,7 +10,7 @@ class SKOptTuner:
         Arguments:
             space (dict): search space for hyperparameters
             random_state (int): random state
-        
+
         Returns:
             SKoptTuner: self
         """
@@ -35,7 +35,7 @@ class SKOptTuner:
 
         Arguments:
             None:
-        
+
         Returns:
             dict: proposed hyper-parameters
         """

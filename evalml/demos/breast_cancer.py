@@ -4,7 +4,7 @@ from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
 
 def load_breast_cancer():
     """Load breast cancer dataset. Multiclass problem
-    
+
     Returns:
         pd.DataFrame, pd.Series: X, y
     """

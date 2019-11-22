@@ -274,7 +274,7 @@ class AutoBase:
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-        
+
         Returns:
             Pipeline: pipeline associated with id
         """

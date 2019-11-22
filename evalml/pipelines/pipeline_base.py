@@ -75,11 +75,11 @@ class PipelineBase:
 
     def visualize(self, to_file=None):
         """Create a UML diagram-ish graph of our pipeline.
-        
-        Arguments: 
+
+        Arguments:
             to_file (str, optional) : Path to where the plot should be saved. If set to None (as by default), the plot will not be saved.
-       
-        Returns: 
+
+        Returns:
             graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
         """
         try:
@@ -148,7 +148,7 @@ class PipelineBase:
 
         Arguments:
             name (str): name of component
-        
+
         Returns:
             Component: component to return
 

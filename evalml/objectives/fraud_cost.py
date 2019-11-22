@@ -39,29 +39,43 @@ class FraudCost(ObjectiveBase):
 
     def decision_function(self, y_predicted, extra_cols, threshold):
         """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold
-        
+
             Arguments:
                 y_predicted (pd.Series): predicted labels
                 extra_cols (pd.DataFrame): extra data needed
                 threshold (float): threshold to determine if transaction is fraud
-            
+
             Returns:
                 pd.Series: series of predicted fraud label using extra cols and threshold
         """
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
         transformed_probs = (y_predicted * extra_cols[self.amount_col])
         return transformed_probs > threshold
 
     def objective_function(self, y_predicted, y_true, extra_cols):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount
-        
+
             Arguments:
                 y_predicted (pd.Series): predicted fraud labels
                 y_true (pd.Series): true fraud labels
                 extra_cols (pd.DataFrame): extra data needed
-            
+
             Returns:
                 float: amount lost to fraud per transaction
         """
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
 
         # extract transaction using the amount columns in users data
         transaction_amount = extra_cols[self.amount_col]

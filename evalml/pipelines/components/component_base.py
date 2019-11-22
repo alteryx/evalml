@@ -37,7 +37,7 @@ class ComponentBase:
             return_dict(Bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
         Returns:
-            None or Dict: prints and returns dictionary 
+            None or Dict: prints and returns dictionary
         """
         if print_name:
             title = self.name

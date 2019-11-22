@@ -4,7 +4,7 @@ from sklearn.datasets import load_wine as load_wine_sk
 
 def load_wine():
     """Load wine dataset. Multiclass problem
-    
+
     Returns:
         pd.DataFrame, Series: X, y
     """

@@ -9,7 +9,7 @@ class CategoricalEncoder(Transformer):
 
         Arguments:
             None
-        
+
         Returns:
             list: list of feature names not including dropped features
         """
