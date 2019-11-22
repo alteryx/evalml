@@ -19,7 +19,7 @@ from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 import evalml
 import sphinx_rtd_theme
 
-
+import subprocess
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
 
