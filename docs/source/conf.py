@@ -212,4 +212,4 @@ def setup(app):
 
 
 def post_build(app, Exception):
-    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "_build/html/_static/js/theme.js"])
+    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
