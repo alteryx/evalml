@@ -6,6 +6,9 @@ def load_fraud(n_rows=None):
 
     Args:
         n_rows (int) : number of rows to return
+
+    Returns:
+        DataFrame, Series: X, y
     """
     X, y = load_data(
         path="s3://featuretools-static/evalml/fraud_transactions.csv.tar.gz",

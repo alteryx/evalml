@@ -3,7 +3,11 @@ from sklearn.datasets import load_diabetes as load_diabetes_sk
 
 
 def load_diabetes():
-    """Load diabetes dataset. Regression problem"""
+    """Load diabetes dataset. Regression problem
+    
+    Returns:
+        DataFrame, Series: X, y
+    """
     data = load_diabetes_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.Series(data.target)
