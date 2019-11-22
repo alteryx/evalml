@@ -6,9 +6,10 @@ Changelog
     * Enhancements
         * Added ROC charts for binary classification and introduce PipelineSearchPlots class :pr:`169`
     * Fixes
-        * Add python-dateutil to requirements :pr:`234`
+        * Lower botocore requirement :pr:`235`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
+        * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`

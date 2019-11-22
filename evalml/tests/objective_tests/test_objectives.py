@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.objectives import (
     Precision,
     PrecisionMacro,
@@ -24,8 +22,6 @@ def test_get_objectives_types():
 
 def test_binary_average(X_y):
     X, y = X_y
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
 
     pipeline = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
     pipeline.fit(X, y)

@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
@@ -28,9 +30,18 @@ class LeadScoring(ObjectiveBase):
         super().__init__(verbose=verbose)
 
     def decision_function(self, y_predicted, threshold):
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
         return y_predicted > threshold
 
     def objective_function(self, y_predicted, y_true):
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
+
         true_positives = (y_true & y_predicted).sum()
         false_positives = (~y_true & y_predicted).sum()
 
