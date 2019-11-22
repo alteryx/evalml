@@ -246,12 +246,20 @@ class PipelineBase:
     def predict(self, X):
         """Make predictions using selected features.
 
+<<<<<<< HEAD
         Arguments:
             X (pd.DataFrame) : features
+=======
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+>>>>>>> 02913f137c79e2f945f6ddaa248c6d97fcf0c67f
 
         Returns:
             pd.Series : estimated labels
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X_t = self._transform(X)
 
         if self.objective and self.objective.needs_fitting:
@@ -271,14 +279,18 @@ class PipelineBase:
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Arguments:
-            X (pd.DataFrame) : features
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             pd.DataFrame : probability estimates
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+
         if proba.shape[1] <= 2:
             return proba[:, 1]
         else:
@@ -287,14 +299,20 @@ class PipelineBase:
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance on current and additional objectives
 
-        Arguments:
-            X (pd.DataFrame) : features for model predictions
-            y (pd.Series) : true labels
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (pd.Series) : true labels of length [n_samples]
             other_objectives (list): list of other objectives to score
 
         Returns:
             float, dict:  score, ordered dictionary of other objective scores
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
         y_predicted = None
