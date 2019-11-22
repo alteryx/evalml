@@ -144,17 +144,25 @@ class PipelineBase:
         return graph
 
     def get_component(self, name):
+        """Returns component by name
+
+        Arguments:
+            name (str): name of component
+        
+        Returns:
+            Component: component to return
+
+        """
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
 
         Arguments:
-            return_dict (bool): If True, return dictionary of information
-                about pipeline. Defaults to false
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
         Returns:
-            dictionary of all component parameters if return_dict is True, else None
+            dict: dictionary of all component parameters if return_dict is True, else None
         """
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
@@ -238,11 +246,11 @@ class PipelineBase:
     def predict(self, X):
         """Make predictions using selected features.
 
-        Args:
-            X (DataFrame) : features
+        Arguments:
+            X (pd.DataFrame) : features
 
         Returns:
-            Series : estimated labels
+            pd.Series : estimated labels
         """
         X_t = self._transform(X)
 
@@ -263,11 +271,11 @@ class PipelineBase:
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Args:
-            X (DataFrame) : features
+        Arguments:
+            X (pd.DataFrame) : features
 
         Returns:
-            DataFrame : probability estimates
+            pd.DataFrame : probability estimates
         """
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
@@ -279,13 +287,13 @@ class PipelineBase:
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance on current and additional objectives
 
-        Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
+        Arguments:
+            X (pd.DataFrame) : features for model predictions
+            y (pd.Series) : true labels
             other_objectives (list): list of other objectives to score
 
         Returns:
-            score, ordered dictionary of other objective scores
+            float, dict:  score, ordered dictionary of other objective scores
         """
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]

@@ -6,7 +6,7 @@ def load_diabetes():
     """Load diabetes dataset. Regression problem
     
     Returns:
-        DataFrame, Series: X, y
+        pd.DataFrame, pd.Series: X, y
     """
     data = load_diabetes_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)

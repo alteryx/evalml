@@ -15,7 +15,7 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
         verbose (bool) : whether to print information about features and labels
 
     Returns:
-        DataFrame, Series : features and labels
+        pd.DataFrame, pd.Series : features and labels
     """
     if '*' in path:
         feature_matrix = dd.read_csv(path, **kwargs).set_index(index, sorted=True)
@@ -52,14 +52,14 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Args:
-        X (DataFrame) : features
-        y (Series) : labels
+        X (pd.DataFrame) : features
+        y (pd.Series) : labels
         regression (bool): if true, do not use stratified split
         test_size (float) : percent of train set to holdout for testing
         random_state (int) : seed for the random number generator
 
     Returns:
-        DataFrame, DataFrame, Series, Series : features and labels each split into train and test sets
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series : features and labels each split into train and test sets
     """
     if regression:
         CV_method = ShuffleSplit(n_splits=1,

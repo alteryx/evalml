@@ -15,11 +15,11 @@ class ComponentBase:
                 raise AttributeError("Component missing attribute: `{}`".format(attribute))
 
     def fit(self, X, y=None):
-        """Build a model
+        """Fits component to data
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series): the target training labels of length [n_samples]
+            y (pd.Series, optional): the target training labels of length [n_samples]
 
         Returns:
             self
@@ -31,6 +31,13 @@ class ComponentBase:
 
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters
+
+        Arguments:
+            print_name(Bool, optional): whether to print name of component
+            return_dict(Bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
+
+        Returns:
+            None or Dict: prints and returns dictionary 
         """
         if print_name:
             title = self.name
