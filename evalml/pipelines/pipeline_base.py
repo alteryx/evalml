@@ -8,6 +8,7 @@ from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
+from evalml.preprocessing.utils import enforce_labels_as_integers
 
 
 class PipelineBase:
@@ -158,6 +159,9 @@ class PipelineBase:
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        if self.problem_type != ProblemTypes.REGRESSION:
+            y = enforce_labels_as_integers(y)
 
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)

@@ -15,6 +15,7 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
+from evalml.preprocessing.utils import enforce_labels_as_integers
 
 
 class AutoBase:
@@ -125,7 +126,7 @@ class AutoBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
-            y = self.validate_label_dtype(y)
+            y = enforce_labels_as_integers(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -216,12 +217,6 @@ class AutoBase:
         for obj in self.additional_objectives:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
-
-    def validate_label_dtype(self, y):
-        if y.dtype != np.object or not y.apply(lambda x: isinstance(x, str)).all():
-            return y
-        label_ids, unique_label_strings = pd.factorize(y)
-        return pd.Series(label_ids)
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
