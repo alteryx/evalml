@@ -8,6 +8,7 @@ Changelog
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
     * Documentation Changes
+        * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
 
 **v0.5.2 Nov. 18, 2019**
