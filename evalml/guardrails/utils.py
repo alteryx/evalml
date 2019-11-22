@@ -84,11 +84,12 @@ def detect_outliers(X, random_state=0):
 
 
 def detect_id_columns(X, threshold=1.0):
-    """Check if any of the features are ID columns.
-    Currently performs these simple checks:
+    """Check if any of the features are ID columns. Currently performs these simple checks:
+
         - column name is "id"
         - column name ends in "_id"
         - column contains all unique values (and is not float / boolean)
+
     Args:
         X (pd.DataFrame): The input features to check
         threshold (float): the probability threshold to be considered an ID column. Defaults to 1.0

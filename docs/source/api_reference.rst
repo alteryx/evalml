@@ -24,7 +24,6 @@ Preprocessing
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     load_data
@@ -49,7 +48,6 @@ Model Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     list_model_types
@@ -62,12 +60,17 @@ Pipelines
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     get_pipelines
     save_pipeline
     load_pipeline
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
@@ -147,6 +150,11 @@ Problem Types
     :nosignatures:
 
     ProblemTypes
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
     handle_problem_types
 
 
@@ -170,7 +178,6 @@ Guardrails
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     detect_highly_null
