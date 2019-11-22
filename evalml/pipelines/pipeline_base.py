@@ -246,13 +246,8 @@ class PipelineBase:
     def predict(self, X):
         """Make predictions using selected features.
 
-<<<<<<< HEAD
-        Arguments:
-            X (pd.DataFrame) : features
-=======
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
->>>>>>> 02913f137c79e2f945f6ddaa248c6d97fcf0c67f
 
         Returns:
             pd.Series : estimated labels
