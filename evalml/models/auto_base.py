@@ -95,7 +95,7 @@ class AutoBase:
             y = pd.Series(y)
 
         if self.problem_type != ProblemTypes.REGRESSION:
-            self.check_multiclass(y)
+            self._check_multiclass(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -143,7 +143,7 @@ class AutoBase:
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
 
-    def check_multiclass(self, y):
+    def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
         if ProblemTypes.MULTICLASS not in self.objective.problem_types:
