@@ -240,11 +240,14 @@ class PipelineBase:
         """Make predictions using selected features.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             Series : estimated labels
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X_t = self._transform(X)
 
         if self.objective and self.objective.needs_fitting:
@@ -265,13 +268,17 @@ class PipelineBase:
         """Make probability estimates for labels.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             DataFrame : probability estimates
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+
         if proba.shape[1] <= 2:
             return proba[:, 1]
         else:
@@ -281,13 +288,19 @@ class PipelineBase:
         """Evaluate model performance on current and additional objectives
 
         Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (Series) : true labels of length [n_samples]
             other_objectives (list): list of other objectives to score
 
         Returns:
             score, ordered dictionary of other objective scores
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
         y_predicted = None

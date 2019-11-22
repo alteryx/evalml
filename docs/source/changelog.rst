@@ -5,11 +5,15 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
+        * Lower botocore requirement :pr:`235`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
+        * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
+        * Added support for testing on Windows with CircleCI :pr:`226`
+        * Added support for doctests :pr:`233`
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
