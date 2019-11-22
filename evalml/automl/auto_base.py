@@ -90,7 +90,7 @@ class AutoBase:
         self.plot = PipelineSearchPlots(self)
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
-        """Find best classifier
+        """Find best model
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
@@ -125,6 +125,7 @@ class AutoBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
+            y = self.validate_label_dtype(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -215,6 +216,12 @@ class AutoBase:
         for obj in self.additional_objectives:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
+
+    def validate_label_dtype(self, y):
+        if y.dtype != np.object or not y.apply(lambda x: isinstance(x, str)).all():
+            return y
+        label_ids, unique_label_strings = pd.factorize(y)
+        return pd.Series(label_ids)
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)

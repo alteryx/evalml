@@ -10,5 +10,6 @@ def load_breast_cancer():
     """
     data = load_breast_cancer_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)
-    y = pd.Series(data.target)
+    labels = data.target_names[data.target]
+    y = pd.Series(labels)
     return X, y
