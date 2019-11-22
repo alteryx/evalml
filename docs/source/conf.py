@@ -17,7 +17,6 @@ import sys
 from sphinx.util import rpartition
 from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 import evalml
-import sphinx_rtd_theme
 
 import subprocess
 path = os.path.join('..', '..')
@@ -52,7 +51,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
-    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
