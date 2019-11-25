@@ -6,11 +6,11 @@ from skopt.space import Integer, Real
 class GridSearchTuner:
     """Grid Search Optimizer"""
 
-    def __init__(self, space, n_intervals=10, random_state=None):
-        """ Generate all of the possible n_intervals to search for in the grid
+    def __init__(self, space, points=10, random_state=None):
+        """ Generate all of the possible points to search for in the grid
 
         Arguments:
-            n_intervals: The number of n_intervals to uniformly sample from \
+            points: The number of points to uniformly sample from \
                 Real dimensions.
             random_state: Not used in grid search, kept for compatibility
         """
@@ -24,8 +24,8 @@ class GridSearchTuner:
             elif isinstance(dimension, Real):
                 low = dimension.low
                 high = dimension.high
-                delta = (low + high) / n_intervals
-                range_values = [low + (delta * i) for i in range(n_intervals)]
+                delta = (low + high) / (points - 1)
+                range_values = [low + (delta * i) for i in range(points)]
             else:
                 return Exception("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
