@@ -1,8 +1,9 @@
+import pytest
+
 from evalml.tuners import (
     RandomSearchTuner,
     GridSearchTuner
 )
-
 from skopt.space import Integer, Real
 
 
@@ -31,4 +32,3 @@ def test_grid_search_tuner(example_space):
         params = tuner.propose()
         generated_parameters.add(tuple(params))
     assert list(generated_parameters) == 10
-

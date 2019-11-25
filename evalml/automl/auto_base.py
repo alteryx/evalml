@@ -323,12 +323,11 @@ class AutoBase:
             space = self.search_spaces[pipeline_class.name]
             proposal = zip(space, values)
             return list(proposal)
-        except:
+        except Exception:
             return None
 
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
-        scores = pd.Series([fold["score"] for fold in cv_data])
-        score = scores.mean()
+    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
+        score = pd.Series(scores).mean()
 
         if self.objective.greater_is_better:
             score_to_minimize = -score
