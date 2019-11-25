@@ -19,13 +19,15 @@ class GridSearchTuner:
             # Categorical dimension
             if isinstance(dimension, list):
                 range_values = dimension
-            elif isinstance(dimension, Integer):
-                range_values = list(range(dimension.low, dimension.high))
-            elif isinstance(dimension, Real):
+            elif isinstance(dimension, Real) or isinstance(dimension, Integer):
                 low = dimension.low
                 high = dimension.high
-                delta = (low + high) / (points - 1)
-                range_values = [low + (delta * i) for i in range(points)]
+                delta = (high - low) / (points - 1)
+
+                if isinstance(dimension, Integer):
+                    range_values = [int((x * delta) + low) for x in range(points)]
+                else:
+                    range_values = [(x * delta) + low for x in range(points)]
             else:
                 return Exception("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
