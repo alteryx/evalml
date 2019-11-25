@@ -1,10 +1,7 @@
 import pytest
-
-from evalml.tuners import (
-    RandomSearchTuner,
-    GridSearchTuner
-)
 from skopt.space import Integer, Real
+
+from evalml.tuners import GridSearchTuner, RandomSearchTuner
 
 
 @pytest.fixture
