@@ -25,7 +25,6 @@ class AutoBase:
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.early_stopping = early_stopping
-        self.num_without_improvement = 0
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -35,6 +34,8 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
+
+        self._num_without_improvement = 0
 
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -146,10 +147,10 @@ class AutoBase:
                 score = self._do_iteration(X, y, pbar, raise_errors)
                 if score > best_score:
                     best_score = score
-                    self.num_without_improvement = 0
+                    self._num_without_improvement = 0
                 else:
-                    self.num_without_improvement += 1
-                if self.num_without_improvement == self.early_stopping:
+                    self._num_without_improvement += 1
+                if self._num_without_improvement == self.early_stopping:
                     pbar.close()
                     self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
             pbar.close()
@@ -223,9 +224,11 @@ class AutoBase:
         training_time = time.time() - start
 
         # save the result and continue
+        score = pd.Series(scores).mean()
         self._add_result(
             trained_pipeline=pipeline,
             parameters=parameters,
+            score=score,
             scores=scores,
             all_objective_scores=all_objective_scores,
             training_time=training_time
@@ -236,8 +239,8 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-        # return average CV score
-        return pd.Series(scores).mean()
+        # return average CV score   
+        return score
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
@@ -248,9 +251,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
-        score = pd.Series(scores).mean()
-
+    def _add_result(self, trained_pipeline, parameters, score, scores, all_objective_scores, training_time):
         if self.objective.greater_is_better:
             score_to_minimize = -score
         else:
