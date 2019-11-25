@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Add early stopping to AutoML :pr:`241`
     * Fixes
         * Lower botocore requirement :pr:`235`
     * Changes
