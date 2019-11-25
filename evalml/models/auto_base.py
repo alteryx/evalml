@@ -239,7 +239,7 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-        # return average CV score   
+        # return average CV score
         return score
 
     def _select_pipeline(self):
