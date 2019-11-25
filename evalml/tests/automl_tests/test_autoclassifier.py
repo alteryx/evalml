@@ -282,4 +282,3 @@ def test_early_stopping(capsys, X_y):
 
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
-    

@@ -155,7 +155,6 @@ class AutoBase:
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
 
-
     def check_multiclass(self, y):
         if y.nunique() <= 2:
             return
