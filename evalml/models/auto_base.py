@@ -17,13 +17,15 @@ from evalml.utils import Logger, convert_to_seconds
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 model_types, detect_label_leakage, start_iteration_callback,
+                 early_stopping, model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
+        self.early_stopping = early_stopping
+        self.num_without_improvement = 0
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -53,6 +55,7 @@ class AutoBase:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
+
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
@@ -133,15 +136,25 @@ class AutoBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
             start = time.time()
+            best_score = np.NINF
             for n in pbar:
                 elapsed = time.time() - start
+                if self.num_without_improvement == self.early_stopping:
+                    pbar.close()
+                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
                 if self.max_time and elapsed > self.max_time:
                     pbar.close()
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
-                self._do_iteration(X, y, pbar, raise_errors)
+                score = self._do_iteration(X, y, pbar, raise_errors)
+                if score > best_score:
+                    best_score = score
+                    self.num_without_improvement = 0
+                else:
+                    self.num_without_improvement += 1
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
+
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
@@ -223,6 +236,9 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
+
+        # return average CV score
+        return sum(scores) / len(scores)
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)

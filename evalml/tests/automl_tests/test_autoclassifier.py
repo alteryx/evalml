@@ -273,3 +273,13 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
+
+
+def test_early_stopping(capsys, X_y):
+    X, y = X_y
+    clf = AutoClassifier(objective='AUC', max_pipelines=5, early_stopping=2, random_state=0)
+    clf.fit(X, y)
+
+    out, _ = capsys.readouterr()
+    assert "2 iterations without improvement. Stopping search early." in out
+    
