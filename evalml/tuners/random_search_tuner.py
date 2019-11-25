@@ -5,10 +5,12 @@ from skopt import Space
 class RandomSearchTuner:
     """Random Search Optimizer"""
 
-    def __init__(self, space, random_state=None):
+    def __init__(self, space, random_state=None, check_duplicates=False):
         self.space = Space(space)
         self.random_state = RandomState(random_state)
-        self.used_parameters = set()
+        self.check_duplicates = check_duplicates
+        if self.check_duplicates is True:
+            self.used_parameters = set()
 
     def add(self, parameters, score):
         # Since this is a random search, we don't need to store the results.
@@ -19,20 +21,24 @@ class RandomSearchTuner:
 
         Arguments:
             max_attempts (Object): The maximum number of tries to get a unique
-                set of random parameters
+                set of random parameters. Only used if tuner is initalized with
+                self.check_duplicates=True
 
         Returns:
             A list of unique parameters
         """
         curr_parameters = self.space.rvs(random_state=self.random_state)[0]
-        param_tuple = tuple(curr_parameters)
-        attempts = 0
-        while param_tuple in self.used_parameters and attempts < max_attempts:
-            attempts += 1
-            curr_parameters = self.space.rvs(random_state=self.random_state)[0]
-        if attempts >= max_attempts:
-            Exception("Cannot create a unique set of unexplored parameters. \
-                       Try expanding the search space.")
-        else:
-            self.used_parameters.add(param_tuple)
+        if self.check_duplicates is False:
             return curr_parameters
+        else:
+            param_tuple = tuple(curr_parameters)
+            attempts = 0
+            while param_tuple in self.used_parameters and attempts < max_attempts:
+                attempts += 1
+                curr_parameters = self.space.rvs(random_state=self.random_state)[0]
+            if attempts >= max_attempts:
+                Exception("Cannot create a unique set of unexplored \
+                           parameters. Try expanding the search space.")
+            else:
+                self.used_parameters.add(param_tuple)
+                return curr_parameters
