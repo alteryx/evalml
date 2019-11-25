@@ -139,9 +139,6 @@ class AutoBase:
             best_score = np.NINF
             for n in pbar:
                 elapsed = time.time() - start
-                if self.num_without_improvement == self.early_stopping:
-                    pbar.close()
-                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
                 if self.max_time and elapsed > self.max_time:
                     pbar.close()
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
@@ -152,6 +149,9 @@ class AutoBase:
                     self.num_without_improvement = 0
                 else:
                     self.num_without_improvement += 1
+                if self.num_without_improvement == self.early_stopping:
+                    pbar.close()
+                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
 
