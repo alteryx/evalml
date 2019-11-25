@@ -255,7 +255,8 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
-
+        if parameters is None:
+            return Exception("No parameters generated")
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
@@ -317,10 +318,13 @@ class AutoBase:
         return random.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
-        values = self.tuners[pipeline_class.name].propose()
-        space = self.search_spaces[pipeline_class.name]
-        proposal = zip(space, values)
-        return list(proposal)
+        try:
+            values = self.tuners[pipeline_class.name].propose()
+            space = self.search_spaces[pipeline_class.name]
+            proposal = zip(space, values)
+            return list(proposal)
+        except:
+            return None
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
