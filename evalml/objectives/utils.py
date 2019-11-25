@@ -29,7 +29,8 @@ OPTIONS = {
     "median_ae": standard_metrics.MedianAE(),
     "max_error": standard_metrics.MaxError(),
     "exp_var": standard_metrics.ExpVariance(),
-    "roc": standard_metrics.ROC()
+    "roc": standard_metrics.ROC(),
+    "confusion_matrix": standard_metrics.ConfusionMatrix()
 }
 
 

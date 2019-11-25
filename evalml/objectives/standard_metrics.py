@@ -321,6 +321,18 @@ class ROC(ObjectiveBase):
         return metrics.roc_curve(y_true, y_predicted)
 
 
+class ConfusionMatrix(ObjectiveBase):
+    """Confusion matrix for classification problems"""
+    needs_fitting = False
+    greater_is_better = True
+    need_proba = False
+    name = "ConfusionMatrix"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    def score(self, y_predicted, y_true):
+        return metrics.confusion_matrix(y_true, y_predicted)
+
+
 def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:
         classes = np.unique(y_true)
