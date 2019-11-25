@@ -237,7 +237,7 @@ class AutoBase:
             print('')
 
         # return average CV score
-        return sum(scores) / len(scores)
+        return pd.Series(scores).mean()
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
