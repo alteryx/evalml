@@ -19,11 +19,10 @@ def test_random_search_tuner_unique_values(example_space):
     assert len(generated_parameters) == 10
 
 
-def test_grid_search_tuner_no_params(small_space):
-    tuner = RandomSearchTuner(small_space, random_state=0)
+def test_random_search_tuner_no_params(small_space):
+    tuner = RandomSearchTuner(small_space, random_state=0, check_duplicates=True)
     generated_parameters = set()
-    error_text = "Cannot create a unique set of unexplored \
-                  parameters. Try expanding the search space."
+    error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     with pytest.raises(NoParamsException, match=error_text):
         for i in range(10):
             params = tuner.propose()

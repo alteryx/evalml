@@ -1,8 +1,7 @@
 import itertools
 
 from skopt.space import Integer, Real
-
-from utils import NoParamsException
+from .tuner_exceptions import NoParamsException
 
 
 class GridSearchTuner:
@@ -43,5 +42,4 @@ class GridSearchTuner:
         if len(self.grid_points) > 0:
             return self.grid_points.pop()
         else:
-            raise NoParamsException("Grid search has exhausted all possible \
-                                     parameters.")
+            raise NoParamsException("Grid search has exhausted all possible parameters.")

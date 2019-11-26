@@ -22,8 +22,7 @@ def test_grid_search_tuner_unique_values(example_space):
 def test_grid_search_tuner_no_params(small_space):
     tuner = GridSearchTuner(small_space, random_state=0)
     generated_parameters = set()
-    error_text = "Grid search has exhausted all possible \
-                                     parameters."
+    error_text = "Grid search has exhausted all possible parameters."
     with pytest.raises(NoParamsException, match=error_text):
         for i in range(10):
             params = tuner.propose()
