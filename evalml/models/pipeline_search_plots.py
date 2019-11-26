@@ -105,11 +105,10 @@ class PipelineSearchPlots:
         figure = go.Figure(layout=layout, data=data)
         return figure
 
-
     def get_confusion_matrix_data(self, pipeline_id):
         results = self.data.results
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate ROC data.")
+            raise RuntimeError("You must first call fit() to generate confusion matrix data.")
 
         if pipeline_id not in results:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
@@ -119,9 +118,7 @@ class PipelineSearchPlots:
 
         confusion_matrix_data = []
         for fold in cv_data:
-            conf_mat = fold["all_objective_scores"]["ConfusionMatrix"]
-            confusion_matrix_data.append(conf_mat)
-
+            confusion_matrix_data.append(fold["all_objective_scores"]["ConfusionMatrix"])
         return confusion_matrix_data
 
 
@@ -130,5 +127,9 @@ class PipelineSearchPlots:
         # todo: check fold_num exists
         if fold_num is None:
             fold_num = -1
-        figure = go.Figure(data=go.Heatmap(z=data[fold_num]))
+
+        conf_mat = data[fold_num][1]
+        labels = data[fold_num][0]
+        print (labels)
+        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat))
         return figure

@@ -5,7 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added ROC charts for binary classification and introduce PipelineSearchPlots class :pr:`169`
-        * Added confusion matrix metric and plot for classification problems
+        * Added confusion matrix metric and plot for classification problems :pr:`242`
     * Fixes
         * Lower botocore requirement :pr:`235`
     * Changes

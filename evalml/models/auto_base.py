@@ -315,6 +315,9 @@ class AutoBase:
         if "ROC" in all_objective_scores.columns:
             all_objective_scores = all_objective_scores.drop(["ROC"], axis=1)
 
+        if "ConfusionMatrix" in all_objective_scores.columns:
+            all_objective_scores = all_objective_scores.drop(["ConfusionMatrix"], axis=1)
+
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
                 all_objective_scores[c] = all_objective_scores[c].astype("object")

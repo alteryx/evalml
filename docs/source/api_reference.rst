@@ -58,6 +58,11 @@ Plotting
     AutoClassifier.plot.generate_roc_plot
     AutoRegressor.plot.get_roc_data
     AutoRegressor.plot.generate_roc_plot
+    AutoClassifier.plot.get_confusion_matrix_data
+    AutoClassifier.plot.generate_confusion_matrix
+    AutoRegressor.plot.get_confusion_matrix_data
+    AutoRegressor.plot.generate_confusion_matrix
+
 
 
 Model Types

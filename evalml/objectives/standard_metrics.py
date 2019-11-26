@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
+from sklearn.utils.multiclass import unique_labels
 
 from .objective_base import ObjectiveBase
 
@@ -330,7 +331,8 @@ class ConfusionMatrix(ObjectiveBase):
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
-        return metrics.confusion_matrix(y_true, y_predicted)
+        labels = unique_labels(y_predicted, y_true)
+        return labels, metrics.confusion_matrix(y_true, y_predicted)
 
 
 def _handle_predictions(y_true, y_pred):
