@@ -1,5 +1,6 @@
 from numpy.random import RandomState
 from skopt import Space
+from utils import NoParamsException
 
 
 class RandomSearchTuner:
@@ -35,7 +36,7 @@ class RandomSearchTuner:
                 attempts += 1
                 curr_parameters = self.space.rvs(random_state=self.random_state)[0]
             if attempts >= max_attempts:
-                Exception("Cannot create a unique set of unexplored \
+                raise NoParamsException("Cannot create a unique set of unexplored \
                            parameters. Try expanding the search space.")
             else:
                 self.used_parameters.add(param_tuple)

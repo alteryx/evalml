@@ -15,7 +15,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
-from evalml.tuners import SKOptTuner
+from evalml.tuners import NoParamsException, SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
 
 logger = Logger()
@@ -254,9 +254,11 @@ class AutoBase:
         pipeline_class = self._select_pipeline()
 
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
-        if parameters is None:
-            return Exception("No parameters generated")
+        try:
+            parameters = self._propose_parameters(pipeline_class)
+        except Exception as e:
+            raise e
+
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
@@ -318,13 +320,10 @@ class AutoBase:
         return random.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
-        try:
-            values = self.tuners[pipeline_class.name].propose()
-            space = self.search_spaces[pipeline_class.name]
-            proposal = zip(space, values)
-            return list(proposal)
-        except Exception:
-            return None
+        values = self.tuners[pipeline_class.name].propose()
+        space = self.search_spaces[pipeline_class.name]
+        proposal = zip(space, values)
+        return list(proposal)
 
     def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
         score = pd.Series(scores).mean()
