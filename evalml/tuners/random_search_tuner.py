@@ -1,3 +1,4 @@
+from numpy.random import RandomState
 from skopt import Space
 
 
@@ -6,7 +7,7 @@ class RandomSearchTuner:
 
     def __init__(self, space, random_state=None, check_duplicates=False):
         self.space = Space(space)
-        self.random_state = random_state
+        self.random_state = RandomState(random_state)
         self.check_duplicates = check_duplicates
         if self.check_duplicates is True:
             self.used_parameters = set()

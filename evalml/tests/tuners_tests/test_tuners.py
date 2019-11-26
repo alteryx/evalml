@@ -19,13 +19,13 @@ def test_random_search_tuner(example_space):
     for i in range(10):
         params = tuner.propose()
         generated_parameters.add(tuple(params))
-    assert list(generated_parameters) == 10
+    assert len(generated_parameters) == 10
 
 
 def test_grid_search_tuner(example_space):
-    tuner = GridSearchTuner(example_space, random_state=0, check_duplicates=True)
+    tuner = GridSearchTuner(example_space, random_state=0)
     generated_parameters = set()
     for i in range(10):
         params = tuner.propose()
         generated_parameters.add(tuple(params))
-    assert list(generated_parameters) == 10
+    assert len(generated_parameters) == 10
