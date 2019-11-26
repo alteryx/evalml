@@ -3,6 +3,8 @@ import plotly.graph_objects as go
 import sklearn.metrics
 from scipy import interp
 
+from evalml.problem_types import ProblemTypes
+
 
 class PipelineSearchPlots:
     """Plots for the AutoClassifier/AutoRegressor class.
@@ -22,6 +24,9 @@ class PipelineSearchPlots:
         Returns:
             Dictionary containing metrics used to generate an ROC plot.
         """
+        if self.data.problem_type != ProblemTypes.BINARY:
+            raise RuntimeError("ROC plots can only be generated for binary classification problems.")
+
         results = self.data.results
         if len(results) == 0:
             raise RuntimeError("You must first call fit() to generate ROC data.")
@@ -65,6 +70,8 @@ class PipelineSearchPlots:
             plotly.Figure representing the ROC plot generated
 
         """
+        if self.data.problem_type != ProblemTypes.BINARY:
+            raise RuntimeError("ROC plots can only be generated for binary classification problems.")
 
         results = self.data.results
         if len(results) == 0:
@@ -106,6 +113,9 @@ class PipelineSearchPlots:
         return figure
 
     def get_confusion_matrix_data(self, pipeline_id):
+        if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            raise RuntimeError("ROC plots can only be generated for classification problems.")
+
         results = self.data.results
         if len(results) == 0:
             raise RuntimeError("You must first call fit() to generate confusion matrix data.")
@@ -122,6 +132,18 @@ class PipelineSearchPlots:
         return confusion_matrix_data
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
+        if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            raise RuntimeError("ROC plots can only be generated for classification problems.")
+
+        results = self.data.results
+        if len(results) == 0:
+            raise RuntimeError("You must first call fit() to generate a confusion matrix plot.")
+
+        if pipeline_id not in results:
+            raise RuntimeError("Pipeline {} not found".format(pipeline_id))
+
+        pipeline_name = results[pipeline_id]["pipeline_name"]
+
         data = self.get_confusion_matrix_data(pipeline_id)
         # todo: check fold_num exists
         if fold_num is None:
@@ -129,5 +151,10 @@ class PipelineSearchPlots:
 
         conf_mat = data[fold_num][1]
         labels = data[fold_num][0]
-        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat))
+
+        layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
+                           xaxis={'title': 'Predicted Label', 'tickvals': labels},
+                           yaxis={'title': 'True Label', 'tickvals': labels})
+        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat), layout=layout)
+
         return figure
