@@ -1,6 +1,7 @@
 import itertools
 
 from skopt.space import Integer, Real
+
 from .tuner_exceptions import NoParamsException
 
 

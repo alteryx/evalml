@@ -1,5 +1,6 @@
 from numpy.random import RandomState
 from skopt import Space
+
 from .tuner_exceptions import NoParamsException
 
 
