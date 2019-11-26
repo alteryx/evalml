@@ -121,7 +121,6 @@ class PipelineSearchPlots:
             confusion_matrix_data.append(fold["all_objective_scores"]["ConfusionMatrix"])
         return confusion_matrix_data
 
-
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
         data = self.get_confusion_matrix_data(pipeline_id)
         # todo: check fold_num exists
@@ -130,6 +129,5 @@ class PipelineSearchPlots:
 
         conf_mat = data[fold_num][1]
         labels = data[fold_num][0]
-        print (labels)
         figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat))
         return figure
