@@ -114,7 +114,7 @@ class PipelineSearchPlots:
 
     def get_confusion_matrix_data(self, pipeline_id):
         if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            raise RuntimeError("ROC plots can only be generated for classification problems.")
+            raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
 
         results = self.data.results
         if len(results) == 0:
@@ -133,7 +133,7 @@ class PipelineSearchPlots:
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
         if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            raise RuntimeError("ROC plots can only be generated for classification problems.")
+            raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
 
         results = self.data.results
         if len(results) == 0:
@@ -155,6 +155,10 @@ class PipelineSearchPlots:
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'Predicted Label', 'tickvals': labels},
                            yaxis={'title': 'True Label', 'tickvals': labels})
-        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat), layout=layout)
-
+        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat,
+                                           hovertemplate='<b>True</b>: %{y}' +
+                                                         '<br><b>Predicted</b>: %{x}' +
+                                                         '<br><b>Number of times</b>: %{z}' +
+                                                         '<extra></extra>'),  # necessary to remove unwanted trace info
+                           layout=layout)
         return figure
