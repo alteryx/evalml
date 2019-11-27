@@ -47,7 +47,7 @@ def test_generate_roc(X_y):
 def test_generate_confusion_matrix(X_y):
     X, y = X_y
     n_splits = 5
-    cv = StratifiedKFold(n_splits=n_splits, random_state=0) 
+    cv = StratifiedKFold(n_splits=n_splits, random_state=0)
     clf = AutoClassifier(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
     clf.fit(X, y)
     cm_data = clf.plot.get_confusion_matrix_data(0)
