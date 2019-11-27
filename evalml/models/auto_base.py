@@ -126,12 +126,14 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
+        best_score = np.NINF
         if self.max_pipelines is None:
             start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
             while time.time() - start <= self.max_time:
-                self._do_iteration(X, y, pbar, raise_errors)
+                score = self._do_iteration(X, y, pbar, raise_errors)
+                best_score = self._check_stopping_condition(score, best_score, X, y, pbar, raise_errors)
             pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
@@ -145,16 +147,20 @@ class AutoBase:
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
                 score = self._do_iteration(X, y, pbar, raise_errors)
-                if score > best_score:
-                    best_score = score
-                    self._num_without_improvement = 0
-                else:
-                    self._num_without_improvement += 1
-                if self._num_without_improvement == self.early_stopping:
-                    pbar.close()
-                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+                best_score = self._check_stopping_condition(score, best_score, X, y, pbar, raise_errors)
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
+
+    def _check_stopping_condition(self, score, best_score, X, y, pbar, raise_errors):
+        if score > best_score:
+            best_score = score
+            self._num_without_improvement = 0
+        else:
+            self._num_without_improvement += 1
+        if self._num_without_improvement == self.early_stopping:
+            pbar.close()
+            self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+        return best_score
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
