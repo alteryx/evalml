@@ -8,6 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 from evalml.models import PipelineSearchPlots
 from evalml.models.auto_base import AutoBase
 from evalml.pipelines import LogisticRegressionPipeline
+from evalml.problem_types import ProblemTypes
 
 
 def test_generate_roc(X_y):
@@ -18,7 +19,7 @@ def test_generate_roc(X_y):
     class MockAuto(AutoBase):
         def __init__(self):
             self.results = {}
-
+            self.problem_type = ProblemTypes.BINARY
         def fit(self):
             pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
