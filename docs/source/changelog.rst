@@ -10,6 +10,7 @@ Changelog
         * Updating demo datasets to retain column names :pr:`223`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
+        * Adding class properties to API reference :pr:`244`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
