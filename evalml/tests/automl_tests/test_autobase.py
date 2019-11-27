@@ -42,3 +42,19 @@ def test_generate_roc(X_y):
 
     fig = clf.plot.generate_roc_plot(0)
     assert isinstance(fig, type(go.Figure()))
+
+
+def test_generate_confusion_matrix(X_y):
+    X, y = X_y
+    n_splits = 5
+    cv = StratifiedKFold(n_splits=n_splits, random_state=0) 
+    clf = AutoClassifier(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
+    clf.fit(X, y)
+    cm_data = clf.plot.get_confusion_matrix_data(0)
+    assert len(cm_data) == 5
+    for fold in cm_data:
+        labels = fold[0]
+        assert all(label in y for label in labels)
+
+    fig = clf.plot.generate_confusion_matrix(0)
+    assert isinstance(fig, type(go.Figure()))

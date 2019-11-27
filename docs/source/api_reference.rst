@@ -139,6 +139,8 @@ Classification
     LogLoss
     MCC
     ROC
+    ConfusionMatrix
+
 
 Regression
 ~~~~~~~~~~
