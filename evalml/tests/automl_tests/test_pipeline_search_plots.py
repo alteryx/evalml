@@ -69,4 +69,3 @@ def test_generate_roc(X_y):
 
     fig = search_plots.generate_roc_plot(0)
     assert isinstance(fig, type(go.Figure()))
-
