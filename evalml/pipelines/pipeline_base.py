@@ -193,7 +193,7 @@ class PipelineBase:
         self._unique_label_strings = unique_label_strings
         return pd.Series(label_ids)
 
-    def predict(self, X):
+    def _predict(self, X):
         """Make predictions using selected features.
 
         Args:
@@ -216,6 +216,21 @@ class PipelineBase:
             return self.objective.predict(y_predicted)
 
         return self.estimator.predict(X_t)
+
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+
+        Returns:
+            Series : estimated labels
+        """
+        if self.problem_type == ProblemTypes.REGRESSION or self._unique_label_strings is None:
+            return self._predict(X)
+        predictions_raw = np.array(self._predict(X), dtype=int)
+        predictions = self._unique_label_strings[predictions_raw]
+        return predictions
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
