@@ -1,7 +1,7 @@
 import os
 
-import pytest
 import numpy as np
+import pytest
 
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
@@ -174,7 +174,6 @@ def test_classification_str_labels(X_y):
 
     clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    X_pred = 0
     preds_orig = clf.predict(X)
     preds_orig_str = unique_labels[preds_orig]
 
@@ -184,6 +183,7 @@ def test_classification_str_labels(X_y):
 
     assert (preds_orig_str == preds_str).all()
 
+
 def test_classification_str_labels_backwards_compatibility(X_y):
     X, y = X_y
     unique_labels = np.array(['label_0', 'label_1'], dtype=object)
@@ -191,7 +191,6 @@ def test_classification_str_labels_backwards_compatibility(X_y):
 
     clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    X_pred = 0
     preds_orig = clf.predict(X)
 
     clf_str = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
@@ -201,6 +200,7 @@ def test_classification_str_labels_backwards_compatibility(X_y):
     preds_str = clf_str.predict(X)
 
     assert (preds_orig == preds_str).all()
+
 
 def test_classification_str_labels_invalid_uniques(X_y):
     X, y = X_y
