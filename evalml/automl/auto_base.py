@@ -15,7 +15,6 @@ from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
-from evalml.preprocessing.utils import enforce_labels_as_integers
 
 
 class AutoBase:
