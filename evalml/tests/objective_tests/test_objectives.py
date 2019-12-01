@@ -29,3 +29,10 @@ def test_binary_average(X_y):
 
     assert Precision().score(y, y_pred) == PrecisionMicro().score(y, y_pred)
     assert Precision().score(y, y_pred) == PrecisionMacro().score(y, y_pred)
+
+def test_objective_types_distinct():
+    regression = set(get_objectives(ProblemTypes.REGRESSION))
+    binary = set(get_objectives(ProblemTypes.BINARY))
+    multiclass = set(get_objectives(ProblemTypes.MULTICLASS))
+    classification = binary.union(multiclass)
+    assert len(regression.intersection(classification)) == 0

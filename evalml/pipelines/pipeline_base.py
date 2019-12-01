@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -7,6 +8,7 @@ from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
+from evalml.problem_types import ProblemTypes
 from evalml.utils import Logger
 
 
@@ -160,7 +162,7 @@ class PipelineBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.problem_type != ProblemTypes.REGRESSION:
+        if ProblemTypes.REGRESSION not in self.objective.problem_types:
             y = self._enforce_labels_as_integers(y)
 
         if self.objective.needs_fitting:
@@ -226,7 +228,7 @@ class PipelineBase:
         Returns:
             Series : estimated labels
         """
-        if self.problem_type == ProblemTypes.REGRESSION or self._unique_label_strings is None:
+        if ProblemTypes.REGRESSION in self.objective.problem_types or self._unique_label_strings is None:
             return self._predict(X)
         predictions_raw = np.array(self._predict(X), dtype=int)
         predictions = self._unique_label_strings[predictions_raw]
