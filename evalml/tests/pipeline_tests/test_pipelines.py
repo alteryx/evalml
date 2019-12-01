@@ -167,7 +167,7 @@ def test_multiple_feature_selectors(X_y):
     assert not clf.feature_importances.isnull().all().all()
 
 
-def test_classification_non_integer_labels(X_y):
+def test_classification_str_labels(X_y):
     X, y = X_y
     unique_labels = np.array(['label_0', 'label_1'], dtype=object)
     y_str = unique_labels[y]
@@ -183,3 +183,31 @@ def test_classification_non_integer_labels(X_y):
     preds_str = clf_str.predict(X)
 
     assert (preds_orig_str == preds_str).all()
+
+def test_classification_str_labels_backwards_compatibility(X_y):
+    X, y = X_y
+    unique_labels = np.array(['label_0', 'label_1'], dtype=object)
+    y_str = unique_labels[y]
+
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+    X_pred = 0
+    preds_orig = clf.predict(X)
+
+    clf_str = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf_str.fit(X, y_str)
+    # simulate an older version of a model by deleting internal state added to support string labels for classification
+    del clf_str._unique_label_strings
+    preds_str = clf_str.predict(X)
+
+    assert (preds_orig == preds_str).all()
+
+def test_classification_str_labels_invalid_uniques(X_y):
+    X, y = X_y
+    unique_labels = np.array(['label_0', 'label_1', 'label_2'], dtype=object)
+    y_str = unique_labels[y]
+    y_str[0] = unique_labels[2]
+
+    clf_str = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    with pytest.raises(RuntimeError, match="Found 3 unique target labels, but problem type is binary classification"):
+        clf_str.fit(X, y_str)

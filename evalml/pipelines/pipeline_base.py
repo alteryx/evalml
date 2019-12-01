@@ -192,6 +192,11 @@ class PipelineBase:
         if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
             return labels
         label_ids, unique_label_strings = pd.factorize(labels)
+        if self.objective.problem_types == [ProblemTypes.BINARY] and len(unique_label_strings) > 2:
+            raise RuntimeError('Found {} unique target labels, but problem type is binary classification'
+                               .format(len(unique_label_strings)))
+        if self.objective.problem_types == [ProblemTypes.MULTICLASS] and len(unique_label_strings) < 3:
+            self.logger.log('Warning: found {} unique target labels, but problem type is multiclass'.format(len(unique_label_strings)))
         self._unique_label_strings = unique_label_strings
         return pd.Series(label_ids)
 
@@ -228,7 +233,9 @@ class PipelineBase:
         Returns:
             Series : estimated labels
         """
-        if ProblemTypes.REGRESSION in self.objective.problem_types or self._unique_label_strings is None:
+        if ProblemTypes.REGRESSION in self.objective.problem_types \
+           or not hasattr(self, '_unique_label_strings') \
+           or self._unique_label_strings is None:
             return self._predict(X)
         predictions_raw = np.array(self._predict(X), dtype=int)
         predictions = np.array(self._unique_label_strings[predictions_raw])
