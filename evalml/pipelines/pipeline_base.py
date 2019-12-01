@@ -8,7 +8,6 @@ from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
-from evalml.preprocessing.utils import enforce_labels_as_integers
 
 
 class PipelineBase:
@@ -52,6 +51,7 @@ class PipelineBase:
 
         self.plot = PipelinePlots(self)
         self.logger = Logger()
+        self._unique_label_strings = None
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -161,7 +161,7 @@ class PipelineBase:
             y = pd.Series(y)
 
         if self.problem_type != ProblemTypes.REGRESSION:
-            y = enforce_labels_as_integers(y)
+            y = self._enforce_labels_as_integers(y)
 
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
@@ -176,6 +176,22 @@ class PipelineBase:
             else:
                 self.objective.fit(y_predicted, y_objective)
         return self
+
+    def _enforce_labels_as_integers(self, labels):
+        """
+        Given input data labels, return a copy ensuring they have been converted to integers.
+        Side effect: set the unique label strings used to convert predictions back to their string values, if necessary.
+
+        Args:
+            y (pd.Series) : the input data labels, which could be represented as either integers or strings
+        Returns:
+            pd.Series : a version of the input data labels, converted if necessary to unique integers ranging from 0 to n - 1
+        """
+        if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
+            return labels
+        label_ids, unique_label_strings = pd.factorize(labels)
+        self._unique_label_strings = unique_label_strings
+        return pd.Series(label_ids)
 
     def predict(self, X):
         """Make predictions using selected features.

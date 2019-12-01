@@ -100,18 +100,3 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
-
-
-def enforce_labels_as_integers(self, labels):
-    """
-    Given input data labels, return a copy ensuring they have been converted to integers
-
-    Args:
-        y (pd.Series) : the input data labels, which could be represented as either integers or strings
-    Returns:
-        pd.Series : a version of the input data labels, converted if necessary to unique integers ranging from 0 to n - 1
-    """
-    if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
-        return labels
-    label_ids, unique_label_strings = pd.factorize(labels)
-    return pd.Series(label_ids)

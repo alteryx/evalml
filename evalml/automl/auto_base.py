@@ -126,7 +126,6 @@ class AutoBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
-            y = enforce_labels_as_integers(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
