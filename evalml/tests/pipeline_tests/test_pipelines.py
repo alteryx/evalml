@@ -1,6 +1,7 @@
 import os
 
 import pytest
+import numpy as np
 
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
@@ -164,3 +165,21 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_classification_non_integer_labels(X_y):
+    X, y = X_y
+    unique_labels = np.array(['label_0', 'label_1'], dtype=object)
+    y_str = unique_labels[y]
+
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+    X_pred = 0
+    preds_orig = clf.predict(X)
+    preds_orig_str = unique_labels[preds_orig]
+
+    clf_str = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf_str.fit(X, y_str)
+    preds_str = clf_str.predict(X)
+
+    assert (preds_orig_str == preds_str).all()

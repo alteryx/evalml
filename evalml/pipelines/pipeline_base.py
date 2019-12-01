@@ -231,7 +231,7 @@ class PipelineBase:
         if ProblemTypes.REGRESSION in self.objective.problem_types or self._unique_label_strings is None:
             return self._predict(X)
         predictions_raw = np.array(self._predict(X), dtype=int)
-        predictions = self._unique_label_strings[predictions_raw]
+        predictions = np.array(self._unique_label_strings[predictions_raw])
         return predictions
 
     def predict_proba(self, X):
