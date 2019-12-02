@@ -21,6 +21,7 @@ Changelog
         * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
         * Enhanced AutoML results with search order :pr:`260`
+        * Support string targets for binary and multiclass problems :pr:`238`
     * Fixes
         * Lower botocore requirement :pr:`235`
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
