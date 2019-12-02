@@ -91,7 +91,7 @@ def test_early_stopping(capsys, X_y):
     out, _ = capsys.readouterr()
     assert "1 iterations without improvement. Stopping search early." in out
 
-    clf = AutoRegressor(objective='r2', max_time='30 seconds', early_stopping=1, model_types=['linear_model'], random_state=0)
+    clf = AutoRegressor(objective='r2', max_time='120 seconds', early_stopping=1, model_types=['linear_model'], random_state=0)
     clf.fit(X, y)
 
     out, _ = capsys.readouterr()

@@ -283,7 +283,7 @@ def test_early_stopping(capsys, X_y):
     out, _ = capsys.readouterr()
     assert "1 iterations without improvement. Stopping search early." in out
 
-    clf = AutoClassifier(objective='AUC', max_time="30 seconds", model_types=['linear_model'], early_stopping=1, random_state=0)
+    clf = AutoClassifier(objective='AUC', max_time="120 seconds", model_types=['linear_model'], early_stopping=1, random_state=0)
     clf.fit(X, y)
 
     out, _ = capsys.readouterr()
