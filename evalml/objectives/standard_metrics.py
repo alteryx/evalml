@@ -16,7 +16,6 @@ class F1(ObjectiveBase):
     score_needs_proba = False
     name = "F1"
     problem_types = [ProblemTypes.BINARY]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted)
@@ -29,7 +28,6 @@ class F1Micro(ObjectiveBase):
     score_needs_proba = False
     name = "F1 Micro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='micro')
@@ -42,7 +40,6 @@ class F1Macro(ObjectiveBase):
     score_needs_proba = False
     name = "F1 Macro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='macro')
@@ -55,7 +52,6 @@ class F1Weighted(ObjectiveBase):
     score_needs_proba = False
     name = "F1 Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
@@ -68,7 +64,6 @@ class Precision(ObjectiveBase):
     score_needs_proba = False
     name = "Precision"
     problem_types = [ProblemTypes.BINARY]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted)
@@ -81,7 +76,6 @@ class PrecisionMicro(ObjectiveBase):
     score_needs_proba = False
     name = "Precision Micro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='micro')
@@ -94,7 +88,6 @@ class PrecisionMacro(ObjectiveBase):
     score_needs_proba = False
     name = "Precision Macro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='macro')
@@ -107,7 +100,6 @@ class PrecisionWeighted(ObjectiveBase):
     score_needs_proba = False
     name = "Precision Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.precision_score(y_true, y_predicted, average='weighted')
@@ -120,7 +112,6 @@ class Recall(ObjectiveBase):
     score_needs_proba = False
     name = "Recall"
     problem_types = [ProblemTypes.BINARY]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted)
@@ -133,7 +124,6 @@ class RecallMicro(ObjectiveBase):
     score_needs_proba = False
     name = "Recall Micro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='micro')
@@ -146,7 +136,6 @@ class RecallMacro(ObjectiveBase):
     score_needs_proba = False
     name = "Recall Macro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='macro')
@@ -159,7 +148,6 @@ class RecallWeighted(ObjectiveBase):
     score_needs_proba = False
     name = "Recall Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
@@ -172,7 +160,6 @@ class AUC(ObjectiveBase):
     score_needs_proba = True
     name = "AUC"
     problem_types = [ProblemTypes.BINARY]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.roc_auc_score(y_true, y_predicted)
@@ -185,7 +172,6 @@ class AUCMicro(ObjectiveBase):
     score_needs_proba = True
     name = "AUC Micro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -199,7 +185,6 @@ class AUCMacro(ObjectiveBase):
     score_needs_proba = True
     name = "AUC Macro"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -213,7 +198,6 @@ class AUCWeighted(ObjectiveBase):
     score_needs_proba = True
     name = "AUC Weighted"
     problem_types = [ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
@@ -227,7 +211,6 @@ class LogLoss(ObjectiveBase):
     score_needs_proba = True
     name = "Log Loss"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.log_loss(y_true, y_predicted)
@@ -240,7 +223,6 @@ class MCC(ObjectiveBase):
     score_needs_proba = False
     name = "MCC"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-    summarizable = True
 
     def score(self, y_predicted, y_true):
         return metrics.matthews_corrcoef(y_true, y_predicted)

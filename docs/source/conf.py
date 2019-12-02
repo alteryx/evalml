@@ -17,7 +17,6 @@ import os
 import sys
 import sphinx_rtd_theme
 import subprocess
-from sphinx.util import rpartition
 from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 
 

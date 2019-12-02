@@ -64,7 +64,7 @@ class PipelineSearchPlots:
 
     def generate_roc_plot(self, pipeline_id):
         """Generate Receiver Operating Characteristic (ROC) plot for a given pipeline using cross-validation
-        using the data returned from generate_roc_plot().
+        using the data returned from get_roc_data().
 
         Returns:
             plotly.Figure representing the ROC plot generated
@@ -113,6 +113,11 @@ class PipelineSearchPlots:
         return figure
 
     def get_confusion_matrix_data(self, pipeline_id):
+        """Gets data that can be used to create a confusion matrix plot.
+
+        Returns:
+            List containing information used to generate a confusion matrix plot. Each element in the list contains the confusion matrix data for that fold.
+        """
         if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
 
@@ -132,6 +137,12 @@ class PipelineSearchPlots:
         return confusion_matrix_data
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
+        """Generate confusion matrix plot for a given pipeline using the data returned from get_confusion_matrix_data().
+
+        Returns:
+            plotly.Figure representing the confusion matrix plot generated
+
+        """
         if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
 
@@ -145,7 +156,7 @@ class PipelineSearchPlots:
         pipeline_name = results[pipeline_id]["pipeline_name"]
 
         data = self.get_confusion_matrix_data(pipeline_id)
-        # todo: check fold_num exists
+        # defaults to last fold if none specified. May need to think of better approach.
         if fold_num is None:
             fold_num = -1
 

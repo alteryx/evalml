@@ -308,28 +308,27 @@ class AutoBase:
                             "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
-        summarizable_objectives = [obj.name for obj in [self.objective] + self.additional_objectives if obj.summarizable]
-        summarizable_objectives.extend(["# Training", "# Testing"])
-        summarizable_scores = []
-        for fold_dict in all_objective_scores:
-            summarizable_scores.append(OrderedDict((key, fold_dict[key]) for key in fold_dict if key in summarizable_objectives))
-        summarizable_scores = pd.DataFrame(summarizable_scores)
+        all_objective_scores = pd.DataFrame(all_objective_scores)
 
-        for c in summarizable_scores:
+        # note: we need to think about how to better handle metrics we don't want to display in our chart
+        # currently, just dropping the columns before displaying
+        all_objective_scores = all_objective_scores.drop(["ROC", "ConfusionMatrix"], axis=1, errors="ignore")
+
+        for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
-                summarizable_scores[c] = summarizable_scores[c].astype("object")
+                all_objective_scores[c] = all_objective_scores[c].astype("object")
                 continue
 
-            mean = summarizable_scores[c].mean(axis=0)
-            std = summarizable_scores[c].std(axis=0)
-            summarizable_scores.loc["mean", c] = mean
-            summarizable_scores.loc["std", c] = std
-            summarizable_scores.loc["coef of var", c] = std / mean
+            mean = all_objective_scores[c].mean(axis=0)
+            std = all_objective_scores[c].std(axis=0)
+            all_objective_scores.loc["mean", c] = mean
+            all_objective_scores.loc["std", c] = std
+            all_objective_scores.loc["coef of var", c] = std / mean
 
-        summarizable_scores = summarizable_scores.fillna("-")
+        all_objective_scores = all_objective_scores.fillna("-")
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            self.logger.log(summarizable_scores)
+            self.logger.log(all_objective_scores)
 
         if return_dict:
             return pipeline_results
