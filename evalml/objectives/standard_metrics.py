@@ -337,6 +337,7 @@ class ConfusionMatrix(ObjectiveBase):
         conf_mat = pd.DataFrame(conf_mat, columns=labels)
         return conf_mat
 
+
 def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:
         classes = np.unique(y_true)
