@@ -134,7 +134,7 @@ class AutoBase:
             pbar._instances.clear()
             while time.time() - start <= self.max_time:
                 score = self._do_iteration(X, y, pbar, raise_errors)
-                best_score, stop = self._check_stopping_condition(score, best_score, X, y, raise_errors)
+                best_score, stop = self._check_stopping_condition(score, best_score, X, y)
                 if stop:
                     pbar._instances.clear()  # prevent ending iteration from showing up twice
                     pbar.close()
