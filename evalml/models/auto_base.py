@@ -35,7 +35,7 @@ class AutoBase:
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
 
-        self._num_without_improvement = 0
+        self._num_without_improvement = None
 
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -127,6 +127,7 @@ class AutoBase:
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         best_score = np.NINF
+        self._num_without_improvement = 0
         if self.max_pipelines is None:
             start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
@@ -139,7 +140,6 @@ class AutoBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
             start = time.time()
-            best_score = np.NINF
             for n in pbar:
                 elapsed = time.time() - start
                 if self.max_time and elapsed > self.max_time:
