@@ -73,7 +73,6 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
-        self.summarizable_objectives = get_summarizable_objectives([self.objective] + self.additional_objectives)
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
