@@ -31,4 +31,4 @@ from .standard_metrics import (
     ROC,
     ConfusionMatrix
 )
-from .utils import get_objective, get_objectives, get_summarizable_objectives
+from .utils import get_objective, get_objectives

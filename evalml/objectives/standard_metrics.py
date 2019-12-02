@@ -8,7 +8,6 @@ from .objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 
 
-
 # todo does this need tuning?
 class F1(ObjectiveBase):
     """F1 Score for binary classification"""
