@@ -9,6 +9,7 @@ class ObjectiveBase:
     fit_needs_proba = True
     score_needs_proba = False
     uses_extra_columns = False
+    summarizable = False
     problem_types = []
 
     def __init__(self, verbose=False):

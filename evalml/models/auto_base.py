@@ -10,7 +10,9 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
-from evalml.objectives import get_objective, get_objectives
+from evalml.objectives import (get_objective,
+                               get_objectives,
+                               get_summarizable_objectives)
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
@@ -73,6 +75,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
+        self.summarizable_objectives = get_summarizable_objectives([self.objective] + self.additional_objectives)
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
@@ -206,7 +209,6 @@ class AutoBase:
                     pbar.write(str(e))
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
-
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
             ordered_scores.update(other_scores)
@@ -309,30 +311,28 @@ class AutoBase:
                             "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
-        all_objective_scores = pd.DataFrame(all_objective_scores)
+        summarizable_objectives = [obj.name for obj in [self.objective] + self.additional_objectives if obj.summarizable]
+        summarizable_objectives.extend(["# Training", "# Testing"])
+        summarizable_scores = []
+        for fold_dict in all_objective_scores:
+            summarizable_scores.append(OrderedDict((key, fold_dict[key]) for key in fold_dict if key in summarizable_objectives))
+        summarizable_scores = pd.DataFrame(summarizable_scores)
 
-        # note: we need to think about how to better handle metrics we don't want to display in our chart
-        if "ROC" in all_objective_scores.columns:
-            all_objective_scores = all_objective_scores.drop(["ROC"], axis=1)
-
-        if "ConfusionMatrix" in all_objective_scores.columns:
-            all_objective_scores = all_objective_scores.drop(["ConfusionMatrix"], axis=1)
-
-        for c in all_objective_scores:
+        for c in summarizable_scores:
             if c in ["# Training", "# Testing"]:
-                all_objective_scores[c] = all_objective_scores[c].astype("object")
+                summarizable_scores[c] = summarizable_scores[c].astype("object")
                 continue
 
-            mean = all_objective_scores[c].mean(axis=0)
-            std = all_objective_scores[c].std(axis=0)
-            all_objective_scores.loc["mean", c] = mean
-            all_objective_scores.loc["std", c] = std
-            all_objective_scores.loc["coef of var", c] = std / mean
+            mean = summarizable_scores[c].mean(axis=0)
+            std = summarizable_scores[c].std(axis=0)
+            summarizable_scores.loc["mean", c] = mean
+            summarizable_scores.loc["std", c] = std
+            summarizable_scores.loc["coef of var", c] = std / mean
 
-        all_objective_scores = all_objective_scores.fillna("-")
+        summarizable_scores = summarizable_scores.fillna("-")
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            self.logger.log(all_objective_scores)
+            self.logger.log(summarizable_scores)
 
         if return_dict:
             return pipeline_results

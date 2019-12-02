@@ -60,3 +60,15 @@ def get_objectives(problem_type):
     """
     problem_type = handle_problem_types(problem_type)
     return [OPTIONS[obj] for obj in OPTIONS if OPTIONS[obj].supports_problem_type(problem_type)]
+
+
+def get_summarizable_objectives(objectives):
+    """Returns list of objective names that are summarizable from list of objectives
+
+    Args:
+        objectives (list) : list of summarizable objectives
+
+    Returns:
+        List of Objectives
+    """
+    return [obj.name for obj in objectives if obj.summarizable]
