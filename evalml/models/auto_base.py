@@ -134,7 +134,12 @@ class AutoBase:
             pbar._instances.clear()
             while time.time() - start <= self.max_time:
                 score = self._do_iteration(X, y, pbar, raise_errors)
-                best_score = self._check_stopping_condition(score, best_score, X, y, pbar, raise_errors)
+                best_score, stop = self._check_stopping_condition(score, best_score, X, y, raise_errors)
+                if stop:
+                    pbar._instances.clear()  # prevent ending iteration from showing up twice
+                    pbar.close()
+                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+                    break
             pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
@@ -143,24 +148,28 @@ class AutoBase:
             for n in pbar:
                 elapsed = time.time() - start
                 if self.max_time and elapsed > self.max_time:
-                    pbar.close()
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
                 score = self._do_iteration(X, y, pbar, raise_errors)
-                best_score = self._check_stopping_condition(score, best_score, X, y, pbar, raise_errors)
+                best_score, stop = self._check_stopping_condition(score, best_score, X, y)
+                if stop:
+                    pbar._instances.clear()  # prevent ending iteration from showing up twice
+                    pbar.close()
+                    self.logger.log("\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+                    break
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
 
-    def _check_stopping_condition(self, score, best_score, X, y, pbar, raise_errors):
+    def _check_stopping_condition(self, score, best_score, X, y):
         if score > best_score:
             best_score = score
             self._num_without_improvement = 0
         else:
             self._num_without_improvement += 1
+
         if self._num_without_improvement == self.early_stopping:
-            pbar.close()
-            self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
-        return best_score
+            return best_score, True
+        return best_score, False
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
