@@ -40,6 +40,9 @@ class AutoClassifier(AutoBase):
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
 
+            early_stopping(int): positive number of iterations without improvement to stop search early.
+                Defaults to None.
+
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("classification") to see options.
 

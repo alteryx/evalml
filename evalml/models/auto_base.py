@@ -57,6 +57,10 @@ class AutoBase:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
+        if self.early_stopping:
+            if (not isinstance(self.early_stopping, int)) or self.early_stopping < 0:
+                raise ValueError("early_stopping value must be a positive integer. Received {} instead".format(self.early_stopping))
+
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
