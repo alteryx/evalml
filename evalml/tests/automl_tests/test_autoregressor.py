@@ -85,8 +85,8 @@ def test_callback(X_y):
 
 def test_early_stopping(capsys, X_y):
     X, y = X_y
-    clf = AutoRegressor(objective='r2', max_pipelines=5, early_stopping=2, model_types=['linear_model'], random_state=0)
+    clf = AutoRegressor(objective='r2', max_pipelines=5, early_stopping=1, model_types=['linear_model'], random_state=0)
     clf.fit(X, y)
 
     out, _ = capsys.readouterr()
-    assert "2 iterations without improvement. Stopping search early." in out
+    assert "1 iterations without improvement. Stopping search early." in out

@@ -277,8 +277,8 @@ def test_max_time_units():
 
 def test_early_stopping(capsys, X_y):
     X, y = X_y
-    clf = AutoClassifier(objective='AUC', max_pipelines=5, early_stopping=2, random_state=0)
+    clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], early_stopping=1, random_state=0)
     clf.fit(X, y)
 
     out, _ = capsys.readouterr()
-    assert "2 iterations without improvement. Stopping search early." in out
+    assert "1 iterations without improvement. Stopping search early." in out
