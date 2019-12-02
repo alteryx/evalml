@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 from sklearn.utils.multiclass import unique_labels
@@ -327,13 +328,14 @@ class ConfusionMatrix(ObjectiveBase):
     needs_fitting = False
     greater_is_better = True
     need_proba = False
-    name = "ConfusionMatrix"
+    name = "Confusion Matrix"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         labels = unique_labels(y_predicted, y_true)
-        return labels, metrics.confusion_matrix(y_true, y_predicted)
-
+        conf_mat = metrics.confusion_matrix(y_true, y_predicted)
+        conf_mat = pd.DataFrame(conf_mat, columns=labels)
+        return conf_mat
 
 def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:

@@ -118,7 +118,7 @@ def test_generate_confusion_matrix(X_y):
                 score, other_scores = pipeline.score(X_test, y_test)
 
                 ordered_scores = OrderedDict()
-                ordered_scores.update({"ConfusionMatrix": score})
+                ordered_scores.update({"Confusion Matrix": score})
                 ordered_scores.update({"# Training": len(y_train)})
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
@@ -136,9 +136,9 @@ def test_generate_confusion_matrix(X_y):
         search_plots.generate_confusion_matrix(1)
 
     cm_data = search_plots.get_confusion_matrix_data(0)
-    for i, fold in enumerate(cm_data):
-        labels, cm = fold
+    for i, cm in enumerate(cm_data):
+        labels = cm.columns
         assert all(label in y for label in labels)
-        assert (np.sum(cm) == y_test_lens[i])
+        assert (cm.to_numpy().sum() == y_test_lens[i])
     fig = search_plots.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))

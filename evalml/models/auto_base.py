@@ -312,7 +312,7 @@ class AutoBase:
 
         # note: we need to think about how to better handle metrics we don't want to display in our chart
         # currently, just dropping the columns before displaying
-        all_objective_scores = all_objective_scores.drop(["ROC", "ConfusionMatrix"], axis=1, errors="ignore")
+        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
 
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:

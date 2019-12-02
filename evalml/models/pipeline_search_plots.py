@@ -133,7 +133,7 @@ class PipelineSearchPlots:
 
         confusion_matrix_data = []
         for fold in cv_data:
-            confusion_matrix_data.append(fold["all_objective_scores"]["ConfusionMatrix"])
+            confusion_matrix_data.append(fold["all_objective_scores"]["Confusion Matrix"])
         return confusion_matrix_data
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
@@ -160,8 +160,8 @@ class PipelineSearchPlots:
         if fold_num is None:
             fold_num = -1
 
-        conf_mat = data[fold_num][1]
-        labels = data[fold_num][0]
+        conf_mat = data[fold_num]
+        labels = conf_mat.columns
 
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'Predicted Label', 'tickvals': labels},

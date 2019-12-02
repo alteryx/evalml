@@ -53,7 +53,7 @@ def test_generate_confusion_matrix(X_y):
     cm_data = clf.plot.get_confusion_matrix_data(0)
     assert len(cm_data) == 5
     for fold in cm_data:
-        labels = fold[0]
+        labels = fold.columns
         assert all(label in y for label in labels)
 
     fig = clf.plot.generate_confusion_matrix(0)
