@@ -11,7 +11,7 @@ class PipelinePlots:
 
         Args:
             to_file (str, optional) : Path to where the plot should be saved. If set to None (as by default), the plot will not be saved.
-        
+
         Returns:
             graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
         """
