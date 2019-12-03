@@ -7,7 +7,8 @@ from .estimators import (
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier
+    XGBoostClassifier,
+    CatBoostClassifier
 )
 from .transformers import (
     Transformer,
