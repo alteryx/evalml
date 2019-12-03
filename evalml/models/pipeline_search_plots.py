@@ -70,16 +70,6 @@ class PipelineSearchPlots:
             plotly.Figure representing the ROC plot generated
 
         """
-        if self.data.problem_type != ProblemTypes.BINARY:
-            raise RuntimeError("ROC plots can only be generated for binary classification problems.")
-
-        results = self.data.results
-        if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate a ROC plot.")
-
-        if pipeline_id not in results:
-            raise RuntimeError("Pipeline {} not found".format(pipeline_id))
-
         roc_data = self.get_roc_data(pipeline_id)
         fpr_tpr_data = roc_data["fpr_tpr_data"]
         roc_aucs = roc_data["roc_aucs"]
@@ -88,6 +78,7 @@ class PipelineSearchPlots:
         mean_auc = roc_data["mean_auc"]
         std_auc = roc_data["std_auc"]
 
+        results = self.data.results
         pipeline_name = results[pipeline_id]["pipeline_name"]
 
         layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
@@ -143,19 +134,9 @@ class PipelineSearchPlots:
             plotly.Figure representing the confusion matrix plot generated
 
         """
-        if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
-
-        results = self.data.results
-        if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate a confusion matrix plot.")
-
-        if pipeline_id not in results:
-            raise RuntimeError("Pipeline {} not found".format(pipeline_id))
-
-        pipeline_name = results[pipeline_id]["pipeline_name"]
-
         data = self.get_confusion_matrix_data(pipeline_id)
+        results = self.data.results
+        pipeline_name = results[pipeline_id]["pipeline_name"]
         # defaults to last fold if none specified. May need to think of better approach.
         if fold_num is None:
             fold_num = -1

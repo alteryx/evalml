@@ -50,7 +50,6 @@ def test_generate_roc(X_y):
 
     mock_clf = MockAuto()
     search_plots = PipelineSearchPlots(mock_clf)
-
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.get_roc_data(0)
     with pytest.raises(RuntimeError, match="You must first call fit"):
@@ -71,25 +70,27 @@ def test_generate_roc(X_y):
     assert isinstance(fig, type(go.Figure()))
 
 
-def test_generate_confusion_matrix(X_y):
-    X, y = X_y
+def test_generate_roc_multi_raises_errors(X_y):
 
-    # Make mock class and generate mock results
-    class MockAutoRegressor(AutoBase):
+    class MockAutoMulti(AutoBase):
         def __init__(self):
             self.results = {}
-            self.problem_type = ProblemTypes.REGRESSION
+            self.problem_type = ProblemTypes.MULTICLASS
 
-    mock_clf = MockAutoRegressor()
+    mock_clf = MockAutoMulti()
     search_plots = PipelineSearchPlots(mock_clf)
 
-    with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems"):
-        search_plots.get_confusion_matrix_data(0)
-    with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems."):
-        search_plots.generate_confusion_matrix(0)
+    with pytest.raises(RuntimeError, match="ROC plots can only be generated for binary classification problems."):
+        search_plots.get_roc_data(0)
+    with pytest.raises(RuntimeError, match="ROC plots can only be generated for binary classification problems."):
+        search_plots.generate_roc_plot(0)
 
+
+def test_generate_confusion_matrix(X_y):
+    X, y = X_y
     y_test_lens = []
 
+    # Make mock class and generate mock results
     class MockAutoClassifier(AutoBase):
         def __init__(self):
             self.results = {}
@@ -127,6 +128,11 @@ def test_generate_confusion_matrix(X_y):
 
     mock_clf = MockAutoClassifier()
     search_plots = PipelineSearchPlots(mock_clf)
+    with pytest.raises(RuntimeError, match="You must first call fit"):
+        search_plots.get_confusion_matrix_data(0)
+    with pytest.raises(RuntimeError, match="You must first call fit"):
+        search_plots.generate_confusion_matrix(0)
+
     mock_clf.fit()
 
     with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
@@ -141,3 +147,20 @@ def test_generate_confusion_matrix(X_y):
         assert (cm.to_numpy().sum() == y_test_lens[i])
     fig = search_plots.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))
+
+
+def test_confusion_matrix_regression_throws_error():
+
+    # Make mock class and generate mock results
+    class MockAutoRegressor(AutoBase):
+        def __init__(self):
+            self.results = {}
+            self.problem_type = ProblemTypes.REGRESSION
+
+    mock_clf = MockAutoRegressor()
+    search_plots = PipelineSearchPlots(mock_clf)
+
+    with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems"):
+        search_plots.get_confusion_matrix_data(0)
+    with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems."):
+        search_plots.generate_confusion_matrix(0)
