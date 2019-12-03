@@ -232,11 +232,12 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def build_finished(app, Exception):
-    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
+    pass
+    # subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
 
 
 def setup(app):
-    # app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
+    app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorMethodDocumenter)
     app.connect('build-finished', build_finished)
