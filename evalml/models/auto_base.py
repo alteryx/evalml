@@ -17,14 +17,14 @@ from evalml.utils import Logger, convert_to_seconds
 
 class AutoBase:
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 early_stopping, model_types, detect_label_leakage, start_iteration_callback,
+                 patience, model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.early_stopping = early_stopping
+        self.patience = patience
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -55,9 +55,9 @@ class AutoBase:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
-        if self.early_stopping:
-            if (not isinstance(self.early_stopping, int)) or self.early_stopping < 0:
-                raise ValueError("early_stopping value must be a positive integer. Received {} instead".format(self.early_stopping))
+        if self.patience:
+            if (not isinstance(self.patience, int)) or self.patience < 0:
+                raise ValueError("patience value must be a positive integer. Received {} instead".format(self.patience))
 
         self.results = {}
         self.trained_pipelines = {}
@@ -140,7 +140,7 @@ class AutoBase:
                 if stop:
                     pbar._instances.clear()  # prevent ending iteration from showing up twice
                     pbar.close()
-                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.patience))
                     break
             pbar.close()
         else:
@@ -157,7 +157,7 @@ class AutoBase:
                 if stop:
                     pbar._instances.clear()  # prevent ending iteration from showing up twice
                     pbar.close()
-                    self.logger.log("\n{} iterations without improvement. Stopping search early.".format(self.early_stopping))
+                    self.logger.log("\n{} iterations without improvement. Stopping search early.".format(self.patience))
                     break
             pbar.close()
         self.logger.log("\n✔ Optimization finished")
@@ -169,7 +169,7 @@ class AutoBase:
         else:
             self._num_without_improvement += 1
 
-        if self._num_without_improvement == self.early_stopping:
+        if self._num_without_improvement == self.patience:
             return best_score, True
         return best_score, False
 
