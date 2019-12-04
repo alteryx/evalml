@@ -1,4 +1,6 @@
 import numpy as np
+from skopt.space import Integer, Real
+
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
@@ -13,23 +15,44 @@ class CatBoostClassifier(Estimator):
     component_type = ComponentTypes.CLASSIFIER
     _needs_fitting = True
     hyperparameter_ranges = {
+        "n_estimators": Integer(10, 1000),
+        "eta": Real(0, 1),
 
     }
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_jobs=-1, random_state=0):
-        parameters = {}
+    def __init__(self, n_estimators=1000, eta=0.03, n_jobs=-1, random_state=0):
+        parameters = {"n_estimators": n_estimators,
+                      "eta": eta}
 
         try:
             import catboost
         except ImportError:
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
-        cb_classifier = catboost.CatBoostClassifier(logging_level="Silent",
+        cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
+                                                    eta=eta,
+                                                    logging_level="Silent",
                                                     random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
                          random_state=random_state)
+
+    def fit(self, X, y=None):
+        """Build a model
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series): the target training labels of length [n_samples]
+
+        Returns:
+            self
+        """
+        try:
+            return self._component_obj.fit(X, y, verbose=False)
+        except AttributeError:
+            raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
+
 
     @property
     def feature_importances(self):
