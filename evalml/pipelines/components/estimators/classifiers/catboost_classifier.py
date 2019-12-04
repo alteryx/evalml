@@ -18,13 +18,15 @@ class CatBoostClassifier(Estimator):
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
+        "max_depth": Integer(1, 16)
     }
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=1000, eta=0.03, n_jobs=-1, random_state=0):
+    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, n_jobs=-1, random_state=0):
         parameters = {"n_estimators": n_estimators,
-                      "eta": eta}
+                      "eta": eta,
+                      "max_depth": max_depth}
 
         try:
             import catboost
@@ -32,6 +34,7 @@ class CatBoostClassifier(Estimator):
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
         cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
                                                     eta=eta,
+                                                    max_depth=max_depth,
                                                     silent=True,
                                                     random_state=random_state)
         super().__init__(parameters=parameters,
@@ -48,7 +51,8 @@ class CatBoostClassifier(Estimator):
         Returns:
             self
         """
-        model = self._component_obj.fit(X, y, silent=True)
+        cat_cols = X.select_dtypes(['object'])
+        model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         # removing catboost's automatically generated folder of training metrics
         shutil.rmtree('catboost_info')
         return model

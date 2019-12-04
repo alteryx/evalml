@@ -49,3 +49,12 @@ def test_catboost_input_feature_names(X_y):
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
+
+
+def test_catboost_categorical(X_y_categorical_classification):
+    X, y = X_y_categorical_classification
+    objective = PrecisionMicro()
+    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=1000, eta=0.03)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not clf.feature_importances.isnull().all().all()
