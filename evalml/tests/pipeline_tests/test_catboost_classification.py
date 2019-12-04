@@ -50,7 +50,8 @@ def test_catboost_input_feature_names(X_y):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
-    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
+    for col_name in clf.feature_importances["feature"]:
+        assert "col_" in col_name
 
 
 def test_catboost_categorical(X_y_categorical_classification):
