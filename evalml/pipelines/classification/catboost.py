@@ -1,13 +1,8 @@
 from skopt.space import Integer, Real
-import numpy as np
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import (
-    CatBoostClassifier,
-    SimpleImputer,
-    StandardScaler,
-)
+from evalml.pipelines.components import CatBoostClassifier, SimpleImputer
 from evalml.problem_types import ProblemTypes
 
 

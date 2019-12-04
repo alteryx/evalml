@@ -1,10 +1,11 @@
-import pandas as pd
 import numpy as np
-from evalml.objectives import PrecisionMicro
-from evalml.pipelines.components import CatBoostClassifier
-from evalml.pipelines import CatBoostClassificationPipeline
+import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+
+from evalml.objectives import PrecisionMicro
+from evalml.pipelines import CatBoostClassificationPipeline
+from evalml.pipelines.components import CatBoostClassifier
 
 
 def test_catboost_init():
