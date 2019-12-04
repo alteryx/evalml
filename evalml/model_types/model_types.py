@@ -6,7 +6,7 @@ class ModelTypes(Enum):
     RANDOM_FOREST = 'random_forest'
     XGBOOST = 'xgboost'
     LINEAR_MODEL = 'linear_model'
-    CATBOOST = 'linear_model'
+    CATBOOST = 'catboost'
 
     def __str__(self):
         model_type_dict = {ModelTypes.RANDOM_FOREST.name: "Random Forest",
