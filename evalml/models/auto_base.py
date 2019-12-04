@@ -165,26 +165,27 @@ class AutoBase:
             cont = False
 
         # check patience
-        max_id = max(self.results, key=int)
-        if self.patience is not None and max_id >= self.patience:
-            past_ids = [i for i in range(max_id - self.patience, max_id + 1)]
-            past_scores = [self.results[id]['score'] for id in past_ids]
+        curr_id = max(self.results, key=int)
+        if self.objective.greater_is_better:
+            best_id = max(self.results, key=lambda x: self.results[x]['score'])
+        else:
+            best_id = min(self.results, key=lambda x: self.results[x]['score'])
+
+        best_score = self.results[best_id]['score']
+        if self.patience is not None and curr_id >= best_id + self.patience:
+            ids_to_check = [i for i in range(best_id, best_id + self.patience + 1)]
+            scores_to_check = [self.results[id]['score'] for id in ids_to_check]
             without_improvement = 0
-            for i in range(1, len(past_scores)):
+            for score in scores_to_check:
                 if self.objective.greater_is_better:
-                    if past_scores[i] <= past_scores[i - 1]:
+                    if score <= best_score:
                         without_improvement += 1
-                    else:
-                        without_improvement = 0
                 else:
-                    if past_scores[i] >= past_scores[i - 1]:
+                    if score >= best_score:
                         without_improvement += 1
-                    else:
-                        without_improvement = 0
             if without_improvement >= self.patience:
                 cont = False
                 msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
-
         if not cont and msg:
             self.logger.log(msg)
         return cont
