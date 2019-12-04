@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Add CatBoost classification and regression components and pipelines :pr:`247`
     * Fixes
         * Lower botocore requirement :pr:`235`
     * Changes

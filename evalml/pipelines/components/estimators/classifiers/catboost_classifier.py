@@ -1,5 +1,4 @@
 import numpy as np
-from catboost import CatBoostClassifier as CBClassifier
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
@@ -21,8 +20,13 @@ class CatBoostClassifier(Estimator):
 
     def __init__(self, n_jobs=-1, random_state=0):
         parameters = {}
-        cb_classifier = CBClassifier(logging_level="Silent",
-                                     random_state=random_state)
+
+        try:
+            import catboost
+        except ImportError:
+            raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
+        cb_classifier = catboost.CatBoostClassifier(logging_level="Silent",
+                                                    random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
                          random_state=random_state)
@@ -30,4 +34,3 @@ class CatBoostClassifier(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.get_feature_importance()
-    
