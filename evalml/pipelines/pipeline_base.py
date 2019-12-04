@@ -330,7 +330,7 @@ class PipelineBase:
 
     @property
     def feature_importances(self):
-        """Return feature importances. Feature dropped by feaure selection are excluded"""
+        """Return feature importances. Features dropped by feature selection are excluded"""
         feature_names = self.input_feature_names[self.estimator.name]
         importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
         importances.sort(key=lambda x: -abs(x[1]))
