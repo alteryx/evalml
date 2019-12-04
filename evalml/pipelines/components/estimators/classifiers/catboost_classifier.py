@@ -1,4 +1,5 @@
 import numpy as np
+import shutil
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
@@ -17,7 +18,6 @@ class CatBoostClassifier(Estimator):
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
-
     }
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -32,7 +32,7 @@ class CatBoostClassifier(Estimator):
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
         cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
                                                     eta=eta,
-                                                    logging_level="Silent",
+                                                    silent=True,
                                                     random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
@@ -48,11 +48,10 @@ class CatBoostClassifier(Estimator):
         Returns:
             self
         """
-        try:
-            return self._component_obj.fit(X, y, verbose=False)
-        except AttributeError:
-            raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
-
+        model = self._component_obj.fit(X, y, silent=True)
+        # removing catboost's automatically generated folder of training metrics
+        shutil.rmtree('catboost_info')
+        return model
 
     @property
     def feature_importances(self):
