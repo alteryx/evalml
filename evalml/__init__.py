@@ -14,7 +14,6 @@ import evalml.demos
 import evalml.model_types
 import evalml.objectives
 import evalml.pipelines
-# import evalml.models
 import evalml.preprocessing
 import evalml.problem_types
 import evalml.utils

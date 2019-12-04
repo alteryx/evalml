@@ -45,6 +45,26 @@ Models
     AutoClassifier
     AutoRegressor
 
+
+Plotting
+~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: accessor_method.rst
+    :nosignatures:
+
+    AutoClassifier.plot.get_roc_data
+    AutoClassifier.plot.generate_roc_plot
+    AutoRegressor.plot.get_roc_data
+    AutoRegressor.plot.generate_roc_plot
+    AutoClassifier.plot.get_confusion_matrix_data
+    AutoClassifier.plot.generate_confusion_matrix
+    AutoRegressor.plot.get_confusion_matrix_data
+    AutoRegressor.plot.generate_confusion_matrix
+
+
+
 Model Types
 ===========
 
@@ -118,6 +138,9 @@ Classification
     AUCWeighted
     LogLoss
     MCC
+    ROC
+    ConfusionMatrix
+
 
 Regression
 ~~~~~~~~~~
