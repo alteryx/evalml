@@ -22,7 +22,8 @@ from .pipeline_base import PipelineBase
 from .classification import (
     LogisticRegressionPipeline,
     RFClassificationPipeline,
-    XGBoostPipeline
+    XGBoostPipeline,
+    CatBoostClassificationPipeline
 )
 from .regression import LinearRegressionPipeline, RFRegressionPipeline
 from .utils import (
