@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
+from catboost import CatBoostClassifier as CBClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import CatBoostClassificationPipeline
-from evalml.pipelines.components import CatBoostClassifier
-from catboost import CatBoostClassifier as CBClassifier
+
 
 def test_catboost_init():
     objective = PrecisionMicro()

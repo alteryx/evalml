@@ -1,9 +1,8 @@
-import category_encoders as ce
 import numpy as np
-import pandas as pd
+from catboost import CatBoostRegressor as CBRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from catboost import CatBoostRegressor as CBRegressor
+
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline
 

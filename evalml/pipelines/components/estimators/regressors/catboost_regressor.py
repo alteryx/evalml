@@ -33,10 +33,10 @@ class CatBoostRegressor(Estimator):
         except ImportError:
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
         cb_classifier = catboost.CatBoostRegressor(n_estimators=n_estimators,
-                                                    eta=eta,
-                                                    max_depth=max_depth,
-                                                    silent=True,
-                                                    random_state=random_state)
+                                                   eta=eta,
+                                                   max_depth=max_depth,
+                                                   silent=True,
+                                                   random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
                          random_state=random_state)
