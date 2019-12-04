@@ -15,7 +15,7 @@ class AutoClassifier(AutoBase):
                  multiclass=False,
                  max_pipelines=None,
                  max_time=None,
-                 early_stopping=None,
+                 patience=None,
                  model_types=None,
                  cv=None,
                  tuner=None,
@@ -40,7 +40,7 @@ class AutoClassifier(AutoBase):
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
 
-            patience (int): Number of iterations without improvement to stop search early. Must be positive. 
+            patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.
 
             model_types (list): The model types to search. By default searches over all
@@ -86,7 +86,7 @@ class AutoClassifier(AutoBase):
             cv=cv,
             max_pipelines=max_pipelines,
             max_time=max_time,
-            early_stopping=early_stopping,
+            patience=patience,
             model_types=model_types,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,

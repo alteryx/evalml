@@ -93,7 +93,6 @@ class AutoBase:
 
             self
         """
-        # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -128,50 +127,62 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        best_score = np.NINF
-        self._num_without_improvement = 0
         if self.max_pipelines is None:
-            start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
-            while time.time() - start <= self.max_time:
-                score = self._do_iteration(X, y, pbar, raise_errors)
-                best_score, stop = self._check_stopping_condition(score, best_score, X, y)
-                if stop:
-                    pbar._instances.clear()  # prevent ending iteration from showing up twice
-                    pbar.close()
-                    self.logger.log("\n\n{} iterations without improvement. Stopping search early.".format(self.patience))
-                    break
-            pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
-            start = time.time()
-            for n in pbar:
-                elapsed = time.time() - start
-                if self.max_time and elapsed > self.max_time:
-                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
-                    break
-                score = self._do_iteration(X, y, pbar, raise_errors)
-                best_score, stop = self._check_stopping_condition(score, best_score, X, y)
-                if stop:
-                    pbar._instances.clear()  # prevent ending iteration from showing up twice
-                    pbar.close()
-                    self.logger.log("\n{} iterations without improvement. Stopping search early.".format(self.patience))
-                    break
-            pbar.close()
-        self.logger.log("\n✔ Optimization finished")
 
-    def _check_stopping_condition(self, score, best_score, X, y):
-        if score > best_score:
-            best_score = score
-            self._num_without_improvement = 0
-        else:
-            self._num_without_improvement += 1
+        start = time.time()
+        self._do_iteration(X, y, pbar, raise_errors)
+        pbar.update(1)
+        while self._check_stopping_condition(start):
+            self._do_iteration(X, y, pbar, raise_errors)
+            pbar.update(1)
 
-        if self._num_without_improvement == self.patience:
-            return best_score, True
-        return best_score, False
+        desc = "✔ Optimization finished"
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
+        pbar.close()
+
+    def _check_stopping_condition(self, start):
+        cont = True
+        msg = None
+
+        # check max_time and max_pipelines
+        elapsed = time.time() - start
+        if self.max_time and elapsed >= self.max_time:
+            cont = False
+        elif self.max_pipelines and len(self.results) >= self.max_pipelines:
+            cont = False
+
+        # check patience
+        max_id = max(self.results, key=int)
+        if self.patience is not None and max_id >= self.patience:
+            past_ids = [i for i in range(max_id - self.patience, max_id + 1)]
+            past_scores = [self.results[id]['score'] for id in past_ids]
+            without_improvement = 0
+            for i in range(1, len(past_scores)):
+                if self.objective.greater_is_better:
+                    if past_scores[i] <= past_scores[i - 1]:
+                        without_improvement += 1
+                    else:
+                        without_improvement = 0
+                else:
+                    if past_scores[i] >= past_scores[i - 1]:
+                        without_improvement += 1
+                    else:
+                        without_improvement = 0
+            if without_improvement >= self.patience:
+                cont = False
+                msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
+
+        if not cont and msg:
+            self.logger.log(msg)
+        return cont
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
@@ -241,11 +252,9 @@ class AutoBase:
         training_time = time.time() - start
 
         # save the result and continue
-        score = pd.Series(scores).mean()
         self._add_result(
             trained_pipeline=pipeline,
             parameters=parameters,
-            score=score,
             scores=scores,
             all_objective_scores=all_objective_scores,
             training_time=training_time
@@ -268,7 +277,8 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, score, scores, all_objective_scores, training_time):
+    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
+        score = pd.Series(scores).mean()
         if self.objective.greater_is_better:
             score_to_minimize = -score
         else:
