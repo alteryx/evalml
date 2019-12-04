@@ -140,7 +140,6 @@ class AutoBase:
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
-<<<<<<< HEAD
 
         start = time.time()
         self._do_iteration(X, y, pbar, raise_errors)
@@ -191,19 +190,6 @@ class AutoBase:
         if not cont and msg:
             self.logger.log(msg)
         return cont
-=======
-            start = time.time()
-            for n in pbar:
-                elapsed = time.time() - start
-                if self.max_time and elapsed > self.max_time:
-                    pbar.close()
-                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
-                    break
-                self._do_iteration(X, y, pbar, raise_errors)
-            pbar.close()
-
-        self.logger.log("\n✔ Optimization finished")
->>>>>>> b10c1fef314b93c2e2db9d3689626d78abe74533
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
@@ -292,15 +278,10 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-<<<<<<< HEAD
-    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
-        score = pd.Series(scores).mean()
-=======
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
->>>>>>> b10c1fef314b93c2e2db9d3689626d78abe74533
         if self.objective.greater_is_better:
             score_to_minimize = -score
         else:
