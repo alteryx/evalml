@@ -147,7 +147,6 @@ class AutoBase:
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
             pbar.update(1)
-
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -161,8 +160,10 @@ class AutoBase:
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             cont = False
+            return cont
         elif self.max_pipelines and len(self.results) >= self.max_pipelines:
             cont = False
+            return cont
 
         # check patience
         curr_id = max(self.results, key=int)
