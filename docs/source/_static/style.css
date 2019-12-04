@@ -3,6 +3,10 @@
     opacity: 0
 }
 
+div.output_stderr {
+    display: none;
+  }
+
 a[href^="https://github.com/Featurelabs/evalml/"] {
     visibility: hidden;
 }
