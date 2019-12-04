@@ -38,8 +38,8 @@ class AutoRegressor(AutoBase):
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("regression") to see options.
 
-            early_stopping(int): positive number of iterations without improvement to stop search early.
-                Defaults to None.
+            early_stopping(int): Number of iterations without improvement to stop search early. Must be positive. 
+                If None, early stopping is disabled. Defaults to None.
 
             cv: cross validation method to use. By default StratifiedKFold
 
