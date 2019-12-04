@@ -15,7 +15,8 @@ from .components import (
     CategoricalEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
-    CatBoostClassifier
+    CatBoostClassifier,
+    CatBoostRegressor
 )
 
 from .pipeline_base import PipelineBase
@@ -23,9 +24,13 @@ from .classification import (
     LogisticRegressionPipeline,
     RFClassificationPipeline,
     XGBoostPipeline,
-    CatBoostClassificationPipeline
+    CatBoostClassificationPipeline,
 )
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
+from .regression import (
+    LinearRegressionPipeline,
+    RFRegressionPipeline,
+    CatBoostRegressionPipeline
+)
 from .utils import (
     get_pipelines,
     list_model_types,

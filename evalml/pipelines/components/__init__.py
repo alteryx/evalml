@@ -8,7 +8,8 @@ from .estimators import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    CatBoostClassifier
+    CatBoostClassifier,
+    CatBoostRegressor
 )
 from .transformers import (
     Transformer,

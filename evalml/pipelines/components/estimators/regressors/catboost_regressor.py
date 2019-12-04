@@ -8,12 +8,12 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class CatBoostClassifier(Estimator):
+class CatBoostRegressor(Estimator):
     """
-    CatBoost Classifier
+    CatBoost Regressor
     """
-    name = "CatBoost Classifier"
-    component_type = ComponentTypes.CLASSIFIER
+    name = "CatBoost Regressor"
+    component_type = ComponentTypes.REGRESSOR
     _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
@@ -21,7 +21,7 @@ class CatBoostClassifier(Estimator):
         "max_depth": Integer(1, 16)
     }
     model_type = ModelTypes.CATBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, random_state=0):
         parameters = {"n_estimators": n_estimators,
@@ -32,7 +32,7 @@ class CatBoostClassifier(Estimator):
             import catboost
         except ImportError:
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
-        cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
+        cb_classifier = catboost.CatBoostRegressor(n_estimators=n_estimators,
                                                     eta=eta,
                                                     max_depth=max_depth,
                                                     silent=True,
