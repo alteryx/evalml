@@ -10,7 +10,7 @@ class CatBoostRegressionPipeline(PipelineBase):
     """CatBoost Pipeline for regression problems"""
     name = "CatBoost Regressor w/ Simple Imputer + RF Regressor Select From Model"
     model_type = ModelTypes.CATBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.REGRESSION]
     hyperparameters = {
         "impute_strategy": ["constant", "most_frequent"],
         "n_estimators": Integer(10, 1000),

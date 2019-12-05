@@ -9,7 +9,7 @@ from evalml.pipelines import CatBoostRegressionPipeline
 
 def test_catboost_init():
     objective = R2()
-    clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, eta=0.03, max_depth=6, random_state=2)
+    clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, eta=0.03, max_depth=6, number_features=0, random_state=2)
     expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2

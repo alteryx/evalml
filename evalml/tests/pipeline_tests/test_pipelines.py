@@ -23,14 +23,14 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_list_model_types():
-    assert set(list_model_types(ProblemTypes.BINARY)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.XGBOOST, ModelTypes.LINEAR_MODEL])
-    assert set(list_model_types(ProblemTypes.REGRESSION)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL])
+    assert set(list_model_types(ProblemTypes.BINARY)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.XGBOOST, ModelTypes.LINEAR_MODEL, ModelTypes.CATBOOST])
+    assert set(list_model_types(ProblemTypes.REGRESSION)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL, ModelTypes.CATBOOST])
 
 
 def test_get_pipelines():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
 
