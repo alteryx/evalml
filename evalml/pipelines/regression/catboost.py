@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 class CatBoostRegressionPipeline(PipelineBase):
     """CatBoost Pipeline for regression problems"""
-    name = "CatBoost Regressor w/ Simple Imputer + RF Regressor Select From Model"
+    name = "CatBoost Regressor w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.REGRESSION]
     hyperparameters = {
