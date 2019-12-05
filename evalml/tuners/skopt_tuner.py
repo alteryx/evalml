@@ -7,7 +7,7 @@ class SKOptTuner:
 
     def __init__(self, space, random_state=0):
         """ Init SkOptTuner
-        
+
         Arguments:
             space (dict): search space for hyperparameters
             random_state (int): random state
