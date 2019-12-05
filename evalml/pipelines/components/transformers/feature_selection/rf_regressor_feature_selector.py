@@ -29,11 +29,9 @@ class RFRegressorSelectFromModel(FeatureSelector):
                                             n_estimators=n_estimators,
                                             max_depth=max_depth,
                                             n_jobs=n_jobs)
-        feature_selection = SkSelect(
-            estimator=estimator,
-            max_features=max_features,
-            threshold=threshold
-        )
+        feature_selection = SkSelect(estimator=estimator,
+                                     max_features=max_features,
+                                     threshold=threshold)
 
         super().__init__(parameters=parameters,
                          component_obj=feature_selection,
