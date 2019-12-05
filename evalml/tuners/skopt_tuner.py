@@ -7,6 +7,7 @@ class SKOptTuner:
 
     def __init__(self, space, random_state=0):
         """ Init SkOptTuner
+        
         Arguments:
             space (dict): search space for hyperparameters
             random_state (int): random state
@@ -20,7 +21,7 @@ class SKOptTuner:
         """ Add score to sample
 
         Arguments:
-            parameters (dict): hyper-parameters
+            parameters (dict): hyperparameters
             score (float): associated score
 
         Returns:
@@ -31,12 +32,9 @@ class SKOptTuner:
             return self.opt.tell(list(parameters), score)
 
     def propose(self):
-        """ Returns hyper-parameters based off search space and samples
-
-        Arguments:
-            None:
+        """ Returns hyperparameters based off search space and samples
 
         Returns:
-            dict: proposed hyper-parameters
+            dict: proposed hyperparameters
         """
         return self.opt.ask()

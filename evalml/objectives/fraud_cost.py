@@ -43,7 +43,7 @@ class FraudCost(ObjectiveBase):
             Arguments:
                 y_predicted (pd.Series): predicted labels
                 extra_cols (pd.DataFrame): extra data needed
-                threshold (float): threshold to determine if transaction is fraud
+                threshold (float): dollar threshold to determine if transaction is fraud
 
             Returns:
                 pd.Series: series of predicted fraud label using extra cols and threshold

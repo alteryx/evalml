@@ -273,7 +273,7 @@ class AutoBase:
         self.trained_pipelines[pipeline_id] = trained_pipeline
 
     def get_pipeline(self, pipeline_id):
-        """Retrives trained pipeline
+        """Retrieves trained pipeline
 
         Arguments:
             pipeline_id (int): pipeline to retrieve

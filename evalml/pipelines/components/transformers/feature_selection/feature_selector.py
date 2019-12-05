@@ -9,9 +9,6 @@ class FeatureSelector(Transformer):
     def get_indices(self):
         """Get integer index of features selected
 
-        Arguments:
-            None
-
         Returns:
             list: list of indices
         """
@@ -21,8 +18,6 @@ class FeatureSelector(Transformer):
     def get_names(self):
         """Get names of selected features.
 
-        Arguments:
-            None
         Returns:
             list of the names of features selected
         """
