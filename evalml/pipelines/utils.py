@@ -72,7 +72,7 @@ def list_model_types(problem_type):
     """List model type for a particular problem type
 
     Arguments:
-        problem_types (ProblemType or str): binary, multiclass, or regression
+        problem_types (ProblemTypes or str): binary, multiclass, or regression
 
     Returns:
         model_types, list of model types
