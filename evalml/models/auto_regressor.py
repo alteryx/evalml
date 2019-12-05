@@ -6,7 +6,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoRegressor(AutoBase):
-    """Automatic pipeline search for regression problems"""
+    """Automatic pipeline search for regression problems
+
+    """
 
     def __init__(self,
                  objective=None,
