@@ -12,10 +12,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
+import evalml
 import os
 import sys
+import subprocess
+from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 
-import evalml
+
+from sphinx.ext.autodoc import MethodDocumenter, Documenter
 
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
@@ -204,5 +208,53 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
+
+class AccessorLevelDocumenter(Documenter):
+    """
+    Documenter subclass for objects on accessor level (methods, attributes).
+
+    Referenced pandas-sphinx-theme (https://github.com/pandas-dev/pandas-sphinx-theme)
+    and sphinx-doc (https://github.com/sphinx-doc/sphinx/blob/8c7faed6fcbc6b7d40f497698cb80fc10aee1ab3/sphinx/ext/autodoc/__init__.py#L846)
+    """
+    def resolve_name(self, modname, parents, path, base):
+        modname = 'evalml'
+        mod_cls = path.rstrip('.')
+        mod_cls = mod_cls.split('.')
+        return modname, mod_cls + [base]
+
+
+class AccessorCallableDocumenter(AccessorLevelDocumenter, MethodDocumenter):
+    """
+    This documenter lets us removes .__call__ from the method signature for
+    callable accessors like Series.plot
+    """
+
+    objtype = "accessorcallable"
+    directivetype = "method"
+
+    # lower than MethodDocumenter; otherwise the doc build prints warnings
+    priority = 0.5
+
+    def format_name(self):
+        return MethodDocumenter.format_name(self).rstrip(".__call__")
+
+
+class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
+    objtype = 'accessormethod'
+    directivetype = 'method'
+
+    # lower than MethodDocumenter so this is not chosen for normal methods
+    priority = 0.6
+
+
+def build_finished(app, Exception):
+    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
+
+
+
 def setup(app):
+    app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
+    app.add_autodocumenter(AccessorCallableDocumenter)
+    app.add_autodocumenter(AccessorMethodDocumenter)
+    app.connect('build-finished', build_finished)

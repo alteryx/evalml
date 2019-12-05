@@ -13,3 +13,4 @@ s3fs==0.2.2
 joblib>=0.10.3
 category_encoders>=2.0.0
 cloudpickle>=0.2.2
+plotly>=4.2.1

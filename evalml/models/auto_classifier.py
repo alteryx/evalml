@@ -10,6 +10,7 @@ from evalml.problem_types import ProblemTypes
 class AutoClassifier(AutoBase):
     """Automatic pipeline search class for classification problems"""
 
+
     def __init__(self,
                  objective=None,
                  multiclass=False,
