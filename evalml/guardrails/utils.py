@@ -111,8 +111,8 @@ def detect_outliers(X, random_state=0):
 
 
 def detect_id_columns(X, threshold=1.0):
-    """Check if any of the features are ID columns.
-    Currently performs these simple checks:
+    """Check if any of the features are ID columns. Currently performs these simple checks:
+
         - column name is "id"
         - column name ends in "_id"
         - column contains all unique values (and is not float / boolean)
