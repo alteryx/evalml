@@ -66,7 +66,7 @@ class AutoClassifier(AutoBase):
         """
 
         if cv is None:
-            cv = StratifiedKFold(n_splits=3, random_state=random_state)
+            cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
         if objective is None and not multiclass:
