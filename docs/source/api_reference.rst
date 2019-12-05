@@ -89,10 +89,22 @@ Pipelines
     get_pipelines
     save_pipeline
     load_pipeline
+    PipelineBase
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
     RFRegressionPipeline
+
+
+Plotting
+~~~~~~~~
+
+
+.. autosummary::
+   :toctree: generated
+   :template: accessor_callable.rst
+
+   PipelineBase.plot
 
 
 .. currentmodule:: evalml.objectives
