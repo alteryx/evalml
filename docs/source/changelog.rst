@@ -12,6 +12,7 @@ Changelog
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
+        * Fix and filter FutureWarnings from scikit-learn :pr:`249`
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
