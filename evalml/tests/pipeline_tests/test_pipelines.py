@@ -1,6 +1,5 @@
 import os
 
-import plotly.graph_objects as go
 import pytest
 
 from evalml.model_types import ModelTypes
@@ -155,10 +154,3 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
-
-
-def test_feature_importance_plot(X_y):
-    X, y = X_y
-    clf = LogisticRegressionPipeline(objective='precision', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf.fit(X, y)
-    assert isinstance(clf.plot_feature_importances(), go.FigureWidget)

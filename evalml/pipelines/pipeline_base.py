@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import pandas as pd
-import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
@@ -280,28 +279,3 @@ class PipelineBase:
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
-
-    def plot_feature_importances(self):
-        feat_imp = self.feature_importances
-        feat_imp['importance'] = abs(feat_imp['importance'])
-        feat_imp = feat_imp.iloc[::-1]
-        title = 'Feature Importances'
-        subtitle = 'May display fewer features due to feature selection'
-        data = [go.Bar(
-            x=feat_imp['importance'],
-            y=feat_imp['feature'],
-            orientation='h'
-        )]
-
-        layout = {
-            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
-            'height': 800,
-            'xaxis_title': 'Feature Importance',
-            'yaxis_title': 'Feature',
-            'yaxis': {
-                'type': 'category'
-            }
-        }
-
-        fig = go.Figure(data=data, layout=layout)
-        return fig
