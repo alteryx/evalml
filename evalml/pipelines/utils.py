@@ -20,8 +20,8 @@ ALL_PIPELINES = [RFClassificationPipeline,
                  LogisticRegressionPipeline,
                  LinearRegressionPipeline,
                  RFRegressionPipeline,
-                #  CatBoostClassificationPipeline,
-                #  CatBoostRegressionPipeline
+                 CatBoostClassificationPipeline,
+                 CatBoostRegressionPipeline
                  ]
 
 
