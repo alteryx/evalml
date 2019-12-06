@@ -7,7 +7,7 @@ import warnings
 import sklearn
 
 with warnings.catch_warnings():
-    warnings.simplefilter("ignore", DeprecationWarning)
+    warnings.simplefilter("ignore", FutureWarning)
     import skopt
 
 import evalml.demos
@@ -22,7 +22,7 @@ import evalml.guardrails
 from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
 from evalml.models import AutoClassifier, AutoRegressor
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 __version__ = '0.5.2'
