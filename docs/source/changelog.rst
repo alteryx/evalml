@@ -12,6 +12,7 @@ Changelog
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
+        * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
