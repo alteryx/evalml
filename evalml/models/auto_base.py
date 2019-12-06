@@ -5,8 +5,6 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-from IPython.display import display
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -79,7 +77,7 @@ class AutoBase:
 
         self.plot = PipelineSearchPlots(self)
 
-    def fit(self, X, y, feature_types=None, raise_errors=False):
+    def fit(self, X, y, feature_types=None, raise_errors=False, no_iteration_plot=False):
         """Find best classifier
 
         Arguments:
@@ -92,15 +90,21 @@ class AutoBase:
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
-            plot_iterations (boolean, False): Show interactive plot of iteration vs. score
-                during fitting. Can only be ran in Jupyter Notebook.
+            no_iteration_plot (boolean, False): Disables the iteration vs. score plot in Jupyter notebook.
+                Disabled by default in non-Jupyter enviroments.
 
         Returns:
 
             self
         """
-        self.best_score_by_iter_fig = None
-        self.best_score_by_iter_ax = None
+        # don't show iteration plot outside of a jupyter notebook
+        if no_iteration_plot is False:
+            try:
+                get_ipython
+                no_iteration_plot = False
+            except NameError:
+                no_iteration_plot = True
+
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -136,14 +140,15 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
+        if no_iteration_plot is False:
+            self.plot.best_score_by_iteration()
+
         if self.max_pipelines is None:
             start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
             while time.time() - start <= self.max_time:
                 self._do_iteration(X, y, pbar, raise_errors)
-                if plot_iterations:
-                    self.plot_best_score_by_iteration(interactive_plot=True)
             pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
@@ -156,8 +161,6 @@ class AutoBase:
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
                 self._do_iteration(X, y, pbar, raise_errors)
-                if plot_iterations:
-                    self.plot_best_score_by_iteration(interactive_plot=True)
             pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
@@ -231,6 +234,9 @@ class AutoBase:
                          parameters=parameters,
                          training_time=training_time,
                          cv_data=cv_data)
+
+        # Update the score for the score vs. iteration plots
+        self.plot.add_iteration_score()
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -343,28 +349,6 @@ class AutoBase:
 
         if return_dict:
             return pipeline_results
-
-    def plot_best_score_by_iteration(self, interactive_plot=False):
-        if self.best_score_by_iter_fig is None:
-            self.best_score_by_iteration = list()
-
-        no_plot_made = self.best_score_by_iter_fig is None
-        if no_plot_made or interactive_plot is False:
-            iter_numbers = list(range(len(self.best_score_by_iteration)))
-            title = 'Pipeline Search: Iteration vs. {}'.format(self.objective.name)
-            data = go.Scatter(x=iter_numbers, y=self.best_score_by_iteration, mode='lines+markers')
-            layout = dict(title=title)
-            self.best_score_by_iter_fig = go.FigureWidget(data, layout)
-            display(self.best_score_by_iter_fig)
-        else:
-            if self.objective.greater_is_better:
-                new_score = self.rankings['score'].max()
-            else:
-                new_score = self.rankings['score'].min()
-            self.best_score_by_iteration.append(new_score)
-            trace = self.best_score_by_iter_fig.data[0]
-            trace.x = list(range(len(self.best_score_by_iteration)))
-            trace.y = self.best_score_by_iteration
 
     @property
     def rankings(self):

@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 import sklearn.metrics
+from IPython.display import display
 from scipy import interp
 
 from evalml.problem_types import ProblemTypes
@@ -17,6 +18,8 @@ class PipelineSearchPlots:
             data (AutoClassifier or AutoRegressor): Automated pipeline search object
         """
         self.data = data
+        self.best_score_by_iter_fig = None
+        self.iteration_scores = list()
 
     def get_roc_data(self, pipeline_id):
         """Gets data that can be used to create a ROC plot.
@@ -154,3 +157,23 @@ class PipelineSearchPlots:
                                                          '<extra></extra>'),  # necessary to remove unwanted trace info
                            layout=layout)
         return figure
+
+    def add_iteration_score(self):
+        if self.data.objective.greater_is_better:
+            new_score = self.data.rankings['score'].max()
+        else:
+            new_score = self.data.rankings['score'].min()
+        self.iteration_scores.append(new_score)
+
+        if self.best_score_by_iter_fig is not None:
+            trace = self.best_score_by_iter_fig.data[0]
+            trace.x = list(range(len(self.iteration_scores)))
+            trace.y = self.iteration_scores
+
+    def best_score_by_iteration(self):
+        iter_numbers = list(range(len(self.iteration_scores)))
+        title = 'Pipeline Search: Iteration vs. {}'.format(self.data.objective.name)
+        data = go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers')
+        layout = dict(title=title, xaxis_title='Iteration', yaxis_title='Score')
+        self.best_score_by_iter_fig = go.FigureWidget(data, layout)
+        display(self.best_score_by_iter_fig)
