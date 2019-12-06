@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoClassifier(AutoBase):
-    """Automatic pipeline search for classification problems"""
+    """Automatic pipeline search class for classification problems"""
 
     def __init__(self,
                  objective=None,
@@ -58,14 +58,6 @@ class AutoClassifier(AutoBase):
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
-                null values for the feature to be considered "highly-null". Default is 0.95.
-
-            check_outliers(bool): If True, checks if there are any outliers in data. Default is False.
-
-            id_cols_threshold(float): Float in range [0,1] that represents the probability threshold for
-            a feature to be considered an ID column. Default is 1.0.
-
             random_state (int): the random_state
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
@@ -101,11 +93,20 @@ class AutoClassifier(AutoBase):
         )
 
     def set_problem_type(self, objective, multiclass):
-        """
+        """Sets the problem type of the AutoClassifier to either binary or multiclass.
+
         If there is an objective either:
             a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
             b. Set problem_type to MUTLICLASS if multiclass is true
             c. Default to BINARY
+
+        Arguments:
+            objective (Object): the objective to optimize
+            multiclass (bool): boolean representing whether search is for multiclass problems or not
+
+        Returns:
+            ProblemTypes enum representing type of problem to set AutoClassifier to
+
         """
         problem_type = ProblemTypes.BINARY
         # if exclusively multiclass: infer

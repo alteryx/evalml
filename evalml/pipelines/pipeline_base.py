@@ -4,12 +4,17 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
+from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
 
 
 class PipelineBase:
+
+    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
+    plot = PipelinePlots
+
     def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -43,6 +48,8 @@ class PipelineBase:
         self.parameters = {}
         for component in self.component_list:
             self.parameters.update(component.parameters)
+
+        self.plot = PipelinePlots(self)
         self.logger = Logger()
 
     def __getitem__(self, index):
@@ -73,24 +80,37 @@ class PipelineBase:
         return name
 
     def get_component(self, name):
+        """Get the first component object in the pipeline with a specific name.
+
+        Arguments:
+            name (str): name of component to get
+
+        Returns:
+            Component in pipeline with the specified name if it exists, else None
+        """
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters and cross validation information
+        """Outputs pipeline details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information
+                about pipeline. Defaults to false
 
         Returns:
-
-            None
-
+            dictionary of all component parameters if return_dict is True, else None
         """
-        title = "Pipeline: " + self.name
-        self.logger.log_title(title)
-
+        self.logger.log_title(self.name)
+        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
-        objective_string = "Objective: {} ({})".format(self.objective.name, better_string)
+        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
         self.logger.log(objective_string)
+
+        if self.estimator.name in self.input_feature_names:
+            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
 
         # Summary of steps
         self.logger.log_subtitle("Pipeline Steps")
@@ -163,11 +183,14 @@ class PipelineBase:
         """Make predictions using selected features.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             Series : estimated labels
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X_t = self._transform(X)
 
         if self.objective and self.objective.needs_fitting:
@@ -188,13 +211,17 @@ class PipelineBase:
         """Make probability estimates for labels.
 
         Args:
-            X (DataFrame) : features
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
             DataFrame : probability estimates
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+
         if proba.shape[1] <= 2:
             return proba[:, 1]
         else:
@@ -204,13 +231,19 @@ class PipelineBase:
         """Evaluate model performance on current and additional objectives
 
         Args:
-            X (DataFrame) : features for model predictions
-            y (Series) : true labels
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (Series) : true labels of length [n_samples]
             other_objectives (list): list of other objectives to score
 
         Returns:
             score, ordered dictionary of other objective scores
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         other_objectives = other_objectives or []
         other_objectives = [get_objective(o) for o in other_objectives]
         y_predicted = None

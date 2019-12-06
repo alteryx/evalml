@@ -9,6 +9,8 @@ import plotly.graph_objects as go
 from IPython.display import display
 from tqdm import tqdm
 
+from .pipeline_search_plots import PipelineSearchPlots
+
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
@@ -18,6 +20,10 @@ from evalml.utils import Logger, convert_to_seconds
 
 
 class AutoBase:
+
+    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
+    plot = PipelineSearchPlots
+
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):
@@ -35,9 +41,6 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
-        self.best_score_by_iter_fig = None
-        self.best_score_by_iter_ax = None
-
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
@@ -74,7 +77,9 @@ class AutoBase:
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
-    def fit(self, X, y, feature_types=None, raise_errors=False, plot_iterations=False):
+        self.plot = PipelineSearchPlots(self)
+
+    def fit(self, X, y, feature_types=None, raise_errors=False):
         """Find best classifier
 
         Arguments:
@@ -154,6 +159,7 @@ class AutoBase:
                 if plot_iterations:
                     self.plot_best_score_by_iteration(interactive_plot=True)
             pbar.close()
+
         self.logger.log("\n✔ Optimization finished")
 
     def check_multiclass(self, y):
@@ -190,8 +196,7 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
 
         start = time.time()
-        scores = []
-        all_objective_scores = []
+        cv_data = []
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -212,25 +217,20 @@ class AutoBase:
                     pbar.write(str(e))
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
-
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
             ordered_scores.update(other_scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
-            scores.append(score)
-            all_objective_scores.append(ordered_scores)
+            cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
         training_time = time.time() - start
 
         # save the result and continue
-        self._add_result(
-            trained_pipeline=pipeline,
-            parameters=parameters,
-            scores=scores,
-            all_objective_scores=all_objective_scores,
-            training_time=training_time
-        )
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=training_time,
+                         cv_data=cv_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -246,8 +246,9 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, scores, all_objective_scores, training_time):
-        score = pd.Series(scores).mean()
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
+        scores = pd.Series([fold["score"] for fold in cv_data])
+        score = scores.mean()
 
         if self.objective.greater_is_better:
             score_to_minimize = -score
@@ -257,21 +258,21 @@ class AutoBase:
         self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
-        s = pd.Series(scores)
-        high_variance_cv = (s.std() / s.mean()) > .2
+        high_variance_cv = (scores.std() / scores.mean()) > .2
 
-        pipeline_name = trained_pipeline.__class__.__name__
+        pipeline_class_name = trained_pipeline.__class__.__name__
+        pipeline_name = trained_pipeline.name
         pipeline_id = len(self.results)
 
         self.results[pipeline_id] = {
             "id": pipeline_id,
+            "pipeline_class_name": pipeline_class_name,
             "pipeline_name": pipeline_name,
             "parameters": dict(parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
-            "scores": scores,
-            "all_objective_scores": all_objective_scores,
             "training_time": training_time,
+            "cv_data": cv_data
         }
 
         if self.add_result_callback:
@@ -294,10 +295,11 @@ class AutoBase:
         Arguments:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
-                about pipeline. Defaults to false
+                about pipeline. Defaults to False.
 
         Returns:
-            description
+            Description of specified pipeline. Includes information such as
+            type of pipeline components, problem, training time, cross validation, etc.
         """
         if pipeline_id not in self.results:
             raise RuntimeError("Pipeline not found")
@@ -305,28 +307,23 @@ class AutoBase:
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results[pipeline_id]
 
-        self.logger.log_title("Pipeline Description")
-
-        better_string = "lower is better"
-        if pipeline.objective.greater_is_better:
-            better_string = "greater is better"
-
-        self.logger.log("Pipeline Name: %s" % pipeline.name)
-        self.logger.log("Model type: %s" % pipeline.model_type)
-        self.logger.log("Objective: %s (%s)" % (pipeline.objective.name, better_string))
-        self.logger.log("Total training time (including CV): %.1f seconds\n" % pipeline_results["training_time"])
-
-        self.logger.log_subtitle("Parameters")
-        for item in pipeline_results["parameters"].items():
-            self.logger.log("• %s: %s" % item)
-
-        self.logger.log_subtitle("\nCross Validation")
+        pipeline.describe()
+        self.logger.log_subtitle("Training")
+        # Ideally, we want this information available on pipeline instead
+        self.logger.log("Training for {} problems.".format(self.problem_type))
+        self.logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
+        self.logger.log_subtitle("Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
             self.logger.log("Warning! High variance within cross validation scores. " +
                             "Model may not perform as estimated on unseen data.")
 
-        all_objective_scores = pd.DataFrame(pipeline_results["all_objective_scores"])
+        all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
+        all_objective_scores = pd.DataFrame(all_objective_scores)
+
+        # note: we need to think about how to better handle metrics we don't want to display in our chart
+        # currently, just dropping the columns before displaying
+        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
 
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
@@ -340,6 +337,7 @@ class AutoBase:
             all_objective_scores.loc["coef of var", c] = std / mean
 
         all_objective_scores = all_objective_scores.fillna("-")
+
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self.logger.log(all_objective_scores)
 
@@ -376,7 +374,7 @@ class AutoBase:
             ascending = False
 
         rankings_df = pd.DataFrame(self.results.values())
-        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
 

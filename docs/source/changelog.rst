@@ -4,20 +4,44 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
+    * Fixes
+        * Lower botocore requirement :pr:`235`
+    * Changes
+        * Updating demo datasets to retain column names :pr:`223`
+        * Moving pipeline visualization to PipelinePlots class :pr:`228`
+        * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
+    * Documentation Changes
+        * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
+    * Testing Changes
+        * Added support for testing on Windows with CircleCI :pr:`226`
+        * Added support for doctests :pr:`233`
+
+**v0.5.2 Nov. 18, 2019**
+    * Enhancements
+        * Adding basic pipeline structure visualization :pr:`211`
+    * Documentation Changes
+        * Added notebooks to build process :pr:`212`
+
+**v0.5.1 Nov. 15, 2019**
+    * Enhancements
         * Added basic outlier detection guardrail :pr:`151`
         * Added basic ID column guardrail :pr:`135`
         * Added support for unlimited pipelines with a max_time limit :pr:`70`
         * Updated .readthedocs.yaml to successfully build :pr:`188`
     * Fixes
+        * Removed MSLE from default additional objectives :pr:`203`
         * Fixed random_state passed in pipelines :pr:`204`
         * Fixed slow down in RFRegressor :pr:`206`
     * Changes
+        * Pulled information for describe_pipeline from pipeline's new describe method :pr:`190`
         * Refactored pipelines :pr:`108`
-        * Removed guardrails from Auto(*) :pr:`202`
+        * Removed guardrails from Auto(*) :pr:`202`, :pr:`208`
     * Documentation Changes
         * Updated documentation to show max_time enhancements :pr:`189`
-        * Updated release instructions for RTd :pr:`193`
-    * Testing Changes
+        * Updated release instructions for RTD :pr:`193`
+        * Added notebooks to build process :pr:`212`
+        * Added contributing instructions :pr:`213`
 
 **v0.5.0 Oct. 29, 2019**
     * Enhancements
