@@ -8,9 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoClassifier(AutoBase):
-    """Automatic pipeline search for classification problems
-
-    """
+    """Automatic pipeline search class for classification problems"""
 
     def __init__(self,
                  objective=None,
@@ -66,7 +64,7 @@ class AutoClassifier(AutoBase):
         """
 
         if cv is None:
-            cv = StratifiedKFold(n_splits=3, random_state=random_state)
+            cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
         if objective is None and not multiclass:
@@ -95,11 +93,20 @@ class AutoClassifier(AutoBase):
         )
 
     def set_problem_type(self, objective, multiclass):
-        """
+        """Sets the problem type of the AutoClassifier to either binary or multiclass.
+
         If there is an objective either:
             a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
             b. Set problem_type to MUTLICLASS if multiclass is true
             c. Default to BINARY
+
+        Arguments:
+            objective (Object): the objective to optimize
+            multiclass (bool): boolean representing whether search is for multiclass problems or not
+
+        Returns:
+            ProblemTypes enum representing type of problem to set AutoClassifier to
+
         """
         problem_type = ProblemTypes.BINARY
         # if exclusively multiclass: infer
