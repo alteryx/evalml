@@ -81,7 +81,9 @@ class PipelinePlots:
 
         feat_imp = self.pipeline.feature_importances
         feat_imp['importance'] = abs(feat_imp['importance'])
+        # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
+
         title = 'Feature Importances'
         subtitle = 'May display fewer features due to feature selection'
         data = [go.Bar(
