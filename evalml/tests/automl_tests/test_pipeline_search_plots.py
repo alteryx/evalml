@@ -6,6 +6,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml.models.auto_base import AutoBase
+from evalml.models import AutoClassifier
 from evalml.models.pipeline_search_plots import PipelineSearchPlots
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
@@ -150,7 +151,6 @@ def test_generate_confusion_matrix(X_y):
 
 
 def test_confusion_matrix_regression_throws_error():
-
     # Make mock class and generate mock results
     class MockAutoRegressor(AutoBase):
         def __init__(self):
@@ -164,3 +164,15 @@ def test_confusion_matrix_regression_throws_error():
         search_plots.get_confusion_matrix_data(0)
     with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems."):
         search_plots.generate_confusion_matrix(0)
+
+
+def test_plot_iterations(X_y):
+    X, y = X_y
+
+    clf = AutoClassifier(multiclass=False, max_pipelines=3)
+    clf.fit(X, y, no_iteration_plot=True)
+    clf.plot.best_score_by_iteration()
+
+    clf2 = AutoClassifier(multiclass=False, max_time=2)
+    clf2.fit(X, y, no_iteration_plot=False)
+    clf2.plot.best_score_by_iteration()

@@ -269,15 +269,3 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
-
-
-def test_plot_iterations(X_y):
-    X, y = X_y
-
-    clf = AutoClassifier(multiclass=False, max_pipelines=3)
-    clf.fit(X, y, plot_iterations=True)
-    clf.plot_best_score_by_iteration()
-
-    clf2 = AutoClassifier(multiclass=False, max_time=2)
-    clf2.fit(X, y, plot_iterations=True)
-    clf2.plot_best_score_by_iteration()
