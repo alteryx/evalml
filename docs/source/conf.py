@@ -12,13 +12,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import os
-import subprocess
-import sys
-
-from sphinx.ext.autodoc import Documenter, MethodDocumenter
-
 import evalml
+import os
+import sys
+import subprocess
+from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
+
+
+from sphinx.ext.autodoc import MethodDocumenter, Documenter
 
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
@@ -87,7 +88,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -248,6 +249,7 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 def build_finished(app, Exception):
     subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
+
 
 
 def setup(app):
