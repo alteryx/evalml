@@ -352,7 +352,6 @@ class AutoBase:
         rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
-
         return rankings_df
 
     @property
