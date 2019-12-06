@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
-from evalml.models.auto_base import AutoBase
 from evalml.models import AutoClassifier
+from evalml.models.auto_base import AutoBase
 from evalml.models.pipeline_search_plots import PipelineSearchPlots
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
