@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 GENDIR        = source/generated
-BUILDDIR      = _build
+BUILDDIR      = build
 
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees source
 
@@ -18,7 +18,7 @@ clean:
 
 .PHONY: html
 html:
-	$(SPHINXBUILD) -j 8 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
