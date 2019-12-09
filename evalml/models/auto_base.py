@@ -139,15 +139,14 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if show_iteration_plot is True:
-            self.plot.search_iteration_plot(interactive_plot=True)
+        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
-            start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
+            start = time.time()
             while time.time() - start <= self.max_time:
-                self._do_iteration(X, y, pbar, raise_errors)
+                self._do_iteration(X, y, pbar, raise_errors, plot)
             pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
@@ -159,7 +158,7 @@ class AutoBase:
                     pbar.close()
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
-                self._do_iteration(X, y, pbar, raise_errors)
+                self._do_iteration(X, y, pbar, raise_errors, plot)
             pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
@@ -173,7 +172,7 @@ class AutoBase:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
-    def _do_iteration(self, X, y, pbar, raise_errors):
+    def _do_iteration(self, X, y, pbar, raise_errors, plot):
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
@@ -234,6 +233,9 @@ class AutoBase:
                          training_time=training_time,
                          cv_data=cv_data)
 
+        # Update plot with new score
+        plot.update()
+
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
@@ -276,9 +278,6 @@ class AutoBase:
             "training_time": training_time,
             "cv_data": cv_data
         }
-
-        # Update the iteration plot to include new score
-        self.plot.iter_plot.update()
 
         if self.add_result_callback:
             self.add_result_callback(self.results[pipeline_id], trained_pipeline)

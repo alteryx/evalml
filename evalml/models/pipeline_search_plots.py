@@ -11,11 +11,14 @@ class SearchIterationPlot():
     def __init__(self, data, show_plot=True):
         self.data = data
         self.best_score_by_iter_fig = None
-        self.iteration_scores = list()
+        self.curr_iteration_scores = list()
+        self.best_iteration_scores = list()
 
-        iter_numbers = list(range(len(self.iteration_scores)))
-        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates current iteration</sub>'.format(self.data.objective.name)
-        data = [go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers'), go.Scatter(x=[], y=[], mode='markers', marker={'color': 'gray'})]
+        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>'.format(self.data.objective.name)
+        data = [
+            go.Scatter(x=[], y=[], mode='lines+markers', name='Best Score'),
+            go.Scatter(x=[], y=[], mode='markers', name='Iter score', marker={'color': 'gray'})
+        ]
         layout = {
             'title': title,
             'xaxis': {
@@ -31,21 +34,23 @@ class SearchIterationPlot():
         self.best_score_by_iter_fig.update_layout(showlegend=False)
 
     def update(self):
-        if self.data.objective.greater_is_better:
-            new_score = self.data.rankings['score'].max()
-        else:
-            new_score = self.data.rankings['score'].min()
-        self.iteration_scores.append(new_score)
+        iter_idx = self.data.rankings['id'].idxmax()
+        self.curr_iteration_scores.append(self.data.rankings['score'].iloc[iter_idx])
 
-        # Update current point in plot
-        trace = self.best_score_by_iter_fig.data[1]
-        trace.x = [len(self.iteration_scores) - 1]
-        trace.y = [new_score]
+        if self.data.objective.greater_is_better:
+            iter_max_score = self.data.rankings['score'].max()
+        else:
+            iter_max_score = self.data.rankings['score'].min()
+        self.best_iteration_scores.append(iter_max_score)
 
         # Update entire line plot
-        trace = self.best_score_by_iter_fig.data[0]
-        trace.x = list(range(len(self.iteration_scores)))
-        trace.y = self.iteration_scores
+        curr_score_trace = self.best_score_by_iter_fig.data[1]
+        curr_score_trace.x = list(range(len(self.curr_iteration_scores)))
+        curr_score_trace.y = self.curr_iteration_scores
+
+        best_score_trace = self.best_score_by_iter_fig.data[0]
+        best_score_trace.x = list(range(len(self.best_iteration_scores)))
+        best_score_trace.y = self.best_iteration_scores
 
 
 class PipelineSearchPlots:
@@ -59,7 +64,6 @@ class PipelineSearchPlots:
             data (AutoClassifier or AutoRegressor): Automated pipeline search object
         """
         self.data = data
-        self.iter_plot = SearchIterationPlot(self.data)
 
     def get_roc_data(self, pipeline_id):
         """Gets data that can be used to create a ROC plot.
@@ -204,7 +208,12 @@ class PipelineSearchPlots:
         Returns:
             plot
         """
-        if interactive_plot is True:
-            display(self.iter_plot.best_score_by_iter_fig)
-        else:
+
+        if hasattr(self, 'iter_plot'):
             return go.Figure(self.iter_plot.best_score_by_iter_fig)
+        else:
+            self.iter_plot = SearchIterationPlot(self.data)
+
+        if interactive_plot:
+            display(self.iter_plot.best_score_by_iter_fig)
+        return self.iter_plot
