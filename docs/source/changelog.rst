@@ -4,7 +4,6 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added basic correlation guardrail :pr:`141`
         * Added ability to create a plot of feature importances :pr:`133`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
     * Fixes

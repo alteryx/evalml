@@ -60,7 +60,7 @@ class AutoClassifier(AutoBase):
 
             random_state (int): the random_state
 
-            verbose (bool): If True, turn verbosity on. Defaults to True
+            verbose (boolean): If True, turn verbosity on. Defaults to True
         """
 
         if cv is None:
