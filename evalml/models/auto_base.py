@@ -151,7 +151,6 @@ class AutoBase:
             pbar._instances.clear()
 
         start = time.time()
-        self._do_iteration(X, y, pbar, raise_errors)
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
         desc = "✔ Optimization finished"
@@ -159,9 +158,12 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
-    def _check_stopping_condition(self, start):
-        cont = True
-        msg = None
+    def _check_stopping_condition(self, start):    
+        should_continue = True
+        msg = None 
+
+        if len(self.results) == 0:
+            return True
 
         # check max_time and max_pipelines
         elapsed = time.time() - start
@@ -188,11 +190,11 @@ class AutoBase:
                 self._best_score = curr_score
 
         if self.patience is not None and curr_id >= self._best_id + self.patience:
-            cont = False
+            should_continue = False
             msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
-        if not cont and msg:
+        if not should_continue and msg:
             self.logger.log(msg)
-        return cont
+        return should_continue
 
     def check_multiclass(self, y):
         if y.nunique() <= 2:
