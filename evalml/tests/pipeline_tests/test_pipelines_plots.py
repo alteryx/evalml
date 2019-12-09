@@ -1,6 +1,7 @@
 import os
 
 import graphviz
+import plotly.graph_objects as go
 import pytest
 
 from evalml.pipelines import PipelineBase
@@ -31,3 +32,10 @@ def test_invalid_format():
     pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.plot(to_file=path)
+
+
+def test_feature_importance_plot(X_y):
+    X, y = X_y
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'categorical_encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    clf.fit(X, y)
+    assert isinstance(clf.plot.feature_importances(), go.Figure)

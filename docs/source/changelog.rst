@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added ability to create a plot of feature importances :pr:`133`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
     * Fixes
         * Lower botocore requirement :pr:`235`
@@ -12,6 +13,7 @@ Changelog
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
+        * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
