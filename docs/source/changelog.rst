@@ -8,6 +8,7 @@ Changelog
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
     * Fixes
         * Lower botocore requirement :pr:`235`
+        * Fixed return value of Recall metrics :pr:`264`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`

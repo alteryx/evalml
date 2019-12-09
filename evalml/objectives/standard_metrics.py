@@ -11,7 +11,7 @@ from evalml.problem_types import ProblemTypes
 
 # todo does this need tuning?
 class F1(ObjectiveBase):
-    """F1 Score for binary classification"""
+    """F1 score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -23,7 +23,7 @@ class F1(ObjectiveBase):
 
 
 class F1Micro(ObjectiveBase):
-    """F1 Score for multiclass classification using micro averaging"""
+    """F1 score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -35,7 +35,7 @@ class F1Micro(ObjectiveBase):
 
 
 class F1Macro(ObjectiveBase):
-    """F1 Score for multiclass classification using macro averaging"""
+    """F1 score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -47,7 +47,7 @@ class F1Macro(ObjectiveBase):
 
 
 class F1Weighted(ObjectiveBase):
-    """F1 Score for multiclass classification using weighted averaging"""
+    """F1 score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -59,7 +59,7 @@ class F1Weighted(ObjectiveBase):
 
 
 class Precision(ObjectiveBase):
-    """Precision Score for binary classification"""
+    """Precision score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -71,7 +71,7 @@ class Precision(ObjectiveBase):
 
 
 class PrecisionMicro(ObjectiveBase):
-    """Precision Score for multiclass classification using micro averaging"""
+    """Precision score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -83,7 +83,7 @@ class PrecisionMicro(ObjectiveBase):
 
 
 class PrecisionMacro(ObjectiveBase):
-    """Precision Score for multiclass classification using macro averaging"""
+    """Precision score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -95,7 +95,7 @@ class PrecisionMacro(ObjectiveBase):
 
 
 class PrecisionWeighted(ObjectiveBase):
-    """Precision Score for multiclass classification using weighted averaging"""
+    """Precision score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -107,7 +107,7 @@ class PrecisionWeighted(ObjectiveBase):
 
 
 class Recall(ObjectiveBase):
-    """Recall Score for binary classification"""
+    """Recall score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -115,11 +115,11 @@ class Recall(ObjectiveBase):
     problem_types = [ProblemTypes.BINARY]
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted)
+        return metrics.recall_score(y_true, y_predicted)
 
 
 class RecallMicro(ObjectiveBase):
-    """Recall Score for multiclass classification using micro averaging"""
+    """Recall score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -127,11 +127,11 @@ class RecallMicro(ObjectiveBase):
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted, average='micro')
+        return metrics.recall_score(y_true, y_predicted, average='micro')
 
 
 class RecallMacro(ObjectiveBase):
-    """Recall Score for multiclass classification using macro averaging"""
+    """Recall score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -139,11 +139,11 @@ class RecallMacro(ObjectiveBase):
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted, average='macro')
+        return metrics.recall_score(y_true, y_predicted, average='macro')
 
 
 class RecallWeighted(ObjectiveBase):
-    """Recall Score for multiclass classification using weighted averaging"""
+    """Recall score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
@@ -151,11 +151,11 @@ class RecallWeighted(ObjectiveBase):
     problem_types = [ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
-        return metrics.f1_score(y_true, y_predicted, average='weighted')
+        return metrics.recall_score(y_true, y_predicted, average='weighted')
 
 
 class AUC(ObjectiveBase):
-    """AUC Score for binary classification"""
+    """AUC score for binary classification"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -167,7 +167,7 @@ class AUC(ObjectiveBase):
 
 
 class AUCMicro(ObjectiveBase):
-    """AUC Score for multiclass classification using micro averaging"""
+    """AUC score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -180,7 +180,7 @@ class AUCMicro(ObjectiveBase):
 
 
 class AUCMacro(ObjectiveBase):
-    """AUC Score for multiclass classification using macro averaging"""
+    """AUC score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
@@ -327,7 +327,7 @@ class ConfusionMatrix(ObjectiveBase):
     """Confusion matrix for classification problems"""
     needs_fitting = False
     greater_is_better = True
-    need_proba = False
+    score_needs_proba = False
     name = "Confusion Matrix"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
