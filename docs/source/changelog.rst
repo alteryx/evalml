@@ -5,15 +5,18 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add CatBoost classification and regression components and pipelines :pr:`247`
+        * Added ability to create a plot of feature importances :pr:`133`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
     * Fixes
         * Lower botocore requirement :pr:`235`
+        * Fixed return value of Recall metrics :pr:`264`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
-        * Fix and filter FutureWarnings from scikit-learn :pr:`249`
+        * Adding class properties to API reference :pr:`244`
+        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`

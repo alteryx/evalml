@@ -75,3 +75,32 @@ class PipelinePlots:
             graph.render(output_path, cleanup=True)
 
         return graph
+
+    def feature_importances(self):
+        import plotly.graph_objects as go
+
+        feat_imp = self.pipeline.feature_importances
+        feat_imp['importance'] = abs(feat_imp['importance'])
+        # List is reversed to go from ascending order to descending order
+        feat_imp = feat_imp.iloc[::-1]
+
+        title = 'Feature Importances'
+        subtitle = 'May display fewer features due to feature selection'
+        data = [go.Bar(
+            x=feat_imp['importance'],
+            y=feat_imp['feature'],
+            orientation='h'
+        )]
+
+        layout = {
+            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+            'height': 800,
+            'xaxis_title': 'Feature Importance',
+            'yaxis_title': 'Feature',
+            'yaxis': {
+                'type': 'category'
+            }
+        }
+
+        fig = go.Figure(data=data, layout=layout)
+        return fig
