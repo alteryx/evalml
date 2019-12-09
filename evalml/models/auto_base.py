@@ -77,7 +77,7 @@ class AutoBase:
 
         self.plot = PipelineSearchPlots(self)
 
-    def fit(self, X, y, feature_types=None, raise_errors=False, no_iteration_plot=False):
+    def fit(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -90,7 +90,7 @@ class AutoBase:
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
-            no_iteration_plot (boolean, False): Disables the iteration vs. score plot in Jupyter notebook.
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
         Returns:
@@ -98,12 +98,11 @@ class AutoBase:
             self
         """
         # don't show iteration plot outside of a jupyter notebook
-        if no_iteration_plot is False:
+        if show_iteration_plot is True:
             try:
                 get_ipython
-                no_iteration_plot = False
             except NameError:
-                no_iteration_plot = True
+                show_iteration_plot = False
 
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
@@ -140,8 +139,8 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        if no_iteration_plot is False:
-            self.plot.best_score_by_iteration()
+        if show_iteration_plot is True:
+            self.plot.search_iteration_plot(interactive_plot=True)
 
         if self.max_pipelines is None:
             start = time.time()
@@ -235,9 +234,6 @@ class AutoBase:
                          training_time=training_time,
                          cv_data=cv_data)
 
-        # Update the score for the score vs. iteration plots
-        self.plot.add_iteration_score()
-
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
@@ -280,6 +276,9 @@ class AutoBase:
             "training_time": training_time,
             "cv_data": cv_data
         }
+
+        # Update the iteration plot to include new score
+        self.plot.iter_plot.update()
 
         if self.add_result_callback:
             self.add_result_callback(self.results[pipeline_id], trained_pipeline)

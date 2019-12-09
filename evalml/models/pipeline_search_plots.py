@@ -7,6 +7,31 @@ from scipy import interp
 from evalml.problem_types import ProblemTypes
 
 
+class SearchIterationPlot():
+    def __init__(self, data, show_plot=True):
+        self.data = data
+        self.best_score_by_iter_fig = None
+        self.iteration_scores = list()
+
+        iter_numbers = list(range(len(self.iteration_scores)))
+        title = 'Pipeline Search: Iteration vs. {}'.format(self.data.objective.name)
+        data = go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers')
+        layout = dict(title=title, xaxis_title='Iteration', yaxis_title='Score')
+        self.best_score_by_iter_fig = go.FigureWidget(data, layout)
+
+    def update(self):
+        if self.data.objective.greater_is_better:
+            new_score = self.data.rankings['score'].max()
+        else:
+            new_score = self.data.rankings['score'].min()
+        self.iteration_scores.append(new_score)
+
+        if self.best_score_by_iter_fig is not None:
+            trace = self.best_score_by_iter_fig.data[0]
+            trace.x = list(range(len(self.iteration_scores)))
+            trace.y = self.iteration_scores
+
+
 class PipelineSearchPlots:
     """Plots for the AutoClassifier/AutoRegressor class.
     """
@@ -18,8 +43,7 @@ class PipelineSearchPlots:
             data (AutoClassifier or AutoRegressor): Automated pipeline search object
         """
         self.data = data
-        self.best_score_by_iter_fig = None
-        self.iteration_scores = list()
+        self.iter_plot = SearchIterationPlot(self.data)
 
     def get_roc_data(self, pipeline_id):
         """Gets data that can be used to create a ROC plot.
@@ -158,22 +182,13 @@ class PipelineSearchPlots:
                            layout=layout)
         return figure
 
-    def add_iteration_score(self):
-        if self.data.objective.greater_is_better:
-            new_score = self.data.rankings['score'].max()
+    def search_iteration_plot(self, interactive_plot=False):
+        """Shows a plot of the best score at each iteration using data gathered during training.
+
+        Returns:
+            plot
+        """
+        if interactive_plot is True:
+            display(self.iter_plot.best_score_by_iter_fig)
         else:
-            new_score = self.data.rankings['score'].min()
-        self.iteration_scores.append(new_score)
-
-        if self.best_score_by_iter_fig is not None:
-            trace = self.best_score_by_iter_fig.data[0]
-            trace.x = list(range(len(self.iteration_scores)))
-            trace.y = self.iteration_scores
-
-    def best_score_by_iteration(self):
-        iter_numbers = list(range(len(self.iteration_scores)))
-        title = 'Pipeline Search: Iteration vs. {}'.format(self.data.objective.name)
-        data = go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers')
-        layout = dict(title=title, xaxis_title='Iteration', yaxis_title='Score')
-        self.best_score_by_iter_fig = go.FigureWidget(data, layout)
-        display(self.best_score_by_iter_fig)
+            return go.Figure(self.iter_plot.best_score_by_iter_fig)
