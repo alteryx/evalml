@@ -19,7 +19,7 @@ def test_generate_roc(X_y):
     class MockAuto(AutoBase):
         def __init__(self):
             self.results = {}
-            self.results['search_results'] = {}
+            self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
         def fit(self):
@@ -46,7 +46,7 @@ def test_generate_roc(X_y):
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
-            self.results['search_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
+            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
 
     mock_clf = MockAuto()
     search_plots = PipelineSearchPlots(mock_clf)
@@ -75,7 +75,7 @@ def test_generate_roc_multi_raises_errors(X_y):
     class MockAutoMulti(AutoBase):
         def __init__(self):
             self.results = {}
-            self.results['search_results'] = {}
+            self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.MULTICLASS
 
     mock_clf = MockAutoMulti()
@@ -95,7 +95,7 @@ def test_generate_confusion_matrix(X_y):
     class MockAutoClassifier(AutoBase):
         def __init__(self):
             self.results = {}
-            self.results['search_results'] = {}
+            self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
         def fit(self):
@@ -125,7 +125,7 @@ def test_generate_confusion_matrix(X_y):
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
-            self.results['search_results'].update({0: {"cv_data": cv_data,
+            self.results['pipeline_results'].update({0: {"cv_data": cv_data,
                                                        "pipeline_name": pipeline.name}})
 
     mock_clf = MockAutoClassifier()
@@ -157,7 +157,7 @@ def test_confusion_matrix_regression_throws_error():
     class MockAutoRegressor(AutoBase):
         def __init__(self):
             self.results = {}
-            self.results['search_results'] = {}
+            self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.REGRESSION
 
     mock_clf = MockAutoRegressor()
