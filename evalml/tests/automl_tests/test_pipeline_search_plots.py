@@ -126,7 +126,7 @@ def test_generate_confusion_matrix(X_y):
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
-                                                       "pipeline_name": pipeline.name}})
+                                                         "pipeline_name": pipeline.name}})
 
     mock_clf = MockAutoClassifier()
     search_plots = PipelineSearchPlots(mock_clf)
