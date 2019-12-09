@@ -70,6 +70,12 @@ class AutoBase:
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+        self._best_id = None
+        if self.objective.greater_is_better:
+            self._best_score = np.NINF
+        else:
+            self._best_score = np.PINF
+
 
         self.tuners = {}
         self.search_spaces = {}
@@ -143,10 +149,8 @@ class AutoBase:
 
         start = time.time()
         self._do_iteration(X, y, pbar, raise_errors)
-        pbar.update(1)
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-            pbar.update(1)
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -159,34 +163,34 @@ class AutoBase:
         # check max_time and max_pipelines
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
-            cont = False
-            return cont
+            return False
         elif self.max_pipelines and len(self.results) >= self.max_pipelines:
-            cont = False
-            return cont
+            return False
 
         # check patience
         curr_id = max(self.results, key=int)
-        if self.objective.greater_is_better:
-            best_id = max(self.results, key=lambda x: self.results[x]['score'])
-        else:
-            best_id = min(self.results, key=lambda x: self.results[x]['score'])
+        curr_score = self.results[curr_id]['score']
+        if self.objective.greater_is_better and curr_score > self._best_score:
+            self._best_id = curr_id
+            self._best_score = curr_score
+        elif not self.objective.greater_is_better and curr_score < self._best_score:
+            self._best_id = curr_id
+            self._best_score = curr_score
 
-        best_score = self.results[best_id]['score']
-        if self.patience is not None and curr_id >= best_id + self.patience:
-            ids_to_check = [i for i in range(best_id, best_id + self.patience + 1)]
-            scores_to_check = [self.results[id]['score'] for id in ids_to_check]
-            without_improvement = 0
-            for score in scores_to_check:
-                if self.objective.greater_is_better:
-                    if score <= best_score:
-                        without_improvement += 1
-                else:
-                    if score >= best_score:
-                        without_improvement += 1
-            if without_improvement >= self.patience:
-                cont = False
-                msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
+        if self.patience is not None and curr_id >= self._best_id + self.patience :
+            # ids_to_check = [i for i in range(self._best_id, self._best_id + self.patience + 1)]
+            # scores_to_check = [self.results[id]['score'] for id in ids_to_check]
+            # without_improvement = 0
+            # for score in scores_to_check:
+            #     if self.objective.greater_is_better:
+            #         if score <= best_score:
+            #             without_improvement += 1
+            #     else:
+            #         if score >= best_score:
+            #             without_improvement += 1
+            # if without_improvement >= self.patience:
+            cont = False
+            msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
         if not cont and msg:
             self.logger.log(msg)
         return cont
@@ -201,6 +205,7 @@ class AutoBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
+        pbar.update(1)
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
