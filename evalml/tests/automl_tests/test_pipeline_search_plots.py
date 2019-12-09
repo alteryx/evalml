@@ -169,10 +169,13 @@ def test_confusion_matrix_regression_throws_error():
 def test_plot_iterations(X_y):
     X, y = X_y
 
-    clf = AutoClassifier(multiclass=False, max_pipelines=3)
-    clf.fit(X, y, no_iteration_plot=True)
-    clf.plot.best_score_by_iteration()
+    clf = AutoClassifier(max_pipelines=3)
+    clf.fit(X, y)
+    plot = clf.plot.search_iteration_plot()
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
 
-    clf2 = AutoClassifier(multiclass=False, max_time=2)
-    clf2.fit(X, y, no_iteration_plot=False)
-    clf2.plot.best_score_by_iteration()
+    assert isinstance(plot, go.Figure)
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
