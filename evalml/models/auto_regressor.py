@@ -6,7 +6,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoRegressor(AutoBase):
-    """Automatic pipeline search for regression problems"""
+    """Automatic pipeline search for regression problems
+
+    """
 
     def __init__(self,
                  objective=None,
@@ -19,8 +21,6 @@ class AutoRegressor(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
-                 null_threshold=0.95,
-                 check_correlation=False,
                  random_state=0,
                  verbose=True):
         """Automated regressors pipeline search
@@ -28,10 +28,13 @@ class AutoRegressor(AutoBase):
         Arguments:
             objective (Object): the objective to optimize
 
-            max_pipelines (int): maximum number of pipelines to search
+            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
-            max_time (int): maximum time in seconds to search for pipelines.
-                won't start new pipeline search after this duration has elapsed
+            max_time (int, str): Maximum time to search for pipelines.
+                This will not start a new pipeline search after the duration
+                has elapsed. If it is an integer, then the time will be in seconds.
+                For strings, time can be specified as seconds, minutes, or hours.
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("regression") to see options.
@@ -51,11 +54,6 @@ class AutoRegressor(AutoBase):
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
-
-            null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
-                null values for the feature to be considered "highly-null". Default is 0.95.
-
-            check_correlation(bool): If true, runs checks for correlation and multicollinearity
 
             random_state (int): the random_state
 
@@ -82,8 +80,6 @@ class AutoRegressor(AutoBase):
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
-            null_threshold=null_threshold,
-            check_correlation=check_correlation,
             random_state=random_state,
             verbose=verbose
         )

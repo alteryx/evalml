@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoClassifier(AutoBase):
-    """Automatic pipeline search for classification problems"""
+    """Automatic pipeline search class for classification problems"""
 
     def __init__(self,
                  objective=None,
@@ -22,8 +22,6 @@ class AutoClassifier(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
-                 null_threshold=0.95,
-                 check_correlation=False,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -33,10 +31,13 @@ class AutoClassifier(AutoBase):
 
             multiclass (bool): If True, expecting multiclass data. By default: False.
 
-            max_pipelines (int): maximum number of pipelines to search
+            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
-            max_time (int): maximum time in seconds to search for pipelines.
-                won't start new pipeline search after this duration has elapsed
+            max_time (int, str): Maximum time to search for pipelines.
+                This will not start a new pipeline search after the duration
+                has elapsed. If it is an integer, then the time will be in seconds.
+                For strings, time can be specified as seconds, minutes, or hours.
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("classification") to see options.
@@ -57,18 +58,13 @@ class AutoClassifier(AutoBase):
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            null_threshold(float): Float in range [0,1] that represents what percentage of a feature needs to be
-                null values for the feature to be considered "highly-null". Default is 0.95.
-
-            check_correlation(bool): If true, runs checks for correlation and multicollinearity
-
             random_state (int): the random_state
 
             verbose (bool): If True, turn verbosity on. Defaults to True
         """
 
         if cv is None:
-            cv = StratifiedKFold(n_splits=3, random_state=random_state)
+            cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
         if objective is None and not multiclass:
@@ -92,18 +88,25 @@ class AutoClassifier(AutoBase):
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
-            null_threshold=null_threshold,
-            check_correlation=check_correlation,
             random_state=random_state,
             verbose=verbose
         )
 
     def set_problem_type(self, objective, multiclass):
-        """
+        """Sets the problem type of the AutoClassifier to either binary or multiclass.
+
         If there is an objective either:
             a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
             b. Set problem_type to MUTLICLASS if multiclass is true
             c. Default to BINARY
+
+        Arguments:
+            objective (Object): the objective to optimize
+            multiclass (bool): boolean representing whether search is for multiclass problems or not
+
+        Returns:
+            ProblemTypes enum representing type of problem to set AutoClassifier to
+
         """
         problem_type = ProblemTypes.BINARY
         # if exclusively multiclass: infer

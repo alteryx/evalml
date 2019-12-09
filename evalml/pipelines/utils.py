@@ -5,12 +5,12 @@ from .classification import (
     RFClassificationPipeline,
     XGBoostPipeline
 )
-from .regression import RFRegressionPipeline
+from .regression import LinearRegressionPipeline, RFRegressionPipeline
 
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
-ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, RFRegressionPipeline]
+ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
 
 
 def get_pipelines(problem_type, model_types=None):
@@ -60,7 +60,7 @@ def list_model_types(problem_type):
     """List model type for a particular problem type
 
     Arguments:
-        problem_types (ProblemType or str): binary, multiclass, or regression
+        problem_types (ProblemTypes or str): binary, multiclass, or regression
 
     Returns:
         model_types, list of model types
