@@ -6,7 +6,7 @@ def load_wine():
     """Load wine dataset. Multiclass problem
 
     Returns:
-        pd.DataFrame, Series: X, y
+        pd.DataFrame, pd.Series: X, y
     """
     data = load_wine_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)

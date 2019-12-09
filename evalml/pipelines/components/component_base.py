@@ -33,11 +33,11 @@ class ComponentBase:
         """Describe a component and its parameters
 
         Arguments:
-            print_name(Bool, optional): whether to print name of component
-            return_dict(Bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
+            print_name(bool, optional): whether to print name of component
+            return_dict(bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
         Returns:
-            None or Dict: prints and returns dictionary
+            None or dict: prints and returns dictionary
         """
         if print_name:
             title = self.name
