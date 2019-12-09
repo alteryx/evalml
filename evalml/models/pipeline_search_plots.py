@@ -14,8 +14,8 @@ class SearchIterationPlot():
         self.iteration_scores = list()
 
         iter_numbers = list(range(len(self.iteration_scores)))
-        title = 'Pipeline Search: Iteration vs. {}'.format(self.data.objective.name)
-        data = go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers')
+        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates current iteration</sub>'.format(self.data.objective.name)
+        data = [go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers'), go.Scatter(x=[], y=[], mode='markers', marker={'color': 'gray'})]
         layout = {
             'title': title,
             'xaxis': {
@@ -28,6 +28,7 @@ class SearchIterationPlot():
             }
         }
         self.best_score_by_iter_fig = go.FigureWidget(data, layout)
+        self.best_score_by_iter_fig.update_layout(showlegend=False)
 
     def update(self):
         if self.data.objective.greater_is_better:
@@ -36,10 +37,15 @@ class SearchIterationPlot():
             new_score = self.data.rankings['score'].min()
         self.iteration_scores.append(new_score)
 
-        if self.best_score_by_iter_fig is not None:
-            trace = self.best_score_by_iter_fig.data[0]
-            trace.x = list(range(len(self.iteration_scores)))
-            trace.y = self.iteration_scores
+        # Update current point in plot
+        trace = self.best_score_by_iter_fig.data[1]
+        trace.x = [len(self.iteration_scores) - 1]
+        trace.y = [new_score]
+
+        # Update entire line plot
+        trace = self.best_score_by_iter_fig.data[0]
+        trace.x = list(range(len(self.iteration_scores)))
+        trace.y = self.iteration_scores
 
 
 class PipelineSearchPlots:
