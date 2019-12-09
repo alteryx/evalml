@@ -58,9 +58,11 @@ class AutoBase:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-        self.results = {}
-        self.results['search_results'] = {}
-        self.results['search_order'] = []
+         
+        self.results = {
+            'pipelines': {},
+            'search_order': []
+        }
         self.trained_pipelines = {}
         self.random_state = random_state
         random.seed(self.random_state)
