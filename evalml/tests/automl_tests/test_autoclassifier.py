@@ -277,6 +277,9 @@ def test_early_stopping(capsys, X_y):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
 
+    with pytest.raises(ValueError, match='tolerance value must be'):
+        clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+
     clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, random_state=0)
     clf.fit(X, y)
     out, _ = capsys.readouterr()

@@ -23,7 +23,7 @@ class AutoBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, model_types, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
@@ -31,6 +31,7 @@ class AutoBase:
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.patience = patience
+        self.tolerance = tolerance
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -64,6 +65,12 @@ class AutoBase:
             if (not isinstance(self.patience, int)) or self.patience < 0:
                 raise ValueError("patience value must be a positive integer. Received {} instead".format(self.patience))
 
+        if tolerance:
+            if self.tolerance > 1.0 or self.tolerance < 0.0:
+                raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(self.tolerance))
+        else:
+            self.tolerance = 0.0
+
         self.results = {}
         self.trained_pipelines = {}
         self.random_state = random_state
@@ -71,11 +78,7 @@ class AutoBase:
         np.random.seed(seed=self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
         self._best_id = None
-        if self.objective.greater_is_better:
-            self._best_score = np.NINF
-        else:
-            self._best_score = np.PINF
-
+        self._best_score = None
 
         self.tuners = {}
         self.search_spaces = {}
@@ -167,28 +170,24 @@ class AutoBase:
         elif self.max_pipelines and len(self.results) >= self.max_pipelines:
             return False
 
-        # check patience
+        # check for best score
         curr_id = max(self.results, key=int)
         curr_score = self.results[curr_id]['score']
-        if self.objective.greater_is_better and curr_score > self._best_score:
-            self._best_id = curr_id
-            self._best_score = curr_score
-        elif not self.objective.greater_is_better and curr_score < self._best_score:
+
+        if self._best_score is None:
             self._best_id = curr_id
             self._best_score = curr_score
 
-        if self.patience is not None and curr_id >= self._best_id + self.patience :
-            # ids_to_check = [i for i in range(self._best_id, self._best_id + self.patience + 1)]
-            # scores_to_check = [self.results[id]['score'] for id in ids_to_check]
-            # without_improvement = 0
-            # for score in scores_to_check:
-            #     if self.objective.greater_is_better:
-            #         if score <= best_score:
-            #             without_improvement += 1
-            #     else:
-            #         if score >= best_score:
-            #             without_improvement += 1
-            # if without_improvement >= self.patience:
+        if self.objective.greater_is_better and curr_score > self._best_score:
+            if abs((curr_score - self._best_score) / self._best_score) > self.tolerance:
+                self._best_id = curr_id
+                self._best_score = curr_score
+        elif not self.objective.greater_is_better and curr_score < self._best_score:
+            if abs((curr_score - self._best_score) / self._best_score) > self.tolerance:
+                self._best_id = curr_id
+                self._best_score = curr_score
+
+        if self.patience is not None and curr_id >= self._best_id + self.patience:
             cont = False
             msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
         if not cont and msg:
