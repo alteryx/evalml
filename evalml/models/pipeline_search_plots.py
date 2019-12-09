@@ -16,7 +16,17 @@ class SearchIterationPlot():
         iter_numbers = list(range(len(self.iteration_scores)))
         title = 'Pipeline Search: Iteration vs. {}'.format(self.data.objective.name)
         data = go.Scatter(x=iter_numbers, y=self.iteration_scores, mode='lines+markers')
-        layout = dict(title=title, xaxis_title='Iteration', yaxis_title='Score')
+        layout = {
+            'title': title,
+            'xaxis': {
+                'title': 'Iteration',
+                'tickformat': ',d',
+                'rangemode': 'tozero'
+            },
+            'yaxis': {
+                'title': 'Score'
+            }
+        }
         self.best_score_by_iter_fig = go.FigureWidget(data, layout)
 
     def update(self):
