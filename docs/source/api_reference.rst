@@ -217,9 +217,5 @@ Guardrails
 
     detect_highly_null
     detect_label_leakage
-    detect_correlation
-    detect_categorical_correlation
-    detect_collinearity
-    detect_multicollinearity
     detect_outliers
     detect_id_columns
