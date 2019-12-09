@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import scipy.stats as scipy_stats
-from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.ensemble import IsolationForest
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 
 def detect_label_leakage(X, y, threshold=.95):
