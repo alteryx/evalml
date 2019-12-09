@@ -14,7 +14,7 @@ Changelog
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
-        * Fix and filter FutureWarnings from scikit-learn :pr:`249`
+        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
