@@ -5,18 +5,16 @@ from evalml import AutoClassifier
 from evalml.objectives import FraudCost
 
 
-def test_function(X_y):
+def test_fraud_objective(X_y):
     X, y = X_y
 
-    objective = FraudCost(
-        retry_percentage=.5,
-        interchange_fee=.02,
-        fraud_payout_percentage=.75,
-        amount_col=10
-    )
+    objective = FraudCost(retry_percentage=.5,
+                          interchange_fee=.02,
+                          fraud_payout_percentage=.75,
+                          amount_col=10)
 
     clf = AutoClassifier(objective=objective, max_pipelines=1)
-    clf.fit(X, y)
+    clf.fit(X, y, raise_errors=True)
 
     pipeline = clf.best_pipeline
     pipeline.predict(X)
