@@ -146,7 +146,8 @@ class AutoBase:
             pbar._instances.clear()
             start = time.time()
             while time.time() - start <= self.max_time:
-                self._do_iteration(X, y, pbar, raise_errors, plot)
+                self._do_iteration(X, y, pbar, raise_errors)
+                plot.update()
             pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
@@ -158,7 +159,8 @@ class AutoBase:
                     pbar.close()
                     self.logger.log("\n\nMax time elapsed. Stopping search early.")
                     break
-                self._do_iteration(X, y, pbar, raise_errors, plot)
+                self._do_iteration(X, y, pbar, raise_errors)
+                plot.update()
             pbar.close()
 
         self.logger.log("\n✔ Optimization finished")
@@ -172,7 +174,7 @@ class AutoBase:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
-    def _do_iteration(self, X, y, pbar, raise_errors, plot):
+    def _do_iteration(self, X, y, pbar, raise_errors):
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
@@ -232,9 +234,6 @@ class AutoBase:
                          parameters=parameters,
                          training_time=training_time,
                          cv_data=cv_data)
-
-        # Update plot with new score
-        plot.update()
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
