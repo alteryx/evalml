@@ -176,10 +176,13 @@ class AutoBase:
         # check for early stopping
 
         if self.patience:
-            best_score = self.results['pipeline_results'][self.results['search_order'][0]]['score']
+            best_score = None
             num_without_improvement = 0
             for id in self.results['search_order']:
                 curr_score = self.results['pipeline_results'][id]['score']
+                if best_score is None:
+                    best_score = curr_score
+                    continue
                 if self.objective.greater_is_better and curr_score > best_score:
                     if abs((curr_score - best_score) / best_score) > self.tolerance:
                         best_score = curr_score
