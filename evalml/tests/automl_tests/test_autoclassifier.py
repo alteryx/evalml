@@ -269,7 +269,7 @@ def test_early_stopping(capsys, X_y):
     with pytest.raises(ValueError, match='tolerance value must be'):
         clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    clf = AutoClassifier(objective='AUC', max_pipelines=6, model_types=['linear_model'], patience=2, random_state=0)
+    clf = AutoClassifier(objective='AUC', max_pipelines=10, model_types=['linear_model'], patience=2, random_state=0)
     clf.fit(X, y, raise_errors=True)
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
