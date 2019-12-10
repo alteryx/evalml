@@ -174,24 +174,26 @@ class AutoBase:
             return False
 
         # check for early stopping
-        best_score = self.results['pipeline_results'][self.results['search_order'][0]]['score']
-        num_without_improvement = 0
-        for id in self.results['search_order']:
-            curr_score = self.results['pipeline_results'][id]['score']
-            if self.objective.greater_is_better and curr_score > best_score:
-                if abs((curr_score - best_score) / best_score) > self.tolerance:
-                    best_score = curr_score
-                    num_without_improvement = 0
-            elif not self.objective.greater_is_better and curr_score < best_score:
-                if abs((curr_score - best_score) / best_score) > self.tolerance:
-                    best_score = curr_score
-                    num_without_improvement = 0
-            else:
-                num_without_improvement += 1
-            if num_without_improvement >= self.patience:
-                should_continue = False
-                msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
-                break
+
+        if self.patience:
+            best_score = self.results['pipeline_results'][self.results['search_order'][0]]['score']
+            num_without_improvement = 0
+            for id in self.results['search_order']:
+                curr_score = self.results['pipeline_results'][id]['score']
+                if self.objective.greater_is_better and curr_score > best_score:
+                    if abs((curr_score - best_score) / best_score) > self.tolerance:
+                        best_score = curr_score
+                        num_without_improvement = 0
+                elif not self.objective.greater_is_better and curr_score < best_score:
+                    if abs((curr_score - best_score) / best_score) > self.tolerance:
+                        best_score = curr_score
+                        num_without_improvement = 0
+                else:
+                    num_without_improvement += 1
+                if num_without_improvement >= self.patience:
+                    should_continue = False
+                    msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
+                    break
 
         if not should_continue and msg:
             self.logger.log(msg)
