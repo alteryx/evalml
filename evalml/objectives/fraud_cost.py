@@ -54,7 +54,7 @@ class FraudCost(ObjectiveBase):
         if not isinstance(y_predicted, pd.Series):
             y_predicted = pd.Series(y_predicted)
 
-        transformed_probs = (y_predicted * extra_cols[self.amount_col])
+        transformed_probs = (y_predicted.values * extra_cols[self.amount_col])
         return transformed_probs > threshold
 
     def objective_function(self, y_predicted, y_true, extra_cols):
