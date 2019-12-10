@@ -59,8 +59,9 @@ class CatBoostClassifier(Estimator):
         cat_cols = X.select_dtypes(['object', 'category'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
-        self._label_encoder = LabelEncoder()
-        y = pd.Series(self._label_encoder.fit_transform(y))
+        if y.nunique() <= 2:
+            self._label_encoder = LabelEncoder()
+            y = pd.Series(self._label_encoder.fit_transform(y))
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         # removing catboost's automatically generated folder of training metrics
         shutil.rmtree('catboost_info', ignore_errors=True)
@@ -76,8 +77,10 @@ class CatBoostClassifier(Estimator):
             Series : estimated labels
         """
         predictions = self._component_obj.predict(X)
-        return self._label_encoder.inverse_transform(predictions.astype(np.int64))
+        if self._label_encoder:
+            return self._label_encoder.inverse_transform(predictions.astype(np.int64))
 
+        return predictions
 
     @property
     def feature_importances(self):
