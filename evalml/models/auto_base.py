@@ -80,8 +80,6 @@ class AutoBase:
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
-        self._best_id = None
-        self._best_score = None
 
         self.tuners = {}
         self.search_spaces = {}
@@ -161,9 +159,9 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
-    def _check_stopping_condition(self, start):    
+    def _check_stopping_condition(self, start):
         should_continue = True
-        msg = None 
+        msg = None
 
         if len(self.results['pipeline_results']) == 0:
             return True
@@ -175,26 +173,26 @@ class AutoBase:
         elif self.max_pipelines and len(self.results['pipeline_results']) >= self.max_pipelines:
             return False
 
-        # check for best score
-        curr_id = max(self.results['pipeline_results'], key=int)
-        curr_score = self.results['pipeline_results'][curr_id]['score']
+        # check for early stopping
+        best_score = self.results['pipeline_results'][self.results['search_order'][0]]['score']
+        num_without_improvement = 0
+        for id in self.results['search_order']:
+            curr_score = self.results['pipeline_results'][id]['score']
+            if self.objective.greater_is_better and curr_score > best_score:
+                if abs((curr_score - best_score) / best_score) > self.tolerance:
+                    best_score = curr_score
+                    num_without_improvement = 0
+            elif not self.objective.greater_is_better and curr_score < best_score:
+                if abs((curr_score - best_score) / best_score) > self.tolerance:
+                    best_score = curr_score
+                    num_without_improvement = 0
+            else:
+                num_without_improvement += 1
+            if num_without_improvement >= self.patience:
+                should_continue = False
+                msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
+                break
 
-        if self._best_score is None:
-            self._best_id = curr_id
-            self._best_score = curr_score
-
-        if self.objective.greater_is_better and curr_score > self._best_score:
-            if abs((curr_score - self._best_score) / self._best_score) > self.tolerance:
-                self._best_id = curr_id
-                self._best_score = curr_score
-        elif not self.objective.greater_is_better and curr_score < self._best_score:
-            if abs((curr_score - self._best_score) / self._best_score) > self.tolerance:
-                self._best_id = curr_id
-                self._best_score = curr_score
-
-        if self.patience is not None and curr_id >= self._best_id + self.patience:
-            should_continue = False
-            msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
         if not should_continue and msg:
             self.logger.log(msg)
         return should_continue
