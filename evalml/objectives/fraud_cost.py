@@ -19,7 +19,7 @@ class FraudCost(ObjectiveBase):
                  fraud_payout_percentage=1.0, amount_col='amount', verbose=False):
         """Create instance of FraudCost
 
-        Args:
+        Arguments:
             retry_percentage (float): what percentage of customers will retry a transaction if it
                 is declined? Between 0 and 1. Defaults to .5
 
@@ -38,8 +38,16 @@ class FraudCost(ObjectiveBase):
         super().__init__(verbose=verbose)
 
     def decision_function(self, y_predicted, extra_cols, threshold):
-        """Determine if transaction is fraud given predicted probabilities,
-            dataframe with transaction amount, and threshold"""
+        """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold
+
+            Arguments:
+                y_predicted (pd.Series): predicted labels
+                extra_cols (pd.DataFrame): extra data needed
+                threshold (float): dollar threshold to determine if transaction is fraud
+
+            Returns:
+                pd.Series: series of predicted fraud label using extra cols and threshold
+        """
         if not isinstance(extra_cols, pd.DataFrame):
             extra_cols = pd.DataFrame(extra_cols)
 
@@ -50,8 +58,16 @@ class FraudCost(ObjectiveBase):
         return transformed_probs > threshold
 
     def objective_function(self, y_predicted, y_true, extra_cols):
-        """Calculate amount lost to fraud given predictions, true values, and dataframe
-            with transaction amount"""
+        """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount
+
+            Arguments:
+                y_predicted (pd.Series): predicted fraud labels
+                y_true (pd.Series): true fraud labels
+                extra_cols (pd.DataFrame): extra data needed
+
+            Returns:
+                float: amount lost to fraud per transaction
+        """
         if not isinstance(extra_cols, pd.DataFrame):
             extra_cols = pd.DataFrame(extra_cols)
 
