@@ -165,19 +165,19 @@ class AutoBase:
         should_continue = True
         msg = None 
 
-        if len(self.results) == 0:
+        if len(self.results['pipeline_results']) == 0:
             return True
 
         # check max_time and max_pipelines
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_pipelines and len(self.results) >= self.max_pipelines:
+        elif self.max_pipelines and len(self.results['pipeline_results']) >= self.max_pipelines:
             return False
 
         # check for best score
-        curr_id = max(self.results, key=int)
-        curr_score = self.results[curr_id]['score']
+        curr_id = max(self.results['pipeline_results'], key=int)
+        curr_score = self.results['pipeline_results'][curr_id]['score']
 
         if self._best_score is None:
             self._best_id = curr_id
