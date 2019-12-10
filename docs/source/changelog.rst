@@ -9,6 +9,8 @@ Changelog
         * Enhanced AutoML results with search order :pr:`260`
     * Fixes
         * Lower botocore requirement :pr:`235`
+        * Fixed decision_function calculation for FraudCost objective :pr:`254`
+        * Fixed return value of Recall metrics :pr:`264`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
