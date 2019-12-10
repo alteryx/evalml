@@ -12,7 +12,7 @@ class CatBoostClassificationPipeline(PipelineBase):
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
     hyperparameters = {
-        "impute_strategy": ["constant", "most_frequent"],
+        "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
         "max_depth": Integer(1, 16),
