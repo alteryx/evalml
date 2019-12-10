@@ -20,11 +20,12 @@ Changelog
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
+        
 **Breaking Changes**
-    * `autoclassifier.results` and `autoregressor.results` now is a dictionary with 
-    with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
-    to access a dictionary that is identical to the old `.results` dictionary. Whereas,
-    `search_order` returns a list of the search order in terms of pipeline id. 
+    *   `autoclassifier.results` and `autoregressor.results` now is a dictionary 
+        with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
+        to access a dictionary that is identical to the old `.results` dictionary. Whereas,
+        `search_order` returns a list of the search order in terms of pipeline id. 
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
