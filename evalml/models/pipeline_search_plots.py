@@ -23,7 +23,6 @@ class SearchIterationPlot():
             'title': title,
             'xaxis': {
                 'title': 'Iteration',
-                'tickformat': ',d',
                 'rangemode': 'tozero'
             },
             'yaxis': {
@@ -34,8 +33,9 @@ class SearchIterationPlot():
         self.best_score_by_iter_fig.update_layout(showlegend=False)
 
     def update(self):
-        iter_idx = self.data.rankings['id'].idxmax()
-        self.curr_iteration_scores.append(self.data.rankings['score'].iloc[iter_idx])
+        iter_idx = self.data.results['search_order']
+        pipeline_res = self.data.results['pipeline_results']
+        iter_scores = [pipeline_res[i]['score'] for i in range(len(pipeline_res))]
 
         if self.data.objective.greater_is_better:
             iter_max_score = self.data.rankings['score'].max()
@@ -45,8 +45,8 @@ class SearchIterationPlot():
 
         # Update entire line plot
         curr_score_trace = self.best_score_by_iter_fig.data[1]
-        curr_score_trace.x = list(range(len(self.curr_iteration_scores)))
-        curr_score_trace.y = self.curr_iteration_scores
+        curr_score_trace.x = iter_idx
+        curr_score_trace.y = iter_scores
 
         best_score_trace = self.best_score_by_iter_fig.data[0]
         best_score_trace.x = list(range(len(self.best_iteration_scores)))
