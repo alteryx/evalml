@@ -12,10 +12,10 @@ class Transformer(ComponentBase):
         """Transforms data X
 
         Arguments:
-            X (DataFrame): Data to transform
+            X (pd.DataFrame): Data to transform
 
         Returns:
-            DataFrame: Transformed X
+            pd.DataFrame: Transformed X
         """
         try:
             X_t = self._component_obj.transform(X)
@@ -29,10 +29,10 @@ class Transformer(ComponentBase):
         """Fits on X and transforms X
 
         Arguments:
-            X (DataFrame): Data to fit and transform
+            X (pd.DataFrame): Data to fit and transform
 
         Returns:
-            DataFrame: Transformed X
+            pd.DataFrame: Transformed X
         """
         try:
             X_t = self._component_obj.fit_transform(X, y)

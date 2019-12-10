@@ -19,7 +19,7 @@ class LeadScoring(ObjectiveBase):
     def __init__(self, true_positives=1, false_positives=-1, verbose=False):
         """Create instance.
 
-        Args:
+        Arguments:
             label (int) : label to optimize threshold for
             true_positives (int) : reward for a true positive
             false_positives (int) : cost for a false positive. Should be negative.
