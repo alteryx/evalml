@@ -47,13 +47,13 @@ def test_cv(X_y):
     clf.fit(X, y, raise_errors=True)
 
     assert isinstance(clf.rankings, pd.DataFrame)
-    assert len(clf.results[0]["cv_data"]) == cv_folds
+    assert len(clf.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
     clf = AutoClassifier(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
     clf.fit(X, y, raise_errors=True)
 
     assert isinstance(clf.rankings, pd.DataFrame)
-    assert len(clf.results[0]["cv_data"]) == cv_folds
+    assert len(clf.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
 
 def test_init_select_model_types():
