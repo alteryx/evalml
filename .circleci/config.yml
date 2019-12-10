@@ -201,7 +201,7 @@ workflows:
             python_version: "3.7"
         - unit_tests:
             name: "linux python 3.5 unit tests"
-            python_version: "3.5"
+            python_version: "3.5.7"
         - unit_tests:
             name: "linux python 3.6 unit tests"
             python_version: "3.6"
