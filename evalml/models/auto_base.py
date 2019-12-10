@@ -117,7 +117,7 @@ class AutoBase:
             y = pd.Series(y)
 
         if self.problem_type != ProblemTypes.REGRESSION:
-            self.check_multiclass(y)
+            self._check_multiclass(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -199,7 +199,7 @@ class AutoBase:
             self.logger.log(msg)
         return should_continue
 
-    def check_multiclass(self, y):
+    def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
         if ProblemTypes.MULTICLASS not in self.objective.problem_types:
@@ -327,6 +327,14 @@ class AutoBase:
         self.trained_pipelines[pipeline_id] = trained_pipeline
 
     def get_pipeline(self, pipeline_id):
+        """Retrieves trained pipeline
+
+        Arguments:
+            pipeline_id (int): pipeline to retrieve
+
+        Returns:
+            Pipeline: pipeline associated with id
+        """
         if pipeline_id not in self.trained_pipelines:
             raise RuntimeError("Pipeline not found")
 

@@ -82,7 +82,7 @@ class AutoClassifier(AutoBase):
             objective = "precision_micro"
             problem_type = ProblemTypes.MULTICLASS
         else:
-            problem_type = self.set_problem_type(objective, multiclass)
+            problem_type = self._set_problem_type(objective, multiclass)
 
         super().__init__(
             tuner=tuner,
@@ -102,7 +102,7 @@ class AutoClassifier(AutoBase):
             verbose=verbose
         )
 
-    def set_problem_type(self, objective, multiclass):
+    def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassifier to either binary or multiclass.
 
         If there is an objective either:

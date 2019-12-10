@@ -55,6 +55,7 @@ Changelog
         * Updated release instructions for RTD :pr:`193`
         * Added notebooks to build process :pr:`212`
         * Added contributing instructions :pr:`213`
+        * Added new content :pr:`222`
 
 **v0.5.0 Oct. 29, 2019**
     * Enhancements
