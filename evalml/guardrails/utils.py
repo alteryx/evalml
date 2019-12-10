@@ -156,6 +156,18 @@ def detect_multicollinearity(X, threshold=5):
 
     Returns:
         A dictionary of features with VIF scores greater than threshold mapped to their corresponding VIF score
+  
+    Example:
+        >>> import pandas as pd
+        >>> col = pd.Series([1, 0, 2, 3, 4])
+        >>> X = pd.DataFrame({'col_1': col,
+        ...                   'col_2': col*3,
+        ...                   'col_3': ~col,
+        ...                   'col_4': col/2,
+        ...                   'col_5': col+1,
+        ...                   'not_mc_col': [0, 1, 0, 0, 0]})
+        >>> detect_multicollinearity(X)
+        {'col_1': inf, 'col_2': inf, 'col_3': inf, 'col_4': inf, 'col_5': inf}
     """
 
     # only select numeric
