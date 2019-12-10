@@ -72,6 +72,39 @@ Model Types
 
     list_model_types
 
+.. currentmodule:: evalml.pipelines.components
+
+Components
+==========
+
+Transformers
+~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    OneHotEncoder
+    RFRegressorSelectFromModel
+    RFClassifierSelectFromModel
+    SimpleImputer
+    StandardScaler
+
+Estimators
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    LogisticRegressionClassifier
+    RandomForestClassifier
+    XGBoostClassifier
+    LinearRegressor
+    RandomForestRegressor
+
 
 .. currentmodule:: evalml.pipelines
 

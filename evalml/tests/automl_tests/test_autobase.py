@@ -58,3 +58,11 @@ def test_generate_confusion_matrix(X_y):
 
     fig = clf.plot.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))
+
+
+def test_search_order(X_y):
+    X, y = X_y
+    clf = AutoClassifier(max_pipelines=3)
+    clf.fit(X, y)
+    correct_order = [0, 1, 2]
+    assert clf.results['search_order'] == correct_order
