@@ -1,5 +1,6 @@
 import shutil
 
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
@@ -34,6 +35,8 @@ class CatBoostClassifier(Estimator):
             import catboost
         except ImportError:
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
+
+        self._label_encoder = None
         cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
                                                     eta=eta,
                                                     max_depth=max_depth,
@@ -56,14 +59,25 @@ class CatBoostClassifier(Estimator):
         cat_cols = X.select_dtypes(['object', 'category'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
-        # Potentially check unique values to determine if binary?
-        if not pd.api.types.is_numeric_dtype(y) or y.dtype == 'bool':
-            y = pd.Series(LabelEncoder().fit_transform(y))
-
+        self._label_encoder = LabelEncoder()
+        y = pd.Series(self._label_encoder.fit_transform(y))
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         # removing catboost's automatically generated folder of training metrics
         shutil.rmtree('catboost_info', ignore_errors=True)
         return model
+
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Args:
+            X (DataFrame) : features
+
+        Returns:
+            Series : estimated labels
+        """
+        predictions = self._component_obj.predict(X)
+        return self._label_encoder.inverse_transform(predictions.astype(np.int64))
+
 
     @property
     def feature_importances(self):
