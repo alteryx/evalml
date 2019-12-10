@@ -20,7 +20,7 @@ def test_init(X_y):
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == clf.possible_pipelines
 
-    clf.fit(X, y)
+    clf.fit(X, y, raise_errors=True)
 
     assert isinstance(clf.rankings, pd.DataFrame)
 
@@ -28,7 +28,7 @@ def test_init(X_y):
     assert isinstance(clf.best_pipeline.feature_importances, pd.DataFrame)
 
     # test with datafarmes
-    clf.fit(pd.DataFrame(X), pd.Series(y))
+    clf.fit(pd.DataFrame(X), pd.Series(y), raise_errors=True)
 
     assert isinstance(clf.rankings, pd.DataFrame)
 
@@ -42,10 +42,10 @@ def test_init(X_y):
 def test_random_state(X_y):
     X, y = X_y
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, raise_errors=True)
 
     clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf_1.fit(X, y)
+    clf_1.fit(X, y, raise_errors=True)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
     assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
@@ -54,7 +54,7 @@ def test_random_state(X_y):
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, raise_errors=True)
     assert not clf.rankings['score'].isnull().all()
     assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
 
@@ -77,7 +77,7 @@ def test_callback(X_y):
     clf = AutoRegressor(objective="R2", max_pipelines=max_pipelines,
                         start_iteration_callback=start_iteration_callback,
                         add_result_callback=add_result_callback)
-    clf.fit(X, y)
+    clf.fit(X, y, raise_errors=True)
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
