@@ -1,5 +1,7 @@
 import shutil
 
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
@@ -52,6 +54,12 @@ class CatBoostClassifier(Estimator):
             self
         """
         cat_cols = X.select_dtypes(['object', 'category'])
+
+        # For binary classification, catboost expects numeric values, so encoding before.
+        # Potentially check unique values to determine if binary?
+        if not pd.api.types.is_numeric_dtype(y) or y.dtype == 'bool':
+            y = pd.Series(LabelEncoder().fit_transform(y))
+
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         # removing catboost's automatically generated folder of training metrics
         shutil.rmtree('catboost_info', ignore_errors=True)
