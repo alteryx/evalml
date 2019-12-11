@@ -13,7 +13,7 @@ class CatBoostRegressionPipeline(PipelineBase):
     problem_types = [ProblemTypes.REGRESSION]
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
-        "n_estimators": Integer(10, 20),
+        "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
         "max_depth": Integer(1, 4),
     }
