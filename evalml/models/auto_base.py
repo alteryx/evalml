@@ -161,7 +161,8 @@ class AutoBase:
 
     def _check_stopping_condition(self, start):
         should_continue = True
-        if len(self.results['pipeline_results']) == 0:
+        num_pipelines = len(self.results['pipeline_results'])
+        if num_pipelines == 0:
             return True
 
         # check max_time and max_pipelines
@@ -169,7 +170,7 @@ class AutoBase:
         if self.max_time and elapsed >= self.max_time:
             return False
         elif self.max_pipelines:
-            if len(self.results['pipeline_results']) >= self.max_pipelines:
+            if num_pipelines >= self.max_pipelines:
                 return False
             elif self.max_time and elapsed >= self.max_time:
                 self.logger.log("\n\nMax time elapsed. Stopping search early.")
