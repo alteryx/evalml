@@ -10,7 +10,12 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
-from evalml.objectives import get_objective, get_objectives
+from evalml.objectives import (
+    ROC,
+    ConfusionMatrix,
+    get_objective,
+    get_objectives
+)
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
@@ -51,6 +56,18 @@ class AutoBase:
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
+
+        # hacky, disallows non-numeric metrics from being primary objective
+        if isinstance(self.objective, ConfusionMatrix) or isinstance(self.objective, ROC):
+            raise RuntimeError("Cannot use Confusion Matrix or ROC as the main objective.")
+
+        # if ROC and ConfusionMatrix not specified as additional objectives, add so we can calculate plots
+        plot_metrics = [ROC(), ConfusionMatrix()]
+        for metric in plot_metrics:
+            if self.problem_type in metric.problem_types:
+                existing_metric = next((obj for obj in additional_objectives if obj.name == metric.name), None)
+                if existing_metric is None:
+                    additional_objectives.append(get_objective(metric))
 
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time

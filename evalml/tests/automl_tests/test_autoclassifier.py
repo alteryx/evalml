@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
@@ -258,3 +259,32 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
+
+
+def test_plots_as_objectives(X_y):
+    X, y = X_y
+    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
+        clf_conf = AutoClassifier(objective='Confusion_Matrix', additional_objectives=['recall'], max_pipelines=1)
+
+    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
+        clf_roc = AutoClassifier(objective='ROC', additional_objectives=['recall'], max_pipelines=1)
+
+    clf = AutoClassifier(objective='AUC', additional_objectives=['recall'], max_pipelines=2)
+    clf.fit(X, y, raise_errors=True)
+
+    # test that we can get ROC and confusion matrix plots even when not specified as objectives
+    roc_data = clf.plot.get_roc_data(0)
+    assert len(roc_data["fpr_tpr_data"]) == 3
+    assert len(roc_data["roc_aucs"]) == 3
+
+    fig = clf.plot.generate_roc_plot(0)
+    assert isinstance(fig, type(go.Figure()))
+
+    cm_data = clf.plot.get_confusion_matrix_data(0)
+    assert len(cm_data) == 3
+    for fold in cm_data:
+        labels = fold.columns
+        assert all(label in y for label in labels)
+
+    fig = clf.plot.generate_confusion_matrix(0)
+    assert isinstance(fig, type(go.Figure()))
