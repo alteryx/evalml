@@ -15,10 +15,11 @@ class CatBoostClassificationPipeline(PipelineBase):
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
-        "n_estimators": Integer(10, 1000),
+        "n_estimators": Integer(10, 20),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 16),
+        "max_depth": Integer(1, 2),
     }
+
 
     def __init__(self, objective, impute_strategy, n_estimators, eta, max_depth, number_features, n_jobs=1, random_state=0):
         # note: impute_strategy must support both string and numeric data
@@ -27,7 +28,7 @@ class CatBoostClassificationPipeline(PipelineBase):
                                        eta=eta, max_depth=max_depth)
         super().__init__(objective=objective,
                          component_list=[imputer, estimator],
-                         n_jobs=n_jobs,
+                         n_jobs=1,
                          random_state=random_state)
 
     def fit(self, X, y, objective_fit_size=.2):
