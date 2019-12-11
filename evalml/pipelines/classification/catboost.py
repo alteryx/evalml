@@ -17,7 +17,7 @@ class CatBoostClassificationPipeline(PipelineBase):
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 20),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 2),
+        "max_depth": Integer(1, 8),
     }
 
     def __init__(self, objective, impute_strategy, n_estimators, eta, max_depth, number_features, n_jobs=1, random_state=0):
