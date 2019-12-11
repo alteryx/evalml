@@ -180,12 +180,12 @@ class AutoBase:
         if self.patience is None:
             return True
 
-        best_score = -np.inf if self.objective.greater_is_better else np.inf
+        first_id = self.results['search_order'][0]
+        best_score = self.results['pipeline_results'][first_id]['score']
         num_without_improvement = 0
-        for id in self.results['search_order']:
+        for id in self.results['search_order'][1:]:
             curr_score = self.results['pipeline_results'][id]['score']
-            id_index = self.results['search_order'].index(id)
-            significant_change = True if id_index == 0 else abs((curr_score - best_score) / best_score) > self.tolerance
+            significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
             score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
             if score_improved and significant_change:
                 best_score = curr_score
