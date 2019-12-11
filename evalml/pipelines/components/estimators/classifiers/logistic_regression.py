@@ -30,7 +30,7 @@ class LogisticRegressionClassifier(Estimator):
                                            random_state=random_state,
                                            multi_class="auto",
                                            solver="lbfgs",
-                                           n_jobs=1) #1?
+                                           n_jobs=-1)  # 1?
         super().__init__(parameters=parameters,
                          component_obj=lr_classifier,
                          random_state=random_state)

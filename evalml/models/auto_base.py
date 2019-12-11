@@ -1,5 +1,5 @@
 import random
-import shutil
+# import shutil
 import time
 from collections import OrderedDict
 from sys import stdout
