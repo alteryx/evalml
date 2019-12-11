@@ -262,9 +262,7 @@ def test_max_time_units():
         AutoClassifier(objective='F1', max_time=(30, 'minutes'))
 
 
-def test_early_stopping(capsys, X_y):
-    X, y = X_y
-
+def test_early_stopping(capsys):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
 

@@ -85,7 +85,7 @@ def test_callback(X_y):
     assert counts["add_result_callback"] == max_pipelines
 
 
-def test_early_stopping(capsys, X_y):
+def test_early_stopping(capsys):
     tolerance = 0.005
     patience = 2
     clf = AutoRegressor(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
