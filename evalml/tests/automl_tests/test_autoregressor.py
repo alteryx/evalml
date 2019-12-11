@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import pytest
 
@@ -86,34 +88,19 @@ def test_callback(X_y):
 def test_early_stopping(capsys, X_y):
     tolerance = 0.005
     patience = 2
-
-    X, y = X_y
-    clf = AutoRegressor(objective='r2', max_pipelines=5, patience=patience, model_types=['linear_model'], random_state=0)
-    clf.fit(X, y, raise_errors=True)
-
-    out, _ = capsys.readouterr()
-    assert "2 iterations without improvement. Stopping search early." in out
-
-    clf = AutoRegressor(objective='r2', max_time='60 seconds', patience=patience, model_types=['linear_model'], random_state=0)
-    clf.fit(X, y, raise_errors=True)
-
-    out, _ = capsys.readouterr()
-    assert "2 iterations without improvement. Stopping search early." in out
-
     clf = AutoRegressor(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
-    clf.fit(X, y, raise_errors=True)
 
-    num_without_improvement = 0
-    best_score = None
-    for id in clf.results['search_order']:
-        score = clf.results['pipeline_results'][id]['score']
-        if best_score is None:
-            best_score = score
-            continue
-        if score < best_score:
-            if abs((score - best_score) / best_score) > tolerance:
-                num_without_improvement = 0
-                best_score = score
-        else:
-            num_without_improvement += 1
-    assert num_without_improvement == 2
+    mock_results = {
+        'search_order': [0, 1, 2],
+        'pipeline_results': {}
+    }
+
+    scores = [150, 200, 195]
+    for id in mock_results['search_order']:
+        mock_results['pipeline_results'][id] = {}
+        mock_results['pipeline_results'][id]['score'] = scores[id]
+
+    clf.results = mock_results
+    clf._check_stopping_condition(time.time())
+    out, _ = capsys.readouterr()
+    assert "2 iterations without improvement. Stopping search early." in out

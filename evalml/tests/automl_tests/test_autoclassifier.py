@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -269,21 +271,18 @@ def test_early_stopping(capsys, X_y):
     with pytest.raises(ValueError, match='tolerance value must be'):
         clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    clf = AutoClassifier(objective='AUC', max_pipelines=10, model_types=['linear_model'], patience=2, random_state=0)
-    clf.fit(X, y, raise_errors=True)
+    clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    mock_results = {
+        'search_order': [0, 1, 2],
+        'pipeline_results': {}
+    }
+
+    scores = [0.95, 0.84, 0.91]
+    for id in mock_results['search_order']:
+        mock_results['pipeline_results'][id] = {}
+        mock_results['pipeline_results'][id]['score'] = scores[id]
+
+    clf.results = mock_results
+    clf._check_stopping_condition(time.time())
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
-
-    num_without_improvement = 0
-    best_score = None
-    for id in clf.results['search_order']:
-        score = clf.results['pipeline_results'][id]['score']
-        if best_score is None:
-            best_score = score
-            continue
-        if score > best_score:
-            num_without_improvement = 0
-            best_score = score
-        else:
-            num_without_improvement += 1
-    assert num_without_improvement == 2
