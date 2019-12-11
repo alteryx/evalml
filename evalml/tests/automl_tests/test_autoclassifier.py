@@ -277,7 +277,7 @@ def test_early_stopping(capsys, X_y):
         'pipeline_results': {}
     }
 
-    scores = [0.95, 0.84, 0.91]
+    scores = [0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
