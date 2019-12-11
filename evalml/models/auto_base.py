@@ -177,7 +177,7 @@ class AutoBase:
         pipeline = pipeline_class(
             objective=self.objective,
             random_state=self.random_state,
-            n_jobs=1,
+            n_jobs=-1,
             number_features=X.shape[1],
             **dict(parameters)
         )
