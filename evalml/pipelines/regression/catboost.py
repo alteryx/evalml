@@ -15,7 +15,7 @@ class CatBoostRegressionPipeline(PipelineBase):
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 20),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 8),
+        "max_depth": Integer(1, 4),
     }
 
     def __init__(self, objective, impute_strategy, n_estimators, eta, max_depth, number_features,
