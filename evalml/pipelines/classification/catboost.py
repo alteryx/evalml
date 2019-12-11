@@ -27,3 +27,9 @@ class CatBoostClassificationPipeline(PipelineBase):
                          component_list=[imputer, estimator],
                          n_jobs=n_jobs,
                          random_state=random_state)
+
+
+    def fit(self, X, y, objective_fit_size=.2):
+        super().fit(X, y, objective_fit_size)
+        # removing catboost's automatically generated folder of training metrics
+        shutil.rmtree('catboost_info', ignore_errors=True)
