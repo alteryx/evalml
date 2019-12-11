@@ -1,4 +1,5 @@
 import random
+import shutil
 import time
 from collections import OrderedDict
 from sys import stdout
@@ -153,6 +154,8 @@ class AutoBase:
                 self._do_iteration(X, y, pbar, raise_errors)
             pbar.close()
 
+        # removing catboost's automatically generated folder of training metrics
+        shutil.rmtree('catboost_info', ignore_errors=True)
         self.logger.log("\n✔ Optimization finished")
 
     def _check_multiclass(self, y):

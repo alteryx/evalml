@@ -1,4 +1,4 @@
-import shutil
+# import shutil
 
 from skopt.space import Integer, Real
 
@@ -53,8 +53,6 @@ class CatBoostRegressor(Estimator):
         """
         cat_cols = X.select_dtypes(['object', 'category'])
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
-        # removing catboost's automatically generated folder of training metrics
-        shutil.rmtree('catboost_info', ignore_errors=True)
         return model
 
     @property
