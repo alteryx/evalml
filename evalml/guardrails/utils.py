@@ -103,8 +103,8 @@ def detect_categorical_correlation(X, threshold=.95):
         >>> X = pd.DataFrame(data=X)
         >>> for col in X:
         ...     X[col] = X[col].astype('category')
-        >>> result = detect_categorical_correlation(X, 0.9)
-        {('col_1', 'col_3'), ('col_1', 'col_2'), ('col_2', 'col_3')}
+        >>> detect_categorical_correlation(X, 0.9).keys() # doctest: +NORMALIZE_WHITESPACE
+        dict_keys([('corr_1', 'corr_2'), ('corr_1', 'corr_3'), ('corr_2', 'corr_3')])
     """
     def cramers_v_bias_corrected(confusion_matrix):
         """ Calculate Cramer's V statistic for categorial-categorial correlation with bias correction."""
@@ -144,6 +144,19 @@ def detect_collinearity(X, threshold=.95):
 
     Returns:
         A dictionary mapping potentially collinear features and their corresponding correlation coefficient
+
+    Example:
+        >>> col = pd.Series([1, 0, 2, 3, 4])
+        >>> X = pd.DataFrame({'col_1': col,
+        ...                   'col_2': col*3,
+        ...                   'col_3': ~col,
+        ...                   'col_4': col/2,
+        ...                   'col_5': col+1,
+        ...                   'not_collinear': [0, 1, 0, 0, 0]})
+        >>> detect_collinearity(X) # doctest: +NORMALIZE_WHITESPACE
+        {('col_1', 'col_2'): 1.0, ('col_1', 'col_3'): 1.0, ('col_1', 'col_4'): 1.0,
+         ('col_1', 'col_5'): 1.0, ('col_2', 'col_3'): 1.0, ('col_2', 'col_4'): 1.0,
+         ('col_2', 'col_5'): 1.0, ('col_3', 'col_4'): 1.0, ('col_3', 'col_5'): 1.0, ('col_4', 'col_5'): 1.0}
     """
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
@@ -163,11 +176,11 @@ def detect_multicollinearity(X, threshold=5):
 
     Args:
         X (pd.DataFrame): The input features to check
-        threshold (float): the VIF threshold to use to determine multicollinearity. Defaults to 10
+        threshold (float): the VIF threshold to use to determine multicollinearity. Defaults to 5
 
     Returns:
         A dictionary of features with VIF scores greater than threshold mapped to their corresponding VIF score
-  
+
     Example:
         >>> col = pd.Series([1, 0, 2, 3, 4])
         >>> X = pd.DataFrame({'col_1': col,
@@ -272,3 +285,5 @@ def detect_id_columns(X, threshold=1.0):
 
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
     return id_cols_above_threshold
+
+
