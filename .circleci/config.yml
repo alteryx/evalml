@@ -12,7 +12,7 @@ executors:
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
-    resource_class: xlarge
+    resource_class: medium+
 
 commands:
   install_dependencies:
