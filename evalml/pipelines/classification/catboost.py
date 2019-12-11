@@ -20,7 +20,7 @@ class CatBoostClassificationPipeline(PipelineBase):
         "max_depth": Integer(1, 16),
     }
 
-    def __init__(self, objective, impute_strategy, n_estimators, eta, max_depth, number_features, n_jobs=-1, random_state=0):
+    def __init__(self, objective, impute_strategy, n_estimators, eta, max_depth, number_features, n_jobs=1, random_state=0):
         # note: impute_strategy must support both string and numeric data
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         estimator = CatBoostClassifier(n_estimators=n_estimators,
