@@ -45,7 +45,7 @@ def detect_highly_null(X, percent_threshold=.95):
     """ Checks if there are any highly-null columns in a dataframe.
 
     Args:
-        X (DataFrame) : features
+        X (pd.DataFrame) : features
         percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
 
     Returns:
@@ -213,7 +213,7 @@ def detect_outliers(X, random_state=0):
     of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
 
     Args:
-        X (DataFrame) : features
+        X (pd.DataFrame): features
 
     Returns:
         A set of indices that may have outlier data.

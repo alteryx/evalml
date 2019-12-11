@@ -7,6 +7,7 @@ Changelog
         * Added basic correlation guardrail :pr:`141`
         * Added ability to create a plot of feature importances :pr:`133`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
+        * Enhanced AutoML results with search order :pr:`260`
     * Fixes
         * Lower botocore requirement :pr:`235`
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
@@ -22,6 +23,12 @@ Changelog
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
+        
+**Breaking Changes**
+    *   `AutoClassifier.results` and `AutoRegressor.results` now is a dictionary
+        with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
+        to access a dictionary that is identical to the old `.results` dictionary. Whereas,
+        `search_order` returns a list of the search order in terms of pipeline id. 
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
@@ -48,6 +55,7 @@ Changelog
         * Updated release instructions for RTD :pr:`193`
         * Added notebooks to build process :pr:`212`
         * Added contributing instructions :pr:`213`
+        * Added new content :pr:`222`
 
 **v0.5.0 Oct. 29, 2019**
     * Enhancements

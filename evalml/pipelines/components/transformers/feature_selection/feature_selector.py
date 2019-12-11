@@ -7,6 +7,11 @@ class FeatureSelector(Transformer):
     """Selects top features based on importance weights"""
 
     def get_indices(self):
+        """Get integer index of features selected
+
+        Returns:
+            list: list of indices
+        """
         indices = self._component_obj.get_support(indices=True)
         return indices
 
@@ -23,10 +28,10 @@ class FeatureSelector(Transformer):
         """Transforms data X
 
         Arguments:
-            X (DataFrame): Data to transform
+            X (pd.DataFrame): Data to transform
 
         Returns:
-            DataFrame: Transformed X
+            pd.DataFrame: Transformed X
         """
         if isinstance(X, pd.DataFrame):
             self.input_feature_names = list(X.columns.values)
@@ -48,10 +53,10 @@ class FeatureSelector(Transformer):
         """Fits on X and transforms X
 
         Arguments:
-            X (DataFrame): Data to fit and transform
+            X (pd.DataFrame): Data to fit and transform
 
         Returns:
-            DataFrame: Transformed X
+            pd.DataFrame: Transformed X
         """
         if isinstance(X, pd.DataFrame):
             self.input_feature_names = list(X.columns.values)

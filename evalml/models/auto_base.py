@@ -58,7 +58,11 @@ class AutoBase:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-        self.results = {}
+
+        self.results = {
+            'pipeline_results': {},
+            'search_order': []
+        }
         self.trained_pipelines = {}
         self.random_state = random_state
         random.seed(self.random_state)
@@ -102,7 +106,7 @@ class AutoBase:
             y = pd.Series(y)
 
         if self.problem_type != ProblemTypes.REGRESSION:
-            self.check_multiclass(y)
+            self._check_multiclass(y)
 
         self.logger.log_title("Beginning pipeline search")
         self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
@@ -151,7 +155,7 @@ class AutoBase:
 
         self.logger.log("\n✔ Optimization finished")
 
-    def check_multiclass(self, y):
+    def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
         if ProblemTypes.MULTICLASS not in self.objective.problem_types:
@@ -251,9 +255,9 @@ class AutoBase:
 
         pipeline_class_name = trained_pipeline.__class__.__name__
         pipeline_name = trained_pipeline.name
-        pipeline_id = len(self.results)
+        pipeline_id = len(self.results['pipeline_results'])
 
-        self.results[pipeline_id] = {
+        self.results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_class_name": pipeline_class_name,
             "pipeline_name": pipeline_name,
@@ -264,8 +268,10 @@ class AutoBase:
             "cv_data": cv_data
         }
 
+        self.results['search_order'].append(pipeline_id)
+
         if self.add_result_callback:
-            self.add_result_callback(self.results[pipeline_id], trained_pipeline)
+            self.add_result_callback(self.results['pipeline_results'][pipeline_id], trained_pipeline)
 
         self._save_pipeline(pipeline_id, trained_pipeline)
 
@@ -273,6 +279,14 @@ class AutoBase:
         self.trained_pipelines[pipeline_id] = trained_pipeline
 
     def get_pipeline(self, pipeline_id):
+        """Retrieves trained pipeline
+
+        Arguments:
+            pipeline_id (int): pipeline to retrieve
+
+        Returns:
+            Pipeline: pipeline associated with id
+        """
         if pipeline_id not in self.trained_pipelines:
             raise RuntimeError("Pipeline not found")
 
@@ -290,11 +304,11 @@ class AutoBase:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
-        if pipeline_id not in self.results:
+        if pipeline_id not in self.results['pipeline_results']:
             raise RuntimeError("Pipeline not found")
 
         pipeline = self.get_pipeline(pipeline_id)
-        pipeline_results = self.results[pipeline_id]
+        pipeline_results = self.results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
         self.logger.log_subtitle("Training")
@@ -340,7 +354,7 @@ class AutoBase:
         if self.objective.greater_is_better:
             ascending = False
 
-        rankings_df = pd.DataFrame(self.results.values())
+        rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
         rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)

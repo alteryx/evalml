@@ -27,7 +27,7 @@ class PipelineSearchPlots:
         if self.data.problem_type != ProblemTypes.BINARY:
             raise RuntimeError("ROC plots can only be generated for binary classification problems.")
 
-        results = self.data.results
+        results = self.data.results['pipeline_results']
         if len(results) == 0:
             raise RuntimeError("You must first call fit() to generate ROC data.")
 
@@ -78,7 +78,7 @@ class PipelineSearchPlots:
         mean_auc = roc_data["mean_auc"]
         std_auc = roc_data["std_auc"]
 
-        results = self.data.results
+        results = self.data.results['pipeline_results']
         pipeline_name = results[pipeline_id]["pipeline_name"]
 
         layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
@@ -112,7 +112,7 @@ class PipelineSearchPlots:
         if self.data.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             raise RuntimeError("Confusion matrix plots can only be generated for classification problems.")
 
-        results = self.data.results
+        results = self.data.results['pipeline_results']
         if len(results) == 0:
             raise RuntimeError("You must first call fit() to generate confusion matrix data.")
 
@@ -135,7 +135,7 @@ class PipelineSearchPlots:
 
         """
         data = self.get_confusion_matrix_data(pipeline_id)
-        results = self.data.results
+        results = self.data.results['pipeline_results']
         pipeline_name = results[pipeline_id]["pipeline_name"]
         # defaults to last fold if none specified. May need to think of better approach.
         if fold_num is None:

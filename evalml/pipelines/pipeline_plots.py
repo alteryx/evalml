@@ -5,11 +5,9 @@ class PipelinePlots:
         self.pipeline = pipeline
 
     def __call__(self, to_file=None):
-        """
-        Create a UML diagram-ish graph of our pipeline.
+        """Create a graph of the pipeline, in a format similar to a UML diagram.
 
-
-        Args:
+        Arguments:
             to_file (str, optional) : Path to where the plot should be saved. If set to None (as by default), the plot will not be saved.
 
         Returns:

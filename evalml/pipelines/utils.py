@@ -21,8 +21,7 @@ def get_pipelines(problem_type, model_types=None):
         problem_type(ProblemTypes or str): the problem type the pipelines work for.
         model_types(list[ModelTypes or str]): model types to match. if none, return all pipelines
 
-    Returns
-
+    Returns:
         pipelines, list of all pipeline
 
     """

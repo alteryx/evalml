@@ -80,13 +80,14 @@ class PipelineBase:
         return name
 
     def get_component(self, name):
-        """Get the first component object in the pipeline with a specific name.
+        """Returns component by name
 
         Arguments:
-            name (str): name of component to get
+            name (str): name of component
 
         Returns:
-            Component in pipeline with the specified name if it exists, else None
+            Component: component to return
+
         """
         return next((component for component in self.component_list if component.name == name), None)
 
@@ -94,11 +95,10 @@ class PipelineBase:
         """Outputs pipeline details including component parameters
 
         Arguments:
-            return_dict (bool): If True, return dictionary of information
-                about pipeline. Defaults to false
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
         Returns:
-            dictionary of all component parameters if return_dict is True, else None
+            dict: dictionary of all component parameters if return_dict is True, else None
         """
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
@@ -186,7 +186,7 @@ class PipelineBase:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
-            Series : estimated labels
+            pd.Series : estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -214,7 +214,7 @@ class PipelineBase:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
-            DataFrame : probability estimates
+            pd.DataFrame : probability estimates
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -232,11 +232,11 @@ class PipelineBase:
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            y (Series) : true labels of length [n_samples]
+            y (pd.Series) : true labels of length [n_samples]
             other_objectives (list): list of other objectives to score
 
         Returns:
-            score, ordered dictionary of other objective scores
+            float, dict:  score, ordered dictionary of other objective scores
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
