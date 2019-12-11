@@ -155,7 +155,7 @@ class AutoBase:
             pbar.close()
 
         # removing catboost's automatically generated folder of training metrics
-        shutil.rmtree('catboost_info', ignore_errors=True)
+        # shutil.rmtree('catboost_info', ignore_errors=True)
         self.logger.log("\n✔ Optimization finished")
 
     def _check_multiclass(self, y):
