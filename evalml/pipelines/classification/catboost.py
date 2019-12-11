@@ -1,4 +1,5 @@
 from skopt.space import Integer, Real
+import shutil
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
