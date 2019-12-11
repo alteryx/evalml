@@ -154,15 +154,13 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-        desc = "✔ Optimization finished"
+        desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
     def _check_stopping_condition(self, start):
         should_continue = True
-        msg = None
-
         if len(self.results['pipeline_results']) == 0:
             return True
 
@@ -170,36 +168,32 @@ class AutoBase:
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_pipelines and len(self.results['pipeline_results']) >= self.max_pipelines:
-            return False
+        elif self.max_pipelines:
+            if len(self.results['pipeline_results']) >= self.max_pipelines:
+                return False
+            elif self.max_time and elapsed >= self.max_time:
+                self.logger.log("\n\nMax time elapsed. Stopping search early.")
+                return False
 
         # check for early stopping
+        if self.patience is None:
+            return True
 
-        if self.patience:
-            best_score = None
-            num_without_improvement = 0
-            for id in self.results['search_order']:
-                curr_score = self.results['pipeline_results'][id]['score']
-                if best_score is None:
-                    best_score = curr_score
-                    continue
-                if self.objective.greater_is_better and curr_score > best_score:
-                    if abs((curr_score - best_score) / best_score) > self.tolerance:
-                        best_score = curr_score
-                        num_without_improvement = 0
-                elif not self.objective.greater_is_better and curr_score < best_score:
-                    if abs((curr_score - best_score) / best_score) > self.tolerance:
-                        best_score = curr_score
-                        num_without_improvement = 0
-                else:
-                    num_without_improvement += 1
-                if num_without_improvement >= self.patience:
-                    should_continue = False
-                    msg = "\n\n{} iterations without improvement. Stopping search early...".format(self.patience)
-                    break
-
-        if not should_continue and msg:
-            self.logger.log(msg)
+        best_score = -np.inf if self.objective.greater_is_better else np.inf
+        num_without_improvement = 0
+        for id in self.results['search_order']:
+            curr_score = self.results['pipeline_results'][id]['score']
+            id_index = self.results['search_order'].index(id)
+            significant_change = True if id_index == 0 else abs((curr_score - best_score) / best_score) > self.tolerance
+            score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
+            if score_improved and significant_change:
+                best_score = curr_score
+                num_without_improvement = 0
+            else:
+                num_without_improvement += 1
+            if num_without_improvement >= self.patience:
+                self.logger.log("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
+                return False
         return should_continue
 
     def _check_multiclass(self, y):
@@ -277,9 +271,6 @@ class AutoBase:
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
-
-        # return average CV score
-        return score
 
     def _select_pipeline(self):
         return random.choice(self.possible_pipelines)
