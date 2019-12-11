@@ -35,7 +35,7 @@ class SearchIterationPlot():
     def update(self):
         iter_idx = self.data.results['search_order']
         pipeline_res = self.data.results['pipeline_results']
-        iter_scores = [pipeline_res[i]['score'] for i in range(len(pipeline_res))]
+        iter_scores = [pipeline_res[i]['score'] for i in iter_idx]
 
         if self.data.objective.greater_is_better:
             iter_max_score = self.data.rankings['score'].max()
