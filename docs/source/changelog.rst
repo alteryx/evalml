@@ -11,6 +11,7 @@ Changelog
         * Lower botocore requirement :pr:`235`
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
         * Fixed return value of Recall metrics :pr:`264`
+        * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
