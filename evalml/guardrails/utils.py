@@ -94,6 +94,17 @@ def detect_categorical_correlation(X, threshold=.95):
 
     Returns:
         A dictionary mapping potentially collinear features and their corresponding correlation coefficient
+
+    Example:
+        >>> X = {'corr_1': [1, 1, 2, 3, 1, 2, 3, 4],
+        ...      'corr_2': ['a', 'a', 'b', 'c', 'a', 'b', 'c', 'd'],
+        ...      'corr_3': ['w', 'w', 'x', 'y', 'w', 'x', 'y', 'z'],
+        ...      'not_corr': [1, 1, 4, 3, 1, 3, 3, 1]}
+        >>> X = pd.DataFrame(data=X)
+        >>> for col in X:
+        ...     X[col] = X[col].astype('category')
+        >>> result = detect_categorical_correlation(X, 0.9)
+        {('col_1', 'col_3'), ('col_1', 'col_2'), ('col_2', 'col_3')}
     """
     def cramers_v_bias_corrected(confusion_matrix):
         """ Calculate Cramer's V statistic for categorial-categorial correlation with bias correction."""
@@ -158,7 +169,6 @@ def detect_multicollinearity(X, threshold=5):
         A dictionary of features with VIF scores greater than threshold mapped to their corresponding VIF score
   
     Example:
-        >>> import pandas as pd
         >>> col = pd.Series([1, 0, 2, 3, 4])
         >>> X = pd.DataFrame({'col_1': col,
         ...                   'col_2': col*3,
