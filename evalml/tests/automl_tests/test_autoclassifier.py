@@ -264,10 +264,10 @@ def test_max_time_units():
 def test_plots_as_objectives(X_y):
     X, y = X_y
     with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        clf_conf = AutoClassifier(objective='Confusion_Matrix', additional_objectives=['recall'], max_pipelines=1)
+        AutoClassifier(objective='Confusion_Matrix', additional_objectives=['recall'], max_pipelines=1)
 
     with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        clf_roc = AutoClassifier(objective='ROC', additional_objectives=['recall'], max_pipelines=1)
+        AutoClassifier(objective='ROC', additional_objectives=['recall'], max_pipelines=1)
 
     clf = AutoClassifier(objective='AUC', additional_objectives=['recall'], max_pipelines=2)
     clf.fit(X, y, raise_errors=True)
