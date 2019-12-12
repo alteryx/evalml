@@ -87,12 +87,12 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               conda install python-graphviz -q -y
-      - run:
-          name: Install Plotly
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              conda install plotly -q -y
+      # - run:
+      #     name: Install Plotly
+      #     command: |
+      #         C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+      #         conda activate curr_py
+      #         conda install plotly -q -y
       - run:
           name: Install EvalML
           command: |
