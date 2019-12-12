@@ -23,107 +23,107 @@ def test_init(X_y):
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.BINARY) == clf.possible_pipelines
+    assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
 
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert isinstance(clf.rankings, pd.DataFrame)
-    assert isinstance(clf.best_pipeline, PipelineBase)
-    assert isinstance(clf.best_pipeline.feature_importances, pd.DataFrame)
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.best_pipeline, PipelineBase)
+    assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
 
     # test with datafarmes
-    clf.fit(pd.DataFrame(X), pd.Series(y))
+    automl.search(pd.DataFrame(X), pd.Series(y))
 
-    assert isinstance(clf.rankings, pd.DataFrame)
-    assert isinstance(clf.best_pipeline, PipelineBase)
-    assert isinstance(clf.get_pipeline(0), PipelineBase)
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.best_pipeline, PipelineBase)
+    assert isinstance(automl.get_pipeline(0), PipelineBase)
 
-    clf.describe_pipeline(0)
+    automl.describe_pipeline(0)
 
 
 def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
     automl = AutoClassificationSearch(cv=StratifiedKFold(cv_folds), max_pipelines=1)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert isinstance(clf.rankings, pd.DataFrame)
-    assert len(clf.results['pipeline_results'][0]["cv_data"]) == cv_folds
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
     automl = AutoClassificationSearch(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert isinstance(clf.rankings, pd.DataFrame)
-    assert len(clf.results['pipeline_results'][0]["cv_data"]) == cv_folds
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
 
 def test_init_select_model_types():
     model_types = [ModelTypes.RANDOM_FOREST]
     automl = AutoClassificationSearch(model_types=model_types)
 
-    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == clf.possible_pipelines
-    assert model_types == clf.possible_model_types
+    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == automl.possible_pipelines
+    assert model_types == automl.possible_model_types
 
 
 def test_max_pipelines(X_y):
     X, y = X_y
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert len(clf.rankings) == max_pipelines
+    assert len(automl.rankings) == max_pipelines
 
 
 def test_best_pipeline(X_y):
     X, y = X_y
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert len(clf.rankings) == max_pipelines
+    assert len(automl.rankings) == max_pipelines
 
 
 def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
 
 def test_binary_auto(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective="recall", multiclass=False, max_pipelines=5)
-    clf.fit(X, y, raise_errors=True)
-    y_pred = clf.best_pipeline.predict(X)
+    automl.search(X, y, raise_errors=True)
+    y_pred = automl.best_pipeline.predict(X)
 
     assert len(np.unique(y_pred)) == 2
 
 
 def test_multi_error(X_y_multi):
     X, y = X_y_multi
-    error_clfs = [AutoClassificationSearch(objective='recall'), AutoClassificationSearch(objective='recall_micro', additional_objectives=['recall'], multiclass=True)]
+    error_automls = [AutoClassificationSearch(objective='recall'), AutoClassificationSearch(objective='recall_micro', additional_objectives=['recall'], multiclass=True)]
     error_msg = 'not compatible with a multiclass problem.'
-    for clf in error_clfs:
+    for automl in error_automls:
         with pytest.raises(ValueError, match=error_msg):
-            clf.fit(X, y)
+            automl.search(X, y)
 
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
     automl = AutoClassificationSearch(objective="recall_micro", multiclass=True, max_pipelines=5)
-    clf.fit(X, y, raise_errors=True)
-    y_pred = clf.best_pipeline.predict(X)
+    automl.search(X, y, raise_errors=True)
+    y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     objective = PrecisionMicro()
     automl = AutoClassificationSearch(objective=objective, multiclass=True, max_pipelines=5)
-    clf.fit(X, y, raise_errors=True)
-    y_pred = clf.best_pipeline.predict(X)
+    automl.search(X, y, raise_errors=True)
+    y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     expected_additional_objectives = get_objectives('multiclass')
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
-    for expected, additional in zip(expected_additional_objectives, clf.additional_objectives):
+    for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
         assert type(additional) is type(expected)
 
 
@@ -133,27 +133,27 @@ def test_multi_objective(X_y_multi):
         automl = AutoClassificationSearch(objective="recall", multiclass=True)
 
     automl = AutoClassificationSearch(objective="log_loss")
-    assert clf.problem_type == ProblemTypes.BINARY
+    assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoClassificationSearch(objective='recall_micro')
-    assert clf.problem_type == ProblemTypes.MULTICLASS
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch(objective='recall')
-    assert clf.problem_type == ProblemTypes.BINARY
+    assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoClassificationSearch(multiclass=True)
-    assert clf.problem_type == ProblemTypes.MULTICLASS
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch()
-    assert clf.problem_type == ProblemTypes.BINARY
+    assert automl.problem_type == ProblemTypes.BINARY
 
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     automl = AutoClassificationSearch(objective="recall", max_pipelines=5, multiclass=False)
-    clf.fit(X, y, raise_errors=True)
-    assert not clf.rankings['score'].isnull().all()
-    assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
+    automl.search(X, y, raise_errors=True)
+    assert not automl.rankings['score'].isnull().all()
+    assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
 
 
 def test_random_state(X_y):
@@ -165,20 +165,20 @@ def test_random_state(X_y):
                    amount_col=10)
 
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    clf_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
-    clf_1.fit(X, y, raise_errors=True)
-    assert clf.rankings.equals(clf_1.rankings)
+    automl_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
+    automl_1.search(X, y, raise_errors=True)
+    assert automl.rankings.equals(automl_1.rankings)
 
     # test an objective that requires fitting
     automl = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    clf_1 = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    clf_1.fit(X, y, raise_errors=True)
+    automl_1 = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
+    automl_1.search(X, y, raise_errors=True)
 
-    assert clf.rankings.equals(clf_1.rankings)
+    assert automl.rankings.equals(automl_1.rankings)
 
 
 def test_callback(X_y):
@@ -197,9 +197,9 @@ def test_callback(X_y):
 
     max_pipelines = 3
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=max_pipelines,
-                         start_iteration_callback=start_iteration_callback,
-                         add_result_callback=add_result_callback)
-    clf.fit(X, y, raise_errors=True)
+                                      start_iteration_callback=start_iteration_callback,
+                                      add_result_callback=add_result_callback)
+    automl.search(X, y, raise_errors=True)
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
@@ -213,23 +213,23 @@ def test_additional_objectives(X_y):
                           fraud_payout_percentage=.75,
                           amount_col=10)
     automl = AutoClassificationSearch(objective='F1', max_pipelines=2, additional_objectives=[objective])
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    results = clf.describe_pipeline(0, return_dict=True)
+    results = automl.describe_pipeline(0, return_dict=True)
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
 def test_describe_pipeline_objective_ordered(X_y, capsys):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    clf.describe_pipeline(0)
+    automl.describe_pipeline(0)
     out, err = capsys.readouterr()
     out_stripped = " ".join(out.split())
 
-    objectives = [get_objective(obj) for obj in clf.additional_objectives]
-    objectives_names = [clf.objective.name] + [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
+    objectives = [get_objective(obj) for obj in automl.additional_objectives]
+    objectives_names = [automl.objective.name] + [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''
@@ -265,8 +265,8 @@ def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
-    clf.fit(X, y)
-    plot = clf.plot.search_iteration_plot()
+    automl.search(X, y)
+    plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
@@ -281,8 +281,8 @@ def test_plot_iterations_max_pipelines(X_y):
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective="f1", max_time=10)
-    clf.fit(X, y, show_iteration_plot=False)
-    plot = clf.plot.search_iteration_plot()
+    automl.search(X, y, show_iteration_plot=False)
+    plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])

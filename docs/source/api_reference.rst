@@ -32,7 +32,7 @@ Preprocessing
 
 .. currentmodule:: evalml
 
-Models
+AutoML
 ======
 
 .. autosummary::

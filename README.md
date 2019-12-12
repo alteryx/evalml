@@ -39,18 +39,18 @@ fraud_objective = FraudCost(
 automl = AutoClassificationSearch(objective=fraud_objective,
                      max_pipelines=3)
 
-clf.fit(X_train, y_train)
+automl.search(X_train, y_train)
 ```
 
 #### See all pipeline ranks
 ```python
-clf.rankings
+automl.rankings
 ```
 
 #### Get best pipeline and predict on new data
 
 ```python
-pipeline = clf.best_pipeline
+pipeline = automl.best_pipeline
 pipeline.predict(X_test)
 ```
 

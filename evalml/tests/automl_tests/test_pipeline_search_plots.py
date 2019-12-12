@@ -51,14 +51,14 @@ def test_generate_roc(X_y):
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
 
-    mock_clf = MockAuto()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAuto()
+    search_plots = PipelineSearchPlots(mock_automl)
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.get_roc_data(0)
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.generate_roc_plot(0)
 
-    mock_clf.fit()
+    mock_automl.search()
 
     with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
         search_plots.get_roc_data(1)
@@ -81,8 +81,8 @@ def test_generate_roc_multi_raises_errors(X_y):
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.MULTICLASS
 
-    mock_clf = MockAutoMulti()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAutoMulti()
+    search_plots = PipelineSearchPlots(mock_automl)
 
     with pytest.raises(RuntimeError, match="ROC plots can only be generated for binary classification problems."):
         search_plots.get_roc_data(0)
@@ -131,14 +131,14 @@ def test_generate_confusion_matrix(X_y):
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
                                                          "pipeline_name": pipeline.name}})
 
-    mock_clf = MockAutoClassificationSearch()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAutoClassificationSearch()
+    search_plots = PipelineSearchPlots(mock_automl)
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.get_confusion_matrix_data(0)
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.generate_confusion_matrix(0)
 
-    mock_clf.fit()
+    mock_automl.search()
 
     with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
         search_plots.get_confusion_matrix_data(1)
@@ -162,8 +162,8 @@ def test_confusion_matrix_regression_throws_error():
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.REGRESSION
 
-    mock_clf = MockAutoRegressionSearch()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAutoRegressionSearch()
+    search_plots = PipelineSearchPlots(mock_automl)
 
     with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems"):
         search_plots.get_confusion_matrix_data(0)
