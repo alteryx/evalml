@@ -31,26 +31,41 @@ class SearchIterationPlot():
         }
         self.best_score_by_iter_fig = go.FigureWidget(data, layout)
         self.best_score_by_iter_fig.update_layout(showlegend=False)
+        self.update()
 
     def update(self):
-        iter_idx = self.data.results['search_order']
-        pipeline_res = self.data.results['pipeline_results']
-        iter_scores = [pipeline_res[i]['score'] for i in iter_idx]
+        if len(self.data.results['search_order']) > 0 and len(self.data.results['pipeline_results']) > 0:
+            iter_idx = self.data.results['search_order']
+            pipeline_res = self.data.results['pipeline_results']
+            iter_scores = [pipeline_res[i]['score'] for i in iter_idx]
 
-        if self.data.objective.greater_is_better:
-            iter_max_score = self.data.rankings['score'].max()
-        else:
-            iter_max_score = self.data.rankings['score'].min()
-        self.best_iteration_scores.append(iter_max_score)
+            iter_score_pairs = zip(iter_idx, iter_scores)
+            iter_score_pairs = sorted(iter_score_pairs, key=lambda value: value[0])
+            sorted_iter_idx, sorted_iter_scores = zip(*iter_score_pairs)
 
-        # Update entire line plot
-        curr_score_trace = self.best_score_by_iter_fig.data[1]
-        curr_score_trace.x = iter_idx
-        curr_score_trace.y = iter_scores
+            # Create best score data
+            best_iteration_scores = list()
+            curr_best = None
+            for score in sorted_iter_scores:
+                if curr_best is None:
+                    best_iteration_scores.append(score)
+                    curr_best = score
+                else:
+                    if self.data.objective.greater_is_better and score > curr_best \
+                            or not self.data.objective.greater_is_better and score < curr_best:
+                        best_iteration_scores.append(score)
+                        curr_best = score
+                    else:
+                        best_iteration_scores.append(curr_best)
 
-        best_score_trace = self.best_score_by_iter_fig.data[0]
-        best_score_trace.x = list(range(len(self.best_iteration_scores)))
-        best_score_trace.y = self.best_iteration_scores
+            # Update entire line plot
+            best_score_trace = self.best_score_by_iter_fig.data[0]
+            best_score_trace.x = sorted_iter_idx
+            best_score_trace.y = best_iteration_scores
+
+            curr_score_trace = self.best_score_by_iter_fig.data[1]
+            curr_score_trace.x = sorted_iter_idx
+            curr_score_trace.y = sorted_iter_scores
 
 
 class PipelineSearchPlots:
@@ -208,12 +223,10 @@ class PipelineSearchPlots:
         Returns:
             plot
         """
-
-        if hasattr(self, 'iter_plot'):
-            return go.Figure(self.iter_plot.best_score_by_iter_fig)
-        else:
-            self.iter_plot = SearchIterationPlot(self.data)
-
         if interactive_plot:
-            display(self.iter_plot.best_score_by_iter_fig)
-        return self.iter_plot
+            plot_obj = SearchIterationPlot(self.data)
+            display(plot_obj.best_score_by_iter_fig)
+            return plot_obj
+        else:
+            plot_obj = SearchIterationPlot(self.data)
+            return go.Figure(plot_obj.best_score_by_iter_fig)

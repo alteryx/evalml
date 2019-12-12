@@ -1,4 +1,5 @@
 import pandas as pd
+import plotly.graph_objects as go
 import pytest
 
 from evalml import AutoRegressor
@@ -81,3 +82,36 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
+def test_plot_iterations_max_pipelines(X_y):
+    X, y = X_y
+
+    clf = AutoRegressor(max_pipelines=3)
+    clf.fit(X, y)
+    plot = clf.plot.search_iteration_plot()
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+
+    assert isinstance(plot, go.Figure)
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) == 3
+    assert len(y) == 3
+
+
+def test_plot_iterations_max_time(X_y):
+    X, y = X_y
+    clf = AutoRegressor(max_time=10)
+    clf.fit(X, y, show_iteration_plot=False)
+    plot = clf.plot.search_iteration_plot()
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+
+    assert isinstance(plot, go.Figure)
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) > 0
+    assert len(y) > 0

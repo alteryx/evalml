@@ -7,7 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from evalml.models import AutoClassifier
 from evalml.models.auto_base import AutoBase
-from evalml.models.pipeline_search_plots import PipelineSearchPlots
+from evalml.models.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -169,32 +169,51 @@ def test_confusion_matrix_regression_throws_error():
         search_plots.generate_confusion_matrix(0)
 
 
-def test_plot_iterations(X_y):
-    X, y = X_y
+def test_search_iteration_plot_class(X_y):
 
-    clf = AutoClassifier(objective="f1", max_pipelines=3)
-    clf.fit(X, y)
-    plot = clf.plot.search_iteration_plot()
-    plot_data = plot.data[0]
-    x = pd.Series(plot_data['x'])
-    y = pd.Series(plot_data['y'])
+    class MockObjective:
+        def __init__(self):
+            self.name = 'Test Objective'
+            self.greater_is_better = True
 
-    assert isinstance(plot, go.Figure)
-    assert x.is_monotonic_increasing
-    assert y.is_monotonic_increasing
-    assert len(x) == 3
-    assert len(y) == 3
+    class MockResults:
+        def __init__(self):
+            self.objective = MockObjective()
+            self.results = {
+                'pipeline_results': {
+                    2: {
+                        'score': 0.50
+                    },
+                    0: {
+                        'score': 0.60
+                    },
+                    1: {
+                        'score': 0.75
+                    },
+                },
+                'search_order': [1, 2, 0]
+            }
+            self.rankings = pd.DataFrame({
+                'score': [0.75, 0.60, 0.50]
+            })
 
-    X, y = X_y
-    clf2 = AutoClassifier(objective="f1", max_time=10)
-    clf2.fit(X, y, show_iteration_plot=False)
-    plot = clf2.plot.search_iteration_plot()
-    plot_data = plot.data[0]
-    x = pd.Series(plot_data['x'])
-    y = pd.Series(plot_data['y'])
+    mock_data = MockResults()
+    plot = SearchIterationPlot(mock_data)
 
-    assert isinstance(plot, go.Figure)
-    assert x.is_monotonic_increasing
-    assert y.is_monotonic_increasing
-    assert len(x) > 0
-    assert len(y) > 0
+    # Check best score trace
+    plot_data = plot.best_score_by_iter_fig.data[0]
+    x = list(plot_data['x'])
+    y = list(plot_data['y'])
+
+    assert isinstance(plot, SearchIterationPlot)
+    assert x == [0, 1, 2]
+    assert y == [0.60, 0.75, 0.75]
+
+    # Check current score trace
+    plot_data = plot.best_score_by_iter_fig.data[1]
+    x = list(plot_data['x'])
+    y = list(plot_data['y'])
+
+    assert isinstance(plot, SearchIterationPlot)
+    assert x == [1, 2, 0]
+    assert y == [0.75, 0.50, 0.60]
