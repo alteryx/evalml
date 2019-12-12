@@ -106,7 +106,7 @@ jobs:
       - store_artifacts:
           path: C:/evalml/test-reports
   unit_tests:
-    resource_class: large
+    resource_class: xlarge
     parameters:
       python_version:
         type: string
