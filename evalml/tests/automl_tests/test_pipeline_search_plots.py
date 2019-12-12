@@ -5,9 +5,11 @@ import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
-from evalml.models import AutoClassifier
 from evalml.models.auto_base import AutoBase
-from evalml.models.pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
+from evalml.models.pipeline_search_plots import (
+    PipelineSearchPlots,
+    SearchIterationPlot
+)
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -215,5 +217,5 @@ def test_search_iteration_plot_class(X_y):
     y = list(plot_data['y'])
 
     assert isinstance(plot, SearchIterationPlot)
-    assert x == [1, 2, 0]
-    assert y == [0.75, 0.50, 0.60]
+    assert x == [0, 1, 2]
+    assert y == [0.60, 0.75, 0.50]
