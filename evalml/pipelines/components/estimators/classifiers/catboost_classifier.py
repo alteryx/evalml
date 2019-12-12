@@ -1,5 +1,3 @@
-import shutil
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -63,8 +61,6 @@ class CatBoostClassifier(Estimator):
             self._label_encoder = LabelEncoder()
             y = pd.Series(self._label_encoder.fit_transform(y))
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
-        # # removing catboost's automatically generated folder of training metrics
-        # shutil.rmtree('catboost_info', ignore_errors=True)
         return model
 
     def predict(self, X):
