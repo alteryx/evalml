@@ -156,13 +156,13 @@ def test_generate_confusion_matrix(X_y):
 
 def test_confusion_matrix_regression_throws_error():
     # Make mock class and generate mock results
-    class MockAutoRegressor(AutoBase):
+    class MockAutoRegressionSearch(AutoBase):
         def __init__(self):
             self.results = {}
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.REGRESSION
 
-    mock_clf = MockAutoRegressor()
+    mock_clf = MockAutoRegressionSearch()
     search_plots = PipelineSearchPlots(mock_clf)
 
     with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems"):

@@ -5,7 +5,7 @@ from .auto_base import AutoBase
 from evalml.problem_types import ProblemTypes
 
 
-class AutoRegressor(AutoBase):
+class AutoRegressionSearch(AutoBase):
     """Automatic pipeline search for regression problems
 
     """

@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import pytest
 
-from evalml import AutoRegressor
+from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -16,7 +16,7 @@ def X_y():
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoRegressor(objective="R2", max_pipelines=3)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == clf.possible_pipelines
@@ -42,10 +42,10 @@ def test_init(X_y):
 
 def test_random_state(X_y):
     X, y = X_y
-    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
     clf.fit(X, y, raise_errors=True)
 
-    clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf_1 = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
     clf_1.fit(X, y, raise_errors=True)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
@@ -54,7 +54,7 @@ def test_random_state(X_y):
 
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
     clf.fit(X, y, raise_errors=True)
     assert not clf.rankings['score'].isnull().all()
     assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
@@ -75,7 +75,7 @@ def test_callback(X_y):
         counts["add_result_callback"] += 1
 
     max_pipelines = 3
-    clf = AutoRegressor(objective="R2", max_pipelines=max_pipelines,
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=max_pipelines,
                         start_iteration_callback=start_iteration_callback,
                         add_result_callback=add_result_callback)
     clf.fit(X, y, raise_errors=True)
@@ -87,7 +87,7 @@ def test_callback(X_y):
 def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
 
-    clf = AutoRegressor(max_pipelines=3)
+    clf = AutoRegressionSearch(max_pipelines=3)
     clf.fit(X, y)
     plot = clf.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -103,7 +103,7 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
-    clf = AutoRegressor(max_time=10)
+    clf = AutoRegressionSearch(max_time=10)
     clf.fit(X, y, show_iteration_plot=False)
     plot = clf.plot.search_iteration_plot()
     plot_data = plot.data[0]

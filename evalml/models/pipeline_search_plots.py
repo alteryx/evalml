@@ -69,14 +69,14 @@ class SearchIterationPlot():
 
 
 class PipelineSearchPlots:
-    """Plots for the AutoClassificationSearch/AutoRegressor class.
+    """Plots for the AutoClassificationSearch/AutoRegressionSearch class.
     """
 
     def __init__(self, data):
-        """Make plots for the AutoClassificationSearch/AutoRegressor class.
+        """Make plots for the AutoClassificationSearch/AutoRegressionSearch class.
 
         Args:
-            data (AutoClassificationSearch or AutoRegressor): Automated pipeline search object
+            data (AutoClassificationSearch or AutoRegressionSearch): Automated pipeline search object
         """
         self.data = data
 

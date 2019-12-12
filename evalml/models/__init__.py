@@ -5,4 +5,4 @@ The usage of this software is governed by the Feature Labs End User License Agre
 """
 # flake8:noqas
 from .auto_classifier import AutoClassificationSearch
-from .auto_regressor import AutoRegressor
+from .auto_regressor import AutoRegressionSearch
