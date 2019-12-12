@@ -14,6 +14,8 @@ class AutoRegressor(AutoBase):
                  objective=None,
                  max_pipelines=None,
                  max_time=None,
+                 patience=None,
+                 tolerance=None,
                  model_types=None,
                  cv=None,
                  tuner=None,
@@ -38,6 +40,12 @@ class AutoRegressor(AutoBase):
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("regression") to see options.
+
+            patience (int): Number of iterations without improvement to stop search early. Must be positive.
+                If None, early stopping is disabled. Defaults to None.
+
+            tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+                Only applicable if patience is not None. Defaults to None.
 
             cv: cross validation method to use. By default StratifiedKFold
 
@@ -74,6 +82,8 @@ class AutoRegressor(AutoBase):
             cv=cv,
             max_pipelines=max_pipelines,
             max_time=max_time,
+            patience=patience,
+            tolerance=tolerance,
             model_types=model_types,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,

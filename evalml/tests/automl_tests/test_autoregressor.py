@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import plotly.graph_objects as go
 import pytest
@@ -82,6 +84,27 @@ def test_callback(X_y):
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
+
+
+def test_early_stopping(capsys):
+    tolerance = 0.005
+    patience = 2
+    clf = AutoRegressor(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
+
+    mock_results = {
+        'search_order': [0, 1, 2],
+        'pipeline_results': {}
+    }
+
+    scores = [150, 200, 195]
+    for id in mock_results['search_order']:
+        mock_results['pipeline_results'][id] = {}
+        mock_results['pipeline_results'][id]['score'] = scores[id]
+
+    clf.results = mock_results
+    clf._check_stopping_condition(time.time())
+    out, _ = capsys.readouterr()
+    assert "2 iterations without improvement. Stopping search early." in out
 
 
 def test_plot_iterations_max_pipelines(X_y):
