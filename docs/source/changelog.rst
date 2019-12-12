@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add CatBoost classification and regression components and pipelines :pr:`247`
         * Added ability to create a plot of feature importances :pr:`133`
+        * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
         * Enhanced AutoML results with search order :pr:`260`
     * Fixes
@@ -66,6 +67,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
+        * Show an interactive iteration vs. score plot when using fit() :pr:`134`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`

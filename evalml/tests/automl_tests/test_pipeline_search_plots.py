@@ -6,7 +6,10 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml.models.auto_base import AutoBase
-from evalml.models.pipeline_search_plots import PipelineSearchPlots
+from evalml.models.pipeline_search_plots import (
+    PipelineSearchPlots,
+    SearchIterationPlot
+)
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -152,7 +155,6 @@ def test_generate_confusion_matrix(X_y):
 
 
 def test_confusion_matrix_regression_throws_error():
-
     # Make mock class and generate mock results
     class MockAutoRegressor(AutoBase):
         def __init__(self):
@@ -167,3 +169,53 @@ def test_confusion_matrix_regression_throws_error():
         search_plots.get_confusion_matrix_data(0)
     with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems."):
         search_plots.generate_confusion_matrix(0)
+
+
+def test_search_iteration_plot_class(X_y):
+
+    class MockObjective:
+        def __init__(self):
+            self.name = 'Test Objective'
+            self.greater_is_better = True
+
+    class MockResults:
+        def __init__(self):
+            self.objective = MockObjective()
+            self.results = {
+                'pipeline_results': {
+                    2: {
+                        'score': 0.50
+                    },
+                    0: {
+                        'score': 0.60
+                    },
+                    1: {
+                        'score': 0.75
+                    },
+                },
+                'search_order': [1, 2, 0]
+            }
+            self.rankings = pd.DataFrame({
+                'score': [0.75, 0.60, 0.50]
+            })
+
+    mock_data = MockResults()
+    plot = SearchIterationPlot(mock_data)
+
+    # Check best score trace
+    plot_data = plot.best_score_by_iter_fig.data[0]
+    x = list(plot_data['x'])
+    y = list(plot_data['y'])
+
+    assert isinstance(plot, SearchIterationPlot)
+    assert x == [0, 1, 2]
+    assert y == [0.60, 0.75, 0.75]
+
+    # Check current score trace
+    plot_data = plot.best_score_by_iter_fig.data[1]
+    x = list(plot_data['x'])
+    y = list(plot_data['y'])
+
+    assert isinstance(plot, SearchIterationPlot)
+    assert x == [0, 1, 2]
+    assert y == [0.60, 0.75, 0.50]
