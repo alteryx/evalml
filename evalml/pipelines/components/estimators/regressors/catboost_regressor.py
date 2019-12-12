@@ -1,3 +1,5 @@
+import shutil
+
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
@@ -30,13 +32,14 @@ class CatBoostRegressor(Estimator):
             import catboost
         except ImportError:
             raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
-        cb_classifier = catboost.CatBoostRegressor(n_estimators=n_estimators,
-                                                   eta=eta,
-                                                   max_depth=max_depth,
-                                                   silent=True,
-                                                   random_state=random_state)
+        cb_regressor = catboost.CatBoostRegressor(n_estimators=n_estimators,
+                                                  eta=eta,
+                                                  max_depth=max_depth,
+                                                  silent=True,
+                                                  random_state=random_state,
+                                                  allow_writing_files=False)
         super().__init__(parameters=parameters,
-                         component_obj=cb_classifier,
+                         component_obj=cb_regressor,
                          random_state=random_state)
 
     def fit(self, X, y=None):
@@ -51,6 +54,7 @@ class CatBoostRegressor(Estimator):
         """
         cat_cols = X.select_dtypes(['object', 'category'])
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
+        shutil.rmtree('catboost_info', ignore_errors=True)
         return model
 
     @property

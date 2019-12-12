@@ -1,3 +1,5 @@
+import shutil
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -39,7 +41,8 @@ class CatBoostClassifier(Estimator):
                                                     eta=eta,
                                                     max_depth=max_depth,
                                                     silent=True,
-                                                    random_state=random_state)
+                                                    random_state=random_state,
+                                                    allow_writing_files=False)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
                          random_state=random_state)
@@ -61,6 +64,7 @@ class CatBoostClassifier(Estimator):
             self._label_encoder = LabelEncoder()
             y = pd.Series(self._label_encoder.fit_transform(y))
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
+        shutil.rmtree('catboost_info', ignore_errors=True)
         return model
 
     def predict(self, X):
