@@ -30,8 +30,6 @@ class AutoBase:
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.patience = patience
-        self.tolerance = tolerance
         self.model_types = model_types
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
@@ -61,16 +59,14 @@ class AutoBase:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
-        if self.patience:
-            if (not isinstance(self.patience, int)) or self.patience < 0:
-                raise ValueError("patience value must be a positive integer. Received {} instead".format(self.patience))
+        if patience and (not isinstance(patience, int) or patience < 0):
+            raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
 
-        if tolerance:
-            if self.tolerance > 1.0 or self.tolerance < 0.0:
-                raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(self.tolerance))
-        else:
-            self.tolerance = 0.0
+        if tolerance and (tolerance > 1.0 or tolerance < 0.0):
+            raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(tolerance))
 
+        self.patience = patience
+        self.tolerance = tolerance if tolerance else 0.0
         self.results = {
             'pipeline_results': {},
             'search_order': []
