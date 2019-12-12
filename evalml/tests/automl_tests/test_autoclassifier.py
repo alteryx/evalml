@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
@@ -284,3 +285,36 @@ def test_early_stopping(capsys):
     clf._check_stopping_condition(time.time())
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
+
+
+def test_plot_iterations_max_pipelines(X_y):
+    X, y = X_y
+
+    clf = AutoClassifier(objective="f1", max_pipelines=3)
+    clf.fit(X, y)
+    plot = clf.plot.search_iteration_plot()
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+
+    assert isinstance(plot, go.Figure)
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) == 3
+    assert len(y) == 3
+
+
+def test_plot_iterations_max_time(X_y):
+    X, y = X_y
+    clf = AutoClassifier(objective="f1", max_time=10)
+    clf.fit(X, y, show_iteration_plot=False)
+    plot = clf.plot.search_iteration_plot()
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+
+    assert isinstance(plot, go.Figure)
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) > 0
+    assert len(y) > 0

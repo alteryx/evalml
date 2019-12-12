@@ -66,6 +66,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
+        * Show an interactive iteration vs. score plot when using fit() :pr:`134`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`

@@ -89,7 +89,7 @@ class AutoBase:
 
         self.plot = PipelineSearchPlots(self)
 
-    def fit(self, X, y, feature_types=None, raise_errors=False):
+    def fit(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -102,10 +102,21 @@ class AutoBase:
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+                Disabled by default in non-Jupyter enviroments.
+
         Returns:
 
             self
         """
+        # don't show iteration plot outside of a jupyter notebook
+        if show_iteration_plot is True:
+            try:
+                get_ipython
+            except NameError:
+                show_iteration_plot = False
+
+        # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -140,6 +151,8 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
+        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
@@ -150,6 +163,7 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
+            plot.update()
         desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
