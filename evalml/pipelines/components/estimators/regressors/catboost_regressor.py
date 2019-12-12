@@ -6,6 +6,7 @@ from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import import_or_raise
 
 
 class CatBoostRegressor(Estimator):
@@ -28,10 +29,8 @@ class CatBoostRegressor(Estimator):
                       "eta": eta,
                       "max_depth": max_depth}
 
-        try:
-            import catboost
-        except ImportError:
-            raise ImportError("catboost is not installed. Please install using `pip install catboost.`")
+        cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
+        catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         cb_regressor = catboost.CatBoostRegressor(n_estimators=n_estimators,
                                                   eta=eta,
                                                   max_depth=max_depth,

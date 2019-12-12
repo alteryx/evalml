@@ -1,6 +1,4 @@
 from skopt.space import Integer, Real
-from xgboost import XGBClassifier
-
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
@@ -24,10 +22,12 @@ class XGBoostClassifier(Estimator):
         parameters = {"eta": eta,
                       "max_depth": max_depth,
                       "min_child_weight": min_child_weight}
-        xgb_classifier = XGBClassifier(random_state=random_state,
-                                       eta=eta,
-                                       max_depth=max_depth,
-                                       min_child_weight=min_child_weight)
+        xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
+        xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
+        xgb_classifier = xgb.XGBClassifier(random_state=random_state,
+                                           eta=eta,
+                                           max_depth=max_depth,
+                                           min_child_weight=min_child_weight)
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
                          random_state=random_state)
