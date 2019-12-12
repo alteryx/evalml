@@ -36,7 +36,7 @@ fraud_objective = FraudCost(
 
 #### Run automl
 ```python
-clf = AutoClassificationSearch(objective=fraud_objective,
+automl = AutoClassificationSearch(objective=fraud_objective,
                      max_pipelines=3)
 
 clf.fit(X_train, y_train)
