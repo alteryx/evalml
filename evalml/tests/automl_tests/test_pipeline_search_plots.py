@@ -25,7 +25,7 @@ def test_generate_roc(X_y):
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
-        def fit(self):
+        def search(self):
             pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
@@ -101,7 +101,7 @@ def test_generate_confusion_matrix(X_y):
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
-        def fit(self):
+        def search(self):
             pipeline = LogisticRegressionPipeline(objective="confusion_matrix", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)

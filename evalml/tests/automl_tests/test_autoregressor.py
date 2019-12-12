@@ -46,7 +46,7 @@ def test_random_state(X_y):
     automl.search(X, y, raise_errors=True)
 
     automl_1 = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
-    automl_1.fit(X, y, raise_errors=True)
+    automl_1.search(X, y, raise_errors=True)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
     assert pd.testing.assert_frame_equal(automl.rankings, automl_1.rankings) is None
