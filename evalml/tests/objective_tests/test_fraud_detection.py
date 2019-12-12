@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from evalml import AutoClassifier
+from evalml import AutoClassificationSearch
 from evalml.objectives import FraudCost
 
 
@@ -13,7 +13,7 @@ def test_fraud_objective(X_y):
                           fraud_payout_percentage=.75,
                           amount_col=10)
 
-    clf = AutoClassifier(objective=objective, max_pipelines=1)
+    clf = AutoClassificationSearch(objective=objective, max_pipelines=1)
     clf.fit(X, y, raise_errors=True)
 
     pipeline = clf.best_pipeline

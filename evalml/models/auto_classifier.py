@@ -7,7 +7,7 @@ from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
 
 
-class AutoClassifier(AutoBase):
+class AutoClassificationSearch(AutoBase):
     """Automatic pipeline search class for classification problems"""
 
     def __init__(self,
@@ -93,7 +93,7 @@ class AutoClassifier(AutoBase):
         )
 
     def _set_problem_type(self, objective, multiclass):
-        """Sets the problem type of the AutoClassifier to either binary or multiclass.
+        """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
 
         If there is an objective either:
             a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
@@ -105,7 +105,7 @@ class AutoClassifier(AutoBase):
             multiclass (bool): boolean representing whether search is for multiclass problems or not
 
         Returns:
-            ProblemTypes enum representing type of problem to set AutoClassifier to
+            ProblemTypes enum representing type of problem to set AutoClassificationSearch to
 
         """
         problem_type = ProblemTypes.BINARY

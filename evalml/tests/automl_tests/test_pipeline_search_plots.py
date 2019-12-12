@@ -95,7 +95,7 @@ def test_generate_confusion_matrix(X_y):
     y_test_lens = []
 
     # Make mock class and generate mock results
-    class MockAutoClassifier(AutoBase):
+    class MockAutoClassificationSearch(AutoBase):
         def __init__(self):
             self.results = {}
             self.results['pipeline_results'] = {}
@@ -131,7 +131,7 @@ def test_generate_confusion_matrix(X_y):
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
                                                          "pipeline_name": pipeline.name}})
 
-    mock_clf = MockAutoClassifier()
+    mock_clf = MockAutoClassificationSearch()
     search_plots = PipelineSearchPlots(mock_clf)
     with pytest.raises(RuntimeError, match="You must first call fit"):
         search_plots.get_confusion_matrix_data(0)

@@ -24,7 +24,7 @@ Changelog
         * Added support for doctests :pr:`233`
         
 **Breaking Changes**
-    *   `AutoClassifier.results` and `AutoRegressor.results` now is a dictionary
+    *   `AutoClassificationSearch.results` and `AutoRegressor.results` now is a dictionary
         with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
         to access a dictionary that is identical to the old `.results` dictionary. Whereas,
         `search_order` returns a list of the search order in terms of pipeline id. 
