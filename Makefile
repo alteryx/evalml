@@ -20,7 +20,7 @@ test:
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
