@@ -15,6 +15,7 @@ Changelog
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
+        * Enforcing that pipelines must have an estimator as last component :pr:`277`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
@@ -28,6 +29,8 @@ Changelog
         with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
         to access a dictionary that is identical to the old `.results` dictionary. Whereas,
         `search_order` returns a list of the search order in terms of pipeline id. 
+    *   Pipelines now require an estimator as the last component in `component_list`. 
+        Slicing pipelines now throws an NotImplementedError to avoid returning Pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements

@@ -54,10 +54,7 @@ class PipelineBase:
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return PipelineBase(objective=self.objective,
-                                component_list=self.component_list[index],
-                                random_state=self.random_state,
-                                n_jobs=self.n_jobs)
+            raise NotImplementedError('Slicing pipelines is currently not supported.')
         elif isinstance(index, int):
             return self.component_list[index]
         else:

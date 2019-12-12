@@ -94,11 +94,14 @@ def test_indexing(X_y):
 
     assert isinstance(clf[0], OneHotEncoder)
     assert isinstance(clf['One Hot Encoder'], OneHotEncoder)
-    assert isinstance(clf[:1], PipelineBase)
 
-    err_msg = 'Setting pipeline components is not supported.'
-    with pytest.raises(NotImplementedError, match=err_msg):
+    setting_err_msg = 'Setting pipeline components is not supported.'
+    with pytest.raises(NotImplementedError, match=setting_err_msg):
         clf[1] = OneHotEncoder()
+
+    slicing_err_msg = 'Slicing pipelines is currently not supported.'
+    with pytest.raises(NotImplementedError, match=slicing_err_msg):
+        clf[:1]
 
 
 def test_describe(X_y):
