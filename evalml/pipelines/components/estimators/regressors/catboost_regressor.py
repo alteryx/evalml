@@ -1,5 +1,3 @@
-import shutil
-
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
@@ -53,8 +51,6 @@ class CatBoostRegressor(Estimator):
         """
         cat_cols = X.select_dtypes(['object', 'category'])
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
-        shutil.rmtree('catboost_info', ignore_errors=True)
-
         return model
 
     @property
