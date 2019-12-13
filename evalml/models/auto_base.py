@@ -9,18 +9,42 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
+from .pipeline_template import PipelineTemplate
+
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines
+from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline)
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
+from evalml.pipelines import PipelineBase
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    RandomForestClassifier,
+    RFClassifierSelectFromModel,
+    SimpleImputer,
+    XGBoostClassifier,
+    LogisticRegressionClassifier,
+    StandardScaler
+)
 
 
 class AutoBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
+
+        
+    def _generate_pipeline_templates(self):
+        rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
+        xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
+        lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+        pipeline_to_components = {RFClassificationPipeline: rfc, XGBoostPipeline:xgb, LogisticRegressionPipeline:lgr}
+        possible_templates = {}
+        for t in pipeline_to_components:
+            p = PipelineTemplate(pipeline_to_components[t])
+            possible_templates[t] = p
+        return possible_templates
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
@@ -79,15 +103,34 @@ class AutoBase:
 
         self.tuners = {}
         self.search_spaces = {}
+
+        templates = self._generate_pipeline_templates()
+
         for p in self.possible_pipelines:
             space = list(p.hyperparameters.items())
+            print (p.name, space)
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
+
+        print ("~~~~")
+
+        for p in self.possible_pipelines:
+            if p in templates:
+                template = templates[p]
+                hyperparameters = template.get_hyperparameters()
+                space = list(hyperparameters.items())
+                print (p, space)
+
+                self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
+                self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
+
+
+
 
     def fit(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
