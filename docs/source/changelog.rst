@@ -28,7 +28,7 @@ Changelog
     * Breaking Changes
         *  The `fit()` method for `AutoClassifier` and `AutoRegressor` has been renamed to `search()`. 
         *  `AutoClassifier` has been renamed to `AutoClassificationSearch`
-        *  `AutoRegressor` has been renamed to`AutoRegressionSearch`
+        *  `AutoRegressor` has been renamed to `AutoRegressionSearch`
         *  `AutoClassificationSearch.results` and `AutoRegressionSearch.results` now is a dictionary
            with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
            to access a dictionary that is identical to the old `.results` dictionary. Whereas,
