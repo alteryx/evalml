@@ -89,7 +89,7 @@ def test_callback(X_y):
 def test_early_stopping(capsys):
     tolerance = 0.005
     patience = 2
-    clf = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
+    automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
 
     mock_results = {
         'search_order': [0, 1, 2],
@@ -101,8 +101,8 @@ def test_early_stopping(capsys):
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
 
-    clf.results = mock_results
-    clf._check_stopping_condition(time.time())
+    automl.results = mock_results
+    automl._check_stopping_condition(time.time())
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
 

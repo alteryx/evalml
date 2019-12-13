@@ -265,12 +265,12 @@ def test_max_time_units():
 
 def test_early_stopping(capsys):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
@@ -281,8 +281,8 @@ def test_early_stopping(capsys):
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
 
-    clf.results = mock_results
-    clf._check_stopping_condition(time.time())
+    automl.results = mock_results
+    automl._check_stopping_condition(time.time())
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
 
