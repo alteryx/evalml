@@ -16,4 +16,4 @@ def import_or_raise(library, error_msg=None):
         if error_msg:
             raise ImportError(error_msg)
         else:
-            raise ImportError("Failed to import ".format(library))
+            raise ImportError("Failed to import {}".format(library))

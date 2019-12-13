@@ -4,7 +4,7 @@ from evalml.utils.gen_utils import import_or_raise
 
 
 def test_import_or_raise_errors():
-    with pytest.raises(ImportError, match="error message"):
+    with pytest.raises(ImportError, match="Failed to import _evalml"):
         import_or_raise("_evalml")
     with pytest.raises(ImportError, match="error message"):
         import_or_raise("_evalml", "error message")
