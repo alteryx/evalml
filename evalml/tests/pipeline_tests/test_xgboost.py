@@ -5,11 +5,10 @@ from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
-
+from evalml.utils import import_or_raise
 
 def test_xg_init(X_y):
     X, y = X_y
@@ -28,7 +27,8 @@ def test_xg_multi(X_y_multi):
 
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = XGBClassifier(random_state=0,
+    xgb = import_or_raise("xgboost")
+    estimator = xgb.XGBClassifier(random_state=0,
                               eta=0.1,
                               max_depth=3,
                               min_child_weight=1)

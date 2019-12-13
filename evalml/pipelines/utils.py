@@ -14,6 +14,8 @@ from .regression import (
 
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
+from evalml.utils import import_or_raise
+
 
 ALL_PIPELINES = [RFClassificationPipeline,
                  XGBoostPipeline,
@@ -21,8 +23,20 @@ ALL_PIPELINES = [RFClassificationPipeline,
                  LinearRegressionPipeline,
                  RFRegressionPipeline,
                  CatBoostClassificationPipeline,
-                 CatBoostRegressionPipeline
-                 ]
+                 CatBoostRegressionPipeline]
+
+
+def package_dependencies():
+    """Returns package dependency for each non-sklearn pipeline.
+
+    Returns:
+        dict: dictionary mapping pipeline to name of additional package necessary to install
+    """
+    xgboost = "xgboost"
+    catboost = "catboost"
+    return {XGBoostPipeline: xgboost,
+            CatBoostClassificationPipeline: catboost,
+            CatBoostRegressionPipeline: catboost}
 
 
 def get_pipelines(problem_type, model_types=None):
@@ -46,8 +60,14 @@ def get_pipelines(problem_type, model_types=None):
         model_types = [handle_model_types(model_type) for model_type in model_types]
 
     problem_type = handle_problem_types(problem_type)
+    dependencies = package_dependencies()
     for p in ALL_PIPELINES:
         if problem_type in p.problem_types:
+            if p in dependencies:
+                try:
+                    import_or_raise(dependencies[p])
+                except ImportError:
+                    continue
             problem_pipelines.append(p)
 
     if model_types is None:
