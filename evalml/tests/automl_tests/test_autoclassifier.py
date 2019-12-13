@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -259,6 +261,30 @@ def test_max_time_units():
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
         AutoClassificationSearch(objective='F1', max_time=(30, 'minutes'))
+
+
+def test_early_stopping(capsys):
+    with pytest.raises(ValueError, match='patience value must be a positive integer.'):
+        clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
+
+    with pytest.raises(ValueError, match='tolerance value must be'):
+        clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+
+    clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    mock_results = {
+        'search_order': [0, 1, 2],
+        'pipeline_results': {}
+    }
+
+    scores = [0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
+    for id in mock_results['search_order']:
+        mock_results['pipeline_results'][id] = {}
+        mock_results['pipeline_results'][id]['score'] = scores[id]
+
+    clf.results = mock_results
+    clf._check_stopping_condition(time.time())
+    out, _ = capsys.readouterr()
+    assert "2 iterations without improvement. Stopping search early." in out
 
 
 def test_plot_iterations_max_pipelines(X_y):

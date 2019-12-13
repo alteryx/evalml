@@ -15,6 +15,8 @@ class AutoClassificationSearch(AutoBase):
                  multiclass=False,
                  max_pipelines=None,
                  max_time=None,
+                 patience=None,
+                 tolerance=None,
                  model_types=None,
                  cv=None,
                  tuner=None,
@@ -38,6 +40,12 @@ class AutoClassificationSearch(AutoBase):
                 This will not start a new pipeline search after the duration
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
+
+            patience (int): Number of iterations without improvement to stop search early. Must be positive.
+                If None, early stopping is disabled. Defaults to None.
+
+            tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+                Only applicable if patience is not None. Defaults to None.
 
             model_types (list): The model types to search. By default searches over all
                 model_types. Run evalml.list_model_types("classification") to see options.
@@ -82,6 +90,8 @@ class AutoClassificationSearch(AutoBase):
             cv=cv,
             max_pipelines=max_pipelines,
             max_time=max_time,
+            patience=patience,
+            tolerance=tolerance,
             model_types=model_types,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,
