@@ -17,14 +17,16 @@ Changelog
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
         * Enforcing that pipelines must have an estimator as last component :pr:`277`
+        * Added ipywidgets as a dependency in requirements.txt :pr:`278`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
-        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
+        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257`
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
-        
+        * Increased the testing container size :pr`278`
+
 **Breaking Changes**
     *   `AutoClassifier.results` and `AutoRegressor.results` now is a dictionary
         with `pipeline_results` and `search_order` keys. `pipeline_results` can be used

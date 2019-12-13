@@ -36,7 +36,7 @@ class PipelineBase:
         # check if one and only estimator in pipeline is the last element in component_list
 
         if not isinstance(self.component_list[-1], Estimator):
-            raise RuntimeError("A pipeline must have an Estimator as the last component in component_list.")
+            raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
 
         self.estimator = self.component_list[-1]
         self.problem_types = self.estimator.problem_types

@@ -134,7 +134,7 @@ def test_estimator_not_last(X_y):
             super().__init__(objective=objective, component_list=[enc, imputer, estimator, scaler], n_jobs=n_jobs, random_state=random_state)
 
     err_msg = "A pipeline must have an Estimator as the last component in component_list."
-    with pytest.raises(RuntimeError, match=err_msg):
+    with pytest.raises(ValueError, match=err_msg):
         MockLogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
 
 
