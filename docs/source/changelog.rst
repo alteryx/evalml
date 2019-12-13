@@ -12,6 +12,7 @@ Changelog
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
         * Fixed return value of Recall metrics :pr:`264`
     * Changes
+        * Renamed automl classes to AutoRegressionSearch and AutoClassificationSearch :pr:`282`
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
@@ -23,11 +24,15 @@ Changelog
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
         
-**Breaking Changes**
-    *   `AutoClassificationSearch.results` and `AutoRegressionSearch.results` now is a dictionary
-        with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
-        to access a dictionary that is identical to the old `.results` dictionary. Whereas,
-        `search_order` returns a list of the search order in terms of pipeline id. 
+    *Breaking Changes
+        *  The `fit()` method for `AutoClassifier` and `AutoRegressor` has been renamed to `search()`. 
+        *  `AutoClassifier` has been renamed to `AutoClassificationSearch`
+        *  `AutoRegressor` has been renamed to`AutoRegressionSearch`
+        *   `AutoClassificationSearch.results` and `AutoRegressionSearch.results` now is a dictionary
+            with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
+            to access a dictionary that is identical to the old `.results` dictionary. Whereas,
+            `search_order` returns a list of the search order in terms of pipeline id. 
+
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
