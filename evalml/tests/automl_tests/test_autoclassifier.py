@@ -265,12 +265,12 @@ def test_max_time_units():
 
 def test_early_stopping(capsys):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
+        clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    clf = AutoClassifier(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    clf = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
