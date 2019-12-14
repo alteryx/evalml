@@ -5,6 +5,18 @@ from .auto_base import AutoBase
 
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
+from .pipeline_template import PipelineTemplate
+from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline)
+
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    RandomForestClassifier,
+    RFClassifierSelectFromModel,
+    SimpleImputer,
+    XGBoostClassifier,
+    LogisticRegressionClassifier,
+    StandardScaler
+)
 
 
 class AutoClassifier(AutoBase):
@@ -84,6 +96,8 @@ class AutoClassifier(AutoBase):
         else:
             problem_type = self._set_problem_type(objective, multiclass)
 
+        templates = self._generate_pipeline_templates()
+
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -99,8 +113,24 @@ class AutoClassifier(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
-            verbose=verbose
+            verbose=verbose,
+            templates=templates
         )
+ 
+
+    def _generate_pipeline_templates(self):
+        rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
+        xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
+        lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+        pipeline_to_components = {RFClassificationPipeline: rfc, 
+                                  XGBoostPipeline:xgb, 
+                                  LogisticRegressionPipeline:lgr}
+        possible_templates = {}
+        for t in pipeline_to_components:
+            p = PipelineTemplate(pipeline_to_components[t])
+            possible_templates[t] = p
+        return possible_templates
+
 
     def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassifier to either binary or multiclass.

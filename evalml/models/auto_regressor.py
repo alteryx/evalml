@@ -3,6 +3,18 @@ from sklearn.model_selection import KFold
 from .auto_base import AutoBase
 
 from evalml.problem_types import ProblemTypes
+from evalml.pipelines.components import (
+    OneHotEncoder,
+    RandomForestRegressor,
+    RFRegressorSelectFromModel,
+    SimpleImputer,
+    LinearRegressor,
+    StandardScaler
+)
+
+from .pipeline_template import PipelineTemplate
+from evalml.pipelines import (get_pipelines, RFRegressionPipeline, LinearRegressionPipeline)
+
 
 
 class AutoRegressor(AutoBase):
@@ -76,6 +88,8 @@ class AutoRegressor(AutoBase):
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
 
+        templates = self._generate_pipeline_templates()
+
         super().__init__(
             tuner=tuner,
             objective=objective,
@@ -91,5 +105,17 @@ class AutoRegressor(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
-            verbose=verbose
+            verbose=verbose,
+            templates=templates
         )
+
+    def _generate_pipeline_templates(self):
+        rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
+        lrp = [OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
+        pipeline_to_components = {RFRegressionPipeline: rfr, 
+                                  LinearRegressionPipeline:lrp}
+        possible_templates = {}
+        for t in pipeline_to_components:
+            p = PipelineTemplate(pipeline_to_components[t])
+            possible_templates[t] = p
+        return possible_templates
