@@ -15,7 +15,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
-from evalml.tuners import NoParamsException, SKOptTuner
+from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
 
 logger = Logger()
