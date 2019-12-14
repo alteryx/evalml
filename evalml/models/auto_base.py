@@ -85,14 +85,6 @@ class AutoBase:
 
         self.templates = templates
 
-        # for p in self.possible_pipelines:
-        #     space = list(p.hyperparameters.items())
-        #     print (p.name, space)
-        #     self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
-        #     self.search_spaces[p.name] = [s[0] for s in space]
-
-        # print ("~~~~")
-
         for p in self.possible_pipelines:
             if p in templates:
                 template = templates[p]

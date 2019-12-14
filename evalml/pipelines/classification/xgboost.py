@@ -14,17 +14,17 @@ from evalml.problem_types import ProblemTypes
 
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
-    name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
+    # name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.XGBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    hyperparameters = {
-        "eta": Real(0, 1),
-        "min_child_weight": Real(1, 10),
-        "max_depth": Integer(1, 20),
-        "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
-    }
+    # hyperparameters = {
+    #     "eta": Real(0, 1),
+    #     "min_child_weight": Real(1, 10),
+    #     "max_depth": Integer(1, 20),
+    #     "impute_strategy": ["mean", "median", "most_frequent"],
+    #     "percent_features": Real(.01, 1)
+    # }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
                  percent_features, number_features, n_estimators=10, n_jobs=-1, random_state=0):

@@ -14,16 +14,16 @@ from evalml.problem_types import ProblemTypes
 
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression problems"""
-    name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model"
+    # name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
     problem_types = [ProblemTypes.REGRESSION]
 
-    hyperparameters = {
-        "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 32),
-        "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
-    }
+    # hyperparameters = {
+    #     "n_estimators": Integer(10, 1000),
+    #     "max_depth": Integer(1, 32),
+    #     "impute_strategy": ["mean", "median", "most_frequent"],
+    #     "percent_features": Real(.01, 1)
+    # }
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=-1, random_state=0):

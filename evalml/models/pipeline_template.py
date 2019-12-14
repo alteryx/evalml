@@ -6,6 +6,9 @@ class PipelineTemplate:
         self.component_list = component_list
         self.estimator = self.component_list[-1]
         self.name = self._generate_name()
+        self.problem_types = self.estimator.problem_types
+        self.model_type = self.estimator.model_type
+
         # todo: also problem type, etc.
         # go through list and find estimator to get all the goodies
 
