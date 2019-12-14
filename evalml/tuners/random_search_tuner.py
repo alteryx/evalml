@@ -7,7 +7,7 @@ from .tuner_exceptions import NoParamsException
 class RandomSearchTuner:
     """Random Search Optimizer"""
 
-    def __init__(self, space, random_state=None, check_duplicates=False):
+    def __init__(self, space, random_state=None, check_duplicates=True):
         self.space = Space(space)
         self.random_state = RandomState(random_state)
         self.check_duplicates = check_duplicates
@@ -36,6 +36,7 @@ class RandomSearchTuner:
             while param_tuple in self.used_parameters and attempts < max_attempts:
                 attempts += 1
                 curr_parameters = self.space.rvs(random_state=self.random_state)[0]
+                param_tuple = tuple(curr_parameters)
             if attempts >= max_attempts:
                 raise NoParamsException("Cannot create a unique set of unexplored parameters. Try expanding the search space.")
             else:

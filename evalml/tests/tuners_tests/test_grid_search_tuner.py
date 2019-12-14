@@ -10,6 +10,14 @@ def test_grid_search_tuner(X_y):
     clf.fit(X, y)
 
 
+def test_grid_search_tuner_no_params(X_y):
+    X, y = X_y
+    clf = AutoRegressor(objective="R2", max_pipelines=20, model_types=['linear_model'], tuner=GridSearchTuner)
+    error_text = "Grid search has exhausted all possible parameters.\nNo more hyperparameters to search. Stopping search early."
+    with pytest.raises(NoParamsException, match=error_text):
+        clf.fit(X, y)
+
+
 def test_grid_search_tuner_unique_values(example_space):
     tuner = GridSearchTuner(example_space, random_state=0)
     generated_parameters = set()

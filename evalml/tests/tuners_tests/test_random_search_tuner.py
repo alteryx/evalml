@@ -10,6 +10,14 @@ def test_random_search_tuner(X_y):
     clf.fit(X, y)
 
 
+def test_random_search_tuner_no_params(X_y):
+    X, y = X_y
+    clf = AutoRegressor(objective="R2", max_pipelines=20, model_types=['linear_model'], tuner=RandomSearchTuner)
+    error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space.\nNo more hyperparameters to search. Stopping search early."
+    with pytest.raises(NoParamsException, match=error_text):
+        clf.fit(X, y)
+
+
 def test_random_search_tuner_unique_values(example_space):
     tuner = RandomSearchTuner(example_space, random_state=0, check_duplicates=True)
     generated_parameters = set()
