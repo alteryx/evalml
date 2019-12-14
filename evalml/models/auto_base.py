@@ -119,10 +119,10 @@ class AutoBase:
                 template = templates[p]
                 hyperparameters = template.get_hyperparameters()
                 space = list(hyperparameters.items())
-                print (p, space)
+                print (template.name, space)
 
-                self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
-                self.search_spaces[p.name] = [s[0] for s in space]
+                self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
+                self.search_spaces[template.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
