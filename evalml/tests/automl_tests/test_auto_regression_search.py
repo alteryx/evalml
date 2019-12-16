@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import pytest
 
-from evalml import AutoRegressor
+from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -18,48 +18,48 @@ def X_y():
 def test_init(X_y):
     X, y = X_y
 
-    clf = AutoRegressor(objective="R2", max_pipelines=3)
+    automl = AutoRegressionSearch(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == clf.possible_pipelines
+    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
 
-    clf.fit(X, y, raise_errors=True)
+    automl.search(X, y, raise_errors=True)
 
-    assert isinstance(clf.rankings, pd.DataFrame)
+    assert isinstance(automl.rankings, pd.DataFrame)
 
-    assert isinstance(clf.best_pipeline, PipelineBase)
-    assert isinstance(clf.best_pipeline.feature_importances, pd.DataFrame)
+    assert isinstance(automl.best_pipeline, PipelineBase)
+    assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
 
     # test with datafarmes
-    clf.fit(pd.DataFrame(X), pd.Series(y), raise_errors=True)
+    automl.search(pd.DataFrame(X), pd.Series(y), raise_errors=True)
 
-    assert isinstance(clf.rankings, pd.DataFrame)
+    assert isinstance(automl.rankings, pd.DataFrame)
 
-    assert isinstance(clf.best_pipeline, PipelineBase)
+    assert isinstance(automl.best_pipeline, PipelineBase)
 
-    assert isinstance(clf.get_pipeline(0), PipelineBase)
+    assert isinstance(automl.get_pipeline(0), PipelineBase)
 
-    clf.describe_pipeline(0)
+    automl.describe_pipeline(0)
 
 
 def test_random_state(X_y):
     X, y = X_y
-    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf.fit(X, y, raise_errors=True)
+    automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl.search(X, y, raise_errors=True)
 
-    clf_1 = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf_1.fit(X, y, raise_errors=True)
+    automl_1 = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl_1.search(X, y, raise_errors=True)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
-    assert pd.testing.assert_frame_equal(clf.rankings, clf_1.rankings) is None
+    assert pd.testing.assert_frame_equal(automl.rankings, automl_1.rankings) is None
 
 
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    clf = AutoRegressor(objective="R2", max_pipelines=5, random_state=0)
-    clf.fit(X, y, raise_errors=True)
-    assert not clf.rankings['score'].isnull().all()
-    assert not clf.get_pipeline(0).feature_importances.isnull().all().all()
+    automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl.search(X, y, raise_errors=True)
+    assert not automl.rankings['score'].isnull().all()
+    assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
 
 
 def test_callback(X_y):
@@ -77,10 +77,10 @@ def test_callback(X_y):
         counts["add_result_callback"] += 1
 
     max_pipelines = 3
-    clf = AutoRegressor(objective="R2", max_pipelines=max_pipelines,
-                        start_iteration_callback=start_iteration_callback,
-                        add_result_callback=add_result_callback)
-    clf.fit(X, y, raise_errors=True)
+    automl = AutoRegressionSearch(objective="R2", max_pipelines=max_pipelines,
+                                  start_iteration_callback=start_iteration_callback,
+                                  add_result_callback=add_result_callback)
+    automl.search(X, y, raise_errors=True)
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
@@ -89,7 +89,7 @@ def test_callback(X_y):
 def test_early_stopping(capsys):
     tolerance = 0.005
     patience = 2
-    clf = AutoRegressor(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
+    automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
 
     mock_results = {
         'search_order': [0, 1, 2],
@@ -101,8 +101,8 @@ def test_early_stopping(capsys):
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
 
-    clf.results = mock_results
-    clf._check_stopping_condition(time.time())
+    automl.results = mock_results
+    automl._check_stopping_condition(time.time())
     out, _ = capsys.readouterr()
     assert "2 iterations without improvement. Stopping search early." in out
 
@@ -110,9 +110,9 @@ def test_early_stopping(capsys):
 def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
 
-    clf = AutoRegressor(max_pipelines=3)
-    clf.fit(X, y)
-    plot = clf.plot.search_iteration_plot()
+    automl = AutoRegressionSearch(max_pipelines=3)
+    automl.search(X, y)
+    plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
@@ -126,9 +126,9 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
-    clf = AutoRegressor(max_time=10)
-    clf.fit(X, y, show_iteration_plot=False)
-    plot = clf.plot.search_iteration_plot()
+    automl = AutoRegressionSearch(max_time=10)
+    automl.search(X, y, show_iteration_plot=False)
+    plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])

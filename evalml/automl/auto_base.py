@@ -98,8 +98,7 @@ class AutoBase:
 
         self.plot = PipelineSearchPlots(self)
 
-
-    def fit(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
+    def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
