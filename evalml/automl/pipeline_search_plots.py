@@ -69,14 +69,14 @@ class SearchIterationPlot():
 
 
 class PipelineSearchPlots:
-    """Plots for the AutoClassifier/AutoRegressor class.
+    """Plots for the AutoClassificationSearch/AutoRegressionSearch class.
     """
 
     def __init__(self, data):
-        """Make plots for the AutoClassifier/AutoRegressor class.
+        """Make plots for the AutoClassificationSearch/AutoRegressionSearch class.
 
         Args:
-            data (AutoClassifier or AutoRegressor): Automated pipeline search object
+            data (AutoClassificationSearch or AutoRegressionSearch): Automated pipeline search object
         """
         self.data = data
 
@@ -91,7 +91,7 @@ class PipelineSearchPlots:
 
         results = self.data.results['pipeline_results']
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate ROC data.")
+            raise RuntimeError("You must first call search() to generate ROC data.")
 
         if pipeline_id not in results:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
@@ -176,7 +176,7 @@ class PipelineSearchPlots:
 
         results = self.data.results['pipeline_results']
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate confusion matrix data.")
+            raise RuntimeError("You must first call search() to generate confusion matrix data.")
 
         if pipeline_id not in results:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
