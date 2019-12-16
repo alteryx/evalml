@@ -5,8 +5,8 @@ import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
-from evalml.models.auto_base import AutoBase
-from evalml.models.pipeline_search_plots import (
+from evalml.automl.auto_base import AutoBase
+from evalml.automl.pipeline_search_plots import (
     PipelineSearchPlots,
     SearchIterationPlot
 )
@@ -25,7 +25,7 @@ def test_generate_roc(X_y):
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
-        def fit(self):
+        def search(self):
             pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
@@ -51,14 +51,14 @@ def test_generate_roc(X_y):
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
 
-    mock_clf = MockAuto()
-    search_plots = PipelineSearchPlots(mock_clf)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    mock_automl = MockAuto()
+    search_plots = PipelineSearchPlots(mock_automl)
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.get_roc_data(0)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.generate_roc_plot(0)
 
-    mock_clf.fit()
+    mock_automl.search()
 
     with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
         search_plots.get_roc_data(1)
@@ -81,8 +81,8 @@ def test_generate_roc_multi_raises_errors(X_y):
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.MULTICLASS
 
-    mock_clf = MockAutoMulti()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAutoMulti()
+    search_plots = PipelineSearchPlots(mock_automl)
 
     with pytest.raises(RuntimeError, match="ROC plots can only be generated for binary classification problems."):
         search_plots.get_roc_data(0)
@@ -95,13 +95,13 @@ def test_generate_confusion_matrix(X_y):
     y_test_lens = []
 
     # Make mock class and generate mock results
-    class MockAutoClassifier(AutoBase):
+    class MockAutoClassificationSearch(AutoBase):
         def __init__(self):
             self.results = {}
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.BINARY
 
-        def fit(self):
+        def search(self):
             pipeline = LogisticRegressionPipeline(objective="confusion_matrix", penalty='l2', C=0.5,
                                                   impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
@@ -131,14 +131,14 @@ def test_generate_confusion_matrix(X_y):
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
                                                          "pipeline_name": pipeline.name}})
 
-    mock_clf = MockAutoClassifier()
-    search_plots = PipelineSearchPlots(mock_clf)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    mock_automl = MockAutoClassificationSearch()
+    search_plots = PipelineSearchPlots(mock_automl)
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.get_confusion_matrix_data(0)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.generate_confusion_matrix(0)
 
-    mock_clf.fit()
+    mock_automl.search()
 
     with pytest.raises(RuntimeError, match="Pipeline 1 not found"):
         search_plots.get_confusion_matrix_data(1)
@@ -156,14 +156,14 @@ def test_generate_confusion_matrix(X_y):
 
 def test_confusion_matrix_regression_throws_error():
     # Make mock class and generate mock results
-    class MockAutoRegressor(AutoBase):
+    class MockAutoRegressionSearch(AutoBase):
         def __init__(self):
             self.results = {}
             self.results['pipeline_results'] = {}
             self.problem_type = ProblemTypes.REGRESSION
 
-    mock_clf = MockAutoRegressor()
-    search_plots = PipelineSearchPlots(mock_clf)
+    mock_automl = MockAutoRegressionSearch()
+    search_plots = PipelineSearchPlots(mock_automl)
 
     with pytest.raises(RuntimeError, match="Confusion matrix plots can only be generated for classification problems"):
         search_plots.get_confusion_matrix_data(0)

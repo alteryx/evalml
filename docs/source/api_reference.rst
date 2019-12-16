@@ -32,7 +32,7 @@ Preprocessing
 
 .. currentmodule:: evalml
 
-Models
+AutoML
 ======
 
 .. autosummary::
@@ -40,8 +40,8 @@ Models
     :template: class_with_properties.rst
     :nosignatures:
 
-    AutoClassifier
-    AutoRegressor
+    AutoClassificationSearch
+    AutoRegressionSearch
 
 
 Plotting
@@ -52,14 +52,14 @@ Plotting
     :template: accessor_method.rst
     :nosignatures:
 
-    AutoClassifier.plot.get_roc_data
-    AutoClassifier.plot.generate_roc_plot
-    AutoRegressor.plot.get_roc_data
-    AutoRegressor.plot.generate_roc_plot
-    AutoClassifier.plot.get_confusion_matrix_data
-    AutoClassifier.plot.generate_confusion_matrix
-    AutoRegressor.plot.get_confusion_matrix_data
-    AutoRegressor.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.get_roc_data
+    AutoClassificationSearch.plot.generate_roc_plot
+    AutoRegressionSearch.plot.get_roc_data
+    AutoRegressionSearch.plot.generate_roc_plot
+    AutoClassificationSearch.plot.get_confusion_matrix_data
+    AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoRegressionSearch.plot.get_confusion_matrix_data
+    AutoRegressionSearch.plot.generate_confusion_matrix
 
 
 
