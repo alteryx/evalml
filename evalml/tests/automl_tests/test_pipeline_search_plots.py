@@ -53,9 +53,9 @@ def test_generate_roc(X_y):
 
     mock_automl = MockAuto()
     search_plots = PipelineSearchPlots(mock_automl)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.get_roc_data(0)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.generate_roc_plot(0)
 
     mock_automl.search()
@@ -133,9 +133,9 @@ def test_generate_confusion_matrix(X_y):
 
     mock_automl = MockAutoClassificationSearch()
     search_plots = PipelineSearchPlots(mock_automl)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.get_confusion_matrix_data(0)
-    with pytest.raises(RuntimeError, match="You must first call fit"):
+    with pytest.raises(RuntimeError, match="You must first call search"):
         search_plots.generate_confusion_matrix(0)
 
     mock_automl.search()
