@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
-from catboost import CatBoostClassifier as CBClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+
+from catboost import CatBoostClassifier as CBClassifier
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import CatBoostClassificationPipeline

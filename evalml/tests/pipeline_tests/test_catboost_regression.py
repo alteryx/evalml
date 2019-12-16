@@ -1,7 +1,8 @@
 import numpy as np
-from catboost import CatBoostRegressor as CBRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+
+from catboost import CatBoostRegressor as CBRegressor
 
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline

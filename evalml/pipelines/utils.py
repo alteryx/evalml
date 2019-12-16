@@ -16,7 +16,6 @@ from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 from evalml.utils import import_or_raise
 
-
 ALL_PIPELINES = [RFClassificationPipeline,
                  XGBoostPipeline,
                  LogisticRegressionPipeline,
