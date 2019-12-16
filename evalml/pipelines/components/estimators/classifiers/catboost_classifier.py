@@ -46,15 +46,6 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        """Build a model
-
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series): the target training labels of length [n_samples]
-
-        Returns:
-            self
-        """
         cat_cols = X.select_dtypes(['object', 'category'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -66,14 +57,6 @@ class CatBoostClassifier(Estimator):
         return model
 
     def predict(self, X):
-        """Make predictions using selected features.
-
-        Args:
-            X (DataFrame) : features
-
-        Returns:
-            Series : estimated labels
-        """
         predictions = self._component_obj.predict(X)
         if self._label_encoder:
             return self._label_encoder.inverse_transform(predictions.astype(np.int64))
