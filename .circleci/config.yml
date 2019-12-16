@@ -100,12 +100,13 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
-              make circleci-test
+              make win-circleci-test
       - store_test_results:
           path: C:/evalml/test-reports
       - store_artifacts:
           path: C:/evalml/test-reports
   unit_tests:
+    resource_class: xlarge
     parameters:
       python_version:
         type: string
