@@ -65,9 +65,8 @@ def handle_component(component):
         Returns:
             ComponentBase
     """
-    print ("COMPONENT:", type(component))
-    if isinstance(component, ComponentBase):
-        return component
+    # if isinstance(component, ComponentBase):
+    #     return component
     try:
         component_type = str_to_component_type(component)
         component_class = DEFAULT_COMPONENTS[component_type]

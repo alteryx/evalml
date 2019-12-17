@@ -101,24 +101,23 @@ class AutoClassificationSearch(AutoBase):
 
         templates = self._generate_pipeline_templates()
 
-        super().__init__(
-            tuner=tuner,
-            objective=objective,
-            cv=cv,
-            max_pipelines=max_pipelines,
-            max_time=max_time,
-            patience=patience,
-            tolerance=tolerance,
-            model_types=model_types,
-            problem_type=problem_type,
-            detect_label_leakage=detect_label_leakage,
-            start_iteration_callback=start_iteration_callback,
-            add_result_callback=add_result_callback,
-            additional_objectives=additional_objectives,
-            random_state=random_state,
-            verbose=verbose,
-            templates=templates
-        )
+        super().__init__(tuner=tuner,
+                         objective=objective,
+                         cv=cv,
+                         max_pipelines=max_pipelines,
+                         max_time=max_time,
+                         patience=patience,
+                         tolerance=tolerance,
+                         model_types=model_types,
+                         problem_type=problem_type,
+                         detect_label_leakage=detect_label_leakage,
+                         start_iteration_callback=start_iteration_callback,
+                         add_result_callback=add_result_callback,
+                         additional_objectives=additional_objectives,
+                         random_state=random_state,
+                         verbose=verbose,
+                         templates=templates
+                         )
 
     def _generate_pipeline_templates(self):
         rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]

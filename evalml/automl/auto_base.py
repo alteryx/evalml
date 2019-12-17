@@ -18,8 +18,6 @@ from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
 
-# from .pipeline_template import PipelineTemplate
-
 
 class AutoBase:
 
@@ -90,6 +88,7 @@ class AutoBase:
             template = templates[p]
             hyperparameters = template.get_hyperparameters()
             space = list(hyperparameters.items())
+            print("component mapping:", template.get_params_to_hyperparameters_names())
             self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[template.name] = [s[0] for s in space]
 
@@ -233,18 +232,25 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_template)
 
-        print("component_list:", pipeline_template.component_list)
+        comp_to_params = pipeline_template.get_params_to_hyperparameters_names()
+
         component_objs = []
         for c in pipeline_template.component_list:
-            component_objs.append(c())
+            params = comp_to_params[c.name]
+            # print ("mapping:", c.name, params, parameters)
+            relevant_params = {}
+            for p in parameters:
+                if p[0] in params:
+                    relevant_params.update({p})
+            obj = c(**dict(relevant_params))
+            component_objs.append(obj)
 
-        pipeline = PipelineBase(
-            objective=self.objective,
-            random_state=self.random_state,
-            n_jobs=-1,
-            # number_features=X.shape[1],
-            component_list=component_objs
-        )
+        pipeline = PipelineBase(objective=self.objective,
+                                random_state=self.random_state,
+                                n_jobs=-1,
+                                # number_features=X.shape[1],
+                                component_list=component_objs
+                                )
 
         # determine which pipeline to build
         # pipeline_class = self._select_pipeline()
