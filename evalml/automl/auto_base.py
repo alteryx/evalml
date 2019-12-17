@@ -67,9 +67,10 @@ class AutoBase:
 
         self.patience = patience
         self.tolerance = tolerance if tolerance else 0.0
-        self.results = {'pipeline_results': {},
-                        'search_order': []
-                        }
+        self.results = {
+            'pipeline_results': {},
+            'search_order': []
+        }
         self.trained_pipelines = {}
         self.random_state = random_state
         random.seed(self.random_state)
