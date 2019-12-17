@@ -11,9 +11,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import \
-    get_pipelines  # RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline,
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -69,10 +67,9 @@ class AutoBase:
 
         self.patience = patience
         self.tolerance = tolerance if tolerance else 0.0
-        self.results = {
-            'pipeline_results': {},
-            'search_order': []
-        }
+        self.results = {'pipeline_results': {},
+                        'search_order': []
+                        }
         self.trained_pipelines = {}
         self.random_state = random_state
         random.seed(self.random_state)
@@ -84,11 +81,12 @@ class AutoBase:
 
         self.templates = templates
 
-        for p in self.possible_pipelines:
-            template = templates[p]
+        # for p in self.possible_pipelines:
+        #     template = templates[p]
+        for template in self.templates:
+            template = self.templates[template]
             hyperparameters = template.get_hyperparameters()
             space = list(hyperparameters.items())
-            print("component mapping:", template.get_params_to_hyperparameters_names())
             self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[template.name] = [s[0] for s in space]
 
@@ -114,7 +112,6 @@ class AutoBase:
                 Disabled by default in non-Jupyter enviroments.
 
         Returns:
-
             self
         """
         # don't show iteration plot outside of a jupyter notebook
@@ -232,39 +229,27 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_template)
 
-        comp_to_params = pipeline_template.get_params_to_hyperparameters_names()
+        pipeline = pipeline_template.generate_pipeline_with_params(objective=self.objective,
+                                                                   random_state=self.random_state,
+                                                                   parameters=parameters)
 
-        component_objs = []
-        for c in pipeline_template.component_list:
-            params = comp_to_params[c.name]
-            # print ("mapping:", c.name, params, parameters)
-            relevant_params = {}
-            for p in parameters:
-                if p[0] in params:
-                    relevant_params.update({p})
-            obj = c(**dict(relevant_params))
-            component_objs.append(obj)
+        # comp_to_params = pipeline_template.get_params_to_hyperparameters_names()
+        # component_objs = []
+        # for c in pipeline_template.component_list:
+        #     params = comp_to_params[c.name]
+        #     # print ("mapping:", c.name, params, parameters)
+        #     relevant_params = {}
+        #     for p in parameters:
+        #         if p[0] in params:
+        #             relevant_params.update({p})
+        #     obj = c(**dict(relevant_params))
+        #     component_objs.append(obj)
 
-        pipeline = PipelineBase(objective=self.objective,
-                                random_state=self.random_state,
-                                n_jobs=-1,
-                                # number_features=X.shape[1],
-                                component_list=component_objs
-                                )
-
-        # determine which pipeline to build
-        # pipeline_class = self._select_pipeline()
-
-        # propose the next best parameters for this piepline
-        # parameters = self._propose_parameters(pipeline_class)
-        # fit an score the pipeline
-        # pipeline = pipeline_class(
-        #     objective=self.objective,
-        #     random_state=self.random_state,
-        #     n_jobs=-1,
-        #     number_features=X.shape[1],
-        #     **dict(parameters)
-        # )
+        # pipeline = PipelineBase(objective=self.objective,
+        #                         random_state=self.random_state,
+        #                         n_jobs=-1,
+        #                         component_list=component_objs
+        #                         )
 
         name = pipeline_template.name
 
@@ -322,14 +307,14 @@ class AutoBase:
     # def _select_pipeline(self):
     #     return random.choice(self.possible_pipelines)
 
-    def _select_pipeline_template(self):
-        return random.choice(list(self.templates.values()))
-
     # def _propose_parameters(self, pipeline_class):
     #     values = self.tuners[pipeline_class.name].propose()
     #     space = self.search_spaces[pipeline_class.name]
     #     proposal = zip(space, values)
     #     return list(proposal)
+
+    def _select_pipeline_template(self):
+        return random.choice(list(self.templates.values()))
 
     def _propose_parameters(self, pipeline_template):
         name = pipeline_template._generate_name()

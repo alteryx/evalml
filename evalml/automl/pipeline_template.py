@@ -1,3 +1,5 @@
+from evalml.pipelines import PipelineBase
+
 
 class PipelineTemplate:
 
@@ -20,8 +22,26 @@ class PipelineTemplate:
         hyperparameter_ranges = {}
         for component in self.component_list:
             hyperparameter_ranges.update({component.name: list(component.hyperparameter_ranges.keys())})
-        # print ("hyperparameter_ranges:", hyperparameter_ranges)
         return hyperparameter_ranges
+
+    def generate_pipeline_with_params(self, objective, parameters, random_state):
+        component_objs = []
+        for c in self.component_list:
+            params = self.get_params_to_hyperparameters_names()[c.name]
+            # print ("mapping:", c.name, params, parameters)
+            relevant_params = {}
+            for p in parameters:
+                if p[0] in params:
+                    relevant_params.update({p})
+            obj = c(**dict(relevant_params))
+            component_objs.append(obj)
+
+        pipeline = PipelineBase(objective=objective,
+                                n_jobs=-1,
+                                component_list=component_objs,
+                                random_state=random_state)
+
+        return pipeline
 
     def _generate_name(self):
         if self.estimator is not None:
