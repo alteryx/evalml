@@ -122,8 +122,8 @@ class AutoClassificationSearch(AutoBase):
         rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
         xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
         lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
-        pipeline_to_components = {RFClassificationPipeline: rfc, 
-                                  XGBoostPipeline:xgb, 
+        pipeline_to_components = {RFClassificationPipeline: rfc,
+                                  XGBoostPipeline:xgb,
                                   LogisticRegressionPipeline:lgr}
         possible_templates = {}
         for t in pipeline_to_components:

@@ -8,12 +8,11 @@ import pandas as pd
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
-
 from .pipeline_template import PipelineTemplate
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline)
+from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, PipelineBase)
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -86,12 +85,11 @@ class AutoBase:
         self.templates = templates
 
         for p in self.possible_pipelines:
-            if p in templates:
-                template = templates[p]
-                hyperparameters = template.get_hyperparameters()
-                space = list(hyperparameters.items())
-                self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
-                self.search_spaces[template.name] = [s[0] for s in space]
+            template = templates[p]
+            hyperparameters = template.get_hyperparameters()
+            space = list(hyperparameters.items())
+            self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.search_spaces[template.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
@@ -227,24 +225,45 @@ class AutoBase:
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
-        # determine which pipeline to build
-        pipeline_class = self._select_pipeline()
 
+        # determine which pipeline to build
+        pipeline_template = self._select_pipeline_template()
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
-        # fit an score the pipeline
-        pipeline = pipeline_class(
+        parameters = self._propose_parameters(pipeline_template)
+
+        print ("component_list:", pipeline_template.component_list)
+        component_objs = []
+        for c in pipeline_template.component_list:
+            component_objs.append(c())
+
+        pipeline = PipelineBase(
             objective=self.objective,
             random_state=self.random_state,
             n_jobs=-1,
-            number_features=X.shape[1],
-            **dict(parameters)
+            # number_features=X.shape[1],
+            component_list=component_objs
         )
+
+        # determine which pipeline to build
+        # pipeline_class = self._select_pipeline()
+
+        # propose the next best parameters for this piepline
+        # parameters = self._propose_parameters(pipeline_class)
+        # fit an score the pipeline
+        # pipeline = pipeline_class(
+        #     objective=self.objective,
+        #     random_state=self.random_state,
+        #     n_jobs=-1,
+        #     number_features=X.shape[1],
+        #     **dict(parameters)
+        # )
+
+        name = pipeline_template.name
 
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(pipeline_class.name)
+        desc = "▹ {}: ".format(name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
@@ -292,12 +311,22 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def _select_pipeline(self):
-        return random.choice(self.possible_pipelines)
+    # def _select_pipeline(self):
+    #     return random.choice(self.possible_pipelines)
 
-    def _propose_parameters(self, pipeline_class):
-        values = self.tuners[pipeline_class.name].propose()
-        space = self.search_spaces[pipeline_class.name]
+    def _select_pipeline_template(self):
+        return random.choice(list(self.templates.values()))
+
+    # def _propose_parameters(self, pipeline_class):
+    #     values = self.tuners[pipeline_class.name].propose()
+    #     space = self.search_spaces[pipeline_class.name]
+    #     proposal = zip(space, values)
+    #     return list(proposal)
+
+    def _propose_parameters(self, pipeline_template):
+        name = pipeline_template._generate_name()
+        values = self.tuners[name].propose()
+        space = self.search_spaces[name]
         proposal = zip(space, values)
         return list(proposal)
 
