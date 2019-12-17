@@ -23,8 +23,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
         max_features = None
         if number_features:
             max_features = max(1, int(percent_features * number_features))
-        parameters = {"percent_features": percent_features,
-                    #   "threshold": threshold
+        parameters = {"percent_features": percent_features,  # "threshold": threshold
                       }
         estimator = SKRandomForestRegressor(random_state=random_state,
                                             n_estimators=n_estimators,

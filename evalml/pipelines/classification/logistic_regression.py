@@ -1,4 +1,4 @@
-from skopt.space import Real
+# from skopt.space import Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase

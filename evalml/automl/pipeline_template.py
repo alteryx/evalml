@@ -1,6 +1,5 @@
 
 class PipelineTemplate:
-    
 
     def __init__(self, component_list):
         self.component_list = component_list
@@ -29,4 +28,4 @@ class PipelineTemplate:
             else:
                 name += " + {}".format(component.name)
 
-        return name   
+        return name

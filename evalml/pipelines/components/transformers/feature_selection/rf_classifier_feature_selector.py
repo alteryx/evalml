@@ -24,7 +24,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
         if number_features:
             max_features = max(1, int(percent_features * number_features))
         parameters = {"percent_features": percent_features,
-                    #   "threshold": threshold
+                      #   "threshold": threshold
                       }
         estimator = SKRandomForestClassifier(random_state=random_state,
                                              n_estimators=n_estimators,

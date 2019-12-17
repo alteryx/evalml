@@ -8,21 +8,23 @@ import pandas as pd
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
-from .pipeline_template import PipelineTemplate
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, PipelineBase)
+from evalml.pipelines import \
+    get_pipelines  # RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline,
+from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
+
+# from .pipeline_template import PipelineTemplate
 
 
 class AutoBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
-
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
@@ -231,7 +233,7 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_template)
 
-        print ("component_list:", pipeline_template.component_list)
+        print("component_list:", pipeline_template.component_list)
         component_objs = []
         for c in pipeline_template.component_list:
             component_objs.append(c())
@@ -261,7 +263,7 @@ class AutoBase:
         name = pipeline_template.name
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline_class, parameters)
+            self.start_iteration_callback(name, parameters)
 
         desc = "▹ {}: ".format(name)
         if len(desc) > self._MAX_NAME_LEN:

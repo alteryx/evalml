@@ -1,5 +1,4 @@
 import numpy as np
-from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
@@ -10,6 +9,8 @@ from evalml.pipelines.components import (
     SimpleImputer
 )
 from evalml.problem_types import ProblemTypes
+
+# from skopt.space import Integer, Real
 
 
 class RFClassificationPipeline(PipelineBase):

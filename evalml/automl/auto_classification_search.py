@@ -2,21 +2,24 @@
 from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
+from .pipeline_template import PipelineTemplate
 
 from evalml.objectives import get_objective
-from evalml.problem_types import ProblemTypes
-from .pipeline_template import PipelineTemplate
-from evalml.pipelines import (get_pipelines, RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline)
-
+from evalml.pipelines import (  # get_pipelines
+    LogisticRegressionPipeline,
+    RFClassificationPipeline,
+    XGBoostPipeline
+)
 from evalml.pipelines.components import (
+    LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
     RFClassifierSelectFromModel,
     SimpleImputer,
-    XGBoostClassifier,
-    LogisticRegressionClassifier,
-    StandardScaler
+    StandardScaler,
+    XGBoostClassifier
 )
+from evalml.problem_types import ProblemTypes
 
 
 class AutoClassificationSearch(AutoBase):
@@ -116,21 +119,19 @@ class AutoClassificationSearch(AutoBase):
             verbose=verbose,
             templates=templates
         )
- 
 
     def _generate_pipeline_templates(self):
         rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
         xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
         lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
         pipeline_to_components = {RFClassificationPipeline: rfc,
-                                  XGBoostPipeline:xgb,
-                                  LogisticRegressionPipeline:lgr}
+                                  XGBoostPipeline: xgb,
+                                  LogisticRegressionPipeline: lgr}
         possible_templates = {}
         for t in pipeline_to_components:
             p = PipelineTemplate(pipeline_to_components[t])
             possible_templates[t] = p
         return possible_templates
-
 
     def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
