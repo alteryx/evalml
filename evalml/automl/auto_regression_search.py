@@ -3,7 +3,7 @@ from sklearn.model_selection import KFold
 from .auto_base import AutoBase
 from .pipeline_template import PipelineTemplate
 
-from evalml.pipelines import (  # get_pipelines,
+from evalml.pipelines import (
     LinearRegressionPipeline,
     RFRegressionPipeline
 )
@@ -110,10 +110,9 @@ class AutoRegressionSearch(AutoBase):
     def _generate_pipeline_templates(self):
         rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
         lrp = [OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
-        pipeline_to_components = {RFRegressionPipeline: rfr,
-                                  LinearRegressionPipeline: lrp}
-        possible_templates = {}
-        for t in pipeline_to_components:
-            p = PipelineTemplate(pipeline_to_components[t])
-            possible_templates[t] = p
-        return possible_templates
+        pipelines = [rfr, lrp]
+        templates = []
+        for pipeline in pipelines:
+            template = PipelineTemplate(pipeline)
+            templates.append(template)
+        return templates

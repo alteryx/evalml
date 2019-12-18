@@ -123,14 +123,12 @@ class AutoClassificationSearch(AutoBase):
         rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
         xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
         lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
-        pipeline_to_components = {RFClassificationPipeline: rfc,
-                                  XGBoostPipeline: xgb,
-                                  LogisticRegressionPipeline: lgr}
-        possible_templates = {}
-        for t in pipeline_to_components:
-            p = PipelineTemplate(pipeline_to_components[t])
-            possible_templates[t] = p
-        return possible_templates
+        pipelines = [rfc, xgb, lgr]
+        templates = []
+        for pipeline in pipelines:
+            template = PipelineTemplate(pipeline)
+            templates.append(template)
+        return templates
 
     def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.

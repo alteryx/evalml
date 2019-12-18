@@ -37,8 +37,10 @@ class AutoBase:
         self.cv = cv
         self.verbose = verbose
         self.logger = Logger(self.verbose)
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
+        self.templates = templates
+        # self.possible_model_types = set([p.model_type for p in self.templates])
+
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
@@ -75,17 +77,12 @@ class AutoBase:
         self.random_state = random_state
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
         self.search_spaces = {}
 
-        self.templates = templates
 
-        # for p in self.possible_pipelines:
-        #     template = templates[p]
         for template in self.templates:
-            template = self.templates[template]
             hyperparameters = template.get_hyperparameters()
             space = list(hyperparameters.items())
             self.tuners[template.name] = tuner([s[1] for s in space], random_state=random_state)
@@ -227,31 +224,12 @@ class AutoBase:
 
         # determine which pipeline to build
         pipeline_template = self._select_pipeline_template()
-        # propose the next best parameters for this piepline
+        # propose the next best parameters for this pipeline
         parameters = self._propose_parameters(pipeline_template)
 
         pipeline = pipeline_template.generate_pipeline_with_params(objective=self.objective,
                                                                    random_state=self.random_state,
                                                                    parameters=parameters)
-
-        # comp_to_params = pipeline_template.get_params_to_hyperparameters_names()
-        # component_objs = []
-        # for c in pipeline_template.component_list:
-        #     params = comp_to_params[c.name]
-        #     # print ("mapping:", c.name, params, parameters)
-        #     relevant_params = {}
-        #     for p in parameters:
-        #         if p[0] in params:
-        #             relevant_params.update({p})
-        #     obj = c(**dict(relevant_params))
-        #     component_objs.append(obj)
-
-        # pipeline = PipelineBase(objective=self.objective,
-        #                         random_state=self.random_state,
-        #                         n_jobs=-1,
-        #                         component_list=component_objs
-        #                         )
-
         name = pipeline_template.name
 
         if self.start_iteration_callback:
@@ -305,20 +283,11 @@ class AutoBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    # def _select_pipeline(self):
-    #     return random.choice(self.possible_pipelines)
-
-    # def _propose_parameters(self, pipeline_class):
-    #     values = self.tuners[pipeline_class.name].propose()
-    #     space = self.search_spaces[pipeline_class.name]
-    #     proposal = zip(space, values)
-    #     return list(proposal)
-
     def _select_pipeline_template(self):
-        return random.choice(list(self.templates.values()))
+        return random.choice(list(self.templates))
 
     def _propose_parameters(self, pipeline_template):
-        name = pipeline_template._generate_name()
+        name = pipeline_template.name
         values = self.tuners[name].propose()
         space = self.search_spaces[name]
         proposal = zip(space, values)
