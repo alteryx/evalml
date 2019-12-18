@@ -99,7 +99,7 @@ class AutoClassificationSearch(AutoBase):
         else:
             problem_type = self._set_problem_type(objective, multiclass)
 
-        templates = self._generate_pipeline_templates()
+        templates = self._generate_pipeline_templates(model_types)
 
         super().__init__(tuner=tuner,
                          objective=objective,
@@ -119,15 +119,20 @@ class AutoClassificationSearch(AutoBase):
                          templates=templates
                          )
 
-    def _generate_pipeline_templates(self):
+    def _generate_pipeline_templates(self, model_types):
         rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
         xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
         lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
         pipelines = [rfc, xgb, lgr]
-        templates = []
+        all_templates = []
         for pipeline in pipelines:
             template = PipelineTemplate(pipeline)
-            templates.append(template)
+            all_templates.append(template)
+
+        templates = all_templates
+        if model_types:
+            templates = [template for templates in all_templates if templates.model_type in model_types]
+
         return templates
 
     def _set_problem_type(self, objective, multiclass):

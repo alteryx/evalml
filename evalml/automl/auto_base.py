@@ -39,7 +39,7 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.objective = get_objective(objective)
         self.templates = templates
-        # self.possible_model_types = set([p.model_type for p in self.templates])
+        self.possible_model_types = set([p.model_type for p in self.templates])
 
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))

@@ -87,7 +87,7 @@ class AutoRegressionSearch(AutoBase):
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
 
-        templates = self._generate_pipeline_templates()
+        templates = self._generate_pipeline_templates(model_types)
 
         super().__init__(tuner=tuner,
                          objective=objective,
@@ -107,12 +107,17 @@ class AutoRegressionSearch(AutoBase):
                          templates=templates
                          )
 
-    def _generate_pipeline_templates(self):
+    def _generate_pipeline_templates(self, model_types):
         rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
         lrp = [OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
         pipelines = [rfr, lrp]
-        templates = []
+        all_templates = []
         for pipeline in pipelines:
             template = PipelineTemplate(pipeline)
-            templates.append(template)
+            all_templates.append(template)
+
+        templates = all_templates
+        if model_types:
+            templates = [template for templates in all_templates if templates.model_type in model_types]
+
         return templates
