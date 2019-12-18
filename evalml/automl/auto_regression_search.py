@@ -3,10 +3,7 @@ from sklearn.model_selection import KFold
 from .auto_base import AutoBase
 from .pipeline_template import PipelineTemplate
 
-from evalml.pipelines import (
-    LinearRegressionPipeline,
-    RFRegressionPipeline
-)
+# from evalml.pipelines import LinearRegressionPipeline, RFRegressionPipeline
 from evalml.pipelines.components import (
     LinearRegressor,
     OneHotEncoder,

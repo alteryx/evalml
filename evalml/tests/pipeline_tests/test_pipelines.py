@@ -35,6 +35,7 @@ def test_get_pipelines():
         # get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
     assert True
 
+
 def test_serialization(X_y, tmpdir):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pipe.pkl')

@@ -1,6 +1,5 @@
 import numpy as np
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     OneHotEncoder,
@@ -8,9 +7,6 @@ from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     SimpleImputer
 )
-from evalml.problem_types import ProblemTypes
-
-# from skopt.space import Integer, Real
 
 
 class RFClassificationPipeline(PipelineBase):

@@ -81,7 +81,6 @@ class AutoBase:
         self.tuners = {}
         self.search_spaces = {}
 
-
         for template in self.templates:
             hyperparameters = template.get_hyperparameters()
             space = list(hyperparameters.items())

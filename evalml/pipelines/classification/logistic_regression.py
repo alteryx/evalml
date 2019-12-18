@@ -1,6 +1,5 @@
 # from skopt.space import Real
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
@@ -8,7 +7,6 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler
 )
-from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionPipeline(PipelineBase):
