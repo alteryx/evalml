@@ -14,7 +14,8 @@ from .components import (
     FeatureSelector,
     CategoricalEncoder,
     RFClassifierSelectFromModel,
-    RFRegressorSelectFromModel
+    RFRegressorSelectFromModel,
+    handle_component
 )
 
 from .pipeline_base import PipelineBase

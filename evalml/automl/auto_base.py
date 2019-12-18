@@ -11,7 +11,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines
+from evalml.pipelines import PipelineBase, get_pipelines, handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -37,7 +37,8 @@ class AutoBase:
         self.cv = cv
         self.verbose = verbose
         self.logger = Logger(self.verbose)
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.possible_component_lists = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.possible_pipelines = []
         self.objective = get_objective(objective)
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -75,19 +76,29 @@ class AutoBase:
         self.random_state = random_state
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+        self.possible_model_types = list(set([handle_component(p[-1]).model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
         self.search_spaces = {}
-        for p in self.possible_pipelines:
-            space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
-            self.search_spaces[p.name] = [s[0] for s in space]
+        for p in self.possible_component_lists:
+            hyperparameters = self._get_hyperparameters(p)
+            space = list(hyperparameters.items())
+            pipeline = PipelineBase(objective=self.objective, component_list=p, random_state=self.random_state, n_jobs=-1)
+            self.possible_pipelines.append(pipeline)
+            self.tuners[pipeline.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.search_spaces[pipeline.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
+
+    def _get_hyperparameters(self, component_list):
+        hyperparameters = {}
+        for component in component_list:
+            component = handle_component(component)
+            hyperparameters.update(component.hyperparameter_ranges)
+        return hyperparameters
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -224,18 +235,18 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
         # fit an score the pipeline
-        pipeline = pipeline_class(
+        pipeline = PipelineBase(
+            component_list=pipeline_class,
             objective=self.objective,
             random_state=self.random_state,
             n_jobs=-1,
-            number_features=X.shape[1],
             **dict(parameters)
         )
 
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(pipeline_class.name)
+        desc = "▹ {}: ".format(pipeline.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)

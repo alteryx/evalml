@@ -1,0 +1,11 @@
+BINARY:
+  random_forest:
+    - [Simple Imputer, One Hot Encoder, Random Forest Classifier]
+    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, Random Forest Classifier]
+MULTICLASS:
+  random_forest:
+    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, Random Forest Classifier]
+
+REGRESSION:
+  random_forest:
+    - [Simple Imputer, One Hot Encoder, RF Regressor Select From Model, Random Forest Regressor]

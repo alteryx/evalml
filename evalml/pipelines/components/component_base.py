@@ -2,7 +2,7 @@ from evalml.utils import Logger
 
 
 class ComponentBase:
-    def __init__(self, parameters, component_obj, random_state):
+    def __init__(self, parameters, component_obj, random_state, **kwargs):
         self.random_state = random_state
         self._component_obj = component_obj
         self.parameters = parameters

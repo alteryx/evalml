@@ -1,3 +1,4 @@
+import inspect
 from collections import OrderedDict
 
 import pandas as pd
@@ -15,7 +16,7 @@ class PipelineBase:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, objective, component_list, n_jobs, random_state):
+    def __init__(self, objective, component_list, n_jobs, random_state, **kwargs):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -33,8 +34,8 @@ class PipelineBase:
         self.component_list = [handle_component(component) for component in component_list]
         self.component_names = [comp.name for comp in self.component_list]
         self.input_feature_names = {}
-        # check if one and only estimator in pipeline is the last element in component_list
 
+        # check if one and only estimator in pipeline is the last element in component_list
         if not isinstance(self.component_list[-1], Estimator):
             raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
 
@@ -46,11 +47,23 @@ class PipelineBase:
         self.results = {}
         self.n_jobs = n_jobs
         self.parameters = {}
+        self._instantiate_components(kwargs)
         for component in self.component_list:
             self.parameters.update(component.parameters)
 
         self.plot = PipelinePlots(self)
         self.logger = Logger()
+
+    def _instantiate_components(self, kwargs):
+        for component in self.component_list:
+            args = inspect.signature(component.__init__).parameters
+            kwargs['n_jobs'] = self.n_jobs
+            kwargs['random_state'] = self.random_state
+            relevant_args = {}
+            for k, v in kwargs.items():
+                if k in args:
+                    relevant_args[k] = v
+            component = component.__class__(**relevant_args)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
