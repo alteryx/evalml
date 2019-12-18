@@ -21,7 +21,7 @@ def test_init(X_y):
     automl = AutoRegressionSearch(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
+    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_component_lists
 
     automl.search(X, y, raise_errors=True)
 

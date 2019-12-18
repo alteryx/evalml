@@ -3,13 +3,6 @@ import os
 import cloudpickle
 import yaml
 
-from .classification import (
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline
-)
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
-
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
@@ -36,7 +29,6 @@ def get_pipelines(problem_type, model_types=None):
     """
     if model_types is not None and not isinstance(model_types, list):
         raise TypeError("model_types parameter is not a list.")
-
     if model_types:
         model_types = [handle_model_types(model_type) for model_type in model_types]
         all_model_types = list_model_types(problem_type)
@@ -47,12 +39,11 @@ def get_pipelines(problem_type, model_types=None):
     problem_type = handle_problem_types(problem_type)
     problem_pipelines = ALL_PIPELINES[problem_type.name]
     pipelines = []
-
     for model_type in problem_pipelines:
-        if model_types and model_type in model_types:
+        if model_types and handle_model_types(model_type) in model_types:
             for component_list in problem_pipelines[model_type]:
                 pipelines.append(component_list)
-        else:
+        elif not model_types:
             for component_list in problem_pipelines[model_type]:
                 pipelines.append(component_list)
 

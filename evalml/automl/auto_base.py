@@ -76,8 +76,6 @@ class AutoBase:
         self.random_state = random_state
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
-        self.possible_model_types = list(set([handle_component(p[-1]).model_type for p in self.possible_pipelines]))
-
         self.tuners = {}
         self.search_spaces = {}
         for p in self.possible_component_lists:
@@ -88,6 +86,7 @@ class AutoBase:
             self.tuners[pipeline.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[pipeline.name] = [s[0] for s in space]
 
+        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
