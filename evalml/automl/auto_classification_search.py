@@ -5,11 +5,6 @@ from .auto_base import AutoBase
 from .pipeline_template import PipelineTemplate
 
 from evalml.objectives import get_objective
-# from evalml.pipelines import (  # get_pipelines
-#     LogisticRegressionPipeline,
-#     RFClassificationPipeline,
-#     XGBoostPipeline
-# )
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,

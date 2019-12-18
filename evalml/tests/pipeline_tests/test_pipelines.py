@@ -28,11 +28,11 @@ def test_list_model_types():
 
 
 def test_get_pipelines():
-    # assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
-    # assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
-    # assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    # with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        # get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
     assert True
 
 

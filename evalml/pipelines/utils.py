@@ -7,10 +7,69 @@ from .classification import (
 )
 from .regression import LinearRegressionPipeline, RFRegressionPipeline
 
+from evalml.pipelines.components import (
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    RandomForestClassifier,
+    RFClassifierSelectFromModel,
+    SimpleImputer,
+    StandardScaler,
+    XGBoostClassifier,
+    LinearRegressor,
+    RandomForestRegressor,
+    RFRegressorSelectFromModel,
+)
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
-ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
+# ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
+
+def get_classification_templates():
+    rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
+    xgb = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, XGBoostClassifier]
+    lgr = [OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    pipelines = [rfc, xgb, lgr]
+    templates = []
+    for pipeline in pipelines:
+        template = PipelineTemplate(pipeline)
+        templates.append(template)
+    return templates
+
+def get_regression_templates():
+    rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
+    lrp = [OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
+    pipelines = [rfr, lrp]
+    templates = []
+    for pipeline in pipelines:
+        template = PipelineTemplate(pipeline)
+        templates.append(template)
+    return templates
+
+
+def get_all_templates():
+    classification = get_classification_templates()
+    regression = get_regression_templates()
+    return classification + regression
+
+
+def list_model_types(problem_type):
+    """List model type for a particular problem type
+
+    Arguments:
+        problem_types (ProblemTypes or str): binary, multiclass, or regression
+
+    Returns:
+        model_types, list of model types
+    """
+
+    problem_templates = []
+    problem_type = handle_problem_types(problem_type)
+    templates = get_all_templates()
+    for t in templates:
+        if problem_type in t.problem_types:
+            problem_pipelines.append(t)
+
+    return list(set([t.model_type for t in problem_templates]))
 
 
 def get_pipelines(problem_type, model_types=None):
@@ -34,7 +93,8 @@ def get_pipelines(problem_type, model_types=None):
         model_types = [handle_model_types(model_type) for model_type in model_types]
 
     problem_type = handle_problem_types(problem_type)
-    for p in ALL_PIPELINES:
+    templates = get_all_templates()
+    for p in templates:
         if problem_type in p.problem_types:
             problem_pipelines.append(p)
 
@@ -53,25 +113,6 @@ def get_pipelines(problem_type, model_types=None):
             pipelines.append(p)
 
     return pipelines
-
-
-def list_model_types(problem_type):
-    """List model type for a particular problem type
-
-    Arguments:
-        problem_types (ProblemTypes or str): binary, multiclass, or regression
-
-    Returns:
-        model_types, list of model types
-    """
-
-    problem_pipelines = []
-    problem_type = handle_problem_types(problem_type)
-    for p in ALL_PIPELINES:
-        if problem_type in p.problem_types:
-            problem_pipelines.append(p)
-
-    return list(set([p.model_type for p in problem_pipelines]))
 
 
 def save_pipeline(pipeline, file_path):
