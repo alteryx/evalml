@@ -1,4 +1,3 @@
-import pytest
 from evalml.utils import convert_to_seconds
 
 
