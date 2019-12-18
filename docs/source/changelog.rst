@@ -26,6 +26,7 @@ Changelog
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
+        * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         
 .. warning::
 
