@@ -25,7 +25,11 @@ def test_init(X_y):
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
 
     # check loads all pipelines
-    # assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
+    templates = get_pipeline_templates(problem_type=ProblemTypes.BINARY)
+    template_names = []
+    for template in templates:
+        template_names.append(template.name)
+    template_names == automl.possible_pipelines
 
     automl.search(X, y, raise_errors=True)
 
@@ -242,9 +246,9 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     assert expected_objective_order in out_stripped
 
 
-# def test_model_types_as_list():
-#     with pytest.raises(TypeError, match="model_types parameter is not a list."):
-#         AutoClassificationSearch(objective='AUC', model_types='linear_model', max_pipelines=2)
+def test_model_types_as_list():
+    with pytest.raises(TypeError, match="model_types parameter is not a list."):
+        AutoClassificationSearch(objective='AUC', model_types='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():

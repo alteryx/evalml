@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 from .auto_base import AutoBase
 
 from evalml.objectives import get_objective
-from evalml.pipelines.utils import get_classification_templates
+from evalml.pipelines.utils import get_classification_templates, handle_model_types
 from evalml.problem_types import ProblemTypes
 
 
@@ -84,8 +84,6 @@ class AutoClassificationSearch(AutoBase):
         else:
             problem_type = self._set_problem_type(objective, multiclass)
 
-        templates = self._generate_pipeline_templates(model_types)
-
         super().__init__(tuner=tuner,
                          objective=objective,
                          cv=cv,
@@ -101,12 +99,12 @@ class AutoClassificationSearch(AutoBase):
                          additional_objectives=additional_objectives,
                          random_state=random_state,
                          verbose=verbose,
-                         templates=templates
                          )
 
     def _generate_pipeline_templates(self, model_types):
         templates = get_classification_templates()
         if model_types:
+            model_types = [handle_model_types(model_type) for model_type in model_types]
             templates = [template for template in templates if template.model_type in model_types]
         return templates
 

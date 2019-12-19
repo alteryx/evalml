@@ -21,8 +21,8 @@ def test_handle_string(correct_model_types):
 
 
 def test_handle_model_types(correct_model_types):
-    for modle_type in correct_model_types:
-        assert handle_model_types(modle_type) == modle_type
+    for model_type in correct_model_types:
+        assert handle_model_types(model_type) == model_type
 
 
 def test_handle_incorrect_type():

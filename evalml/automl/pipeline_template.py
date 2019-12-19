@@ -3,14 +3,13 @@ from evalml.pipelines import PipelineBase
 
 class PipelineTemplate:
 
-    def __init__(self, component_list, parameters=None):
+    def __init__(self, component_list):
         self.component_list = component_list
         self.estimator = self.component_list[-1]
         self.name = self._generate_name()
         self.problem_types = self.estimator.problem_types
         self.model_type = self.estimator.model_type
-        if parameters:
-            self.parameters = parameters
+
 
     def _generate_name(self):
         if self.estimator is not None:
@@ -34,7 +33,7 @@ class PipelineTemplate:
             hyperparameter_ranges.update(component.hyperparameter_ranges)
         return hyperparameter_ranges
 
-    def get_params_to_hyperparameters_names(self):
+    def get_comp_to_hyperparameters_names(self):
         hyperparameter_ranges = {}
         for component in self.component_list:
             hyperparameter_ranges.update({component.name: list(component.hyperparameter_ranges.keys())})
@@ -42,18 +41,19 @@ class PipelineTemplate:
 
     def generate_pipeline_with_params(self, objective, parameters, random_state):
         """
-        Generate pipeline with specified parameters
+        Generate pipeline with default or specified parameters
 
         Arguments:
             parameters (dict)
         """
         component_objs = []
+        comp_to_hyperparams = self.get_comp_to_hyperparameters_names()
         for c in self.component_list:
-            params = self.get_params_to_hyperparameters_names()[c.name]
+            component_params = comp_to_hyperparams[c.name]
             relevant_params = {}
-            for p in parameters:
-                if p[0] in params:
-                    relevant_params.update({p})
+            for (param_name, param_value) in parameters:
+                if param_name in component_params:
+                    relevant_params.update({param_name: param_value})
             obj = c(**dict(relevant_params))
             component_objs.append(obj)
 
