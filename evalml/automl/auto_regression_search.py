@@ -2,7 +2,6 @@ from sklearn.model_selection import KFold
 
 from .auto_base import AutoBase
 
-from evalml.pipelines.utils import get_regression_templates
 from evalml.problem_types import ProblemTypes
 
 
@@ -91,10 +90,3 @@ class AutoRegressionSearch(AutoBase):
                          random_state=random_state,
                          verbose=verbose,
                          )
-
-    def _generate_pipeline_templates(self, model_types):
-        templates = get_regression_templates()
-        if model_types:
-            model_types = [handle_model_types(model_type) for model_type in model_types]
-            templates = [template for template in templates if template.model_type in model_types]
-        return templates

@@ -10,7 +10,6 @@ class PipelineTemplate:
         self.problem_types = self.estimator.problem_types
         self.model_type = self.estimator.model_type
 
-
     def _generate_name(self):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
