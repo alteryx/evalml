@@ -67,7 +67,7 @@ def list_model_types(problem_type):
     templates = get_all_templates()
     for t in templates:
         if problem_type in t.problem_types:
-            problem_pipelines.append(t)
+            problem_templates.append(t)
 
     return list(set([t.model_type for t in problem_templates]))
 
