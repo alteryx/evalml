@@ -283,7 +283,7 @@ class AutoBase:
             print('')
 
     def _select_pipeline_template(self):
-        return random.choice(list(self.templates))
+        return random.choice(self.templates)
 
     def _propose_parameters(self, pipeline_template):
         name = pipeline_template.name

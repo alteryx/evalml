@@ -14,6 +14,7 @@ from evalml.pipelines.components import (
     XGBoostClassifier
 )
 from evalml.problem_types import ProblemTypes
+from evalml.pipelines.utils import get_classification_templates
 
 
 class AutoClassificationSearch(AutoBase):
@@ -123,7 +124,7 @@ class AutoClassificationSearch(AutoBase):
             template = PipelineTemplate(pipeline)
             all_templates.append(template)
 
-        templates = all_templates
+        templates = get_classification_templates()
         if model_types:
             templates = [template for templates in all_templates if templates.model_type in model_types]
 

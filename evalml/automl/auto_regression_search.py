@@ -12,6 +12,7 @@ from evalml.pipelines.components import (
     StandardScaler
 )
 from evalml.problem_types import ProblemTypes
+from evalml.pipelines.utils import get_regression_templates
 
 
 class AutoRegressionSearch(AutoBase):
@@ -104,15 +105,7 @@ class AutoRegressionSearch(AutoBase):
                          )
 
     def _generate_pipeline_templates(self, model_types):
-        rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
-        lrp = [OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
-        pipelines = [rfr, lrp]
-        all_templates = []
-        for pipeline in pipelines:
-            template = PipelineTemplate(pipeline)
-            all_templates.append(template)
-
-        templates = all_templates
+        templates = get_regression_templates()
         if model_types:
             templates = [template for templates in all_templates if templates.model_type in model_types]
 

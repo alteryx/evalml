@@ -21,6 +21,7 @@ import evalml.problem_types
 import evalml.utils
 import evalml.guardrails
 
+from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
