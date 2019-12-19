@@ -418,7 +418,7 @@ class AutoBase:
             ascending = False
 
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
-        rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

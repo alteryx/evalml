@@ -3,6 +3,8 @@ import os
 import cloudpickle
 import yaml
 
+from .components.utils import handle_component
+
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
@@ -13,6 +15,16 @@ with open(pipelines_path, 'r') as stream:
         ALL_PIPELINES = yaml.safe_load(stream)
     except yaml.YAMLError as exc:
         print(exc)
+
+
+def register_pipelines(component_lists=None):
+    for component_list in component_lists:
+        # check model_type
+        estimator = handle_component(component_list[-1])
+        model_type = estimator.model_type
+        problem_types = estimator.problem_types
+        for problem_type in problem_types:
+            ALL_PIPELINES[problem_type.name][model_type.value].append(component_list)
 
 
 def get_pipelines(problem_type, model_types=None):

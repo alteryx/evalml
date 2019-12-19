@@ -29,5 +29,6 @@ from .utils import (
     get_pipelines,
     list_model_types,
     load_pipeline,
+    register_pipelines,
     save_pipeline
 )
