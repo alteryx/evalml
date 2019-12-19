@@ -238,9 +238,9 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     assert expected_objective_order in out_stripped
 
 
-def test_model_types_as_list():
-    with pytest.raises(TypeError, match="model_types parameter is not a list."):
-        AutoClassificationSearch(objective='AUC', model_types='linear_model', max_pipelines=2)
+# def test_model_types_as_list():
+#     with pytest.raises(TypeError, match="model_types parameter is not a list."):
+#         AutoClassificationSearch(objective='AUC', model_types='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():

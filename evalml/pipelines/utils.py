@@ -21,7 +21,7 @@ from evalml.pipelines.components import (
 )
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
-
+from evalml.automl.pipeline_template import PipelineTemplate
 # ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
 
 def get_classification_templates():
