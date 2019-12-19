@@ -1,12 +1,5 @@
 import cloudpickle
 
-from .classification import (
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline
-)
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
-
 from evalml.automl.pipeline_template import PipelineTemplate
 from evalml.model_types import handle_model_types
 from evalml.pipelines.components import (
