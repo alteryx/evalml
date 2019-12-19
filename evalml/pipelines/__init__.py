@@ -25,7 +25,7 @@ from .classification import (
 )
 from .regression import LinearRegressionPipeline, RFRegressionPipeline
 from .utils import (
-    get_pipelines,
+    get_pipeline_templates,
     list_model_types,
     load_pipeline,
     save_pipeline

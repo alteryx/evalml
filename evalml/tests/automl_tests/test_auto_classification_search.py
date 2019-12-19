@@ -15,7 +15,7 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import PipelineBase, get_pipeline_templates
 from evalml.problem_types import ProblemTypes
 
 

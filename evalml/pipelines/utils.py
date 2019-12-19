@@ -7,22 +7,22 @@ from .classification import (
 )
 from .regression import LinearRegressionPipeline, RFRegressionPipeline
 
+from evalml.automl.pipeline_template import PipelineTemplate
+from evalml.model_types import handle_model_types
 from evalml.pipelines.components import (
+    LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    RandomForestRegressor,
     RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SimpleImputer,
     StandardScaler,
-    XGBoostClassifier,
-    LinearRegressor,
-    RandomForestRegressor,
-    RFRegressorSelectFromModel,
+    XGBoostClassifier
 )
-from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
-from evalml.automl.pipeline_template import PipelineTemplate
-# ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
+
 
 def get_classification_templates():
     rfc = [OneHotEncoder, SimpleImputer, RFClassifierSelectFromModel, RandomForestClassifier]
@@ -34,6 +34,7 @@ def get_classification_templates():
         template = PipelineTemplate(pipeline)
         templates.append(template)
     return templates
+
 
 def get_regression_templates():
     rfr = [OneHotEncoder, SimpleImputer, RFRegressorSelectFromModel, RandomForestRegressor]
@@ -72,8 +73,8 @@ def list_model_types(problem_type):
     return list(set([t.model_type for t in problem_templates]))
 
 
-def get_pipelines(problem_type, model_types=None):
-    """Returns potential pipelines by model type
+def get_pipeline_templates(problem_type, model_types=None):
+    """Returns potential pipeline templates by model type
 
     Arguments:
 
@@ -87,32 +88,32 @@ def get_pipelines(problem_type, model_types=None):
     if model_types is not None and not isinstance(model_types, list):
         raise TypeError("model_types parameter is not a list.")
 
-    problem_pipelines = []
+    problem_templates = []
 
     if model_types:
         model_types = [handle_model_types(model_type) for model_type in model_types]
 
     problem_type = handle_problem_types(problem_type)
     templates = get_all_templates()
-    for p in templates:
-        if problem_type in p.problem_types:
-            problem_pipelines.append(p)
+    for template in templates:
+        if problem_type in template.problem_types:
+            problem_templates.append(p)
 
     if model_types is None:
-        return problem_pipelines
+        return problem_templates
 
     all_model_types = list_model_types(problem_type)
     for model_type in model_types:
         if model_type not in all_model_types:
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_type))
 
-    pipelines = []
+    templates = []
 
-    for p in problem_pipelines:
+    for p in problem_templates:
         if p.model_type in model_types:
-            pipelines.append(p)
+            templates.append(p)
 
-    return pipelines
+    return templates
 
 
 def save_pipeline(pipeline, file_path):

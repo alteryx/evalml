@@ -6,7 +6,7 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import PipelineBase, get_pipeline_templates
 from evalml.problem_types import ProblemTypes
 
 
