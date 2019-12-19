@@ -15,8 +15,8 @@ def test_rf_init(X_y_reg):
 
     objective = R2()
     clf = RFRegressionPipeline(objective=objective, n_estimators=20, max_depth=5, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), random_state=2)
-    expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0, 'threshold': -np.inf,
-                           'n_estimators': 20, 'max_depth': 5}
+    expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0,
+                           'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
 

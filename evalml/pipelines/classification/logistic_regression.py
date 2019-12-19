@@ -1,5 +1,3 @@
-# from skopt.space import Real
-
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,

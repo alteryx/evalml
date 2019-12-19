@@ -1,4 +1,3 @@
-# from evalml.pipelines import get_pipelines_by_model_type
 from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
