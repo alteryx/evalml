@@ -11,8 +11,6 @@ from evalml.pipelines.components import (
 
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression problems"""
-    # model_type = ModelTypes.RANDOM_FOREST
-    # problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
                  number_features, n_jobs=-1, random_state=0):

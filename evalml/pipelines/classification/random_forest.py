@@ -11,8 +11,6 @@ from evalml.pipelines.components import (
 
 class RFClassificationPipeline(PipelineBase):
     """Random Forest Pipeline for both binary and multiclass classification"""
-    # model_type = ModelTypes.RANDOM_FOREST
-    # problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=-1, random_state=0):

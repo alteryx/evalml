@@ -9,8 +9,6 @@ from evalml.pipelines.components import (
 
 class LinearRegressionPipeline(PipelineBase):
     """Linear Regression Pipeline for regression problems"""
-    # model_type = ModelTypes.LINEAR_MODEL
-    # problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, objective, random_state, number_features, impute_strategy, normalize=False, fit_intercept=True, n_jobs=-1):
 

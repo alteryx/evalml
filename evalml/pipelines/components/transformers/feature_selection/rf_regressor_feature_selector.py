@@ -15,7 +15,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
     _needs_fitting = True
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),
-        # "threshold": ['mean', -np.inf]
+        "threshold": ['mean', -np.inf]
     }
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
@@ -23,7 +23,8 @@ class RFRegressorSelectFromModel(FeatureSelector):
         max_features = None
         if number_features:
             max_features = max(1, int(percent_features * number_features))
-        parameters = {"percent_features": percent_features,  # "threshold": threshold
+        parameters = {"percent_features": percent_features,
+                      "threshold": threshold
                       }
         estimator = SKRandomForestRegressor(random_state=random_state,
                                             n_estimators=n_estimators,

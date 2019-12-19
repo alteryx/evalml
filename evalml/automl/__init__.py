@@ -6,4 +6,3 @@ The usage of this software is governed by the Feature Labs End User License Agre
 # flake8:noqas
 from .auto_classification_search import AutoClassificationSearch
 from .auto_regression_search import AutoRegressionSearch
-from .pipeline_template import PipelineTemplate

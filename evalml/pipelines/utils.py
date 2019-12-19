@@ -97,7 +97,7 @@ def get_pipeline_templates(problem_type, model_types=None):
     templates = get_all_templates()
     for template in templates:
         if problem_type in template.problem_types:
-            problem_templates.append(p)
+            problem_templates.append(template)
 
     if model_types is None:
         return problem_templates
@@ -109,9 +109,9 @@ def get_pipeline_templates(problem_type, model_types=None):
 
     templates = []
 
-    for p in problem_templates:
-        if p.model_type in model_types:
-            templates.append(p)
+    for template in problem_templates:
+        if template.model_type in model_types:
+            templates.append(template)
 
     return templates
 

@@ -11,8 +11,6 @@ from evalml.pipelines.components import (
 
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
-    # model_type = ModelTypes.XGBOOST
-    # problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
                  percent_features, number_features, n_estimators=10, n_jobs=-1, random_state=0):
