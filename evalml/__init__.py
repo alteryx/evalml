@@ -22,7 +22,6 @@ import evalml.utils
 import evalml.guardrails
 
 
-
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
