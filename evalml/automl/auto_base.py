@@ -41,6 +41,11 @@ class AutoBase:
         self.templates = templates
         self.possible_model_types = set([p.model_type for p in self.templates])
 
+        possible_template_objs = get_pipeline_templates(problem_type=self.problem_type, model_types=model_types)
+        self.possible_pipelines = []
+        for template in possible_template_objs:
+            self.possible_pipelines.append(template.name)
+
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 

@@ -107,6 +107,5 @@ class AutoRegressionSearch(AutoBase):
     def _generate_pipeline_templates(self, model_types):
         templates = get_regression_templates()
         if model_types:
-            templates = [template for templates in all_templates if templates.model_type in model_types]
-
+            templates = [template for template in templates if template.model_type in model_types]
         return templates

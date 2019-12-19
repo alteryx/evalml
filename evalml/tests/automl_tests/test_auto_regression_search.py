@@ -21,7 +21,11 @@ def test_init(X_y):
     automl = AutoRegressionSearch(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
-    # assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
+    templates = get_pipeline_templates(problem_type=ProblemTypes.REGRESSION)
+    template_names = []
+    for template in templates:
+        template_names.append(template.name)
+    template_names == automl.possible_pipelines
 
     automl.search(X, y, raise_errors=True)
 

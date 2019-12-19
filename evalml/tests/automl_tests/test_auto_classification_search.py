@@ -63,8 +63,12 @@ def test_init_select_model_types():
     model_types = [ModelTypes.RANDOM_FOREST]
     automl = AutoClassificationSearch(model_types=model_types)
 
-    # assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == automl.possible_pipelines
-    # assert model_types == automl.possible_model_types
+    templates = get_pipeline_templates(problem_type=ProblemTypes.BINARY, model_types=model_types)
+    template_names = []
+    for template in templates:
+        template_names.append(template.name)
+    template_names == automl.possible_pipelines
+    assert set(model_types) == automl.possible_model_types
 
 
 def test_max_pipelines(X_y):
