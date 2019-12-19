@@ -1,18 +1,9 @@
 from sklearn.model_selection import KFold
 
 from .auto_base import AutoBase
-from .pipeline_template import PipelineTemplate
 
-from evalml.pipelines.components import (
-    LinearRegressor,
-    OneHotEncoder,
-    RandomForestRegressor,
-    RFRegressorSelectFromModel,
-    SimpleImputer,
-    StandardScaler
-)
-from evalml.problem_types import ProblemTypes
 from evalml.pipelines.utils import get_regression_templates
+from evalml.problem_types import ProblemTypes
 
 
 class AutoRegressionSearch(AutoBase):

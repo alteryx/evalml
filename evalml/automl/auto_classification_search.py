@@ -1,20 +1,10 @@
 from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
-from .pipeline_template import PipelineTemplate
 
 from evalml.objectives import get_objective
-from evalml.pipelines.components import (
-    LogisticRegressionClassifier,
-    OneHotEncoder,
-    RandomForestClassifier,
-    RFClassifierSelectFromModel,
-    SimpleImputer,
-    StandardScaler,
-    XGBoostClassifier
-)
-from evalml.problem_types import ProblemTypes
 from evalml.pipelines.utils import get_classification_templates
+from evalml.problem_types import ProblemTypes
 
 
 class AutoClassificationSearch(AutoBase):
