@@ -23,6 +23,7 @@ class AutoClassificationSearch(AutoBase):
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
+                 additional_templates=None,
                  random_state=0,
                  verbose=True):
         """Automated classifier pipeline search
@@ -96,6 +97,7 @@ class AutoClassificationSearch(AutoBase):
                          start_iteration_callback=start_iteration_callback,
                          add_result_callback=add_result_callback,
                          additional_objectives=additional_objectives,
+                         additional_templates=additional_templates,
                          random_state=random_state,
                          verbose=verbose,
                          )

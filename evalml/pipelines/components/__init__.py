@@ -20,4 +20,4 @@ from .transformers import (
     CategoricalEncoder
     )
 
-from .utils import handle_component, str_to_component_type
+from .utils import handle_component, str_to_component_type, handle_component_class

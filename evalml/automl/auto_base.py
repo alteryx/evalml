@@ -24,7 +24,7 @@ class AutoBase:
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, verbose):
+                 add_result_callback, additional_objectives, additional_templates, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -39,6 +39,9 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.objective = get_objective(objective)
         self.templates = get_pipeline_templates(problem_type=self.problem_type, model_types=model_types)
+
+        if additional_templates:
+            self.templates.extend(additional_templates)
 
         self.possible_model_types = set([p.model_type for p in self.templates])
 

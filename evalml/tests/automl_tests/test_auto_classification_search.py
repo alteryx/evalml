@@ -15,6 +15,7 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
+from evalml.automl import PipelineTemplate
 from evalml.pipelines import PipelineBase, get_pipeline_templates
 from evalml.problem_types import ProblemTypes
 
@@ -326,3 +327,21 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
+
+
+def test_additional_templates(X_y):
+    X, y = X_y
+    temp_1 = PipelineTemplate(component_list=['Simple Imputer',
+                                              'One Hot Encoder',
+                                              'XGBoost Classifier'])
+    temp_2 = PipelineTemplate(component_list=['Simple Imputer',
+                                              'One Hot Encoder',
+                                              'Logistic Regression Classifier'])
+
+    additional_templates = [temp_1, temp_2]
+    model_types = [ModelTypes.RANDOM_FOREST]
+    automl = AutoClassificationSearch(model_types=model_types, additional_templates=additional_templates)
+    assert len(automl.templates) == 3
+    assert len(automl.possible_pipelines) == 3
+    assert automl.possible_model_types == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL, ModelTypes.XGBOOST])
+    automl.search(X, y, raise_errors=True)

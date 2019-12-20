@@ -55,6 +55,23 @@ DEFAULT_COMPONENTS = {
    ComponentTypes.FEATURE_SELECTION_REGRESSOR: RFRegressorSelectFromModel
 }
 
+def handle_component_class(component):
+    """Handles component by either returning the ComponentBase object or converts the str
+
+        Args:
+            component_type (str or ComponentBase) : component that needs to be handled
+
+        Returns:
+            ComponentBase
+    """
+    try:
+        component_type = str_to_component_type(component)
+        component_class = DEFAULT_COMPONENTS[component_type]
+        return component_class
+    except ValueError:
+        component = str_to_component_class(component)
+    return component
+
 
 def handle_component(component):
     """Handles component by either returning the ComponentBase object or converts the str
@@ -80,6 +97,19 @@ def str_to_component(component):
             component_class = __COMPONENTS[component]
             return component_class()
         elif isinstance(component, ComponentBase):
+            return component
+        else:
+            raise ValueError("handle_component only takes in str or ComponentBase")
+    except KeyError:
+        raise ValueError("Component {} has required parameters and string initialization is not supported".format(component))
+
+
+def str_to_component_class(component):
+    try:
+        if isinstance(component, str):
+            component_class = __COMPONENTS[component]
+            return component_class
+        elif issubclass(component, ComponentBase):
             return component
         else:
             raise ValueError("handle_component only takes in str or ComponentBase")

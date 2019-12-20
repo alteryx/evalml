@@ -1,14 +1,22 @@
 from evalml.pipelines import PipelineBase
+from evalml.pipelines.components import handle_component_class
 
 
 class PipelineTemplate:
 
-    def __init__(self, component_list):
-        self.component_list = component_list
+    def __init__(self, component_list, hyperparameter_space=None):
+        """
+        Initializes a template that can be used to create pipeline
+
+        hyperparameter_space: list of dictionaries, where each element corresponds 
+        to the hyperparameter range of the corresponding component
+        """
+        self.component_list = [handle_component_class(component) for component in component_list]
         self.estimator = self.component_list[-1]
         self.name = self._generate_name()
         self.problem_types = self.estimator.problem_types
         self.model_type = self.estimator.model_type
+        self.hyperparameter_space = hyperparameter_space
 
     def _generate_name(self):
         if self.estimator is not None:
@@ -27,6 +35,9 @@ class PipelineTemplate:
         """
         Gets hyperparameter space
         """
+        if self.hyperparameter_space:
+            return self.hyperparameter_space
+
         hyperparameter_ranges = {}
         for component in self.component_list:
             hyperparameter_ranges.update(component.hyperparameter_ranges)
@@ -34,8 +45,11 @@ class PipelineTemplate:
 
     def get_comp_to_hyperparameters_names(self):
         hyperparameter_ranges = {}
-        for component in self.component_list:
-            hyperparameter_ranges.update({component.name: list(component.hyperparameter_ranges.keys())})
+        for i, component in enumerate(self.component_list):
+            if self.hyperparameter_space:
+                hyperparameter_ranges.update({component.name: list(self.hyperparameter_space[i].keys())})
+            else:
+                hyperparameter_ranges.update({component.name: list(component.hyperparameter_ranges.keys())})
         return hyperparameter_ranges
 
     def generate_pipeline_with_params(self, objective, parameters, random_state):
