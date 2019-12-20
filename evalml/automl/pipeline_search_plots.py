@@ -1,20 +1,82 @@
 import numpy as np
 import plotly.graph_objects as go
 import sklearn.metrics
+from IPython.display import display
 from scipy import interp
 
 from evalml.problem_types import ProblemTypes
 
 
+class SearchIterationPlot():
+    def __init__(self, data, show_plot=True):
+        self.data = data
+        self.best_score_by_iter_fig = None
+        self.curr_iteration_scores = list()
+        self.best_iteration_scores = list()
+
+        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>'.format(self.data.objective.name)
+        data = [
+            go.Scatter(x=[], y=[], mode='lines+markers', name='Best Score'),
+            go.Scatter(x=[], y=[], mode='markers', name='Iter score', marker={'color': 'gray'})
+        ]
+        layout = {
+            'title': title,
+            'xaxis': {
+                'title': 'Iteration',
+                'rangemode': 'tozero'
+            },
+            'yaxis': {
+                'title': 'Score'
+            }
+        }
+        self.best_score_by_iter_fig = go.FigureWidget(data, layout)
+        self.best_score_by_iter_fig.update_layout(showlegend=False)
+        self.update()
+
+    def update(self):
+        if len(self.data.results['search_order']) > 0 and len(self.data.results['pipeline_results']) > 0:
+            iter_idx = self.data.results['search_order']
+            pipeline_res = self.data.results['pipeline_results']
+            iter_scores = [pipeline_res[i]['score'] for i in iter_idx]
+
+            iter_score_pairs = zip(iter_idx, iter_scores)
+            iter_score_pairs = sorted(iter_score_pairs, key=lambda value: value[0])
+            sorted_iter_idx, sorted_iter_scores = zip(*iter_score_pairs)
+
+            # Create best score data
+            best_iteration_scores = list()
+            curr_best = None
+            for score in sorted_iter_scores:
+                if curr_best is None:
+                    best_iteration_scores.append(score)
+                    curr_best = score
+                else:
+                    if self.data.objective.greater_is_better and score > curr_best \
+                            or not self.data.objective.greater_is_better and score < curr_best:
+                        best_iteration_scores.append(score)
+                        curr_best = score
+                    else:
+                        best_iteration_scores.append(curr_best)
+
+            # Update entire line plot
+            best_score_trace = self.best_score_by_iter_fig.data[0]
+            best_score_trace.x = sorted_iter_idx
+            best_score_trace.y = best_iteration_scores
+
+            curr_score_trace = self.best_score_by_iter_fig.data[1]
+            curr_score_trace.x = sorted_iter_idx
+            curr_score_trace.y = sorted_iter_scores
+
+
 class PipelineSearchPlots:
-    """Plots for the AutoClassifier/AutoRegressor class.
+    """Plots for the AutoClassificationSearch/AutoRegressionSearch class.
     """
 
     def __init__(self, data):
-        """Make plots for the AutoClassifier/AutoRegressor class.
+        """Make plots for the AutoClassificationSearch/AutoRegressionSearch class.
 
         Args:
-            data (AutoClassifier or AutoRegressor): Automated pipeline search object
+            data (AutoClassificationSearch or AutoRegressionSearch): Automated pipeline search object
         """
         self.data = data
 
@@ -29,7 +91,7 @@ class PipelineSearchPlots:
 
         results = self.data.results['pipeline_results']
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate ROC data.")
+            raise RuntimeError("You must first call search() to generate ROC data.")
 
         if pipeline_id not in results:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
@@ -114,7 +176,7 @@ class PipelineSearchPlots:
 
         results = self.data.results['pipeline_results']
         if len(results) == 0:
-            raise RuntimeError("You must first call fit() to generate confusion matrix data.")
+            raise RuntimeError("You must first call search() to generate confusion matrix data.")
 
         if pipeline_id not in results:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
@@ -154,3 +216,17 @@ class PipelineSearchPlots:
                                                          '<extra></extra>'),  # necessary to remove unwanted trace info
                            layout=layout)
         return figure
+
+    def search_iteration_plot(self, interactive_plot=False):
+        """Shows a plot of the best score at each iteration using data gathered during training.
+
+        Returns:
+            plot
+        """
+        if interactive_plot:
+            plot_obj = SearchIterationPlot(self.data)
+            display(plot_obj.best_score_by_iter_fig)
+            return plot_obj
+        else:
+            plot_obj = SearchIterationPlot(self.data)
+            return go.Figure(plot_obj.best_score_by_iter_fig)

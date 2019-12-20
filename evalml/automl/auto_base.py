@@ -28,7 +28,7 @@ class AutoBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 model_types, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
@@ -76,6 +76,14 @@ class AutoBase:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
+        if patience and (not isinstance(patience, int) or patience < 0):
+            raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
+
+        if tolerance and (tolerance > 1.0 or tolerance < 0.0):
+            raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(tolerance))
+
+        self.patience = patience
+        self.tolerance = tolerance if tolerance else 0.0
         self.results = {
             'pipeline_results': {},
             'search_order': []
@@ -98,7 +106,7 @@ class AutoBase:
 
         self.plot = PipelineSearchPlots(self)
 
-    def fit(self, X, y, feature_types=None, raise_errors=False):
+    def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -111,10 +119,20 @@ class AutoBase:
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+                Disabled by default in non-Jupyter enviroments.
+
         Returns:
 
             self
         """
+        # don't show iteration plot outside of a jupyter notebook
+        if show_iteration_plot is True:
+            try:
+                get_ipython
+            except NameError:
+                show_iteration_plot = False
+
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -150,27 +168,61 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
+        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+
         if self.max_pipelines is None:
-            start = time.time()
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
-            while time.time() - start <= self.max_time:
-                self._do_iteration(X, y, pbar, raise_errors)
-            pbar.close()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
-            start = time.time()
-            for n in pbar:
-                elapsed = time.time() - start
-                if self.max_time and elapsed > self.max_time:
-                    pbar.close()
-                    self.logger.log("\n\nMax time elapsed. Stopping search early.")
-                    break
-                self._do_iteration(X, y, pbar, raise_errors)
-            pbar.close()
 
-        self.logger.log("\n✔ Optimization finished")
+        start = time.time()
+        while self._check_stopping_condition(start):
+            self._do_iteration(X, y, pbar, raise_errors)
+            plot.update()
+        desc = u"✔ Optimization finished"
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
+        pbar.close()
+
+    def _check_stopping_condition(self, start):
+        should_continue = True
+        num_pipelines = len(self.results['pipeline_results'])
+        if num_pipelines == 0:
+            return True
+
+        # check max_time and max_pipelines
+        elapsed = time.time() - start
+        if self.max_time and elapsed >= self.max_time:
+            return False
+        elif self.max_pipelines:
+            if num_pipelines >= self.max_pipelines:
+                return False
+            elif self.max_time and elapsed >= self.max_time:
+                self.logger.log("\n\nMax time elapsed. Stopping search early.")
+                return False
+
+        # check for early stopping
+        if self.patience is None:
+            return True
+
+        first_id = self.results['search_order'][0]
+        best_score = self.results['pipeline_results'][first_id]['score']
+        num_without_improvement = 0
+        for id in self.results['search_order'][1:]:
+            curr_score = self.results['pipeline_results'][id]['score']
+            significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
+            score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
+            if score_improved and significant_change:
+                best_score = curr_score
+                num_without_improvement = 0
+            else:
+                num_without_improvement += 1
+            if num_without_improvement >= self.patience:
+                self.logger.log("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
+                return False
+        return should_continue
 
     def _check_multiclass(self, y):
         if y.nunique() <= 2:
@@ -182,6 +234,7 @@ class AutoBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):
+        pbar.update(1)
         # determine which pipeline to build
         pipeline_class = self._select_pipeline()
 
