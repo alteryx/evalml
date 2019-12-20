@@ -5,6 +5,13 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add CatBoost classification and regression components and pipelines :pr:`247`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.6.0 Dec. 16, 2019**
+    * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`
         * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
