@@ -7,6 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
+from evalml.automl import PipelineTemplate
 from evalml.model_types import ModelTypes
 from evalml.objectives import (
     FraudCost,
@@ -15,7 +16,6 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.automl import PipelineTemplate
 from evalml.pipelines import PipelineBase, get_pipeline_templates
 from evalml.problem_types import ProblemTypes
 

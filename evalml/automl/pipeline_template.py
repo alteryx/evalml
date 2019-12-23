@@ -8,7 +8,7 @@ class PipelineTemplate:
         """
         Initializes a template that can be used to create pipeline
 
-        hyperparameter_space: list of dictionaries, where each element corresponds 
+        hyperparameter_space: list of dictionaries, where each element corresponds
         to the hyperparameter range of the corresponding component
         """
         self.component_list = [handle_component_class(component) for component in component_list]
