@@ -9,11 +9,11 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 from evalml import AutoClassificationSearch
 from evalml.model_types import ModelTypes
 from evalml.objectives import (
+    ROC,
+    ConfusionMatrix,
     FraudCost,
     Precision,
     PrecisionMicro,
-    ROC,
-    ConfusionMatrix,
     get_objective,
     get_objectives
 )
