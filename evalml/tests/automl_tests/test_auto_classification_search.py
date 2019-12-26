@@ -10,6 +10,8 @@ from evalml import AutoClassificationSearch
 from evalml.automl import PipelineTemplate
 from evalml.model_types import ModelTypes
 from evalml.objectives import (
+    ROC,
+    ConfusionMatrix,
     FraudCost,
     Precision,
     PrecisionMicro,
@@ -300,7 +302,7 @@ def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
-    automl.search(X, y)
+    automl.search(X, y, raise_errors=True)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
@@ -316,7 +318,7 @@ def test_plot_iterations_max_pipelines(X_y):
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective="f1", max_time=10)
-    automl.search(X, y, show_iteration_plot=False)
+    automl.search(X, y, show_iteration_plot=False, raise_errors=True)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
@@ -327,6 +329,18 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
+
+
+def test_plots_as_main_objectives(X_y):
+    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
+        automl = AutoClassificationSearch(objective='confusion_matrix')
+    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
+        automl = AutoClassificationSearch(objective='ROC')
+    automl = AutoClassificationSearch(objective='f1', additional_objectives=['recall'])
+    roc = next((obj for obj in automl.additional_objectives if isinstance(obj, ROC)), None)
+    assert roc
+    cfm = next((obj for obj in automl.additional_objectives if isinstance(obj, ConfusionMatrix)), None)
+    assert cfm
 
 
 def test_additional_templates(X_y):
@@ -345,3 +359,4 @@ def test_additional_templates(X_y):
     assert len(automl.possible_pipelines) == 3
     assert automl.possible_model_types == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL, ModelTypes.XGBOOST])
     automl.search(X, y, raise_errors=True)
+ 
