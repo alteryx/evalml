@@ -359,4 +359,3 @@ def test_additional_templates(X_y):
     assert len(automl.possible_pipelines) == 3
     assert automl.possible_model_types == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL, ModelTypes.XGBOOST])
     automl.search(X, y, raise_errors=True)
- 
