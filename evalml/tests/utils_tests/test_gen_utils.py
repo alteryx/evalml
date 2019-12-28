@@ -1,6 +1,4 @@
-from evalml.utils import (summarize_row,
-                          summarize_col,
-                          summarize_table)
+from evalml.utils import summarize_col, summarize_row, summarize_table
 
 
 def test_summarize_table(X_y):

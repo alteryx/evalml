@@ -19,12 +19,11 @@ def summarize_table(X):
 
     logger.log("Number of columns by data type:")
     counts = X.dtypes.value_counts()
-    for dtype in counts.index: 
+    for dtype in counts.index:
         logger.log('{}: {}'.format(dtype, counts[dtype]))
     X.dtypes.value_counts()
 
     logger.log("Total size of DataFrame: {} bytes".format(X.memory_usage(index=True).sum()))
-
 
 
 def summarize_row(X, row):
