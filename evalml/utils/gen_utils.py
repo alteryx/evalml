@@ -18,7 +18,13 @@ def summarize_table(X):
     logger.log("Number of columns: {}".format(X.shape[1]))
 
     logger.log("Number of columns by data type:")
-    logger.log(X.dtypes.value_counts())
+    counts = X.dtypes.value_counts()
+    for dtype in counts.index: 
+        logger.log('{}: {}'.format(dtype, counts[dtype]))
+    X.dtypes.value_counts()
+
+    logger.log("Total size of DataFrame: {} bytes".format(X.memory_usage(index=True).sum()))
+
 
 
 def summarize_row(X, row):
@@ -30,8 +36,9 @@ def summarize_row(X, row):
 
 
 def summarize_col(X, col):
+    # todo: combine with summarize_row but change axis?
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
     logger = Logger()
-    logger.log("Number of non-NaN elements in col {}: {}".format(X.count(axis=0)[col]))
+    logger.log("Number of non-NaN elements in col {}: {}".format(col, X.count(axis=0)[col]))
