@@ -10,7 +10,7 @@ def summarize_table(X):
 
     Arguments:
         X (pd.DataFrame)
-    
+
     TODO: doctest
     """
     if not isinstance(X, pd.DataFrame):
@@ -44,7 +44,7 @@ def summarize_col(X, col):
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
-    X_col = X.iloc[:,col]
+    X_col = X.iloc[:, col]
 
     logger = Logger()
     logger.log_title("Summary for column {}".format(col))
