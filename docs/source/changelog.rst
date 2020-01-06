@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
     * Documentation Changes
     * Testing Changes
