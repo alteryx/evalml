@@ -4,6 +4,14 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+        * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.6.0 Dec. 16, 2019**
+    * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`
         * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
