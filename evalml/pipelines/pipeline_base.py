@@ -63,7 +63,11 @@ class PipelineBase:
             for k, v in kwargs.items():
                 if k in args:
                     relevant_args[k] = v
-            component = component.__class__(**relevant_args)
+            try:
+                component = component.__class__(**relevant_args)
+            except Exception as e:
+                print("Error received when instantiating component {} with the following arguments {}".format(component, relevant_args))
+                raise e
 
     def __getitem__(self, index):
         if isinstance(index, slice):
