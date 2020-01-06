@@ -38,7 +38,6 @@ if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
         print(e)
 
 
-
 def get_pipelines(problem_type, model_types=None):
     """Returns potential pipelines by model type
 
