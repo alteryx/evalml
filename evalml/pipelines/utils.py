@@ -24,7 +24,14 @@ def register_pipelines(component_lists=None):
         model_type = estimator.model_type
         problem_types = estimator.problem_types
         for problem_type in problem_types:
-            ALL_PIPELINES[problem_type.name][model_type.value].append(component_list)
+            if component_list not in ALL_PIPELINES[problem_type.name][model_type.value]:
+                ALL_PIPELINES[problem_type.name][model_type.value].append(component_list)
+
+
+if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
+    with open(os.environ['EVALML_CUSTOM_PIPELINES_PATH']) as stream:
+        pipelines = yaml.safe_load(stream)
+        register_pipelines(pipelines)
 
 
 def get_pipelines(problem_type, model_types=None):
