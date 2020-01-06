@@ -34,8 +34,8 @@ if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
             pipelines = yaml.safe_load(stream)
             register_pipelines(pipelines)
     except Exception as e:
-        print("Received an error when using custom pipelines path")
-        print(e)
+        print("Received an error when using custom pipelines path!")
+        raise(e)
 
 
 def get_component_lists(problem_type, model_types=None):
