@@ -115,7 +115,7 @@ Pipelines
     :toctree: generated
     :nosignatures:
 
-    get_pipelines
+    get_component_lists
     save_pipeline
     load_pipeline
 

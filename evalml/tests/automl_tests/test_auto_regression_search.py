@@ -6,7 +6,7 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import PipelineBase, get_component_lists
 from evalml.problem_types import ProblemTypes
 
 
@@ -21,7 +21,7 @@ def test_init(X_y):
     automl = AutoRegressionSearch(objective="R2", max_pipelines=3)
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_component_lists
+    assert get_component_lists(problem_type=ProblemTypes.REGRESSION) == automl.possible_component_lists
 
     automl.search(X, y, raise_errors=True)
 

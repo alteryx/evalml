@@ -38,16 +38,15 @@ if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
         print(e)
 
 
-def get_pipelines(problem_type, model_types=None):
-    """Returns potential pipelines by model type
+def get_component_lists(problem_type, model_types=None):
+    """Returns potential pipelines defined by component lists by model type
 
     Arguments:
-
         problem_type(ProblemTypes or str): the problem type the pipelines work for.
         model_types(list[ModelTypes or str]): model types to match. if none, return all pipelines
 
     Returns:
-        pipelines, list of all pipeline
+        component list, list of component lists
 
     """
     if model_types is not None and not isinstance(model_types, list):

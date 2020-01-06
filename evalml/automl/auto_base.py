@@ -11,7 +11,11 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import PipelineBase, get_pipelines, handle_component
+from evalml.pipelines import (
+    PipelineBase,
+    get_component_lists,
+    handle_component
+)
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -37,7 +41,7 @@ class AutoBase:
         self.cv = cv
         self.verbose = verbose
         self.logger = Logger(self.verbose)
-        self.possible_component_lists = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.possible_component_lists = get_component_lists(problem_type=self.problem_type, model_types=model_types)
         self.possible_pipelines = []
         self.objective = get_objective(objective)
         if self.problem_type not in self.objective.problem_types:
