@@ -85,12 +85,11 @@ class AutoBase:
         for p in self.possible_component_lists:
             hyperparameters = self._get_hyperparameters(p)
             space = list(hyperparameters.items())
-            pipeline = PipelineBase(objective=self.objective, component_list=p, random_state=self.random_state, n_jobs=-1)
-            self.possible_pipelines.append(pipeline)
-            self.tuners[pipeline.name] = tuner([s[1] for s in space], random_state=random_state)
-            self.search_spaces[pipeline.name] = [s[0] for s in space]
+            name = PipelineBase.generate_name(p)
+            self.tuners[name] = tuner([s[1] for s in space], random_state=random_state)
+            self.search_spaces[name] = [s[0] for s in space]
 
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+        self.possible_model_types = list(set([PipelineBase.generate_model_type(c) for c in self.possible_component_lists]))
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
@@ -233,13 +232,12 @@ class AutoBase:
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
         # determine which pipeline to build
-        pipeline_class = self._select_pipeline()
-
+        component_list = self._select_pipeline()
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
+        parameters = self._propose_parameters(PipelineBase.generate_name(component_list))
         # fit an score the pipeline
         pipeline = PipelineBase(
-            component_list=pipeline_class,
+            component_list=component_list,
             objective=self.objective,
             random_state=self.random_state,
             n_jobs=-1,
@@ -247,7 +245,7 @@ class AutoBase:
         )
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline_class, parameters)
+            self.start_iteration_callback(pipeline, parameters)
 
         desc = "▹ {}: ".format(pipeline.name)
         if len(desc) > self._MAX_NAME_LEN:
@@ -298,11 +296,11 @@ class AutoBase:
             print('')
 
     def _select_pipeline(self):
-        return random.choice(self.possible_pipelines)
+        return random.choice(self.possible_component_lists)
 
     def _propose_parameters(self, pipeline_class):
-        values = self.tuners[pipeline_class.name].propose()
-        space = self.search_spaces[pipeline_class.name]
+        values = self.tuners[pipeline_class].propose()
+        space = self.search_spaces[pipeline_class]
         proposal = zip(space, values)
         return list(proposal)
 

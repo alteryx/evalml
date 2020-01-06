@@ -77,16 +77,12 @@ class PipelineBase:
         raise NotImplementedError('Setting pipeline components is not supported.')
 
     def _generate_name(self):
-        if self.estimator is not None:
-            name = "{}".format(self.estimator.name)
-        else:
-            name = "Pipeline"
+        name = "{}".format(self.estimator.name)
         for index, component in enumerate(self.component_list[:-1]):
             if index == 0:
                 name += " w/ {}".format(component.name)
             else:
                 name += " + {}".format(component.name)
-
         return name
 
     def get_component(self, name):
@@ -289,3 +285,30 @@ class PipelineBase:
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
+
+    @classmethod
+    def generate_name(self, component_list):
+        """Returns name of pipeline generated through `component_list`
+
+        Arguments:
+            component_list(list[ComponentBase or str]): list of components
+
+        Returns:
+            name, str
+
+        """
+        component_list = [handle_component(component) for component in component_list]
+        estimator = component_list[-1]
+        name = "{}".format(estimator.name)
+        for index, component in enumerate(component_list[:-1]):
+            if index == 0:
+                name += " w/ {}".format(component.name)
+            else:
+                name += " + {}".format(component.name)
+        return name
+
+    @classmethod
+    def generate_model_type(self, component_list):
+        component_list = [handle_component(component) for component in component_list]
+        estimator = component_list[-1]
+        return estimator.model_type
