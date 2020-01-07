@@ -14,7 +14,6 @@ with open(pipelines_path, 'r') as stream:
     ALL_PIPELINES = yaml.safe_load(stream)
 
 
-
 def register_pipeline(component_list):
     estimator = handle_component(component_list[-1])
     model_type = estimator.model_type
