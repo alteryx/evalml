@@ -11,10 +11,8 @@ from evalml.problem_types import handle_problem_types
 ALL_PIPELINES = None
 pipelines_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "default_pipelines.yaml")
 with open(pipelines_path, 'r') as stream:
-    try:
-        ALL_PIPELINES = yaml.safe_load(stream)
-    except yaml.YAMLError as exc:
-        print(exc)
+    ALL_PIPELINES = yaml.safe_load(stream)
+
 
 
 def register_pipeline(component_list):
