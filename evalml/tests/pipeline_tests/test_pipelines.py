@@ -18,6 +18,7 @@ from evalml.pipelines.utils import (
     list_model_types,
     load_pipeline,
     register_pipeline,
+    register_pipeline_yaml,
     register_pipelines,
     save_pipeline
 )
@@ -175,5 +176,14 @@ def test_register_pipelines():
 
     pipelines = [['Simple Imputer', 'XGboost Classifier'], ['Simple Imputer', 'Logistic Regression Classifier']]
     register_pipelines(pipelines)
+    for pipeline in pipelines:
+        assert pipeline in get_component_lists('binary')
+
+
+def test_yaml_path():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(dir_path, 'test_custom_pipelines.yaml')
+    register_pipeline_yaml(path)
+    pipelines = [['Simple Imputer', 'XGBoost Classifier'], ['Simple Imputer', 'Logistic Regression Classifier']]
     for pipeline in pipelines:
         assert pipeline in get_component_lists('binary')

@@ -31,14 +31,18 @@ def register_pipelines(component_lists=None):
         register_pipeline(component_list)
 
 
-if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
+def register_pipeline_yaml(path):
     try:
-        with open(os.environ['EVALML_CUSTOM_PIPELINES_PATH']) as stream:
+        with open(path) as stream:
             pipelines = yaml.safe_load(stream)
             register_pipelines(pipelines)
     except Exception as e:
         print("Received an error when using custom pipelines path!")
-        raise(e)
+        print(e)
+
+
+if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
+    register_pipeline_yaml(os.environ['EVALML_CUSTOM_PIPELINES_PATH'])
 
 
 def get_component_lists(problem_type, model_types=None):
