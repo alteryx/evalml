@@ -57,7 +57,7 @@ DEFAULT_COMPONENTS = {
 
 
 def handle_component(component):
-    """Handles component by either returning the ComponentBase object or converts the str
+    """Handles component by either returning the Component class/obj or converts the str into the class
 
         Args:
             component_type (str or ComponentBase) : component that needs to be handled
@@ -68,7 +68,7 @@ def handle_component(component):
     try:
         component_type = str_to_component_type(component)
         component_class = DEFAULT_COMPONENTS[component_type]
-        component = component_class()
+        component = component_class
     except ValueError:
         component = str_to_component(component)
     return component
@@ -78,8 +78,10 @@ def str_to_component(component):
     try:
         if isinstance(component, str):
             component_class = __COMPONENTS[component.lower()]
-            return component_class()
+            return component_class
         elif isinstance(component, ComponentBase):
+            return component
+        elif issubclass(component, ComponentBase):
             return component
         else:
             raise ValueError("handle_component only takes in str or ComponentBase")

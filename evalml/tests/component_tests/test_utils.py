@@ -31,7 +31,7 @@ def test_handle_component():
     ]
 
     for component_str, component in zip(component_strs, components):
-        assert isinstance(handle_component(component_str), component)
+        assert handle_component(component_str) == component
 
     bad_str = 'Select From Model'
     with pytest.raises(ValueError):
@@ -42,7 +42,7 @@ def test_default_component():
     component_type_strs = ['classifier', 'categorical_encoder', 'imputer', 'regressor', 'scaler', 'feature_selection']
     components = [LogisticRegressionClassifier, OneHotEncoder, SimpleImputer, LinearRegressor, StandardScaler, RFClassifierSelectFromModel]
     for component_type_str, component in zip(component_type_strs, components):
-        assert isinstance(handle_component(component_type_str), component)
+        assert handle_component(component_type_str) == component
 
 
 @pytest.fixture

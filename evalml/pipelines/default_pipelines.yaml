@@ -1,20 +1,20 @@
 BINARY:
   linear_model:
-    - [Simple Imputer, One Hot Encoder, Standard Scaler, Logistic Regression Classifier]
+    - [One Hot Encoder, Simple Imputer, Standard Scaler, Logistic Regression Classifier]
   random_forest:
-    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, Random Forest Classifier]
+    - [One Hot Encoder, Simple Imputer, RF Classifier Select From Model, Random Forest Classifier]
   xgboost:
-    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, XGBoost Classifier]
+    - [One Hot Encoder, Simple Imputer, RF Classifier Select From Model, XGBoost Classifier]
 MULTICLASS:
   linear_model:
-    - [Simple Imputer, One Hot Encoder, Standard Scaler, Logistic Regression Classifier]
+    - [One Hot Encoder, Simple Imputer, Standard Scaler, Logistic Regression Classifier]
   random_forest:
-    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, Random Forest Classifier]
+    - [One Hot Encoder, Simple Imputer, RF Classifier Select From Model, Random Forest Classifier]
   xgboost:
-    - [Simple Imputer, One Hot Encoder, RF Classifier Select From Model, XGBoost Classifier]
+    - [One Hot Encoder, Simple Imputer, RF Classifier Select From Model, XGBoost Classifier]
 
 REGRESSION:
   linear_model:
-    - [Simple Imputer, One Hot Encoder, Standard Scaler, Linear Regressor]
+    - [One Hot Encoder, Simple Imputer, Standard Scaler, Linear Regressor]
   random_forest:
-    - [Simple Imputer, One Hot Encoder, RF Regressor Select From Model, Random Forest Regressor]
+    - [One Hot Encoder, Simple Imputer, RF Regressor Select From Model, Random Forest Regressor]

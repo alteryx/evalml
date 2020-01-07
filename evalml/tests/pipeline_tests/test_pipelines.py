@@ -7,6 +7,7 @@ from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
     ComponentTypes,
+    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -167,6 +168,44 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_component_list_init(X_y):
+    X, y = X_y
+    component_list = ['Simple Imputer', 'Logistic Regression Classifier']
+    pipeline = PipelineBase(objective='recall', component_list=component_list, n_jobs=-1, random_state=0)
+    assert pipeline.model_type == ModelTypes.LINEAR_MODEL
+    assert pipeline.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    class Mock_Component(Estimator):
+        name = "Mock_Component"
+        problem_types = [ProblemTypes.BINARY]
+        model_type = ModelTypes.LINEAR_MODEL
+
+        def __init__(self, param_1, param_2, param_3):
+            self.parameters = {
+                'param_1': param_1,
+                'param_2': param_2,
+                'param_3': param_3
+            }
+            pass
+
+    params = {
+        'param_1': 0.1,
+        'param_2': 0.2,
+        'param_3': 0.03,
+    }
+
+    pipeline = PipelineBase(objective='recall', component_list=[Mock_Component], n_jobs=-1, random_state=0, **params)
+    assert pipeline.model_type == ModelTypes.LINEAR_MODEL
+    assert pipeline.problem_types == [ProblemTypes.BINARY]
+
+    params = {
+        'param_1': 0.1,
+        'param_2': 0.2,
+    }
+    with pytest.raises(Exception):
+        pipeline = PipelineBase(objective='recall', component_list=[Mock_Component], n_jobs=-1, random_state=0, **params)
 
 
 def test_register_pipelines():
