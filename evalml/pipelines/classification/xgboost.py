@@ -22,8 +22,9 @@ class XGBoostPipeline(PipelineBase):
         "eta": Real(0, 1),
         "min_child_weight": Real(1, 10),
         "max_depth": Integer(1, 20),
+        "n_estimators": Integer(1, 100),
         "impute_strategy": ["mean", "median", "most_frequent"],
-        "percent_features": Real(.01, 1)
+        "percent_features": Real(.01, 1),
     }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
@@ -41,7 +42,8 @@ class XGBoostPipeline(PipelineBase):
         estimator = XGBoostClassifier(random_state=random_state,
                                       eta=eta,
                                       max_depth=max_depth,
-                                      min_child_weight=min_child_weight)
+                                      min_child_weight=min_child_weight,
+                                      n_estimators=n_estimators)
 
         super().__init__(objective=objective,
                          component_list=[enc, imputer, feature_selection, estimator],
