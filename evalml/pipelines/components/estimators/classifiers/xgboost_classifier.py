@@ -16,7 +16,7 @@ class XGBoostClassifier(Estimator):
         "eta": Real(0, 1),
         "max_depth": Integer(1, 20),
         "min_child_weight": Real(1, 10),
-        "n_estimators": Integer(1, 100),
+        "n_estimators": Integer(1, 1000),
     }
     model_type = ModelTypes.XGBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
