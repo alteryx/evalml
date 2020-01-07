@@ -37,9 +37,9 @@ def __components_dict():
         if issubclass(obj, ComponentBase):
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
-                    COMPONENTS[obj.name] = obj
+                    COMPONENTS[obj.name.lower()] = obj
             elif len(params.args) == 1:
-                COMPONENTS[obj.name] = obj
+                COMPONENTS[obj.name.lower()] = obj
     return COMPONENTS
 
 __COMPONENTS = __components_dict()
@@ -77,7 +77,7 @@ def handle_component(component):
 def str_to_component(component):
     try:
         if isinstance(component, str):
-            component_class = __COMPONENTS[component]
+            component_class = __COMPONENTS[component.lower()]
             return component_class()
         elif isinstance(component, ComponentBase):
             return component

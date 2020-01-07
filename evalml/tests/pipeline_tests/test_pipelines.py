@@ -17,6 +17,8 @@ from evalml.pipelines.utils import (
     get_component_lists,
     list_model_types,
     load_pipeline,
+    register_pipeline,
+    register_pipelines,
     save_pipeline
 )
 from evalml.problem_types import ProblemTypes
@@ -164,3 +166,14 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_register_pipelines():
+    pipeline = ['Simple Imputer', 'Random Forest Classifier']
+    register_pipeline(pipeline)
+    assert pipeline in get_component_lists('binary')
+
+    pipelines = [['Simple Imputer', 'XGboost Classifier'], ['Simple Imputer', 'Logistic Regression Classifier']]
+    register_pipelines(pipelines)
+    for pipeline in pipelines:
+        assert pipeline in get_component_lists('binary')

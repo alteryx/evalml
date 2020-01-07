@@ -17,15 +17,18 @@ with open(pipelines_path, 'r') as stream:
         print(exc)
 
 
+def register_pipeline(component_list):
+    estimator = handle_component(component_list[-1])
+    model_type = estimator.model_type
+    problem_types = estimator.problem_types
+    for problem_type in problem_types:
+        if component_list not in ALL_PIPELINES[problem_type.name][model_type.value]:
+            ALL_PIPELINES[problem_type.name][model_type.value].append(component_list)
+
+
 def register_pipelines(component_lists=None):
     for component_list in component_lists:
-        # check model_type
-        estimator = handle_component(component_list[-1])
-        model_type = estimator.model_type
-        problem_types = estimator.problem_types
-        for problem_type in problem_types:
-            if component_list not in ALL_PIPELINES[problem_type.name][model_type.value]:
-                ALL_PIPELINES[problem_type.name][model_type.value].append(component_list)
+        register_pipeline(component_list)
 
 
 if 'EVALML_CUSTOM_PIPELINES_PATH' in os.environ:
