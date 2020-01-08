@@ -19,12 +19,7 @@ from .components import (
 )
 
 from .pipeline_base import PipelineBase
-from .classification import (
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline
-)
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
+
 from .utils import (
     get_component_lists,
     list_model_types,
