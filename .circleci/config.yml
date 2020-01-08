@@ -135,36 +135,7 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov
-  unit_tests_no_parallel:
-    resource_class: xlarge
-    parameters:
-      python_version:
-        type: string
-        default: "3.5"
-      codecov:
-        type: boolean
-        default: false
-    executor:
-        name: python
-        python_version: << parameters.python_version >>
-    steps:
-      - run: sudo apt update && sudo apt install -y graphviz
-      - checkout
-      - install_dependencies
-      - run: |
-          source test_python/bin/activate
-          coverage erase
-          make circleci-test-no-parallel
-      - store_test_results:
-          path: test-reports
-      - store_artifacts:
-          path: test-reports
-      - when:
-          condition: << parameters.codecov >>
-          steps:
-            - run: |
-                source test_python/bin/activate
-                codecov
+
   changelog_updated:
     working_directory: ~/evalml
     docker:
@@ -229,7 +200,7 @@ workflows:
         - lint_test:
             name: "python 3.7 lint test"
             python_version: "3.7"
-        - unit_tests_no_parallel:
+        - unit_tests:
             name: "linux python 3.5 unit tests"
             python_version: "3.5"
         - unit_tests:
