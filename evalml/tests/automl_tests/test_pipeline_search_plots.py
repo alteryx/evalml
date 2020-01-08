@@ -10,7 +10,7 @@ from evalml.automl.pipeline_search_plots import (
     PipelineSearchPlots,
     SearchIterationPlot
 )
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -26,8 +26,8 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = PipelineBase(objective="ROC", component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"], 
-                                        penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
+                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):
@@ -102,8 +102,8 @@ def test_generate_confusion_matrix(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = PipelineBase(objective="confusion_matrix", component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                        penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionPipeline(objective="confusion_matrix", penalty='l2', C=0.5,
+                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):

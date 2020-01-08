@@ -4,7 +4,7 @@ import pytest
 
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
     ComponentTypes,
     Estimator,
@@ -44,8 +44,7 @@ def test_serialization(X_y, tmpdir):
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     objective = Precision()
 
-    pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
@@ -57,8 +56,7 @@ def pickled_pipeline_path(X_y, tmpdir):
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
     objective = MockPrecision()
-    pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
@@ -70,8 +68,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path)
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
@@ -85,12 +82,10 @@ def test_reproducibility(X_y):
         amount_col=10
     )
 
-    clf = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
 
-    clf_1 = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
@@ -98,8 +93,7 @@ def test_reproducibility(X_y):
 
 def test_indexing(X_y):
     X, y = X_y
-    clf = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
 
     assert isinstance(clf[0], OneHotEncoder)
@@ -116,15 +110,13 @@ def test_indexing(X_y):
 
 def test_describe(X_y):
     X, y = X_y
-    lrp = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
 
 
 def test_name(X_y):
     X, y = X_y
-    clf = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean')
+    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 

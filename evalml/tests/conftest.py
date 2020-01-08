@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 from sklearn import datasets
 
-from evalml.pipelines import PipelineBase
 
 @pytest.fixture
 def X_y():
