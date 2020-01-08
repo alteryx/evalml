@@ -125,12 +125,6 @@ Pipelines
     :nosignatures:
 
     PipelineBase
-    RFClassificationPipeline
-    XGBoostPipeline
-    LogisticRegressionPipeline
-    RFRegressionPipeline
-    LinearRegressionPipeline
-
 
 Plotting
 ~~~~~~~~
