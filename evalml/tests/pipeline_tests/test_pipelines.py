@@ -45,7 +45,7 @@ def test_serialization(X_y, tmpdir):
     objective = Precision()
 
     pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                            penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
@@ -58,7 +58,7 @@ def pickled_pipeline_path(X_y, tmpdir):
     MockPrecision = type('MockPrecision', (Precision,), {})
     objective = MockPrecision()
     pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                            penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
@@ -71,7 +71,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path)
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
     pipeline = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                            penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     pipeline.fit(X, y)
     assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
@@ -86,11 +86,11 @@ def test_reproducibility(X_y):
     )
 
     clf = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                       penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     clf.fit(X, y)
 
     clf_1 = PipelineBase(objective=objective, component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                         penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
@@ -99,7 +99,7 @@ def test_reproducibility(X_y):
 def test_indexing(X_y):
     X, y = X_y
     clf = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                       penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     clf.fit(X, y)
 
     assert isinstance(clf[0], OneHotEncoder)
@@ -117,14 +117,14 @@ def test_indexing(X_y):
 def test_describe(X_y):
     X, y = X_y
     lrp = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                       penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
 
 
 def test_name(X_y):
     X, y = X_y
     clf = PipelineBase(objective='recall', component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                       penalty='l2', C=1.0, impute_strategy='mean')
+                                penalty='l2', C=1.0, impute_strategy='mean')
     assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
