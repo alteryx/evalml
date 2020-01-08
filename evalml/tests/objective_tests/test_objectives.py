@@ -24,7 +24,7 @@ def test_binary_average(X_y):
     X, y = X_y
 
     pipeline = PipelineBase(objective=Precision(), component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+                            penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
     pipeline.fit(X, y)
     y_pred = pipeline.predict(X)
 

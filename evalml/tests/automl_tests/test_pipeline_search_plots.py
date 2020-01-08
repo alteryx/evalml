@@ -26,8 +26,8 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = PipelineBase(objective="ROC", component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"], 
-                                        penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = PipelineBase(objective="ROC", component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
+                                    penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):
@@ -103,7 +103,7 @@ def test_generate_confusion_matrix(X_y):
 
         def search(self):
             pipeline = PipelineBase(objective="confusion_matrix", component_list=["One Hot Encoder", "Simple Imputer", "Standard Scaler", "Logistic Regression Classifier"],
-                                        penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+                                    penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):
