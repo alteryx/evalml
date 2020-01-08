@@ -23,7 +23,7 @@ circleci-test:
 	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: circleci-test-no-parallel
-circleci-test:
+circleci-test-no-parallel:
 	pytest evalml/ --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: win-circleci-test
