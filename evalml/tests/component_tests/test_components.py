@@ -118,14 +118,14 @@ def test_missing_methods_on_components(X_y):
 def test_component_fit(X_y):
     X, y = X_y
 
-    class Mock_Estimator():
+    class MockEstimator():
         def fit(self, X, y):
             pass
 
         def predict(self, X):
             pass
 
-    class Mock_Component(Estimator):
+    class MockComponent(Estimator):
         name = 'Mock Estimator'
         component_type = ComponentTypes.CLASSIFIER
         _needs_fitting = True
@@ -133,10 +133,10 @@ def test_component_fit(X_y):
 
         def __init__(self):
             parameters = {}
-            est = Mock_Estimator()
+            est = MockEstimator()
             super().__init__(parameters=parameters,
                              component_obj=est,
                              random_state=0)
 
-    est = Mock_Component()
+    est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
