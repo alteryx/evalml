@@ -22,7 +22,7 @@ class XGBoostPipeline(PipelineBase):
         "eta": Real(0, 1),
         "min_child_weight": Real(1, 10),
         "max_depth": Integer(1, 20),
-        "n_estimators": Integer(1, 100),
+        "n_estimators": Integer(1, 1000),
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1),
     }
