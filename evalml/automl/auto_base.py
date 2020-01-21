@@ -6,6 +6,7 @@ from sys import stdout
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from threading import Thread, Event
 
 from .pipeline_search_plots import PipelineSearchPlots
 
@@ -14,7 +15,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds
+from evalml.utils import Logger, convert_to_seconds, sigint_handler
 
 
 class AutoBase:
@@ -109,6 +110,11 @@ class AutoBase:
 
             self
         """
+        def search_loop(stop_event, self, start, X, y, pbar, raise_errors, plot, desc):
+            while not stop_event.is_set() and self._check_stopping_condition(start):
+                self._do_iteration(X, y, pbar, raise_errors)
+                plot.update()
+
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot is True:
             try:
@@ -160,11 +166,19 @@ class AutoBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
 
+        start = 0
+        desc = ''
+        stop_event = Event()
+        t = Thread(target=search_loop, args=[stop_event, self, start, X, y, pbar, raise_errors, plot, desc])
+        sigint_handler.setup_signal(stop_event)
         start = time.time()
-        while self._check_stopping_condition(start):
-            self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
-        desc = u"✔ Optimization finished"
+        t.start()
+        t.join()
+        sigint_handler.remove_signal()
+        if stop_event.is_set():
+            desc = u"Optimization terminated early"
+        else:
+            desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
