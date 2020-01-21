@@ -9,6 +9,7 @@ import pkg_resources
 
 import evalml
 
+# todo: check if these are accurate and up to dte
 deps = ["numpy", "pandas", "tqdm", "toolz", "cloudpickle",
         "future", "dask", "distributed", "psutil", "Click",
         "scikit-learn", "pip", "setuptools"]
@@ -21,9 +22,9 @@ def show_info():
 
 def print_info():
     print("EvalML version: %s" % evalml.__version__)
-    # print("EvalML installation directory: %s" % get_evalml_root())
-    # print_sys_info()
-    # print_deps(deps)
+    print("EvalML installation directory: %s" % get_evalml_root())
+    print_sys_info()
+    print_deps(deps)
 
 
 def print_sys_info():
