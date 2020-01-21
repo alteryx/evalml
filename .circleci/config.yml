@@ -94,7 +94,7 @@ jobs:
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
-              python -m pip install -r test-requirements.txt
+              python -m pip install -r dev-requirements.txt
       - run:
           name: Run Unit Tests
           command: |
@@ -173,40 +173,40 @@ workflows:
     jobs:
         - win_unit_tests:
             name: "windows python 3.5 unit tests"
-            python_version: "3.5"
-            filters:
-              branches:
-                only: master
-        - win_unit_tests:
-            name: "windows python 3.6 unit tests"
-            python_version: "3.6"
-            filters:
-              branches:
-                only: master
-        - win_unit_tests:
-            name: "windows python 3.7 unit tests"
-            python_version: "3.7"
-            filters:
-              branches:
-                only: master
-  test_all_python_versions:
-    jobs:
-        - lint_test:
-            name: "python 3.5 lint test"
-            python_version: "3.5"
-        - lint_test:
-            name: "python 3.6 lint test"
-            python_version: "3.6"
-        - lint_test:
-            name: "python 3.7 lint test"
-            python_version: "3.7"
-        - unit_tests:
-            name: "linux python 3.5 unit tests"
-            python_version: "3.5"
-        - unit_tests:
-            name: "linux python 3.6 unit tests"
-            python_version: "3.6"
-        - unit_tests:
-            name: "linux python 3.7 unit tests"
-            python_version: "3.7"
-            codecov: true
+            # python_version: "3.5"
+            # filters:
+            #   branches:
+            #     only: master
+        # - win_unit_tests:
+        #     name: "windows python 3.6 unit tests"
+        #     python_version: "3.6"
+        #     # filters:
+        #     #   branches:
+        #     #     only: master
+        # - win_unit_tests:
+        #     name: "windows python 3.7 unit tests"
+        #     python_version: "3.7"
+        #     # filters:
+        #     #   branches:
+        #     #     only: master
+  # test_all_python_versions:
+  #   jobs:
+  #       - lint_test:
+  #           name: "python 3.5 lint test"
+  #           python_version: "3.5"
+  #       - lint_test:
+  #           name: "python 3.6 lint test"
+  #           python_version: "3.6"
+  #       - lint_test:
+  #           name: "python 3.7 lint test"
+  #           python_version: "3.7"
+  #       - unit_tests:
+  #           name: "linux python 3.5 unit tests"
+  #           python_version: "3.5"
+  #       - unit_tests:
+  #           name: "linux python 3.6 unit tests"
+  #           python_version: "3.6"
+  #       - unit_tests:
+  #           name: "linux python 3.7 unit tests"
+  #           python_version: "3.7"
+  #           codecov: true
