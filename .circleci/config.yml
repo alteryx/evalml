@@ -94,7 +94,7 @@ jobs:
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
-              pip install xgboost-0.6-cp35-cp35m-win_amd64.whl
+              python -m pip install scikit-learn
               python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
