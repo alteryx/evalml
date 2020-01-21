@@ -94,7 +94,8 @@ jobs:
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
-              python -m pip install -r dev-requirements.txt
+              pip install xgboost-0.6-cp35-cp35m-win_amd64.whl
+              python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
           command: |
@@ -171,15 +172,15 @@ workflows:
           name: "build docs"
   windows_test_all_python_versions:
     jobs:
-        - win_unit_tests:
-            name: "windows python 3.5 unit tests"
-            # python_version: "3.5"
+        # - win_unit_tests:
+        #     name: "windows python 3.5 unit tests"
+        #     python_version: "3.5"
             # filters:
             #   branches:
             #     only: master
-        # - win_unit_tests:
-        #     name: "windows python 3.6 unit tests"
-        #     python_version: "3.6"
+        - win_unit_tests:
+            name: "windows python 3.6 unit tests"
+            python_version: "3.6"
         #     # filters:
         #     #   branches:
         #     #     only: master
