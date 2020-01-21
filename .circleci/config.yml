@@ -88,13 +88,18 @@ jobs:
               conda activate curr_py
               conda install python-graphviz -q -y
       - run:
+          name: Install XGBoost
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda install -c anaconda py-xgboost
+      - run:
           name: Install EvalML
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
-              python -m pip install -r requirements.txt
               python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
