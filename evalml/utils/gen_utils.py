@@ -1,7 +1,7 @@
 def convert_to_seconds(input_str):
-    hours = {'h', 'hour', 'hr'}
-    minutes = {'m', 'minute', 'min'}
-    seconds = {'s', 'second', 'sec'}
+    hours = {'h', 'hr', 'hour', 'hours'}
+    minutes = {'m', 'min', 'minute', 'minutes'}
+    seconds = {'s', 'sec', 'second', 'seconds'}
     value, unit = input_str.split()
     if unit[-1] == 's' and len(unit) != 1:
         unit = unit[:-1]
