@@ -1,19 +1,19 @@
 import pytest
 
-from evalml import AutoRegressor
+from evalml import AutoRegressionSearch
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
 def test_autoreg_random_search_tuner(X_y):
     X, y = X_y
-    clf = AutoRegressor(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
-    clf.fit(X, y)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
+    clf.search(X, y)
 
 
 def test_autoreg_random_search_tuner_no_params(X_y, capsys):
     X, y = X_y
-    clf = AutoRegressor(objective="R2", max_pipelines=20, model_types=['linear_model'], tuner=RandomSearchTuner)
-    clf.fit(X, y)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, model_types=['linear_model'], tuner=RandomSearchTuner)
+    clf.search(X, y)
     error_text = "✘ Cannot create a unique set of unexplored parameters. Try expanding the search space."
     out, __ = capsys.readouterr()
     assert error_text in out
