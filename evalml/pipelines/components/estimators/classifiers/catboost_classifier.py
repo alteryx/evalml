@@ -14,7 +14,10 @@ from evalml.utils import import_or_raise
 
 class CatBoostClassifier(Estimator):
     """
-    CatBoost Classifier
+    CatBoost Classifier, a classifier that uses gradient-boosting on decision trees.
+    CatBoost is an open-source library and natively supports categorical features.
+
+    For more information, check out https://catboost.ai/
     """
     name = "CatBoost Classifier"
     component_type = ComponentTypes.CLASSIFIER

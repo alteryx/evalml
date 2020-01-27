@@ -7,7 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class CatBoostClassificationPipeline(PipelineBase):
-    """CatBoost Pipeline for both binary and multiclass classification"""
+    """
+    CatBoost Pipeline for both binary and multiclass classification.
+    CatBoost is an open-source library and natively supports categorical features.
+
+    For more information, check out https://catboost.ai/
+    """
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -22,7 +27,9 @@ class CatBoostClassificationPipeline(PipelineBase):
         # note: impute_strategy must support both string and numeric data
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         estimator = CatBoostClassifier(n_estimators=n_estimators,
-                                       eta=eta, max_depth=max_depth)
+                                       eta=eta,
+                                       max_depth=max_depth,
+                                       random_state=random_state)
         super().__init__(objective=objective,
                          component_list=[imputer, estimator],
                          n_jobs=1,
