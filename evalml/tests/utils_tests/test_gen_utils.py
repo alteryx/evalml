@@ -1,6 +1,6 @@
 import pytest
 
-from evalml.utils.gen_utils import import_or_raise, convert_to_seconds
+from evalml.utils.gen_utils import convert_to_seconds, import_or_raise
 
 
 def test_import_or_raise_errors():
