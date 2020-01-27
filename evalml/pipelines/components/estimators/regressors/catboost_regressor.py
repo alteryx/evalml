@@ -11,7 +11,10 @@ from evalml.utils import import_or_raise
 
 class CatBoostRegressor(Estimator):
     """
-    CatBoost Regressor
+    CatBoost Regressor, a regressor that uses gradient-boosting on decision trees.
+    CatBoost is an open-source library and natively supports categorical features.
+
+    For more information, check out https://catboost.ai/
     """
     name = "CatBoost Regressor"
     component_type = ComponentTypes.REGRESSOR
@@ -19,23 +22,26 @@ class CatBoostRegressor(Estimator):
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 16)
+        "max_depth": Integer(1, 16),
+        "bootstrap_type": ["Bayesian", "Bernoulli"]
     }
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, random_state=0):
+    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type="Bayesian", random_state=0):
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
-                      "max_depth": max_depth}
+                      "max_depth": max_depth,
+                      "bootstrap_type": bootstrap_type}
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         cb_regressor = catboost.CatBoostRegressor(n_estimators=n_estimators,
                                                   eta=eta,
                                                   max_depth=max_depth,
-                                                  silent=True,
+                                                  bootstrap_type=bootstrap_type,
                                                   random_state=random_state,
+                                                  silent=True,
                                                   allow_writing_files=False)
         super().__init__(parameters=parameters,
                          component_obj=cb_regressor,

@@ -25,15 +25,17 @@ class CatBoostClassifier(Estimator):
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 16)
+        "max_depth": Integer(1, 16),
+        "bootstrap_type": ["Bayesian", "Bernoulli"]
     }
     model_type = ModelTypes.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, random_state=0):
+    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type="Bayesian", random_state=0):
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
-                      "max_depth": max_depth}
+                      "max_depth": max_depth,
+                      "bootstrap_type": bootstrap_type}
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
@@ -41,8 +43,9 @@ class CatBoostClassifier(Estimator):
         cb_classifier = catboost.CatBoostClassifier(n_estimators=n_estimators,
                                                     eta=eta,
                                                     max_depth=max_depth,
-                                                    silent=True,
                                                     random_state=random_state,
+                                                    bootstrap_type=bootstrap_type,
+                                                    silent=True,
                                                     allow_writing_files=False)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
