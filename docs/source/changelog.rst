@@ -8,8 +8,11 @@ Changelog
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
+        * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
     * Documentation Changes
     * Testing Changes
+        * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
+
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
@@ -35,15 +38,15 @@ Changelog
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
-        
+
 .. warning::
 
     **Breaking Changes**
 
-    * The ``fit()`` method for ``AutoClassifier`` and ``AutoRegressor`` has been renamed to ``search()``. 
+    * The ``fit()`` method for ``AutoClassifier`` and ``AutoRegressor`` has been renamed to ``search()``.
     * ``AutoClassifier`` has been renamed to ``AutoClassificationSearch``
     * ``AutoRegressor`` has been renamed to ``AutoRegressionSearch``
-    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas,``search_order`` returns a list of the search order in terms of pipeline id. 
+    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas,``search_order`` returns a list of the search order in terms of pipeline id.
     * Pipelines now require an estimator as the last component in `component_list`. Slicing pipelines now throws an NotImplementedError to avoid returning Pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**

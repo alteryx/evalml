@@ -16,9 +16,9 @@ def test_xg_init(X_y):
 
     objective = PrecisionMicro()
     clf = XGBoostPipeline(objective=objective, eta=0.2, min_child_weight=3, max_depth=5, impute_strategy='median',
-                          percent_features=1.0, number_features=len(X[0]), random_state=1)
+                          percent_features=1.0, number_features=len(X[0]), n_estimators=10, random_state=1)
     expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
-                           'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3}
+                           'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3, 'n_estimators': 10}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 1
 
@@ -32,7 +32,8 @@ def test_xg_multi(X_y_multi):
     estimator = xgb.XGBClassifier(random_state=0,
                                   eta=0.1,
                                   max_depth=3,
-                                  min_child_weight=1)
+                                  min_child_weight=1,
+                                  n_estimators=10)
     rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
@@ -45,7 +46,7 @@ def test_xg_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), n_estimators=10)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -63,7 +64,7 @@ def test_xg_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns), n_estimators=10)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
