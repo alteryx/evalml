@@ -11,7 +11,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
-
+        * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
