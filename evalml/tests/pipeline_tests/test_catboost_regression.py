@@ -20,7 +20,7 @@ def test_catboost_regression(X_y_reg):
     X, y = X_y_reg
 
     imputer = SimpleImputer(strategy='mean')
-    estimator = CBRegressor(n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
+    estimator = CBRegressor(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', random_state=0)
     sk_pipeline = Pipeline([("imputer", imputer),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
