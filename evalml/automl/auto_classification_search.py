@@ -25,6 +25,7 @@ class AutoClassificationSearch(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
+                 parallel=False,
                  verbose=True):
         """Automated classifier pipeline search
 
@@ -99,6 +100,7 @@ class AutoClassificationSearch(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
+            parallel=parallel,
             verbose=verbose
         )
 

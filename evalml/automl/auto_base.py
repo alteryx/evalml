@@ -5,6 +5,7 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
+from dask.distributed import Client, LocalCluster
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -24,7 +25,7 @@ class AutoBase:
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, verbose):
+                 add_result_callback, additional_objectives, random_state, parallel, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
@@ -88,6 +89,7 @@ class AutoBase:
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
+        self.parallel = parallel
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -152,22 +154,94 @@ class AutoBase:
                 self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+        start = time.time()
+        if self.parallel:
+            # TODO: scattering
+            # TODO: more than one batch
+            # TODO: manage works and `n_jobs`
+            # TODO: how to properly close? close dashboard?
 
-        if self.max_pipelines is None:
-            pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
-            pbar._instances.clear()
+            client = Client(LocalCluster(n_workers=5))
+            self.max_pipelines = 5
+
+            # train 5 pipelines in parallel
+            pipelines = self._batch_select_pipelines(5)
+            _scores = client.map(self._train_pipeline, pipelines, X=X, y=y, raise_errors=raise_errors)
+            scores = client.gather(_scores)
+            for score in scores:
+                self._add_result(**score)
+            client.close()
         else:
-            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
-            pbar._instances.clear()
+            if self.max_pipelines is None:
+                pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
+                pbar._instances.clear()
+            else:
+                pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
+                pbar._instances.clear()
+            while self._check_stopping_condition(start):
+                self._do_iteration(X, y, pbar, raise_errors)
+                plot.update()
+            desc = u"✔ Optimization finished"
+            desc = desc.ljust(self._MAX_NAME_LEN)
+            pbar.set_description_str(desc=desc, refresh=True)
+            pbar.close()
+            print('\n')
+
+        print("Finished optimization in {}.".format(time.time() - start))
+
+    def _batch_select_pipelines(self, num_pipelines):
+        pipelines = []
+        for _ in range(num_pipelines):
+            pipelines.append(self._select_pipeline())
+        return pipelines
+
+    def _train_pipeline(self, pipeline, X, y, raise_errors):
+        # propose the next best parameters for this piepline
+        parameters = self._propose_parameters(pipeline)
+        pipeline = pipeline(
+            objective=self.objective,
+            random_state=self.random_state,
+            n_jobs=1,
+            number_features=X.shape[1],
+            **dict(parameters)
+        )
 
         start = time.time()
-        while self._check_stopping_condition(start):
-            self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
-        desc = u"✔ Optimization finished"
-        desc = desc.ljust(self._MAX_NAME_LEN)
-        pbar.set_description_str(desc=desc, refresh=True)
-        pbar.close()
+        cv_data = []
+
+        for train, test in self.cv.split(X, y):
+            if isinstance(X, pd.DataFrame):
+                X_train, X_test = X.iloc[train], X.iloc[test]
+            else:
+                X_train, X_test = X[train], X[test]
+            if isinstance(y, pd.Series):
+                y_train, y_test = y.iloc[train], y.iloc[test]
+            else:
+                y_train, y_test = y[train], y[test]
+
+            try:
+                pipeline.fit(X_train, y_train)
+                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+            except Exception as e:
+                if raise_errors:
+                    raise e
+                score = np.nan
+                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+            ordered_scores = OrderedDict()
+            ordered_scores.update({self.objective.name: score})
+            ordered_scores.update(other_scores)
+            ordered_scores.update({"# Training": len(y_train)})
+            ordered_scores.update({"# Testing": len(y_test)})
+            cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+
+        training_time = time.time() - start
+
+        return {
+            'trained_pipeline': pipeline,
+            'parameters': parameters,
+            'training_time': training_time,
+            'cv_data': cv_data
+        }
 
     def _check_stopping_condition(self, start):
         should_continue = True
