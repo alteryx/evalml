@@ -11,8 +11,8 @@ from evalml.pipelines import CatBoostClassificationPipeline
 def test_catboost_init():
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000,
-                                         eta=0.03, number_features=0, max_depth=6)
-    expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6}
+                                         bootstrap_type='Bayesian', eta=0.03, number_features=0, max_depth=6)
+    expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6, 'boostrap_type': 'Bayesian'}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 0
 
@@ -28,7 +28,7 @@ def test_catboost_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000,
+    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
                                          number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
@@ -59,7 +59,8 @@ def test_catboost_input_feature_names(X_y):
 def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     objective = PrecisionMicro()
-    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent', number_features=len(X.columns),
+    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent',
+                                         number_features=len(X.columns), bootstrap_type='Bayesian',
                                          n_estimators=1000, eta=0.03, max_depth=6)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
