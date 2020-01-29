@@ -21,7 +21,7 @@ def test_catboost_multi(X_y_multi):
     X, y = X_y_multi
 
     imputer = SimpleImputer(strategy='mean')
-    estimator = CBClassifier(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', random_state=0)
+    estimator = CBClassifier(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_state=0)
     sk_pipeline = Pipeline([("imputer", imputer),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
