@@ -52,7 +52,7 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        cat_cols = X.select_dtypes(['category'])
+        cat_cols = X.select_dtypes(['category', 'object'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
