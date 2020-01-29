@@ -12,7 +12,6 @@ class LeadScoring(ObjectiveBase):
 
     needs_fitting = True
     greater_is_better = True
-    fit_needs_proba = True
     score_needs_proba = False
     name = "Lead Scoring"
 
