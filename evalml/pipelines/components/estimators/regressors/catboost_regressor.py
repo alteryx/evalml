@@ -1,5 +1,3 @@
-import shutil
-
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
