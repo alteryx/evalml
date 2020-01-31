@@ -161,6 +161,25 @@ jobs:
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
+  dependencies_updated_linux:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      python_version: << parameters.python_version >>
+    steps:
+      - checkout
+      - install_dependencies
+      - run:
+        name: Detect Dependency Changes
+        command: |
+          mkdir /tmp/dependencies_updated_artifacts
+          pip freeze > /tmp/dependencies_updated_artifacts/current_dependencies.txt
+          diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/diff.txt
+      - store_artifacts:
+        path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
