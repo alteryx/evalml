@@ -6,7 +6,6 @@ from evalml.problem_types import handle_problem_types
 class ObjectiveBase:
     needs_fitting = False
     greater_is_better = True
-    fit_needs_proba = True
     score_needs_proba = False
     uses_extra_columns = False
     problem_types = []
