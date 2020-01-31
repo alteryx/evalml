@@ -186,7 +186,7 @@ jobs:
             cat /tmp/dependencies_updated_artifacts/diff.txt
           when: on_fail
       - store_artifacts:
-        path: /tmp/dependencies_updated_artifacts
+          path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
