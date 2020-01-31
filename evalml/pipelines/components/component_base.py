@@ -25,7 +25,8 @@ class ComponentBase:
             self
         """
         try:
-            return self._component_obj.fit(X, y)
+            self._component_obj.fit(X, y)
+            return self
         except AttributeError:
             raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
 
