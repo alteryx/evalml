@@ -179,7 +179,7 @@ jobs:
           pip freeze > /tmp/dependencies_updated_artifacts/current_dependencies.txt
           diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
           exit $?
-      - run
+      - run:
         name: "Display Dependency Diff"
         command: |
           echo Displaying dependencies which have changed, with master on the left and the new branch on the right:
