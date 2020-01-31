@@ -242,3 +242,6 @@ workflows:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
             codecov: true
+        - dependencies_updated_linux:
+            name: "linux python 3.7 dependencies update"
+            python_version: "3.7"
