@@ -161,7 +161,7 @@ jobs:
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
-  dependencies_updated_linux:
+  check_dependencies_updated_linux:
     parameters:
       python_version:
         type: string
@@ -221,10 +221,10 @@ workflows:
             filters:
               branches:
                 only: master
-  dependencies_updated_linux:
+  check_dependencies_updated_linux:
     jobs:
-        - dependencies_updated_linux:
-            name: "linux python 3.7 dependencies update"
+        - check_dependencies_updated_linux:
+            name: "linux python 3.7 check dependencies for updates"
             python_version: "3.7"
             filters:
               branches:
