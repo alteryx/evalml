@@ -25,6 +25,7 @@ Changelog
         * Lower botocore requirement :pr:`235`
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
         * Fixed return value of Recall metrics :pr:`264`
+        * Components return `self` on fit :pr:`289`
     * Changes
         * Renamed automl classes to AutoRegressionSearch and AutoClassificationSearch :pr:`287`
         * Updating demo datasets to retain column names :pr:`223`
