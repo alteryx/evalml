@@ -21,10 +21,10 @@ import evalml.utils
 import evalml.guardrails
 
 from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
-from evalml.models import AutoClassifier, AutoRegressor
+from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.5.2'
+__version__ = '0.6.0'

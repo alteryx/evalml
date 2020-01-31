@@ -5,7 +5,19 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added basic correlation guardrail :pr:`141`
+    * Fixes
+        * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
+    * Changes
+        * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
+    * Documentation Changes
+    * Testing Changes
+        * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
+        * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
+
+**v0.6.0 Dec. 16, 2019**
+    * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`
+        * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
         * Enhanced AutoML results with search order :pr:`260`
     * Fixes
@@ -13,22 +25,29 @@ Changelog
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
         * Fixed return value of Recall metrics :pr:`264`
     * Changes
+        * Renamed automl classes to AutoRegressionSearch and AutoClassificationSearch :pr:`287`
         * Updating demo datasets to retain column names :pr:`223`
         * Moving pipeline visualization to PipelinePlots class :pr:`228`
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
+        * Enforcing that pipelines must have an estimator as last component :pr:`277`
+        * Added ipywidgets as a dependency in requirements.txt :pr:`278`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
-        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257` 
+        * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257`
         * Adding Linear Regression to API reference and cleaning up some Sphinx warnings :pr:`227`
     * Testing Changes
         * Added support for testing on Windows with CircleCI :pr:`226`
         * Added support for doctests :pr:`233`
-        
-**Breaking Changes**
-    *   `AutoClassifier.results` and `AutoRegressor.results` now is a dictionary
-        with `pipeline_results` and `search_order` keys. `pipeline_results` can be used
-        to access a dictionary that is identical to the old `.results` dictionary. Whereas,
-        `search_order` returns a list of the search order in terms of pipeline id. 
+
+.. warning::
+
+    **Breaking Changes**
+
+    * The ``fit()`` method for ``AutoClassifier`` and ``AutoRegressor`` has been renamed to ``search()``.
+    * ``AutoClassifier`` has been renamed to ``AutoClassificationSearch``
+    * ``AutoRegressor`` has been renamed to ``AutoRegressionSearch``
+    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas,``search_order`` returns a list of the search order in terms of pipeline id.
+    * Pipelines now require an estimator as the last component in `component_list`. Slicing pipelines now throws an NotImplementedError to avoid returning Pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
@@ -66,6 +85,7 @@ Changelog
         * Added support for other units in max_time :pr:`125`
         * Detect highly null columns :pr:`121`
         * Added additional regression objectives :pr:`100`
+        * Show an interactive iteration vs. score plot when using fit() :pr:`134`
     * Fixes
         * Reordered `describe_pipeline` :pr:`94`
         * Added type check for model_type :pr:`109`
