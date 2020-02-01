@@ -285,5 +285,3 @@ def detect_id_columns(X, threshold=1.0):
 
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
     return id_cols_above_threshold
-
-
