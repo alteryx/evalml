@@ -9,6 +9,7 @@ Changelog
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
+        * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
     * Documentation Changes
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
