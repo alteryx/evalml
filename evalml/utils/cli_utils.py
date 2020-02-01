@@ -9,9 +9,9 @@ import pkg_resources
 
 import evalml
 
-# todo: check if these are accurate and up to dte
+# TODO: check if these are accurate and up to date for EVALML
 deps = ["numpy", "pandas", "tqdm", "toolz", "cloudpickle",
-        "future", "dask", "distributed", "psutil", "Click",
+        "dask", "distributed", "psutil", "Click",
         "scikit-learn", "pip", "setuptools"]
 
 
