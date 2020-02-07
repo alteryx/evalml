@@ -165,10 +165,7 @@ class PipelineBase:
         self._fit(X, y)
 
         if self.objective.needs_fitting:
-            if self.objective.fit_needs_proba:
-                y_predicted = self.predict_proba(X_objective)
-            else:
-                y_predicted = self.predict(X_objective)
+            y_predicted = self.predict_proba(X_objective)
 
             if self.objective.uses_extra_columns:
                 self.objective.fit(y_predicted, y_objective, X_objective)
@@ -191,11 +188,7 @@ class PipelineBase:
         X_t = self._transform(X)
 
         if self.objective and self.objective.needs_fitting:
-            if self.objective.fit_needs_proba:
-                y_predicted = self.predict_proba(X)
-            else:
-                X_t = self._transform(X)
-                y_predicted = self.estimator.predict(X_t)
+            y_predicted = self.predict_proba(X)
 
             if self.objective.uses_extra_columns:
                 return self.objective.predict(y_predicted, X)
