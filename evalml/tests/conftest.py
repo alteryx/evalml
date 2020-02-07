@@ -2,8 +2,6 @@ import pandas as pd
 import pytest
 from sklearn import datasets
 
-from evalml.utils import import_or_raise
-
 
 @pytest.fixture
 def X_y():
@@ -44,9 +42,3 @@ def X_y_categorical_classification():
     y = titanic['Survived']
     X = titanic.drop('Survived', axis=1)
     return X, y
-
-
-@pytest.fixture
-def xgb():
-    xgb = import_or_raise("xgboost")
-    return xgb

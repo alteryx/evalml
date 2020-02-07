@@ -10,11 +10,11 @@ from evalml.pipelines import CatBoostClassificationPipeline
 
 def test_catboost_init():
     objective = PrecisionMicro()
-    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000,
-                                         bootstrap_type='Bayesian', eta=0.03, number_features=0, max_depth=6, random_state=0)
-    expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6, 'bootstrap_type': 'Bayesian'}
+    clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=500,
+                                         bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2)
+    expected_parameters = {'impute_strategy': 'most_frequent', 'eta': 0.1, 'n_estimators': 500, 'max_depth': 3, 'bootstrap_type': 'Bernoulli'}
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 0
+    assert clf.random_state == 2
 
 
 def test_catboost_multi(X_y_multi):

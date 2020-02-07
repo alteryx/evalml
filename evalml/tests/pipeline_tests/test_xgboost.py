@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
+from evalml.utils import import_or_raise
 
 
 def test_xg_init(X_y):
@@ -22,9 +23,10 @@ def test_xg_init(X_y):
     assert clf.random_state == 1
 
 
-def test_xg_multi(X_y_multi, xgb):
+def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
+    xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
     estimator = xgb.XGBClassifier(random_state=0,
