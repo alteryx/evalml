@@ -1,8 +1,12 @@
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
+from evalml.problem_types import ProblemTypes
 from evalml.utils import Logger
+
 logger = Logger()
+
 
 def detect_label_leakage(X, y, threshold=.95):
     """Check if any of the features are highly correlated with the target.
@@ -151,6 +155,7 @@ def detect_id_columns(X, threshold=1.0):
 
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
     return id_cols_above_threshold
+
 
 def enforce_labels_as_integers(y, supported_problem_types):
     """

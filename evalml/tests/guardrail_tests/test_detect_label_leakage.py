@@ -18,6 +18,7 @@ def test_detect_label_leakage():
 
     assert set(["a", "b", "c", "d"]) == set(result.keys())
 
+
 def test_invalid_target_dtype():
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
@@ -31,4 +32,3 @@ def test_invalid_target_dtype():
 
     result = detect_label_leakage(X, y)
     assert set() == set(result.keys())
-
