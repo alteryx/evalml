@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
+from evalml.utils import Logger
+logger = Logger()
 
 def detect_label_leakage(X, y, threshold=.95):
     """Check if any of the features are highly correlated with the target.
@@ -148,3 +150,23 @@ def detect_id_columns(X, threshold=1.0):
 
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
     return id_cols_above_threshold
+
+def enforce_labels_as_integers(labels, supported_problem_types):
+    """
+    Given input data labels, return a copy ensuring they have been converted to integers.
+    Side effect: set the unique label strings used to convert predictions back to their string values, if necessary.
+
+    Args:
+        y (pd.Series) : the input data labels, which could be represented as either integers or strings
+    Returns:
+        pd.Series : a version of the input data labels, converted if necessary to unique integers ranging from 0 to n - 1
+    """
+    if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
+        return labels
+    label_ids, unique_label_strings = pd.factorize(labels)
+    if supported_problem_types == [ProblemTypes.BINARY] and len(unique_label_strings) > 2:
+        raise RuntimeError('Found {} unique target labels, but problem type is binary classification'
+                           .format(len(unique_label_strings)))
+    if supported_problem_types == [ProblemTypes.MULTICLASS] and len(unique_label_strings) < 3:
+        logger.log('Warning: found {} unique target labels, but problem type is multiclass'.format(len(unique_label_strings)))
+    return pd.Series(label_ids), unique_label_strings

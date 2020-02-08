@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
+from evalml.guardrails import enforce_labels_as_integers
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
 from evalml.utils import Logger
@@ -163,7 +164,7 @@ class PipelineBase:
             y = pd.Series(y)
 
         if ProblemTypes.REGRESSION not in self.objective.problem_types:
-            y = self._enforce_labels_as_integers(y)
+            y, self._unique_label_strings = enforce_labels_as_integers(y, self.objective.problem_types)
 
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
@@ -178,27 +179,6 @@ class PipelineBase:
             else:
                 self.objective.fit(y_predicted, y_objective)
         return self
-
-    def _enforce_labels_as_integers(self, labels):
-        """
-        Given input data labels, return a copy ensuring they have been converted to integers.
-        Side effect: set the unique label strings used to convert predictions back to their string values, if necessary.
-
-        Args:
-            y (pd.Series) : the input data labels, which could be represented as either integers or strings
-        Returns:
-            pd.Series : a version of the input data labels, converted if necessary to unique integers ranging from 0 to n - 1
-        """
-        if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
-            return labels
-        label_ids, unique_label_strings = pd.factorize(labels)
-        if self.objective.problem_types == [ProblemTypes.BINARY] and len(unique_label_strings) > 2:
-            raise RuntimeError('Found {} unique target labels, but problem type is binary classification'
-                               .format(len(unique_label_strings)))
-        if self.objective.problem_types == [ProblemTypes.MULTICLASS] and len(unique_label_strings) < 3:
-            self.logger.log('Warning: found {} unique target labels, but problem type is multiclass'.format(len(unique_label_strings)))
-        self._unique_label_strings = unique_label_strings
-        return pd.Series(label_ids)
 
     def _predict(self, X):
         """Make predictions using selected features.
