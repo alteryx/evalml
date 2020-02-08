@@ -31,7 +31,8 @@ def detect_label_leakage(X, y, threshold=.95):
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
     X = X.select_dtypes(include=numerics)
-
+    if y.dtype not in numerics:
+        return {}
     if len(X.columns) == 0:
         return {}
 
@@ -151,9 +152,9 @@ def detect_id_columns(X, threshold=1.0):
     id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= threshold}
     return id_cols_above_threshold
 
-def enforce_labels_as_integers(labels, supported_problem_types):
+def enforce_labels_as_integers(y, supported_problem_types):
     """
-    Given input data labels, return a copy ensuring they have been converted to integers.
+    Given input data labels in y, return a copy ensuring they have been converted to integers.
     Side effect: set the unique label strings used to convert predictions back to their string values, if necessary.
 
     Args:
@@ -161,9 +162,9 @@ def enforce_labels_as_integers(labels, supported_problem_types):
     Returns:
         pd.Series : a version of the input data labels, converted if necessary to unique integers ranging from 0 to n - 1
     """
-    if labels.dtype != np.object or not labels.apply(lambda el: isinstance(el, str)).all():
-        return labels
-    label_ids, unique_label_strings = pd.factorize(labels)
+    if y.dtype != np.object or not y.apply(lambda el: isinstance(el, str)).all():
+        return y
+    label_ids, unique_label_strings = pd.factorize(y)
     if supported_problem_types == [ProblemTypes.BINARY] and len(unique_label_strings) > 2:
         raise RuntimeError('Found {} unique target labels, but problem type is binary classification'
                            .format(len(unique_label_strings)))
