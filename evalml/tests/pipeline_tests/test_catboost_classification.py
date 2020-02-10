@@ -60,8 +60,7 @@ def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent',
-                                         number_features=len(X.columns), bootstrap_type='Bayesian',
-                                         n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
+                                         number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
