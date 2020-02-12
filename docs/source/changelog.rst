@@ -12,6 +12,7 @@ Changelog
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
     * Documentation Changes
+        * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
