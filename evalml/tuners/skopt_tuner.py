@@ -30,7 +30,8 @@ class SKOptTuner(Tuner):
             None
         """
         # skip adding nan scores
-        if pd.isnull(score): return
+        if pd.isnull(score):
+            return
         self.opt.tell(list(parameters), score)
 
     def propose(self):

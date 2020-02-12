@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pytest
 import numpy as np
+import pytest
 from skopt.space import Integer, Real
 
-from evalml.tuners.tuner import Tuner
 from evalml.tuners.skopt_tuner import SKOptTuner
+from evalml.tuners.tuner import Tuner
 
 
 def assert_params_almost_equal(a, b, decimal=7):
     """Given two sets of numeric/str parameter lists, assert numerics are approx equal and strs are equal"""
     def separate_numeric_and_str(values):
-        is_numeric = lambda val: isinstance(val, (int, float))
-        extract = lambda vals, invert: [el for el in vals if (invert ^ is_numeric(el))]
+        def is_numeric(val):
+            return isinstance(val, (int, float))
+
+        def extract(vals, invert):
+            return [el for el in vals if (invert ^ is_numeric(el))]
+
         return extract(values, False), extract(values, True)
     a_num, a_str = separate_numeric_and_str(a)
     b_num, b_str = separate_numeric_and_str(a)
@@ -24,6 +28,8 @@ def assert_params_almost_equal(a, b, decimal=7):
 @pytest.fixture
 def test_space():
     return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c']]
+
+
 @pytest.fixture
 def test_space_unicode():
     return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
@@ -31,7 +37,7 @@ def test_space_unicode():
 
 def test_tuner_base(test_space):
     with pytest.raises(TypeError):
-        tuner = Tuner(test_space)
+        tuner = Tuner(test_space)  # NOQA
 
 
 def test_skopt_tuner_basic(test_space, test_space_unicode):
@@ -67,7 +73,7 @@ def test_skopt_tuner_invalid_space():
     with pytest.raises(ValueError):
         tuner = SKOptTuner(((0, 1)))
     with pytest.raises(ValueError):
-        tuner = SKOptTuner([(0, 0)])
+        tuner = SKOptTuner([(0, 0)])  # NOQA
 
 
 def test_skopt_tuner_invalid_parameters_score(test_space):
