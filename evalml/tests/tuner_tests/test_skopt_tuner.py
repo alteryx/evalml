@@ -37,7 +37,7 @@ def test_space_unicode():
 
 def test_tuner_base(test_space):
     with pytest.raises(TypeError):
-        tuner = Tuner(test_space)  # NOQA
+        tuner = Tuner(test_space)  # NOQA: F841
 
 
 def test_skopt_tuner_basic(test_space, test_space_unicode):
@@ -73,7 +73,7 @@ def test_skopt_tuner_invalid_space():
     with pytest.raises(ValueError):
         tuner = SKOptTuner(((0, 1)))
     with pytest.raises(ValueError):
-        tuner = SKOptTuner([(0, 0)])  # NOQA
+        tuner = SKOptTuner([(0, 0)])  # NOQA: F841
 
 
 def test_skopt_tuner_invalid_parameters_score(test_space):
