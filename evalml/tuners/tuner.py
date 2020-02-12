@@ -1,24 +1,22 @@
-import pandas as pd
-from skopt import Optimizer
-
-from .tuner import Tuner
+from abc import ABC, abstractmethod
 
 
-class SKOptTuner(Tuner):
-    """Bayesian Optimizer"""
+class Tuner(ABC):
+    """Base Tuner class"""
 
     def __init__(self, space, random_state=0):
-        """ Init SkOptTuner
+        """Init Tuner
 
         Arguments:
             space (dict): search space for hyperparameters
             random_state (int): random state
 
         Returns:
-            SKoptTuner: self
+            Tuner: self
         """
-        self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
+        pass
 
+    @abstractmethod
     def add(self, parameters, score):
         """ Add score to sample
 
@@ -29,14 +27,13 @@ class SKOptTuner(Tuner):
         Returns:
             None
         """
-        # skip adding nan scores for
-        if not pd.isnull(score):
-            return self.opt.tell(list(parameters), score)
+        pass
 
+    @abstractmethod
     def propose(self):
         """ Returns hyperparameters based off search space and samples
 
         Returns:
             dict: proposed hyperparameters
         """
-        return self.opt.ask()
+        pass
