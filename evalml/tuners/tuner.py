@@ -14,7 +14,7 @@ class Tuner(ABC):
         Returns:
             Tuner: self
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def add(self, parameters, score):
@@ -27,7 +27,7 @@ class Tuner(ABC):
         Returns:
             None
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def propose(self):
@@ -36,4 +36,4 @@ class Tuner(ABC):
         Returns:
             dict: proposed hyperparameters
         """
-        pass
+        raise NotImplementedError
