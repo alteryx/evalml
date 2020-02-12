@@ -35,31 +35,34 @@ def test_space_unicode():
     return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
 
 
+random_state = 0
+
+
 def test_tuner_base(test_space):
     with pytest.raises(TypeError):
-        tuner = Tuner(test_space)  # NOQA: F841
+        Tuner(test_space)
 
 
 def test_skopt_tuner_basic(test_space, test_space_unicode):
-    tuner = SKOptTuner(test_space)
+    tuner = SKOptTuner(test_space, random_state=random_state)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c'])
     tuner.add(proposed_params, 0.5)
 
-    tuner = SKOptTuner(test_space_unicode)
+    tuner = SKOptTuner(test_space_unicode, random_state=random_state)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩'])
     tuner.add(proposed_params, 0.5)
 
 
 def test_skopt_tuner_space_types():
-    tuner = SKOptTuner([(0, 10)])
+    tuner = SKOptTuner([(0, 10)], random_state=random_state)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5.928446182250184])
     tuner.add(proposed_params, 0.5)
 
-    tuner = SKOptTuner([(0, 10.0)])
+    tuner = SKOptTuner([(0, 10.0)], random_state=random_state)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5.928446182250184])
     tuner.add(proposed_params, 0.5)
@@ -67,13 +70,13 @@ def test_skopt_tuner_space_types():
 
 def test_skopt_tuner_invalid_space():
     with pytest.raises(TypeError):
-        tuner = SKOptTuner(False)
+        SKOptTuner(False)
     with pytest.raises(ValueError):
-        tuner = SKOptTuner([(0)])
+        SKOptTuner([(0)])
     with pytest.raises(ValueError):
-        tuner = SKOptTuner(((0, 1)))
+        SKOptTuner(((0, 1)))
     with pytest.raises(ValueError):
-        tuner = SKOptTuner([(0, 0)])  # NOQA: F841
+        SKOptTuner([(0, 0)])
 
 
 def test_skopt_tuner_invalid_parameters_score(test_space):
@@ -103,3 +106,4 @@ def test_skopt_tuner_invalid_parameters_score(test_space):
     tuner.add([0, 1, 'option_a'], np.inf)
     tuner.add([0, 1, 'option_a'], None)
     tuner.propose()
+    print(random_state)
