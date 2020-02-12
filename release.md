@@ -39,7 +39,7 @@ Navigate to the root directory
 cd evalml
 ```
 
-If necessary, add a folder called "licenses" and put an `admin.json` file in that folder:
+If necessary, add a folder called "licenses" and create an `admin.json` file in that folder:
 ```json
 {
     "email": "admin@featurelabs.com"
@@ -51,7 +51,7 @@ Run
 flrelease upload-package --url install.featurelabs.com --license licenses/admin.json
 ```
 
-You can also run the following to 
+You can also run the following to release to specific users.
 * `flrelease build-package`
 * `flrelease upload-package <--url or --license> <install.featurelabs.com or licenses/user.json>`
 
