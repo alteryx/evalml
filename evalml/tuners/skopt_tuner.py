@@ -29,9 +29,9 @@ class SKOptTuner(Tuner):
         Returns:
             None
         """
-        # skip adding nan scores for
-        if not pd.isnull(score):
-            return self.opt.tell(list(parameters), score)
+        # skip adding nan scores
+        if pd.isnull(score): return
+        self.opt.tell(list(parameters), score)
 
     def propose(self):
         """ Returns hyperparameters based off search space and samples
