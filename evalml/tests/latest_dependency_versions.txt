@@ -24,7 +24,6 @@ defusedxml==0.6.0
 distributed==2.10.0
 docutils==0.15.2
 entrypoints==0.3
--e git+git@github.com:FeatureLabs/evalml.git@2a4e126645ee72133b1c372f5d8ed8a65631ec37#egg=evalml
 execnet==1.7.1
 flake8==3.7.0
 fsspec==0.6.2
