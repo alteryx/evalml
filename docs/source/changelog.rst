@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
+        * Remove extraneous parameter component_type from all components :pr:`361`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
