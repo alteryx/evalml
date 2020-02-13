@@ -62,4 +62,4 @@ def handle_component(component):
         else:
             raise ValueError("handle_component only takes in str or ComponentBase")
     except KeyError:
-        raise ValueError("Component {} has required parameters and string initialization is not supported".format(component))
+        raise ValueError("Component {} was not found".format(component))
