@@ -1,6 +1,19 @@
 import pytest
 
-from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components import (
+    ComponentBase,
+    Estimator,
+    LinearRegressor,
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    RandomForestClassifier,
+    RandomForestRegressor,
+    RFClassifierSelectFromModel,
+    SimpleImputer,
+    StandardScaler,
+    Transformer,
+    XGBoostClassifier
+)
 
 
 @pytest.fixture
@@ -36,6 +49,29 @@ def test_describe(test_classes):
     assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
     transformer = MockTransformer(params, None, random_state=0)
     assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
+
+
+def test_describe_component():
+    enc = OneHotEncoder()
+    imputer = SimpleImputer("mean")
+    scaler = StandardScaler()
+    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
+    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {}}
+    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
+    assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
+    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': 10}}
+
+    # testing estimators
+    lr_classifier = LogisticRegressionClassifier()
+    rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
+    xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
+    rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
+    linear_regressor = LinearRegressor()
+    assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
+    assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
 
 
 def test_missing_attributes(X_y):
