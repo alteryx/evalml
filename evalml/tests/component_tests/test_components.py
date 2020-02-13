@@ -8,12 +8,15 @@ def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         _needs_fitting = True
+
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         _needs_fitting = True
+
     class MockTransformer(Transformer):
         name = "Mock Transformer"
         _needs_fitting = False
+
     return MockComponent, MockEstimator, MockTransformer
 
 
