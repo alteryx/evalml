@@ -5,10 +5,10 @@ from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
+from evalml.utils import import_or_raise
 
 
 def test_xg_init(X_y):
@@ -26,13 +26,14 @@ def test_xg_init(X_y):
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
+    xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = XGBClassifier(random_state=0,
-                              eta=0.1,
-                              max_depth=3,
-                              min_child_weight=1,
-                              n_estimators=10)
+    estimator = xgb.XGBClassifier(random_state=0,
+                                  eta=0.1,
+                                  max_depth=3,
+                                  min_child_weight=1,
+                                  n_estimators=10)
     rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
@@ -67,4 +68,5 @@ def test_xg_input_feature_names(X_y):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
-    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
+    for col_name in clf.feature_importances["feature"]:
+        assert "col_" in col_name

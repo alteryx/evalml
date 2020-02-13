@@ -1,16 +1,27 @@
 import cloudpickle
 
 from .classification import (
+    CatBoostClassificationPipeline,
     LogisticRegressionPipeline,
     RFClassificationPipeline,
     XGBoostPipeline
 )
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
+from .regression import (
+    CatBoostRegressionPipeline,
+    LinearRegressionPipeline,
+    RFRegressionPipeline
+)
 
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
-ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
+ALL_PIPELINES = [RFClassificationPipeline,
+                 XGBoostPipeline,
+                 LogisticRegressionPipeline,
+                 LinearRegressionPipeline,
+                 RFRegressionPipeline,
+                 CatBoostClassificationPipeline,
+                 CatBoostRegressionPipeline]
 
 
 def get_pipelines(problem_type, model_types=None):

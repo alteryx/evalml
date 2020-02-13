@@ -21,7 +21,8 @@ class LinearRegressionPipeline(PipelineBase):
         'fit_intercept': [False, True]
     }
 
-    def __init__(self, objective, random_state, number_features, impute_strategy, normalize=False, fit_intercept=True, n_jobs=-1):
+    def __init__(self, objective, number_features, impute_strategy,
+                 normalize=False, fit_intercept=True, random_state=0, n_jobs=-1):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
