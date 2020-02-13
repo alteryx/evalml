@@ -119,7 +119,7 @@ def test_component_fit(X_y):
             pass
 
         def predict(self, X):
-            pass
+            raise NotImplementedError()
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
