@@ -3,36 +3,29 @@ import pytest
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 
 
-def test_init():
+@pytest.fixture
+def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         _needs_fitting = True
-    assert MockComponent({}, None, 0).name == "Mock Component"
-
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         _needs_fitting = True
-    assert MockEstimator({}, None, 0).name == "Mock Estimator"
-
     class MockTransformer(Transformer):
         name = "Mock Transformer"
         _needs_fitting = False
+    return MockComponent, MockEstimator, MockTransformer
+
+
+def test_init(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    assert MockComponent({}, None, 0).name == "Mock Component"
+    assert MockEstimator({}, None, 0).name == "Mock Estimator"
     assert MockTransformer({}, None, 0).name == "Mock Transformer"
 
 
-def test_describe():
-    class MockComponent(ComponentBase):
-        name = "Mock Component"
-        _needs_fitting = True
-
-    class MockEstimator(Estimator):
-        name = "Mock Estimator"
-        _needs_fitting = True
-
-    class MockTransformer(Transformer):
-        name = "Mock Transformer"
-        _needs_fitting = False
-
+def test_describe(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
     params = {'param_a': 'value_a', 'param_b': 123}
     component = MockComponent(params, None, random_state=0)
     assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
@@ -56,21 +49,9 @@ def test_missing_attributes(X_y):
         MockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
 
-def test_missing_methods_on_components(X_y):
-    # test that estimator doesn't have
+def test_missing_methods_on_components(X_y, test_classes):
     X, y = X_y
-
-    class MockComponent(ComponentBase):
-        name = "Mock Component"
-        _needs_fitting = True
-
-    class MockEstimator(Estimator):
-        name = "Mock Estimator"
-        _needs_fitting = True
-
-    class MockTransformer(Transformer):
-        name = "Mock Transformer"
-        _needs_fitting = False
+    MockComponent, MockEstimator, MockTransformer = test_classes
 
     component = MockComponent(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
