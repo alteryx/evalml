@@ -29,9 +29,12 @@ def test_list_model_types():
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
+    with pytest.raises(KeyError):
+        get_pipelines(problem_type="Not A Valid Problem Type")
 
 
 def test_serialization(X_y, tmpdir):
