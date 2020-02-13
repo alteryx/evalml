@@ -1,14 +1,12 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.transformers import Transformer
 
 
 class SimpleImputer(Transformer):
     """Imputes missing data with either mean, median and most_frequent for numerical data or most_frequent for categorical data"""
     name = 'Simple Imputer'
-    component_type = ComponentTypes.IMPUTER
     _needs_fitting = True
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 

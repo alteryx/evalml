@@ -3,7 +3,6 @@ import inspect
 import sys
 
 from .component_base import ComponentBase
-from .component_types import ComponentTypes
 from .estimators import (
     Estimator,
     LinearRegressor,
@@ -44,17 +43,6 @@ def __components_dict():
 
 __COMPONENTS = __components_dict()
 
-DEFAULT_COMPONENTS = {
-   ComponentTypes.CLASSIFIER: LogisticRegressionClassifier,
-   ComponentTypes.CATEGORICAL_ENCODER: OneHotEncoder,
-   ComponentTypes.IMPUTER: SimpleImputer,
-   ComponentTypes.REGRESSOR: LinearRegressor,
-   ComponentTypes.SCALER: StandardScaler,
-   ComponentTypes.FEATURE_SELECTION: RFClassifierSelectFromModel,
-   ComponentTypes.FEATURE_SELECTION_CLASSIFIER: RFClassifierSelectFromModel,
-   ComponentTypes.FEATURE_SELECTION_REGRESSOR: RFRegressorSelectFromModel
-}
-
 
 def handle_component(component):
     """Handles component by either returning the ComponentBase object or converts the str
@@ -66,16 +54,6 @@ def handle_component(component):
             ComponentBase
     """
     try:
-        component_type = str_to_component_type(component)
-        component_class = DEFAULT_COMPONENTS[component_type]
-        component = component_class()
-    except ValueError:
-        component = str_to_component(component)
-    return component
-
-
-def str_to_component(component):
-    try:
         if isinstance(component, str):
             component_class = __COMPONENTS[component]
             return component_class()
@@ -85,23 +63,3 @@ def str_to_component(component):
             raise ValueError("handle_component only takes in str or ComponentBase")
     except KeyError:
         raise ValueError("Component {} has required parameters and string initialization is not supported".format(component))
-
-
-def str_to_component_type(component_type):
-    """Handles component_type by either returning the ComponentTypes object or converts the str
-
-        Args:
-            component_type (str or ComponentTypes) : component type that needs to be handled
-
-        Returns:
-            ComponentTypes
-    """
-    if isinstance(component_type, str):
-        try:
-            tpe = ComponentTypes[component_type.upper()]
-        except KeyError:
-            raise ValueError('Component type \'{}\' does not exist'.format(component_type))
-        return tpe
-    if isinstance(component_type, ComponentTypes):
-        return component_type
-    raise ValueError('`handle_component_types` was not passed a str or ComponentTypes object')

@@ -2,15 +2,14 @@ from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from skopt.space import Integer
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
+
 from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
     """Random Forest Classifier"""
     name = "Random Forest Classifier"
-    component_type = ComponentTypes.CLASSIFIER
     _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),

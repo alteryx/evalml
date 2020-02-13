@@ -2,7 +2,6 @@ from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -10,7 +9,6 @@ from evalml.problem_types import ProblemTypes
 class RandomForestRegressor(Estimator):
     """Random Forest Regressor"""
     name = "Random Forest Regressor"
-    component_type = ComponentTypes.REGRESSOR
     _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
