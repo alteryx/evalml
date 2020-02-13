@@ -24,7 +24,6 @@ def test_components_dict():
 
 
 def test_global_components():
-    components_dict = __components_dict()
     assert __COMPONENTS == __components_dict()
 
 
@@ -37,6 +36,7 @@ def test_handle_component_names():
     with pytest.raises(ValueError):
         handle_component(invalid_name)
 
-    class NonComponent: pass
+    class NonComponent:
+        pass
     with pytest.raises(ValueError):
         handle_component(NonComponent())

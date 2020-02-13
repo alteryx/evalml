@@ -1,19 +1,6 @@
 import pytest
 
-from evalml.pipelines import (
-    Estimator,
-    LinearRegressor,
-    LogisticRegressionClassifier,
-    OneHotEncoder,
-    RandomForestClassifier,
-    RandomForestRegressor,
-    RFClassifierSelectFromModel,
-    SimpleImputer,
-    StandardScaler,
-    Transformer,
-    XGBoostClassifier
-)
-from evalml.pipelines.components import ComponentBase
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 
 
 def test_init():
@@ -87,7 +74,7 @@ def test_missing_methods_on_components(X_y):
 
     component = MockComponent(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
-        estimator.fit(X)
+        component.fit(X)
 
     estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):

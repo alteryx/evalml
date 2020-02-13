@@ -3,7 +3,6 @@ from skopt.space import Integer
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines.components.estimators import Estimator
-
 from evalml.problem_types import ProblemTypes
 
 
