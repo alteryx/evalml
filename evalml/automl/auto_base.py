@@ -112,7 +112,9 @@ class AutoBase:
         """
         def search_loop(stop_event, self, start, X, y, pbar, raise_errors, plot, desc):
             while not stop_event.is_set() and self._check_stopping_condition(start):
-                self._do_iteration(X, y, pbar, raise_errors)
+                pipeline_thread = Thread(target=self._do_iteration, args=[X, y, pbar, raise_errors], daemon=True)
+                pipeline_thread.start()
+                pipeline_thread.join()
                 plot.update()
 
         # don't show iteration plot outside of a jupyter notebook
@@ -169,12 +171,12 @@ class AutoBase:
         start = 0
         desc = ''
         stop_event = Event()
-        t = Thread(target=search_loop, args=[stop_event, self, start, X, y, pbar, raise_errors, plot, desc])
-        sigint_handler.setup_signal(stop_event)
+        search_thread = Thread(target=search_loop, args=[stop_event, self, start, X, y, pbar, raise_errors, plot, desc], daemon=True)
+        sigint_handler.setup_signal(search_thread, stop_event)
         start = time.time()
-        t.start()
-        t.join()
-        sigint_handler.remove_signal()
+        search_thread.start()
+        search_thread.join()
+        # sigint_handler.remove_signal()
         if stop_event.is_set():
             desc = u"Optimization terminated early"
         else:
