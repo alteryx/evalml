@@ -2,11 +2,11 @@ import random
 import time
 from collections import OrderedDict
 from sys import stdout
+from threading import Event, Thread
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from threading import Thread, Event
 
 from .pipeline_search_plots import PipelineSearchPlots
 
