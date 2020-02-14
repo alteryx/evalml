@@ -1,13 +1,26 @@
 from numpy.random import RandomState
 from skopt import Space
 
+from .tuner import Tuner
 from .tuner_exceptions import NoParamsException
 
 
-class RandomSearchTuner:
-    """Random Search Optimizer"""
+class RandomSearchTuner(Tuner):
+    """Random Search Optimizer
+
+    Example:
+        >>> from skopt.space import Real
+        >>> GridSearchTuner([Real(1,10)], n_points=5)
+    """
 
     def __init__(self, space, random_state=None, check_duplicates=True):
+        """ Sets up check for duplication if needed
+
+        Arguments:
+            space: A list of all dimensions available to tune
+            random_state: Unused in this class
+            check_duplicates: A boolean that determines if hyperparameters should be unique
+        """
         self.space = Space(space)
         self.random_state = RandomState(random_state)
         self.check_duplicates = check_duplicates
@@ -15,7 +28,6 @@ class RandomSearchTuner:
             self.used_parameters = set()
 
     def add(self, parameters, score):
-        # Since this is a random search, we don't need to store the results.
         pass
 
     def propose(self, max_attempts=10):

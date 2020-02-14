@@ -2,11 +2,17 @@ import itertools
 
 from skopt.space import Integer, Real
 
+from .tuner import Tuner
 from .tuner_exceptions import NoParamsException
 
 
-class GridSearchTuner:
-    """Grid Search Optimizer"""
+class GridSearchTuner(Tuner):
+    """Grid Search Optimizer
+
+    Example:
+        >>> from skopt.space import Real
+        >>> GridSearchTuner([Real(1,10)], n_points=5)
+    """
 
     def __init__(self, space, n_points=10, random_state=None):
         """ Generate all of the possible points to search for in the grid
@@ -16,10 +22,6 @@ class GridSearchTuner:
                 Real dimensions.
             space: A list of all dimensions available to tune
             random_state: Unused in this class
-
-        Example:
-            >>> from skopt.space import Real
-            >>> GridSearchTuner([Real(1,10)], n_points=5)
         """
         raw_dimensions = list()
         for dimension in space:
@@ -43,6 +45,11 @@ class GridSearchTuner:
         pass
 
     def propose(self):
+        """ Returns hyperparameters from _grid_points iterations
+
+        Returns:
+            dict: proposed hyperparameters
+        """
         try:
             return next(self._grid_points)
         except StopIteration:
