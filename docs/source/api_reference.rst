@@ -236,6 +236,7 @@ Tuners
     :template: class.rst
     :nosignatures:
 
+    Tuner
     SKOptTuner
 
 
