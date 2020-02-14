@@ -18,6 +18,7 @@ Changelog
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
         * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
+        * Added dependency update checkin test :pr:`324`
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements

@@ -161,6 +161,33 @@ jobs:
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
+  check_dependencies_updated_linux:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      python_version: << parameters.python_version >>
+    steps:
+      - checkout
+      - install_dependencies
+      - run:
+          name: "Detect Dependency Changes"
+          command: |
+            source test_python/bin/activate
+            mkdir /tmp/dependencies_updated_artifacts
+            pip freeze | grep -v "FeatureLabs/evalml.git" > /tmp/dependencies_updated_artifacts/current_dependencies.txt
+            diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+            exit $?
+      - run:
+          name: "Display Dependency Diff"
+          command: |
+            echo Displaying dependencies which have changed, with master on the left and the new branch on the right:
+            cat /tmp/dependencies_updated_artifacts/diff.txt
+          when: on_fail
+      - store_artifacts:
+          path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
@@ -195,6 +222,14 @@ workflows:
             filters:
               branches:
                 only: master
+  check_dependencies_updated_linux:
+    jobs:
+        - check_dependencies_updated_linux:
+            name: "linux python 3.7 check dependencies for updates"
+            python_version: "3.7"
+            filters:
+              branches:
+                ignore: /^master?/
   test_all_python_versions:
     jobs:
         - lint_test:
