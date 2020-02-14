@@ -26,18 +26,26 @@ class GridSearchTuner(Tuner):
         raw_dimensions = list()
         for dimension in space:
             # Categorical dimension
+            print(type(dimension))
             if isinstance(dimension, list):
                 range_values = dimension
-            elif isinstance(dimension, Real) or isinstance(dimension, Integer):
-                low = dimension.low
-                high = dimension.high
+            elif isinstance(dimension, Real) or isinstance(dimension, Integer) or isinstance(dimension, tuple):
+                if isinstance(dimension, tuple) and isinstance(dimension[0], (int, float)) and isinstance(dimension[1], (int, float)):
+                    if dimension[1] > dimension[0]:
+                        low = dimension[0]
+                        high = dimension[1]
+                    else:
+                        raise TypeError("Invalid dimension type in tuner")
+                else:
+                    low = dimension.low
+                    high = dimension.high
                 delta = (high - low) / (n_points - 1)
                 if isinstance(dimension, Integer):
                     range_values = [int((x * delta) + low) for x in range(n_points)]
                 else:
                     range_values = [(x * delta) + low for x in range(n_points)]
             else:
-                return Exception("Invalid dimension type in tuner")
+                raise TypeError("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
         self._grid_points = itertools.product(*raw_dimensions)
 

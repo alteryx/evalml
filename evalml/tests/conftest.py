@@ -52,16 +52,17 @@ def X_y_categorical_classification():
 
 
 @pytest.fixture
-def example_space():
-    list_of_space = list()
-    list_of_space.append(Integer(5, 100))
-    list_of_space.append(Real(0.01, 10))
-    list_of_space.append(['most_frequent', 'median', 'mean'])
-    return list_of_space
+def test_space():
+    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c']]
 
 
 @pytest.fixture
-def small_space():
+def test_space_unicode():
+    return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
+
+
+@pytest.fixture
+def test_space_small():
     list_of_space = list()
     list_of_space.append(['most_frequent', 'median', 'mean'])
     list_of_space.append(['a', 'b', 'c'])
