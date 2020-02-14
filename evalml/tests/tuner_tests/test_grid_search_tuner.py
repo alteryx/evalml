@@ -1,10 +1,9 @@
-import pytest
 import numpy as np
+import pytest
 
 from evalml import AutoRegressionSearch
-from evalml.tuners.tuner import Tuner
-
 from evalml.tuners import GridSearchTuner, NoParamsException
+from evalml.tuners.tuner import Tuner
 
 
 def assert_params_almost_equal(a, b, decimal=7):
