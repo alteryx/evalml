@@ -9,8 +9,7 @@ class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
-        >>> from skopt.space import Real
-        >>> GridSearchTuner([Real(1,10)], n_points=5)
+        >>> tuner = RandomSearchTuner([(1,10)], n_points=5)
     """
 
     def __init__(self, space, random_state=None, check_duplicates=True):

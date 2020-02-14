@@ -10,8 +10,7 @@ class GridSearchTuner(Tuner):
     """Grid Search Optimizer
 
     Example:
-        >>> from skopt.space import Real
-        >>> GridSearchTuner([Real(1,10)], n_points=5)
+        >>> tuner = RandomSearchTuner([(1,10)], n_points=5)
     """
 
     def __init__(self, space, n_points=10, random_state=None):
