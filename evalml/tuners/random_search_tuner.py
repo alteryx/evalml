@@ -9,7 +9,7 @@ class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
-        >>> tuner = RandomSearchTuner([(1,10)], n_points=5)
+        >>> tuner = RandomSearchTuner([(1,10)], check_duplicates=False)
     """
 
     def __init__(self, space, random_state=None, check_duplicates=True):
