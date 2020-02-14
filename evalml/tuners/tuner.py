@@ -2,7 +2,10 @@ from abc import ABC, abstractmethod
 
 
 class Tuner(ABC):
-    """Base Tuner class"""
+    """Defines API for Tuners
+
+    Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
+    """
 
     def __init__(self, space, random_state=0):
         """Init Tuner
@@ -18,7 +21,7 @@ class Tuner(ABC):
 
     @abstractmethod
     def add(self, parameters, score):
-        """ Add score to sample
+        """ Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
 
         Arguments:
             parameters (dict): hyperparameters
@@ -31,7 +34,7 @@ class Tuner(ABC):
 
     @abstractmethod
     def propose(self):
-        """ Returns hyperparameters based off search space and samples
+        """ Returns a set of hyperparameters to train a pipeline with, based off the search space dimensions and prior samples
 
         Returns:
             dict: proposed hyperparameters
