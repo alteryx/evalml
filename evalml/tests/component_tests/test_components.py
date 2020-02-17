@@ -1,6 +1,7 @@
 import pytest
 
-from evalml.pipelines import (
+from evalml.pipelines.components import (
+    ComponentBase,
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -13,31 +14,41 @@ from evalml.pipelines import (
     Transformer,
     XGBoostClassifier
 )
-from evalml.pipelines.components import ComponentBase, ComponentTypes
 
 
-def test_init():
-    # testing transformers
-    enc = OneHotEncoder()
-    imputer = SimpleImputer()
-    scaler = StandardScaler()
-    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5)
-    assert enc.component_type == ComponentTypes.CATEGORICAL_ENCODER
-    assert imputer.component_type == ComponentTypes.IMPUTER
-    assert scaler.component_type == ComponentTypes.SCALER
-    assert feature_selection.component_type == ComponentTypes.FEATURE_SELECTION_CLASSIFIER
+@pytest.fixture
+def test_classes():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        _needs_fitting = True
 
-    # testing estimators
-    lr_classifier = LogisticRegressionClassifier()
-    rf_classifier = RandomForestClassifier(n_estimators=10)
-    xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3)
-    rf_regressor = RandomForestRegressor(n_estimators=10)
-    linear_regressor = LinearRegressor()
-    assert lr_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert rf_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert xgb_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert rf_regressor.component_type == ComponentTypes.REGRESSOR
-    assert linear_regressor.component_type == ComponentTypes.REGRESSOR
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        _needs_fitting = True
+
+    class MockTransformer(Transformer):
+        name = "Mock Transformer"
+        _needs_fitting = False
+
+    return MockComponent, MockEstimator, MockTransformer
+
+
+def test_init(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    assert MockComponent({}, None, 0).name == "Mock Component"
+    assert MockEstimator({}, None, 0).name == "Mock Estimator"
+    assert MockTransformer({}, None, 0).name == "Mock Transformer"
+
+
+def test_describe(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    params = {'param_a': 'value_a', 'param_b': 123}
+    component = MockComponent(params, None, random_state=0)
+    assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
+    estimator = MockEstimator(params, None, random_state=0)
+    assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
+    transformer = MockTransformer(params, None, random_state=0)
+    assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
 
 
 def test_describe_component():
@@ -64,49 +75,34 @@ def test_describe_component():
 
 
 def test_missing_attributes(X_y):
-    class mockComponentFitting(ComponentBase):
+    class MockComponentFitting(ComponentBase):
         name = "mock"
-        component_type = ComponentTypes.REGRESSOR
 
-    class mockComponentName(ComponentBase):
-        component_type = ComponentTypes.REGRESSOR
-        _needs_fitting = True
-
-    class mockComponentType(ComponentBase):
-        name = "mock"
+    class MockComponentName(ComponentBase):
         _needs_fitting = True
 
     with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
-        mockComponentName(parameters={}, component_obj=None, random_state=0)
+        MockComponentName(parameters={}, component_obj=None, random_state=0)
 
     with pytest.raises(AttributeError, match="Component missing attribute: `_needs_fitting`"):
-        mockComponentFitting(parameters={}, component_obj=None, random_state=0)
-
-    with pytest.raises(AttributeError, match="Component missing attribute: `component_type`"):
-        mockComponentType(parameters={}, component_obj=None, random_state=0)
+        MockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
 
-def test_missing_methods_on_components(X_y):
-    # test that estimator doesn't have
+def test_missing_methods_on_components(X_y, test_classes):
     X, y = X_y
+    MockComponent, MockEstimator, MockTransformer = test_classes
 
-    class mockEstimator(Estimator):
-        name = "mock Estimator"
-        component_type = ComponentTypes.REGRESSOR
-        _needs_fitting = True
+    component = MockComponent(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+        component.fit(X)
 
-    class mockTransformer(Transformer):
-        name = "mock Transformer"
-        component_type = ComponentTypes.IMPUTER
-        _needs_fitting = False
-
-    estimator = mockEstimator(parameters={}, component_obj=None, random_state=0)
+    estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
-    transformer = mockTransformer(parameters={}, component_obj=None, random_state=0)
+    transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -123,11 +119,10 @@ def test_component_fit(X_y):
             pass
 
         def predict(self, X):
-            pass
+            raise NotImplementedError()
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
-        component_type = ComponentTypes.CLASSIFIER
         _needs_fitting = True
         hyperparameter_ranges = {}
 

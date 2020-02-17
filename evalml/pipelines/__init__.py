@@ -10,7 +10,6 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    ComponentTypes,
     FeatureSelector,
     CategoricalEncoder,
     RFClassifierSelectFromModel,

@@ -1,7 +1,6 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
@@ -15,7 +14,6 @@ class CatBoostRegressor(Estimator):
     For more information, check out https://catboost.ai/
     """
     name = "CatBoost Regressor"
-    component_type = ComponentTypes.REGRESSOR
     _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
