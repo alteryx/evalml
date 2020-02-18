@@ -46,7 +46,7 @@ jsonschema==3.2.0
 jupyter==1.0.0
 jupyter-client==5.3.4
 jupyter-console==6.1.0
-jupyter-core==4.6.2
+jupyter-core==4.6.3
 kiwisolver==1.1.0
 locket==0.2.0
 MarkupSafe==1.1.1
@@ -54,7 +54,7 @@ matplotlib==3.1.3
 mccabe==0.6.1
 mistune==0.8.4
 more-itertools==8.2.0
-msgpack==0.6.2
+msgpack==1.0.0
 nbconvert==5.5.0
 nbformat==5.0.4
 nbsphinx==0.4.2
@@ -74,7 +74,7 @@ plotly==4.5.0
 pluggy==0.13.1
 prometheus-client==0.7.1
 prompt-toolkit==3.0.3
-psutil==5.6.7
+psutil==5.7.0
 ptyprocess==0.6.0
 py==1.8.1
 pyaml==19.12.0
@@ -125,4 +125,4 @@ webencodings==0.5.1
 widgetsnbextension==3.5.1
 xgboost==0.90
 zict==1.0.0
-zipp==2.2.0
+zipp==3.0.0
