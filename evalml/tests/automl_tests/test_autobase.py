@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
@@ -65,3 +66,22 @@ def test_search_order(X_y):
     automl.search(X, y)
     correct_order = [0, 1, 2]
     assert automl.results['search_order'] == correct_order
+
+
+def test_filter_objectives(X_y, capsys):
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=3)
+    automl.search(X, y)
+    automl.describe_pipeline(0, show_objectives=['F1', 'AUC'])
+    captured = capsys.readouterr()
+    assert 'Recall' not in captured.out
+    assert 'Log Loss' not in captured.out
+    assert 'MCC' not in captured.out
+
+
+def test_filter_invalid_objectives(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=3)
+    automl.search(X, y)
+    with pytest.raises(KeyError, match=r".*Fraud Objective.* not in index"):
+        automl.describe_pipeline(0, show_objectives=['F1', 'Fraud Objective'])
