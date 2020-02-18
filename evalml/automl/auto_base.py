@@ -345,13 +345,15 @@ class AutoBase:
 
         return self.trained_pipelines[pipeline_id]
 
-    def describe_pipeline(self, pipeline_id, return_dict=False):
+    def describe_pipeline(self, pipeline_id, return_dict=False, show_objectives=None):
         """Describe a pipeline
 
         Arguments:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to False.
+            show_objectives(list): A list of objectives to output. If none, prints all
+                available objectives
 
         Returns:
             Description of specified pipeline. Includes information such as
@@ -377,9 +379,15 @@ class AutoBase:
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
 
+        scores_to_drop = ["ROC", "Confusion Matrix"]
+        if show_objectives:
+            for score in all_objective_scores:
+                if score not in show_objectives and score not in ["# Training", "# Testing"]:
+                    scores_to_drop.append(score)
+
         # note: we need to think about how to better handle metrics we don't want to display in our chart
         # currently, just dropping the columns before displaying
-        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
+        all_objective_scores = all_objective_scores.drop(scores_to_drop, axis=1, errors="ignore")
 
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
