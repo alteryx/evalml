@@ -1,0 +1,2 @@
+class RegressionObjective(ObjectiveBase):
+    pass
