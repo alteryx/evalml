@@ -11,6 +11,7 @@ class GridSearchTuner(Tuner):
 
     Example:
         >>> tuner = GridSearchTuner([(1,10)], n_points=5)
+        <class 'tuple'>
     """
 
     def __init__(self, space, n_points=10, random_state=None):
