@@ -74,6 +74,11 @@ def test_filter_objectives(X_y, capsys):
     automl.search(X, y)
     automl.describe_pipeline(0, show_objectives=['F1', 'AUC'])
     captured = capsys.readouterr()
+    assert 'F1' in captured.out
+    assert 'AUC' in captured.out
+    assert '# Training' in captured.out
+    assert '# Testing' in captured.out
+    assert 'MCC' not in captured.out
     assert 'Recall' not in captured.out
     assert 'Log Loss' not in captured.out
     assert 'MCC' not in captured.out
@@ -83,5 +88,5 @@ def test_filter_invalid_objectives(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=3)
     automl.search(X, y)
-    with pytest.raises(KeyError, match=r".*Fraud Objective.* not in index"):
+    with pytest.raises(ValueError, match="{'Fraud Objective'} are not valid objectives"):
         automl.describe_pipeline(0, show_objectives=['F1', 'Fraud Objective'])
