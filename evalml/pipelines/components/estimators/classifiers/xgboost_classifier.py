@@ -9,7 +9,6 @@ from evalml.utils import import_or_raise
 class XGBoostClassifier(Estimator):
     """XGBoost Classifier"""
     name = "XGBoost Classifier"
-    _needs_fitting = True
     hyperparameter_ranges = {
         "eta": Real(0, 1),
         "max_depth": Integer(1, 20),

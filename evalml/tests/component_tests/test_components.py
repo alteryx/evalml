@@ -20,15 +20,12 @@ from evalml.pipelines.components import (
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
-        _needs_fitting = True
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
-        _needs_fitting = True
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
-        _needs_fitting = False
 
     return MockComponent, MockEstimator, MockTransformer
 
@@ -75,17 +72,11 @@ def test_describe_component():
 
 
 def test_missing_attributes(X_y):
-    class MockComponentFitting(ComponentBase):
-        name = "mock"
-
     class MockComponentName(ComponentBase):
         _needs_fitting = True
 
     with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
-
-    with pytest.raises(AttributeError, match="Component missing attribute: `_needs_fitting`"):
-        MockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
 
 def test_missing_methods_on_components(X_y, test_classes):
@@ -123,7 +114,6 @@ def test_component_fit(X_y):
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
-        _needs_fitting = True
         hyperparameter_ranges = {}
 
         def __init__(self):

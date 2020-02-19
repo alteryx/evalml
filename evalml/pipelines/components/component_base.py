@@ -8,7 +8,7 @@ class ComponentBase:
         self.parameters = parameters
         self.logger = Logger()
 
-        attributes_to_check = ['_needs_fitting', "name"]
+        attributes_to_check = ["name"]
 
         for attribute in attributes_to_check:
             if not hasattr(self, attribute):
