@@ -1,21 +1,21 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import MulticlassClassificationPipeline
 from evalml.pipelines.components import CatBoostClassifier, SimpleImputer
 from evalml.problem_types import ProblemTypes
 
 
-class CatBoostClassificationPipeline(PipelineBase):
+class CatBoostMulticlassClassificationPipeline(MulticlassClassificationPipeline):
     """
-    CatBoost Pipeline for both binary and multiclass classification.
+    CatBoost Pipeline for multiclass classification.
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
     """
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.MULTICLASS]
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),

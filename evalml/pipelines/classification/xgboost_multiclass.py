@@ -2,7 +2,7 @@ import numpy as np
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import MulticlassClassificationPipeline
 from evalml.pipelines.components import (
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -12,11 +12,11 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class XGBoostPipeline(PipelineBase):
-    """XGBoost Pipeline for both binary and multiclass classification"""
+class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
+    """XGBoost Pipeline for multiclass classification"""
     name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.XGBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "eta": Real(0, 1),

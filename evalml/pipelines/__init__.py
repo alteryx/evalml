@@ -20,12 +20,21 @@ from .components import (
 )
 
 from .pipeline_base import PipelineBase
+from .binary_classification_pipeline import BinaryClassificationPipeline
+from .multiclass_classification_pipeline import MulticlassClassificationPipeline
+from .regression_pipeline import RegressionPipeline
+
 from .classification import (
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline,
-    CatBoostClassificationPipeline,
+    CatBoostBinaryClassificationPipeline,
+    CatBoostMulticlassClassificationPipeline,
+    LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline,
+    RFBinaryClassificationPipeline,
+    RFMulticlassClassificationPipeline,
+    XGBoostBinaryPipeline,
+    XGBoostMulticlassPipeline
 )
+
 from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,

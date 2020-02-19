@@ -1,7 +1,7 @@
 from skopt.space import Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import MulticlassClassificationPipeline
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -11,11 +11,11 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class LogisticRegressionPipeline(PipelineBase):
-    """Logistic Regression Pipeline for both binary and multiclass classification"""
+class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
+    """Logistic Regression Pipeline for multiclass classification"""
     name = "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.MULTICLASS]
 
     hyperparameters = {
         "penalty": ["l2"],

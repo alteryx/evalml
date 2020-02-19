@@ -1,5 +1,13 @@
 # flake8:noqa
-from .logistic_regression import LogisticRegressionPipeline
-from .random_forest import RFClassificationPipeline
-from .xgboost import XGBoostPipeline
-from .catboost import CatBoostClassificationPipeline
+# from .logistic_regression import LogisticRegressionPipeline
+from .logistic_regression_binary import LogisticRegressionBinaryPipeline
+from .logistic_regression_multiclass import LogisticRegressionMulticlassPipeline
+# from .xgboost import XGBoostPipeline
+from .xgboost_binary import XGBoostBinaryPipeline
+from .xgboost_multiclass import XGBoostMulticlassPipeline
+# from .catboost import CatBoostClassificationPipeline
+from .catboost_binary import CatBoostBinaryClassificationPipeline
+from .catboost_multiclass import CatBoostMulticlassClassificationPipeline
+# from .random_forest import RFClassificationPipeline
+from .random_forest_binary import RFBinaryClassificationPipeline
+from .random_forest_multiclass import RFMulticlassClassificationPipeline
