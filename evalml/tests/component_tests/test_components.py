@@ -73,7 +73,7 @@ def test_describe_component():
 
 def test_missing_attributes(X_y):
     class MockComponentName(ComponentBase):
-        _needs_fitting = True
+        pass
 
     with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
