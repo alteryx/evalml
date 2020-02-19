@@ -132,7 +132,7 @@ class PipelineBase:
             self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
             try:
                 X_t = component.fit_transform(X_t, y_t)
-            except Exception:
+            except RuntimeError:
                 X_t = component.transform(X_t, y_t)
 
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
