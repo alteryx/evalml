@@ -8,7 +8,7 @@ class Transformer(ComponentBase):
     These components are used before an estimator.
     """
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """Transforms data X
 
         Arguments:
