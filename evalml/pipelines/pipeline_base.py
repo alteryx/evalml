@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
@@ -88,7 +87,6 @@ class PipelineBase:
         """
         return next((component for component in self.component_list if component.name == name), None)
 
-
     def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
 
@@ -138,16 +136,13 @@ class PipelineBase:
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-    def fit(self, X, y, objective_fit_size=.2):
+    def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
 
             y (pd.Series): the target training labels of length [n_samples]
-
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
 
         Returns:
 
@@ -161,7 +156,6 @@ class PipelineBase:
 
         self._fit(X, y)
         return self
-
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -179,6 +173,8 @@ class PipelineBase:
         return self.estimator.predict(X_t)
 
     def predict_proba(self, X):
+        # TODO: does this warrant having a ClassificationPipeline?
+        # doesn't make sense for regression?
         """Make probability estimates for labels.
 
         Args:
@@ -188,7 +184,6 @@ class PipelineBase:
             pd.DataFrame : probability estimates
         """
         raise NotImplementedError
-
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance on current and additional objectives

@@ -3,12 +3,10 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-from evalml.utils import Logger
 
 
 class BinaryClassificationPipeline(PipelineBase):
@@ -17,7 +15,7 @@ class BinaryClassificationPipeline(PipelineBase):
     plot = PipelinePlots
     threshold_selection_split = True
 
-    def fit(self, X, y, objective_fit_size=.2):
+    def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
 
         Arguments:
@@ -39,18 +37,20 @@ class BinaryClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
+        objective_fit_size = 0.2
         if self.objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
 
         if self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X_objective)
+            y_predicted_proba = self.predict_proba(X_objective)
+            y_predicted_proba = y_predicted_proba[:, 1]
 
             if self.objective.uses_extra_columns:
-                self.objective.fit(y_predicted, y_objective, X_objective)
+                self.objective.fit(y_predicted_proba, y_objective, X_objective)
             else:
-                self.objective.fit(y_predicted, y_objective)
+                self.objective.fit(y_predicted_proba, y_objective)
         return self
 
     def predict(self, X):
@@ -68,12 +68,12 @@ class BinaryClassificationPipeline(PipelineBase):
         X_t = self._transform(X)
 
         if self.objective and self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X)
-
+            y_predicted_proba = self.predict_proba(X)
+            y_predicted_proba = y_predicted_proba[:, 1]
             if self.objective.uses_extra_columns:
-                return self.objective.predict(y_predicted, X)
+                return self.objective.predict(y_predicted_proba, X)
 
-            return self.objective.predict(y_predicted)
+            return self.objective.predict(y_predicted_proba)
 
         return self.estimator.predict(X_t)
 
@@ -91,11 +91,7 @@ class BinaryClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
-
-        if proba.shape[1] <= 2:
-            return proba[:, 1]
-        else:
-            return proba
+        return proba
 
     def score(self, X, y, other_objectives=None):
         """Evaluate model performance on current and additional objectives
@@ -124,6 +120,7 @@ class BinaryClassificationPipeline(PipelineBase):
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
+                    y_predicted_proba = y_predicted_proba[:, 1]
                 y_predictions = y_predicted_proba
             else:
                 if y_predicted is None:
