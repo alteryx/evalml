@@ -14,6 +14,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * `problem_type` is now a required parameter for pipelines :pr:406
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
