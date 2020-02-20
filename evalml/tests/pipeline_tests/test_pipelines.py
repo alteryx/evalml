@@ -178,8 +178,8 @@ def test_problem_type_validation(X_y):
     X, y = X_y
 
     with pytest.raises(ValueError, match=".* is not valid .* "):
-        clf = LogisticRegressionPipeline(problem_type='regression', objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+        LogisticRegressionPipeline(problem_type='regression', objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
 
     with pytest.raises(ValueError, match=".* is not valid .* "):
-        clf = RFRegressionPipeline(problem_type='binary', objective='r2', n_estimators=10, max_depth=3,
-                                   impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
+        RFRegressionPipeline(problem_type='binary', objective='r2', n_estimators=10, max_depth=3,
+                             impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
