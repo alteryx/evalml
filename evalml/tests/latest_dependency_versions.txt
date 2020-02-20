@@ -123,6 +123,6 @@ urllib3==1.25.8
 wcwidth==0.1.8
 webencodings==0.5.1
 widgetsnbextension==3.5.1
-xgboost==0.90
+xgboost==1.0.0
 zict==1.0.0
 zipp==3.0.0
