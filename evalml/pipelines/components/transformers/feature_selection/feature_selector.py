@@ -24,12 +24,12 @@ class FeatureSelector(Transformer):
         selected_masks = self._component_obj.get_support()
         return [feature_name for (selected, feature_name) in zip(selected_masks, self.input_feature_names) if selected]
 
-    def transform(self, X):
-        """Transforms data X
+    def transform(self, X, y=None):
+        """Transforms data X by selecting features
 
         Arguments:
             X (pd.DataFrame): Data to transform
-
+            y (pd.Series): Labels to transform
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -50,11 +50,11 @@ class FeatureSelector(Transformer):
             raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
 
     def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
+        """Fits feature selector on data X then transforms X by selecting features
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-
+            y (pd.Series): Labels to fit and transform
         Returns:
             pd.DataFrame: Transformed X
         """

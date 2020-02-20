@@ -13,7 +13,7 @@ class Transformer(ComponentBase):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-
+            y (pd.Series): Labels to transform
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -30,7 +30,7 @@ class Transformer(ComponentBase):
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-
+            y (pd. DataFrame): Labels to fit and transform
         Returns:
             pd.DataFrame: Transformed X
         """
