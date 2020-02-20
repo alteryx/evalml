@@ -15,24 +15,7 @@ class BinaryClassificationPipeline(PipelineBase):
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
-
-    def _transform(self, X):
-        X_t = X
-        for component in self.component_list[:-1]:
-            X_t = component.transform(X_t)
-        return X_t
-
-    def _fit(self, X, y):
-        X_t = X
-        y_t = y
-        for component in self.component_list[:-1]:
-            self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
-            if component._needs_fitting:
-                X_t = component.fit_transform(X_t, y_t)
-            else:
-                X_t = component.transform(X_t, y_t)
-        self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
-        self.estimator.fit(X_t, y_t)
+    threshold_selection_split = True
 
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
@@ -157,5 +140,3 @@ class BinaryClassificationPipeline(PipelineBase):
         other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
-
-

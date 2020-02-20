@@ -1,12 +1,12 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import CatBoostRegressor, SimpleImputer
 from evalml.problem_types import ProblemTypes
 
 
-class CatBoostRegressionPipeline(PipelineBase):
+class CatBoostRegressionPipeline(RegressionPipeline):
     """
     CatBoost Pipeline for regression problems.
     CatBoost is an open-source library and natively supports categorical features.

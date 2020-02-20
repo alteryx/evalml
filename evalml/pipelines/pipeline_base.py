@@ -76,7 +76,6 @@ class PipelineBase:
 
         return name
 
-
     def get_component(self, name):
         """Returns component by name
 
@@ -121,7 +120,6 @@ class PipelineBase:
         if return_dict:
             return self.parameters
 
-
     def _transform(self, X):
         X_t = X
         for component in self.component_list[:-1]:
@@ -140,7 +138,6 @@ class PipelineBase:
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-
     def fit(self, X, y, objective_fit_size=.2):
         """Build a model
 
@@ -157,7 +154,13 @@ class PipelineBase:
             self
 
         """
-        raise NotImplementedError
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        self._fit(X, y)
+        return self
 
 
     def predict(self, X):
@@ -169,8 +172,11 @@ class PipelineBase:
         Returns:
             pd.Series : estimated labels
         """
-        raise NotImplementedError
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
+        X_t = self._transform(X)
+        return self.estimator.predict(X_t)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -195,7 +201,38 @@ class PipelineBase:
         Returns:
             float, dict:  score, ordered dictionary of other objective scores
         """
-        raise NotImplementedError
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        other_objectives = other_objectives or []
+        other_objectives = [get_objective(o) for o in other_objectives]
+        y_predicted = None
+        y_predicted_proba = None
+
+        scores = []
+        for objective in [self.objective] + other_objectives:
+            if objective.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
+                y_predictions = y_predicted
+
+            if objective.uses_extra_columns:
+                scores.append(objective.score(y_predictions, y, X))
+            else:
+                scores.append(objective.score(y_predictions, y))
+        if not other_objectives:
+            return scores[0], {}
+
+        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
+
+        return scores[0], other_scores
 
     @property
     def feature_importances(self):

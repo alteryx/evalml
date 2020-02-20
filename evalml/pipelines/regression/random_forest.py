@@ -2,7 +2,7 @@ import numpy as np
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestRegressor,
@@ -12,7 +12,7 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class RFRegressionPipeline(PipelineBase):
+class RFRegressionPipeline(RegressionPipeline):
     """Random Forest Pipeline for regression problems"""
     name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model"
     model_type = ModelTypes.RANDOM_FOREST

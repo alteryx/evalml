@@ -1,5 +1,5 @@
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import (
     LinearRegressor,
     OneHotEncoder,
@@ -9,7 +9,7 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class LinearRegressionPipeline(PipelineBase):
+class LinearRegressionPipeline(RegressionPipeline):
     """Linear Regression Pipeline for regression problems"""
     name = "Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
