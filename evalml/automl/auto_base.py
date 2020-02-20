@@ -229,6 +229,7 @@ class AutoBase:
             random_state=self.random_state,
             n_jobs=-1,
             number_features=X.shape[1],
+            problem_type=self.problem_type,
             **dict(parameters)
         )
 
