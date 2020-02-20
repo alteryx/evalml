@@ -1,8 +1,10 @@
 import pandas as pd
 from skopt import Optimizer
 
+from .tuner import Tuner
 
-class SKOptTuner:
+
+class SKOptTuner(Tuner):
     """Bayesian Optimizer"""
 
     def __init__(self, space, random_state=0):
@@ -27,9 +29,10 @@ class SKOptTuner:
         Returns:
             None
         """
-        # skip adding nan scores for
-        if not pd.isnull(score):
-            return self.opt.tell(list(parameters), score)
+        # skip adding nan scores
+        if pd.isnull(score):
+            return
+        self.opt.tell(list(parameters), score)
 
     def propose(self):
         """ Returns hyperparameters based off search space and samples

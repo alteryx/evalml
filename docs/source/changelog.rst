@@ -6,17 +6,22 @@ Changelog
     * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
+        * Added Tuner abstract base class :pr:`351`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
+        * Remove extraneous parameter component_type from all components :pr:`361`
+        * Remove unused rankings.csv file :pr:`397`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
         * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
+        * Added dependency update checkin test :pr:`324`
+        * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements

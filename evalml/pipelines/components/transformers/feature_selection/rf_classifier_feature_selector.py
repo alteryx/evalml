@@ -5,13 +5,10 @@ from skopt.space import Real
 
 from .feature_selector import FeatureSelector
 
-from evalml.pipelines.components import ComponentTypes
-
 
 class RFClassifierSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier"""
     name = 'RF Classifier Select From Model'
-    component_type = ComponentTypes.FEATURE_SELECTION_CLASSIFIER
     _needs_fitting = True
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),
