@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from evalml.pipelines.components import (
@@ -125,3 +126,23 @@ def test_component_fit(X_y):
 
     est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
+
+
+def test_component_fit_transform(X_y):
+    X, y = X_y
+
+    class MockTransformer(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    component = MockTransformer()
+    assert isinstance(component.fit_transform(X), np.ndarray)
