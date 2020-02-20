@@ -4,7 +4,11 @@ import pytest
 
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
-from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
+from evalml.pipelines import (
+    LogisticRegressionPipeline,
+    PipelineBase,
+    RFRegressionPipeline
+)
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -168,3 +172,14 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y)
     clf.score(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_problem_type_validation(X_y):
+    X, y = X_y
+
+    with pytest.raises(ValueError, match=".* is not valid .* "):
+        clf = LogisticRegressionPipeline(problem_type='regression', objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+
+    with pytest.raises(ValueError, match=".* is not valid .* "):
+        clf = RFRegressionPipeline(problem_type='binary', objective='r2', n_estimators=10, max_depth=3,
+                                   impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
