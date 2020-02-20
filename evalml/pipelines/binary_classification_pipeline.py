@@ -93,13 +93,13 @@ class BinaryClassificationPipeline(PipelineBase):
         proba = self.estimator.predict_proba(X)
         return proba
 
-    def score(self, X, y, other_objectives=None):
+    def score(self, X, y, objectives=None):
         """Evaluate model performance on current and additional objectives
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
-            other_objectives (list): list of other objectives to score
+            objectives (list): list of other objectives to score
 
         Returns:
             float, dict:  score, ordered dictionary of other objective scores
@@ -110,13 +110,13 @@ class BinaryClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        other_objectives = other_objectives or []
-        other_objectives = [get_objective(o) for o in other_objectives]
+        objectives = objectives or []
+        objectives = [get_objective(o) for o in objectives]
         y_predicted = None
         y_predicted_proba = None
 
         scores = []
-        for objective in [self.objective] + other_objectives:
+        for objective in [self.objective] + objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
@@ -131,9 +131,9 @@ class BinaryClassificationPipeline(PipelineBase):
                 scores.append(objective.score(y_predictions, y, X))
             else:
                 scores.append(objective.score(y_predictions, y))
-        if not other_objectives:
+        if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
+        other_scores = OrderedDict(zip([n.name for n in objectives], scores[1:]))
 
         return scores[0], other_scores
