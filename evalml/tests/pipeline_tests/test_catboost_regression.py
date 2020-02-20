@@ -10,7 +10,7 @@ from evalml.pipelines import CatBoostRegressionPipeline
 def test_catboost_init():
     objective = R2()
     clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, number_features=0,
-                                     bootstrap_type='Bayesian', eta=0.03, max_depth=6, random_state=2)
+                                     bootstrap_type='Bayesian', eta=0.03, max_depth=6, random_state=2, problem_type='regression')
     expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6, 'bootstrap_type': 'Bayesian'}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
@@ -28,7 +28,7 @@ def test_catboost_regression(X_y_reg):
 
     objective = R2()
     clf = CatBoostRegressionPipeline(objective=objective, n_estimators=1000, eta=0.03, number_features=X.shape[1],
-                                     bootstrap_type='Bayesian', max_depth=6, impute_strategy='mean', random_state=0)
+                                     bootstrap_type='Bayesian', max_depth=6, impute_strategy='mean', random_state=0, problem_type='regression')
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -42,7 +42,7 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
     objective = R2()
     clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=1000,
                                      number_features=len(X.columns), bootstrap_type='Bayesian',
-                                     eta=0.03, max_depth=6, random_state=0)
+                                     eta=0.03, max_depth=6, random_state=0, problem_type='regression')
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

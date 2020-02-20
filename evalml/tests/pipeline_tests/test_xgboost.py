@@ -16,7 +16,7 @@ def test_xg_init(X_y):
 
     objective = PrecisionMicro()
     clf = XGBoostPipeline(objective=objective, eta=0.2, min_child_weight=3, max_depth=5, impute_strategy='median',
-                          percent_features=1.0, number_features=len(X[0]), n_estimators=10, random_state=1)
+                          percent_features=1.0, number_features=len(X[0]), n_estimators=10, random_state=1, problem_type='binary')
     expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
                            'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3, 'n_estimators': 10}
     assert clf.parameters == expected_parameters
@@ -46,7 +46,8 @@ def test_xg_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), n_estimators=10)
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean',
+                          percent_features=1.0, number_features=len(X[0]), n_estimators=10, problem_type='multiclass')
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -64,7 +65,8 @@ def test_xg_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns), n_estimators=10)
+    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean',
+                          percent_features=1.0, number_features=len(X.columns), n_estimators=10, problem_type='binary')
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

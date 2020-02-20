@@ -23,7 +23,7 @@ def test_get_objectives_types():
 def test_binary_average(X_y):
     X, y = X_y
 
-    pipeline = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    pipeline = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0, problem_type='binary')
     pipeline.fit(X, y)
     y_pred = pipeline.predict(X)
 

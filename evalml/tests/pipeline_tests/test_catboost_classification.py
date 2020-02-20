@@ -11,7 +11,7 @@ from evalml.pipelines import CatBoostClassificationPipeline
 def test_catboost_init():
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=500,
-                                         bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2)
+                                         bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2, problem_type='binary')
     expected_parameters = {'impute_strategy': 'most_frequent', 'eta': 0.1, 'n_estimators': 500, 'max_depth': 3, 'bootstrap_type': 'Bernoulli'}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
@@ -29,7 +29,7 @@ def test_catboost_multi(X_y_multi):
 
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
-                                         number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
+                                         number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0, problem_type='multiclass')
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -48,7 +48,7 @@ def test_catboost_input_feature_names(X_y):
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, eta=0.03,
-                                         bootstrap_type='Bayesian', number_features=len(X.columns), max_depth=6, random_state=0)
+                                         bootstrap_type='Bayesian', number_features=len(X.columns), max_depth=6, random_state=0, problem_type='binary')
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
@@ -60,7 +60,7 @@ def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent',
-                                         number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
+                                         number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0, problem_type='binary')
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
