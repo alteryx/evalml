@@ -24,7 +24,7 @@ class LogisticRegressionPipeline(PipelineBase):
     }
 
     def __init__(self, objective, penalty, C, impute_strategy,
-                 number_features, n_jobs=-1, random_state=0):
+                 number_features, problem_type, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
@@ -36,5 +36,6 @@ class LogisticRegressionPipeline(PipelineBase):
 
         super().__init__(objective=objective,
                          component_list=[enc, imputer, scaler, estimator],
+                         problem_type=problem_type,
                          n_jobs=n_jobs,
                          random_state=random_state)

@@ -24,7 +24,7 @@ class CatBoostClassificationPipeline(PipelineBase):
     }
 
     def __init__(self, objective, impute_strategy, n_estimators,
-                 eta, max_depth, number_features, bootstrap_type=None,
+                 eta, max_depth, number_features, problem_type, bootstrap_type=None,
                  n_jobs=1, random_state=0):
         # note: impute_strategy must support both string and numeric data
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -35,5 +35,6 @@ class CatBoostClassificationPipeline(PipelineBase):
                                        random_state=random_state)
         super().__init__(objective=objective,
                          component_list=[imputer, estimator],
+                         problem_type=problem_type,
                          n_jobs=1,
                          random_state=random_state)

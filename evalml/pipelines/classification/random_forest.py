@@ -26,7 +26,7 @@ class RFClassificationPipeline(PipelineBase):
     }
 
     def __init__(self, objective, n_estimators, max_depth, impute_strategy,
-                 percent_features, number_features, n_jobs=-1, random_state=0):
+                 percent_features, number_features, problem_type, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
@@ -44,5 +44,6 @@ class RFClassificationPipeline(PipelineBase):
 
         super().__init__(objective=objective,
                          component_list=[enc, imputer, feature_selection, estimator],
+                         problem_type=problem_type,
                          n_jobs=n_jobs,
                          random_state=random_state)

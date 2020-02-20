@@ -21,7 +21,7 @@ class LinearRegressionPipeline(PipelineBase):
         'fit_intercept': [False, True]
     }
 
-    def __init__(self, objective, number_features, impute_strategy,
+    def __init__(self, objective, number_features, impute_strategy, problem_type,
                  normalize=False, fit_intercept=True, random_state=0, n_jobs=-1):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -33,5 +33,6 @@ class LinearRegressionPipeline(PipelineBase):
 
         super().__init__(objective=objective,
                          component_list=[enc, imputer, scaler, estimator],
+                         problem_type=problem_type,
                          n_jobs=n_jobs,
                          random_state=random_state)
