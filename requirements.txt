@@ -5,7 +5,7 @@ scikit-learn>=0.21.3,!=0.22
 dask[complete]>=2.1.0
 numpy>=1.16.4
 pandas>=0.25.0,<1.0.0
-xgboost>=0.82,<=0.9.0
+xgboost>=0.82,<=0.90
 tqdm>=4.33.0
 scikit-optimize[plots]
 colorama
