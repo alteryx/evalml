@@ -1,3 +1,4 @@
+import inspect
 from collections import OrderedDict
 
 import pandas as pd
@@ -35,9 +36,7 @@ class PipelineBase(PipelineTemplate):
         self.component_graph = self.template.component_graph
         self.parameters = parameters
         self.plot = PipelinePlots(self)
-
         self._instantiate_components()
-        # init components with parameters here
 
         super().__init__(component_graph=self.template.component_graph, supported_problem_types=self.template.supported_problem_types)
 
@@ -59,7 +58,9 @@ class PipelineBase(PipelineTemplate):
 
     def _validate_component_parameters(self, component_class, parameters):
         for parameter, parameter_value in parameters.items():
-            if parameter_value not in component_class.hyperparameter_ranges[parameter]:
+            if parameter not in inspect.signature(component_class.__init__).parameters:
+                raise ValueError("{} is not a hyperparameter of {}".format(parameter_value, component_class.name))
+            if parameter in component_class.hyperparameter_ranges and parameter_value not in component_class.hyperparameter_ranges[parameter]:
                 raise ValueError("{} = {} not in hyperparameter range of {}".format(parameter, parameter_value, component_class.name))
 
     def __getitem__(self, index):

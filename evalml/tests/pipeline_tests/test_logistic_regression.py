@@ -14,10 +14,19 @@ def test_lor_init(X_y):
     X, y = X_y
 
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
-    expected_parameters = {'impute_strategy': 'mean', 'penalty': 'l2', 'C': 0.5}
-    assert clf.parameters == expected_parameters
-    assert clf.random_state == 1
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 0.5,
+            'random_state': 1
+        }
+    }
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    assert clf.parameters == parameters
+    assert clf.parameters['Logistic Regression Classifier']['random_state'] == 1
 
 
 def test_lor_multi(X_y_multi):
@@ -39,7 +48,17 @@ def test_lor_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -55,9 +74,22 @@ def test_lor_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
+
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns), random_state=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
+
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
