@@ -38,3 +38,12 @@ def test_description(pipeline_template, capsys):
     assert "Simple Imputer" in description
     assert "One Hot Encoder" in description
     assert "Logistic Regression Classifier" in description
+
+
+def test_estimator_not_last():
+    component_graph = ['Simple Imputer', 'One Hot Encoder']
+    supported_problem_types = ['regression']
+
+    err_msg = "A pipeline must have an Estimator as the last component in component_list."
+    with pytest.raises(ValueError, match=err_msg):
+        PipelineTemplate(component_graph=component_graph, supported_problem_types=supported_problem_types)

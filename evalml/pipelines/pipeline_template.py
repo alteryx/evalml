@@ -12,6 +12,10 @@ class PipelineTemplate:
         self.name = self._generate_name()
         self.logger = Logger()
 
+        # check if one and only estimator in pipeline is the last element in component_list
+        if not isinstance(self.component_graph[-1], Estimator):
+            raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
+
         self._validate_problem_types(self.supported_problem_types)
 
     def _generate_name(self):
