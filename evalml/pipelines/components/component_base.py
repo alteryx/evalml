@@ -30,7 +30,7 @@ class ComponentBase:
         except AttributeError:
             raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
 
-    def describe(self, print_name=False, return_dict=False):
+    def describe(self, print_name=False, print_parameters=True, return_dict=False):
         """Describe a component and its parameters
 
         Arguments:
@@ -43,9 +43,10 @@ class ComponentBase:
         if print_name:
             title = self.name
             self.logger.log_subtitle(title)
-        for parameter in self.parameters:
-            parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
-            self.logger.log(parameter_str)
+        if print_parameters:
+            for parameter in self.parameters:
+                parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
+                self.logger.log(parameter_str)
         if return_dict:
             component_dict = {"name": self.name}
             component_dict.update({"parameters": self.parameters})

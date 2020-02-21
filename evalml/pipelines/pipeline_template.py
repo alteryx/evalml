@@ -1,7 +1,8 @@
 from .components import Estimator, handle_component
 
-from evalml.utils import Logger
 from evalml.problem_types import handle_problem_types
+from evalml.utils import Logger
+
 
 class PipelineTemplate:
     def __init__(self, component_graph, supported_problem_types):
@@ -12,7 +13,7 @@ class PipelineTemplate:
         self.logger = Logger()
 
         self._validate_problem_types(self.supported_problem_types)
-        
+
     def _generate_name(self):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
@@ -41,33 +42,16 @@ class PipelineTemplate:
 
         return self.estimator.model_type
 
-    def describe(self, return_dict):
-        """Outputs pipeline details including component parameters
-
-        Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
-
-        Returns:
-            dict: dictionary of all component parameters if return_dict is True, else None
-        """
+    @property
+    def description(self):
+        """Outputs pipeline details including component parameters"""
         self.logger.log_title(self.name)
-        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        self.logger.log("Model Type: {}".format(str(self.model_type)))
-        better_string = "lower is better"
-        if self.objective.greater_is_better:
-            better_string = "greater is better"
-        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        self.logger.log(objective_string)
-
-        if self.estimator.name in self.input_feature_names:
-            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+        self.logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
+        self.logger.log("Model Family: {}".format(str(self.model_family)))
 
         # Summary of steps
         self.logger.log_subtitle("Pipeline Steps")
-        for number, component in enumerate(self.component_list, 1):
+        for number, component in enumerate(self.component_graph, 1):
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
-            component.describe(print_name=False)
-
-        if return_dict:
-            return self.parameters
+            component.describe(print_name=False, print_parameters=False)
