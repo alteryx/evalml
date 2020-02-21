@@ -46,10 +46,12 @@ class PipelineBase(PipelineTemplate):
             try:
                 component_class = component.__class__
                 component_name = component.name
-                component_parameters = self.parameters[component_name]
-                # need to validate component parameters
-                self._validate_component_parameters(component_class, self.parameters[component_name])
-                new_component = component_class(**component_parameters)
+                if component_class.hyperparameter_ranges == {}:
+                    new_component = component_class()
+                else:
+                    component_parameters = self.parameters[component_name]
+                    self._validate_component_parameters(component_class, self.parameters[component_name])
+                    new_component = component_class(**component_parameters)
                 self.component_graph[index] = new_component
             except ValueError as e:
                 print("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))
