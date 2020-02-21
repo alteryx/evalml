@@ -43,7 +43,7 @@ def test_rf_regression(X_y_categorical_regression):
     objective = R2()
     clf = RFRegressionPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)

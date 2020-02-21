@@ -19,7 +19,7 @@ def test_fraud_objective(X_y):
     pipeline = automl.best_pipeline
     pipeline.predict(X)
     pipeline.predict_proba(X)
-    pipeline.score(X, y)
+    pipeline.score(X, y, [objective])
 
     fraud_cost = FraudCost(amount_col="value")
 

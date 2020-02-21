@@ -110,13 +110,12 @@ class BinaryClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objectives = objectives or []
         objectives = [get_objective(o) for o in objectives]
         y_predicted = None
         y_predicted_proba = None
 
         scores = []
-        for objective in [self.objective] + objectives:
+        for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
@@ -134,6 +133,6 @@ class BinaryClassificationPipeline(PipelineBase):
         if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in objectives], scores[1:]))
+        other_scores = OrderedDict(zip([n.name for n in objectives], scores))
 
         return scores[0], other_scores

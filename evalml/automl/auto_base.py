@@ -27,7 +27,6 @@ class AutoBase:
                  add_result_callback, additional_objectives, random_state, verbose):
         if tuner is None:
             tuner = SKOptTuner
-        self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.model_types = model_types
@@ -51,6 +50,8 @@ class AutoBase:
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
+
+        self.additional_objectives = [self.objective] + additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
@@ -84,7 +85,6 @@ class AutoBase:
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
 
-        self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
@@ -264,7 +264,7 @@ class AutoBase:
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
             ordered_scores = OrderedDict()
-            ordered_scores.update({self.objective.name: score})
+            # ordered_scores.update({self.objective.name: score})
             ordered_scores.update(other_scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})

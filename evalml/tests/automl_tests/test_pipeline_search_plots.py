@@ -41,7 +41,7 @@ def test_generate_roc(X_y):
                     y_train, y_test = y[train], y[test]
 
                 pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test)
+                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
 
                 ordered_scores = OrderedDict()
                 ordered_scores.update({"ROC": score})
@@ -120,7 +120,7 @@ def test_generate_confusion_matrix(X_y):
                 y_test_lens.append(len(y_test))
 
                 pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test)
+                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
 
                 ordered_scores = OrderedDict()
                 ordered_scores.update({"Confusion Matrix": score})

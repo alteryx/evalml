@@ -47,7 +47,7 @@ def test_rf_multi(X_y_multi):
     objective = PrecisionMicro()
     clf = RFMulticlassClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())

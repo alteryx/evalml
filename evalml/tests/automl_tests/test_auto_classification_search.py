@@ -124,11 +124,13 @@ def test_multi_auto(X_y_multi):
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    expected_additional_objectives = get_objectives('multiclass')
-    objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
-    expected_additional_objectives.remove(objective_in_additional_objectives)
-    for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
-        assert type(additional) is type(expected)
+    expected_additional_objectives = set([type(objective) for objective in get_objectives('multiclass')])
+    # objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
+    # expected_additional_objectives.remove(objective_in_additional_objectives)
+    # for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
+    #     assert type(additional) is type(expected)
+    automl_objectives = set([type(objective) for objective in automl.additional_objectives])
+    assert expected_additional_objectives == automl_objectives
 
 
 def test_multi_objective(X_y_multi):
@@ -233,7 +235,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
-    objectives_names = [automl.objective.name] + [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
+    objectives_names = [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''

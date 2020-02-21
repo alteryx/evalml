@@ -45,7 +45,7 @@ def test_serialization(X_y, tmpdir):
     pipeline = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
-    assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
+    assert pipeline.score(X, y, [objective]) == load_pipeline(path).score(X, y, [objective])
 
 
 @pytest.fixture
@@ -68,7 +68,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path)
     objective = Precision()
     pipeline = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
     pipeline.fit(X, y)
-    assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
+    assert load_pipeline(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
 def test_reproducibility(X_y):
@@ -86,7 +86,7 @@ def test_reproducibility(X_y):
     clf_1 = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf_1.fit(X, y)
 
-    assert clf_1.score(X, y) == clf.score(X, y)
+    assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
 
 def test_indexing(X_y):
@@ -150,7 +150,7 @@ def test_multi_format_creation(X_y):
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
-    clf.score(X, y)
+    clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
 
@@ -164,5 +164,5 @@ def test_multiple_feature_selectors(X_y):
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
-    clf.score(X, y)
+    clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()

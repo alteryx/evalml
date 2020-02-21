@@ -99,11 +99,11 @@ class PipelineBase:
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
-        better_string = "lower is better"
-        if self.objective.greater_is_better:
-            better_string = "greater is better"
-        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        self.logger.log(objective_string)
+        # better_string = "lower is better"
+        # if self.objective.greater_is_better:
+        #     better_string = "greater is better"
+        # objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
+        # self.logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
             self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
@@ -202,13 +202,12 @@ class PipelineBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objectives = objectives or []
         objectives = [get_objective(o) for o in objectives]
         y_predicted = None
         y_predicted_proba = None
 
         scores = []
-        for objective in [self.objective] + objectives:
+        for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
@@ -225,7 +224,7 @@ class PipelineBase:
         if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in objectives], scores[1:]))
+        other_scores = OrderedDict(zip([n.name for n in objectives], scores))
 
         return scores[0], other_scores
 
