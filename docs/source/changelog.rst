@@ -14,6 +14,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * Created binary and multiclass pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
@@ -23,6 +24,13 @@ Changelog
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
 
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which must be used to fit a pipeline for a particular objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on.
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`

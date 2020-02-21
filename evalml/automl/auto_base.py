@@ -51,7 +51,6 @@ class AutoBase:
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
 
-        # self.additional_objectives = [self.objective] + additional_objectives
         self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
