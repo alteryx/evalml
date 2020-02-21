@@ -54,7 +54,7 @@ class BinaryClassificationPipeline(PipelineBase):
                 objective.fit(y_predicted_proba, y_objective)
         return self
 
-    def predict(self, X):
+    def predict(self, X, objective):
         """Make predictions using selected features.
 
         Args:
@@ -68,13 +68,13 @@ class BinaryClassificationPipeline(PipelineBase):
 
         X_t = self._transform(X)
 
-        if self.objective and self.objective.needs_fitting:
+        objective = get_objective(objective)
+        if objective and objective.needs_fitting:
             y_predicted_proba = self.predict_proba(X)
             y_predicted_proba = y_predicted_proba[:, 1]
-            if self.objective.uses_extra_columns:
-                return self.objective.predict(y_predicted_proba, X)
-
-            return self.objective.predict(y_predicted_proba)
+            if objective.uses_extra_columns:
+                return objective.predict(y_predicted_proba, X)
+            return objective.predict(y_predicted_proba)
 
         return self.estimator.predict(X_t)
 
@@ -124,7 +124,7 @@ class BinaryClassificationPipeline(PipelineBase):
                 y_predictions = y_predicted_proba
             else:
                 if y_predicted is None:
-                    y_predicted = self.predict(X)
+                    y_predicted = self.predict(X, objective)
                 y_predictions = y_predicted
 
             if objective.uses_extra_columns:
@@ -134,6 +134,6 @@ class BinaryClassificationPipeline(PipelineBase):
         if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in objectives], scores))
+        other_scores = OrderedDict(zip([n.name for n in objectives[1:]], scores[1:]))
 
         return scores[0], other_scores

@@ -51,7 +51,8 @@ class AutoBase:
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
 
-        self.additional_objectives = [self.objective] + additional_objectives
+        # self.additional_objectives = [self.objective] + additional_objectives
+        self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
@@ -225,7 +226,6 @@ class AutoBase:
         parameters = self._propose_parameters(pipeline_class)
         # fit an score the pipeline
         pipeline = pipeline_class(
-            objective=self.objective,
             random_state=self.random_state,
             n_jobs=-1,
             number_features=X.shape[1],
@@ -253,9 +253,10 @@ class AutoBase:
             else:
                 y_train, y_test = y[train], y[test]
 
+            objectives_to_score = [self.objective] + self.additional_objectives
             try:
                 pipeline.fit(X_train, y_train, self.objective)
-                score, other_scores = pipeline.score(X_test, y_test, objectives=self.additional_objectives)
+                score, other_scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
             except Exception as e:
                 if raise_errors:
                     raise e
@@ -264,7 +265,7 @@ class AutoBase:
                 score = np.nan
                 other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
             ordered_scores = OrderedDict()
-            # ordered_scores.update({self.objective.name: score})
+            ordered_scores.update({self.objective.name: score})
             ordered_scores.update(other_scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})

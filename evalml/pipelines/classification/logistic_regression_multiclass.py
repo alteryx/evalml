@@ -23,7 +23,7 @@ class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         "impute_strategy": ["mean", "median", "most_frequent"],
     }
 
-    def __init__(self, objective, penalty, C, impute_strategy,
+    def __init__(self, penalty, C, impute_strategy,
                  number_features, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -34,7 +34,6 @@ class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
                                                  C=C,
                                                  n_jobs=-1)
 
-        super().__init__(objective=objective,
-                         component_list=[enc, imputer, scaler, estimator],
+        super().__init__(component_list=[enc, imputer, scaler, estimator],
                          n_jobs=n_jobs,
                          random_state=random_state)

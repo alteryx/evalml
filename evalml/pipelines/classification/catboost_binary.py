@@ -23,7 +23,7 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
         "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, objective, impute_strategy, n_estimators,
+    def __init__(self, impute_strategy, n_estimators,
                  eta, max_depth, number_features, bootstrap_type=None,
                  n_jobs=1, random_state=0):
         # note: impute_strategy must support both string and numeric data
@@ -33,7 +33,6 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
                                        max_depth=max_depth,
                                        bootstrap_type=bootstrap_type,
                                        random_state=random_state)
-        super().__init__(objective=objective,
-                         component_list=[imputer, estimator],
+        super().__init__(component_list=[imputer, estimator],
                          n_jobs=1,
                          random_state=random_state)

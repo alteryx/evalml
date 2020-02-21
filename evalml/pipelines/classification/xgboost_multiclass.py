@@ -27,7 +27,7 @@ class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
         "percent_features": Real(.01, 1),
     }
 
-    def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
+    def __init__(self, eta, min_child_weight, max_depth, impute_strategy,
                  percent_features, number_features, n_estimators=10, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -45,7 +45,6 @@ class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
                                       min_child_weight=min_child_weight,
                                       n_estimators=n_estimators)
 
-        super().__init__(objective=objective,
-                         component_list=[enc, imputer, feature_selection, estimator],
+        super().__init__(component_list=[enc, imputer, feature_selection, estimator],
                          n_jobs=n_jobs,
                          random_state=random_state)

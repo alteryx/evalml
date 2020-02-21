@@ -14,20 +14,16 @@ class PipelineBase:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, objective, component_list, n_jobs, random_state):
+    def __init__(self, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
-            objective (Object): the objective to optimize
-
             component_list (list): List of components in order
 
             random_state (int): random seed/state
 
             n_jobs (int): Number of jobs to run in parallel
         """
-
-        self.objective = get_objective(objective)
         self.random_state = random_state
         self.component_list = [handle_component(component) for component in component_list]
         self.component_names = [comp.name for comp in self.component_list]
@@ -157,7 +153,7 @@ class PipelineBase:
         self._fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:
@@ -224,7 +220,7 @@ class PipelineBase:
         if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in objectives], scores))
+        other_scores = OrderedDict(zip([n.name for n in objectives[1:]], scores[1:]))
 
         return scores[0], other_scores
 
