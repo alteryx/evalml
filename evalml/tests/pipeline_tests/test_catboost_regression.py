@@ -29,7 +29,7 @@ def test_catboost_regression(X_y_reg):
     objective = R2()
     clf = CatBoostRegressionPipeline(objective=objective, n_estimators=1000, eta=0.03, number_features=X.shape[1],
                                      bootstrap_type='Bayesian', max_depth=6, impute_strategy='mean', random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -43,6 +43,6 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
     clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=1000,
                                      number_features=len(X.columns), bootstrap_type='Bayesian',
                                      eta=0.03, max_depth=6, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

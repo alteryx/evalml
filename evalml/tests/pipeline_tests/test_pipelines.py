@@ -43,7 +43,7 @@ def test_serialization(X_y, tmpdir):
     objective = Precision()
 
     pipeline = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
-    pipeline.fit(X, y)
+    pipeline.fit(X, y, objective)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y, [objective]) == load_pipeline(path).score(X, y, [objective])
 
@@ -55,7 +55,7 @@ def pickled_pipeline_path(X_y, tmpdir):
     MockPrecision = type('MockPrecision', (Precision,), {})
     objective = MockPrecision()
     pipeline = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
-    pipeline.fit(X, y)
+    pipeline.fit(X, y, objective)
     save_pipeline(pipeline, path)
     return path
 
@@ -67,7 +67,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path)
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
     pipeline = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
-    pipeline.fit(X, y)
+    pipeline.fit(X, y, 'precision')
     assert load_pipeline(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
@@ -81,10 +81,10 @@ def test_reproducibility(X_y):
     )
 
     clf = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
 
     clf_1 = LogisticRegressionBinaryPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf_1.fit(X, y)
+    clf_1.fit(X, y, objective)
 
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
@@ -92,7 +92,7 @@ def test_reproducibility(X_y):
 def test_indexing(X_y):
     X, y = X_y
     clf = LogisticRegressionBinaryPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, 'recall')
 
     assert isinstance(clf[0], OneHotEncoder)
     assert isinstance(clf['One Hot Encoder'], OneHotEncoder)
@@ -149,7 +149,7 @@ def test_multi_format_creation(X_y):
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    clf.fit(X, y)
+    clf.fit(X, y, 'precision')
     clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
@@ -163,6 +163,6 @@ def test_multiple_feature_selectors(X_y):
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    clf.fit(X, y)
+    clf.fit(X, y, 'precision')
     clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()

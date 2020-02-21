@@ -42,7 +42,7 @@ def test_rf_regression(X_y_categorical_regression):
 
     objective = R2()
     clf = RFRegressionPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -57,7 +57,7 @@ def test_rfr_input_feature_names(X_y_reg):
     X = pd.DataFrame(X, columns=col_names)
     objective = R2()
     clf = RFRegressionPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

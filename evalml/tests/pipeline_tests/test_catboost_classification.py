@@ -33,7 +33,7 @@ def test_catboost_multi(X_y_multi):
     objective = PrecisionMicro()
     clf = CatBoostMulticlassClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
                                                    number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -52,7 +52,7 @@ def test_catboost_input_feature_names(X_y):
     objective = PrecisionMicro()
     clf = CatBoostBinaryClassificationPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, eta=0.03,
                                                bootstrap_type='Bayesian', number_features=len(X.columns), max_depth=6, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
@@ -64,6 +64,6 @@ def test_catboost_categorical(X_y_categorical_classification):
     objective = PrecisionMicro()
     clf = CatBoostBinaryClassificationPipeline(objective=objective, impute_strategy='most_frequent',
                                                number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

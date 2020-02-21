@@ -46,7 +46,7 @@ def test_rf_multi(X_y_multi):
 
     objective = PrecisionMicro()
     clf = RFMulticlassClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -64,7 +64,7 @@ def test_rf_input_feature_names(X_y):
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
     clf = RFBinaryClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
-    clf.fit(X, y)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

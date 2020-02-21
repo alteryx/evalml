@@ -37,5 +37,5 @@ def test_invalid_format():
 def test_feature_importance_plot(X_y):
     X, y = X_y
     clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
-    clf.fit(X, y)
+    clf.fit(X, y, 'precision')
     assert isinstance(clf.plot.feature_importances(), go.Figure)

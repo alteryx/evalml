@@ -185,7 +185,7 @@ class PipelineBase:
         """
         raise NotImplementedError
 
-    def score(self, X, y, objectives=None):
+    def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Args:

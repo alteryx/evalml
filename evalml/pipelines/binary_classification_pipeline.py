@@ -38,19 +38,20 @@ class BinaryClassificationPipeline(PipelineBase):
             y = pd.Series(y)
 
         objective_fit_size = 0.2
-        if self.objective.needs_fitting:
+        objective = get_objective(objective)  # for now, to get things to work
+        if objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
 
-        if self.objective.needs_fitting:
+        if objective.needs_fitting:
             y_predicted_proba = self.predict_proba(X_objective)
             y_predicted_proba = y_predicted_proba[:, 1]
 
-            if self.objective.uses_extra_columns:
-                self.objective.fit(y_predicted_proba, y_objective, X_objective)
+            if objective.uses_extra_columns:
+                objective.fit(y_predicted_proba, y_objective, X_objective)
             else:
-                self.objective.fit(y_predicted_proba, y_objective)
+                objective.fit(y_predicted_proba, y_objective)
         return self
 
     def predict(self, X):
@@ -93,7 +94,7 @@ class BinaryClassificationPipeline(PipelineBase):
         proba = self.estimator.predict_proba(X)
         return proba
 
-    def score(self, X, y, objectives=None):
+    def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Args:
