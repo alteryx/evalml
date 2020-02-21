@@ -43,15 +43,22 @@ class PipelineBase(PipelineTemplate):
 
     def _instantiate_components(self):
         for index, component in enumerate(self.component_graph):
-            component_class = component.__class__
-            component_name = component.name
-            component_parameters = self.parameters[component_name]
             try:
+                component_class = component.__class__
+                component_name = component.name
+                component_parameters = self.parameters[component_name]
+                # need to validate component parameters
+                self._validate_component_parameters(component_class, self.parameters[component_name])
                 new_component = component_class(**component_parameters)
                 self.component_graph[index] = new_component
-            except TypeError as e:
+            except ValueError as e:
                 print("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))
                 raise e
+
+    def _validate_component_parameters(self, component_class, parameters):
+        for parameter, parameter_value in parameters.items():
+            if parameter_value not in component_class.hyperparameter_ranges[parameter]:
+                raise ValueError("{} = {} not in hyperparameter range of {}".format(parameter, parameter_value, component_class.name))
 
     def __getitem__(self, index):
         if isinstance(index, slice):
