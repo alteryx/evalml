@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
     ComponentBase,
     Estimator,
@@ -85,21 +86,21 @@ def test_missing_methods_on_components(X_y, test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
 
     component = MockComponent(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         component.fit(X)
 
     estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
     transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
-    with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
         transformer.transform(X)
-    with pytest.raises(RuntimeError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
         transformer.fit_transform(X)
 
 

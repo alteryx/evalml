@@ -1,5 +1,6 @@
 import pandas as pd
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import ComponentBase
 
 
@@ -23,7 +24,7 @@ class Transformer(ComponentBase):
                 X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
             return X_t
         except AttributeError:
-            raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
+            raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -40,4 +41,4 @@ class Transformer(ComponentBase):
                 X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
             return X_t
         except AttributeError:
-            raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
+            raise MethodPropertyNotFoundError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")

@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.objectives import get_objective
 from evalml.utils import Logger
 
@@ -132,7 +133,7 @@ class PipelineBase:
             self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
             try:
                 component.fit(X_t, y_t)
-            except RuntimeError:
+            except MethodPropertyNotFoundError:
                 pass
             X_t = component.transform(X_t, y_t)
 

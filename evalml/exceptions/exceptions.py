@@ -1,0 +1,2 @@
+class MethodPropertyNotFoundError(Exception):
+    pass
