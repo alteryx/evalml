@@ -136,6 +136,8 @@ class PipelineBase:
         """Build a model
 
         Arguments:
+            objective (Object): the objective to optimize
+
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
 
             y (pd.Series): the target training labels of length [n_samples]

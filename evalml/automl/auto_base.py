@@ -224,12 +224,10 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
         # fit an score the pipeline
-        pipeline = pipeline_class(
-            random_state=self.random_state,
-            n_jobs=-1,
-            number_features=X.shape[1],
-            **dict(parameters)
-        )
+        pipeline = pipeline_class(random_state=self.random_state,
+                                  n_jobs=-1,
+                                  number_features=X.shape[1],
+                                  **dict(parameters))
 
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)

@@ -7,7 +7,6 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
-# from evalml.pipelines import XGBoostPipeline
 from evalml.pipelines import XGBoostBinaryPipeline, XGBoostMulticlassPipeline
 from evalml.utils import import_or_raise
 
