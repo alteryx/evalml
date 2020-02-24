@@ -37,8 +37,13 @@ class Transformer(ComponentBase):
         """
         try:
             X_t = self._component_obj.fit_transform(X, y)
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-            return X_t
         except AttributeError:
-            raise MethodPropertyNotFoundError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
+            try:
+                self.fit(X, y)
+                X_t = self.transform(X, y)
+            except MethodPropertyNotFoundError as e:
+                raise e
+
+        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        return X_t

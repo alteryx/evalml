@@ -145,5 +145,24 @@ def test_component_fit_transform(X_y):
                              component_obj=None,
                              random_state=0)
 
+    class MockTransformerFitTransform(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
     component = MockTransformer()
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerFitTransform()
     assert isinstance(component.fit_transform(X, y), np.ndarray)
