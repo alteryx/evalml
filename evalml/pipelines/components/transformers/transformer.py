@@ -14,7 +14,7 @@ class Transformer(ComponentBase):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series): Labels to transform
+            y (pd.Series, optional): Input Labels
         Returns:
             pd.DataFrame: Transformed X
         """
