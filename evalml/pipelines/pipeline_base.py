@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.objectives import get_objective
 from evalml.utils import Logger
 
