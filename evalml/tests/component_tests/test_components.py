@@ -146,4 +146,4 @@ def test_component_fit_transform(X_y):
                              random_state=0)
 
     component = MockTransformer()
-    assert isinstance(component.fit_transform(X), np.ndarray)
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
