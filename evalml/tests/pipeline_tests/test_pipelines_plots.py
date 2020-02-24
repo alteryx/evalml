@@ -43,7 +43,7 @@ def test_feature_importance_plot(X_y):
     assert isinstance(clf.plot.feature_importances(), go.Figure)
 
 
-def test_feature_importance_plot_hides_zero_value_features(X_y):
+def test_feature_importance_plot_show_all_features(X_y):
 
     class MockPipeline(PipelineBase):
         name = "Mock Pipeline"
@@ -71,3 +71,7 @@ def test_feature_importance_plot_hides_zero_value_features(X_y):
 
     data = figure.data[0]
     assert (np.all(data['x']))
+
+    figure = clf.plot.feature_importances(show_all_features=True)
+    data = figure.data[0]
+    assert (np.any(data['x'] == 0.0))

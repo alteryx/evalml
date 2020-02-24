@@ -74,14 +74,24 @@ class PipelinePlots:
 
         return graph
 
-    def feature_importances(self):
+    def feature_importances(self, show_all_features=False):
+        """Create and return a plot of the pipeline's feature importances
+
+        Arguments:
+            show_all_features (bool, optional) : If true, plot features with an importance value of zero. Defaults to False.
+
+        Returns:
+            plotly.Figure, a bar graph showing features and their importances
+
+        """
         import plotly.graph_objects as go
 
         feat_imp = self.pipeline.feature_importances
         feat_imp['importance'] = abs(feat_imp['importance'])
 
-        # Remove features with zero importance
-        feat_imp = feat_imp[feat_imp['importance'] != 0]
+        if not show_all_features:
+            # Remove features with zero importance
+            feat_imp = feat_imp[feat_imp['importance'] != 0]
 
         # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
