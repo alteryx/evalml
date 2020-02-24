@@ -79,6 +79,10 @@ class PipelinePlots:
 
         feat_imp = self.pipeline.feature_importances
         feat_imp['importance'] = abs(feat_imp['importance'])
+
+        # Remove features with zero importance
+        feat_imp = feat_imp[feat_imp['importance'] != 0]
+
         # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
 
