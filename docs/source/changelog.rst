@@ -15,6 +15,7 @@ Changelog
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
