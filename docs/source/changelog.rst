@@ -15,6 +15,7 @@ Changelog
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
+        * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
