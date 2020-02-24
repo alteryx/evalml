@@ -37,7 +37,6 @@ class BinaryClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objective_fit_size = 0.2
         objective = get_objective(objective)  # for now, to get things to work
         if objective.needs_fitting:
             X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
