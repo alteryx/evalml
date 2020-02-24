@@ -85,6 +85,11 @@ def test_missing_methods_on_components(X_y, test_classes):
     X, y = X_y
     MockComponent, MockEstimator, MockTransformer = test_classes
 
+    class MockTransformerWithFit(Transformer):
+        name = "Mock Transformer"
+        def fit(self, X, y=None):
+            return X
+
     component = MockComponent(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         component.fit(X)
@@ -96,12 +101,16 @@ def test_missing_methods_on_components(X_y, test_classes):
         estimator.predict_proba(X)
 
     transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
+    transformer_with_fit = MockTransformerWithFit(parameters={}, component_obj=None, random_state=0)
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
         transformer.transform(X)
-    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit_transform(X)
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
+        transformer_with_fit.fit_transform(X)
+    
 
 
 def test_component_fit(X_y):
