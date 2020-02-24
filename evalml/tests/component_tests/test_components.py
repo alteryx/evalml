@@ -87,6 +87,7 @@ def test_missing_methods_on_components(X_y, test_classes):
 
     class MockTransformerWithFit(Transformer):
         name = "Mock Transformer"
+
         def fit(self, X, y=None):
             return X
 
@@ -110,7 +111,6 @@ def test_missing_methods_on_components(X_y, test_classes):
         transformer.fit_transform(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
         transformer_with_fit.fit_transform(X)
-    
 
 
 def test_component_fit(X_y):
