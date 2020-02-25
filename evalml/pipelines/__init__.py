@@ -19,7 +19,6 @@ from .components import (
 )
 
 from .pipeline_base import PipelineBase
-from .pipeline_template import PipelineTemplate
 
 from .classification import (
     LogisticRegressionPipeline,

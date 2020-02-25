@@ -1,21 +1,23 @@
-from collections import OrderedDict
 import inspect
+from collections import OrderedDict
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
-from .pipeline_template import PipelineTemplate
 
 from evalml.objectives import get_objective
+from evalml.problem_types import handle_problem_types
+from evalml.utils import Logger
 
 
-class PipelineBase(PipelineTemplate):
+class PipelineBase():
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, template, parameters, objective):
+    def __init__(self, component_graph, parameters, objective, supported_problem_types):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -27,18 +29,42 @@ class PipelineBase(PipelineTemplate):
 
             n_jobs (int): Number of jobs to run in parallel
         """
-
+        self.component_graph = [handle_component(component) for component in component_graph]
+        self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in supported_problem_types]
+        self.name = self._generate_name()
+        self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
-        self.template = template
-
-        self.component_graph = self.template.component_graph
         self.parameters = parameters
         self.plot = PipelinePlots(self)
         self._instantiate_components()
 
-        super().__init__(component_graph=self.template.component_graph, supported_problem_types=self.template.supported_problem_types)
+        # check if one and only estimator in pipeline is the last element in component_list
+        if not isinstance(self.component_graph[-1], Estimator):
+            raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
+
+        self._validate_problem_types(self.supported_problem_types)
+
+    def _generate_name(self):
+        if self.estimator is not None:
+            name = "{}".format(self.estimator.name)
+        else:
+            name = "Pipeline"
+        for index, component in enumerate(self.component_graph[:-1]):
+            if index == 0:
+                name += " w/ {}".format(component.name)
+            else:
+                name += " + {}".format(component.name)
+
+        return name
+
+    def _validate_problem_types(self, supported_problem_types):
+        estimator_problem_types = self.estimator.problem_types
+        for problem_type in self.supported_problem_types:
+            if problem_type not in estimator_problem_types:
+                raise ValueError("Supported problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
     def _instantiate_components(self):
         for index, component in enumerate(self.component_graph):
@@ -258,6 +284,15 @@ class PipelineBase(PipelineTemplate):
         other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
+
+    @property
+    def model_family(self):
+        """Returns model family of this pipeline template"""
+
+        # TODO: Refactor to model_family
+        # In future there potentially could be multiple estimators
+
+        return self.estimator.model_type
 
     @property
     def feature_importances(self):
