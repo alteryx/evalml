@@ -10,6 +10,7 @@ class CatBoostClassificationPipeline(PipelineBase):
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
+    Note: impute_strategy must support both string and numeric data
     """
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
@@ -28,5 +29,4 @@ class CatBoostClassificationPipeline(PipelineBase):
         super().__init__(objective=objective,
                          parameters=parameters,
                          component_graph=self.__class__.component_graph,
-                         supported_problem_types=self.__class__.supported_problem_types,
-                         )
+                         supported_problem_types=self.__class__.supported_problem_types)
