@@ -26,7 +26,7 @@ def test_lor_init(X_y):
     }
     clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.parameters['Logistic Regression Classifier']['random_state'] == 1
+    assert clf.random_state == 1
 
 
 def test_lor_multi(X_y_multi):
