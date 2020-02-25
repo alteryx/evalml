@@ -7,6 +7,8 @@ dask==2.11.0
 distributed==2.11.0
 numpy==1.18.1
 pandas==0.25.3
-scipy==1.4.1
+pyzmq==18.1.1
+scikit-learn==0.22.1
+scikit-optimize==0.7.4
 statsmodels==0.11.1
 xgboost==0.90
