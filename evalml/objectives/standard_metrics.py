@@ -5,12 +5,15 @@ from sklearn.preprocessing import label_binarize
 from sklearn.utils.multiclass import unique_labels
 
 from .objective_base import ObjectiveBase
+from .binary_classification_objective import BinaryClassificationObjective
+from .multiclass_classification_objective import MultiClassificationObjective
+from .regression_objective import RegressionObjective
 
 from evalml.problem_types import ProblemTypes
 
 
 # todo does this need tuning?
-class F1(ObjectiveBase):
+class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
     needs_fitting = False
     greater_is_better = True
@@ -22,7 +25,7 @@ class F1(ObjectiveBase):
         return metrics.f1_score(y_true, y_predicted)
 
 
-class F1Micro(ObjectiveBase):
+class F1Micro(MultiClassificationObjective):
     """F1 score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -34,7 +37,7 @@ class F1Micro(ObjectiveBase):
         return metrics.f1_score(y_true, y_predicted, average='micro')
 
 
-class F1Macro(ObjectiveBase):
+class F1Macro(MultiClassificationObjective):
     """F1 score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -46,7 +49,7 @@ class F1Macro(ObjectiveBase):
         return metrics.f1_score(y_true, y_predicted, average='macro')
 
 
-class F1Weighted(ObjectiveBase):
+class F1Weighted(MultiClassificationObjective):
     """F1 score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -58,7 +61,7 @@ class F1Weighted(ObjectiveBase):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
 
 
-class Precision(ObjectiveBase):
+class Precision(BinaryClassificationObjective):
     """Precision score for binary classification"""
     needs_fitting = False
     greater_is_better = True
@@ -70,7 +73,7 @@ class Precision(ObjectiveBase):
         return metrics.precision_score(y_true, y_predicted)
 
 
-class PrecisionMicro(ObjectiveBase):
+class PrecisionMicro(MultiClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -82,7 +85,7 @@ class PrecisionMicro(ObjectiveBase):
         return metrics.precision_score(y_true, y_predicted, average='micro')
 
 
-class PrecisionMacro(ObjectiveBase):
+class PrecisionMacro(MultiClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -94,7 +97,7 @@ class PrecisionMacro(ObjectiveBase):
         return metrics.precision_score(y_true, y_predicted, average='macro')
 
 
-class PrecisionWeighted(ObjectiveBase):
+class PrecisionWeighted(MultiClassificationObjective):
     """Precision score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -106,7 +109,7 @@ class PrecisionWeighted(ObjectiveBase):
         return metrics.precision_score(y_true, y_predicted, average='weighted')
 
 
-class Recall(ObjectiveBase):
+class Recall(BinaryClassificationObjective):
     """Recall score for binary classification"""
     needs_fitting = False
     greater_is_better = True
@@ -118,7 +121,7 @@ class Recall(ObjectiveBase):
         return metrics.recall_score(y_true, y_predicted)
 
 
-class RecallMicro(ObjectiveBase):
+class RecallMicro(MultiClassificationObjective):
     """Recall score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -130,7 +133,7 @@ class RecallMicro(ObjectiveBase):
         return metrics.recall_score(y_true, y_predicted, average='micro')
 
 
-class RecallMacro(ObjectiveBase):
+class RecallMacro(MultiClassificationObjective):
     """Recall score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -142,7 +145,7 @@ class RecallMacro(ObjectiveBase):
         return metrics.recall_score(y_true, y_predicted, average='macro')
 
 
-class RecallWeighted(ObjectiveBase):
+class RecallWeighted(MultiClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -154,7 +157,7 @@ class RecallWeighted(ObjectiveBase):
         return metrics.recall_score(y_true, y_predicted, average='weighted')
 
 
-class AUC(ObjectiveBase):
+class AUC(BinaryClassificationObjective):
     """AUC score for binary classification"""
     needs_fitting = False
     greater_is_better = True
@@ -166,7 +169,7 @@ class AUC(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted)
 
 
-class AUCMicro(ObjectiveBase):
+class AUCMicro(MultiClassificationObjective):
     """AUC score for multiclass classification using micro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -179,7 +182,7 @@ class AUCMicro(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
 
-class AUCMacro(ObjectiveBase):
+class AUCMacro(MultiClassificationObjective):
     """AUC score for multiclass classification using macro averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -192,7 +195,7 @@ class AUCMacro(ObjectiveBase):
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
 
-class AUCWeighted(ObjectiveBase):
+class AUCWeighted(MultiClassificationObjective):
     """AUC Score for multiclass classification using weighted averaging"""
     needs_fitting = False
     greater_is_better = True
@@ -313,7 +316,7 @@ class ExpVariance(ObjectiveBase):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class ROC(ObjectiveBase):
+class ROC(BinaryClassificationObjective):
     """Receiver Operating Characteristic score for binary classification."""
     score_needs_proba = True
     name = "ROC"
