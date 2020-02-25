@@ -3,8 +3,6 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .pipeline_plots import PipelinePlots
-
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
@@ -65,13 +63,12 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         X_t = self._transform(X)
 
-        objective = get_objective(objective)
-        if objective and objective.needs_fitting:
-            y_predicted_proba = self.predict_proba(X)
-            y_predicted_proba = y_predicted_proba[:, 1]
-            if objective.uses_extra_columns:
+        if objective is not None:
+            objective = get_objective(objective)
+            if objective.needs_fitting:
+                y_predicted_proba = self.predict_proba(X)
+                y_predicted_proba = y_predicted_proba[:, 1]
                 return objective.predict(y_predicted_proba, X)
-            return objective.predict(y_predicted_proba)
 
         return self.estimator.predict(X_t)
 

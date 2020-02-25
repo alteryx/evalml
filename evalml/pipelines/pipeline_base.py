@@ -166,7 +166,6 @@ class PipelineBase:
         X_t = self._transform(X)
         return self.estimator.predict(X_t)
 
-
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
