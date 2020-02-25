@@ -68,7 +68,10 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             if objective.needs_fitting:
                 y_predicted_proba = self.predict_proba(X)
                 y_predicted_proba = y_predicted_proba[:, 1]
-                return objective.predict(y_predicted_proba, X)
+                if objective.uses_extra_columns:
+                    return objective.predict(y_predicted_proba, X)
+                else:
+                    return objective.predict(y_predicted_proba)
 
         return self.estimator.predict(X_t)
 

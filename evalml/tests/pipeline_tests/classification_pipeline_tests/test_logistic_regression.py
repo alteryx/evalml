@@ -56,6 +56,7 @@ def test_lor_multi(X_y_multi):
     y_pred_with_objective = clf.predict(X)
     assert((y_pred == y_pred_with_objective).all())
 
+
 def test_lor_input_feature_names(X_y):
     X, y = X_y
     # create a list of column names
