@@ -137,7 +137,7 @@ class PipelineBase:
 
             objective (Object or string): the objective to optimize
 
-            objective_fit_size (float): represent the proportion of the dataset to include in the test split.
+            objective_fit_size (float): the proportion of the dataset to include in the test split.
         Returns:
 
             self
@@ -166,18 +166,6 @@ class PipelineBase:
         X_t = self._transform(X)
         return self.estimator.predict(X_t)
 
-    def predict_proba(self, X):
-        # TODO: does this warrant having a ClassificationPipeline?
-        # doesn't make sense for regression?
-        """Make probability estimates for labels.
-
-        Args:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-
-        Returns:
-            pd.DataFrame : probability estimates
-        """
-        raise NotImplementedError
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives

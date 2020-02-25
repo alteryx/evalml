@@ -11,10 +11,6 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 class BinaryClassificationPipeline(ClassificationPipeline):
 
-    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
-    plot = PipelinePlots
-    threshold_selection_split = True
-
     def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
 
@@ -23,9 +19,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
+            objective (Object or string): the objective to optimize
 
+            objective_fit_size (float): the proportion of the dataset to include in the test split.
         Returns:
 
             self
