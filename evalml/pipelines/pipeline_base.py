@@ -75,19 +75,23 @@ class PipelineBase():
                 component_name = component.name
                 if component_class.hyperparameter_ranges == {}:
                     new_component = component_class()
+                elif component_name not in self.parameters:
+                    try:
+                        new_component = component_class()
+                    except TypeError as e:
+                        raise ValueError(e.message + "\nPlease provide the required parameters in the `parameters` dictionary argument.")
                 else:
                     component_parameters = self.parameters[component_name]
                     self._validate_component_parameters(component_class, self.parameters[component_name])
                     new_component = component_class(**component_parameters)
                 self.component_graph[index] = new_component
-            except ValueError as e:
-                print("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))
-                raise e
+            except ValueError:
+                raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))
 
     def _validate_component_parameters(self, component_class, parameters):
         for parameter, parameter_value in parameters.items():
             if parameter not in inspect.signature(component_class.__init__).parameters:
-                raise ValueError("{} is not a hyperparameter of {}".format(parameter_value, component_class.name))
+                raise ValueError("{} is not a hyperparameter of {}".format(parameter, component_class.name))
             if parameter in component_class.hyperparameter_ranges and parameter_value not in component_class.hyperparameter_ranges[parameter]:
                 raise ValueError("{} = {} not in hyperparameter range of {}".format(parameter, parameter_value, component_class.name))
 

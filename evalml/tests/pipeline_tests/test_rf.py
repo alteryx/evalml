@@ -20,7 +20,8 @@ def test_rf_init(X_y):
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
-            "number_features": len(X[0])
+            "number_features": len(X[0]),
+            "n_estimators": 20
         },
         'Random Forest Classifier': {
             "n_estimators": 20,
@@ -61,7 +62,8 @@ def test_rf_multi(X_y_multi):
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
-            "number_features": len(X[0])
+            "number_features": len(X[0]),
+            "n_estimators": 10
         },
         'Random Forest Classifier': {
             "n_estimators": 10,
@@ -92,7 +94,8 @@ def test_rf_input_feature_names(X_y):
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
-            "number_features": len(X.columns)
+            "number_features": len(X.columns),
+            "n_estimators": 20
         },
         'Random Forest Classifier': {
             "n_estimators": 20,
