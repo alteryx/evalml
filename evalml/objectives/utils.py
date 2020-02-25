@@ -43,6 +43,8 @@ def get_objective(objective):
     Returns:
         Objective
     """
+    if objective is None:
+        raise TypeError("Objective parameter cannot be NoneType")
     if isinstance(objective, ObjectiveBase):
         return objective
     objective = objective.lower()

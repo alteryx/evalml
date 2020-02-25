@@ -6,10 +6,10 @@ from sklearn.model_selection import train_test_split
 from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
-from evalml.pipelines import PipelineBase
+from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
-class BinaryClassificationPipeline(PipelineBase):
+class BinaryClassificationPipeline(ClassificationPipeline):
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
@@ -37,20 +37,22 @@ class BinaryClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objective = get_objective(objective)  # for now, to get things to work
-        if objective.needs_fitting:
-            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
+        if objective is not None:
+            objective = get_objective(objective)
+            if objective.needs_fitting:
+                X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
 
-        if objective.needs_fitting:
-            y_predicted_proba = self.predict_proba(X_objective)
-            y_predicted_proba = y_predicted_proba[:, 1]
+        if objective is not None:
+            if objective.needs_fitting:
+                y_predicted_proba = self.predict_proba(X_objective)
+                y_predicted_proba = y_predicted_proba[:, 1]
 
-            if objective.uses_extra_columns:
-                objective.fit(y_predicted_proba, y_objective, X_objective)
-            else:
-                objective.fit(y_predicted_proba, y_objective)
+                if objective.uses_extra_columns:
+                    objective.fit(y_predicted_proba, y_objective, X_objective)
+                else:
+                    objective.fit(y_predicted_proba, y_objective)
         return self
 
     def predict(self, X, objective):

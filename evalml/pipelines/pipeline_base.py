@@ -95,11 +95,6 @@ class PipelineBase:
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
-        # better_string = "lower is better"
-        # if self.objective.greater_is_better:
-        #     better_string = "greater is better"
-        # objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        # self.logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
             self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
