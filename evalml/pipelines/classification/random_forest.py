@@ -16,7 +16,8 @@ class RFClassificationPipeline(PipelineBase):
     """Random Forest Pipeline for both binary and multiclass classification"""
     name = "Random Forest Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', 'Random Forest Classifier']
+    supported_problem_types = ['binary', 'multiclass']
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
@@ -25,24 +26,9 @@ class RFClassificationPipeline(PipelineBase):
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy,
-                 percent_features, number_features, n_jobs=-1, random_state=0):
-
-        imputer = SimpleImputer(impute_strategy=impute_strategy)
-        enc = OneHotEncoder()
-        estimator = RandomForestClassifier(n_estimators=n_estimators,
-                                           max_depth=max_depth,
-                                           n_jobs=n_jobs,
-                                           random_state=random_state)
-        feature_selection = RFClassifierSelectFromModel(n_estimators=n_estimators,
-                                                        max_depth=max_depth,
-                                                        number_features=number_features,
-                                                        percent_features=percent_features,
-                                                        threshold=-np.inf,
-                                                        n_jobs=n_jobs,
-                                                        random_state=random_state)
-
+    def __init__(self, objective, parameters):
         super().__init__(objective=objective,
-                         component_list=[enc, imputer, feature_selection, estimator],
-                         n_jobs=n_jobs,
-                         random_state=random_state)
+                         parameters=parameters,
+                         component_graph=self.__class__.component_graph,
+                         supported_problem_types=self.__class__.supported_problem_types
+                        )
