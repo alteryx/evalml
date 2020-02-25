@@ -1,19 +1,13 @@
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import (
-    LinearRegressor,
-    OneHotEncoder,
-    SimpleImputer,
-    StandardScaler
-)
-from evalml.problem_types import ProblemTypes
 
 
 class LinearRegressionPipeline(PipelineBase):
     """Linear Regression Pipeline for regression problems"""
     name = "Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
-    problem_types = [ProblemTypes.REGRESSION]
+    component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Linear Regressor']
+    supported_problem_types = ['regression']
 
     hyperparameters = {
         'impute_strategy': ['most_frequent', 'mean', 'median'],
@@ -21,17 +15,8 @@ class LinearRegressionPipeline(PipelineBase):
         'fit_intercept': [False, True]
     }
 
-    def __init__(self, objective, number_features, impute_strategy,
-                 normalize=False, fit_intercept=True, random_state=0, n_jobs=-1):
-
-        imputer = SimpleImputer(impute_strategy=impute_strategy)
-        enc = OneHotEncoder()
-        scaler = StandardScaler()
-        estimator = LinearRegressor(normalize=normalize,
-                                    fit_intercept=fit_intercept,
-                                    n_jobs=-1)
-
+    def __init__(self, objective, parameters):
         super().__init__(objective=objective,
-                         component_list=[enc, imputer, scaler, estimator],
-                         n_jobs=n_jobs,
-                         random_state=random_state)
+                         parameters=parameters,
+                         component_graph=self.__class__.component_graph,
+                         supported_problem_types=self.__class__.supported_problem_types)
