@@ -1,22 +1,15 @@
-import numpy as np
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import (
-    OneHotEncoder,
-    RandomForestRegressor,
-    RFRegressorSelectFromModel,
-    SimpleImputer
-)
-from evalml.problem_types import ProblemTypes
 
 
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression problems"""
     name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
-    problem_types = [ProblemTypes.REGRESSION]
+    component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Regressor Select From Model', 'Random Forest Regressor']
+    supported_problem_types = ['regression']
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
@@ -25,24 +18,8 @@ class RFRegressionPipeline(PipelineBase):
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy, percent_features,
-                 number_features, n_jobs=-1, random_state=0):
-
-        imputer = SimpleImputer(impute_strategy=impute_strategy)
-        enc = OneHotEncoder()
-        feature_selection = RFRegressorSelectFromModel(n_estimators=n_estimators,
-                                                       max_depth=max_depth,
-                                                       number_features=number_features,
-                                                       percent_features=percent_features,
-                                                       threshold=-np.inf,
-                                                       n_jobs=n_jobs,
-                                                       random_state=random_state)
-        estimator = RandomForestRegressor(random_state=random_state,
-                                          n_estimators=n_estimators,
-                                          max_depth=max_depth,
-                                          n_jobs=n_jobs)
-
+    def __init__(self, objective, parameters):
         super().__init__(objective=objective,
-                         component_list=[enc, imputer, feature_selection, estimator],
-                         n_jobs=n_jobs,
-                         random_state=random_state)
+                         parameters=parameters,
+                         component_graph=self.__class__.component_graph,
+                         supported_problem_types=self.__class__.supported_problem_types)
