@@ -49,11 +49,10 @@ def test_feature_importance_plot_show_all_features(X_y):
         name = "Mock Pipeline"
 
         def __init__(self):
-            objective = "Precision"
             component_list = ['Logistic Regression Classifier']
             n_jobs = 1
             random_state = 0
-            super().__init__(objective=objective, component_list=component_list, n_jobs=n_jobs, random_state=random_state)
+            super().__init__(component_list=component_list, n_jobs=n_jobs, random_state=random_state)
 
         @property
         def feature_importances(self):
