@@ -23,7 +23,7 @@ Changelog
         * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
-        * Updated dependency jmespath :pr:`415`
+        * Updated expected dependency versions for jmespath and plotly :pr:`415`
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
