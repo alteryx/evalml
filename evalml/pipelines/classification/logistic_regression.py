@@ -2,7 +2,6 @@ from skopt.space import Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
-from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionPipeline(PipelineBase):
@@ -22,5 +21,4 @@ class LogisticRegressionPipeline(PipelineBase):
         super().__init__(objective=objective,
                          parameters=parameters,
                          component_graph=self.__class__.component_graph,
-                         supported_problem_types=self.__class__.supported_problem_types
-                        )
+                         supported_problem_types=self.__class__.supported_problem_types)
