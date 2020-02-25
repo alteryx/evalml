@@ -9,7 +9,7 @@ class LogisticRegressionPipeline(PipelineBase):
     name = "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
     component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-    supported_problem_types = ['binary', 'multiclass']
+    problem_types = ['binary', 'multiclass']
 
     hyperparameters = {
         "penalty": ["l2"],
@@ -21,4 +21,4 @@ class LogisticRegressionPipeline(PipelineBase):
         super().__init__(objective=objective,
                          parameters=parameters,
                          component_graph=self.__class__.component_graph,
-                         supported_problem_types=self.__class__.supported_problem_types)
+                         problem_types=self.__class__.problem_types)

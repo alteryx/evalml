@@ -17,7 +17,7 @@ class PipelineBase():
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, supported_problem_types):
+    def __init__(self, component_graph, parameters, objective, problem_types):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -30,7 +30,7 @@ class PipelineBase():
             n_jobs (int): Number of jobs to run in parallel
         """
         self.component_graph = [handle_component(component) for component in component_graph]
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in supported_problem_types]
+        self.problem_types = [handle_problem_types(problem_type) for problem_type in problem_types]
         self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
@@ -47,7 +47,7 @@ class PipelineBase():
         if not isinstance(self.component_graph[-1], Estimator):
             raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
 
-        self._validate_problem_types(self.supported_problem_types)
+        self._validate_problem_types(self.problem_types)
 
     def _generate_name(self):
         if self.estimator is not None:
@@ -62,11 +62,11 @@ class PipelineBase():
 
         return name
 
-    def _validate_problem_types(self, supported_problem_types):
+    def _validate_problem_types(self, problem_types):
         estimator_problem_types = self.estimator.problem_types
-        for problem_type in self.supported_problem_types:
+        for problem_type in self.problem_types:
             if problem_type not in estimator_problem_types:
-                raise ValueError("Supported problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
+                raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
     def _instantiate_components(self):
         for index, component in enumerate(self.component_graph):
