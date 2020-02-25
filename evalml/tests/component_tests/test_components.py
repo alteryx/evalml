@@ -141,7 +141,7 @@ def test_component_fit(X_y):
 def test_component_fit_transform(X_y):
     X, y = X_y
 
-    class MockTransformer(Transformer):
+    class MockTransformerWithFitTransform(Transformer):
         name = "Mock Transformer"
         hyperparameter_ranges = {}
 
@@ -154,7 +154,20 @@ def test_component_fit_transform(X_y):
                              component_obj=None,
                              random_state=0)
 
-    class MockTransformerFitTransform(Transformer):
+    class MockTransformerWithFitTransformButError(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            raise RuntimeError
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithFitAndTransform(Transformer):
         name = "Mock Transformer"
         hyperparameter_ranges = {}
 
@@ -170,8 +183,29 @@ def test_component_fit_transform(X_y):
                              component_obj=None,
                              random_state=0)
 
-    component = MockTransformer()
+    class MockTransformerWithOnlyFit(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    component = MockTransformerWithFitTransform()
     assert isinstance(component.fit_transform(X, y), np.ndarray)
 
-    component = MockTransformerFitTransform()
+    component = MockTransformerWithFitTransformButError()
+    with pytest.raises(RuntimeError):
+        component.fit_transform(X, y)
+
+    component = MockTransformerWithFitAndTransform()
     assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerWithOnlyFit()
+    with pytest.raises(MethodPropertyNotFoundError):
+        component.fit_transform(X, y)
