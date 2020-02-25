@@ -30,16 +30,18 @@ class PipelineBase():
             n_jobs (int): Number of jobs to run in parallel
         """
         self.component_graph = [handle_component(component) for component in component_graph]
-        self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in supported_problem_types]
-        self.name = self._generate_name()
         self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
         self.parameters = parameters
         self.plot = PipelinePlots(self)
+
         self._instantiate_components()
+        self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
+        self.random_state = self.estimator.random_state
+        self.name = self._generate_name()
 
         # check if one and only estimator in pipeline is the last element in component_list
         if not isinstance(self.component_graph[-1], Estimator):
