@@ -172,7 +172,7 @@ class PipelineBase:
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
-            objectives (list): list of other objectives to score
+            objectives (list): Non-empty list of objectives to score on
 
         Returns:
             float, dict:  score, ordered dictionary of other objective scores

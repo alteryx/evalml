@@ -42,7 +42,7 @@ def test_lor_multi(X_y_multi):
 
     objective = PrecisionMicro()
     clf = LogisticRegressionMulticlassPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
     assert((y_pred == sk_pipeline.predict(X)).all())
@@ -51,6 +51,10 @@ def test_lor_multi(X_y_multi):
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
 
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y, objective)
+    y_pred_with_objective = clf.predict(X)
+    assert((y_pred == y_pred_with_objective).all())
 
 def test_lor_input_feature_names(X_y):
     X, y = X_y

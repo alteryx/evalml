@@ -28,13 +28,17 @@ def test_catboost_regression(X_y_reg):
     objective = R2()
     clf = CatBoostRegressionPipeline(n_estimators=1000, eta=0.03, number_features=X.shape[1],
                                      bootstrap_type='Bayesian', max_depth=6, impute_strategy='mean', random_state=0)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
     np.testing.assert_almost_equal(sk_score, clf_score[0], decimal=5)
 
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y, objective)
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 def test_cbr_input_feature_names(X_y_categorical_regression):
     X, y = X_y_categorical_regression

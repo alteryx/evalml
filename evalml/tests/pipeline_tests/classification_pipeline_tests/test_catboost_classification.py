@@ -32,7 +32,7 @@ def test_catboost_multi(X_y_multi):
     objective = PrecisionMicro()
     clf = CatBoostMulticlassClassificationPipeline(impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
                                                    number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -41,6 +41,11 @@ def test_catboost_multi(X_y_multi):
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
+
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y, objective)
+    y_pred_with_objective = clf.predict(X)
+    assert((y_pred == y_pred_with_objective).all())
 
 
 def test_catboost_input_feature_names(X_y):
