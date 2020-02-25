@@ -46,7 +46,7 @@ class PipelineBase:
         self.results = {}
 
         self.n_jobs = n_jobs
-        if not isinstance(n_jobs, int) and not None or n_jobs == 0:
+        if not isinstance (n_jobs, (int, type(None))) or n_jobs == 0:
             raise ValueError('n_jobs must be an non-zero integer or None. n_jobs is set to `{}`.'.format(n_jobs))
 
         self.parameters = {}
