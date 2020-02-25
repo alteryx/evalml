@@ -4,6 +4,8 @@ import sys
 
 from .component_base import ComponentBase
 from .estimators import (
+    CatBoostClassifier,
+    CatBoostRegressor,
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,

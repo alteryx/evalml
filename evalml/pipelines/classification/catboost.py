@@ -1,7 +1,7 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase, PipelineTemplate
+from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 
 
@@ -14,7 +14,8 @@ class CatBoostClassificationPipeline(PipelineBase):
     """
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    component_graph = ['Simple Imputer', 'CatBoost Classifier']
+    supported_problem_types = ['binary', 'multiclass']
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),
@@ -25,9 +26,8 @@ class CatBoostClassificationPipeline(PipelineBase):
     def __init__(self, objective, parameters):
 
         # note: impute_strategy must support both string and numeric data
-        component_graph = ['Simple Imputer', 'CatBoost Classifier']
-        supported_problem_types = ['binary', 'multiclass']
-        template = PipelineTemplate(component_graph=component_graph, supported_problem_types=supported_problem_types)
         super().__init__(objective=objective,
-                         template=template,
-                         parameters=parameters)
+                         parameters=parameters,
+                         component_graph=self.__class__.component_graph,
+                         supported_problem_types=self.__class__.supported_problem_types,
+                         )
