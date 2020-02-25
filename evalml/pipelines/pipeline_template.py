@@ -18,7 +18,7 @@ class PipelineTemplate:
 
         self._validate_problem_types(self.supported_problem_types)
 
-    def _generate_name(self):
+    def _generate_name(cls):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
         else:

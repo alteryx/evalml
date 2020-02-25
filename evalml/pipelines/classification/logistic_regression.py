@@ -20,7 +20,8 @@ class LogisticRegressionPipeline(PipelineBase):
     def __init__(self, objective, parameters):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
         supported_problem_types = ['binary', 'multiclass']
-        template = PipelineTemplate(component_graph=component_graph, supported_problem_types=supported_problem_types)
+        # template = PipelineTemplate(component_graph=component_graph, supported_problem_types=supported_problem_types)
         super().__init__(objective=objective,
-                         template=template,
+                         component_graph=component_graph,
+                         supported_problem_types=supported_problem_types,
                          parameters=parameters)

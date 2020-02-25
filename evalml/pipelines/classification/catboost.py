@@ -1,8 +1,7 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import CatBoostClassifier, SimpleImputer
+from evalml.pipelines import PipelineBase, PipelineTemplate
 from evalml.problem_types import ProblemTypes
 
 
@@ -23,17 +22,12 @@ class CatBoostClassificationPipeline(PipelineBase):
         "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, objective, impute_strategy, n_estimators,
-                 eta, max_depth, number_features, bootstrap_type=None,
-                 n_jobs=1, random_state=0):
+    def __init__(self, objective, parameters):
+
         # note: impute_strategy must support both string and numeric data
-        imputer = SimpleImputer(impute_strategy=impute_strategy)
-        estimator = CatBoostClassifier(n_estimators=n_estimators,
-                                       eta=eta,
-                                       max_depth=max_depth,
-                                       bootstrap_type=bootstrap_type,
-                                       random_state=random_state)
+        component_graph = ['Simple Imputer', 'CatBoost Classifier']
+        supported_problem_types = ['binary', 'multiclass']
+        template = PipelineTemplate(component_graph=component_graph, supported_problem_types=supported_problem_types)
         super().__init__(objective=objective,
-                         component_list=[imputer, estimator],
-                         n_jobs=1,
-                         random_state=random_state)
+                         template=template,
+                         parameters=parameters)
