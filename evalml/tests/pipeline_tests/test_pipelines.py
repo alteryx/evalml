@@ -58,7 +58,7 @@ def test_serialization(X_y, tmpdir):
 
 
 @pytest.fixture
-def pickled_pipeline_path_binary(X_y, tmpdir):
+def pickled_pipeline_path(X_y, tmpdir):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
