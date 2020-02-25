@@ -40,6 +40,7 @@ def test_catboost_regression(X_y_reg):
     y_pred_with_objective = clf.predict(X, objective)
     np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
+
 def test_cbr_input_feature_names(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     objective = R2()

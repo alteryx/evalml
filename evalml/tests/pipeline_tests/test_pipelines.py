@@ -56,6 +56,7 @@ def test_serialization(X_y, tmpdir):
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y, [objective]) == load_pipeline(path).score(X, y, [objective])
 
+
 @pytest.fixture
 def pickled_pipeline_path_binary(X_y, tmpdir):
     X, y = X_y
@@ -174,6 +175,7 @@ def test_multiple_feature_selectors(X_y):
     clf.fit(X, y, 'precision')
     clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
+
 
 def test_score_with_empty_list_of_objectives(X_y):
     X, y = X_y
