@@ -27,8 +27,6 @@ from .standard_metrics import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted,
-    ROC,
-    ConfusionMatrix
+    RecallWeighted
 )
 from .utils import get_objective, get_objectives

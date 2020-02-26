@@ -313,29 +313,29 @@ class ExpVariance(ObjectiveBase):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class ROC(ObjectiveBase):
-    """Receiver Operating Characteristic score for binary classification."""
-    score_needs_proba = True
-    name = "ROC"
-    problem_types = [ProblemTypes.BINARY]
+# class ROC(ObjectiveBase):
+#     """Receiver Operating Characteristic score for binary classification."""
+#     score_needs_proba = True
+#     name = "ROC"
+#     problem_types = [ProblemTypes.BINARY]
 
-    def score(self, y_predicted, y_true):
-        return metrics.roc_curve(y_true, y_predicted)
+#     def score(self, y_predicted, y_true):
+#         return metrics.roc_curve(y_true, y_predicted)
 
 
-class ConfusionMatrix(ObjectiveBase):
-    """Confusion matrix for classification problems"""
-    needs_fitting = False
-    greater_is_better = True
-    score_needs_proba = False
-    name = "Confusion Matrix"
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+# class ConfusionMatrix(ObjectiveBase):
+#     """Confusion matrix for classification problems"""
+#     needs_fitting = False
+#     greater_is_better = True
+#     score_needs_proba = False
+#     name = "Confusion Matrix"
+#     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
-        labels = unique_labels(y_predicted, y_true)
-        conf_mat = metrics.confusion_matrix(y_true, y_predicted)
-        conf_mat = pd.DataFrame(conf_mat, columns=labels)
-        return conf_mat
+#     def score(self, y_predicted, y_true):
+#         labels = unique_labels(y_predicted, y_true)
+#         conf_mat = metrics.confusion_matrix(y_true, y_predicted)
+#         conf_mat = pd.DataFrame(conf_mat, columns=labels)
+#         return conf_mat
 
 
 def _handle_predictions(y_true, y_pred):

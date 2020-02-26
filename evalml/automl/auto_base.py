@@ -377,10 +377,6 @@ class AutoBase:
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
 
-        # note: we need to think about how to better handle metrics we don't want to display in our chart
-        # currently, just dropping the columns before displaying
-        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
-
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
                 all_objective_scores[c] = all_objective_scores[c].astype("object")
