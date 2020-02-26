@@ -26,12 +26,11 @@ def test_rf_init(X_y_reg):
         'Random Forest Regressor': {
             "n_estimators": 20,
             "max_depth": 5,
-            "random_state": 2
         }
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 2
+    assert clf.random_state == 0
 
 
 def test_rf_regression(X_y_categorical_regression):
@@ -63,12 +62,10 @@ def test_rf_regression(X_y_categorical_regression):
             "number_features": X.shape[1],
             "n_estimators": 10,
             "max_depth": 3,
-            "random_state": 0
         },
         'Random Forest Regressor': {
             "n_estimators": 10,
             "max_depth": 3,
-            "random_state": 0
         }
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)
@@ -98,7 +95,6 @@ def test_rfr_input_feature_names(X_y_reg):
         'Random Forest Regressor': {
             "n_estimators": 20,
             "max_depth": 5,
-            "random_state": 2
         }
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)

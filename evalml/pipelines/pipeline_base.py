@@ -1,3 +1,4 @@
+import copy
 import inspect
 from collections import OrderedDict
 
@@ -17,7 +18,7 @@ class PipelineBase():
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, problem_types):
+    def __init__(self, component_graph, objective, problem_types, parameters=None, random_state=0, n_jobs=-1):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -37,13 +38,15 @@ class PipelineBase():
         self.results = {}
         self.parameters = parameters
         self.plot = PipelinePlots(self)
+        self.random_state = random_state
+        self.n_jobs = n_jobs
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
-        self.random_state = self.estimator.random_state if self.estimator else 0
+
         self.name = self._generate_name()
 
-        # check if one and only estimator in pipeline is the last element in component_list
+        # check if one and only estimator in pipeline is the last element in component_graph
         if not isinstance(self.component_graph[-1], Estimator):
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
@@ -81,8 +84,12 @@ class PipelineBase():
                     except TypeError as e:
                         raise ValueError(e.message + "\nPlease provide the required parameters in the `parameters` dictionary argument.")
                 else:
-                    component_parameters = self.parameters[component_name]
+                    component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])
+                    if 'random_state' in inspect.signature(component_class.__init__).parameters:
+                        component_parameters['random_state'] = self.random_state
+                    if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
+                        component_parameters['n_jobs'] = self.n_jobs
                     new_component = component_class(**component_parameters)
                 self.component_graph[index] = new_component
             except ValueError:

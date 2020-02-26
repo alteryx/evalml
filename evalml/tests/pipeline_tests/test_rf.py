@@ -26,13 +26,12 @@ def test_rf_init(X_y):
         'Random Forest Classifier': {
             "n_estimators": 20,
             "max_depth": 5,
-            "random_state": 2
         }
     }
 
     clf = RFClassificationPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 2
+    assert clf.random_state == 0
 
 
 def test_rf_multi(X_y_multi):
@@ -100,7 +99,6 @@ def test_rf_input_feature_names(X_y):
         'Random Forest Classifier': {
             "n_estimators": 20,
             "max_depth": 5,
-            "random_state": 2
         }
     }
     clf = RFClassificationPipeline(objective=objective, parameters=parameters)

@@ -19,13 +19,12 @@ def test_catboost_init():
             "bootstrap_type": 'Bernoulli',
             "eta": 0.1,
             "max_depth": 3,
-            "random_state": 2
         }
     }
     clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
 
     assert clf.parameters == parameters
-    assert clf.random_state == 2
+    assert clf.random_state == 0
 
 
 def test_catboost_multi(X_y_multi):
@@ -48,7 +47,6 @@ def test_catboost_multi(X_y_multi):
             "bootstrap_type": 'Bernoulli',
             "eta": 0.1,
             "max_depth": 3,
-            "random_state": 2
         }
     }
 
@@ -79,7 +77,6 @@ def test_catboost_input_feature_names(X_y):
             "bootstrap_type": 'Bernoulli',
             "eta": 0.03,
             "max_depth": 6,
-            "random_state": 0
         }
     }
     clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
@@ -102,7 +99,6 @@ def test_catboost_categorical(X_y_categorical_classification):
             "bootstrap_type": 'Bernoulli',
             "eta": 0.1,
             "max_depth": 3,
-            "random_state": 2
         }
     }
     clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)

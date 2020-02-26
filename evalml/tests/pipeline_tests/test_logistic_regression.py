@@ -21,12 +21,11 @@ def test_lor_init(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,
-            'random_state': 1
         }
     }
     clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 1
+    assert clf.random_state == 0
 
 
 def test_lor_multi(X_y_multi):

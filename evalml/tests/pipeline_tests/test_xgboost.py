@@ -30,14 +30,13 @@ def test_xg_init(X_y):
             "eta": 0.2,
             "min_child_weight": 3,
             "max_depth": 5,
-            "random_state": 1
         }
     }
 
     clf = XGBoostPipeline(objective=objective, parameters=parameters)
 
     assert clf.parameters == parameters
-    assert clf.random_state == 1
+    assert clf.random_state == 0
 
 
 def test_xg_multi(X_y_multi):
@@ -72,13 +71,11 @@ def test_xg_multi(X_y_multi):
             "number_features": len(X[0]),
             "n_estimators": 20,
             "max_depth": 3,
-            "random_state": 0
         },
         'XGBoost Classifier': {
             "n_estimators": 10,
             "eta": 0.1,
             "min_child_weight": 1,
-            "random_state": 0,
             "max_depth": 3
         }
     }
@@ -116,7 +113,6 @@ def test_xg_input_feature_names(X_y):
             "eta": 0.2,
             "min_child_weight": 3,
             "max_depth": 5,
-            "random_state": 1
         }
     }
 

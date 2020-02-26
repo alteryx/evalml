@@ -18,12 +18,11 @@ def test_catboost_init():
             "bootstrap_type": 'Bayesian',
             "eta": 0.03,
             "max_depth": 6,
-            "random_state": 2
         }
     }
     clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 2
+    assert clf.random_state == 0
 
 
 def test_catboost_regression(X_y_reg):
@@ -46,7 +45,6 @@ def test_catboost_regression(X_y_reg):
             "bootstrap_type": 'Bayesian',
             "eta": 0.03,
             "max_depth": 6,
-            "random_state": 0
         }
     }
     clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
@@ -70,7 +68,6 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
             "bootstrap_type": 'Bayesian',
             "eta": 0.03,
             "max_depth": 6,
-            "random_state": 2
         }
     }
     clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
