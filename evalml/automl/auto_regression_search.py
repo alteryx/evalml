@@ -66,7 +66,7 @@ class AutoRegressionSearch(AutoBase):
 
             random_state (int): the random_state
 
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. 
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
