@@ -1,5 +1,7 @@
+import numpy as np
 import pytest
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
     ComponentBase,
     Estimator,
@@ -20,15 +22,12 @@ from evalml.pipelines.components import (
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
-        _needs_fitting = True
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
-        _needs_fitting = True
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
-        _needs_fitting = False
 
     return MockComponent, MockEstimator, MockTransformer
 
@@ -75,40 +74,43 @@ def test_describe_component():
 
 
 def test_missing_attributes(X_y):
-    class MockComponentFitting(ComponentBase):
-        name = "mock"
-
     class MockComponentName(ComponentBase):
-        _needs_fitting = True
+        pass
 
     with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
-
-    with pytest.raises(AttributeError, match="Component missing attribute: `_needs_fitting`"):
-        MockComponentFitting(parameters={}, component_obj=None, random_state=0)
 
 
 def test_missing_methods_on_components(X_y, test_classes):
     X, y = X_y
     MockComponent, MockEstimator, MockTransformer = test_classes
 
+    class MockTransformerWithFit(Transformer):
+        name = "Mock Transformer"
+
+        def fit(self, X, y=None):
+            return X
+
     component = MockComponent(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         component.fit(X)
 
     estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
     transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+    transformer_with_fit = MockTransformerWithFit(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
-    with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
         transformer.transform(X)
-    with pytest.raises(RuntimeError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit_transform(X)
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
+        transformer_with_fit.fit_transform(X)
 
 
 def test_component_fit(X_y):
@@ -123,7 +125,6 @@ def test_component_fit(X_y):
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
-        _needs_fitting = True
         hyperparameter_ranges = {}
 
         def __init__(self):
@@ -135,3 +136,76 @@ def test_component_fit(X_y):
 
     est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
+
+
+def test_component_fit_transform(X_y):
+    X, y = X_y
+
+    class MockTransformerWithFitTransform(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithFitTransformButError(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            raise RuntimeError
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithFitAndTransform(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithOnlyFit(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    component = MockTransformerWithFitTransform()
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerWithFitTransformButError()
+    with pytest.raises(RuntimeError):
+        component.fit_transform(X, y)
+
+    component = MockTransformerWithFitAndTransform()
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerWithOnlyFit()
+    with pytest.raises(MethodPropertyNotFoundError):
+        component.fit_transform(X, y)

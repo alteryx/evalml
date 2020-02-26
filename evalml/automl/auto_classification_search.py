@@ -25,6 +25,7 @@ class AutoClassificationSearch(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
+                 n_jobs=-1,
                  verbose=True):
         """Automated classifier pipeline search
 
@@ -68,6 +69,9 @@ class AutoClassificationSearch(AutoBase):
 
             random_state (int): the random_state
 
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
+                None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
 
@@ -99,6 +103,7 @@ class AutoClassificationSearch(AutoBase):
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
+            n_jobs=n_jobs,
             verbose=verbose
         )
         if self.problem_type == ProblemTypes.BINARY:
