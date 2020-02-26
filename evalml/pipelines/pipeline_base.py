@@ -22,7 +22,7 @@ class PipelineBase():
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
-            objective (Object): the objective to optimize
+            objective (ObjectiveBase): the objective to optimize
 
             component_graph (list): List of components in order
 
