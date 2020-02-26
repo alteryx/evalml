@@ -374,6 +374,7 @@ class AutoBase:
             self.logger.log("Warning! High variance within cross validation scores. " +
                             "Model may not perform as estimated on unseen data.")
 
+        # todo
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
 
