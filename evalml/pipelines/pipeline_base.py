@@ -18,7 +18,7 @@ class PipelineBase():
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1):
+    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1, number_features=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -40,6 +40,7 @@ class PipelineBase():
         self.plot = PipelinePlots(self)
         self.random_state = random_state
         self.n_jobs = n_jobs
+        self.number_features = number_features
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
@@ -87,11 +88,13 @@ class PipelineBase():
                     component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])
 
-                    # Add random_state and n_jobs into parameters
-                    if 'random_state' in inspect.signature(component_class.__init__).parameters:
+                    # Add random_state, n_jobs and number_features into component parameters if doesn't exist
+                    if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
                         component_parameters['random_state'] = self.random_state
-                    if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
+                    if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
                         component_parameters['n_jobs'] = self.n_jobs
+                    if 'number_features' in inspect.signature(component_class.__init__).parameters and 'number_features' not in component_parameters:
+                        component_parameters['number_features'] = self.number_features
                     new_component = component_class(**component_parameters)
 
                 self.component_graph[index] = new_component
