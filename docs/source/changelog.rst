@@ -14,6 +14,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
