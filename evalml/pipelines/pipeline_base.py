@@ -261,6 +261,34 @@ class PipelineBase:
 
         return scores[0], other_scores
 
+    def get_plot_data(self, X, y, plot_metrics):
+        """TODO
+        Generates plotting data
+        """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+        y_predicted = None
+        y_predicted_proba = None
+        scores = []
+        for plot_metric in plot_metrics:
+            if plot_metric.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
+                y_predictions = y_predicted
+
+            scores.append(plot_metric.score(y_predictions, y))
+
+        scores = OrderedDict(zip([n.name for n in plot_metrics], scores))
+
+        return scores
+
     @property
     def feature_importances(self):
         """Return feature importances. Features dropped by feature selection are excluded"""

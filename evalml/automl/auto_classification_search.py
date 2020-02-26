@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective
+from evalml.objectives import ROC, ConfusionMatrix, get_objective
 from evalml.problem_types import ProblemTypes
 
 
@@ -101,6 +101,10 @@ class AutoClassificationSearch(AutoBase):
             random_state=random_state,
             verbose=verbose
         )
+        if self.problem_type == ProblemTypes.BINARY:
+            self.plot_metrics = [ROC(), ConfusionMatrix()]
+        else:
+            self.plot_metrics = [ConfusionMatrix()]
 
     def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
