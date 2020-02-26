@@ -37,36 +37,50 @@ def test_get_pipelines():
         get_pipelines(problem_type="Not A Valid Problem Type")
 
 
-def test_serialization(X_y, tmpdir):
+@pytest.fixture
+def lr_pipeline():
+    objective = Precision()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+
+    return LogisticRegressionPipeline(objective=objective, parameters=parameters)
+
+
+def test_serialization(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pipe.pkl')
-    objective = Precision()
-
-    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline = lr_pipeline
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
 
 
 @pytest.fixture
-def pickled_pipeline_path(X_y, tmpdir):
+def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
-    objective = MockPrecision()
-    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline = lr_pipeline
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
 
 
-def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path):
+def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path, lr_pipeline):
     X, y = X_y
     # checks that class is not defined before loading in pipeline
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]))
+    pipeline = lr_pipeline
     pipeline.fit(X, y)
     assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
@@ -80,22 +94,33 @@ def test_reproducibility(X_y):
         amount_col=10
     )
 
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf_1 = LogisticRegressionPipeline(objective=objective, parameters=parameters)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y) == clf.score(X, y)
 
 
-def test_indexing(X_y):
+def test_indexing(X_y, lr_pipeline):
     X, y = X_y
-    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf = lr_pipeline
     clf.fit(X, y)
 
-    assert isinstance(clf[0], OneHotEncoder)
-    assert isinstance(clf['One Hot Encoder'], OneHotEncoder)
+    assert isinstance(clf[0], SimpleImputer)
+    assert isinstance(clf['Simple Imputer'], SimpleImputer)
 
     setting_err_msg = 'Setting pipeline components is not supported.'
     with pytest.raises(NotImplementedError, match=setting_err_msg):
@@ -106,45 +131,75 @@ def test_indexing(X_y):
         clf[:1]
 
 
-def test_describe(X_y):
+def test_describe(X_y, lr_pipeline):
     X, y = X_y
-    lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
+    lrp = lr_pipeline
+    assert lrp.describe(True) == {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
 
 
-def test_name(X_y):
+def test_name(X_y, lr_pipeline):
     X, y = X_y
-    clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    clf = lr_pipeline
+    assert clf.name == 'Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
     X, y = X_y
 
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+
     class MockLogisticRegressionPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
+        problem_types = ['binary', 'multiclass']
+        component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
-        def __init__(self, objective, penalty, C, impute_strategy,
-                     number_features, n_jobs=-1, random_state=0):
-            imputer = SimpleImputer(impute_strategy=impute_strategy)
-            enc = OneHotEncoder()
-            scaler = StandardScaler()
-            estimator = LogisticRegressionClassifier(random_state=random_state,
-                                                     penalty=penalty,
-                                                     C=C,
-                                                     n_jobs=-1)
-            super().__init__(objective=objective, component_list=[enc, imputer, estimator, scaler], n_jobs=n_jobs, random_state=random_state)
+        def __init__(self, objective, parameters):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             component_graph=self.__class__.component_graph,
+                             problem_types=self.__class__.problem_types)
 
-    err_msg = "A pipeline must have an Estimator as the last component in component_list."
+    err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockLogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+        MockLogisticRegressionPipeline(objective='recall', parameters=parameters)
 
 
 def test_multi_format_creation(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 1
+        }
+    }
+
+    clf = PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+                       parameters=parameters, problem_types=['binary', 'multiclass'])
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf.component_list, correct_components):
+    for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -156,9 +211,10 @@ def test_multi_format_creation(X_y):
 
 def test_multiple_feature_selectors(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    clf = PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier'],
+                       parameters={}, problem_types=['binary', 'multiclass'])
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf.component_list, correct_components):
+    for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]

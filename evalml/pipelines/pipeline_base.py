@@ -40,12 +40,12 @@ class PipelineBase():
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
-        self.random_state = self.estimator.random_state
+        self.random_state = self.estimator.random_state if self.estimator else 0
         self.name = self._generate_name()
 
         # check if one and only estimator in pipeline is the last element in component_list
         if not isinstance(self.component_graph[-1], Estimator):
-            raise ValueError("A pipeline must have an Estimator as the last component in component_list.")
+            raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
         self._validate_problem_types(self.problem_types)
 
@@ -292,7 +292,7 @@ class PipelineBase():
         return scores[0], other_scores
 
     @property
-    def model_family(self):
+    def model_type(self):
         """Returns model family of this pipeline template"""
 
         # TODO: Refactor to model_family
