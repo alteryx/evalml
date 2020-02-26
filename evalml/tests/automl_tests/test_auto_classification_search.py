@@ -24,7 +24,9 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y):
     X, y = X_y
 
-    automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
+    automl = AutoClassificationSearch(multiclass=False, max_pipelines=1, n_jobs=4)
+
+    assert automl.n_jobs == 4
 
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
@@ -34,7 +36,7 @@ def test_init(X_y):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
-
+    assert automl.best_pipeline.n_jobs == 4
     # test with datafarmes
     automl.search(pd.DataFrame(X), pd.Series(y))
 

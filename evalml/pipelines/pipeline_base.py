@@ -39,8 +39,11 @@ class PipelineBase():
         self.parameters = parameters
         self.plot = PipelinePlots(self)
         self.random_state = random_state
-        self.n_jobs = n_jobs
         self.number_features = number_features
+
+        self.n_jobs = n_jobs
+        if not isinstance(n_jobs, (int, type(None))) or n_jobs == 0:
+            raise ValueError('n_jobs must be an non-zero integer or None. n_jobs is set to `{}`.'.format(n_jobs))
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
@@ -173,10 +176,8 @@ class PipelineBase():
         y_t = y
         for component in self.component_graph[:-1]:
             self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
-            if component._needs_fitting:
-                X_t = component.fit_transform(X_t, y_t)
-            else:
-                X_t = component.transform(X_t, y_t)
+            X_t = component.fit_transform(X_t, y_t)
+
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
