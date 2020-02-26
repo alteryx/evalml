@@ -57,13 +57,17 @@ def test_feature_importance_plot_show_all_features(X_y):
 
     class MockPipeline(PipelineBase):
         name = "Mock Pipeline"
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary', 'multiclass']
 
-        def __init__(self):
-            objective = "Precision"
-            component_list = ['Logistic Regression Classifier']
-            n_jobs = 1
-            random_state = 0
-            super().__init__(objective=objective, component_list=component_list, n_jobs=n_jobs, random_state=random_state)
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             component_graph=self.__class__.component_graph,
+                             problem_types=self.__class__.problem_types,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
 
         @property
         def feature_importances(self):
@@ -74,7 +78,7 @@ def test_feature_importance_plot_show_all_features(X_y):
             return df
 
     X, y = X_y
-    clf = MockPipeline()
+    clf = MockPipeline(objective='precision', parameters={}, n_jobs=1, random_state=0)
     clf.fit(X, y)
     figure = clf.plot.feature_importances()
     assert isinstance(figure, go.Figure)
