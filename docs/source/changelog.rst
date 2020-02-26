@@ -14,6 +14,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
         * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
@@ -23,6 +24,7 @@ Changelog
         * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
+        * Update dependency check to use a whitelist :pr:`417`
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
