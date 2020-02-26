@@ -18,7 +18,7 @@ class PipelineBase():
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, objective, problem_types, parameters=None, random_state=0, n_jobs=-1):
+    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -82,15 +82,18 @@ class PipelineBase():
                     try:
                         new_component = component_class()
                     except TypeError as e:
-                        raise ValueError(e.message + "\nPlease provide the required parameters in the `parameters` dictionary argument.")
+                        raise ValueError(e.message + "\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name))
                 else:
                     component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])
+
+                    # Add random_state and n_jobs into parameters
                     if 'random_state' in inspect.signature(component_class.__init__).parameters:
                         component_parameters['random_state'] = self.random_state
                     if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
                         component_parameters['n_jobs'] = self.n_jobs
                     new_component = component_class(**component_parameters)
+
                 self.component_graph[index] = new_component
             except ValueError:
                 raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))

@@ -229,7 +229,7 @@ class AutoBase:
             random_state=self.random_state,
             n_jobs=-1,
             number_features=X.shape[1],
-            **dict(parameters)
+            parameters=parameters
         )
 
         if self.start_iteration_callback:

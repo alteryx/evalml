@@ -52,7 +52,7 @@ class PipelinePlots:
         graph.attr(rankdir='LR')
 
         # Draw components
-        for component in self.pipeline.component_list:
+        for component in self.pipeline.component_graph:
             label = '%s\l' % (component.name)  # noqa: W605
             if len(component.parameters) > 0:
                 parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
@@ -62,8 +62,8 @@ class PipelinePlots:
             graph.node(component.name, shape='record', label=label)
 
         # Draw edges
-        for i in range(len(self.pipeline.component_list[:-1])):
-            graph.edge(self.pipeline.component_list[i].name, self.pipeline.component_list[i + 1].name)
+        for i in range(len(self.pipeline.component_graph[:-1])):
+            graph.edge(self.pipeline.component_graph[i].name, self.pipeline.component_graph[i + 1].name)
 
         if to_file:
             # Graphviz always appends the format to the file name, so we need to
