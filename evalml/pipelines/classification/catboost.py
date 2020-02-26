@@ -29,4 +29,4 @@ class CatBoostClassificationPipeline(PipelineBase):
         super().__init__(objective=objective,
                          parameters=parameters,
                          component_graph=self.__class__.component_graph,
-                         supported_problem_types=self.__class__.supported_problem_types)
+                         problem_types=self.__class__.problem_types)
