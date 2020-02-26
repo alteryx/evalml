@@ -68,7 +68,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
-    pipeline = lr_pipeline
+    pipeline = LogisticRegressionPipeline(objective=MockPrecision(), parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
@@ -80,7 +80,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = lr_pipeline
+    pipeline = LogisticRegressionPipeline(objective=objective, parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
     assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
