@@ -12,7 +12,6 @@ class LogisticRegressionClassifier(Estimator):
     Logistic Regression Classifier
     """
     name = "Logistic Regression Classifier"
-    _needs_fitting = True
     hyperparameter_ranges = {
         "penalty": ["l2"],
         "C": Real(.01, 10),
