@@ -316,7 +316,11 @@ class ExpVariance(RegressionObjective):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class ROC(BinaryClassificationObjective):
+class PlotMetric:
+    score_needs_proba = True
+
+
+class ROC(PlotMetric):
     """Receiver Operating Characteristic score for binary classification."""
     score_needs_proba = True
     name = "ROC"
@@ -326,7 +330,7 @@ class ROC(BinaryClassificationObjective):
         return metrics.roc_curve(y_true, y_predicted)
 
 
-class ConfusionMatrix(ObjectiveBase):
+class ConfusionMatrix(PlotMetric):
     """Confusion matrix for classification problems"""
     needs_fitting = False
     greater_is_better = True

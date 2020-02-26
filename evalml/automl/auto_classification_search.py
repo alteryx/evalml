@@ -106,6 +106,10 @@ class AutoClassificationSearch(AutoBase):
             n_jobs=n_jobs,
             verbose=verbose
         )
+        if self.problem_type == ProblemTypes.BINARY:
+            self.plot_metrics = [ROC(), ConfusionMatrix()]
+        else:
+            self.plot_metrics = [ConfusionMatrix()]
 
         # hacky, disallows non-numeric metrics from being primary objective
         if isinstance(self.objective, ConfusionMatrix) or isinstance(self.objective, ROC):

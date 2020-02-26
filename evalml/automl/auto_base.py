@@ -91,6 +91,7 @@ class AutoBase:
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
+        self.plot_metrics = []
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -243,6 +244,8 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
+        plot_data = []
+
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -257,6 +260,7 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train, self.objective)
                 score, other_scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))
             except Exception as e:
                 if raise_errors:
                     raise e
