@@ -4,17 +4,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
-from .pipeline_plots import PipelineGraph
+from .pipeline_graph import make_pipeline_graph
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
 
 
 class PipelineBase:
-
-    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
-    plot = PipelineGraph
-
     def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -53,7 +49,6 @@ class PipelineBase:
         for component in self.component_list:
             self.parameters.update(component.parameters)
 
-        self.plot = PipelineGraph(self)
         self.logger = Logger()
 
     def __getitem__(self, index):
@@ -262,6 +257,10 @@ class PipelineBase:
         other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
 
         return scores[0], other_scores
+
+    def plot(self):
+        """Generate a pipeline graph of """
+        return make_pipeline_graph(self)
 
     @property
     def feature_importances(self):

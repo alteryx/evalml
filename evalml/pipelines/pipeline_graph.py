@@ -1,118 +1,114 @@
+import plotly.graph_objects as go
+
+from evalml.utils.gen_utils import import_or_raise
 
 
-class PipelineGraph:
-    def __init__(self, pipeline):
-        self.pipeline = pipeline
+def make_pipeline_graph(pipeline, filename=None):
+    """Create a graph of the pipeline, in a format similar to a UML diagram.
 
-    def __call__(self, to_file=None):
-        """Create a graph of the pipeline, in a format similar to a UML diagram.
+    Arguments:
+        pipelne (PipelineBase) : The pipeline to make a graph of.
+        filename (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
-        Arguments:
-            to_file (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+    Returns:
+        graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
+    """
+    import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
 
-        Returns:
-            graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
-        """
-        try:
-            import graphviz
-        except ImportError:
-            raise ImportError('Please install graphviz to visualize pipelines.')
+    # Try rendering a dummy graph to see if a working backend is installed
+    try:
+        graphviz.Digraph().pipe()
+    except graphviz.backend.ExecutableNotFound:
+        raise RuntimeError(
+            "To graph entity sets, a graphviz backend is required.\n" +
+            "Install the backend using one of the following commands:\n" +
+            "  Mac OS: brew install graphviz\n" +
+            "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+            "  Windows: conda install python-graphviz\n"
+        )
 
-        # Try rendering a dummy graph to see if a working backend is installed
-        try:
-            graphviz.Digraph().pipe()
-        except graphviz.backend.ExecutableNotFound:
-            raise RuntimeError(
-                "To graph entity sets, a graphviz backend is required.\n" +
-                "Install the backend using one of the following commands:\n" +
-                "  Mac OS: brew install graphviz\n" +
-                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz\n"
-            )
+    if filename:
+        # Explicitly cast to str in case a Path object was passed in
+        filename = str(filename)
+        split_path = filename.split('.')
+        if len(split_path) < 2:
+            raise ValueError("Please use a file extension like '.pdf'" +
+                             " so that the format can be inferred")
 
-        if to_file:
-            # Explicitly cast to str in case a Path object was passed in
-            to_file = str(to_file)
-            split_path = to_file.split('.')
-            if len(split_path) < 2:
-                raise ValueError("Please use a file extension like '.pdf'" +
-                                 " so that the format can be inferred")
+        format = split_path[-1]
+        valid_formats = graphviz.backend.FORMATS
+        if format not in valid_formats:
+            raise ValueError("Unknown format. Make sure your format is" +
+                             " amongst the following: %s" % valid_formats)
+    else:
+        format = None
 
-            format = split_path[-1]
-            valid_formats = graphviz.backend.FORMATS
-            if format not in valid_formats:
-                raise ValueError("Unknown format. Make sure your format is" +
-                                 " amongst the following: %s" % valid_formats)
-        else:
-            format = None
+    # Initialize a new directed graph
+    graph = graphviz.Digraph(name=pipeline.name, format=format,
+                             graph_attr={'splines': 'ortho'})
+    graph.attr(rankdir='LR')
 
-        # Initialize a new directed graph
-        graph = graphviz.Digraph(name=self.pipeline.name, format=format,
-                                 graph_attr={'splines': 'ortho'})
-        graph.attr(rankdir='LR')
+    # Draw components
+    for component in pipeline.component_list:
+        label = '%s\l' % (component.name)  # noqa: W605
+        if len(component.parameters) > 0:
+            parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
+                                    else key + ' : ' + str(val)
+                                    for key, val in component.parameters.items()])  # noqa: W605
+            label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
+        graph.node(component.name, shape='record', label=label)
 
-        # Draw components
-        for component in self.pipeline.component_list:
-            label = '%s\l' % (component.name)  # noqa: W605
-            if len(component.parameters) > 0:
-                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
-                                        else key + ' : ' + str(val)
-                                        for key, val in component.parameters.items()])  # noqa: W605
-                label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
-            graph.node(component.name, shape='record', label=label)
+    # Draw edges
+    for i in range(len(pipeline.component_list[:-1])):
+        graph.edge(pipeline.component_list[i].name, pipeline.component_list[i + 1].name)
 
-        # Draw edges
-        for i in range(len(self.pipeline.component_list[:-1])):
-            graph.edge(self.pipeline.component_list[i].name, self.pipeline.component_list[i + 1].name)
+    if filename:
+        # Graphviz always appends the format to the file name, so we need to
+        # remove it manually to avoid file names like 'file_name.pdf.pdf'
+        offset = len(format) + 1  # Add 1 for the dot
+        output_path = filename[:-offset]
+        graph.render(output_path, cleanup=True)
 
-        if to_file:
-            # Graphviz always appends the format to the file name, so we need to
-            # remove it manually to avoid file names like 'file_name.pdf.pdf'
-            offset = len(format) + 1  # Add 1 for the dot
-            output_path = to_file[:-offset]
-            graph.render(output_path, cleanup=True)
+    return graph
 
-        return graph
+def feature_importances(pipeline, show_all_features=False):
+    """Create and return a graph of the pipeline's feature importances
 
-    def feature_importances(self, show_all_features=False):
-        """Create and return a graph of the pipeline's feature importances
+    Arguments:
+        pipelne (PipelineBase) : The pipeline with which to compute feature importances.
+        show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to False.
 
-        Arguments:
-            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to False.
+    Returns:
+        plotly.Figure, a bar graph showing features and their importances
 
-        Returns:
-            plotly.Figure, a bar graph showing features and their importances
+    """
+    feat_imp = pipeline.feature_importances
+    feat_imp['importance'] = abs(feat_imp['importance'])
 
-        """
-        import plotly.graph_objects as go
+    if not show_all_features:
+        # Remove features with zero importance
+        feat_imp = feat_imp[feat_imp['importance'] != 0]
 
-        feat_imp = self.pipeline.feature_importances
-        feat_imp['importance'] = abs(feat_imp['importance'])
+    # List is reversed to go from ascending order to descending order
+    feat_imp = feat_imp.iloc[::-1]
 
-        if not show_all_features:
-            # Remove features with zero importance
-            feat_imp = feat_imp[feat_imp['importance'] != 0]
+    title = 'Feature Importances'
+    subtitle = 'May display fewer features due to feature selection'
+    data = [go.Bar(
+        x=feat_imp['importance'],
+        y=feat_imp['feature'],
+        orientation='h'
+    )]
 
-        # List is reversed to go from ascending order to descending order
-        feat_imp = feat_imp.iloc[::-1]
-
-        title = 'Feature Importances'
-        subtitle = 'May display fewer features due to feature selection'
-        data = [go.Bar(
-            x=feat_imp['importance'],
-            y=feat_imp['feature'],
-            orientation='h'
-        )]
-
-        layout = {
-            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
-            'height': 800,
-            'xaxis_title': 'Feature Importance',
-            'yaxis_title': 'Feature',
-            'yaxis': {
-                'type': 'category'
-            }
+    layout = {
+        'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+        'height': 800,
+        'xaxis_title': 'Feature Importance',
+        'yaxis_title': 'Feature',
+        'yaxis': {
+            'type': 'category'
         }
+    }
 
-        fig = go.Figure(data=data, layout=layout)
-        return fig
+    fig = go.Figure(data=data, layout=layout)
+    return fig
