@@ -9,7 +9,6 @@ from .feature_selector import FeatureSelector
 class RFRegressorSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest regressor"""
     name = 'RF Regressor Select From Model'
-    _needs_fitting = True
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),
         "threshold": ['mean', -np.inf]
