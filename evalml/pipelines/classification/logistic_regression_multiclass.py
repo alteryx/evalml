@@ -32,7 +32,7 @@ class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         estimator = LogisticRegressionClassifier(random_state=random_state,
                                                  penalty=penalty,
                                                  C=C,
-                                                 n_jobs=-1)
+                                                 n_jobs=n_jobs)
 
         super().__init__(component_list=[enc, imputer, scaler, estimator],
                          n_jobs=n_jobs,

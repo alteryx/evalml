@@ -7,6 +7,7 @@ Changelog
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
+        * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
@@ -15,6 +16,9 @@ Changelog
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Created binary and multiclass objective subclasses :pr:`419`
+        * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
+        * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`

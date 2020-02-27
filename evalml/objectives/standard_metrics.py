@@ -4,9 +4,9 @@ from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 from sklearn.utils.multiclass import unique_labels
 
-from .objective_base import ObjectiveBase
 from .binary_classification_objective import BinaryClassificationObjective
 from .multiclass_classification_objective import MultiClassificationObjective
+from .objective_base import ObjectiveBase
 from .regression_objective import RegressionObjective
 
 from evalml.problem_types import ProblemTypes
@@ -232,7 +232,7 @@ class MCC(ObjectiveBase):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
-class R2(ObjectiveBase):
+class R2(RegressionObjective):
     """Coefficient of determination for regression"""
     needs_fitting = False
     greater_is_better = True
@@ -244,7 +244,7 @@ class R2(ObjectiveBase):
         return metrics.r2_score(y_true, y_predicted)
 
 
-class MAE(ObjectiveBase):
+class MAE(RegressionObjective):
     """Mean absolute error for regression"""
     needs_fitting = False
     greater_is_better = False
@@ -256,7 +256,7 @@ class MAE(ObjectiveBase):
         return metrics.mean_absolute_error(y_true, y_predicted)
 
 
-class MSE(ObjectiveBase):
+class MSE(RegressionObjective):
     """Mean squared error for regression"""
     needs_fitting = False
     greater_is_better = False
@@ -268,7 +268,7 @@ class MSE(ObjectiveBase):
         return metrics.mean_squared_error(y_true, y_predicted)
 
 
-class MSLE(ObjectiveBase):
+class MSLE(RegressionObjective):
     """Mean squared log error for regression"""
     needs_fitting = False
     greater_is_better = False
@@ -280,7 +280,7 @@ class MSLE(ObjectiveBase):
         return metrics.mean_squared_log_error(y_true, y_predicted)
 
 
-class MedianAE(ObjectiveBase):
+class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
     needs_fitting = False
     greater_is_better = False
@@ -292,7 +292,7 @@ class MedianAE(ObjectiveBase):
         return metrics.median_absolute_error(y_true, y_predicted)
 
 
-class MaxError(ObjectiveBase):
+class MaxError(RegressionObjective):
     """Maximum residual error for regression"""
     needs_fitting = False
     greater_is_better = False
@@ -304,7 +304,7 @@ class MaxError(ObjectiveBase):
         return metrics.max_error(y_true, y_predicted)
 
 
-class ExpVariance(ObjectiveBase):
+class ExpVariance(RegressionObjective):
     """Explained variance score for regression"""
     needs_fitting = False
     greater_is_better = True

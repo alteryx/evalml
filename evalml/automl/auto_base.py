@@ -24,7 +24,7 @@ class AutoBase:
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, verbose):
+                 add_result_callback, additional_objectives, random_state, n_jobs, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
@@ -73,9 +73,12 @@ class AutoBase:
             'search_order': []
         }
         self.trained_pipelines = {}
+
         self.random_state = random_state
         random.seed(self.random_state)
         np.random.seed(seed=self.random_state)
+
+        self.n_jobs = n_jobs
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
         self.tuners = {}
@@ -225,7 +228,7 @@ class AutoBase:
         parameters = self._propose_parameters(pipeline_class)
         # fit an score the pipeline
         pipeline = pipeline_class(random_state=self.random_state,
-                                  n_jobs=-1,
+                                  n_jobs=self.n_jobs,
                                   number_features=X.shape[1],
                                   **dict(parameters))
 

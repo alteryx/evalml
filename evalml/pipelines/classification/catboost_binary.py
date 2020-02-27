@@ -25,7 +25,7 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
 
     def __init__(self, impute_strategy, n_estimators,
                  eta, max_depth, number_features, bootstrap_type=None,
-                 n_jobs=1, random_state=0):
+                 n_jobs=-1, random_state=0):
         # note: impute_strategy must support both string and numeric data
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         estimator = CatBoostClassifier(n_estimators=n_estimators,
@@ -34,5 +34,5 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
                                        bootstrap_type=bootstrap_type,
                                        random_state=random_state)
         super().__init__(component_list=[imputer, estimator],
-                         n_jobs=1,
+                         n_jobs=n_jobs,
                          random_state=random_state)
