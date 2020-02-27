@@ -1,3 +1,5 @@
+import os.path
+
 import plotly.graph_objects as go
 
 from evalml.utils.gen_utils import import_or_raise
@@ -27,24 +29,19 @@ def make_pipeline_graph(pipeline, filepath=None):
             "  Windows: conda install python-graphviz\n"
         )
 
+    graph_format = None
     if filepath:
         # Explicitly cast to str in case a Path object was passed in
         filepath = str(filepath)
-        split_path = filepath.split('.')
-        if len(split_path) < 2:
-            raise ValueError("Please use a file extension like '.pdf'" +
-                             " so that the format can be inferred")
-
-        format = split_path[-1]
-        valid_formats = graphviz.backend.FORMATS
-        if format not in valid_formats:
-            raise ValueError("Unknown format. Make sure your format is" +
-                             " amongst the following: %s" % valid_formats)
-    else:
-        format = None
+        path_and_name, graph_format = os.path.splitext(filepath)
+        graph_format = graph_format[1:].lower() # ignore the dot
+        supported_filetypes = graphviz.backend.FORMATS
+        if graph_format not in supported_filetypes:
+            raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
+                              "following: {}").format(graph_format, supported_filetypes))
 
     # Initialize a new directed graph
-    graph = graphviz.Digraph(name=pipeline.name, format=format,
+    graph = graphviz.Digraph(name=pipeline.name, format=graph_format,
                              graph_attr={'splines': 'ortho'})
     graph.attr(rankdir='LR')
 
@@ -63,11 +60,7 @@ def make_pipeline_graph(pipeline, filepath=None):
         graph.edge(pipeline.component_list[i].name, pipeline.component_list[i + 1].name)
 
     if filepath:
-        # Graphviz always appends the format to the file name, so we need to
-        # remove it manually to avoid file names like 'file_name.pdf.pdf'
-        offset = len(format) + 1  # Add 1 for the dot
-        output_path = filepath[:-offset]
-        graph.render(output_path, cleanup=True)
+        graph.render(filepath, cleanup=True)
 
     return graph
 
