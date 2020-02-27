@@ -97,15 +97,15 @@ class PipelineSearchPlots:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
         pipeline_results = results[pipeline_id]
-        cv_data = pipeline_results["cv_data"]
+        plot_data = pipeline_results["plot_data"]
         mean_fpr = np.linspace(0, 1, 100)
         tprs = []
         roc_aucs = []
         fpr_tpr_data = []
 
-        for fold in cv_data:
-            fpr = fold["all_objective_scores"]["ROC"][0]
-            tpr = fold["all_objective_scores"]["ROC"][1]
+        for fold in plot_data:
+            fpr = fold["ROC"][0]
+            tpr = fold["ROC"][1]
             tprs.append(interp(mean_fpr, fpr, tpr))
             tprs[-1][0] = 0.0
             roc_auc = sklearn.metrics.auc(fpr, tpr)
@@ -182,11 +182,11 @@ class PipelineSearchPlots:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
         pipeline_results = results[pipeline_id]
-        cv_data = pipeline_results["cv_data"]
+        plot_data = pipeline_results["plot_data"]
 
         confusion_matrix_data = []
-        for fold in cv_data:
-            confusion_matrix_data.append(fold["all_objective_scores"]["Confusion Matrix"])
+        for fold in plot_data:
+            confusion_matrix_data.append(fold["Confusion Matrix"])
         return confusion_matrix_data
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):

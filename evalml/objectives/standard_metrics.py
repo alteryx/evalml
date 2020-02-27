@@ -315,6 +315,7 @@ class ExpVariance(ObjectiveBase):
 
 class PlotMetric:
     score_needs_proba = True
+    name = None
 
 
 class ROC(PlotMetric):
@@ -329,8 +330,6 @@ class ROC(PlotMetric):
 
 class ConfusionMatrix(PlotMetric):
     """Confusion matrix for classification problems"""
-    needs_fitting = False
-    greater_is_better = True
     score_needs_proba = False
     name = "Confusion Matrix"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
