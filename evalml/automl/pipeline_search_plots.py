@@ -213,7 +213,8 @@ class PipelineSearchPlots:
                                            hovertemplate='<b>True</b>: %{y}' +
                                                          '<br><b>Predicted</b>: %{x}' +
                                                          '<br><b>Number of times</b>: %{z}' +
-                                                         '<extra></extra>'),  # necessary to remove unwanted trace info
+                                                         '<extra></extra>', # necessary to remove unwanted trace info
+                                            colorscale='Blues'),
                            layout=layout)
         return figure
 
