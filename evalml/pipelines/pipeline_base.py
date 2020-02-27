@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
-from .pipeline_graph import make_pipeline_graph
+from .pipeline_graph import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
@@ -277,3 +277,14 @@ class PipelineBase:
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
+
+    def feature_importance_graph(self, show_all_features=False):
+        """Generate a bar graph of the pipeline's feature importances
+
+        Arguments:
+            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
+
+        Returns:
+            plotly.Figure, a bar graph showing features and their importances
+        """
+        return make_feature_importance_graph(self, show_all_features=show_all_features)

@@ -72,16 +72,15 @@ def make_pipeline_graph(pipeline, filepath=None):
     return graph
 
 
-def feature_importances(pipeline, show_all_features=False):
-    """Create and return a graph of the pipeline's feature importances
+def make_feature_importance_graph(pipeline, show_all_features=False):
+    """Create and return a bar graph of the pipeline's feature importances
 
     Arguments:
         pipelne (PipelineBase) : The pipeline with which to compute feature importances.
-        show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to False.
+        show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
 
     Returns:
         plotly.Figure, a bar graph showing features and their importances
-
     """
     feat_imp = pipeline.feature_importances
     feat_imp['importance'] = abs(feat_imp['importance'])
