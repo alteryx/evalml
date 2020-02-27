@@ -114,7 +114,8 @@ def test_generate_confusion_matrix(X_y):
 
                 pipeline.fit(X_train, y_train)
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, [ConfusionMatrix()]))
-
+                # store information for testing purposes later
+                y_test_lens.append(len(y_test))
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,
                                                          "pipeline_name": pipeline.name}})
 
