@@ -13,7 +13,7 @@ def make_pipeline_graph(pipeline, filepath=None):
     Returns:
         graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
     """
-    import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
+    graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
 
     # Try rendering a dummy graph to see if a working backend is installed
     try:
@@ -70,6 +70,7 @@ def make_pipeline_graph(pipeline, filepath=None):
         graph.render(output_path, cleanup=True)
 
     return graph
+
 
 def feature_importances(pipeline, show_all_features=False):
     """Create and return a graph of the pipeline's feature importances
