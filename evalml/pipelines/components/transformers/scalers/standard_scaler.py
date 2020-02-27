@@ -6,7 +6,6 @@ from evalml.pipelines.components.transformers import Transformer
 class StandardScaler(Transformer):
     """Standardize features: removes mean and scales to unit variance"""
     name = "Standard Scaler"
-    _needs_fitting = True
     hyperparameter_ranges = {}
 
     def __init__(self):

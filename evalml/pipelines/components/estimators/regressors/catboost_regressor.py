@@ -14,7 +14,6 @@ class CatBoostRegressor(Estimator):
     For more information, check out https://catboost.ai/
     """
     name = "CatBoost Regressor"
-    _needs_fitting = True
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),

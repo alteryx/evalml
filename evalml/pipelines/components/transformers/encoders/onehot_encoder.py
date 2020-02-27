@@ -7,7 +7,6 @@ class OneHotEncoder(CategoricalEncoder):
 
     """Creates one-hot encoding for non-numeric data"""
     name = 'One Hot Encoder'
-    _needs_fitting = True
     hyperparameter_ranges = {}
 
     def __init__(self):

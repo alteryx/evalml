@@ -34,5 +34,5 @@ class CatBoostRegressionPipeline(RegressionPipeline):
                                       bootstrap_type=bootstrap_type,
                                       random_state=random_state)
         super().__init__(component_list=[imputer, estimator],
-                         n_jobs=1,
+                         n_jobs=n_jobs,
                          random_state=random_state)
