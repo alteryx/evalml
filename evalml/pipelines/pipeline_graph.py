@@ -3,12 +3,12 @@ import plotly.graph_objects as go
 from evalml.utils.gen_utils import import_or_raise
 
 
-def make_pipeline_graph(pipeline, filename=None):
+def make_pipeline_graph(pipeline, filepath=None):
     """Create a graph of the pipeline, in a format similar to a UML diagram.
 
     Arguments:
         pipelne (PipelineBase) : The pipeline to make a graph of.
-        filename (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+        filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
     Returns:
         graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
@@ -27,10 +27,10 @@ def make_pipeline_graph(pipeline, filename=None):
             "  Windows: conda install python-graphviz\n"
         )
 
-    if filename:
+    if filepath:
         # Explicitly cast to str in case a Path object was passed in
-        filename = str(filename)
-        split_path = filename.split('.')
+        filepath = str(filepath)
+        split_path = filepath.split('.')
         if len(split_path) < 2:
             raise ValueError("Please use a file extension like '.pdf'" +
                              " so that the format can be inferred")
@@ -62,11 +62,11 @@ def make_pipeline_graph(pipeline, filename=None):
     for i in range(len(pipeline.component_list[:-1])):
         graph.edge(pipeline.component_list[i].name, pipeline.component_list[i + 1].name)
 
-    if filename:
+    if filepath:
         # Graphviz always appends the format to the file name, so we need to
         # remove it manually to avoid file names like 'file_name.pdf.pdf'
         offset = len(format) + 1  # Add 1 for the dot
-        output_path = filename[:-offset]
+        output_path = filepath[:-offset]
         graph.render(output_path, cleanup=True)
 
     return graph

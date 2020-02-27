@@ -258,9 +258,16 @@ class PipelineBase:
 
         return scores[0], other_scores
 
-    def plot(self):
-        """Generate a pipeline graph of """
-        return make_pipeline_graph(self)
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        return make_pipeline_graph(self, filepath=filepath)
 
     @property
     def feature_importances(self):

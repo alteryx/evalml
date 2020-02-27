@@ -7,40 +7,41 @@ import plotly.graph_objects as go
 import pytest
 
 from evalml.pipelines import PipelineBase
+from evalml.pipelines.pipeline_grapj import feature_importances
 
 
 def test_returns_digraph_object():
     clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
-    plot = clf.plot()
-    assert isinstance(plot, graphviz.Digraph)
+    graph = clf.graph()
+    assert isinstance(graph, graphviz.Digraph)
 
 
 def test_saving_png_file(tmpdir):
-    path = os.path.join(str(tmpdir), 'pipeline.png')
+    filepath = os.path.join(str(tmpdir), 'pipeline.png')
     pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
-    pipeline.plot(to_file=path)
-    assert os.path.isfile(path)
+    pipeline.graph(filepath=filepath)
+    assert os.path.isfile(filepath)
 
 
 def test_missing_file_extension():
-    path = "test1"
+    filepath = "test1"
     pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Please use a file extension"):
-        pipeline.plot(to_file=path)
+        pipeline.graph(filepath=filepath)
 
 
 def test_invalid_format():
-    path = "test1.xzy"
+    filepath = "test1.xzy"
     pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Unknown format"):
-        pipeline.plot(to_file=path)
+        pipeline.graph(filepath=filepath)
 
 
 def test_feature_importance_plot(X_y):
     X, y = X_y
     clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     clf.fit(X, y)
-    assert isinstance(clf.plot.feature_importances(), go.Figure)
+    assert isinstance(feature_importances(clf.graph()), go.Figure)
 
 
 def test_feature_importance_plot_show_all_features(X_y):
@@ -66,12 +67,12 @@ def test_feature_importance_plot_show_all_features(X_y):
     X, y = X_y
     clf = MockPipeline()
     clf.fit(X, y)
-    figure = clf.plot.feature_importances()
+    figure = feature_importances(clf)
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
     assert (np.all(data['x']))
 
-    figure = clf.plot.feature_importances(show_all_features=True)
+    figure = feature_importances(clf, show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
