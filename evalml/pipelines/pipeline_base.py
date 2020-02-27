@@ -77,32 +77,37 @@ class PipelineBase():
 
     def _instantiate_components(self):
         for index, component in enumerate(self.component_graph):
-            try:
-                component_class = component.__class__
-                component_name = component.name
-                if component_class.hyperparameter_ranges == {}:
-                    new_component = component_class()
-                elif component_name not in self.parameters:
-                    try:
-                        new_component = component_class()
-                    except TypeError as e:
-                        raise ValueError(e.message + "\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name))
-                else:
+            component_class = component.__class__
+            component_name = component.name
+            if component_class.hyperparameter_ranges == {}:
+                new_component = component_class()
+            elif component_name not in self.parameters:
+                try:
+                    component_parameters = self._check_arguments_and_add(dict(), component_class)
+                    new_component = component_class(**component_parameters)
+                except TypeError as e:
+                    raise ValueError("\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name)) from e
+            else:
+                try:
                     component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])
 
                     # Add random_state, n_jobs and number_features into component parameters if doesn't exist
-                    if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
-                        component_parameters['random_state'] = self.random_state
-                    if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
-                        component_parameters['n_jobs'] = self.n_jobs
-                    if 'number_features' in inspect.signature(component_class.__init__).parameters and 'number_features' not in component_parameters:
-                        component_parameters['number_features'] = self.number_features
+                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
                     new_component = component_class(**component_parameters)
+                except ValueError as e:
+                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
+            self.component_graph[index] = new_component
 
-                self.component_graph[index] = new_component
-            except ValueError:
-                raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name]))
+    def _check_arguments_and_add(self, component_parameters, component_class):
+        if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
+            component_parameters['random_state'] = self.random_state
+        if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
+            component_parameters['n_jobs'] = self.n_jobs
+        if 'number_features' in inspect.signature(component_class.__init__).parameters and 'number_features' not in component_parameters:
+            component_parameters['number_features'] = self.number_features
+
+        return component_parameters
 
     def _validate_component_parameters(self, component_class, parameters):
         for parameter, parameter_value in parameters.items():

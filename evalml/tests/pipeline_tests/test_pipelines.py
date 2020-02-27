@@ -10,7 +10,8 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     RFClassifierSelectFromModel,
     SimpleImputer,
-    StandardScaler
+    StandardScaler,
+    Transformer
 )
 from evalml.pipelines.utils import (
     get_pipelines,
@@ -241,3 +242,56 @@ def test_n_jobs(X_y):
 
     assert PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                         n_jobs=None, random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+
+
+def test_problem_types():
+    component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
+
+    with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
+        PipelineBase(component_graph=component_graph, parameters={}, objective='precision', problem_types=['regression'])
+
+
+def test_no_default_parameters():
+    class MockComponent(Transformer):
+        name = "Mock Component"
+        hyperparameter_ranges = {
+            'a': [0, 1, 2]
+        }
+
+        def __init__(self, a, b=1, c='2',):
+            self.a = a
+            self.b = b
+            self.c = c
+
+    component_graph = [MockComponent(a=0)]
+    with pytest.raises(ValueError, match="Please provide the required parameters for *."):
+        PipelineBase(component_graph=component_graph, parameters={}, objective='precision', problem_types=['binary'])
+
+
+def test_num_features():
+    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+    pipeline = PipelineBase(component_graph=component_graph, parameters={}, objective="precision", problem_types=['binary'], number_features=100)
+    assert pipeline.number_features == 100
+    assert pipeline.component_graph[0]._component_obj.get_params()['max_features'] == 50  # default percent_features=0.5 so 100 * 0.5 == 50
+
+
+def test_initiate_components():
+    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+    parameters = {
+        'Logistic Regression Classifier': {
+            "cool_parameter": "yes"
+        }
+    }
+
+    with pytest.raises(ValueError, match="Error received when instantiating component"):
+        PipelineBase(component_graph=component_graph, parameters=parameters, objective='precision', problem_types=['binary'])
+
+    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+    parameters = {
+        'Logistic Regression Classifier': {
+            "C": 100
+        }
+    }
+
+    with pytest.raises(ValueError, match="Error received when instantiating component"):
+        PipelineBase(component_graph=component_graph, parameters=parameters, objective='precision', problem_types=['binary'])
