@@ -208,7 +208,7 @@ class PipelineSearchPlots:
 
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'Predicted Label', 'tickvals': labels},
-                           yaxis={'title': 'True Label', 'tickvals': labels})
+                           yaxis={'title': 'True Label', 'tickvals': labels[::-1]})
         figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat,
                                            hovertemplate='<b>True</b>: %{y}' +
                                                          '<br><b>Predicted</b>: %{x}' +
