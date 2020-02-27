@@ -264,8 +264,15 @@ class PipelineBase:
         return scores[0], other_scores
 
     def get_plot_data(self, X, y, plot_metrics):
-        """TODO
-        Generates plotting data
+        """Generates plotting data for the pipeline for each specified plot metric
+
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (pd.Series) : true labels of length [n_samples]
+            plot_metrics (list): list of plot metrics to generate data for
+
+        Returns:
+            dict: ordered dictionary of plot metric data (scores)
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -284,11 +291,8 @@ class PipelineBase:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
-
             scores.append(plot_metric.score(y_predictions, y))
-
         scores = OrderedDict(zip([n.name for n in plot_metrics], scores))
-
         return scores
 
     @property

@@ -320,15 +320,3 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
-
-
-# def test_plots_as_main_objectives(X_y):
-#     with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-#         automl = AutoClassificationSearch(objective='confusion_matrix')
-#     with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-#         automl = AutoClassificationSearch(objective='ROC')
-#     automl = AutoClassificationSearch(objective='f1', additional_objectives=['recall'])
-#     roc = next((obj for obj in automl.additional_objectives if isinstance(obj, ROC)), None)
-#     assert roc
-#     cfm = next((obj for obj in automl.additional_objectives if isinstance(obj, ConfusionMatrix)), None)
-#     assert cfm
