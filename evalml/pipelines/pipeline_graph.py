@@ -1,6 +1,6 @@
 
 
-class PipelinePlots:
+class PipelineGraph:
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
@@ -8,7 +8,7 @@ class PipelinePlots:
         """Create a graph of the pipeline, in a format similar to a UML diagram.
 
         Arguments:
-            to_file (str, optional) : Path to where the plot should be saved. If set to None (as by default), the plot will not be saved.
+            to_file (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
         Returns:
             graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
@@ -23,7 +23,7 @@ class PipelinePlots:
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To plot entity sets, a graphviz backend is required.\n" +
+                "To graph entity sets, a graphviz backend is required.\n" +
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
@@ -75,10 +75,10 @@ class PipelinePlots:
         return graph
 
     def feature_importances(self, show_all_features=False):
-        """Create and return a plot of the pipeline's feature importances
+        """Create and return a graph of the pipeline's feature importances
 
         Arguments:
-            show_all_features (bool, optional) : If true, plot features with an importance value of zero. Defaults to False.
+            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to False.
 
         Returns:
             plotly.Figure, a bar graph showing features and their importances
