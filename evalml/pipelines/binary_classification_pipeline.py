@@ -54,6 +54,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to predict
 
         Returns:
             pd.Series : estimated labels
@@ -97,7 +98,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
-            objectives (list): list of other objectives to score
+            objectives (list): list of objectives to score
 
         Returns:
             float, dict:  score, ordered dictionary of other objective scores

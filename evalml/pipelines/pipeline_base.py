@@ -158,6 +158,7 @@ class PipelineBase:
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to predict
 
         Returns:
             pd.Series : estimated labels
