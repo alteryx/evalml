@@ -187,18 +187,18 @@ def test_score_with_empty_list_of_objectives(X_y):
 
 def test_n_jobs(X_y):
     with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+        PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                      n_jobs='5', random_state=0)
 
     with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+        PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                      n_jobs=0, random_state=0)
 
-    assert PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+    assert PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                         n_jobs=-4, random_state=0)
 
-    assert PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+    assert PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                         n_jobs=4, random_state=0)
 
-    assert PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
+    assert PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
                         n_jobs=None, random_state=0)
