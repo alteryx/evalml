@@ -39,7 +39,11 @@ class XGBoostPipeline(PipelineBase):
                                                         threshold=-np.inf,
                                                         n_jobs=n_jobs,
                                                         random_state=random_state)
-        estimator = XGBoostClassifier(random_state=random_state,
+        xgboost_random_state = random_state
+        if isinstance(random_state, np.random.RandomState):
+            xgboost_random_state = random_state.randint(np.iinfo(np.int32).max)
+
+        estimator = XGBoostClassifier(random_state=xgboost_random_state,
                                       eta=eta,
                                       max_depth=max_depth,
                                       min_child_weight=min_child_weight,

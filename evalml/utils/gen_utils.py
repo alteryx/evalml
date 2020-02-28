@@ -1,15 +1,16 @@
 import importlib
 
+from sklearn.utils import check_random_state
+
 
 def import_or_raise(library, error_msg=None):
-    '''
-    Attempts to import the requested library by name.
+    """Attempts to import the requested library by name.
     If the import fails, raises an ImportError.
 
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
-    '''
+    """
     try:
         return importlib.import_module(library)
     except ImportError:
@@ -34,3 +35,12 @@ def convert_to_seconds(input_str):
     else:
         msg = "Invalid unit. Units must be hours, mins, or seconds. Received '{}'".format(unit)
         raise AssertionError(msg)
+
+
+def get_random_state(seed):
+    """Generates a numpy.random.RandomState instance using seed
+
+    Arguments:
+        seed (None, int, np.random.RandomState object): seed to generate numpy.random.RandomState with
+    """
+    return check_random_state(seed)

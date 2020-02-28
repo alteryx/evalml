@@ -14,7 +14,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds
+from evalml.utils import Logger, convert_to_seconds, get_random_state
 
 
 class AutoBase:
@@ -72,11 +72,7 @@ class AutoBase:
             'search_order': []
         }
         self.trained_pipelines = {}
-
-        self.random_state = random_state
-        random.seed(self.random_state)
-        np.random.seed(seed=self.random_state)
-
+        self.random_state = get_random_state(random_state)
         self.n_jobs = n_jobs
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
