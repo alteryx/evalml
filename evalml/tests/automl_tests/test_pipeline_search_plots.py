@@ -40,14 +40,14 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
-                pipeline.fit(X_train, y_train, "ROC")
-                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
-
+                pipeline.fit(X_train, y_train)
+                scores = pipeline.score(X_test, y_test, ["ROC"])
+                roc_score = scores["ROC"]
                 ordered_scores = OrderedDict()
-                ordered_scores.update({"ROC": score})
+                ordered_scores.update({"ROC": roc_score})
                 ordered_scores.update({"# Training": len(y_train)})
                 ordered_scores.update({"# Testing": len(y_test)})
-                cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+                cv_data.append({"all_objective_scores": scores, "score": roc_score})
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
 
@@ -120,13 +120,13 @@ def test_generate_confusion_matrix(X_y):
                 y_test_lens.append(len(y_test))
 
                 pipeline.fit(X_train, y_train, "confusion_matrix")
-                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
-
+                scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
+                cm_score = scores["Confusion Matrix"]
                 ordered_scores = OrderedDict()
-                ordered_scores.update({"Confusion Matrix": score})
+                ordered_scores.update({"Confusion Matrix": cm_score})
                 ordered_scores.update({"# Training": len(y_train)})
                 ordered_scores.update({"# Testing": len(y_test)})
-                cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+                cv_data.append({"all_objective_scores": scores, "score": cm_score})
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
                                                          "pipeline_name": pipeline.name}})
