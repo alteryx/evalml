@@ -256,17 +256,18 @@ class AutoBase:
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
                 pipeline.fit(X_train, y_train, self.objective)
-                score, other_scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                score = scores[self.objective.name]
             except Exception as e:
                 if raise_errors:
                     raise e
                 if pbar:
                     pbar.write(str(e))
                 score = np.nan
-                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
-            ordered_scores.update(other_scores)
+            ordered_scores.update(scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
             cv_data.append({"all_objective_scores": ordered_scores, "score": score})
