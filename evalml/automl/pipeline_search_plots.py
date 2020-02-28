@@ -206,15 +206,19 @@ class PipelineSearchPlots:
         conf_mat = data[fold_num]
         labels = conf_mat.columns
 
+        # reverse columns in confusion matrix to change axis order to match sklearn's
+        conf_mat = conf_mat.iloc[:, ::-1]
+        reversed_labels = labels[::-1]
+
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                           xaxis={'title': 'Predicted Label', 'tickvals': labels},
-                           yaxis={'title': 'True Label', 'tickvals': labels[::-1]})
-        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat,
+                           xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': reversed_labels},
+                           yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
+        figure = go.Figure(data=go.Heatmap(x=reversed_labels, y=labels, z=conf_mat,
                                            hovertemplate='<b>True</b>: %{y}' +
                                                          '<br><b>Predicted</b>: %{x}' +
                                                          '<br><b>Number of times</b>: %{z}' +
-                                                         '<extra></extra>', # necessary to remove unwanted trace info
-                                            colorscale='Blues'),
+                                                         '<extra></extra>',  # necessary to remove unwanted trace info
+                                           colorscale='Blues'),
                            layout=layout)
         return figure
 
