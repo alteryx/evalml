@@ -40,11 +40,11 @@ def test_linear_regression(X_y_categorical_regression):
                                    random_state=0,
                                    n_jobs=-1)
     clf.fit(X, y)
-    clf_score = clf.score(X, y, [objective])
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_score[0], decimal=5)
+    np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
     assert not clf.feature_importances.isnull().all().all()
 
     # testing objective parameter passed in does not change results

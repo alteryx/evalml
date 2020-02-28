@@ -177,12 +177,12 @@ def test_multiple_feature_selectors(X_y):
     assert not clf.feature_importances.isnull().all().all()
 
 
-def test_score_with_empty_list_of_objectives(X_y):
-    X, y = X_y
-    clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    clf.fit(X, y)
-    with pytest.raises(IndexError):
-        clf.score(X, y, [])
+# def test_score_with_empty_list_of_objectives(X_y):
+#     X, y = X_y
+#     clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+#     clf.fit(X, y)
+#     with pytest.raises(IndexError):
+#         clf.score(X, y, [])
 
 
 def test_n_jobs(X_y):
