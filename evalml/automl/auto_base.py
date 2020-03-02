@@ -80,7 +80,7 @@ class AutoBase:
         self.search_spaces = {}
         for p in self.possible_pipelines:
             space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=self.random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
@@ -96,8 +96,8 @@ class AutoBase:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
+            feature_types (list, optional): list of feature types, either numerical or categorical.
+                Categorical features will automatically be encoded
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
@@ -283,7 +283,7 @@ class AutoBase:
             print('')
 
     def _select_pipeline(self):
-        return random.choice(self.possible_pipelines)
+        return self.random_state.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
