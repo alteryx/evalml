@@ -23,7 +23,7 @@ class PipelineBase:
 
             component_list (list): List of components in order
 
-            random_state (int): random seed/state
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
             n_jobs (int): Number of jobs to run in parallel
         """
