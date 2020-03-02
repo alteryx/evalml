@@ -1,6 +1,7 @@
 from . import standard_metrics
 from .objective_base import ObjectiveBase
 
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.problem_types import handle_problem_types
 
 OPTIONS = {
@@ -43,10 +44,16 @@ def get_objective(objective):
     Returns:
         Objective
     """
+    if objective is None:
+        raise TypeError("Objective parameter cannot be NoneType")
     if isinstance(objective, ObjectiveBase):
         return objective
-    objective = objective.lower()
-    return OPTIONS[objective]
+
+    try:
+        objective = objective.lower()
+        return OPTIONS[objective]
+    except (AttributeError, KeyError):
+        raise ObjectiveNotFoundError("Could not find the specified objective.")
 
 
 def get_objectives(problem_type):

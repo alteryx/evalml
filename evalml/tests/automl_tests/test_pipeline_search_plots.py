@@ -10,7 +10,7 @@ from evalml.automl.pipeline_search_plots import (
     PipelineSearchPlots,
     SearchIterationPlot
 )
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -26,8 +26,8 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionPipeline(objective="ROC", penalty='l2', C=0.5,
-                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
+                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):
@@ -40,8 +40,8 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
-                pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test)
+                pipeline.fit(X_train, y_train, "ROC")
+                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
 
                 ordered_scores = OrderedDict()
                 ordered_scores.update({"ROC": score})
@@ -102,8 +102,8 @@ def test_generate_confusion_matrix(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionPipeline(objective="confusion_matrix", penalty='l2', C=0.5,
-                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
+                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             cv_data = []
             for train, test in cv.split(X, y):
@@ -119,8 +119,8 @@ def test_generate_confusion_matrix(X_y):
                 # store information for testing purposes later
                 y_test_lens.append(len(y_test))
 
-                pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test)
+                pipeline.fit(X_train, y_train, "confusion_matrix")
+                score, other_scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
 
                 ordered_scores = OrderedDict()
                 ordered_scores.update({"Confusion Matrix": score})

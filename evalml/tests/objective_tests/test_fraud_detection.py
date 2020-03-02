@@ -17,9 +17,9 @@ def test_fraud_objective(X_y):
     automl.search(X, y, raise_errors=True)
 
     pipeline = automl.best_pipeline
-    pipeline.predict(X)
+    pipeline.predict(X, objective)
     pipeline.predict_proba(X)
-    pipeline.score(X, y)
+    pipeline.score(X, y, [objective])
 
     fraud_cost = FraudCost(amount_col="value")
 

@@ -7,14 +7,16 @@ from sklearn.pipeline import Pipeline as SKPipeline
 from sklearn.preprocessing import StandardScaler as SkScaler
 
 from evalml.objectives import PrecisionMicro
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import (
+    LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline
+)
 
 
 def test_lor_init(X_y):
     X, y = X_y
 
-    objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
+    clf = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
     expected_parameters = {'impute_strategy': 'mean', 'penalty': 'l2', 'C': 0.5}
     assert clf.parameters == expected_parameters
     assert clf.random_state == 1
@@ -39,15 +41,20 @@ def test_lor_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf = LogisticRegressionMulticlassPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
     assert((y_pred == sk_pipeline.predict(X)).all())
     assert (sk_score == clf_score[0])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
+
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y, objective)
+    y_pred_with_objective = clf.predict(X)
+    assert((y_pred == y_pred_with_objective).all())
 
 
 def test_lor_input_feature_names(X_y):
@@ -56,8 +63,8 @@ def test_lor_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns), random_state=0)
-    clf.fit(X, y)
+    clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns), random_state=0)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
