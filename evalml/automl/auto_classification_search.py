@@ -25,7 +25,7 @@ class AutoClassificationSearch(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
-                 n_jobs=-1,
+                 n_jobs=1,
                  verbose=True):
         """Automated classifier pipeline search
 
