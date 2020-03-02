@@ -1,3 +1,5 @@
+import abc
+
 import numpy as np
 import pandas as pd
 from sklearn import metrics
@@ -313,9 +315,12 @@ class ExpVariance(ObjectiveBase):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class PlotMetric:
+class PlotMetric(ABC):
     score_needs_proba = True
     name = None
+
+    def score(self, y_predicted, y_true):
+        raise NotImplementedError("score() is not implemented!")
 
 
 class ROC(PlotMetric):
