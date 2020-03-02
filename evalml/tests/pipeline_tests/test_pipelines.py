@@ -175,8 +175,8 @@ def test_estimator_not_last(X_y):
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
                              parameters=parameters,
-                             component_graph=self.__class__.component_graph,
-                             problem_types=self.__class__.problem_types)
+                             component_graph=self.component_graph,
+                             problem_types=self.problem_types)
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):

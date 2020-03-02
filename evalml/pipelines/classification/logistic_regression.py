@@ -20,8 +20,8 @@ class LogisticRegressionPipeline(PipelineBase):
     def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
         super().__init__(objective=objective,
                          parameters=parameters,
-                         component_graph=self.__class__.component_graph,
-                         problem_types=self.__class__.problem_types,
+                         component_graph=self.component_graph,
+                         problem_types=self.problem_types,
                          number_features=number_features,
                          random_state=random_state,
                          n_jobs=n_jobs)

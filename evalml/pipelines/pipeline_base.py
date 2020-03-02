@@ -24,7 +24,11 @@ class PipelineBase():
         Arguments:
             objective (ObjectiveBase): the objective to optimize
 
-            component_graph (list): List of components in order
+            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+
+            parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
+                If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
+                value provided as arguments to the pipeline.
 
             random_state (int): random seed/state
 
