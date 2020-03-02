@@ -33,9 +33,9 @@ class PipelineBase:
             random_state (int): random seed/state. Defaults to 0. `random_state` can also be provided directly to components
                 using the parameters dictionary argument.
 
-            n_jobs (int): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1. 
+            n_jobs (int): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-                `n_jobs` can also be provided directly to components using the parameters dictionary argument. 
+                `n_jobs` can also be provided directly to components using the parameters dictionary argument.
 
             number_features (int): Number of features in dataset. Defaults to None. `number_features` can also be provided directly to components
                 using the parameters dictionary argument.
