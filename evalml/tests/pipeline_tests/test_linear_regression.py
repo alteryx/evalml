@@ -17,7 +17,7 @@ def test_lr_init(X_y_categorical_regression):
     clf = LinearRegressionPipeline(objective=objective, number_features=len(X.columns), random_state=2, impute_strategy='mean', normalize=True, fit_intercept=True, n_jobs=-1)
     expected_parameters = {'impute_strategy': 'mean', 'fit_intercept': True, 'normalize': True}
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_linear_regression(X_y_categorical_regression):

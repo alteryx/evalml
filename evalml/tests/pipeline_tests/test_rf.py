@@ -18,7 +18,7 @@ def test_rf_init(X_y):
     expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0,
                            'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_multi(X_y_multi):
