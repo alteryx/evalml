@@ -9,7 +9,7 @@ from evalml.automl.pipeline_search_plots import (
     SearchIterationPlot
 )
 from evalml.objectives import ROC, ConfusionMatrix
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -25,8 +25,8 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionPipeline(objective="precision", penalty='l2', C=0.5,
-                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
+                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -39,7 +39,7 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
-                pipeline.fit(X_train, y_train)
+                pipeline.fit(X_train, y_train, "ROC")
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, [ROC()]))
 
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,
@@ -98,8 +98,8 @@ def test_generate_confusion_matrix(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionPipeline(objective="precision", penalty='l2', C=0.5,
-                                                  impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
+                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):

@@ -2,7 +2,7 @@ import numpy as np
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestClassifier,
@@ -12,11 +12,11 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class RFClassificationPipeline(PipelineBase):
-    """Random Forest Pipeline for both binary and multiclass classification"""
+class RFBinaryClassificationPipeline(BinaryClassificationPipeline):
+    """Random Forest Pipeline for binary classification"""
     name = "Random Forest Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.BINARY]
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
@@ -25,7 +25,7 @@ class RFClassificationPipeline(PipelineBase):
         "percent_features": Real(.01, 1)
     }
 
-    def __init__(self, objective, n_estimators, max_depth, impute_strategy,
+    def __init__(self, n_estimators, max_depth, impute_strategy,
                  percent_features, number_features, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -42,7 +42,6 @@ class RFClassificationPipeline(PipelineBase):
                                                         n_jobs=n_jobs,
                                                         random_state=random_state)
 
-        super().__init__(objective=objective,
-                         component_list=[enc, imputer, feature_selection, estimator],
+        super().__init__(component_list=[enc, imputer, feature_selection, estimator],
                          n_jobs=n_jobs,
                          random_state=random_state)

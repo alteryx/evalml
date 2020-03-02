@@ -14,9 +14,9 @@ def test_lead_scoring_objective(X_y):
     automl = AutoClassificationSearch(objective=objective, max_pipelines=1, random_state=0)
     automl.search(X, y, raise_errors=True)
     pipeline = automl.best_pipeline
-    pipeline.predict(X)
+    pipeline.predict(X, objective=objective)
     pipeline.predict_proba(X)
-    pipeline.score(X, y)
+    pipeline.score(X, y, [objective])
 
     predicted = pd.Series([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)

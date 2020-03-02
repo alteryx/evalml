@@ -1,5 +1,5 @@
 from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import (
     LinearRegressor,
     OneHotEncoder,
@@ -9,7 +9,7 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-class LinearRegressionPipeline(PipelineBase):
+class LinearRegressionPipeline(RegressionPipeline):
     """Linear Regression Pipeline for regression problems"""
     name = "Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
@@ -21,7 +21,7 @@ class LinearRegressionPipeline(PipelineBase):
         'fit_intercept': [False, True]
     }
 
-    def __init__(self, objective, number_features, impute_strategy,
+    def __init__(self, number_features, impute_strategy,
                  normalize=False, fit_intercept=True, random_state=0, n_jobs=-1):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
@@ -31,7 +31,6 @@ class LinearRegressionPipeline(PipelineBase):
                                     fit_intercept=fit_intercept,
                                     n_jobs=-1)
 
-        super().__init__(objective=objective,
-                         component_list=[enc, imputer, scaler, estimator],
+        super().__init__(component_list=[enc, imputer, scaler, estimator],
                          n_jobs=n_jobs,
                          random_state=random_state)

@@ -1,3 +1,6 @@
+import pytest
+
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     Precision,
     PrecisionMacro,
@@ -5,13 +8,18 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.problem_types import ProblemTypes
 
 
 def test_get_objective():
     assert isinstance(get_objective('precision'), Precision)
     assert isinstance(get_objective(Precision()), Precision)
+
+    with pytest.raises(ObjectiveNotFoundError):
+        get_objective('this is not a valid objective')
+    with pytest.raises(ObjectiveNotFoundError):
+        get_objective(1)
 
 
 def test_get_objectives_types():
@@ -23,9 +31,10 @@ def test_get_objectives_types():
 def test_binary_average(X_y):
     X, y = X_y
 
-    pipeline = LogisticRegressionPipeline(objective=Precision(), penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
-    pipeline.fit(X, y)
-    y_pred = pipeline.predict(X)
+    objective = Precision()
+    pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    pipeline.fit(X, y, objective)
+    y_pred = pipeline.predict(X, objective=objective)
 
     assert Precision().score(y, y_pred) == PrecisionMicro().score(y, y_pred)
     assert Precision().score(y, y_pred) == PrecisionMacro().score(y, y_pred)

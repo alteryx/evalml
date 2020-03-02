@@ -8,6 +8,7 @@ Changelog
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
+        * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
@@ -15,6 +16,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
@@ -28,6 +30,13 @@ Changelog
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
 
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`

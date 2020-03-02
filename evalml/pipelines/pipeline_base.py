@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
@@ -15,20 +14,16 @@ class PipelineBase:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, objective, component_list, n_jobs, random_state):
+    def __init__(self, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
-            objective (Object): the objective to optimize
-
             component_list (list): List of components in order
 
             random_state (int): random seed/state
 
             n_jobs (int): Number of jobs to run in parallel
         """
-
-        self.objective = get_objective(objective)
         self.random_state = random_state
         self.component_list = [handle_component(component) for component in component_list]
         self.component_names = [comp.name for comp in self.component_list]
@@ -104,11 +99,6 @@ class PipelineBase:
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
-        better_string = "lower is better"
-        if self.objective.greater_is_better:
-            better_string = "greater is better"
-        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        self.logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
             self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
@@ -139,7 +129,7 @@ class PipelineBase:
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-    def fit(self, X, y, objective_fit_size=.2):
+    def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
 
         Arguments:
@@ -147,9 +137,9 @@ class PipelineBase:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
+            objective (Object or string): the objective to optimize
 
+            objective_fit_size (float): the proportion of the dataset to include in the test split.
         Returns:
 
             self
@@ -157,29 +147,18 @@ class PipelineBase:
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.objective.needs_fitting:
-            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
-
         self._fit(X, y)
-
-        if self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X_objective)
-
-            if self.objective.uses_extra_columns:
-                self.objective.fit(y_predicted, y_objective, X_objective)
-            else:
-                self.objective.fit(y_predicted, y_objective)
         return self
 
-    def predict(self, X):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to predict
 
         Returns:
             pd.Series : estimated labels
@@ -188,44 +167,15 @@ class PipelineBase:
             X = pd.DataFrame(X)
 
         X_t = self._transform(X)
-
-        if self.objective and self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X)
-
-            if self.objective.uses_extra_columns:
-                return self.objective.predict(y_predicted, X)
-
-            return self.objective.predict(y_predicted)
-
         return self.estimator.predict(X_t)
 
-    def predict_proba(self, X):
-        """Make probability estimates for labels.
-
-        Args:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-
-        Returns:
-            pd.DataFrame : probability estimates
-        """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        X = self._transform(X)
-        proba = self.estimator.predict_proba(X)
-
-        if proba.shape[1] <= 2:
-            return proba[:, 1]
-        else:
-            return proba
-
-    def score(self, X, y, other_objectives=None):
+    def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
-            other_objectives (list): list of other objectives to score
+            objectives (list): Non-empty list of objectives to score on
 
         Returns:
             float, dict:  score, ordered dictionary of other objective scores
@@ -236,13 +186,12 @@ class PipelineBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        other_objectives = other_objectives or []
-        other_objectives = [get_objective(o) for o in other_objectives]
+        objectives = [get_objective(o) for o in objectives]
         y_predicted = None
         y_predicted_proba = None
 
         scores = []
-        for objective in [self.objective] + other_objectives:
+        for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
@@ -256,10 +205,10 @@ class PipelineBase:
                 scores.append(objective.score(y_predictions, y, X))
             else:
                 scores.append(objective.score(y_predictions, y))
-        if not other_objectives:
+        if not objectives:
             return scores[0], {}
 
-        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
+        other_scores = OrderedDict(zip([n.name for n in objectives[1:]], scores[1:]))
 
         return scores[0], other_scores
 

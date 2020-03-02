@@ -27,7 +27,6 @@ class AutoBase:
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose):
         if tuner is None:
             tuner = SKOptTuner
-        self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.model_types = model_types
@@ -51,6 +50,8 @@ class AutoBase:
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
+
+        self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
@@ -87,7 +88,6 @@ class AutoBase:
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
 
-        self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
@@ -228,13 +228,10 @@ class AutoBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
         # fit an score the pipeline
-        pipeline = pipeline_class(
-            objective=self.objective,
-            random_state=self.random_state,
-            n_jobs=self.n_jobs,
-            number_features=X.shape[1],
-            **dict(parameters)
-        )
+        pipeline = pipeline_class(random_state=self.random_state,
+                                  n_jobs=self.n_jobs,
+                                  number_features=X.shape[1],
+                                  **dict(parameters))
 
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
@@ -259,9 +256,10 @@ class AutoBase:
             else:
                 y_train, y_test = y[train], y[test]
 
+            objectives_to_score = [self.objective] + self.additional_objectives
             try:
-                pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+                pipeline.fit(X_train, y_train, self.objective)
+                score, other_scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))
             except Exception as e:
                 if raise_errors:
