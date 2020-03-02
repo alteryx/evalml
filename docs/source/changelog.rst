@@ -8,6 +8,7 @@ Changelog
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
+        * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes
@@ -15,6 +16,7 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
+        * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
         * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
