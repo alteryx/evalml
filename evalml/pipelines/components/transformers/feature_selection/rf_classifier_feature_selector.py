@@ -15,7 +15,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
     }
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
-                 percent_features=0.5, threshold=-np.inf, n_jobs=1, random_state=0):
+                 percent_features=0.5, threshold=-np.inf, n_jobs=2, random_state=0):
         max_features = None
         if number_features:
             max_features = max(1, int(percent_features * number_features))

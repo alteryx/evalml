@@ -30,7 +30,7 @@ def test_lor_multi(X_y_multi):
                                    C=1.0,
                                    multi_class='auto',
                                    solver="lbfgs",
-                                   n_jobs=1)
+                                   n_jobs=2)
     sk_pipeline = SKPipeline([("encoder", enc),
                               ("imputer", imputer),
                               ("scaler", scaler),
