@@ -1,4 +1,4 @@
-import abc
+from abc import ABC
 
 import numpy as np
 import pandas as pd
