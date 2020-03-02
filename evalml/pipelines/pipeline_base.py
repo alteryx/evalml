@@ -13,12 +13,12 @@ from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
 
 
-class PipelineBase():
+class PipelineBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1, number_features=0):
+    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1, number_features=None):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -30,9 +30,15 @@ class PipelineBase():
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
                 value provided as arguments to the pipeline.
 
-            random_state (int): random seed/state
+            random_state (int): random seed/state. Defaults to 0. `random_state` can also be provided directly to components
+                using the parameters dictionary argument.
 
-            n_jobs (int): Number of jobs to run in parallel
+            n_jobs (int): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1. 
+                None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+                `n_jobs` can also be provided directly to components using the parameters dictionary argument. 
+
+            number_features (int): Number of features in dataset. Defaults to None. `number_features` can also be provided directly to components
+                using the parameters dictionary argument.
         """
         self.component_graph = [handle_component(component) for component in component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in problem_types]
