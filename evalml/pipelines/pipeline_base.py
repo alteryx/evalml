@@ -43,7 +43,7 @@ class PipelineBase(ABC):
 
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
-                value provided as arguments to the pipeline.
+                value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
 
             random_state (int): random seed/state. Defaults to 0. `random_state` can also be provided directly to components
                 using the parameters dictionary argument.
