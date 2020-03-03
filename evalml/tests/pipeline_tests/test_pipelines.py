@@ -56,6 +56,20 @@ def lr_pipeline():
     return LogisticRegressionPipeline(objective=objective, parameters=parameters)
 
 
+def test_required_fields():
+    class TestPipelineWithComponentGraph(PipelineBase):
+        component_graph = ['Logistic Regression']
+
+    with pytest.raises(TypeError):
+        TestPipelineWithComponentGraph(parameters={}, objective='precision')
+
+    class TestPipelineWithProblemTypes(PipelineBase):
+        component_graph = ['Logistic Regression']
+
+    with pytest.raises(TypeError):
+        TestPipelineWithProblemTypes(parameters={}, objective='precision')
+
+
 def test_serialization(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pipe.pkl')

@@ -1,5 +1,6 @@
 import copy
 import inspect
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 import pandas as pd
@@ -13,10 +14,22 @@ from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
 
 
-class PipelineBase:
+class PipelineBase(ABC):
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
+
+    @property
+    @classmethod
+    @abstractmethod
+    def component_graph(cls):
+        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
+
+    @property
+    @classmethod
+    @abstractmethod
+    def problem_types(cls):
+        return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
 
     def __init__(self, parameters, objective, random_state=0, n_jobs=-1, number_features=None):
         """Machine learning pipeline made out of transformers and a estimator.
