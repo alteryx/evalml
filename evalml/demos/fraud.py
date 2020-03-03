@@ -13,7 +13,7 @@ def load_fraud(n_rows=None):
     Returns:
         pd.DataFrame, pd.Series: X, y
     """
-    data_path = os.path.join(os.path.dirname(__file__), "data/fraud_transactions.csv.tar.gz")
+    data_path = os.path.join(os.path.abspath(__file__), "data/fraud_transactions.csv.tar.gz")
     X, y = load_data(path=data_path,
                      index="id",
                      label="fraud",
