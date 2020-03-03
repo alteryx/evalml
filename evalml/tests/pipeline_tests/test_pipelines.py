@@ -3,7 +3,7 @@ import os
 import pytest
 
 from evalml.model_types import ModelTypes
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import FraudCost, Precision, Recall
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline,
@@ -189,7 +189,9 @@ def test_score_with_list_of_multiple_objectives(X_y):
     X, y = X_y
     clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    objective_names = ["recall", "precision"]
+    recall_name = Recall().name
+    precision_name = Precision().name
+    objective_names = [recall_name, precision_name]
     scores = clf.score(X, y, objective_names)
     assert len(scores.values()) == 2
     assert scores.keys() == objective_names
