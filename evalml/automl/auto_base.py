@@ -91,6 +91,7 @@ class AutoBase:
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
+        self.plot_metrics = []
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -243,6 +244,8 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
+        plot_data = []
+
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -257,6 +260,7 @@ class AutoBase:
             try:
                 pipeline.fit(X_train, y_train, self.objective)
                 score, other_scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))
             except Exception as e:
                 if raise_errors:
                     raise e
@@ -277,7 +281,8 @@ class AutoBase:
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=training_time,
-                         cv_data=cv_data)
+                         cv_data=cv_data,
+                         plot_data=plot_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -293,7 +298,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, plot_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
@@ -319,7 +324,8 @@ class AutoBase:
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "cv_data": cv_data
+            "cv_data": cv_data,
+            "plot_data": plot_data
         }
 
         self.results['search_order'].append(pipeline_id)
@@ -377,10 +383,6 @@ class AutoBase:
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
-
-        # note: we need to think about how to better handle metrics we don't want to display in our chart
-        # currently, just dropping the columns before displaying
-        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
 
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
