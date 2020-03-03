@@ -53,6 +53,11 @@ def test_rf_regression(X_y_categorical_regression):
     y_pred_with_objective = clf.predict(X, objective)
     np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y, objective)
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
 
 def test_rfr_input_feature_names(X_y_reg):
     X, y = X_y_reg

@@ -190,7 +190,11 @@ class PipelineBase:
         y_predicted = None
         y_predicted_proba = None
 
+<<<<<<< HEAD
         scores = OrderedDict()
+=======
+        scores = []
+>>>>>>> improved_objectives
         for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
@@ -206,6 +210,38 @@ class PipelineBase:
             else:
                 scores.update({objective.name: objective.score(y_predictions, y)})
 
+        return scores
+
+    def get_plot_data(self, X, y, plot_metrics):
+        """Generates plotting data for the pipeline for each specified plot metric
+
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (pd.Series) : true labels of length [n_samples]
+            plot_metrics (list): list of plot metrics to generate data for
+
+        Returns:
+            dict: ordered dictionary of plot metric data (scores)
+        """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+        y_predicted = None
+        y_predicted_proba = None
+        scores = []
+        for plot_metric in plot_metrics:
+            if plot_metric.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
+                y_predictions = y_predicted
+            scores.append(plot_metric.score(y_predictions, y))
+        scores = OrderedDict(zip([n.name for n in plot_metrics], scores))
         return scores
 
     @property

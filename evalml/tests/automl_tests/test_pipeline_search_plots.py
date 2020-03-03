@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import pandas as pd
 import plotly.graph_objects as go
 import pytest
@@ -10,6 +8,10 @@ from evalml.automl.pipeline_search_plots import (
     PipelineSearchPlots,
     SearchIterationPlot
 )
+<<<<<<< HEAD
+=======
+from evalml.objectives import ROC, ConfusionMatrix
+>>>>>>> improved_objectives
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -29,7 +31,7 @@ def test_generate_roc(X_y):
             pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
                                                         impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
-            cv_data = []
+            plot_data = []
             for train, test in cv.split(X, y):
                 if isinstance(X, pd.DataFrame):
                     X_train, X_test = X.iloc[train], X.iloc[test]
@@ -40,6 +42,7 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
+<<<<<<< HEAD
                 pipeline.fit(X_train, y_train)
                 scores = pipeline.score(X_test, y_test, ["ROC"])
                 roc_score = scores["ROC"]
@@ -48,8 +51,15 @@ def test_generate_roc(X_y):
                 ordered_scores.update({"# Training": len(y_train)})
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": scores, "score": roc_score})
+=======
+                pipeline.fit(X_train, y_train, "precision")
+                plot_data.append(pipeline.get_plot_data(X_test, y_test, [ROC()]))
 
-            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
+            self.results['pipeline_results'].update({0: {"plot_data": plot_data,
+                                                         "pipeline_name": pipeline.name}})
+>>>>>>> improved_objectives
+
+            self.results['pipeline_results'].update({0: {"plot_data": plot_data, "pipeline_name": pipeline.name}})
 
     mock_automl = MockAuto()
     search_plots = PipelineSearchPlots(mock_automl)
@@ -105,7 +115,7 @@ def test_generate_confusion_matrix(X_y):
             pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
                                                         impute_strategy='mean', number_features=len(X[0]), random_state=1)
             cv = StratifiedKFold(n_splits=5, random_state=0)
-            cv_data = []
+            plot_data = []
             for train, test in cv.split(X, y):
                 if isinstance(X, pd.DataFrame):
                     X_train, X_test = X.iloc[train], X.iloc[test]
@@ -116,19 +126,11 @@ def test_generate_confusion_matrix(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
+                pipeline.fit(X_train, y_train)
+                plot_data.append(pipeline.get_plot_data(X_test, y_test, [ConfusionMatrix()]))
                 # store information for testing purposes later
                 y_test_lens.append(len(y_test))
-
-                pipeline.fit(X_train, y_train, "confusion_matrix")
-                scores = pipeline.score(X_test, y_test, ["confusion_matrix"])
-                cm_score = scores["Confusion Matrix"]
-                ordered_scores = OrderedDict()
-                ordered_scores.update({"Confusion Matrix": cm_score})
-                ordered_scores.update({"# Training": len(y_train)})
-                ordered_scores.update({"# Testing": len(y_test)})
-                cv_data.append({"all_objective_scores": scores, "score": cm_score})
-
-            self.results['pipeline_results'].update({0: {"cv_data": cv_data,
+            self.results['pipeline_results'].update({0: {"plot_data": plot_data,
                                                          "pipeline_name": pipeline.name}})
 
     mock_automl = MockAutoClassificationSearch()

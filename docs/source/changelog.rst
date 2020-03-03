@@ -8,6 +8,7 @@ Changelog
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
+        * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes

@@ -1,3 +1,5 @@
+from abc import ABC
+
 import numpy as np
 import pandas as pd
 from sklearn import metrics
@@ -313,7 +315,15 @@ class ExpVariance(ObjectiveBase):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class ROC(ObjectiveBase):
+class PlotMetric(ABC):
+    score_needs_proba = True
+    name = None
+
+    def score(self, y_predicted, y_true):
+        raise NotImplementedError("score() is not implemented!")
+
+
+class ROC(PlotMetric):
     """Receiver Operating Characteristic score for binary classification."""
     score_needs_proba = True
     name = "ROC"
@@ -323,10 +333,8 @@ class ROC(ObjectiveBase):
         return metrics.roc_curve(y_true, y_predicted)
 
 
-class ConfusionMatrix(ObjectiveBase):
+class ConfusionMatrix(PlotMetric):
     """Confusion matrix for classification problems"""
-    needs_fitting = False
-    greater_is_better = True
     score_needs_proba = False
     name = "Confusion Matrix"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
