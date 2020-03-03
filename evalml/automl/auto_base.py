@@ -1,3 +1,4 @@
+import random
 import time
 from collections import OrderedDict
 from sys import stdout
@@ -13,7 +14,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds, get_random_state
+from evalml.utils import Logger, convert_to_seconds
 
 
 class AutoBase:
@@ -71,7 +72,11 @@ class AutoBase:
             'search_order': []
         }
         self.trained_pipelines = {}
-        self.random_state = get_random_state(random_state)
+
+        self.random_state = random_state
+        random.seed(self.random_state)
+        np.random.seed(seed=self.random_state)
+
         self.n_jobs = n_jobs
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
@@ -79,7 +84,7 @@ class AutoBase:
         self.search_spaces = {}
         for p in self.possible_pipelines:
             space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=self.random_state)
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
 
         self.additional_objectives = additional_objectives
@@ -95,8 +100,8 @@ class AutoBase:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types, either numerical or categorical.
-                Categorical features will automatically be encoded
+            feature_types (list, optional): list of feature types. either numeric of categorical.
+                categorical features will automatically be encoded
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
@@ -282,7 +287,7 @@ class AutoBase:
             print('')
 
     def _select_pipeline(self):
-        return self.random_state.choice(self.possible_pipelines)
+        return random.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()

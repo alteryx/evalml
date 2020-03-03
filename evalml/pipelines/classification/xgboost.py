@@ -28,7 +28,7 @@ class XGBoostPipeline(PipelineBase):
     }
 
     def __init__(self, objective, eta, min_child_weight, max_depth, impute_strategy,
-                 percent_features, number_features, n_estimators=10, n_jobs=2, random_state=0):
+                 percent_features, number_features, n_estimators=10, n_jobs=-1, random_state=0):
 
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         enc = OneHotEncoder()
@@ -39,11 +39,7 @@ class XGBoostPipeline(PipelineBase):
                                                         threshold=-np.inf,
                                                         n_jobs=n_jobs,
                                                         random_state=random_state)
-        xgboost_random_state = random_state
-        if isinstance(random_state, np.random.RandomState):
-            xgboost_random_state = random_state.randint(np.iinfo(np.int32).max)
-
-        estimator = XGBoostClassifier(random_state=xgboost_random_state,
+        estimator = XGBoostClassifier(random_state=random_state,
                                       eta=eta,
                                       max_depth=max_depth,
                                       min_child_weight=min_child_weight,

@@ -51,12 +51,12 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
 def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
-    Arguments:
+    Args:
         X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
         y (pd.Series) : labels of length [n_samples]
         regression (bool): if true, do not use stratified split
         test_size (float) : percent of train set to holdout for testing
-        random_state (int, np.random.RandomState) : seed for the random number generator
+        random_state (int) : seed for the random number generator
 
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series : features and labels each split into train and test sets

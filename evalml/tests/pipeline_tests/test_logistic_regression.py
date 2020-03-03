@@ -17,7 +17,7 @@ def test_lor_init(X_y):
     clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
     expected_parameters = {'impute_strategy': 'mean', 'penalty': 'l2', 'C': 0.5}
     assert clf.parameters == expected_parameters
-    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
+    assert clf.random_state == 1
 
 
 def test_lor_multi(X_y_multi):
@@ -30,7 +30,7 @@ def test_lor_multi(X_y_multi):
                                    C=1.0,
                                    multi_class='auto',
                                    solver="lbfgs",
-                                   n_jobs=2)
+                                   n_jobs=-1)
     sk_pipeline = SKPipeline([("encoder", enc),
                               ("imputer", imputer),
                               ("scaler", scaler),
