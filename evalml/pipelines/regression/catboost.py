@@ -26,7 +26,7 @@ class CatBoostRegressionPipeline(PipelineBase):
 
     def __init__(self, objective, impute_strategy, n_estimators, eta,
                  max_depth, number_features, bootstrap_type=None,
-                 n_jobs=2, random_state=0):
+                 n_jobs=-1, random_state=0):
         # note: impute_strategy must support both string and numeric data
         imputer = SimpleImputer(impute_strategy=impute_strategy)
         catboost_random_state = random_state

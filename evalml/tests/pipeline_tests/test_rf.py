@@ -30,7 +30,7 @@ def test_rf_multi(X_y_multi):
     estimator = RandomForestClassifier(random_state=0,
                                        n_estimators=10,
                                        max_depth=3,
-                                       n_jobs=2)
+                                       n_jobs=-1)
     feature_selection = SelectFromModel(estimator=estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
                                         threshold=-np.inf)

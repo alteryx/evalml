@@ -19,7 +19,7 @@ class LogisticRegressionClassifier(Estimator):
     model_type = ModelTypes.LINEAR_MODEL
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, penalty="l2", C=1.0, n_jobs=2, random_state=0):
+    def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         parameters = {"penalty": penalty,
                       "C": C}
         lr_classifier = LogisticRegression(penalty=penalty,

@@ -29,7 +29,7 @@ def test_rf_regression(X_y_categorical_regression):
     estimator = RandomForestRegressor(random_state=0,
                                       n_estimators=10,
                                       max_depth=3,
-                                      n_jobs=2)
+                                      n_jobs=-1)
     feature_selection = SelectFromModel(estimator=estimator,
                                         max_features=max(1, int(1 * X.shape[1])),
                                         threshold=-np.inf)
