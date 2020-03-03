@@ -72,6 +72,7 @@ class AutoBase:
         }
         self.trained_pipelines = {}
         self.random_state = get_random_state(random_state)
+
         self.n_jobs = n_jobs
         self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
 
