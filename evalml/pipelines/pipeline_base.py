@@ -7,7 +7,7 @@ from .components import Estimator, handle_component
 from .pipeline_plots import PipelinePlots
 
 from evalml.objectives import get_objective
-from evalml.utils import Logger
+from evalml.utils import Logger, get_random_state
 
 
 class PipelineBase:
@@ -23,13 +23,13 @@ class PipelineBase:
 
             component_list (list): List of components in order
 
-            random_state (int): random seed/state
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
             n_jobs (int): Number of jobs to run in parallel
         """
 
         self.objective = get_objective(objective)
-        self.random_state = random_state
+        self.random_state = get_random_state(random_state)
         self.component_list = [handle_component(component) for component in component_list]
         self.component_names = [comp.name for comp in self.component_list]
         self.input_feature_names = {}

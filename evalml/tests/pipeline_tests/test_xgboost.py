@@ -20,7 +20,7 @@ def test_xg_init(X_y):
     expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
                            'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3, 'n_estimators': 10}
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 1
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
 def test_xg_multi(X_y_multi):

@@ -12,7 +12,7 @@ class Tuner(ABC):
 
         Arguments:
             space (dict): search space for hyperparameters
-            random_state (int): random state
+            random_state (int, np.random.RandomState): The random state
 
         Returns:
             Tuner: self

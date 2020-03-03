@@ -14,7 +14,7 @@ def test_catboost_init():
                                          bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2)
     expected_parameters = {'impute_strategy': 'most_frequent', 'eta': 0.1, 'n_estimators': 500, 'max_depth': 3, 'bootstrap_type': 'Bernoulli'}
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_catboost_multi(X_y_multi):
