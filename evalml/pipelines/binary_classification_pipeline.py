@@ -133,7 +133,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             y = pd.Series(y)
         y_predicted = None
         y_predicted_proba = None
-        scores = []
+        scores = OrderedDict()
         for plot_metric in plot_metrics:
             if plot_metric.score_needs_proba:
                 if y_predicted_proba is None:
@@ -144,5 +144,5 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 if y_predicted is None:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
-            scores.append(plot_metric.score(y_predictions, y))
-        scores = OrderedDict(zip([n.name for n in plot_metrics], scores))
+            scores.update({plot_metric.name: plot_metric.score(y_predictions, y)})
+        return scores
