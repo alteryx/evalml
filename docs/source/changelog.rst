@@ -9,7 +9,6 @@ Changelog
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
-        * Allow numpy.random.RandomState for random_state parameters :pr:`431`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
     * Changes

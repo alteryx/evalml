@@ -13,7 +13,7 @@ def test_catboost_init():
                                      bootstrap_type='Bayesian', eta=0.03, max_depth=6, random_state=2)
     expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6, 'bootstrap_type': 'Bayesian'}
     assert clf.parameters == expected_parameters
-    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
+    assert clf.random_state == 2
 
 
 def test_catboost_regression(X_y_reg):

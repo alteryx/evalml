@@ -18,7 +18,7 @@ def test_rf_init(X_y):
     expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0,
                            'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
     assert clf.parameters == expected_parameters
-    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
+    assert clf.random_state == 2
 
 
 def test_rf_multi(X_y_multi):
@@ -30,7 +30,7 @@ def test_rf_multi(X_y_multi):
     estimator = RandomForestClassifier(random_state=0,
                                        n_estimators=10,
                                        max_depth=3,
-                                       n_jobs=2)
+                                       n_jobs=-1)
     feature_selection = SelectFromModel(estimator=estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
                                         threshold=-np.inf)

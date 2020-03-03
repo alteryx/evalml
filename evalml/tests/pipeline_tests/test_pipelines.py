@@ -125,14 +125,14 @@ def test_estimator_not_last(X_y):
         name = "Mock Logistic Regression Pipeline"
 
         def __init__(self, objective, penalty, C, impute_strategy,
-                     number_features, n_jobs=2, random_state=0):
+                     number_features, n_jobs=-1, random_state=0):
             imputer = SimpleImputer(impute_strategy=impute_strategy)
             enc = OneHotEncoder()
             scaler = StandardScaler()
             estimator = LogisticRegressionClassifier(random_state=random_state,
                                                      penalty=penalty,
                                                      C=C,
-                                                     n_jobs=2)
+                                                     n_jobs=-1)
             super().__init__(objective=objective, component_list=[enc, imputer, estimator, scaler], n_jobs=n_jobs, random_state=random_state)
 
     err_msg = "A pipeline must have an Estimator as the last component in component_list."
@@ -142,7 +142,7 @@ def test_estimator_not_last(X_y):
 
 def test_multi_format_creation(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'], n_jobs=2, random_state=0)
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
@@ -156,7 +156,7 @@ def test_multi_format_creation(X_y):
 
 def test_multiple_feature_selectors(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier'], n_jobs=2, random_state=0)
+    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_list, correct_components):
         assert isinstance(component, correct_components)
