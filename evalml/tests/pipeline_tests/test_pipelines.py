@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytest
 
 from evalml.model_types import ModelTypes
@@ -194,8 +195,8 @@ def test_score_with_list_of_multiple_objectives(X_y):
     objective_names = [recall_name, precision_name]
     scores = clf.score(X, y, objective_names)
     assert len(scores.values()) == 2
-    assert scores.keys() == objective_names
-    assert not np.isnan(scores.values()).any()
+    assert all(name in scores.keys() for name in objective_names)
+    assert not any(np.isnan(val) for val in scores.values())
 
 
 def test_n_jobs(X_y):
