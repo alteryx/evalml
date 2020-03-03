@@ -18,7 +18,7 @@ class PipelineBase:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1, number_features=None):
+    def __init__(self, parameters, objective, random_state=0, n_jobs=-1, number_features=None):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -40,8 +40,8 @@ class PipelineBase:
             number_features (int): Number of features in dataset. Defaults to None. `number_features` can also be provided directly to components
                 using the parameters dictionary argument.
         """
-        self.component_graph = [handle_component(component) for component in component_graph]
-        self.problem_types = [handle_problem_types(problem_type) for problem_type in problem_types]
+        self.component_graph = [handle_component(component) for component in self.component_graph]
+        self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
         self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}

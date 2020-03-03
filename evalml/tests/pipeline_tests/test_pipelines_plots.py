@@ -5,50 +5,65 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import pytest
+from skopt.space import Real
 
+from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 
 
-def test_returns_digraph_object():
-    clf = PipelineBase(objective='precision',
-                       component_graph=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], problem_types=['binary', 'multiclass'],
-                       parameters={})
+@pytest.fixture
+def test_pipeline():
+    class TestPipeline(PipelineBase):
+        model_type = ModelTypes.LINEAR_MODEL
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+        problem_types = ['binary', 'multiclass']
+
+        hyperparameters = {
+            "penalty": ["l2"],
+            "C": Real(.01, 10),
+            "impute_strategy": ["mean", "median", "most_frequent"],
+        }
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
+
+    return TestPipeline(objective='precision', parameters={})
+
+
+def test_returns_digraph_object(test_pipeline):
+    clf = test_pipeline
     plot = clf.plot()
     assert isinstance(plot, graphviz.Digraph)
 
 
-def test_saving_png_file(tmpdir):
+def test_saving_png_file(tmpdir, test_pipeline):
     path = os.path.join(str(tmpdir), 'pipeline.png')
-    pipeline = PipelineBase(objective='precision',
-                            component_graph=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], problem_types=['binary', 'multiclass'],
-                            parameters={})
+    pipeline = test_pipeline
     pipeline.plot(to_file=path)
     assert os.path.isfile(path)
 
 
-def test_missing_file_extension():
+def test_missing_file_extension(test_pipeline):
     path = "test1"
-    pipeline = PipelineBase(objective='precision',
-                            component_graph=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], problem_types=['binary', 'multiclass'],
-                            parameters={})
+    pipeline = test_pipeline
     with pytest.raises(ValueError, match="Please use a file extension"):
         pipeline.plot(to_file=path)
 
 
-def test_invalid_format():
+def test_invalid_format(test_pipeline):
     path = "test1.xzy"
-    pipeline = PipelineBase(objective='precision',
-                            component_graph=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], problem_types=['binary', 'multiclass'],
-                            parameters={})
+    pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.plot(to_file=path)
 
 
-def test_feature_importance_plot(X_y):
+def test_feature_importance_plot(X_y, test_pipeline):
     X, y = X_y
-    clf = PipelineBase(objective='precision',
-                       component_graph=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], problem_types=['binary', 'multiclass'],
-                       parameters={})
+    clf = test_pipeline
     clf.fit(X, y)
     assert isinstance(clf.plot.feature_importances(), go.Figure)
 
@@ -63,8 +78,6 @@ def test_feature_importance_plot_show_all_features(X_y):
         def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
             super().__init__(objective=objective,
                              parameters=parameters,
-                             component_graph=self.component_graph,
-                             problem_types=self.problem_types,
                              number_features=number_features,
                              random_state=random_state,
                              n_jobs=n_jobs)
