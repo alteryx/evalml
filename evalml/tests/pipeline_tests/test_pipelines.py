@@ -185,6 +185,17 @@ def test_score_with_empty_list_of_objectives(X_y):
     assert len(scores.values()) == 0
 
 
+def test_score_with_list_of_multiple_objectives(X_y):
+    X, y = X_y
+    clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+    objective_names = ["recall", "precision"]
+    scores = clf.score(X, y, objective_names)
+    assert len(scores.values()) == 2
+    assert scores.keys() == objective_names
+    assert not np.isnan(scores.values()).any()
+
+
 def test_n_jobs(X_y):
     with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
         PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
