@@ -304,12 +304,12 @@ class AutoBase:
         else:
             score_to_minimize = score
 
-        self.tuners[trained_pipeline.__class__.name].add([p[1] for p in parameters], score_to_minimize)
+        self.tuners[type(trained_pipeline).name].add([p[1] for p in parameters], score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
 
-        pipeline_class_name = trained_pipeline.__class__.name
+        pipeline_class_name = type(trained_pipeline).name
         pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self.results['pipeline_results'])
 

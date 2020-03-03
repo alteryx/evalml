@@ -58,7 +58,7 @@ def test_generate_roc(X_y):
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
-            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_class_name": pipeline.__class__.name}})
+            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_class_name": type(pipeline).name}})
 
     mock_automl = MockAuto()
     search_plots = PipelineSearchPlots(mock_automl)
