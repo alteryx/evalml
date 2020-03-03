@@ -34,10 +34,12 @@ class PipelineBase(ABC):
     def __init__(self, parameters, objective, random_state=0, n_jobs=-1, number_features=None):
         """Machine learning pipeline made out of transformers and a estimator.
 
+        Required Class Variables:
+            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+            problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
+
         Arguments:
             objective (ObjectiveBase): the objective to optimize
-
-            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
 
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
