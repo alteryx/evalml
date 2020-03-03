@@ -8,10 +8,7 @@ from evalml.automl.pipeline_search_plots import (
     PipelineSearchPlots,
     SearchIterationPlot
 )
-<<<<<<< HEAD
-=======
 from evalml.objectives import ROC, ConfusionMatrix
->>>>>>> improved_objectives
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -42,22 +39,11 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
-<<<<<<< HEAD
-                pipeline.fit(X_train, y_train)
-                scores = pipeline.score(X_test, y_test, ["ROC"])
-                roc_score = scores["ROC"]
-                ordered_scores = OrderedDict()
-                ordered_scores.update({"ROC": roc_score})
-                ordered_scores.update({"# Training": len(y_train)})
-                ordered_scores.update({"# Testing": len(y_test)})
-                cv_data.append({"all_objective_scores": scores, "score": roc_score})
-=======
                 pipeline.fit(X_train, y_train, "precision")
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, [ROC()]))
 
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,
                                                          "pipeline_name": pipeline.name}})
->>>>>>> improved_objectives
 
             self.results['pipeline_results'].update({0: {"plot_data": plot_data, "pipeline_name": pipeline.name}})
 

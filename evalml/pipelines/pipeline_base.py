@@ -190,11 +190,7 @@ class PipelineBase:
         y_predicted = None
         y_predicted_proba = None
 
-<<<<<<< HEAD
         scores = OrderedDict()
-=======
-        scores = []
->>>>>>> improved_objectives
         for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:

@@ -115,7 +115,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 scores.update({objective.name: objective.score(y_predictions, y)})
         return scores
 
-
     def get_plot_data(self, X, y, plot_metrics):
         """Generates plotting data for the pipeline for each specified plot metric
 
