@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from skopt.space import Real
 
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
@@ -53,6 +54,20 @@ def lr_pipeline():
     }
 
     return LogisticRegressionPipeline(objective=objective, parameters=parameters)
+
+
+def test_required_fields():
+    class TestPipelineWithComponentGraph(PipelineBase):
+        component_graph = ['Logistic Regression']
+
+    with pytest.raises(TypeError):
+        TestPipelineWithComponentGraph(parameters={}, objective='precision')
+
+    class TestPipelineWithProblemTypes(PipelineBase):
+        component_graph = ['Logistic Regression']
+
+    with pytest.raises(TypeError):
+        TestPipelineWithProblemTypes(parameters={}, objective='precision')
 
 
 def test_serialization(X_y, tmpdir, lr_pipeline):
@@ -174,9 +189,7 @@ def test_estimator_not_last(X_y):
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             component_graph=self.component_graph,
-                             problem_types=self.problem_types)
+                             parameters=parameters)
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
@@ -185,6 +198,24 @@ def test_estimator_not_last(X_y):
 
 def test_multi_format_creation(X_y):
     X, y = X_y
+
+    class TestPipeline(PipelineBase):
+        model_type = ModelTypes.LINEAR_MODEL
+        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
+        problem_types = ['binary', 'multiclass']
+
+        hyperparameters = {
+            "penalty": ["l2"],
+            "C": Real(.01, 10),
+            "impute_strategy": ["mean", "median", "most_frequent"],
+        }
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
 
     parameters = {
         'Simple Imputer': {
@@ -197,8 +228,7 @@ def test_multi_format_creation(X_y):
         }
     }
 
-    clf = PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                       parameters=parameters, problem_types=['binary', 'multiclass'])
+    clf = TestPipeline(parameters=parameters, objective='precision')
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
@@ -212,8 +242,26 @@ def test_multi_format_creation(X_y):
 
 def test_multiple_feature_selectors(X_y):
     X, y = X_y
-    clf = PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier'],
-                       parameters={}, problem_types=['binary', 'multiclass'])
+
+    class TestPipeline(PipelineBase):
+        model_type = ModelTypes.LINEAR_MODEL
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        problem_types = ['binary', 'multiclass']
+
+        hyperparameters = {
+            "penalty": ["l2"],
+            "C": Real(.01, 10),
+            "impute_strategy": ["mean", "median", "most_frequent"],
+        }
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
+
+    clf = TestPipeline(parameters={}, objective='precision')
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
@@ -227,28 +275,33 @@ def test_multiple_feature_selectors(X_y):
 
 def test_n_jobs(X_y):
     with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                     n_jobs='5', random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+        LogisticRegressionPipeline(objective='precision', n_jobs='5', random_state=0, parameters={})
 
     with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                     n_jobs=0, random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+        LogisticRegressionPipeline(objective='precision', n_jobs=0, random_state=0, parameters={})
 
-    assert PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                        n_jobs=-4, random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+    assert LogisticRegressionPipeline(objective='precision', n_jobs=-4, random_state=0, parameters={})
 
-    assert PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                        n_jobs=4, random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+    assert LogisticRegressionPipeline(objective='precision', n_jobs=4, random_state=0, parameters={})
 
-    assert PipelineBase(objective='precision', component_graph=['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier'],
-                        n_jobs=None, random_state=0, parameters={}, problem_types=['binary', 'multiclass'])
+    assert LogisticRegressionPipeline(objective='precision', n_jobs=None, random_state=0, parameters={})
 
 
 def test_problem_types():
-    component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
+    class TestPipeline(PipelineBase):
+        model_type = ModelTypes.LINEAR_MODEL
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary', 'regression']
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        PipelineBase(component_graph=component_graph, parameters={}, objective='precision', problem_types=['regression'])
+        TestPipeline(parameters={}, objective='precision')
 
 
 def test_no_default_parameters():
@@ -263,20 +316,49 @@ def test_no_default_parameters():
             self.b = b
             self.c = c
 
-    component_graph = [MockComponent(a=0)]
+    class TestPipeline(PipelineBase):
+        component_graph = [MockComponent(a=0)]
+        problem_types = ['binary']
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
+
     with pytest.raises(ValueError, match="Please provide the required parameters for *."):
-        PipelineBase(component_graph=component_graph, parameters={}, objective='precision', problem_types=['binary'])
+        TestPipeline(parameters={}, objective='precision')
 
 
 def test_num_features():
-    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-    pipeline = PipelineBase(component_graph=component_graph, parameters={}, objective="precision", problem_types=['binary'], number_features=100)
+    class TestPipeline(PipelineBase):
+        component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+        problem_types = ['binary']
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
+    pipeline = TestPipeline(parameters={}, objective="precision", number_features=100)
     assert pipeline.number_features == 100
     assert pipeline.component_graph[0]._component_obj.get_params()['max_features'] == 50  # default percent_features=0.5 so 100 * 0.5 == 50
 
 
 def test_initiate_components():
-    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+    class TestPipeline(PipelineBase):
+        component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+        problem_types = ['binary']
+
+        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+            super().__init__(objective=objective,
+                             parameters=parameters,
+                             number_features=number_features,
+                             random_state=random_state,
+                             n_jobs=n_jobs)
+
     parameters = {
         'Logistic Regression Classifier': {
             "cool_parameter": "yes"
@@ -284,9 +366,8 @@ def test_initiate_components():
     }
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
-        PipelineBase(component_graph=component_graph, parameters=parameters, objective='precision', problem_types=['binary'])
+        TestPipeline(parameters=parameters, objective='precision')
 
-    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
     parameters = {
         'Logistic Regression Classifier': {
             "C": 100
@@ -294,4 +375,4 @@ def test_initiate_components():
     }
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
-        PipelineBase(component_graph=component_graph, parameters=parameters, objective='precision', problem_types=['binary'])
+        TestPipeline(parameters=parameters, objective='precision')

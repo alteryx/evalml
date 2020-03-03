@@ -1,5 +1,6 @@
 import copy
 import inspect
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 import pandas as pd
@@ -45,22 +46,36 @@ class hybridmethod:
         return self.finstance.__get__(instance, cls)
 
 
-class PipelineBase:
+class PipelineBase(ABC):
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelinePlots
 
-    def __init__(self, component_graph, parameters, objective, problem_types, random_state=0, n_jobs=-1, number_features=None):
+    @property
+    @classmethod
+    @abstractmethod
+    def component_graph(cls):
+        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
+
+    @property
+    @classmethod
+    @abstractmethod
+    def problem_types(cls):
+        return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
+
+    def __init__(self, parameters, objective, random_state=0, n_jobs=-1, number_features=None):
         """Machine learning pipeline made out of transformers and a estimator.
+
+        Required Class Variables:
+            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+            problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             objective (ObjectiveBase): the objective to optimize
 
-            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
-                value provided as arguments to the pipeline.
+                value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
 
             random_state (int): random seed/state. Defaults to 0. `random_state` can also be provided directly to components
                 using the parameters dictionary argument.
@@ -72,8 +87,8 @@ class PipelineBase:
             number_features (int): Number of features in dataset. Defaults to None. `number_features` can also be provided directly to components
                 using the parameters dictionary argument.
         """
-        self.component_graph = [handle_component(component) for component in component_graph]
-        self.problem_types = [handle_problem_types(problem_type) for problem_type in problem_types]
+        self.component_graph = [handle_component(component) for component in self.component_graph]
+        self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
         self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
