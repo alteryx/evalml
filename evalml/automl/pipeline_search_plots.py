@@ -141,7 +141,7 @@ class PipelineSearchPlots:
         std_auc = roc_data["std_auc"]
 
         results = self.data.results['pipeline_results']
-        pipeline_name = results[pipeline_id]["pipeline_name"]
+        pipeline_name = results[pipeline_id]["pipeline_class_name"]
 
         layout = go.Layout(title={'text': 'Receiver Operating Characteristic of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
@@ -201,7 +201,7 @@ class PipelineSearchPlots:
         """
         data = self.get_confusion_matrix_data(pipeline_id)
         results = self.data.results['pipeline_results']
-        pipeline_name = results[pipeline_id]["pipeline_name"]
+        pipeline_name = results[pipeline_id]["pipeline_class_name"]
         # defaults to last fold if none specified. May need to think of better approach.
         if fold_num is None:
             fold_num = -1

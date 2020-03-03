@@ -1,5 +1,6 @@
 import copy
 import inspect
+import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -15,35 +16,11 @@ from evalml.utils import Logger
 
 
 class classproperty:
-    def __init__(self, fget=None, doc=None):
-        self.fget = fget
-        if doc is None and fget is not None:
-            doc = fget.__doc__
-        self.__doc__ = doc
+    def __init__(self, f):
+        self.f = f
 
-    def __get__(self, obj, objtype=None):
-        if obj is None:
-            return self.fget(objtype)
-        return self.fget(obj)
-
-
-class hybridmethod:
-    def __init__(self, fclass, finstance=None, doc=None):
-        self.fclass = fclass
-        self.finstance = finstance
-        self.__doc__ = doc or fclass.__doc__
-
-    def classmethod(self, fclass):
-        return type(self)(fclass, self.finstance, None)
-
-    def instancemethod(self, finstance):
-        return type(self)(self.fclass, finstance, self.__doc__)
-
-    def __get__(self, instance, cls):
-        if instance is None or self.finstance is None:
-              # either bound to the class, or no instance method available
-            return self.fclass.__get__(cls, None)
-        return self.finstance.__get__(instance, cls)
+    def __get__(self, obj, owner):
+        return self.f(owner)
 
 
 class PipelineBase(ABC):
@@ -110,47 +87,21 @@ class PipelineBase(ABC):
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
         self._validate_problem_types(self.problem_types)
-    
-    
-    @property
-    def summary(self):
-        return self._generate_summary()
-    
-    def _generate_summary(self):
-        if self.estimator is not None:
-            name = "{}".format(self.estimator.name)
-        else:
-            name = "Pipeline"
-        for index, component in enumerate(self.component_graph[:-1]):
-            if index == 0:
-                name += " w/ {}".format(component.name)
-            else:
-                name += " + {}".format(component.name)
-
-        return name
 
     @classproperty
     def name(cls):
-        return cls._generate_name()
-
-    @hybridmethod
-    def _generate_name(cls):
-        component_graph = [handle_component(c) for c in cls.component_graph]
-        estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-        if estimator is not None:
-            name = "{}".format(estimator.name)
-        else:
-            name = "Pipeline"
-        for index, component in enumerate(component_graph[:-1]):
-            if index == 0:
-                name += " w/ {}".format(component.name)
-            else:
-                name += " + {}".format(component.name)
-
+        try:
+            name = cls._name
+        except AttributeError:
+            rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
+            name = rex.sub(' ', cls.__name__)
         return name
-    
-    @_generate_name.instancemethod
-    def _generate_name(self):
+
+    @property
+    def summary(self):
+        return self._generate_summary()
+
+    def _generate_summary(self):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
         else:
@@ -242,7 +193,7 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters if return_dict is True, else None
         """
-        self.logger.log_title(self.name)
+        self.logger.log_title(type(self).name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"

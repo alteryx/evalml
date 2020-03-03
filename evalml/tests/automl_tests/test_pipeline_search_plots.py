@@ -58,7 +58,7 @@ def test_generate_roc(X_y):
                 ordered_scores.update({"# Testing": len(y_test)})
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
-            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_name": pipeline.name}})
+            self.results['pipeline_results'].update({0: {"cv_data": cv_data, "pipeline_class_name": pipeline.__class__.name}})
 
     mock_automl = MockAuto()
     search_plots = PipelineSearchPlots(mock_automl)
@@ -147,7 +147,7 @@ def test_generate_confusion_matrix(X_y):
                 cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
             self.results['pipeline_results'].update({0: {"cv_data": cv_data,
-                                                         "pipeline_name": pipeline.name}})
+                                                         "pipeline_class_name": pipeline.name}})
 
     mock_automl = MockAutoClassificationSearch()
     search_plots = PipelineSearchPlots(mock_automl)

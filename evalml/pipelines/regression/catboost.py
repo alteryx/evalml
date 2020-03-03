@@ -13,7 +13,7 @@ class CatBoostRegressionPipeline(PipelineBase):
 
     Note: impute_strategy must support both string and numeric data
     """
-    name = "CatBoost Regressor w/ Simple Imputer"
+    _name = "CatBoost Regressor w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
     problem_types = ['regression']

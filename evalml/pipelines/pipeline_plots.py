@@ -47,7 +47,7 @@ class PipelinePlots:
             format = None
 
         # Initialize a new directed graph
-        graph = graphviz.Digraph(name=self.pipeline.name, format=format,
+        graph = graphviz.Digraph(name=self.pipeline.__class__.name, format=format,
                                  graph_attr={'splines': 'ortho'})
         graph.attr(rankdir='LR')
 

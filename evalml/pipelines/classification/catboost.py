@@ -12,7 +12,7 @@ class CatBoostClassificationPipeline(PipelineBase):
     For more information, check out https://catboost.ai/
     Note: impute_strategy must support both string and numeric data
     """
-    name = "CatBoost Classifier w/ Simple Imputer"
+    _name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
     problem_types = ['binary', 'multiclass']
