@@ -113,10 +113,10 @@ class PipelineBase(ABC):
     
     
     @property
-    def name(self):
-        return self._generate_name()
+    def summary(self):
+        return self._generate_summary()
     
-    def _generate_name(self):
+    def _generate_summary(self):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
         else:
