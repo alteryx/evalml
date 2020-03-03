@@ -49,7 +49,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                     objective.fit(y_predicted_proba, y_objective)
         return self
 
-    def predict(self, X, objective):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:
