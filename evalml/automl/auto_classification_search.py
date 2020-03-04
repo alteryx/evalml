@@ -111,18 +111,6 @@ class AutoClassificationSearch(AutoBase):
         else:
             self.plot_metrics = [ConfusionMatrix()]
 
-        # hacky, disallows non-numeric metrics from being primary objective
-        if isinstance(self.objective, ConfusionMatrix) or isinstance(self.objective, ROC):
-            raise RuntimeError("Cannot use Confusion Matrix or ROC as the main objective.")
-
-        # if ROC and ConfusionMatrix not specified as additional objectives, add so we can calculate plots
-        plot_metrics = [ROC(), ConfusionMatrix()]
-        for metric in plot_metrics:
-            if self.problem_type in metric.problem_types:
-                existing_metric = next((obj for obj in self.additional_objectives if obj.name == metric.name), None)
-                if existing_metric is None:
-                    self.additional_objectives.append(get_objective(metric))
-
     def _set_problem_type(self, objective, multiclass):
         """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
 

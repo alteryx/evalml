@@ -97,15 +97,15 @@ class PipelineSearchPlots:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
         pipeline_results = results[pipeline_id]
-        cv_data = pipeline_results["cv_data"]
+        plot_data = pipeline_results["plot_data"]
         mean_fpr = np.linspace(0, 1, 100)
         tprs = []
         roc_aucs = []
         fpr_tpr_data = []
 
-        for fold in cv_data:
-            fpr = fold["all_objective_scores"]["ROC"][0]
-            tpr = fold["all_objective_scores"]["ROC"][1]
+        for fold in plot_data:
+            fpr = fold["ROC"][0]
+            tpr = fold["ROC"][1]
             tprs.append(interp(mean_fpr, fpr, tpr))
             tprs[-1][0] = 0.0
             roc_auc = sklearn.metrics.auc(fpr, tpr)
@@ -182,11 +182,14 @@ class PipelineSearchPlots:
             raise RuntimeError("Pipeline {} not found".format(pipeline_id))
 
         pipeline_results = results[pipeline_id]
-        cv_data = pipeline_results["cv_data"]
+        plot_data = pipeline_results["plot_data"]
 
         confusion_matrix_data = []
-        for fold in cv_data:
-            confusion_matrix_data.append(fold["all_objective_scores"]["Confusion Matrix"])
+        for fold in plot_data:
+            conf_mat = fold["Confusion Matrix"]
+            # reverse columns in confusion matrix to change axis order to match sklearn's
+            conf_mat = conf_mat.iloc[:, ::-1]
+            confusion_matrix_data.append(conf_mat)
         return confusion_matrix_data
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None):
@@ -205,15 +208,17 @@ class PipelineSearchPlots:
 
         conf_mat = data[fold_num]
         labels = conf_mat.columns
+        reversed_labels = labels[::-1]
 
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                           xaxis={'title': 'Predicted Label', 'tickvals': labels},
-                           yaxis={'title': 'True Label', 'tickvals': labels})
-        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat,
+                           xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                           yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
+        figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat,
                                            hovertemplate='<b>True</b>: %{y}' +
                                                          '<br><b>Predicted</b>: %{x}' +
                                                          '<br><b>Number of times</b>: %{z}' +
-                                                         '<extra></extra>'),  # necessary to remove unwanted trace info
+                                                         '<extra></extra>',  # necessary to remove unwanted trace info
+                                           colorscale='Blues'),
                            layout=layout)
         return figure
 

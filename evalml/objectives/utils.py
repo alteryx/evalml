@@ -1,6 +1,7 @@
 from . import standard_metrics
 from .objective_base import ObjectiveBase
 
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.problem_types import handle_problem_types
 
 OPTIONS = {
@@ -28,9 +29,7 @@ OPTIONS = {
     # "msle": standard_metrics.MSLE(), removed due to not taking in positive Y
     "median_ae": standard_metrics.MedianAE(),
     "max_error": standard_metrics.MaxError(),
-    "exp_var": standard_metrics.ExpVariance(),
-    "roc": standard_metrics.ROC(),
-    "confusion_matrix": standard_metrics.ConfusionMatrix()
+    "exp_var": standard_metrics.ExpVariance()
 }
 
 
@@ -47,8 +46,12 @@ def get_objective(objective):
         raise TypeError("Objective parameter cannot be NoneType")
     if isinstance(objective, ObjectiveBase):
         return objective
-    objective = objective.lower()
-    return OPTIONS[objective]
+
+    try:
+        objective = objective.lower()
+        return OPTIONS[objective]
+    except (AttributeError, KeyError):
+        raise ObjectiveNotFoundError("Could not find the specified objective.")
 
 
 def get_objectives(problem_type):

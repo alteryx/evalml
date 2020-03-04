@@ -158,6 +158,7 @@ class PipelineBase:
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to predict
 
         Returns:
             pd.Series : estimated labels
@@ -177,7 +178,7 @@ class PipelineBase:
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
-            float, dict:  score, ordered dictionary of other objective scores
+            dict: ordered dictionary of objective scores
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -189,7 +190,7 @@ class PipelineBase:
         y_predicted = None
         y_predicted_proba = None
 
-        scores = []
+        scores = OrderedDict()
         for objective in objectives:
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
@@ -201,15 +202,42 @@ class PipelineBase:
                 y_predictions = y_predicted
 
             if objective.uses_extra_columns:
-                scores.append(objective.score(y_predictions, y, X))
+                scores.update({objective.name: objective.score(y_predictions, y, X)})
             else:
-                scores.append(objective.score(y_predictions, y))
-        if not objectives:
-            return scores[0], {}
+                scores.update({objective.name: objective.score(y_predictions, y)})
 
-        other_scores = OrderedDict(zip([n.name for n in objectives[1:]], scores[1:]))
+        return scores
 
-        return scores[0], other_scores
+    def get_plot_data(self, X, y, plot_metrics):
+        """Generates plotting data for the pipeline for each specified plot metric
+
+        Args:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            y (pd.Series) : true labels of length [n_samples]
+            plot_metrics (list): list of plot metrics to generate data for
+
+        Returns:
+            dict: ordered dictionary of plot metric data (scores)
+        """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+        y_predicted = None
+        y_predicted_proba = None
+        scores = OrderedDict()
+        for plot_metric in plot_metrics:
+            if plot_metric.score_needs_proba:
+                if y_predicted_proba is None:
+                    y_predicted_proba = self.predict_proba(X)
+                y_predictions = y_predicted_proba
+            else:
+                if y_predicted is None:
+                    y_predicted = self.predict(X)
+                y_predictions = y_predicted
+            scores.update({plot_metric.name: plot_metric.score(y_predictions, y)})
+        return scores
 
     def get_plot_data(self, X, y, plot_metrics):
         """TODO

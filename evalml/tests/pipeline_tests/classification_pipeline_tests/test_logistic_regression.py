@@ -43,10 +43,10 @@ def test_lor_multi(X_y_multi):
     objective = PrecisionMicro()
     clf = LogisticRegressionMulticlassPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    clf_score = clf.score(X, y, [objective])
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_scores[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()

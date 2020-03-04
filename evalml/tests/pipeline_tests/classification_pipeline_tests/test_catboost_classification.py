@@ -33,11 +33,11 @@ def test_catboost_multi(X_y_multi):
     clf = CatBoostMulticlassClassificationPipeline(impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
                                                    number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
     clf.fit(X, y)
-    clf_score = clf.score(X, y, [objective])
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_scores[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
