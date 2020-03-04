@@ -90,6 +90,7 @@ class PipelineBase(ABC):
 
     @classproperty
     def name(cls):
+        "Returns either `_name` defined on pipeline class or the pipeline class name"
         try:
             name = cls._name
         except AttributeError:
@@ -99,6 +100,7 @@ class PipelineBase(ABC):
 
     @property
     def summary(self):
+        "Returns string of pipeline structure: `Logistic Regression Classifier w/ ... + ..."
         return self._generate_summary()
 
     def _generate_summary(self):
