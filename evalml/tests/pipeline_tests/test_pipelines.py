@@ -190,8 +190,8 @@ def test_score_with_list_of_multiple_objectives(X_y):
     X, y = X_y
     clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    recall_name = Recall().name
-    precision_name = Precision().name
+    recall_name = Recall.name
+    precision_name = Precision.name
     objective_names = [recall_name, precision_name]
     scores = clf.score(X, y, objective_names)
     assert len(scores.values()) == 2
