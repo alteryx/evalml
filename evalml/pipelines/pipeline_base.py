@@ -175,7 +175,7 @@ class PipelineBase(ABC):
         """
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        self.logger.log("Model Type: {}".format(str(self.model_type)))
+        self.logger.log("Model Type: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
@@ -336,13 +336,10 @@ class PipelineBase(ABC):
         return scores[0], other_scores
 
     @property
-    def model_type(self):
+    def model_family(self):
         """Returns model family of this pipeline template"""
 
-        # TODO: Refactor to model_family
-        # In future there potentially could be multiple estimators
-
-        return self.estimator.model_type
+        return self.estimator.model_family
 
     @property
     def feature_importances(self):

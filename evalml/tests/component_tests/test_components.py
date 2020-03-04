@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
     Estimator,
@@ -23,9 +23,11 @@ from evalml.pipelines.components import (
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
+        model_family = None
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
@@ -76,7 +78,7 @@ def test_describe_component():
 
 def test_missing_attributes(X_y):
     class MockComponentName(ComponentBase):
-        model_family = ModelTypes.LINEAR_MODEL
+        model_family = ModelFamily.LINEAR_MODEL
 
     with pytest.raises(TypeError):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
@@ -132,6 +134,7 @@ def test_component_fit(X_y):
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
+        model_family = ModelFamily.LINEAR_MODEL
         hyperparameter_ranges = {}
 
         def __init__(self):

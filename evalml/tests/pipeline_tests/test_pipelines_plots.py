@@ -7,14 +7,14 @@ import plotly.graph_objects as go
 import pytest
 from skopt.space import Real
 
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 
 
 @pytest.fixture
 def test_pipeline():
     class TestPipeline(PipelineBase):
-        model_type = ModelTypes.LINEAR_MODEL
+        model_family = ModelFamily.LINEAR_MODEL
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 

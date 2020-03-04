@@ -11,13 +11,6 @@ class ComponentBase(ABC):
         self.parameters = parameters
         self.logger = Logger()
 
-        attributes_to_check = ["name", "model_family"]
-
-        for attribute in attributes_to_check:
-            if not hasattr(self, attribute):
-                raise AttributeError("Component missing attribute: `{}`".format(attribute))
-            if attribute == "model_family":
-
     @property
     @classmethod
     @abstractmethod

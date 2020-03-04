@@ -1,13 +1,13 @@
 from skopt.space import Integer, Real
 
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 
 
 class RFClassificationPipeline(PipelineBase):
     """Random Forest Pipeline for both binary and multiclass classification"""
     name = "Random Forest Classifier w/ Simple Imputer + One Hot Encoder + RF Classifier Select From Model"
-    model_type = ModelTypes.RANDOM_FOREST
+    model_family = ModelFamily.RANDOM_FOREST
     component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', 'Random Forest Classifier']
     problem_types = ['binary', 'multiclass']
 

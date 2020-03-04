@@ -9,6 +9,8 @@ class Transformer(ComponentBase):
     These components are used before an estimator.
     """
 
+    model_family = None
+    
     def transform(self, X, y=None):
         """Transforms data X
 

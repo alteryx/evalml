@@ -92,7 +92,7 @@ def test_callback(X_y):
 def test_early_stopping(capsys):
     tolerance = 0.005
     patience = 2
-    automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_types=['linear_model'], random_state=0)
+    automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, model_families=['linear_model'], random_state=0)
 
     mock_results = {
         'search_order': [0, 1, 2],
