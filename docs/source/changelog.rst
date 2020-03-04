@@ -19,6 +19,7 @@ Changelog
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
+        * Dropped support for Python 3.5 :pr:`438`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
@@ -28,6 +29,11 @@ Changelog
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
+.. warning::
+
+    **Breaking Changes**
+
+    * Python 3.5 will not be actively supported.
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
