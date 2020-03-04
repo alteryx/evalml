@@ -20,6 +20,7 @@ Changelog
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
+        * Changed the output of `score` to return one dictionary :pr:`429`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
@@ -37,6 +38,7 @@ Changelog
     * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
+    * ``score()`` will now return one dictionary of all objective scores.
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`

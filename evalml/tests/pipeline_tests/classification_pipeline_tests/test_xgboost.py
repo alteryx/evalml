@@ -47,11 +47,11 @@ def test_xg_multi(X_y_multi):
     objective = PrecisionMicro()
     clf = XGBoostMulticlassPipeline(eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), n_estimators=10)
     clf.fit(X, y)
-    clf_score = clf.score(X, y, [objective])
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_scores[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()

@@ -1,9 +1,10 @@
 import os
 
+import numpy as np
 import pytest
 
 from evalml.model_types import ModelTypes
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import FraudCost, Precision, Recall
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline,
@@ -181,8 +182,21 @@ def test_score_with_empty_list_of_objectives(X_y):
     X, y = X_y
     clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     clf.fit(X, y)
-    with pytest.raises(IndexError):
-        clf.score(X, y, [])
+    scores = clf.score(X, y, [])
+    assert len(scores.values()) == 0
+
+
+def test_score_with_list_of_multiple_objectives(X_y):
+    X, y = X_y
+    clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    clf.fit(X, y)
+    recall_name = Recall().name
+    precision_name = Precision().name
+    objective_names = [recall_name, precision_name]
+    scores = clf.score(X, y, objective_names)
+    assert len(scores.values()) == 2
+    assert all(name in scores.keys() for name in objective_names)
+    assert not any(np.isnan(val) for val in scores.values())
 
 
 def test_n_jobs(X_y):
