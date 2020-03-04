@@ -23,21 +23,21 @@ class AutoBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, model_families, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.model_families = model_families
+        self.allowed_model_families = allowed_model_families
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
         self.logger = Logger(self.verbose)
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=model_families)
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
         if self.problem_type not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))

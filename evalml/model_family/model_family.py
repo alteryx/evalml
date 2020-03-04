@@ -10,7 +10,7 @@ class ModelFamily(Enum):
 
     def __str__(self):
         model_family_dict = {ModelFamily.RANDOM_FOREST.name: "Random Forest",
-                           ModelFamily.XGBOOST.name: "XGBoost Classifier",
-                           ModelFamily.LINEAR_MODEL.name: "Linear Model",
-                           ModelFamily.CATBOOST.name: "CatBoost Classifier"}
+                             ModelFamily.XGBOOST.name: "XGBoost Classifier",
+                             ModelFamily.LINEAR_MODEL.name: "Linear Model",
+                             ModelFamily.CATBOOST.name: "CatBoost Classifier"}
         return model_family_dict[self.name]
