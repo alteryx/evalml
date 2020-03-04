@@ -81,11 +81,10 @@ class PipelineBase(ABC):
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
-
-        # check if one and only estimator in pipeline is the last element in component_graph
-        if not isinstance(self.component_graph[-1], Estimator):
+        if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
+        self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
     @classproperty
@@ -117,36 +116,50 @@ class PipelineBase(ABC):
         return name
 
     def _validate_problem_types(self, problem_types):
+        """Validates provided `problem_types` against the estimator in `self.component_graph`
+
+        Arguments:
+            problem_types (list): list of ProblemTypes
+        """
         estimator_problem_types = self.estimator.problem_types
         for problem_type in self.problem_types:
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
     def _instantiate_components(self):
+        """Instantiates components with parameters in `self.parameters`"""
         for index, component in enumerate(self.component_graph):
             component_class = component.__class__
             component_name = component.name
             if component_class.hyperparameter_ranges == {}:
                 new_component = component_class()
-            elif component_name not in self.parameters:
+            elif component_name in self.parameters:
+                try:
+                    component_parameters = copy.deepcopy(self.parameters[component_name])
+                    self._validate_component_parameters(component_class, self.parameters[component_name])
+                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
+                    new_component = component_class(**component_parameters)
+                except ValueError as e:
+                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
+            else:
                 try:
                     component_parameters = self._check_arguments_and_add(dict(), component_class)
                     new_component = component_class(**component_parameters)
                 except TypeError as e:
                     raise ValueError("\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name)) from e
-            else:
-                try:
-                    component_parameters = copy.deepcopy(self.parameters[component_name])
-                    self._validate_component_parameters(component_class, self.parameters[component_name])
-
-                    # Add random_state, n_jobs and number_features into component parameters if doesn't exist
-                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
-                    new_component = component_class(**component_parameters)
-                except ValueError as e:
-                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
             self.component_graph[index] = new_component
 
     def _check_arguments_and_add(self, component_parameters, component_class):
+        """Adds `random_state`, `n_jobs`, `number_features` as a parameter to applicable component when not provided
+
+        Arguments:
+            component_parameters (dict): dictionary holding parameters of the given component
+            component_class (ComponentBase): component class to check
+
+        Returns:
+            component_parameters: dictionary holding with potentially added parameters
+
+        """
         if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
             component_parameters['random_state'] = self.random_state
         if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
@@ -157,6 +170,12 @@ class PipelineBase(ABC):
         return component_parameters
 
     def _validate_component_parameters(self, component_class, parameters):
+        """Checks parameter against accepted hyperparameters of `component_class` and their ranges
+
+        Arguments:
+            component_class (ComponentBase): component
+            parameters (dict): parameters to check for
+        """
         for parameter, parameter_value in parameters.items():
             if parameter not in inspect.signature(component_class.__init__).parameters:
                 raise ValueError("{} is not a hyperparameter of {}".format(parameter, component_class.name))
@@ -360,10 +379,6 @@ class PipelineBase(ABC):
     @property
     def model_type(self):
         """Returns model family of this pipeline template"""
-
-        # TODO: Refactor to model_family
-        # In future there potentially could be multiple estimators
-
         return self.estimator.model_type
 
     @property

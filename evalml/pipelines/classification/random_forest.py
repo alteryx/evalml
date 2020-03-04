@@ -17,10 +17,3 @@ class RFClassificationPipeline(PipelineBase):
         "impute_strategy": ["mean", "median", "most_frequent"],
         "percent_features": Real(.01, 1)
     }
-
-    def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
-        super().__init__(objective=objective,
-                         parameters=parameters,
-                         number_features=number_features,
-                         random_state=random_state,
-                         n_jobs=n_jobs)
