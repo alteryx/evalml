@@ -11,6 +11,7 @@ Changelog
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
+        * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
