@@ -72,13 +72,10 @@ class PipelineBase(ABC):
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
-
-        self.name = self._generate_name()
-
-        # check if one and only estimator in pipeline is the last element in component_graph
-        if not isinstance(self.component_graph[-1], Estimator):
+        if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
-
+        
+        self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
     def _generate_name(self):
