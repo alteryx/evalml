@@ -74,11 +74,12 @@ class PipelineBase(ABC):
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
-        
+
         self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
     def _generate_name(self):
+        "Generates name from components in self.component_graph"
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
         else:
@@ -92,12 +93,18 @@ class PipelineBase(ABC):
         return name
 
     def _validate_problem_types(self, problem_types):
+        """Validates provided `problem_types` against the estimator in `self.component_graph`
+
+        Arguments:
+            problem_types (list): list of ProblemTypes
+        """
         estimator_problem_types = self.estimator.problem_types
         for problem_type in self.problem_types:
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
     def _instantiate_components(self):
+        """Instantiates components with parameters in `self.parameters`"""
         for index, component in enumerate(self.component_graph):
             component_class = component.__class__
             component_name = component.name
@@ -122,6 +129,16 @@ class PipelineBase(ABC):
             self.component_graph[index] = new_component
 
     def _check_arguments_and_add(self, component_parameters, component_class):
+        """Adds `random_state`, `n_jobs`, `number_features` as a parameter to applicable component when not provided
+
+        Arguments:
+            component_parameters (dict): dictionary holding parameters of the given component
+            component_class (ComponentBase): component class to check
+
+        Returns:
+            component_parameters: dictionary holding with potentially added parameters
+
+        """
         if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
             component_parameters['random_state'] = self.random_state
         if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
@@ -132,6 +149,12 @@ class PipelineBase(ABC):
         return component_parameters
 
     def _validate_component_parameters(self, component_class, parameters):
+        """Checks parameter against accepted hyperparameters of `component_class` and their ranges
+
+        Arguments:
+            component_class (ComponentBase): component
+            parameters (dict): parameters to check for
+        """
         for parameter, parameter_value in parameters.items():
             if parameter not in inspect.signature(component_class.__init__).parameters:
                 raise ValueError("{} is not a hyperparameter of {}".format(parameter, component_class.name))
