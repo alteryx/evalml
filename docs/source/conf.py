@@ -23,8 +23,8 @@ from sphinx.ext.autodoc import MethodDocumenter, Documenter
 
 path = os.path.join('..', '..')
 sys.path.insert(0, os.path.abspath(path))
-evalml_path = os.path.join('..', '../evalml')
-sys.path.append(os.path.abspath(evalml_path))
+# evalml_path = os.path.join('..', '../evalml')
+# sys.path.append(os.path.abspath(evalml_path))
 
 
 # -- Project information -----------------------------------------------------
