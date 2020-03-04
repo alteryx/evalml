@@ -62,15 +62,23 @@ Plotting
     AutoRegressionSearch.plot.generate_confusion_matrix
 
 
+.. currentmodule:: evalml.model_family
 
-Model Types
+Model Family
 ===========
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ModelFamily
 
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
-    list_model_types
+    list_model_families
 
 .. currentmodule:: evalml.pipelines.components
 
