@@ -1,7 +1,5 @@
 import os
 
-import pkg_resources
-
 from evalml.preprocessing import load_data
 
 
