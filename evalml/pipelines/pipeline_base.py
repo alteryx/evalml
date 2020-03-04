@@ -338,10 +338,6 @@ class PipelineBase(ABC):
     @property
     def model_type(self):
         """Returns model family of this pipeline template"""
-
-        # TODO: Refactor to model_family
-        # In future there potentially could be multiple estimators
-
         return self.estimator.model_type
 
     @property
