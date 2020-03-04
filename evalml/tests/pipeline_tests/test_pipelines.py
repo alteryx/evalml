@@ -389,3 +389,4 @@ def test_model_family(lr_pipeline):
     clf = TestPipeline(parameters={}, objective='precision')
     assert TestPipeline.model_family == ModelFamily.XGBOOST
     assert clf.model_family == ModelFamily.XGBOOST
+    assert OneHotEncoder.model_family is None
