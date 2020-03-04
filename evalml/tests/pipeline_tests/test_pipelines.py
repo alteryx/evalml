@@ -167,7 +167,13 @@ def test_name():
         component_graph = ['Logistic Regression']
         problem_types = ['binary']
 
+    class TestDefinedNamePipeline(PipelineBase):
+        _name = "Cool Logistic Regression"
+        component_graph = ['Logistic Regression']
+        problem_types = ['binary']
+
     assert TestNamePipeline.name == "Test Name Pipeline"
+    assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
 
 
 def test_summary(X_y, lr_pipeline):
