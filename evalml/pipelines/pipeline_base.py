@@ -110,22 +110,20 @@ class PipelineBase(ABC):
             component_name = component.name
             if component_class.hyperparameter_ranges == {}:
                 new_component = component_class()
-            elif component_name not in self.parameters:
+            elif component_name in self.parameters:
+                try:
+                    component_parameters = copy.deepcopy(self.parameters[component_name])
+                    self._validate_component_parameters(component_class, self.parameters[component_name])
+                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
+                    new_component = component_class(**component_parameters)
+                except ValueError as e:
+                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
+            else:
                 try:
                     component_parameters = self._check_arguments_and_add(dict(), component_class)
                     new_component = component_class(**component_parameters)
                 except TypeError as e:
                     raise ValueError("\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name)) from e
-            else:
-                try:
-                    component_parameters = copy.deepcopy(self.parameters[component_name])
-                    self._validate_component_parameters(component_class, self.parameters[component_name])
-
-                    # Add random_state, n_jobs and number_features into component parameters if doesn't exist
-                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
-                    new_component = component_class(**component_parameters)
-                except ValueError as e:
-                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
             self.component_graph[index] = new_component
 
     def _check_arguments_and_add(self, component_parameters, component_class):
