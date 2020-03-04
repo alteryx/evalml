@@ -1,6 +1,5 @@
 from skopt.space import Integer, Real
 
-from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 
@@ -8,7 +7,6 @@ from evalml.problem_types import ProblemTypes
 class XGBoostPipeline(PipelineBase):
     """XGBoost Pipeline for both binary and multiclass classification"""
     name = "XGBoost Classifier w/ Simple Imputer + One Hot Encoder + RF Classifier Select From Model"
-    model_family = ModelFamily.XGBOOST
     component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', 'XGBoost Classifier']
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 

@@ -376,3 +376,16 @@ def test_initiate_components():
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
         TestPipeline(parameters=parameters, objective='precision')
+
+
+def test_model_family(lr_pipeline):
+    clf = lr_pipeline
+    assert clf.model_family == ModelFamily.LINEAR_MODEL
+
+    class TestPipeline(PipelineBase):
+        component_graph = ['XGBoost Classifier']
+        problem_types = ['binary']
+
+    clf = TestPipeline(parameters={}, objective='precision')
+    assert TestPipeline.model_family == ModelFamily.XGBOOST
+    assert clf.model_family == ModelFamily.XGBOOST

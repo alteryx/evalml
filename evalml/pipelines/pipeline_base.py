@@ -14,6 +14,14 @@ from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
 
 
+class classproperty:
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
+
 class PipelineBase(ABC):
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
@@ -353,10 +361,11 @@ class PipelineBase(ABC):
 
         return scores[0], other_scores
 
-    @property
-    def model_family(self):
+    @classproperty
+    def model_family(cls):
         """Returns model family of this pipeline template"""
-        return self.estimator.model_family
+        component_graph = [handle_component(component) for component in cls.component_graph]
+        return component_graph[-1].model_family if isinstance(component_graph[-1], Estimator) else None
 
     @property
     def feature_importances(self):
