@@ -1,16 +1,15 @@
 import pandas as pd
 
-from .objective_base import ObjectiveBase
+from .binary_classification_objective import BinaryClassificationObjective
 
 from evalml.problem_types import ProblemTypes
 
 
-class LeadScoring(ObjectiveBase):
+class LeadScoring(BinaryClassificationObjective):
     """Lead scoring"""
     name = "Lead Scoring"
     problem_types = [ProblemTypes.BINARY]
 
-    needs_fitting = True
     greater_is_better = True
     score_needs_proba = False
     name = "Lead Scoring"

@@ -33,20 +33,18 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            if objective.needs_fitting:
-                X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
+            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
 
         if objective is not None:
-            if objective.needs_fitting:
-                y_predicted_proba = self.predict_proba(X_objective)
-                y_predicted_proba = y_predicted_proba[:, 1]
+            y_predicted_proba = self.predict_proba(X_objective)
+            y_predicted_proba = y_predicted_proba[:, 1]
 
-                if objective.uses_extra_columns:
-                    objective.fit(y_predicted_proba, y_objective, X_objective)
-                else:
-                    objective.fit(y_predicted_proba, y_objective)
+            if objective.uses_extra_columns:
+                objective.fit(y_predicted_proba, y_objective, X_objective)
+            else:
+                objective.fit(y_predicted_proba, y_objective)
         return self
 
     def predict(self, X, objective=None):
@@ -66,13 +64,12 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            if objective.needs_fitting:
-                y_predicted_proba = self.predict_proba(X)
-                y_predicted_proba = y_predicted_proba[:, 1]
-                if objective.uses_extra_columns:
-                    return objective.predict(y_predicted_proba, X)
-                else:
-                    return objective.predict(y_predicted_proba)
+            y_predicted_proba = self.predict_proba(X)
+            y_predicted_proba = y_predicted_proba[:, 1]
+            if objective.uses_extra_columns:
+                return objective.predict(y_predicted_proba, X)
+            else:
+                return objective.predict(y_predicted_proba)
 
         return self.estimator.predict(X_t)
 

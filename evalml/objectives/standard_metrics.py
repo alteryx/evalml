@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,6 @@ from evalml.problem_types import ProblemTypes
 # todo does this need tuning?
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "F1"
@@ -29,7 +28,6 @@ class F1(BinaryClassificationObjective):
 
 class F1Micro(MultiClassificationObjective):
     """F1 score for multiclass classification using micro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "F1 Micro"
@@ -41,7 +39,6 @@ class F1Micro(MultiClassificationObjective):
 
 class F1Macro(MultiClassificationObjective):
     """F1 score for multiclass classification using macro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "F1 Macro"
@@ -53,7 +50,6 @@ class F1Macro(MultiClassificationObjective):
 
 class F1Weighted(MultiClassificationObjective):
     """F1 score for multiclass classification using weighted averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "F1 Weighted"
@@ -65,7 +61,6 @@ class F1Weighted(MultiClassificationObjective):
 
 class Precision(BinaryClassificationObjective):
     """Precision score for binary classification"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Precision"
@@ -77,7 +72,6 @@ class Precision(BinaryClassificationObjective):
 
 class PrecisionMicro(MultiClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Precision Micro"
@@ -89,7 +83,6 @@ class PrecisionMicro(MultiClassificationObjective):
 
 class PrecisionMacro(MultiClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Precision Macro"
@@ -101,7 +94,6 @@ class PrecisionMacro(MultiClassificationObjective):
 
 class PrecisionWeighted(MultiClassificationObjective):
     """Precision score for multiclass classification using weighted averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Precision Weighted"
@@ -113,7 +105,6 @@ class PrecisionWeighted(MultiClassificationObjective):
 
 class Recall(BinaryClassificationObjective):
     """Recall score for binary classification"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Recall"
@@ -125,7 +116,6 @@ class Recall(BinaryClassificationObjective):
 
 class RecallMicro(MultiClassificationObjective):
     """Recall score for multiclass classification using micro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Recall Micro"
@@ -137,7 +127,6 @@ class RecallMicro(MultiClassificationObjective):
 
 class RecallMacro(MultiClassificationObjective):
     """Recall score for multiclass classification using macro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Recall Macro"
@@ -149,7 +138,6 @@ class RecallMacro(MultiClassificationObjective):
 
 class RecallWeighted(MultiClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "Recall Weighted"
@@ -161,7 +149,6 @@ class RecallWeighted(MultiClassificationObjective):
 
 class AUC(BinaryClassificationObjective):
     """AUC score for binary classification"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
     name = "AUC"
@@ -173,7 +160,6 @@ class AUC(BinaryClassificationObjective):
 
 class AUCMicro(MultiClassificationObjective):
     """AUC score for multiclass classification using micro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
     name = "AUC Micro"
@@ -186,7 +172,6 @@ class AUCMicro(MultiClassificationObjective):
 
 class AUCMacro(MultiClassificationObjective):
     """AUC score for multiclass classification using macro averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
     name = "AUC Macro"
@@ -199,7 +184,6 @@ class AUCMacro(MultiClassificationObjective):
 
 class AUCWeighted(MultiClassificationObjective):
     """AUC Score for multiclass classification using weighted averaging"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = True
     name = "AUC Weighted"
@@ -212,7 +196,6 @@ class AUCWeighted(MultiClassificationObjective):
 
 class LogLoss(ObjectiveBase):
     """Log Loss for both binary and multiclass classification"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = True
     name = "Log Loss"
@@ -224,7 +207,6 @@ class LogLoss(ObjectiveBase):
 
 class MCC(ObjectiveBase):
     """Matthews correlation coefficient for both binary and multiclass classification"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "MCC"
@@ -236,7 +218,6 @@ class MCC(ObjectiveBase):
 
 class R2(RegressionObjective):
     """Coefficient of determination for regression"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "R2"
@@ -248,7 +229,6 @@ class R2(RegressionObjective):
 
 class MAE(RegressionObjective):
     """Mean absolute error for regression"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = False
     name = "MAE"
@@ -260,7 +240,6 @@ class MAE(RegressionObjective):
 
 class MSE(RegressionObjective):
     """Mean squared error for regression"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = False
     name = "MSE"
@@ -272,7 +251,6 @@ class MSE(RegressionObjective):
 
 class MSLE(RegressionObjective):
     """Mean squared log error for regression"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = False
     name = "MSLE"
@@ -284,7 +262,6 @@ class MSLE(RegressionObjective):
 
 class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = False
     name = "MedianAE"
@@ -296,7 +273,6 @@ class MedianAE(RegressionObjective):
 
 class MaxError(RegressionObjective):
     """Maximum residual error for regression"""
-    needs_fitting = False
     greater_is_better = False
     score_needs_proba = False
     name = "MaxError"
@@ -308,7 +284,6 @@ class MaxError(RegressionObjective):
 
 class ExpVariance(RegressionObjective):
     """Explained variance score for regression"""
-    needs_fitting = False
     greater_is_better = True
     score_needs_proba = False
     name = "ExpVariance"
@@ -322,6 +297,7 @@ class PlotMetric(ABC):
     score_needs_proba = True
     name = None
 
+    @abstractmethod
     def score(self, y_predicted, y_true):
         raise NotImplementedError("score() is not implemented!")
 

@@ -1,3 +1,5 @@
+from scipy.optimize import minimize_scalar
+
 from .objective_base import ObjectiveBase
 
 
@@ -33,3 +35,56 @@ class BinaryClassificationObjective(ObjectiveBase):
     #     optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
     #     self.optimal = optimal.x
     #     return self.optimal
+
+    def fit(self, y_predicted, y_true, extra_cols=None):
+        """Learn the objective function based on the predictions from a model.
+
+        Arguments:
+            y_predicted (list): the predictions from the model. If needs_proba is True,
+                it is the probability estimates
+
+            y_true (list): the ground truth for the predictions.
+
+            extra_cols (pd.DataFrame): any extra columns that are needed from training
+                data to fit. Only provided if uses_extra_columns is True.
+
+        Returns:
+            self
+        """
+        def cost(threshold):
+            if extra_cols is not None:
+                predictions = self.decision_function(y_predicted, extra_cols, threshold)
+                cost = self.objective_function(predictions, y_true, extra_cols)
+            else:
+                predictions = self.decision_function(y_predicted, threshold)
+                cost = self.objective_function(predictions, y_true)
+
+            if self.greater_is_better:
+                return -cost
+
+            return cost
+
+        self.optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
+        self.threshold = self.optimal.x
+
+        if self.verbose:
+            print("Best threshold found at: ", self.threshold)
+
+        return self
+
+    def predict(self, y_predicted, extra_cols=None):
+        """Apply the learned objective function to the output of a model.
+
+        Arguments:
+            y_predicted: the prediction to transform to final prediction
+
+        Returns:
+            predictions
+        """
+
+        if extra_cols is not None:
+            predictions = self.decision_function(y_predicted, extra_cols, self.threshold)
+        else:
+            predictions = self.decision_function(y_predicted, self.threshold)
+
+        return predictions
