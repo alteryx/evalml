@@ -84,7 +84,6 @@ class PipelineBase(ABC):
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
     @classproperty
