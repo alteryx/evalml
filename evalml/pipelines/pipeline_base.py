@@ -108,9 +108,7 @@ class PipelineBase(ABC):
         for index, component in enumerate(self.component_graph):
             component_class = component.__class__
             component_name = component.name
-            if component_class.hyperparameter_ranges == {}:
-                new_component = component_class()
-            elif component_name in self.parameters:
+            if component_name in self.parameters:
                 try:
                     component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])

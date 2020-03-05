@@ -135,7 +135,7 @@ def test_indexing(X_y, lr_pipeline):
     clf = lr_pipeline
     clf.fit(X, y)
 
-    assert isinstance(clf[0], SimpleImputer)
+    assert isinstance(clf[0], OneHotEncoder)
     assert isinstance(clf['Simple Imputer'], SimpleImputer)
 
     setting_err_msg = 'Setting pipeline components is not supported.'
@@ -165,7 +165,7 @@ def test_describe(X_y, lr_pipeline):
 def test_name(X_y, lr_pipeline):
     X, y = X_y
     clf = lr_pipeline
-    assert clf.name == 'Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder + Standard Scaler'
+    assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
