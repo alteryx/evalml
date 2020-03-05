@@ -5,7 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
-        * Added CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
+        * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
@@ -14,23 +14,23 @@ Changelog
         * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
-        * Removed unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
-        * Removed extraneous parameter component_type from all components :pr:`361`
-        * Removed unused rankings.csv file :pr:`397`
+        * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
+        * Remove extraneous parameter component_type from all components :pr:`361`
+        * Remove unused rankings.csv file :pr:`397`
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
-        * Removed `_needs_fitting` attribute from Components :pr:`398`
+        * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
         * Dropped support for Python 3.5 :pr:`438`
-        * Removed unused apply.py file :pr:`449`
+        * Remove unused `apply.py` file :pr:`449`
     * Documentation Changes
-        * Updated release.md with instructions to release to internal license key :pr:`354`
+        * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
-        * Rewinded pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
+        * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
-        * Updated dependency check to use a whitelist :pr:`417`
+        * Update dependency check to use a whitelist :pr:`417`
 .. warning::
 
     **Breaking Changes**
