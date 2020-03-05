@@ -124,6 +124,18 @@ def test_describe(X_y, capsys):
         assert component.name in out
 
 
+def test_parameters(X_y):
+    X, y = X_y
+    lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
+    params = {
+        'penalty':'l2',
+        'C':1.0,
+        'impute_strategy':'mean',
+    }
+
+    assert params == lrp.parameters
+
+
 def test_name(X_y):
     X, y = X_y
     clf = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)

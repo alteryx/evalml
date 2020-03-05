@@ -49,7 +49,6 @@ class PipelineBase:
         if not isinstance(n_jobs, (int, type(None))) or n_jobs == 0:
             raise ValueError('n_jobs must be an non-zero integer or None. n_jobs is set to `{}`.'.format(n_jobs))
 
-
         self.plot = PipelinePlots(self)
         self.logger = Logger()
 
@@ -58,7 +57,7 @@ class PipelineBase:
         params = {}
         for component in self.component_list:
             params.update(component.parameters)
-        return parameters
+        return params
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -123,7 +122,6 @@ class PipelineBase:
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
             component.describe(print_name=False)
-            
 
     def _transform(self, X):
         X_t = X
