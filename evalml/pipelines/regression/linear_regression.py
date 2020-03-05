@@ -1,4 +1,3 @@
-from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 
 
