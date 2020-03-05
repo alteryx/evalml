@@ -106,10 +106,22 @@ def test_indexing(X_y):
         clf[:1]
 
 
-def test_describe(X_y):
+def test_describe(X_y, capsys):
     X, y = X_y
     lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
-    assert lrp.describe(True) == {'C': 1.0, 'impute_strategy': 'mean', 'penalty': 'l2'}
+    lrp.describe()
+    out, _ = capsys.readouterr()
+
+    assert "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler" in out
+    assert "Problem Types: Binary Classification, Multiclass Classification" in out
+    assert "Model Type: Linear Model" in out
+    assert "Objective to Optimize: Recall (greater is better)" in out
+
+    for component in lrp.component_list:
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
 
 
 def test_name(X_y):
