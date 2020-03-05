@@ -38,7 +38,7 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
-        if self.problem_type not in self.objective.problem_types:
+        if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
         if additional_objectives is not None:
@@ -214,10 +214,10 @@ class AutoBase:
     def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
-        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
+        if ProblemTypes.MULTICLASS != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
-            if ProblemTypes.MULTICLASS not in obj.problem_types:
+            if ProblemTypes.MULTICLASS != obj.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _do_iteration(self, X, y, pbar, raise_errors):

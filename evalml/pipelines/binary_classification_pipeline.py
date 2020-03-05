@@ -40,11 +40,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is not None:
             y_predicted_proba = self.predict_proba(X_objective)
             y_predicted_proba = y_predicted_proba[:, 1]
-
-            if objective.uses_extra_columns:
-                objective.fit(y_predicted_proba, y_objective, X_objective)
-            else:
-                objective.fit(y_predicted_proba, y_objective)
+            objective.optimize_threshold(y_predicted_proba, y_objective, X_objective)
         return self
 
     def predict(self, X, objective=None):
@@ -66,10 +62,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             objective = get_objective(objective)
             y_predicted_proba = self.predict_proba(X)
             y_predicted_proba = y_predicted_proba[:, 1]
-            if objective.uses_extra_columns:
-                return objective.predict(y_predicted_proba, X)
-            else:
-                return objective.predict(y_predicted_proba)
+            return objective.predict(y_predicted_proba, X)
 
         return self.estimator.predict(X_t)
 
@@ -105,11 +98,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 if y_predicted is None:
                     y_predicted = self.predict(X, objective)
                 y_predictions = y_predicted
-
-            if objective.uses_extra_columns:
-                scores.update({objective.name: objective.score(y_predictions, y, X)})
-            else:
-                scores.update({objective.name: objective.score(y_predictions, y)})
+            scores.update({objective.name: objective.objective_function(y_predictions, y, X)})
         return scores
 
     def get_plot_data(self, X, y, plot_metrics):

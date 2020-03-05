@@ -137,8 +137,11 @@ def test_multi_objective(X_y_multi):
     with pytest.raises(ValueError, match=error_msg):
         automl = AutoClassificationSearch(objective="recall", multiclass=True)
 
-    automl = AutoClassificationSearch(objective="log_loss")
+    automl = AutoClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
+
+    automl = AutoClassificationSearch(objective="log_loss_multi")
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch(objective='recall_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
