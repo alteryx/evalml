@@ -1,6 +1,5 @@
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
-from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
