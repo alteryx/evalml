@@ -2,14 +2,12 @@ import pandas as pd
 
 from .binary_classification_objective import BinaryClassificationObjective
 
-from evalml.problem_types import ProblemTypes
-
 
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud"""
     name = "Fraud Cost"
-    problem_type = ProblemTypes.BINARY
     greater_is_better = False
+    score_needs_proba = False
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, amount_col='amount'):

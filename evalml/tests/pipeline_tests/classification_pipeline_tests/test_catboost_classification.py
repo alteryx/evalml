@@ -4,7 +4,7 @@ from catboost import CatBoostClassifier as CBClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline
@@ -65,7 +65,7 @@ def test_catboost_input_feature_names(X_y):
 
 def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    objective = PrecisionMicro()
+    objective = Precision()
     clf = CatBoostBinaryClassificationPipeline(impute_strategy='most_frequent',
                                                number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
     clf.fit(X, y, objective)

@@ -6,7 +6,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import XGBoostBinaryPipeline, XGBoostMulticlassPipeline
 from evalml.utils import import_or_raise
 
@@ -67,7 +67,7 @@ def test_xg_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
+    objective = Precision()
     clf = XGBoostBinaryPipeline(eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns), n_estimators=10)
     clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)

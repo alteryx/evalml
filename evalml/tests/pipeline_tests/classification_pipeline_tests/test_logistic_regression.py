@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline as SKPipeline
 from sklearn.preprocessing import StandardScaler as SkScaler
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline
@@ -62,7 +62,7 @@ def test_lor_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
+    objective = Precision()
     clf = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X.columns), random_state=0)
     clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)

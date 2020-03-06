@@ -2,16 +2,12 @@ import pandas as pd
 
 from .binary_classification_objective import BinaryClassificationObjective
 
-from evalml.problem_types import ProblemTypes
-
 
 class LeadScoring(BinaryClassificationObjective):
     """Lead scoring"""
     name = "Lead Scoring"
-    problem_type = ProblemTypes.BINARY
-
     greater_is_better = True
-    name = "Lead Scoring"
+    score_needs_proba = False
 
     def __init__(self, true_positives=1, false_positives=-1):
         """Create instance.
