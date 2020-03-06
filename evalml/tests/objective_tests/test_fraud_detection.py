@@ -27,7 +27,7 @@ def test_fraud_objective(X_y):
     y_true = [True, False, True]
     extra_columns = pd.DataFrame({"value": [100, 5, 25]})
 
-    out = fraud_cost.decision_function(y_predicted, extra_columns, 5)
+    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     assert out.tolist() == y_true
     score = fraud_cost.score(out, y_true, extra_columns)
     assert (score == 0.0)
@@ -35,7 +35,7 @@ def test_fraud_objective(X_y):
     # testing with other types of inputs
     y_predicted = np.array([.1, .5, .5])
     extra_columns = {"value": [100, 5, 25]}
-    out = fraud_cost.decision_function(y_predicted, extra_columns, 5)
+    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     assert out.tolist() == y_true
     score = fraud_cost.score(out, y_true, extra_columns)
     assert (score == 0.0)

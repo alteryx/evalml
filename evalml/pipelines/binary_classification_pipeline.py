@@ -37,7 +37,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         self._fit(X, y)
 
-        if objective is not None:
+        if objective is not None and objective.can_optimize_threshold:
             y_predicted_proba = self.predict_proba(X_objective)
             y_predicted_proba = y_predicted_proba[:, 1]
             objective.optimize_threshold(y_predicted_proba, y_objective, X_objective)

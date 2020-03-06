@@ -6,7 +6,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationObjective(ObjectiveBase):
-    can_optimize_bin_class_threshold = False
+    can_optimize_threshold = False
     optimal = None
     threshold = None
     problem_type = ProblemTypes.BINARY
@@ -65,7 +65,10 @@ class BinaryClassificationObjective(ObjectiveBase):
         Returns:
             predictions
         """
-        predictions = self.decision_function(y_predicted, self.threshold, X)
+        if self.threshold is not None:
+            predictions = self.decision_function(y_predicted, self.threshold, X)
+        else:
+            predictions = self.decision_function(y_predicted, 0.0, X)  # todo
         return predictions
 
     def decision_function(self, ypred_proba, classification_threshold=0.0, X=None):
