@@ -30,7 +30,7 @@ win-circleci-test:
 installdeps-test:
 	pip install --upgrade pip -q
 	pip install -e . -q
+
 .PHONY: installdeps
-installdeps:
-	installdeps-test
+installdeps: installdeps-test
 	pip install -r dev-requirements.txt -q
