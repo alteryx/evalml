@@ -61,9 +61,14 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            y_predicted_proba = self.predict_proba(X)
-            y_predicted_proba = y_predicted_proba[:, 1]
-            return objective.predict(y_predicted_proba, X)
+            if objective.score_needs_proba:
+                y_predicted_proba = self.predict_proba(X)
+                y_predicted_proba = y_predicted_proba[:, 1]
+                return objective.predict(y_predicted_proba, X)
+            else:
+                #  TODO?
+                y_predicted = self.predict(X)
+                return objective.predict(y_predicted, X)
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):

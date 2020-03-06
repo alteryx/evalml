@@ -4,7 +4,6 @@ from .objective_base import ObjectiveBase
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.problem_types import handle_problem_types
 
-# TODO: we should probably dynamically generate this?
 OPTIONS = {
     "f1": standard_metrics.F1(),
     'f1_micro': standard_metrics.F1Micro(),

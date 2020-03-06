@@ -7,9 +7,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationObjective(ObjectiveBase):
+    problem_type = ProblemTypes.BINARY
     can_optimize_threshold = False
     threshold = None
-    problem_type = ProblemTypes.BINARY
 
     def optimize_threshold(self, ypred_proba, y_true, X=None):
         """Learn and optimize the objective function based on the predictions from a model.
@@ -25,7 +25,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             optimal threshold
         """
         def cost(threshold):
-            predictions = self.decision_function(ypred_proba=ypred_proba, classification_threshold=threshold, X=X)
+            predictions = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
             cost = self.objective_function(predictions, y_true, X=X)
             return -cost if self.greater_is_better else cost
         optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
@@ -49,7 +49,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             predictions = self.decision_function(y_predicted, 0.5, X)  # todo
         return predictions
 
-    def decision_function(self, ypred_proba, classification_threshold=0.0, X=None):
+    def decision_function(self, ypred_proba, threshold=0.0, X=None):
         """Apply the learned objective function to the output of a model.
         note to self (delete later): old predict()
         Arguments:
@@ -60,7 +60,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         if not isinstance(ypred_proba, pd.Series):
             ypred_proba = pd.Series(ypred_proba)
 
-        return ypred_proba > classification_threshold
+        return ypred_proba > threshold
 
     def score(self, y_predicted, y_true, X=None):
         """Calculate score from applying fitted objective to predicted values

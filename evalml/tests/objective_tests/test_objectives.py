@@ -1,6 +1,7 @@
 import pytest
 
 from evalml.exceptions import ObjectiveNotFoundError
+from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 
 from evalml.objectives import (  # PrecisionMacro,; PrecisionMicro,
@@ -8,6 +9,27 @@ from evalml.objectives import (  # PrecisionMacro,; PrecisionMicro,
     get_objective,
     get_objectives
 )
+
+
+def test_create_custom_objective():
+    class MockEmptyObjective(ObjectiveBase):
+        pass
+
+    class MockEmptyNamedObjective(ObjectiveBase):
+        name = "Mock Empty Named Objective"
+
+    with pytest.raises(NameError):
+        MockEmptyObjective()
+
+    with pytest.raises(NameError):  # TODO: add match
+        MockEmptyNamedObjective()
+
+    class MockNoObjectiveFunctionObjective(ObjectiveBase):
+        name = "Mock objective without objective function"
+        problem_type = ProblemTypes.BINARY
+
+    with pytest.raises(NotImplementedError):  # TODO: add match
+        MockNoObjectiveFunctionObjective()
 
 
 def test_get_objective():
