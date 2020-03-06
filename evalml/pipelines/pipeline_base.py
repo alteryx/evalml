@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
-from .pipeline_plots import PipelinePlots
+from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
@@ -13,9 +13,6 @@ from evalml.utils import Logger
 
 
 class PipelineBase(ABC):
-
-    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
-    plot = PipelinePlots
 
     @property
     @classmethod
@@ -50,7 +47,6 @@ class PipelineBase(ABC):
         self.input_feature_names = {}
         self.results = {}
         self.parameters = parameters
-        self.plot = PipelinePlots(self)
 
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
@@ -291,6 +287,17 @@ class PipelineBase(ABC):
 
         return scores[0], other_scores
 
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
+
     @property
     def model_type(self):
         """Returns model family of this pipeline template"""
@@ -304,3 +311,14 @@ class PipelineBase(ABC):
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
+
+    def feature_importance_graph(self, show_all_features=False):
+        """Generate a bar graph of the pipeline's feature importances
+
+        Arguments:
+            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
+
+        Returns:
+            plotly.Figure, a bar graph showing features and their importances
+        """
+        return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)

@@ -1,10 +1,8 @@
-boto3==1.10.8
-botocore==1.13.8
 catboost==0.22
 category-encoders==2.1.0
 cloudpickle==1.3.0
-dask==2.11.0
-distributed==2.11.0
+dask==2.12.0
+distributed==2.12.0
 numpy==1.18.1
 pandas==0.25.3
 pyzmq==19.0.0
