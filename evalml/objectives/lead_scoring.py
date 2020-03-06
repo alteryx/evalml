@@ -11,7 +11,6 @@ class LeadScoring(BinaryClassificationObjective):
     problem_types = [ProblemTypes.BINARY]
 
     greater_is_better = True
-    score_needs_proba = False
     name = "Lead Scoring"
 
     def __init__(self, true_positives=1, false_positives=-1, verbose=False):

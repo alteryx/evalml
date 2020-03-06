@@ -15,7 +15,6 @@ from .regression_objective import RegressionObjective
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
     greater_is_better = True
-    score_needs_proba = False
     name = "F1"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -25,7 +24,6 @@ class F1(BinaryClassificationObjective):
 class F1Micro(MultiClassificationObjective):
     """F1 score for multiclass classification using micro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "F1 Micro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -35,7 +33,6 @@ class F1Micro(MultiClassificationObjective):
 class F1Macro(MultiClassificationObjective):
     """F1 score for multiclass classification using macro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "F1 Macro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -45,7 +42,6 @@ class F1Macro(MultiClassificationObjective):
 class F1Weighted(MultiClassificationObjective):
     """F1 score for multiclass classification using weighted averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "F1 Weighted"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -55,7 +51,6 @@ class F1Weighted(MultiClassificationObjective):
 class Precision(BinaryClassificationObjective):
     """Precision score for binary classification"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Precision"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -65,7 +60,6 @@ class Precision(BinaryClassificationObjective):
 class PrecisionMicro(BinaryClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Precision Micro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -75,7 +69,6 @@ class PrecisionMicro(BinaryClassificationObjective):
 class PrecisionMacro(BinaryClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Precision Macro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -85,7 +78,6 @@ class PrecisionMacro(BinaryClassificationObjective):
 class PrecisionWeighted(MultiClassificationObjective):
     """Precision score for multiclass classification using weighted averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Precision Weighted"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -95,7 +87,6 @@ class PrecisionWeighted(MultiClassificationObjective):
 class Recall(BinaryClassificationObjective):
     """Recall score for binary classification"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Recall"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -105,7 +96,6 @@ class Recall(BinaryClassificationObjective):
 class RecallMicro(MultiClassificationObjective):
     """Recall score for multiclass classification using micro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Recall Micro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -115,7 +105,6 @@ class RecallMicro(MultiClassificationObjective):
 class RecallMacro(MultiClassificationObjective):
     """Recall score for multiclass classification using macro averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Recall Macro"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -125,7 +114,6 @@ class RecallMacro(MultiClassificationObjective):
 class RecallWeighted(MultiClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
     greater_is_better = True
-    score_needs_proba = False
     name = "Recall Weighted"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -198,7 +186,6 @@ class LogLossMulticlass(MultiClassificationObjective):
 class MCCBinary(BinaryClassificationObjective):
     """Matthews correlation coefficient for binary classification"""
     greater_is_better = True
-    score_needs_proba = False
     name = "MCC Binary"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -208,7 +195,6 @@ class MCCBinary(BinaryClassificationObjective):
 class MCCMulticlass(MultiClassificationObjective):
     """Matthews correlation coefficient for multiclass classification"""
     greater_is_better = True
-    score_needs_proba = False
     name = "MCC Multiclass"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -218,7 +204,6 @@ class MCCMulticlass(MultiClassificationObjective):
 class R2(RegressionObjective):
     """Coefficient of determination for regression"""
     greater_is_better = True
-    score_needs_proba = False
     name = "R2"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -228,7 +213,6 @@ class R2(RegressionObjective):
 class MAE(RegressionObjective):
     """Mean absolute error for regression"""
     greater_is_better = False
-    score_needs_proba = False
     name = "MAE"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -238,7 +222,6 @@ class MAE(RegressionObjective):
 class MSE(RegressionObjective):
     """Mean squared error for regression"""
     greater_is_better = False
-    score_needs_proba = False
     name = "MSE"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -248,7 +231,6 @@ class MSE(RegressionObjective):
 class MSLE(RegressionObjective):
     """Mean squared log error for regression"""
     greater_is_better = False
-    score_needs_proba = False
     name = "MSLE"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -258,7 +240,6 @@ class MSLE(RegressionObjective):
 class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
     greater_is_better = False
-    score_needs_proba = False
     name = "MedianAE"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -268,7 +249,6 @@ class MedianAE(RegressionObjective):
 class MaxError(RegressionObjective):
     """Maximum residual error for regression"""
     greater_is_better = False
-    score_needs_proba = False
     name = "MaxError"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -278,7 +258,6 @@ class MaxError(RegressionObjective):
 class ExpVariance(RegressionObjective):
     """Explained variance score for regression"""
     greater_is_better = True
-    score_needs_proba = False
     name = "ExpVariance"
 
     def objective_function(self, y_predicted, y_true, X=None):
@@ -286,7 +265,7 @@ class ExpVariance(RegressionObjective):
 
 
 class PlotMetric(ABC):
-    score_needs_proba = True
+    score_needs_proba = False
     name = None
 
     @abstractmethod
@@ -305,7 +284,6 @@ class ROC(PlotMetric):
 
 class ConfusionMatrix(PlotMetric):
     """Confusion matrix for classification problems"""
-    score_needs_proba = False
     name = "Confusion Matrix"
 
     def score(self, y_predicted, y_true):
