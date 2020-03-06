@@ -301,7 +301,7 @@ def test_no_default_parameters():
             super().__init__(objective=objective,
                              parameters=parameters)
 
-    with pytest.raises(ValueError, match="Please provide the required parameters for *."):
+    with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={}, objective='precision')
 
 
@@ -317,15 +317,6 @@ def test_initiate_components():
     parameters = {
         'Logistic Regression Classifier': {
             "cool_parameter": "yes"
-        }
-    }
-
-    with pytest.raises(ValueError, match="Error received when instantiating component"):
-        TestPipeline(parameters=parameters, objective='precision')
-
-    parameters = {
-        'Logistic Regression Classifier': {
-            "C": 100
         }
     }
 

@@ -1,5 +1,3 @@
-import copy
-import inspect
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -45,7 +43,7 @@ class PipelineBase(ABC):
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
         """
-        self.component_graph = [handle_component(component) for component in self.component_graph]
+        self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
         self.logger = Logger()
         self.objective = get_objective(objective)
@@ -54,7 +52,6 @@ class PipelineBase(ABC):
         self.parameters = parameters
         self.plot = PipelinePlots(self)
 
-        self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -87,37 +84,18 @@ class PipelineBase(ABC):
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
-    def _instantiate_components(self):
-        """Instantiates components with parameters in `self.parameters`"""
-        for index, component in enumerate(self.component_graph):
-            component_class = component.__class__
-            component_name = component.name
-            if component_name in self.parameters:
-                try:
-                    component_parameters = copy.deepcopy(self.parameters[component_name])
-                    self._validate_component_parameters(component_class, self.parameters[component_name])
-                    new_component = component_class(**component_parameters)
-                except ValueError as e:
-                    raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
-            else:
-                try:
-                    new_component = component_class()
-                except TypeError as e:
-                    raise ValueError("\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name)) from e
-            self.component_graph[index] = new_component
-
-    def _validate_component_parameters(self, component_class, parameters):
-        """Checks parameter against accepted hyperparameters of `component_class` and their ranges
-
-        Arguments:
-            component_class (ComponentBase): component
-            parameters (dict): parameters to check for
-        """
-        for parameter, parameter_value in parameters.items():
-            if parameter not in inspect.signature(component_class.__init__).parameters:
-                raise ValueError("{} is not a hyperparameter of {}".format(parameter, component_class.name))
-            if parameter in component_class.hyperparameter_ranges and parameter_value not in component_class.hyperparameter_ranges[parameter]:
-                raise ValueError("{} = {} not in hyperparameter range of {}".format(parameter, parameter_value, component_class.name))
+    def _instantiate_component(self, component, parameters):
+        """Instantiates components with parameters in `parameters`"""
+        component = handle_component(component)
+        component_class = component.__class__
+        component_name = component.name
+        try:
+            component_parameters = parameters.get(component_name, {})
+            new_component = component_class(**component_parameters)
+        except (ValueError, TypeError) as e:
+            err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
+            raise ValueError(err) from e
+        return new_component
 
     def __getitem__(self, index):
         if isinstance(index, slice):
