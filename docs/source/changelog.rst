@@ -21,7 +21,7 @@ Changelog
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
         * Dropped support for Python 3.5 :pr:`438`
-        * Remove unused `apply.py` file :pr:`449`
+        * Removed unused `apply.py` file :pr:`449`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
