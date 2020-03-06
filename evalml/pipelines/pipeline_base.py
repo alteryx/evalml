@@ -267,7 +267,7 @@ class PipelineBase:
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
         """
-        return make_pipeline_graph(self, filepath=filepath)
+        return make_pipeline_graph(self.component_list, self.name, filepath=filepath)
 
     @property
     def feature_importances(self):
@@ -287,4 +287,4 @@ class PipelineBase:
         Returns:
             plotly.Figure, a bar graph showing features and their importances
         """
-        return make_feature_importance_graph(self, show_all_features=show_all_features)
+        return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)

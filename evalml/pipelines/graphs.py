@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from evalml.utils.gen_utils import import_or_raise
 
 
-def make_pipeline_graph(pipeline, filepath=None):
+def make_pipeline_graph(component_list, graph_name, filepath=None):
     """Create a graph of the pipeline, in a format similar to a UML diagram.
 
     Arguments:
@@ -41,12 +41,12 @@ def make_pipeline_graph(pipeline, filepath=None):
                               "following: {}").format(graph_format, supported_filetypes))
 
     # Initialize a new directed graph
-    graph = graphviz.Digraph(name=pipeline.name, format=graph_format,
+    graph = graphviz.Digraph(name=graph_name, format=graph_format,
                              graph_attr={'splines': 'ortho'})
     graph.attr(rankdir='LR')
 
     # Draw components
-    for component in pipeline.component_list:
+    for component in component_list:
         label = '%s\l' % (component.name)  # noqa: W605
         if len(component.parameters) > 0:
             parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
@@ -56,8 +56,8 @@ def make_pipeline_graph(pipeline, filepath=None):
         graph.node(component.name, shape='record', label=label)
 
     # Draw edges
-    for i in range(len(pipeline.component_list[:-1])):
-        graph.edge(pipeline.component_list[i].name, pipeline.component_list[i + 1].name)
+    for i in range(len(component_list[:-1])):
+        graph.edge(component_list[i].name, component_list[i + 1].name)
 
     if filepath:
         graph.render(filepath, cleanup=True)
@@ -65,17 +65,17 @@ def make_pipeline_graph(pipeline, filepath=None):
     return graph
 
 
-def make_feature_importance_graph(pipeline, show_all_features=False):
+def make_feature_importance_graph(feature_importances, show_all_features=False):
     """Create and return a bar graph of the pipeline's feature importances
 
     Arguments:
-        pipelne (PipelineBase) : The pipeline with which to compute feature importances.
+        feature_importances (pd.DataFrame) : The pipeline with which to compute feature importances.
         show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
 
     Returns:
         plotly.Figure, a bar graph showing features and their importances
     """
-    feat_imp = pipeline.feature_importances
+    feat_imp = feature_importances
     feat_imp['importance'] = abs(feat_imp['importance'])
 
     if not show_all_features:
