@@ -9,7 +9,6 @@ from evalml.pipelines import PipelineBase
 class ClassificationPipeline(PipelineBase):
 
     plot = PipelinePlots
-    threshold_selection_split = True
 
     def predict_proba(self, X):
         """Make probability estimates for labels.

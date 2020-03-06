@@ -3,13 +3,13 @@ from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
 from .objective_base import ObjectiveBase
 from .standard_metrics import (
+    Accuracy,
     AUC,
-    F1,
-    R2,
     AUCMacro,
     AUCMicro,
     AUCWeighted,
     ExpVariance,
+    F1,
     F1Macro,
     F1Micro,
     F1Weighted,
@@ -30,6 +30,7 @@ from .standard_metrics import (
     RecallMacro,
     RecallMicro,
     RecallWeighted,
+    R2,
     ROC,
     ConfusionMatrix
 )

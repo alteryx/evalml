@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from evalml.objectives import get_objective
+from evalml.objectives import Accuracy, get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
@@ -37,12 +37,19 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         self._fit(X, y)
 
-        if objective is not None and objective.can_optimize_threshold:
-            y_predicted_proba = self.predict_proba(X_objective)
-            y_predicted_proba = y_predicted_proba[:, 1]
-            objective.optimize_threshold(y_predicted_proba, y_objective, X_objective)
-
+        if objective is not None:
+            self._optimize_threshold(y_objective, X_objective, objective)
         return self
+
+    def _optimize_threshold(self, y_objective, X_objective, objective):
+        y_predicted_proba = self.predict_proba(X_objective)
+        y_predicted_proba = y_predicted_proba[:, 1]
+        objective_to_optimize = objective
+        # for f1/auc to use accuracy by default
+        if not objective.can_optimize_threshold:
+            objective_to_optimize = Accuracy()
+        # TODO
+        self.classifier_threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -61,14 +68,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            if objective.score_needs_proba:
-                y_predicted_proba = self.predict_proba(X)
-                y_predicted_proba = y_predicted_proba[:, 1]
-                return objective.predict(y_predicted_proba, X)
-            else:
-                #  TODO?
-                y_predicted = self.predict(X)
-                return objective.predict(y_predicted, X)
+            y_predicted_proba = self.predict_proba(X)
+            y_predicted_proba = y_predicted_proba[:, 1]
+            return objective.predict(y_predicted_proba, X)
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):

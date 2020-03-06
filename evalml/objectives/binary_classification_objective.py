@@ -11,11 +11,11 @@ class BinaryClassificationObjective(ObjectiveBase):
     can_optimize_threshold = False
     threshold = None
 
-    def optimize_threshold(self, ypred_proba, y_true, X=None):
+    def optimize_threshold(self, y_predicted, y_true, X=None):
         """Learn and optimize the objective function based on the predictions from a model.
 
         Arguments:
-            ypred_proba (list): the probability estimatrs from the model.
+            y_predicted (list): the probability estimatrs from the model.
 
             y_true (list): the ground truth for the predictions.
 
@@ -25,7 +25,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             optimal threshold
         """
         def cost(threshold):
-            predictions = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+            predictions = self.decision_function(ypred_proba=y_predicted, threshold=threshold, X=X)
             cost = self.objective_function(predictions, y_true, X=X)
             return -cost if self.greater_is_better else cost
         optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
@@ -61,21 +61,3 @@ class BinaryClassificationObjective(ObjectiveBase):
             ypred_proba = pd.Series(ypred_proba)
 
         return ypred_proba > threshold
-
-    def score(self, y_predicted, y_true, X=None):
-        """Calculate score from applying fitted objective to predicted values
-
-        Arguments:
-            y_predicted (list): the predictions from the model. If needs_proba is True,
-                it is the probability estimates
-
-            y_true (list): the ground truth for the predictions.
-
-            X (pd.DataFrame): any extra columns that are needed from training
-                data to fit. Only provided if uses_extra_columns is True.
-
-        Returns:
-            score
-
-        """
-        return self.objective_function(y_predicted, y_true, X)

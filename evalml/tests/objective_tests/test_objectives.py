@@ -13,22 +13,17 @@ from evalml.objectives import (  # PrecisionMacro,; PrecisionMicro,
 
 def test_create_custom_objective():
     class MockEmptyObjective(ObjectiveBase):
-        pass
-
-    class MockEmptyNamedObjective(ObjectiveBase):
-        name = "Mock Empty Named Objective"
+        def objective_function(self, y_predicted, y_true, X=None):
+            pass
 
     with pytest.raises(NameError):
         MockEmptyObjective()
-
-    with pytest.raises(NameError):  # TODO: add match
-        MockEmptyNamedObjective()
 
     class MockNoObjectiveFunctionObjective(ObjectiveBase):
         name = "Mock objective without objective function"
         problem_type = ProblemTypes.BINARY
 
-    with pytest.raises(NotImplementedError):  # TODO: add match
+    with pytest.raises(TypeError):  # TODO: add match
         MockNoObjectiveFunctionObjective()
 
 
