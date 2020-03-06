@@ -1,3 +1,4 @@
+import pandas as pd
 from scipy.optimize import minimize_scalar
 
 from .objective_base import ObjectiveBase
@@ -56,6 +57,9 @@ class BinaryClassificationObjective(ObjectiveBase):
         Returns:
             predictions
         """
+        if not isinstance(ypred_proba, pd.Series):
+            ypred_proba = pd.Series(ypred_proba)
+
         return ypred_proba > classification_threshold
 
     def score(self, y_predicted, y_true, X=None):

@@ -8,11 +8,11 @@ from evalml.problem_types import ProblemTypes
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud"""
     name = "Fraud Cost"
-    problem_types = [ProblemTypes.BINARY]
+    problem_type = ProblemTypes.BINARY
     greater_is_better = False
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
-                 fraud_payout_percentage=1.0, amount_col='amount', verbose=False):
+                 fraud_payout_percentage=1.0, amount_col='amount'):
         """Create instance of FraudCost
 
         Arguments:
@@ -31,7 +31,7 @@ class FraudCost(BinaryClassificationObjective):
         self.interchange_fee = interchange_fee
         self.fraud_payout_percentage = fraud_payout_percentage
         self.amount_col = amount_col
-        super().__init__(verbose=verbose)
+        super().__init__()
 
     def decision_function(self, ypred_proba, classification_threshold, X):
         """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold

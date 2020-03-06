@@ -8,12 +8,12 @@ from evalml.problem_types import ProblemTypes
 class LeadScoring(BinaryClassificationObjective):
     """Lead scoring"""
     name = "Lead Scoring"
-    problem_types = [ProblemTypes.BINARY]
+    problem_type = ProblemTypes.BINARY
 
     greater_is_better = True
     name = "Lead Scoring"
 
-    def __init__(self, true_positives=1, false_positives=-1, verbose=False):
+    def __init__(self, true_positives=1, false_positives=-1):
         """Create instance.
 
         Arguments:
@@ -24,13 +24,14 @@ class LeadScoring(BinaryClassificationObjective):
         self.true_positives = true_positives
         self.false_positives = false_positives
 
-        super().__init__(verbose=verbose)
+        super().__init__()
 
-    # def decision_function(self, y_predicted, threshold):
-    #     if not isinstance(y_predicted, pd.Series):
-    #         y_predicted = pd.Series(y_predicted)
+    def decision_function(self, y_predicted, threshold, X=None):
+        #  TODO: necessary?
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
 
-    #     return y_predicted > threshold
+        return y_predicted > threshold
 
     def objective_function(self, y_predicted, y_true, X=None):
         if not isinstance(y_predicted, pd.Series):

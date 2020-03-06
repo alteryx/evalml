@@ -57,7 +57,7 @@ class Precision(BinaryClassificationObjective):
         return metrics.precision_score(y_true, y_predicted)
 
 
-class PrecisionMicro(BinaryClassificationObjective):
+class PrecisionMicro(MultiClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
     greater_is_better = True
     name = "Precision Micro"
@@ -66,7 +66,7 @@ class PrecisionMicro(BinaryClassificationObjective):
         return metrics.precision_score(y_true, y_predicted, average='micro')
 
 
-class PrecisionMacro(BinaryClassificationObjective):
+class PrecisionMacro(MultiClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
     greater_is_better = True
     name = "Precision Macro"

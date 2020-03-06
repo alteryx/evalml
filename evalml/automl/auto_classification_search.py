@@ -129,7 +129,7 @@ class AutoClassificationSearch(AutoBase):
         """
         problem_type = ProblemTypes.BINARY
         # if exclusively multiclass: infer
-        if ProblemTypes.MULTICLASS == get_objective(objective).problem_type:
+        if get_objective(objective).problem_type == ProblemTypes.MULTICLASS:
             problem_type = ProblemTypes.MULTICLASS
         elif multiclass:
             problem_type = ProblemTypes.MULTICLASS
