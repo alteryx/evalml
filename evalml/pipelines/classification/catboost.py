@@ -23,11 +23,8 @@ class CatBoostClassificationPipeline(PipelineBase):
         "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+    def __init__(self, objective, parameters):
 
         # note: impute_strategy must support both string and numeric data
         super().__init__(objective=objective,
-                         parameters=parameters,
-                         number_features=number_features,
-                         random_state=random_state,
-                         n_jobs=n_jobs)
+                         parameters=parameters)

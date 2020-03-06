@@ -31,7 +31,6 @@ def test_rf_init(X_y):
 
     clf = RFClassificationPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 0
 
 
 def test_rf_multi(X_y_multi):

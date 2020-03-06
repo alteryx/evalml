@@ -24,12 +24,9 @@ def test_pipeline():
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     return TestPipeline(objective='precision', parameters={})
 
@@ -75,12 +72,9 @@ def test_feature_importance_plot_show_all_features(X_y):
         component_graph = ['Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
         @property
         def feature_importances(self):
@@ -91,7 +85,7 @@ def test_feature_importance_plot_show_all_features(X_y):
             return df
 
     X, y = X_y
-    clf = MockPipeline(objective='precision', parameters={}, n_jobs=1, random_state=0)
+    clf = MockPipeline(objective='precision', parameters={})
     clf.fit(X, y)
     figure = clf.plot.feature_importances()
     assert isinstance(figure, go.Figure)

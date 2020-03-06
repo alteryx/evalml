@@ -44,11 +44,11 @@ def lr_pipeline():
     objective = Precision()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'median'
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 1.0,
+            'C': 3.0,
             'random_state': 1
         }
     }
@@ -152,11 +152,11 @@ def test_describe(X_y, lr_pipeline):
     lrp = lr_pipeline
     assert lrp.describe(True) == {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'median'
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 1.0,
+            'C': 3.0,
             'random_state': 1
         }
     }
@@ -210,12 +210,9 @@ def test_multi_format_creation(X_y):
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     parameters = {
         'Simple Imputer': {
@@ -254,12 +251,9 @@ def test_multiple_feature_selectors(X_y):
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     clf = TestPipeline(parameters={}, objective='precision')
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
@@ -273,32 +267,15 @@ def test_multiple_feature_selectors(X_y):
     assert not clf.feature_importances.isnull().all().all()
 
 
-def test_n_jobs(X_y):
-    with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        LogisticRegressionPipeline(objective='precision', n_jobs='5', random_state=0, parameters={})
-
-    with pytest.raises(ValueError, match='n_jobs must be an non-zero integer*.'):
-        LogisticRegressionPipeline(objective='precision', n_jobs=0, random_state=0, parameters={})
-
-    assert LogisticRegressionPipeline(objective='precision', n_jobs=-4, random_state=0, parameters={})
-
-    assert LogisticRegressionPipeline(objective='precision', n_jobs=4, random_state=0, parameters={})
-
-    assert LogisticRegressionPipeline(objective='precision', n_jobs=None, random_state=0, parameters={})
-
-
 def test_problem_types():
     class TestPipeline(PipelineBase):
         model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Logistic Regression Classifier']
         problem_types = ['binary', 'regression']
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
         TestPipeline(parameters={}, objective='precision')
@@ -320,31 +297,12 @@ def test_no_default_parameters():
         component_graph = [MockComponent(a=0)]
         problem_types = ['binary']
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     with pytest.raises(ValueError, match="Please provide the required parameters for *."):
         TestPipeline(parameters={}, objective='precision')
-
-
-def test_num_features():
-    class TestPipeline(PipelineBase):
-        component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary']
-
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
-            super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
-    pipeline = TestPipeline(parameters={}, objective="precision", number_features=100)
-    assert pipeline.number_features == 100
-    assert pipeline.component_graph[0]._component_obj.get_params()['max_features'] == 50  # default percent_features=0.5 so 100 * 0.5 == 50
 
 
 def test_initiate_components():
@@ -352,12 +310,9 @@ def test_initiate_components():
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
         problem_types = ['binary']
 
-        def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
+        def __init__(self, objective, parameters):
             super().__init__(objective=objective,
-                             parameters=parameters,
-                             number_features=number_features,
-                             random_state=random_state,
-                             n_jobs=n_jobs)
+                             parameters=parameters)
 
     parameters = {
         'Logistic Regression Classifier': {
@@ -376,3 +331,11 @@ def test_initiate_components():
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
         TestPipeline(parameters=parameters, objective='precision')
+
+
+def test_correct_parameters(lr_pipeline):
+    lr_pipeline = lr_pipeline
+
+    assert lr_pipeline.estimator.random_state == 1
+    assert lr_pipeline.estimator.parameters['C'] == 3.0
+    assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'

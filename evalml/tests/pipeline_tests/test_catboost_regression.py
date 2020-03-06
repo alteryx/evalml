@@ -22,7 +22,6 @@ def test_catboost_init():
     }
     clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 0
 
 
 def test_catboost_regression(X_y_reg):

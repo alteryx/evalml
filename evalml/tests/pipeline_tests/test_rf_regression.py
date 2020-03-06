@@ -30,7 +30,6 @@ def test_rf_init(X_y_reg):
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
-    assert clf.random_state == 0
 
 
 def test_rf_regression(X_y_categorical_regression):

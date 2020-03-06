@@ -36,7 +36,6 @@ def test_xg_init(X_y):
     clf = XGBoostPipeline(objective=objective, parameters=parameters)
 
     assert clf.parameters == parameters
-    assert clf.random_state == 0
 
 
 def test_xg_multi(X_y_multi):

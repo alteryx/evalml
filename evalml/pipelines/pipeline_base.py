@@ -31,7 +31,7 @@ class PipelineBase(ABC):
     def problem_types(cls):
         return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
 
-    def __init__(self, parameters, objective, random_state=0, n_jobs=-1, number_features=None):
+    def __init__(self, parameters, objective):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -44,16 +44,6 @@ class PipelineBase(ABC):
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
-
-            random_state (int): random seed/state. Defaults to 0. `random_state` can also be provided directly to components
-                using the parameters dictionary argument.
-
-            n_jobs (int): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
-                None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-                `n_jobs` can also be provided directly to components using the parameters dictionary argument.
-
-            number_features (int): Number of features in dataset. Defaults to None. `number_features` can also be provided directly to components
-                using the parameters dictionary argument.
         """
         self.component_graph = [handle_component(component) for component in self.component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
@@ -63,12 +53,6 @@ class PipelineBase(ABC):
         self.results = {}
         self.parameters = parameters
         self.plot = PipelinePlots(self)
-        self.random_state = random_state
-        self.number_features = number_features
-
-        self.n_jobs = n_jobs
-        if not isinstance(n_jobs, (int, type(None))) or n_jobs == 0:
-            raise ValueError('n_jobs must be an non-zero integer or None. n_jobs is set to `{}`.'.format(n_jobs))
 
         self._instantiate_components()
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
@@ -112,37 +96,15 @@ class PipelineBase(ABC):
                 try:
                     component_parameters = copy.deepcopy(self.parameters[component_name])
                     self._validate_component_parameters(component_class, self.parameters[component_name])
-                    component_parameters = self._check_arguments_and_add(component_parameters, component_class)
                     new_component = component_class(**component_parameters)
                 except ValueError as e:
                     raise ValueError("Error received when instantiating component {} with the following arguments {}".format(component_name, self.parameters[component_name])) from e
             else:
                 try:
-                    component_parameters = self._check_arguments_and_add(dict(), component_class)
-                    new_component = component_class(**component_parameters)
+                    new_component = component_class()
                 except TypeError as e:
                     raise ValueError("\nPlease provide the required parameters for {} in the `parameters` dictionary argument.".format(component_name)) from e
             self.component_graph[index] = new_component
-
-    def _check_arguments_and_add(self, component_parameters, component_class):
-        """Adds `random_state`, `n_jobs`, `number_features` as a parameter to applicable component when not provided
-
-        Arguments:
-            component_parameters (dict): dictionary holding parameters of the given component
-            component_class (ComponentBase): component class to check
-
-        Returns:
-            component_parameters: dictionary holding with potentially added parameters
-
-        """
-        if 'random_state' in inspect.signature(component_class.__init__).parameters and 'random_state' not in component_parameters:
-            component_parameters['random_state'] = self.random_state
-        if 'n_jobs' in inspect.signature(component_class.__init__).parameters and 'n_jobs' not in component_parameters:
-            component_parameters['n_jobs'] = self.n_jobs
-        if 'number_features' in inspect.signature(component_class.__init__).parameters and 'number_features' not in component_parameters:
-            component_parameters['number_features'] = self.number_features
-
-        return component_parameters
 
     def _validate_component_parameters(self, component_class, parameters):
         """Checks parameter against accepted hyperparameters of `component_class` and their ranges
@@ -250,7 +212,7 @@ class PipelineBase(ABC):
             y = pd.Series(y)
 
         if self.objective.needs_fitting:
-            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
+            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
 
         self._fit(X, y)
 

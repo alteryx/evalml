@@ -220,12 +220,19 @@ class AutoBase:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
-    def _transform_parameters(self, pipeline_class, parameters):
+    def _transform_parameters(self, pipeline_class, parameters, number_features):
         new_parameters = {}
         component_graph = [handle_component(c) for c in pipeline_class.component_graph]
         for component in component_graph:
             component_parameters = {}
             component_class = component.__class__
+
+            if 'random_state' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['random_state'] = self.random_state
+            if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['n_jobs'] = self.n_jobs
+            if 'number_features' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['number_features'] = number_features
             for parameter in parameters:
                 if parameter[0] in inspect.signature(component_class.__init__).parameters:
                     component_parameters[parameter[0]] = parameter[1]
@@ -243,10 +250,7 @@ class AutoBase:
         # fit an score the pipeline
         pipeline = pipeline_class(
             objective=self.objective,
-            random_state=self.random_state,
-            n_jobs=self.n_jobs,
-            number_features=X.shape[1],
-            parameters=self._transform_parameters(pipeline_class, parameters)
+            parameters=self._transform_parameters(pipeline_class, parameters, X.shape[1])
         )
 
         if self.start_iteration_callback:
