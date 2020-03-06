@@ -32,6 +32,7 @@ Changelog
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
+        * Update unit test jobs to not install dev deps :pr:`455`
 .. warning::
 
     **Breaking Changes**
