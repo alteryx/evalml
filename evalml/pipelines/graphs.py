@@ -30,6 +30,7 @@ def make_pipeline_graph(component_list, graph_name, filepath=None):
         )
 
     graph_format = None
+    path_and_name = None
     if filepath:
         # Explicitly cast to str in case a Path object was passed in
         filepath = str(filepath)
@@ -60,7 +61,7 @@ def make_pipeline_graph(component_list, graph_name, filepath=None):
         graph.edge(component_list[i].name, component_list[i + 1].name)
 
     if filepath:
-        graph.render(filepath, cleanup=True)
+        graph.render(path_and_name, cleanup=True)
 
     return graph
 
