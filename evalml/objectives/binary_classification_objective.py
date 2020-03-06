@@ -68,7 +68,8 @@ class BinaryClassificationObjective(ObjectiveBase):
         if self.threshold is not None:
             predictions = self.decision_function(y_predicted, self.threshold, X)
         else:
-            predictions = self.decision_function(y_predicted, 0.0, X)  # todo
+            print("using default")
+            predictions = self.decision_function(y_predicted, 0.5, X)  # todo
         return predictions
 
     def decision_function(self, ypred_proba, classification_threshold=0.0, X=None):

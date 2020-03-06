@@ -62,7 +62,7 @@ class Precision(BinaryClassificationObjective):
         return metrics.precision_score(y_true, y_predicted)
 
 
-class PrecisionMicro(MultiClassificationObjective):
+class PrecisionMicro(BinaryClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
     greater_is_better = True
     score_needs_proba = False
@@ -72,7 +72,7 @@ class PrecisionMicro(MultiClassificationObjective):
         return metrics.precision_score(y_true, y_predicted, average='micro')
 
 
-class PrecisionMacro(MultiClassificationObjective):
+class PrecisionMacro(BinaryClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
     greater_is_better = True
     score_needs_proba = False
