@@ -10,42 +10,42 @@ from evalml.pipelines import PipelineBase
 
 
 def test_returns_digraph_object():
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    clf = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
 
 
 def test_saving_png_file(tmpdir):
     filepath = os.path.join(str(tmpdir), 'pipeline.png')
-    pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    pipeline = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     pipeline.graph(filepath=filepath)
     assert os.path.isfile(filepath)
 
 
 def test_missing_file_extension():
     filepath = "test1"
-    pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    pipeline = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
 def test_invalid_format():
     filepath = "test1.xzy"
-    pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    pipeline = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
 def test_invalid_path(tmpdir):
     filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
-    pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    pipeline = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     with pytest.raises(ValueError, match="Specified parent directory does not exist"):
         pipeline.graph(filepath=filepath)
 
 
 def test_feature_importance_plot(X_y):
     X, y = X_y
-    clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    clf = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     clf.fit(X, y)
     assert isinstance(clf.feature_importance_graph(), go.Figure)
 
