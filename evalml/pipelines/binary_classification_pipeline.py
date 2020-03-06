@@ -41,6 +41,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             y_predicted_proba = self.predict_proba(X_objective)
             y_predicted_proba = y_predicted_proba[:, 1]
             objective.optimize_threshold(y_predicted_proba, y_objective, X_objective)
+
         return self
 
     def predict(self, X, objective=None):
@@ -63,7 +64,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             y_predicted_proba = self.predict_proba(X)
             y_predicted_proba = y_predicted_proba[:, 1]
             return objective.predict(y_predicted_proba, X)
-
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):
@@ -99,6 +99,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                     y_predicted = self.predict(X, objective)
                 y_predictions = y_predicted
             scores.update({objective.name: objective.objective_function(y_predictions, y, X)})
+
         return scores
 
     def get_plot_data(self, X, y, plot_metrics):
