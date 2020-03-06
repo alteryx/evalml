@@ -34,7 +34,7 @@ def make_pipeline_graph(pipeline, filepath=None):
         # Explicitly cast to str in case a Path object was passed in
         filepath = str(filepath)
         path_and_name, graph_format = os.path.splitext(filepath)
-        graph_format = graph_format[1:].lower() # ignore the dot
+        graph_format = graph_format[1:].lower()  # ignore the dot
         supported_filetypes = graphviz.backend.FORMATS
         if graph_format not in supported_filetypes:
             raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
