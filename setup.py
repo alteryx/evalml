@@ -11,4 +11,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     data_files=[('evalml/demos/data', ['evalml/demos/data/fraud_transactions.csv.tar.gz'])]
+    extras_require={
+        'complete': ['xgboost>=0.82,<1.0.0', 'catboost>=0.20']
+    }
 )
