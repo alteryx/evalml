@@ -45,15 +45,9 @@ def test_invalid_path(tmpdir):
 
 def test_feature_importance_plot(X_y):
     X, y = X_y
-<<<<<<< HEAD:evalml/tests/pipeline_tests/test_pipelines_plots.py
-    clf = PipelineBase(component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
-    clf.fit(X, y, 'precision')
-    assert isinstance(clf.plot.feature_importances(), go.Figure)
-=======
     clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
     clf.fit(X, y)
     assert isinstance(clf.feature_importance_graph(), go.Figure)
->>>>>>> master:evalml/tests/pipeline_tests/test_graphs.py
 
 
 def test_feature_importance_plot_show_all_features(X_y):
