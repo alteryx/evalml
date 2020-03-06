@@ -9,6 +9,7 @@ Changelog
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
+        * Added PipelineBase graph and feature_importance_graph methods, moved from previous location :pr:`423`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
         * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
@@ -34,6 +35,7 @@ Changelog
         * Added dependency update checkin test :pr:`324`
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
+        * Update unit test jobs to not install dev deps :pr:`455`
 .. warning::
 
     **Breaking Changes**

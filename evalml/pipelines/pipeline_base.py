@@ -3,18 +3,14 @@ from collections import OrderedDict
 import pandas as pd
 
 from .components import Estimator, handle_component
-from .pipeline_plots import PipelinePlots
+from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.objectives import get_objective
 from evalml.utils import Logger
 
 
 class PipelineBase:
-
-    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
-    plot = PipelinePlots
-
-    def __init__(self, component_list, n_jobs, random_state):
+    def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
@@ -48,7 +44,6 @@ class PipelineBase:
         for component in self.component_list:
             self.parameters.update(component.parameters)
 
-        self.plot = PipelinePlots(self)
         self.logger = Logger()
 
     def __getitem__(self, index):
@@ -239,6 +234,17 @@ class PipelineBase:
             scores.update({plot_metric.name: plot_metric.score(y_predictions, y)})
         return scores
 
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        return make_pipeline_graph(self.component_list, self.name, filepath=filepath)
+
     @property
     def feature_importances(self):
         """Return feature importances. Features dropped by feature selection are excluded"""
@@ -247,3 +253,14 @@ class PipelineBase:
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
+
+    def feature_importance_graph(self, show_all_features=False):
+        """Generate a bar graph of the pipeline's feature importances
+
+        Arguments:
+            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
+
+        Returns:
+            plotly.Figure, a bar graph showing features and their importances
+        """
+        return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
