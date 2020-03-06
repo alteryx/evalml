@@ -34,6 +34,11 @@ def make_pipeline_graph(component_list, graph_name, filepath=None):
     if filepath:
         # Explicitly cast to str in case a Path object was passed in
         filepath = str(filepath)
+        try:
+            f = open(filepath, 'w')
+            f.close()
+        except IOError:
+            raise ValueError(('Specified parent directory does not exist: {}'.format(filepath)))
         path_and_name, graph_format = os.path.splitext(filepath)
         graph_format = graph_format[1:].lower()  # ignore the dot
         supported_filetypes = graphviz.backend.FORMATS

@@ -36,6 +36,13 @@ def test_invalid_format():
         pipeline.graph(filepath=filepath)
 
 
+def test_invalid_path(tmpdir):
+    filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
+    pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
+    with pytest.raises(ValueError, match="Specified parent directory does not exist"):
+        pipeline.graph(filepath=filepath)
+
+
 def test_feature_importance_plot(X_y):
     X, y = X_y
     clf = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
