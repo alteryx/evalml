@@ -11,4 +11,5 @@ joblib>=0.13
 category_encoders>=2.0.0
 cloudpickle>=0.2.2
 plotly>=4.2.1
+ipywidgets>=7.5
 catboost>=0.20
