@@ -149,22 +149,6 @@ jobs:
                 source test_python/bin/activate
                 codecov
 
-  installation_tests:
-    parameters:
-      python_version:
-        type: string
-        default: "3.7"
-    executor:
-        name: python
-        python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies_test
-      - run: |
-          source test_python/bin/activate
-          python -c "import evalml; print(evalml.__version__)"
-
-
   changelog_updated:
     working_directory: ~/evalml
     docker:
@@ -263,9 +247,3 @@ workflows:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
             codecov: true
-        - installation_tests:
-            name: "python 3.6 base installation test"
-            python_version: "3.6"
-        - installation_tests:
-            name: "python 3.7 base installation test"
-            python_version: "3.7"
