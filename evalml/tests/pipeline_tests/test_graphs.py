@@ -25,7 +25,7 @@ def test_saving_png_file(tmpdir):
 def test_missing_file_extension():
     filepath = "test1"
     pipeline = PipelineBase('precision', component_list=['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier'], n_jobs=-1, random_state=0)
-    with pytest.raises(ValueError, match="Please use a file extension"):
+    with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
