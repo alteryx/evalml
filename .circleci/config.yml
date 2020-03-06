@@ -14,7 +14,14 @@ executors:
       - image: circleci/python:<< parameters.python_version >>
 
 commands:
-  install_dependencies:
+  install_dependencies_test:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps-test
+            pip install -r test-requirements.txt
+  install_dependencies_dev:
     steps:
       - run: |
             virtualenv test_python -q
@@ -33,7 +40,7 @@ jobs:
         python_version: << parameters.python_version >>
       steps:
         - checkout
-        - install_dependencies
+        - install_dependencies_dev
         - run: |
             source test_python/bin/activate
             make lint
@@ -126,7 +133,7 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies
+      - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -157,7 +164,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_dev
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
@@ -171,13 +178,13 @@ jobs:
       python_version: << parameters.python_version >>
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_dev
       - run:
           name: "Detect Dependency Changes"
           command: |
             source test_python/bin/activate
             mkdir /tmp/dependencies_updated_artifacts
-            export whitelist="pandas|numpy|scikit|xgboost|catboost|boto|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
+            export whitelist="pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
             pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > /tmp/dependencies_updated_artifacts/current_dependencies.txt
             diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
             exit $?
