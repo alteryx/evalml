@@ -10,7 +10,7 @@ from evalml.utils import Logger
 
 
 class PipelineBase:
-    def __init__(self, objective, component_list, n_jobs, random_state):
+    def __init__(self, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:

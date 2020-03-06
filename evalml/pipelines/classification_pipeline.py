@@ -1,14 +1,10 @@
 
 import pandas as pd
 
-from .pipeline_plots import PipelinePlots
-
 from evalml.pipelines import PipelineBase
 
 
 class ClassificationPipeline(PipelineBase):
-
-    plot = PipelinePlots
     threshold_selection_split = True
 
     def predict_proba(self, X):
