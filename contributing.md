@@ -20,7 +20,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 * install in edit mode with:
     ```bash
     cd evalml  # move to directory
-    make installdeps # install in edit mode
+    make installdeps-complete # install in edit mode
     ```
 
 

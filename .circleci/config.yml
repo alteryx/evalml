@@ -14,12 +14,19 @@ executors:
       - image: circleci/python:<< parameters.python_version >>
 
 commands:
-  install_dependencies:
+  install_dependencies_complete:
     steps:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps
+            make installdeps-complete
+            pip install -r test-requirements.txt
+  install_dependencies_minimal:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps-minimal
             pip install -r test-requirements.txt
 
 jobs:
@@ -33,7 +40,7 @@ jobs:
         python_version: << parameters.python_version >>
       steps:
         - checkout
-        - install_dependencies
+        - install_dependencies_complete
         - run: |
             source test_python/bin/activate
             make lint
@@ -94,12 +101,12 @@ jobs:
               conda activate curr_py
               conda install -c anaconda py-xgboost
       - run:
-          name: Install EvalML
+          name: Install EvalML with third-party dependencies
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               python -m pip install --upgrade pip
-              python -m pip install .
+              python -m pip install .[complete]
               python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
@@ -126,7 +133,7 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies
+      - install_dependencies_complete
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -157,7 +164,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_complete
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
@@ -171,7 +178,7 @@ jobs:
       python_version: << parameters.python_version >>
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_complete
       - run:
           name: "Detect Dependency Changes"
           command: |
