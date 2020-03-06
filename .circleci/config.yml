@@ -14,7 +14,14 @@ executors:
       - image: circleci/python:<< parameters.python_version >>
 
 commands:
-  install_dependencies:
+  install_dependencies_test:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps-test
+            pip install -r test-requirements.txt
+  install_dependencies_dev:
     steps:
       - run: |
             virtualenv test_python -q
@@ -33,7 +40,7 @@ jobs:
         python_version: << parameters.python_version >>
       steps:
         - checkout
-        - install_dependencies
+        - install_dependencies_dev
         - run: |
             source test_python/bin/activate
             make lint
@@ -126,7 +133,7 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies
+      - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -141,6 +148,22 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov
+
+  installation_tests:
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+    executor:
+        name: python
+        python_version: << parameters.python_version >>
+    steps:
+      - checkout
+      - install_dependencies_test
+      - run: |
+          source test_python/bin/activate
+          python -c "import evalml; print(evalml.__version__)"
+
 
   changelog_updated:
     working_directory: ~/evalml
@@ -157,7 +180,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_dev
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: source test_python/bin/activate ; make -C docs/ html
       - run: ls docs/build/html
@@ -171,7 +194,7 @@ jobs:
       python_version: << parameters.python_version >>
     steps:
       - checkout
-      - install_dependencies
+      - install_dependencies_dev
       - run:
           name: "Detect Dependency Changes"
           command: |
@@ -240,3 +263,9 @@ workflows:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
             codecov: true
+        - installation_tests:
+            name: "python 3.6 base installation test"
+            python_version: "3.6"
+        - installation_tests:
+            name: "python 3.7 base installation test"
+            python_version: "3.7"
