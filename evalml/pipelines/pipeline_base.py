@@ -196,7 +196,7 @@ class PipelineBase:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
 
-            scores.update({objective.name: objective.objective_function(y_predictions, y, X)})
+            scores.update({objective.name: objective.score(y_predictions, y, X)})
 
         return scores
 

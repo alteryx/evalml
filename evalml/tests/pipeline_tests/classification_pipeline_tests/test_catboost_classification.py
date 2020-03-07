@@ -53,7 +53,7 @@ def test_catboost_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
+    objective = Precision()
     clf = CatBoostBinaryClassificationPipeline(impute_strategy='mean', n_estimators=1000, eta=0.03,
                                                bootstrap_type='Bayesian', number_features=len(X.columns), max_depth=6, random_state=0)
     clf.fit(X, y, objective)

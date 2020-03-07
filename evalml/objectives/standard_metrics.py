@@ -136,7 +136,7 @@ class RecallWeighted(MultiClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
     name = "Recall Weighted"
     greater_is_better = True
-    score_needs_proba = True
+    score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted, average='weighted')
