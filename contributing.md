@@ -54,6 +54,8 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 
 * Be sure to include unit tests for your changes; the unit tests you write will also be run as part of the continuous integration.
 
+* Until your pull request is ready for review, please prefix the title with "[WIP]" to indicate its not yet ready for review. This signals the team to ignore it and allow you to develop. PRs without the "[WIP]" prefix will be treated as ready for review.
+
 * If your changes alter the following please fix them as well:
     * Docstrings - if your changes render docstrings invalid
     * API changes - if you change the API update `docs/source/api_reference.rst`
@@ -66,3 +68,29 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     * Documentation Changes
     * Testing Changes
 
+## Code Style Guide
+
+* Keep things simple. Any complexity must be justified in order to pass code review.
+* Be aware that while we love fancy python magic, there's usually a simpler solution which is easier to understand!
+* Make PRs as small as possible! Consider breaking your large changes into separate PRs. This will make code review easier, quicker, less bug-prone and more effective.
+* In the name of every branch you create, include your initials and the associated issue number if applicable.
+* If new changes are added to the branch you're basing your changes off of, consider using `git rebase -i base_branch` rather than merging the base branch, to keep history clean.
+* Always include a docstring for public methods and classes. Consider including docstrings for private methods too.
+* Any code which doesn't need to be public should be private, and prefixed with an underscore. Use static and class methods where applicable, to indicate no side effects.
+* Only call public methods in unit tests.
+* All code must have unit test coverage. Use mocking and monkey-patching when necessary.
+* Keep unit tests as fast as possible. In particular, avoid calling `fit`. Mocking can help with this.
+* When you're working with code which uses a random number generator, make sure your unit tests set a random seed.
+* Use `np.testing.assert_almost_equal` when comparing floating-point numbers, to avoid numerical precision issues, particularly cross-platform.
+* Use `os.path` tools to keep file paths cross-platform.
+* Our rule of thumb is to favor traditional inheritance over a mixin pattern.
+
+## GitHub Issue Guide
+
+* Make the title as short and descriptive as possible.
+* Make sure the body is concise and gets to the point quickly.
+* Check for duplicates before filing.
+* For bugs, a good general outline is: problem summary, root cause if known, symptoms and scope, proposed solution(s), and next steps.
+* If the issue writeup or conversation get too long and hard to follow, consider starting a design document.
+* Use the appropriate labels to help your issue get triaged quickly.
+* Make your issues as actionable as possible. If they track open discussions, consider prefixing the title with "[Discuss]", or refining the issue further before filing.
