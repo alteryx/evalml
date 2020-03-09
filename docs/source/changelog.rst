@@ -24,6 +24,7 @@ Changelog
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
+        * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`464`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
