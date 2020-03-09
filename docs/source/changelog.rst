@@ -9,6 +9,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
 
+
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
