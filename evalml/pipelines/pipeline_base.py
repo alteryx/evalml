@@ -49,6 +49,11 @@ class PipelineBase:
 
     @property
     def parameters(self):
+        """Returns parameter dictionary for this pipeline
+
+        Returns:
+            dict: dictionary of all component parameters
+        """
         params = {}
         for component in self.component_list:
             if component.parameters:
@@ -93,14 +98,7 @@ class PipelineBase:
         return next((component for component in self.component_list if component.name == name), None)
 
     def describe(self):
-        """Outputs pipeline details including component parameters
-
-        Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
-
-        Returns:
-            dict: dictionary of all component parameters if return_dict is True, else None
-        """
+        """Outputs pipeline details including component parameters"""
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
