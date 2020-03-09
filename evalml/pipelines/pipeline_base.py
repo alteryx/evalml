@@ -51,7 +51,9 @@ class PipelineBase:
     def parameters(self):
         params = {}
         for component in self.component_list:
-            params.update(component.parameters)
+            if component.parameters:
+                params[component.name] = {}
+                params[component.name].update(component.parameters)
         return params
 
     def __getitem__(self, index):

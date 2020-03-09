@@ -128,9 +128,13 @@ def test_parameters(X_y):
     X, y = X_y
     lrp = LogisticRegressionPipeline(objective='recall', penalty='l2', C=1.0, impute_strategy='mean', number_features=len(X[0]), random_state=0)
     params = {
-        'penalty': 'l2',
-        'C': 1.0,
-        'impute_strategy': 'mean',
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0
+        }
     }
 
     assert params == lrp.parameters
