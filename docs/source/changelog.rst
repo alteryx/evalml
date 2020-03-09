@@ -4,6 +4,13 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.7.0 Mar. 9, 2020**
+    * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
