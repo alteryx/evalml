@@ -57,6 +57,6 @@ class BinaryClassificationObjective(ObjectiveBase):
         if self.threshold is not None:
             predictions = self.decision_function(y_predicted, self.threshold, X)
         else:
-            # raise Exception("Didn't optimize for objective first!")
+            raise Exception("Didn't optimize for objective first!")
             predictions = self.decision_function(y_predicted, 0.0, X)  # todo
         return predictions

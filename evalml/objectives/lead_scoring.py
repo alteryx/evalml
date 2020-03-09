@@ -22,13 +22,6 @@ class LeadScoring(BinaryClassificationObjective):
 
         super().__init__()
 
-    def decision_function(self, y_predicted, threshold, X=None):
-        #  TODO: necessary?
-        if not isinstance(y_predicted, pd.Series):
-            y_predicted = pd.Series(y_predicted)
-
-        return y_predicted > threshold
-
     def objective_function(self, y_predicted, y_true, X=None):
         if not isinstance(y_predicted, pd.Series):
             y_predicted = pd.Series(y_predicted)

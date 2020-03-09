@@ -35,7 +35,7 @@ class FraudCost(BinaryClassificationObjective):
         """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold
 
             Arguments:
-                ypred_proba (pd.Series): predicted labels
+                ypred_proba (pd.Series): predicted probablities
                 X (pd.DataFrame): extra data needed
                 threshold (float): dollar threshold to determine if transaction is fraud
 
