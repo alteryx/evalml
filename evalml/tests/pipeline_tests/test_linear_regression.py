@@ -15,7 +15,15 @@ def test_lr_init(X_y_categorical_regression):
 
     objective = R2()
     clf = LinearRegressionPipeline(objective=objective, number_features=len(X.columns), random_state=2, impute_strategy='mean', normalize=True, fit_intercept=True, n_jobs=-1)
-    expected_parameters = {'impute_strategy': 'mean', 'fit_intercept': True, 'normalize': True}
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True
+        }
+    }
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
 

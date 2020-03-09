@@ -11,7 +11,17 @@ def test_catboost_init():
     objective = R2()
     clf = CatBoostRegressionPipeline(objective=objective, impute_strategy='mean', n_estimators=1000, number_features=0,
                                      bootstrap_type='Bayesian', eta=0.03, max_depth=6, random_state=2)
-    expected_parameters = {'impute_strategy': 'mean', 'eta': 0.03, 'n_estimators': 1000, 'max_depth': 6, 'bootstrap_type': 'Bayesian'}
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'CatBoost Regressor': {
+            'eta': 0.03,
+            'n_estimators': 1000,
+            'max_depth': 6,
+            'bootstrap_type': 'Bayesian'
+        }
+    }
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
 

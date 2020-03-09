@@ -15,7 +15,15 @@ def test_lor_init(X_y):
 
     objective = PrecisionMicro()
     clf = LogisticRegressionPipeline(objective=objective, penalty='l2', C=0.5, impute_strategy='mean', number_features=len(X[0]), random_state=1)
-    expected_parameters = {'impute_strategy': 'mean', 'penalty': 'l2', 'C': 0.5}
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 0.5
+        }
+    }
     assert clf.parameters == expected_parameters
     assert clf.random_state == 1
 

@@ -12,7 +12,17 @@ def test_catboost_init():
     objective = PrecisionMicro()
     clf = CatBoostClassificationPipeline(objective=objective, impute_strategy='most_frequent', n_estimators=500,
                                          bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2)
-    expected_parameters = {'impute_strategy': 'most_frequent', 'eta': 0.1, 'n_estimators': 500, 'max_depth': 3, 'bootstrap_type': 'Bernoulli'}
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            'eta': 0.1,
+            'n_estimators': 500,
+            'max_depth': 3,
+            'bootstrap_type': 'Bernoulli'
+        }
+    }
     assert clf.parameters == expected_parameters
     assert clf.random_state == 2
 

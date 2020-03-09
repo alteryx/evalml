@@ -19,6 +19,21 @@ def test_xg_init(X_y):
                           percent_features=1.0, number_features=len(X[0]), n_estimators=10, random_state=1)
     expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
                            'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3, 'n_estimators': 10}
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            'percent_features': 1.0,
+            'threshold': -np.inf
+        },
+        'XGBoost Classifier': {
+            'eta': 0.2,
+            'max_depth': 5,
+            'min_child_weight': 3,
+            'n_estimators': 10
+        }
+    }
     assert clf.parameters == expected_parameters
     assert clf.random_state == 1
 
