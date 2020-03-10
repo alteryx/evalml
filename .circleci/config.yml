@@ -12,8 +12,8 @@ executors:
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
-        environment:
-          OMP_NUM_THREADS: 8
+    environment:
+        OMP_NUM_THREADS: 8
 
 commands:
   install_dependencies_test:
