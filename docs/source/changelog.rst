@@ -9,6 +9,7 @@ Changelog
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
     * Documentation Changes
     * Testing Changes
+        * Added Github app to auto assign PR author as assignee :pr:`477`
 
 
 **v0.7.0 Mar. 9, 2020**
