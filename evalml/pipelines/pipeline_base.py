@@ -148,12 +148,11 @@ class PipelineBase:
         self._fit(X, y)
         return self
 
-    def predict(self, X, objective=None):
+    def predict(self, X):
         """Make predictions using selected features.
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to predict
 
         Returns:
             pd.Series : estimated labels

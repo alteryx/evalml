@@ -49,7 +49,7 @@ def test_linear_regression(X_y_categorical_regression):
 
     # testing objective parameter passed in does not change results
     clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
+    y_pred_with_objective = clf.predict(X)
     assert((y_pred == y_pred_with_objective).all())
 
 

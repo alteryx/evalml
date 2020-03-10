@@ -50,17 +50,7 @@ def test_rf_regression(X_y_categorical_regression):
 
     # testing objective parameter passed in does not change results
     clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-    # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-    # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
+    y_pred_with_objective = clf.predict(X)
     np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
