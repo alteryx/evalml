@@ -95,7 +95,7 @@ def test_specify_objective(X_y):
 
 def test_binary_auto(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective="recall", multiclass=False, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
     automl.search(X, y, raise_errors=True)
     y_pred = automl.best_pipeline.predict(X, "recall")
 

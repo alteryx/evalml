@@ -23,7 +23,7 @@ class FraudCost(BinaryClassificationObjective):
             fraud_payout_percentage (float): Percentage of fraud will you be unable to collect.
                 Between 0 and 1. Defaults to 1.0
 
-            amount_col (str): name of column in data that contains the amount. Defaults to "amount"
+            amount_col (str): Name of column in data that contains the amount. Defaults to "amount"
         """
         self.retry_percentage = retry_percentage
         self.interchange_fee = interchange_fee
@@ -35,12 +35,12 @@ class FraudCost(BinaryClassificationObjective):
         """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount
 
             Arguments:
-                ypred_proba (pd.Series): predicted probablities
-                X (pd.DataFrame): dataframe containing transaction amount
-                threshold (float): dollar threshold to determine if transaction is fraud
+                ypred_proba (pd.Series): Predicted probablities
+                X (pd.DataFrame): Dataframe containing transaction amount
+                threshold (float): Dollar threshold to determine if transaction is fraud
 
             Returns:
-                pd.Series: Series of predicted fraud label using X and threshold
+                pd.Series: Series of predicted fraud labels using X and threshold
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
