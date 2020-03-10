@@ -14,16 +14,16 @@ class FraudCost(BinaryClassificationObjective):
         """Create instance of FraudCost
 
         Arguments:
-            retry_percentage (float): what percentage of customers will retry a transaction if it
-                is declined? Between 0 and 1. Defaults to .5
+            retry_percentage (float): What percentage of customers will retry a transaction if it
+                is declined. Between 0 and 1. Defaults to .5
 
-            interchange_fee (float): how much of each successful transaction do you collect?
+            interchange_fee (float): How much of each successful transaction you can collect.
                 Between 0 and 1. Defaults to .02
 
-            fraud_payout_percentage (float):  how percentage of fraud will you be unable to collect.
+            fraud_payout_percentage (float): Percentage of fraud will you be unable to collect.
                 Between 0 and 1. Defaults to 1.0
 
-            amount_col (str): name of column in data that contains the amount. defaults to "amount"
+            amount_col (str): name of column in data that contains the amount. Defaults to "amount"
         """
         self.retry_percentage = retry_percentage
         self.interchange_fee = interchange_fee
@@ -32,15 +32,15 @@ class FraudCost(BinaryClassificationObjective):
         super().__init__()
 
     def decision_function(self, ypred_proba, threshold, X):
-        """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold
+        """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount
 
             Arguments:
                 ypred_proba (pd.Series): predicted probablities
-                X (pd.DataFrame): extra data needed
+                X (pd.DataFrame): dataframe containing transaction amount
                 threshold (float): dollar threshold to determine if transaction is fraud
 
             Returns:
-                pd.Series: series of predicted fraud label using extra cols and threshold
+                pd.Series: Series of predicted fraud label using X and threshold
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -57,7 +57,7 @@ class FraudCost(BinaryClassificationObjective):
             Arguments:
                 y_predicted (pd.Series): predicted fraud labels
                 y_true (pd.Series): true fraud labels
-                X (pd.DataFrame): extra data needed
+                X (pd.DataFrame): dataframe with transaction amounts
 
             Returns:
                 float: amount lost to fraud per transaction

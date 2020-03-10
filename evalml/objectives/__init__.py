@@ -26,11 +26,11 @@ from .standard_metrics import (
     PrecisionMacro,
     PrecisionMicro,
     PrecisionWeighted,
+    R2,
     Recall,
     RecallMacro,
     RecallMicro,
     RecallWeighted,
-    R2,
     ROC,
     ConfusionMatrix
 )

@@ -15,7 +15,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         """Learn and optimize the objective function based on the predictions from a model.
 
         Arguments:
-            y_predicted (list): the probability estimatrs from the model.
+            y_predicted (list): the probability estimators from the model.
 
             y_true (list): the ground truth for the predictions.
 

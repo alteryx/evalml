@@ -37,12 +37,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
+        self._optimize_threshold(y_objective, X_objective, objective)
 
-        if objective is not None:
-            self._optimize_threshold(y_objective, X_objective, objective)
-        else:
-            # TODO?
-            self._optimize_threshold(y_objective, X_objective, Accuracy())
         return self
 
     def _optimize_threshold(self, y_objective, X_objective, objective):
@@ -50,7 +46,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         y_predicted_proba = y_predicted_proba[:, 1]
         objective_to_optimize = objective
         # for f1/auc to use accuracy by default
-        if not objective.can_optimize_threshold:
+        if objective is None or not objective.can_optimize_threshold:
             objective_to_optimize = Accuracy()
         # TODO
         self.classifier_threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)

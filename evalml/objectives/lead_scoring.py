@@ -13,16 +13,24 @@ class LeadScoring(BinaryClassificationObjective):
         """Create instance.
 
         Arguments:
-            label (int) : label to optimize threshold for
             true_positives (int) : reward for a true positive
             false_positives (int) : cost for a false positive. Should be negative.
         """
         self.true_positives = true_positives
         self.false_positives = false_positives
-
         super().__init__()
 
     def objective_function(self, y_predicted, y_true, X=None):
+        """Calculate the profit per lead.
+
+            Arguments:
+                y_predicted (pd.Series): predicted labels
+                y_true (pd.Series): true labels
+                X (pd.DataFrame): None, not used.
+
+            Returns:
+                float: profit per lead
+        """
         if not isinstance(y_predicted, pd.Series):
             y_predicted = pd.Series(y_predicted)
 
