@@ -229,8 +229,8 @@ class PipelineSearchPlots:
                                                customdata=conf_mat,
                                                hovertemplate='<b>True</b>: %{y}' +
                                                '<br><b>Predicted</b>: %{x}' +
-                                               '<br><b>Number of times</b>: %{customdata:.3f}' +
-                                               '<br>Normalized: %{z} <br>' +
+                                               '<br><b>Number of times</b>: %{customdata}' +
+                                               '<br><b>Normalized</b>: %{z} <br>' +
                                                '<extra></extra>',  # necessary to remove unwanted trace info
                                                colorscale='Blues'),
                                layout=layout)
