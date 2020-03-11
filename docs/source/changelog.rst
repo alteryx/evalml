@@ -9,6 +9,7 @@ Changelog
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
     * Documentation Changes
     * Testing Changes
+        * Added automated dependency check PR :pr:`482`
 
 
 **v0.7.0 Mar. 9, 2020**
