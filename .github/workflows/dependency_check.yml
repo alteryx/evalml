@@ -25,3 +25,4 @@ jobs:
           title: Automated Latest Dependency Updates
           body: This is an auto-generated PR with dependency updates.
           branch: dep-update
+          base: master
