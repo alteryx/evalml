@@ -165,8 +165,11 @@ class PipelineSearchPlots:
         figure = go.Figure(layout=layout, data=data)
         return figure
 
-    def get_confusion_matrix_data(self, pipeline_id):
+    def get_confusion_matrix_data(self, pipeline_id, normalize=False):
         """Gets data that can be used to create a confusion matrix plot.
+
+        Arguments:
+            pipeline_id (int): ID of pipeline to get confusion matrix data for
 
         Returns:
             List containing information used to generate a confusion matrix plot. Each element in the list contains the confusion matrix data for that fold.
@@ -189,17 +192,19 @@ class PipelineSearchPlots:
             conf_mat = fold["all_objective_scores"]["Confusion Matrix"]
             # reverse columns in confusion matrix to change axis order to match sklearn's
             conf_mat = conf_mat.iloc[:, ::-1]
+            if normalize:
+                conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
             confusion_matrix_data.append(conf_mat)
         return confusion_matrix_data
 
-    def generate_confusion_matrix(self, pipeline_id, fold_num=None):
+    def generate_confusion_matrix(self, pipeline_id, fold_num=None, normalize=False):
         """Generate confusion matrix plot for a given pipeline using the data returned from get_confusion_matrix_data().
 
         Returns:
             plotly.Figure representing the confusion matrix plot generated
 
         """
-        data = self.get_confusion_matrix_data(pipeline_id)
+        data = self.get_confusion_matrix_data(pipeline_id, normalize=False)
         results = self.data.results['pipeline_results']
         pipeline_name = results[pipeline_id]["pipeline_name"]
         # defaults to last fold if none specified. May need to think of better approach.
@@ -207,16 +212,22 @@ class PipelineSearchPlots:
             fold_num = -1
 
         conf_mat = data[fold_num]
+        conf_mat_normalized = data[fold_num]
+
+        if normalize:
+            conf_mat_normalized = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
+
         labels = conf_mat.columns
         reversed_labels = labels[::-1]
-
         layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
                            xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
                            yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
         figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat,
+                                           customdata=conf_mat_normalized,
                                            hovertemplate='<b>True</b>: %{y}' +
                                                          '<br><b>Predicted</b>: %{x}' +
                                                          '<br><b>Number of times</b>: %{z}' +
+                                                         '<br>Normalized: %{customdata:.3f} <br>' +
                                                          '<extra></extra>',  # necessary to remove unwanted trace info
                                            colorscale='Blues'),
                            layout=layout)
