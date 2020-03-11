@@ -37,9 +37,5 @@ installdeps: installdeps-test
 
 .PHONY: dependenciesfile
 dependenciesfile:
-	ifdef path
-		export whitelist="pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
-		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > path /tmp/dependencies_updated_artifacts/current_dependencies.txt
-	else
-		echo `path not defined`
-	endif
+		$(eval whitelist='pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels')
+		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $(whitelist) > $(DEPENDENCY_FILE_PATH)
