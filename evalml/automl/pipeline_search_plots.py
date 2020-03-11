@@ -170,6 +170,7 @@ class PipelineSearchPlots:
 
         Arguments:
             pipeline_id (int): ID of pipeline to get confusion matrix data for
+            normalize (bool): Normalizes confusion matrix if True. Defaults to False.
 
         Returns:
             List containing information used to generate a confusion matrix plot. Each element in the list contains the confusion matrix data for that fold.
@@ -198,10 +199,24 @@ class PipelineSearchPlots:
         return confusion_matrix_data
 
     def normalize_confusion_matrix(self, conf_mat):
+        """Normalizes a confusion matrix.
+
+        Arguments:
+            conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
+
+        Returns:
+            A normalized version of the input confusion matrix.
+
+        """
         return conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None, normalize=False):
         """Generate confusion matrix plot for a given pipeline using the data returned from get_confusion_matrix_data().
+
+        Arguments:
+            pipeline_id (int): ID of pipeline to get confusion matrix data for
+            fold_num (int): Fold number of pipeline to get confusion matrix data for
+            normalize (bool): Normalizes confusion matrix if True. Defaults to False.
 
         Returns:
             plotly.Figure representing the confusion matrix plot generated
