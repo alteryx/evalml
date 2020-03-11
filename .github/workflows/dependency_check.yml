@@ -11,6 +11,7 @@ jobs:
       - name: Update dependencies
         id: vars
         run: |
+          sudo pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
