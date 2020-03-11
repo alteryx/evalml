@@ -12,10 +12,9 @@ jobs:
         id: vars
         run: |
           make installdeps-test
-          mkdir /tmp/dependencies_updated_artifacts
           export whitelist="pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
-          pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > /tmp/dependencies_updated_artifacts/current_dependencies.txt
-          diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+          pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > evalml/tests/latest_dependency_versions.txt
+          touch test.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v2
         with:
