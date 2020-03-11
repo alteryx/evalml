@@ -1,7 +1,5 @@
 name: Update Dependencies
-on:
-  watch:
-    types: [started]
+on: push
 jobs:
   update-deps:
     runs-on: ubuntu-latest
