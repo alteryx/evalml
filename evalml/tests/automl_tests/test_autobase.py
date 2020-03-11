@@ -55,8 +55,8 @@ def test_generate_confusion_matrix(X_y):
         labels = fold.columns
         assert all(label in y for label in labels)
 
-        cm_data_normalized = automl.plot.normalize_confusion_matrix(cm_data)
-        assert all(cm_data_normalized.sum(axis=0) == 1.0)
+        cm_data_normalized = automl.plot.normalize_confusion_matrix(fold)
+        assert all(cm_data_normalized.sum(axis=1) == 1.0)
 
     fig = automl.plot.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))

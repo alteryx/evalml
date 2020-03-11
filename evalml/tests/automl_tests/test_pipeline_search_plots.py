@@ -150,6 +150,9 @@ def test_generate_confusion_matrix(X_y):
         labels = cm.columns
         assert all(label in y for label in labels)
         assert (cm.to_numpy().sum() == y_test_lens[i])
+        cm_data_normalized = search_plots.normalize_confusion_matrix(cm)
+        assert all(cm_data_normalized.sum(axis=1) == 1.0)
+
     fig = search_plots.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))
 
