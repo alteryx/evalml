@@ -1,5 +1,7 @@
 name: Update Dependencies
-on: push
+on:
+  schedule:
+      - cron: '30 8 * * *'
 jobs:
   update-deps:
     runs-on: ubuntu-latest
