@@ -18,7 +18,7 @@ jobs:
           pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > evalml/tests/latest_dependency_versions.txt
           cat evalml/tests/latest_dependency_versions.txt
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v2
+        uses: Featurelabs/create-pull-request@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update latest dependencies
