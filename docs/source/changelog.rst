@@ -4,6 +4,15 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.7.0 Mar. 9, 2020**
+    * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
