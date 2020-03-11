@@ -11,9 +11,6 @@ jobs:
       - name: Update dependencies
         id: vars
         run: |
-          sudo pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
           make installdeps-test
           export whitelist="pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
           pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > evalml/tests/latest_dependency_versions.txt
