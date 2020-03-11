@@ -215,16 +215,15 @@ class PipelineSearchPlots:
             fold_num = -1
 
         conf_mat = data[fold_num]
-        conf_mat_normalized = data[fold_num]
         conf_mat_normalized = self.normalize_confusion_matrix(conf_mat)
 
         labels = conf_mat.columns
         reversed_labels = labels[::-1]
-        layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                           xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                           yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
 
         if normalize:
+            layout = go.Layout(title={'text': 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
+                               xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                               yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
             figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat_normalized,
                                                customdata=conf_mat,
                                                hovertemplate='<b>True</b>: %{y}' +
@@ -235,6 +234,9 @@ class PipelineSearchPlots:
                                                colorscale='Blues'),
                                layout=layout)
         else:
+            layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
+                               xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                               yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
             figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat,
                                                customdata=conf_mat_normalized,
                                                hovertemplate='<b>True</b>: %{y}' +
