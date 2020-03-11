@@ -1,6 +1,6 @@
 name: Update Dependencies
 on:
-  watch
+  watch:
     types: [started]
 jobs:
   update-deps:
