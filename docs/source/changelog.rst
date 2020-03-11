@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
     * Documentation Changes
     * Testing Changes
 
