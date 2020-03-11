@@ -36,8 +36,8 @@ class RFRegressionPipeline(PipelineBase):
                                                        percent_features=percent_features,
                                                        threshold=-np.inf,
                                                        n_jobs=n_jobs,
-                                                       random_state=random_state)
-        estimator = RandomForestRegressor(random_state=random_state,
+                                                       random_state=0)
+        estimator = RandomForestRegressor(random_state=0,
                                           n_estimators=n_estimators,
                                           max_depth=max_depth,
                                           n_jobs=n_jobs)

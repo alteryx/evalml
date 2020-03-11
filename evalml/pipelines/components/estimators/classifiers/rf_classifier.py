@@ -22,7 +22,7 @@ class RandomForestClassifier(Estimator):
         rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
                                                  max_depth=max_depth,
                                                  n_jobs=n_jobs,
-                                                 random_state=random_state)
+                                                 random_state=0)
         super().__init__(parameters=parameters,
                          component_obj=rf_classifier,
                          random_state=random_state)
