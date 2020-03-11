@@ -34,3 +34,12 @@ installdeps-test:
 .PHONY: installdeps
 installdeps: installdeps-test
 	pip install -r dev-requirements.txt -q
+
+.PHONY: dependenciesfile
+dependenciesfile:
+	ifdef path
+		export whitelist="pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels"
+		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $whitelist > path /tmp/dependencies_updated_artifacts/current_dependencies.txt
+	else
+		echo `path not defined`
+	endif
