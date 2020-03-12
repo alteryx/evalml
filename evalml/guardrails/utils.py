@@ -29,6 +29,7 @@ def detect_label_leakage(X, y, threshold=.95):
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
     X = X.select_dtypes(include=numerics)
+    y = y.to_frame() 
 
     if len(X.columns) == 0:
         return {}
