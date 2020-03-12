@@ -11,6 +11,8 @@ from evalml.utils import Logger
 
 
 class PipelineBase:
+    """Base class for all pipelines."""
+
     def __init__(self, objective, component_list, n_jobs, random_state):
         """Machine learning pipeline made out of transformers and a estimator.
 
