@@ -119,6 +119,7 @@ def test_generate_confusion_matrix(X_y):
                 'Logistic Regression Classifier': {
                     'penalty': 'l2',
                     'C': 0.5,
+                    'random_state': 0
                 }
             }
             pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
