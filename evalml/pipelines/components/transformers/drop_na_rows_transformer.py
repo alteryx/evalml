@@ -41,8 +41,14 @@ class DropNaRowsTransformer(Transformer):
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        # na_rows = y.isna()
-        return X.dropna(axis=0)
+
+        # drop rows where corresponding y is NaN
+        null_indices = y.index[y.apply(np.isnan)]
+        X = X.drop(index=null_indices)
+
+        # drop any rows with NaN
+        X = X.dropna(axis=0)
+        return X
 
     def fit_transform(self, X, y=None):
         """Fits
@@ -53,9 +59,4 @@ class DropNaRowsTransformer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        # X_t = self._component_obj.fit_transform(X, y)
-        # if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-        #     # skLearn's SimpleImputer loses track of column type, so we need to restore
-        #     X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
-        # return X_t
         return self.transform(X, y)
