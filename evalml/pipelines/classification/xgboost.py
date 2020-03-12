@@ -21,6 +21,6 @@ class XGBoostPipeline(PipelineBase):
         "percent_features": Real(.01, 1),
     }
 
-    def __init__(self, objective, parameters):
-        super().__init__(objective=objective,
-                         parameters=parameters)
+    def __init__(self, parameters, objective):
+        super().__init__(parameters=parameters,
+                         objective=objective)

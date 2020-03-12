@@ -24,6 +24,6 @@ class CatBoostRegressionPipeline(PipelineBase):
         "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, objective, parameters, number_features=0, random_state=0, n_jobs=-1):
-        super().__init__(objective=objective,
-                         parameters=parameters)
+    def __init__(self, parameters, objective):
+        super().__init__(parameters=parameters,
+                         objective=objective)
