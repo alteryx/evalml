@@ -161,6 +161,9 @@ def test_generate_confusion_matrix(X_y):
     fig = search_plots.generate_confusion_matrix(0)
     assert isinstance(fig, type(go.Figure()))
 
+    fig = search_plots.generate_confusion_matrix(0, normalize=True)
+    assert isinstance(fig, type(go.Figure()))
+
 
 def test_confusion_matrix_regression_throws_error():
     # Make mock class and generate mock results

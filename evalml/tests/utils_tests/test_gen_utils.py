@@ -41,3 +41,10 @@ def test_normalize_confusion_matrix():
     conf_mat = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     conf_mat_normalized = normalize_confusion_matrix(conf_mat)
     assert all(conf_mat_normalized.sum(axis=1) == 1.0)
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
+    for col_sum in conf_mat_normalized.sum(axis=0):
+        assert col_sum == 1.0 or col_sum == 0.0
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
+    assert conf_mat_normalized.sum() == 1.0

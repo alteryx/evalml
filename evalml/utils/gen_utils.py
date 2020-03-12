@@ -38,14 +38,23 @@ def convert_to_seconds(input_str):
         raise AssertionError(msg)
 
 
-def normalize_confusion_matrix(conf_mat):
+def normalize_confusion_matrix(conf_mat, option='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
         conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
+        option ({'true', 'pred', 'all'}): Option to normalize over the true (rows), predicted (columns) or all values. Defaults to 'true'.
 
     Returns:
         A normalized version of the input confusion matrix.
 
     """
-    return conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
+    if option == 'true':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1, keepdims=True)
+    elif option == 'pred':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0, keepdims=True)
+    elif option == 'all':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum()
+
+    conf_mat = np.nan_to_num(conf_mat)
+    return conf_mat
