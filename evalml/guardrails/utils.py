@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
@@ -33,7 +34,7 @@ def detect_label_leakage(X, y, threshold=.95):
     if len(X.columns) == 0:
         return {}
 
-    corrs = {label: y.corr(col) for label, col in X.iteritems() if y.corr(col) >= threshold}
+    corrs = {label: np.abs(y.corr(col)) for label, col in X.iteritems() if np.abs(y.corr(col)) >= threshold}
     return corrs
 
 
