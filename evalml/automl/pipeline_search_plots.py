@@ -226,18 +226,18 @@ class PipelineSearchPlots:
         labels = conf_mat.columns
         reversed_labels = labels[::-1]
 
-        title = 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+        title_text = 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
         z_data = conf_mat
         custom_data = conf_mat_normalized
-        hover_text = '<br><b>Number of times</b>: %{z}' + '<br><b>Normalized</b>: %{customdata:.3f} <br>' + '<extra></extra>'
+        hover_text = '<br><b>Number of times</b>: %{z}' + '<br><b>Normalized</b>: %{customdata:.3f} <br>'
 
         if normalize:
-            title = 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+            title_text = 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
             z_data = conf_mat_normalized
             custom_data = conf_mat
-            hover_text = '<br><b>Number of times</b>: %{customdata}' + '<br><b>Normalized</b>: %{z:.3f} <br>' + '<extra></extra>'
+            hover_text = '<br><b>Number of times</b>: %{customdata}' + '<br><b>Normalized</b>: %{z:.3f} <br>'
 
-        layout = go.Layout(title={'text': title},
+        layout = go.Layout(title={'text': title_text},
                            xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
                            yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
         figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=z_data,
