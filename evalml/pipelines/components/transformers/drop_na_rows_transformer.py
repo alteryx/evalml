@@ -3,10 +3,10 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 
 
-class DropNaRowsTransformer(Transformer):
-    """Drops rows when a given column has a null value."""
+class DropNaNRowsTransformer(Transformer):
+    """Transformer that drop any rows with a null value."""
 
-    name = 'Drop NA Row Transformer'
+    name = 'Drop NaN Row Transformer'
     hyperparameter_ranges = {}
 
     def __init__(self):
@@ -44,11 +44,11 @@ class DropNaRowsTransformer(Transformer):
 
         # drop rows where corresponding y is NaN
         null_indices = y.index[y.apply(np.isnan)]
-        X = X.drop(index=null_indices)
+        X_t = X.drop(index=null_indices)
 
         # drop any rows with NaN
-        X = X.dropna(axis=0)
-        return X
+        X_t = X_t.dropna(axis=0)
+        return X_t
 
     def fit_transform(self, X, y=None):
         """Fits
