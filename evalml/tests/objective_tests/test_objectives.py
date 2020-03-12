@@ -31,7 +31,7 @@ def test_binary_average(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state':0
+            'random_state': 0
         }
     }
 
