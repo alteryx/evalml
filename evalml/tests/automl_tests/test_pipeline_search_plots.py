@@ -34,6 +34,7 @@ def test_generate_roc(X_y):
                 'Logistic Regression Classifier': {
                     'penalty': 'l2',
                     'C': 0.5,
+                    'random_state': 0
                 }
             }
             pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
