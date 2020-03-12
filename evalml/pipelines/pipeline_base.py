@@ -13,6 +13,7 @@ from evalml.utils import Logger
 
 
 class PipelineBase(ABC):
+    """Base class for all pipelines."""
 
     @property
     @classmethod

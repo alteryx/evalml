@@ -140,7 +140,8 @@ Plotting
    :toctree: generated
    :template: accessor_callable.rst
 
-   PipelineBase.plot
+   PipelineBase.graph
+   PipelineBase.feature_importance_graph
 
 
 .. currentmodule:: evalml.objectives
