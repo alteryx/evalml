@@ -28,6 +28,14 @@ def test_pipeline():
             super().__init__(objective=objective,
                              parameters=parameters)
 
+        @property
+        def feature_importances(self):
+            importances = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
+            feature_names = range(len(importances))
+            f_i = list(zip(feature_names, importances))
+            df = pd.DataFrame(f_i, columns=["feature", "importance"])
+            return df
+
     return TestPipeline(objective='precision', parameters={})
 
 
@@ -72,27 +80,9 @@ def test_feature_importance_plot(X_y, test_pipeline):
     assert isinstance(clf.feature_importance_graph(), go.Figure)
 
 
-def test_feature_importance_plot_show_all_features(X_y):
-
-    class MockPipeline(PipelineBase):
-        name = "Mock Pipeline"
-        component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
-
-        def __init__(self, objective, parameters):
-            super().__init__(objective=objective,
-                             parameters=parameters)
-
-        @property
-        def feature_importances(self):
-            importances = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
-            feature_names = range(len(importances))
-            f_i = list(zip(feature_names, importances))
-            df = pd.DataFrame(f_i, columns=["feature", "importance"])
-            return df
-
+def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
     X, y = X_y
-    clf = MockPipeline(objective='precision', parameters={})
+    clf = test_pipeline
     clf.fit(X, y)
     figure = clf.feature_importance_graph()
     assert isinstance(figure, go.Figure)
