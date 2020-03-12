@@ -50,9 +50,9 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 
     """
     if option == 'true':
-        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1, keepdims=True)
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
     elif option == 'pred':
-        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0, keepdims=True)
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0)
     elif option == 'all':
         conf_mat = conf_mat.astype('float') / conf_mat.sum()
 
