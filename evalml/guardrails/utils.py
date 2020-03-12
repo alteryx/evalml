@@ -29,14 +29,12 @@ def detect_label_leakage(X, y, threshold=.95):
     # only select numeric
     numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
     X = X.select_dtypes(include=numerics)
-    y = y.to_frame()
 
     if len(X.columns) == 0:
         return {}
 
-    corrs = X.corrwith(y).abs()
-    out = corrs[corrs >= threshold]
-    return out.to_dict()
+    corrs = {label: y.corr(col) for label, col in X.iteritems() if y.corr(col) >= threshold}
+    return corrs
 
 
 def detect_highly_null(X, percent_threshold=.95):
