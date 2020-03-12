@@ -8,10 +8,12 @@ executors:
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
+        environment:
+          OMP_NUM_THREADS: 8
 
 commands:
   install_dependencies_test:
@@ -34,7 +36,7 @@ jobs:
       parameters:
         python_version:
           type: string
-          default: "3.7"
+          default: "3.8"
       executor:
         name: python
         python_version: << parameters.python_version >>
@@ -49,7 +51,7 @@ jobs:
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
       miniconda_pkg_name:
         type: string
         default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
@@ -123,7 +125,7 @@ jobs:
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
       codecov:
         type: boolean
         default: false
@@ -161,7 +163,7 @@ jobs:
   build_docs:
     working_directory: ~/evalml/
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
     steps:
       - checkout
       - install_dependencies_dev
@@ -172,7 +174,7 @@ jobs:
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
     executor:
       name: python
       python_version: << parameters.python_version >>
@@ -224,11 +226,17 @@ workflows:
             filters:
               branches:
                 only: master
+        - win_unit_tests:
+            name: "windows python 3.8 unit tests"
+            python_version: "3.8"
+            filters:
+              branches:
+                only: master
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
-            name: "linux python 3.7 check dependencies for updates"
-            python_version: "3.7"
+            name: "linux python 3.8 check dependencies for updates"
+            python_version: "3.8"
             filters:
               branches:
                 ignore: /^master?/
@@ -240,10 +248,16 @@ workflows:
         - lint_test:
             name: "python 3.7 lint test"
             python_version: "3.7"
+        - lint_test:
+            name: "python 3.8 lint test"
+            python_version: "3.8"
         - unit_tests:
             name: "linux python 3.6 unit tests"
             python_version: "3.6"
         - unit_tests:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
+        - unit_tests:
+            name: "linux python 3.8 unit tests"
+            python_version: "3.8"
             codecov: true

@@ -4,12 +4,22 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.7.0 Mar. 9, 2020**
+    * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
         * Added PipelineBase graph and feature_importance_graph methods, moved from previous location :pr:`423`
+        * Added support for python 3.8 :pr:`462`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
         * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
