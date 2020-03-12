@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.utils.gen_utils import (
@@ -47,4 +48,20 @@ def test_normalize_confusion_matrix():
         assert col_sum == 1.0 or col_sum == 0.0
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
+    assert conf_mat_normalized.sum() == 1.0
+
+    # testing with pd.DataFrames
+    conf_mat_df = pd.DataFrame()
+    conf_mat_df["col_1"] = [0, 1, 2]
+    conf_mat_df["col_2"] = [0, 0, 3]
+    conf_mat_df["col_3"] = [2, 0, 0]
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df)
+    assert all(conf_mat_normalized.sum(axis=1) == 1.0)
+    assert list(conf_mat_normalized.columns) == ['col_1', 'col_2', 'col_3']
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'pred')
+    for col_sum in conf_mat_normalized.sum(axis=0):
+        assert col_sum == 1.0 or col_sum == 0.0
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
     assert conf_mat_normalized.sum() == 1.0

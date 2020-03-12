@@ -44,23 +44,24 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 
     Arguments:
         conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
-        option ({'true', 'pred', 'all'}): Option to normalize over the true (rows), predicted (columns) or all values. Defaults to 'true'.
+        option ({'true', 'pred', 'all', None}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. If option is None, returns original confusion matrix. Defaults to 'true'.
 
     Returns:
         A normalized version of the input confusion matrix.
 
     """
-    column_names = None
-    if isinstance(conf_mat, pd.DataFrame):
-        column_names = conf_mat.columns
-    if option == 'true':
+    if option is None:
+        return conf_mat
+    elif option == 'true':
         conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
     elif option == 'pred':
         conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0)
     elif option == 'all':
-        conf_mat = conf_mat.astype('float') / conf_mat.sum()
+        conf_mat = conf_mat.astype('float') / conf_mat.sum().sum()
 
-    conf_mat = np.nan_to_num(conf_mat)
-    if column_names is not None:
-        conf_mat = pd.DataFrame(conf_mat, columns=column_names)
+    if isinstance(conf_mat, pd.DataFrame):
+        conf_mat = conf_mat.fillna(0)
+    else:
+        conf_mat = np.nan_to_num(conf_mat)
+
     return conf_mat
