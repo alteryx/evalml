@@ -6,7 +6,7 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
     """Load features and labels from file(s).
 
     Args:
-        path (str) : path to file(s) or a http/ftp/s3 URL
+        path (str) : path to file or a http/ftp/s3 URL
         index (str) : column for index
         label (str) : column for labels
         n_rows (int) : number of rows to return
