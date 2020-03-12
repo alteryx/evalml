@@ -1,6 +1,7 @@
 import importlib
 
 import numpy as np
+import pandas as pd
 
 
 def import_or_raise(library, error_msg=None):
@@ -49,6 +50,9 @@ def normalize_confusion_matrix(conf_mat, option='true'):
         A normalized version of the input confusion matrix.
 
     """
+    column_names = None
+    if isinstance(conf_mat, pd.DataFrame):
+        column_names = conf_mat.columns
     if option == 'true':
         conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
     elif option == 'pred':
@@ -57,4 +61,6 @@ def normalize_confusion_matrix(conf_mat, option='true'):
         conf_mat = conf_mat.astype('float') / conf_mat.sum()
 
     conf_mat = np.nan_to_num(conf_mat)
+    if column_names is not None:
+        conf_mat = pd.DataFrame(conf_mat, columns=column_names)
     return conf_mat
