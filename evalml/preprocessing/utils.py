@@ -1,5 +1,4 @@
 import pandas as pd
-from dask import dataframe as dd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
@@ -17,22 +16,12 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
     Returns:
         pd.DataFrame, pd.Series : features and labels
     """
-    if '*' in path:
-        feature_matrix = dd.read_csv(path, **kwargs).set_index(index, sorted=True)
 
-        labels = [label] + (drop or [])
-        y = feature_matrix[label].compute()
-        X = feature_matrix.drop(labels=labels, axis=1).compute()
+    feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
-        if n_rows:
-            X = X.head(n_rows)
-            y = y.head(n_rows)
-    else:
-        feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
-
-        labels = [label] + (drop or [])
-        y = feature_matrix[label]
-        X = feature_matrix.drop(columns=labels)
+    labels = [label] + (drop or [])
+    y = feature_matrix[label]
+    X = feature_matrix.drop(columns=labels)
 
     if verbose:
         # number of features
