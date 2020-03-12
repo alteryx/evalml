@@ -1,6 +1,11 @@
+import numpy as np
 import pytest
 
-from evalml.utils.gen_utils import convert_to_seconds, import_or_raise
+from evalml.utils.gen_utils import (
+    convert_to_seconds,
+    import_or_raise,
+    normalize_confusion_matrix
+)
 
 
 def test_import_or_raise_errors():
@@ -30,3 +35,9 @@ def test_convert_to_seconds():
     assert convert_to_seconds("10 hr") == 36000
     assert convert_to_seconds("10 hour") == 36000
     assert convert_to_seconds("10 hours") == 36000
+
+
+def test_normalize_confusion_matrix():
+    conf_mat = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat)
+    assert all(conf_mat_normalized.sum(axis=1) == 1.0)

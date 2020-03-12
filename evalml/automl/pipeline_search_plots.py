@@ -5,6 +5,7 @@ from IPython.display import display
 from scipy import interp
 
 from evalml.problem_types import ProblemTypes
+from evalml.utils import normalize_confusion_matrix
 
 
 class SearchIterationPlot():
@@ -194,21 +195,9 @@ class PipelineSearchPlots:
             # reverse columns in confusion matrix to change axis order to match sklearn's
             conf_mat = conf_mat.iloc[:, ::-1]
             if normalize:
-                conf_mat = self.normalize_confusion_matrix(conf_mat)
+                conf_mat = normalize_confusion_matrix(conf_mat)
             confusion_matrix_data.append(conf_mat)
         return confusion_matrix_data
-
-    def normalize_confusion_matrix(self, conf_mat):
-        """Normalizes a confusion matrix.
-
-        Arguments:
-            conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
-
-        Returns:
-            A normalized version of the input confusion matrix.
-
-        """
-        return conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
 
     def generate_confusion_matrix(self, pipeline_id, fold_num=None, normalize=False):
         """Generate confusion matrix plot for a given pipeline using the data returned from get_confusion_matrix_data().
@@ -223,6 +212,8 @@ class PipelineSearchPlots:
 
         """
         data = self.get_confusion_matrix_data(pipeline_id, normalize=False)
+        data_normalized = self.get_confusion_matrix_data(pipeline_id, normalize=True)
+
         results = self.data.results['pipeline_results']
         pipeline_name = results[pipeline_id]["pipeline_name"]
         # defaults to last fold if none specified. May need to think of better approach.
@@ -230,37 +221,33 @@ class PipelineSearchPlots:
             fold_num = -1
 
         conf_mat = data[fold_num]
-        conf_mat_normalized = self.normalize_confusion_matrix(conf_mat)
+        conf_mat_normalized = data_normalized[fold_num]
 
         labels = conf_mat.columns
         reversed_labels = labels[::-1]
 
+        title = 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+        z_data = conf_mat
+        custom_data = conf_mat_normalized
+        hover_text = '<br><b>Number of times</b>: %{z}' + '<br><b>Normalized</b>: %{customdata:.3f} <br>' + '<extra></extra>'
+
         if normalize:
-            layout = go.Layout(title={'text': 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                               xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                               yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
-            figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat_normalized,
-                                               customdata=conf_mat,
-                                               hovertemplate='<b>True</b>: %{y}' +
-                                               '<br><b>Predicted</b>: %{x}' +
-                                               '<br><b>Number of times</b>: %{customdata}' +
-                                               '<br><b>Normalized</b>: %{z} <br>' +
-                                               '<extra></extra>',  # necessary to remove unwanted trace info
-                                               colorscale='Blues'),
-                               layout=layout)
-        else:
-            layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                               xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                               yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
-            figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=conf_mat,
-                                               customdata=conf_mat_normalized,
-                                               hovertemplate='<b>True</b>: %{y}' +
-                                               '<br><b>Predicted</b>: %{x}' +
-                                               '<br><b>Number of times</b>: %{z}' +
-                                               '<br><b>Normalized</b>: %{customdata:.3f} <br>' +
-                                               '<extra></extra>',  # necessary to remove unwanted trace info
-                                               colorscale='Blues'),
-                               layout=layout)
+            title = 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+            z_data = conf_mat_normalized
+            custom_data = conf_mat
+            hover_text = '<br><b>Number of times</b>: %{customdata}' + '<br><b>Normalized</b>: %{z:.3f} <br>' + '<extra></extra>'
+
+        layout = go.Layout(title={'text': title},
+                           xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                           yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
+        figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=z_data,
+                                           customdata=custom_data,
+                                           hovertemplate='<b>True</b>: %{y}' +
+                                           '<br><b>Predicted</b>: %{x}' +
+                                           hover_text +
+                                           '<extra></extra>',  # necessary to remove unwanted trace info
+                                           colorscale='Blues'),
+                           layout=layout)
         return figure
 
     def search_iteration_plot(self, interactive_plot=False):
