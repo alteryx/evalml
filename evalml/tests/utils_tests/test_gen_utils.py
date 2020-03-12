@@ -64,4 +64,4 @@ def test_normalize_confusion_matrix():
         assert col_sum == 1.0 or col_sum == 0.0
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
-    assert conf_mat_normalized.sum() == 1.0
+    assert conf_mat_normalized.sum().sum() == 1.0

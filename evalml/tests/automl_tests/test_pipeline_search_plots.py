@@ -152,7 +152,7 @@ def test_generate_confusion_matrix(X_y):
         assert all(label in y for label in labels)
         assert (cm.to_numpy().sum() == y_test_lens[i])
 
-    cm_data_normalized = search_plots.get_confusion_matrix_data(0, normalize=True)
+    cm_data_normalized = search_plots.get_confusion_matrix_data(0, normalize='true')
     for i, cm_normalized in enumerate(cm_data_normalized):
         labels = cm_normalized.columns
         assert all(label in y for label in labels)
