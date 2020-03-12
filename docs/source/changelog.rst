@@ -7,7 +7,7 @@ Changelog
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
-        * Remove version cap on Pandas :pr:`486`
+        * Support pandas 1.0.0 :pr:`486`
     * Documentation Changes
     * Testing Changes
 
