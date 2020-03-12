@@ -227,15 +227,20 @@ class AutoBase:
             component_parameters = {}
             component_class = component.__class__
 
+            # Inspects each component and adds the following parameters when needed
             if 'random_state' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['random_state'] = self.random_state
             if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['number_features'] = number_features
+
+            # Inspects each component and checks the parameters list for the right parameters
+            # Sk_opt tuner returns a list of (name, value) tuples so must be accessed as follows
             for parameter in parameters:
                 if parameter[0] in inspect.signature(component_class.__init__).parameters:
                     component_parameters[parameter[0]] = parameter[1]
+
             new_parameters[component.name] = component_parameters
         return new_parameters
 
