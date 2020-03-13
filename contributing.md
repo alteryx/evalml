@@ -73,10 +73,12 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 * Keep things simple. Any complexity must be justified in order to pass code review.
 * Be aware that while we love fancy python magic, there's usually a simpler solution which is easier to understand!
 * Make PRs as small as possible! Consider breaking your large changes into separate PRs. This will make code review easier, quicker, less bug-prone and more effective.
-* In the name of every branch you create, include your initials and the associated issue number if applicable.
+* In the name of every branch you create, include the associated issue number if applicable.
 * If new changes are added to the branch you're basing your changes off of, consider using `git rebase -i base_branch` rather than merging the base branch, to keep history clean.
 * Always include a docstring for public methods and classes. Consider including docstrings for private methods too.
-* Any code which doesn't need to be public should be private, and prefixed with an underscore. Use static and class methods where applicable, to indicate no side effects.
+* Use [PascalCase (upper camel case)](https://en.wikipedia.org/wiki/Camel_case#Variations_and_synonyms) for class names, and [snake_case](https://en.wikipedia.org/wiki/Snake_case) for method and class member names.
+* To distinguish private methods and class attributes from public ones, those which are private should be prefixed with an underscore
+* Any code which doesn't need to be public should be private. Use `@staticmethod` and `@classmethod` where applicable, to indicate no side effects.
 * Only call public methods in unit tests.
 * All code must have unit test coverage. Use mocking and monkey-patching when necessary.
 * Keep unit tests as fast as possible. In particular, avoid calling `fit`. Mocking can help with this.
