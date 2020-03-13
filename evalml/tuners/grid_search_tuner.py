@@ -10,7 +10,7 @@ class GridSearchTuner(Tuner):
     """Grid Search Optimizer
 
     Example:
-        >>> tuner = GridSearchTuner([(1,10)], n_points=5)
+        >>> tuner = GridSearchTuner([(1,10), ['A', 'B']], n_points=5)
         >>> print(tuner.propose())
         (1.0, 'A')
         >>> print(tuner.propose())
@@ -55,7 +55,8 @@ class GridSearchTuner(Tuner):
         self._grid_points = itertools.product(*raw_dimensions)
 
     def add(self, parameters, score):
-        """Not applicable to grid search tuner.
+        """Not applicable to grid search tuner as generated parameters are
+        not dependent on scores of previous parameters.
 
         Arguments:
             parameters: Hyperparameters used

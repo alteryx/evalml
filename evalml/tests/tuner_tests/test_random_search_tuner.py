@@ -41,7 +41,7 @@ random_state = 0
 
 
 def test_random_search_tuner_unique_values(test_space):
-    tuner = RandomSearchTuner(test_space, random_state=0, check_duplicates=True)
+    tuner = RandomSearchTuner(test_space, random_state=0, with_replacement=True)
     generated_parameters = set()
     for i in range(10):
         params = tuner.propose()
@@ -50,7 +50,7 @@ def test_random_search_tuner_unique_values(test_space):
 
 
 def test_random_search_tuner_no_params(test_space_small):
-    tuner = RandomSearchTuner(test_space_small, random_state=0, check_duplicates=True)
+    tuner = RandomSearchTuner(test_space_small, random_state=0, with_replacement=True)
     generated_parameters = set()
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     with pytest.raises(NoParamsException, match=error_text):

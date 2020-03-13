@@ -9,47 +9,60 @@ class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
-        >>> tuner = RandomSearchTuner([(1,10)], check_duplicates=False)
+        >>> tuner = RandomSearchTuner([(1,10), ['A', 'B']], random_state=0)
+        >>> print(tuner.propose())
+        (6, 'B')
+        >>> print(tuner.propose())
+        (4, 'B')
+        >>> print(tuner.propose())
+        (5, 'A')
     """
 
-    def __init__(self, space, random_state=None, check_duplicates=True):
-        """ Sets up check for duplication if needed
+    def __init__(self, space, random_state=None, with_replacement=False, replacement_max_attempts=10):
+        """ Sets up check for duplication if needed.
 
         Arguments:
             space: A list of all dimensions available to tune
             random_state: Unused in this class
-            check_duplicates: A boolean that determines if hyperparameters should be unique
+            with_replacement: If false, only unique hyperparameters will be shown
+            replacement_max_attempts: The maximum number of tries to get a unique
+                set of random parameters. Only used if tuner is initalized with
+                with_replacement=True
         """
-        self.space = Space(space)
-        self.random_state = RandomState(random_state)
-        self.check_duplicates = check_duplicates
-        if self.check_duplicates is True:
-            self.used_parameters = set()
+        self._space = Space(space)
+        self._random_state = RandomState(random_state)
+        self._with_replacement = with_replacement
+        self._replacement_max_attempts = replacement_max_attempts
+        self._used_parameters = set()
+        self._used_parameters.add(())
 
     def add(self, parameters, score):
-        pass
-
-    def propose(self, max_attempts=10):
-        """Generate a unique set of parameters.
+        """Not applicable to random search tuner as generated parameters are
+        not dependent on scores of previous parameters.
 
         Arguments:
-            max_attempts (Object): The maximum number of tries to get a unique
-                set of random parameters. Only used if tuner is initalized with
-                self.check_duplicates=True
+            parameters: Hyperparameters used
+            score: Associated score
+        """
+        pass
+
+    def _get_sample(self):
+        return tuple(self._space.rvs(random_state=self._random_state)[0])
+
+    def propose(self):
+        """Generate a unique set of parameters.
 
         Returns:
             A list of unique parameters
         """
-        curr_parameters = self.space.rvs(random_state=self.random_state)[0]
-        if self.check_duplicates is True:
-            param_tuple = tuple(curr_parameters)
-            attempts = 0
-            while param_tuple in self.used_parameters and attempts < max_attempts:
-                attempts += 1
-                curr_parameters = self.space.rvs(random_state=self.random_state)[0]
-                param_tuple = tuple(curr_parameters)
-            if attempts >= max_attempts:
+        if self._with_replacement:
+            return self._get_sample()
+        curr_params = ()
+        attempts = 0
+        while curr_params in self._used_parameters:
+            if attempts >= self._replacement_max_attempts:
                 raise NoParamsException("Cannot create a unique set of unexplored parameters. Try expanding the search space.")
-            else:
-                self.used_parameters.add(param_tuple)
-        return curr_parameters
+            attempts += 1
+            curr_params = self._get_sample()
+        self._used_parameters.add(curr_params)
+        return curr_params
