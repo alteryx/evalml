@@ -14,12 +14,28 @@ from evalml.utils import import_or_raise
 def test_xg_init(X_y):
     X, y = X_y
 
-    clf = XGBoostBinaryPipeline(eta=0.2, min_child_weight=3, max_depth=5, impute_strategy='median',
-                                percent_features=1.0, number_features=len(X[0]), n_estimators=10, random_state=1)
-    expected_parameters = {'impute_strategy': 'median', 'percent_features': 1.0, 'threshold': -np.inf,
-                           'eta': 0.2, 'max_depth': 5, 'min_child_weight': 3, 'n_estimators': 10}
-    assert clf.parameters == expected_parameters
-    assert clf.random_state == 1
+    objective = PrecisionMicro()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+
+    assert clf.parameters == parameters
 
 
 def test_xg_multi(X_y_multi):
@@ -45,7 +61,25 @@ def test_xg_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = XGBoostMulticlassPipeline(eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), n_estimators=10)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 3,
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 10,
+            "eta": 0.1,
+            "min_child_weight": 1,
+            "max_depth": 3
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -68,8 +102,26 @@ def test_xg_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = XGBoostBinaryPipeline(eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns), n_estimators=10)
-    clf.fit(X, y, objective)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": X.shape[1],
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

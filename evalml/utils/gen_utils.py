@@ -1,5 +1,8 @@
 import importlib
 
+import numpy as np
+import pandas as pd
+
 
 def import_or_raise(library, error_msg=None):
     '''
@@ -34,3 +37,31 @@ def convert_to_seconds(input_str):
     else:
         msg = "Invalid unit. Units must be hours, mins, or seconds. Received '{}'".format(unit)
         raise AssertionError(msg)
+
+
+def normalize_confusion_matrix(conf_mat, option='true'):
+    """Normalizes a confusion matrix.
+
+    Arguments:
+        conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
+        option ({'true', 'pred', 'all', None}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. If option is None, returns original confusion matrix. Defaults to 'true'.
+
+    Returns:
+        A normalized version of the input confusion matrix.
+
+    """
+    if option is None:
+        return conf_mat
+    elif option == 'true':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
+    elif option == 'pred':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0)
+    elif option == 'all':
+        conf_mat = conf_mat.astype('float') / conf_mat.sum().sum()
+
+    if isinstance(conf_mat, pd.DataFrame):
+        conf_mat = conf_mat.fillna(0)
+    else:
+        conf_mat = np.nan_to_num(conf_mat)
+
+    return conf_mat

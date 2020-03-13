@@ -6,10 +6,12 @@ from evalml.pipelines.components.utils import __COMPONENTS, __components_dict
 
 def test_components_dict():
     components_dict = __components_dict()
-    assert len(components_dict) == 10
+    assert len(components_dict) == 12
     names = list(components_dict.keys())
     names.sort()
     assert names == [
+        'CatBoost Classifier',
+        'CatBoost Regressor',
         'Linear Regressor',
         'Logistic Regression Classifier',
         'One Hot Encoder',

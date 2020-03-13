@@ -12,11 +12,22 @@ from evalml.pipelines import (
 
 
 def test_catboost_init():
-    clf = CatBoostBinaryClassificationPipeline(impute_strategy='most_frequent', n_estimators=500,
-                                               bootstrap_type='Bernoulli', eta=0.1, number_features=0, max_depth=3, random_state=2)
-    expected_parameters = {'impute_strategy': 'most_frequent', 'eta': 0.1, 'n_estimators': 500, 'max_depth': 3, 'bootstrap_type': 'Bernoulli'}
-    assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
+    objective = PrecisionMicro()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 500,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+            "random_state": 2
+        }
+    }
+    clf = CatBoostClassificationPipeline(parameters=parameters)
+
+    assert clf.parameters == parameters
 
 
 def test_catboost_multi(X_y_multi):
@@ -30,9 +41,20 @@ def test_catboost_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = CatBoostMulticlassClassificationPipeline(impute_strategy='mean', n_estimators=1000, bootstrap_type='Bayesian',
-                                                   number_features=X.shape[1], eta=0.03, max_depth=6, random_state=0)
-    clf.fit(X, y)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 500,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+
+    clf = CatBoostClassificationPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -54,8 +76,18 @@ def test_catboost_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = CatBoostBinaryClassificationPipeline(impute_strategy='mean', n_estimators=1000, eta=0.03,
-                                               bootstrap_type='Bayesian', number_features=len(X.columns), max_depth=6, random_state=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 1000,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.03,
+            "max_depth": 6,
+        }
+    }
+    clf = CatBoostClassificationPipeline(parameters=parameters)
     clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
@@ -66,8 +98,18 @@ def test_catboost_input_feature_names(X_y):
 def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     objective = PrecisionMicro()
-    clf = CatBoostBinaryClassificationPipeline(impute_strategy='most_frequent',
-                                               number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 500,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+    clf = CatBoostClassificationPipeline(parameters=parameters)
     clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

@@ -197,6 +197,7 @@ def test_estimator_not_last(X_y):
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
         MockLogisticRegressionPipeline(parameters=parameters)
+>>>>>> > 873b5137... starting to fix merge conflicts, still more to go
 
 
 def test_multi_format_creation(X_y):

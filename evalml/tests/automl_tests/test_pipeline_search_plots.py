@@ -25,8 +25,18 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
-                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            objective = 'ROC'
+            parameters = {
+                'Simple Imputer': {
+                    'impute_strategy': 'mean'
+                },
+                'Logistic Regression Classifier': {
+                    'penalty': 'l2',
+                    'C': 0.5,
+                    'random_state': 0
+                }
+            }
+            pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -98,8 +108,18 @@ def test_generate_confusion_matrix(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=0.5,
-                                                        impute_strategy='mean', number_features=len(X[0]), random_state=1)
+            objective = 'confusion_matrix'
+            parameters = {
+                'Simple Imputer': {
+                    'impute_strategy': 'mean'
+                },
+                'Logistic Regression Classifier': {
+                    'penalty': 'l2',
+                    'C': 0.5,
+                    'random_state': 0
+                }
+            }
+            pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -134,11 +154,22 @@ def test_generate_confusion_matrix(X_y):
         search_plots.generate_confusion_matrix(1)
 
     cm_data = search_plots.get_confusion_matrix_data(0)
+
     for i, cm in enumerate(cm_data):
         labels = cm.columns
         assert all(label in y for label in labels)
         assert (cm.to_numpy().sum() == y_test_lens[i])
+
+    cm_data_normalized = search_plots.get_confusion_matrix_data(0, normalize='true')
+    for i, cm_normalized in enumerate(cm_data_normalized):
+        labels = cm_normalized.columns
+        assert all(label in y for label in labels)
+        assert all(cm_normalized.sum(axis=1) == 1.0)
+
     fig = search_plots.generate_confusion_matrix(0)
+    assert isinstance(fig, type(go.Figure()))
+
+    fig = search_plots.generate_confusion_matrix(0, normalize=True)
     assert isinstance(fig, type(go.Figure()))
 
 
