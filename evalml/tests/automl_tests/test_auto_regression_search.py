@@ -111,7 +111,11 @@ def test_early_stopping(capsys):
 
 def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
-    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    try:
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        assert isinstance(plot, go.Figure)
+    except ImportError:
+        assert plot is None
 
     automl = AutoRegressionSearch(max_pipelines=3)
     automl.search(X, y)
@@ -129,7 +133,11 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
-    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    try:
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        assert isinstance(plot, go.Figure)
+    except ImportError:
+        assert plot is None
 
     automl = AutoRegressionSearch(max_time=10)
     automl.search(X, y, show_iteration_plot=False)

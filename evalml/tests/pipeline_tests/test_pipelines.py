@@ -28,11 +28,29 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_list_model_families():
-    assert set(list_model_families(ProblemTypes.BINARY)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
-    assert set(list_model_families(ProblemTypes.REGRESSION)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
+    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    try:
+        import_or_raise("xgboost", "")
+        expected_model_families_binary.add(ModelFamily.XGBOOST)
+    except ImportError:
+        pass
+    try:
+        import_or_raise("xgboost", "")
+        expected_model_families_binary.add(ModelFamily.CATBOOST)
+        expected_model_families_regression.add(ModelFamily.CATBOOST)
+    except ImportError:
+        pass
+    assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
+    assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_familes_regression
 
 
 def test_all_pipelines():
+    try:
+        import_or_raise("xgboost", "")
+        import_or_raise("catboost", "")
+    except ImportError:
+        return
     assert len(all_pipelines()) == 7
 
 
@@ -51,6 +69,11 @@ def test_all_pipelines_minimal_dependencies():
 
 
 def test_get_pipelines():
+    try:
+        import_or_raise("xgboost", "")
+        import_or_raise("catboost", "")
+    except ImportError:
+        return
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
@@ -64,11 +87,11 @@ def test_get_pipelines():
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_get_pipelines_minimal_dependencies():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
