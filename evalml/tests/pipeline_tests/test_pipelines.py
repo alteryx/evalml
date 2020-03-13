@@ -162,10 +162,24 @@ def test_describe(X_y, lr_pipeline):
     }
 
 
-def test_name(X_y, lr_pipeline):
+def test_name():
+    class TestNamePipeline(PipelineBase):
+        component_graph = ['Logistic Regression']
+        problem_types = ['binary']
+
+    class TestDefinedNamePipeline(PipelineBase):
+        _name = "Cool Logistic Regression"
+        component_graph = ['Logistic Regression']
+        problem_types = ['binary']
+
+    assert TestNamePipeline.name == "Test Name Pipeline"
+    assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
+
+
+def test_summary(X_y, lr_pipeline):
     X, y = X_y
     clf = lr_pipeline
-    assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
