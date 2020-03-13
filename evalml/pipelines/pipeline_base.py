@@ -62,7 +62,6 @@ class PipelineBase(ABC):
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
     @classproperty
@@ -82,16 +81,16 @@ class PipelineBase(ABC):
 
     def _generate_summary(self):
         if self.estimator is not None:
-            name = "{}".format(self.estimator.name)
+            summary = "{}".format(self.estimator.name)
         else:
-            name = "Pipeline"
+            summary = "Pipeline"
         for index, component in enumerate(self.component_graph[:-1]):
             if index == 0:
-                name += " w/ {}".format(component.name)
+                summary += " w/ {}".format(component.name)
             else:
-                name += " + {}".format(component.name)
+                summary += " + {}".format(component.name)
 
-        return name
+        return summary
 
     def _validate_problem_types(self, problem_types):
         """Validates provided `problem_types` against the estimator in `self.component_graph`
@@ -149,7 +148,7 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters if return_dict is True, else None
         """
-        self.logger.log_title(self.logger.log_title(type(self).name))
+        self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
