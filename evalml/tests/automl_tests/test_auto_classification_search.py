@@ -36,7 +36,6 @@ def test_init(X_y):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
-    assert automl.best_pipeline.n_jobs == 4
     # test with datafarmes
     automl.search(pd.DataFrame(X), pd.Series(y))
 

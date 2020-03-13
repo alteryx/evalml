@@ -14,17 +14,28 @@ def test_rf_init(X_y_reg):
     X, y = X_y_reg
 
     objective = R2()
-    clf = RFRegressionPipeline(objective=objective, n_estimators=20, max_depth=5, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), random_state=2)
-    expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0,
-                           'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
-    assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20
+        },
+        'Random Forest Regressor': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    assert clf.parameters == parameters
 
 
 def test_rf_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
 
-    imputer = SimpleImputer(strategy='mean')
+    imputer = SimpleImputer(strategy='most_frequent')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
     estimator = RandomForestRegressor(random_state=0,
                                       n_estimators=10,
@@ -41,7 +52,22 @@ def test_rf_regression(X_y_categorical_regression):
     sk_score = sk_pipeline.score(X, y)
 
     objective = R2()
-    clf = RFRegressionPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=X.shape[1])
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'RF Regressor Select From Model': {
+            "percent_features": 1.0,
+            "number_features": X.shape[1],
+            "n_estimators": 10,
+            "max_depth": 3,
+        },
+        'Random Forest Regressor': {
+            "n_estimators": 10,
+            "max_depth": 3,
+        }
+    }
+    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -56,7 +82,21 @@ def test_rfr_input_feature_names(X_y_reg):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = R2()
-    clf = RFRegressionPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": X.shape[1],
+            "n_estimators": 20
+        },
+        'Random Forest Regressor': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
