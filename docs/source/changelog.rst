@@ -4,10 +4,12 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Add normalization option and information to confusion matrix :pr:`484`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
     * Documentation Changes
+        * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`
 
