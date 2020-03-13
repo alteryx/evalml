@@ -2,7 +2,6 @@ import time
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
@@ -19,6 +18,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
+from evalml.utils import import_or_raise
 
 
 def test_init(X_y):
@@ -300,7 +300,11 @@ def test_plot_iterations_max_pipelines(X_y):
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
 
-    assert isinstance(plot, go.Figure)
+    try:
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        assert isinstance(plot, go.Figure)
+    except ImportError:
+        assert plot is None
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
     assert len(x) == 3
@@ -309,6 +313,8 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
+    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
     automl = AutoClassificationSearch(objective="f1", max_time=10)
     automl.search(X, y, show_iteration_plot=False, raise_errors=True)
     plot = automl.plot.search_iteration_plot()

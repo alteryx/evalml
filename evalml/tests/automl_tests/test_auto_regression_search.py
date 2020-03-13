@@ -1,13 +1,13 @@
 import time
 
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
+from evalml.utils import import_or_raise
 
 
 @pytest.fixture
@@ -111,6 +111,7 @@ def test_early_stopping(capsys):
 
 def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
+    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
     automl = AutoRegressionSearch(max_pipelines=3)
     automl.search(X, y)
@@ -128,6 +129,8 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
+    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
     automl = AutoRegressionSearch(max_time=10)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
