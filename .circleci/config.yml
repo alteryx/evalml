@@ -168,11 +168,13 @@ jobs:
           condition: << parameters.minimal_dependencies >>
           steps:
             - run: |
+                source test_python/bin/activate
                 make circleci-test-minimal
       - unless:
           condition: << parameters.minimal_dependencies >>
           steps:
             - run: |
+                source test_python/bin/activate
                 make circleci-test
       - store_test_results:
           path: test-reports
