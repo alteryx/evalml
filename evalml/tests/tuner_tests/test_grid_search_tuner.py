@@ -60,34 +60,37 @@ def test_grid_search_tuner_no_params(test_space_small):
 
 
 def test_grid_search_tuner_basic(test_space, test_space_unicode):
-    tuner = GridSearchTuner(test_space, random_state=random_state)
+    tuner = GridSearchTuner(test_space)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c'])
     tuner.add(proposed_params, 0.5)
 
-    tuner = GridSearchTuner(test_space_unicode, random_state=random_state)
+    tuner = GridSearchTuner(test_space_unicode)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩'])
     tuner.add(proposed_params, 0.5)
 
 
 def test_grid_search_tuner_space_types():
-    tuner = GridSearchTuner([(0, 10)], random_state=random_state)
+    tuner = GridSearchTuner([(0, 10)])
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5.928446182250184])
 
-    tuner = GridSearchTuner([(0, 10.0)], random_state=random_state)
+    tuner = GridSearchTuner([(0, 10.0)])
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5.928446182250184])
 
 
 def test_grid_search_tuner_invalid_space():
-    with pytest.raises(TypeError):
+    iterable_error = '\'bool\' object is not iterable'
+    type_error_text = 'Invalid dimension type in tuner'
+    bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
+    with pytest.raises(TypeError, match=iterable_error):
         GridSearchTuner(False)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=type_error_text):
         GridSearchTuner([(0)])
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=type_error_text):
         GridSearchTuner(((0, 1)))
-    with pytest.raises(TypeError):
-        GridSearchTuner([(0, 0)])
+    with pytest.raises(ValueError, match=bound_error_text):
+        GridSearchTuner([(1, 0)])

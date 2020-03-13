@@ -32,15 +32,15 @@ class GridSearchTuner(Tuner):
         for dimension in space:
             # Categorical dimension
             print(type(dimension))
-            if isinstance(dimension, list):
-                range_values = dimension
-            elif isinstance(dimension, Real) or isinstance(dimension, Integer) or isinstance(dimension, tuple):
-                if isinstance(dimension, tuple) and isinstance(dimension[0], (int, float)) and isinstance(dimension[1], (int, float)):
+            if isinstance(dimension, (Real, Integer, tuple)):
+                if isinstance(dimension, (list, tuple)) and isinstance(dimension[0], (int, float)) and isinstance(dimension[1], (int, float)):
                     if dimension[1] > dimension[0]:
                         low = dimension[0]
                         high = dimension[1]
                     else:
-                        raise TypeError("Invalid dimension type in tuner")
+                        error_text = "Upper bound must be greater than lower bound. Parameter lower bound is {0} and upper bound is {1}"
+                        error_text = error_text.format(dimension[0], dimension[1])
+                        raise ValueError(error_text)
                 else:
                     low = dimension.low
                     high = dimension.high

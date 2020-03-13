@@ -59,7 +59,7 @@ def test_random_search_tuner_no_params(test_space_small):
             generated_parameters.add(tuple(params))
 
 
-def test_grid_search_tuner_basic(test_space, test_space_unicode):
+def test_random_search_tuner_basic(test_space, test_space_unicode):
     tuner = RandomSearchTuner(test_space, random_state=random_state)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
@@ -72,7 +72,7 @@ def test_grid_search_tuner_basic(test_space, test_space_unicode):
     tuner.add(proposed_params, 0.5)
 
 
-def test_grid_search_tuner_space_types():
+def test_random_search_tuner_space_types():
     tuner = RandomSearchTuner([(0, 10)], random_state=random_state)
     proposed_params = tuner.propose()
     assert_params_almost_equal(proposed_params, [5.928446182250184])
@@ -82,7 +82,7 @@ def test_grid_search_tuner_space_types():
     assert_params_almost_equal(proposed_params, [5.928446182250184])
 
 
-def test_grid_search_tuner_invalid_space():
+def test_random_search_tuner_invalid_space():
     with pytest.raises(TypeError):
         RandomSearchTuner(False)
     with pytest.raises(ValueError):
