@@ -11,7 +11,12 @@ class GridSearchTuner(Tuner):
 
     Example:
         >>> tuner = GridSearchTuner([(1,10)], n_points=5)
-        <class 'tuple'>
+        >>> print(tuner.propose())
+        (1.0, 'A')
+        >>> print(tuner.propose())
+        (1.0, 'B')
+        >>> print(tuner.propose())
+        (3.25, 'A')
     """
 
     def __init__(self, space, n_points=10, random_state=None):
@@ -50,6 +55,12 @@ class GridSearchTuner(Tuner):
         self._grid_points = itertools.product(*raw_dimensions)
 
     def add(self, parameters, score):
+        """Not applicable to grid search tuner.
+
+        Arguments:
+            parameters: Hyperparameters used
+            score: Associated score
+        """
         pass
 
     def propose(self):
