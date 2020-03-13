@@ -294,7 +294,7 @@ def test_no_default_parameters():
             self.c = c
 
     class TestPipeline(PipelineBase):
-        component_graph = [MockComponent(a=0)]
+        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
         problem_types = ['binary']
 
         def __init__(self, objective, parameters):
@@ -304,8 +304,10 @@ def test_no_default_parameters():
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={}, objective='precision')
 
+    assert TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision')
 
-def test_initiate_components():
+
+def test_init_components_invalid_parameters():
     class TestPipeline(PipelineBase):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
         problem_types = ['binary']
