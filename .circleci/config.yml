@@ -30,6 +30,21 @@ commands:
             source test_python/bin/activate
             make installdeps
             pip install -r test-requirements.txt
+  install_dependencies_minimal:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            mkdir /tmp/install_dependencies_minimal
+            pip install --upgrade pip -q
+            export blacklist="plotly|ipywidgets"
+            cat requirements.txt | grep -vE $blacklist > /tmp/install_dependencies_minimal/requirements-minimal.txt
+            cp /tmp/install_dependencies_minimal/requirements-minimal.txt requirements.txt
+            pip install -e .  # this installs from requirements.txt via setup.py
+            pip install -r test-requirements.txt
+            pip uninstall --yes plotly # catboost requires plotly, so for now manually uninstall
+      - store_artifacts:
+          path: /tmp/install_dependencies_minimal
 
 jobs:
   lint_test:
@@ -129,13 +144,23 @@ jobs:
       codecov:
         type: boolean
         default: false
+      minimal_dependencies:
+        type: boolean
+        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies_test
+      - when:
+          condition: << parameters.minimal_dependencies >>
+          steps:
+            - install_dependencies_minimal
+      - unless:
+          condition: << parameters.minimal_dependencies >>
+          steps:
+            - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -253,10 +278,17 @@ workflows:
         - unit_tests:
             name: "linux python 3.6 unit tests"
             python_version: "3.6"
+            minimal_dependencies: false
         - unit_tests:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
+            minimal_dependencies: false
         - unit_tests:
             name: "linux python 3.8 unit tests"
             python_version: "3.8"
+            minimal_dependencies: false
             codecov: true
+        - unit_tests:
+            name: "linux python 3.8 unit tests, minimal dependencies"
+            python_version: "3.8"
+            minimal_dependencies: true
