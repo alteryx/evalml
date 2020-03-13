@@ -9,6 +9,7 @@ Changelog
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
+        * Remove unused `return_dict` parameter on describe methods: always return dict :pr:`490`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
     * Testing Changes
