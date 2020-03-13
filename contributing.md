@@ -61,7 +61,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     * API changes - if you change the API update `docs/source/api_reference.rst`
     * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
 
-* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request. Add a description of your PR to the subsection that most closely matches your contribution:
+* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include an entry for your pull request. Write your entry in past tense, i.e. "added fizzbuzz impl." Add a description of your PR to the subsection that most closely matches your contribution:
     * Enhancements: new features or additions to EvalML.
     * Fixes: things like bugfixes or adding more descriptive error messages.
     * Changes: modifications to an existing part of EvalML.
