@@ -371,13 +371,11 @@ class AutoBase:
 
         return self.trained_pipelines[pipeline_id]
 
-    def describe_pipeline(self, pipeline_id, return_dict=False):
+    def describe_pipeline(self, pipeline_id):
         """Describe a pipeline
 
         Arguments:
             pipeline_id (int): pipeline to describe
-            return_dict (bool): If True, return dictionary of information
-                about pipeline. Defaults to False.
 
         Returns:
             Description of specified pipeline. Includes information such as
@@ -423,8 +421,7 @@ class AutoBase:
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             self.logger.log(all_objective_scores)
 
-        if return_dict:
-            return pipeline_results
+        return pipeline_results
 
     @property
     def rankings(self):

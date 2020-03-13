@@ -43,11 +43,11 @@ def test_describe(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
     params = {'param_a': 'value_a', 'param_b': 123}
     component = MockComponent(params, None, random_state=0)
-    assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
+    assert component.describe() == {'name': 'Mock Component', 'parameters': params}
     estimator = MockEstimator(params, None, random_state=0)
-    assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
+    assert estimator.describe() == {'name': 'Mock Estimator', 'parameters': params}
     transformer = MockTransformer(params, None, random_state=0)
-    assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
+    assert transformer.describe() == {'name': 'Mock Transformer', 'parameters': params}
 
 
 def test_describe_component():
@@ -55,10 +55,10 @@ def test_describe_component():
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
-    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {}}
-    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
-    assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
-    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf}}
+    assert enc.describe() == {'name': 'One Hot Encoder', 'parameters': {}}
+    assert imputer.describe() == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
+    assert scaler.describe() == {'name': 'Standard Scaler', 'parameters': {}}
+    assert feature_selection.describe() == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf}}
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
@@ -66,11 +66,11 @@ def test_describe_component():
     xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
-    assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
-    assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
-    assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
-    assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
-    assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
+    assert lr_classifier.describe() == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
+    assert rf_classifier.describe() == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert xgb_classifier.describe() == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    assert rf_regressor.describe() == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
+    assert linear_regressor.describe() == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
 
 
 def test_missing_attributes(X_y):

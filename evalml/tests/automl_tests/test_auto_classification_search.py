@@ -220,7 +220,7 @@ def test_additional_objectives(X_y):
     automl = AutoClassificationSearch(objective='F1', max_pipelines=2, additional_objectives=[objective])
     automl.search(X, y, raise_errors=True)
 
-    results = automl.describe_pipeline(0, return_dict=True)
+    results = automl.describe_pipeline(0)
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 

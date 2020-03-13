@@ -117,14 +117,11 @@ class PipelineBase(ABC):
         """
         return next((component for component in self.component_graph if component.name == name), None)
 
-    def describe(self, return_dict=False):
+    def describe(self):
         """Outputs pipeline details including component parameters
 
-        Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
-
         Returns:
-            dict: dictionary of all component parameters if return_dict is True, else None
+            dict: dictionary of all component parameters
         """
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
@@ -145,8 +142,7 @@ class PipelineBase(ABC):
             self.logger.log(component_string)
             component.describe(print_name=False)
 
-        if return_dict:
-            return self.parameters
+        return self.parameters
 
     def _transform(self, X):
         X_t = X

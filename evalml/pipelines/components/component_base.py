@@ -31,15 +31,14 @@ class ComponentBase:
         except AttributeError:
             raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
 
-    def describe(self, print_name=False, return_dict=False):
-        """Describe a component and its parameters
+    def describe(self, print_name=False):
+        """Describe a component and its parameters.
 
         Arguments:
             print_name(bool, optional): whether to print name of component
-            return_dict(bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
         Returns:
-            None or dict: prints and returns dictionary
+            dict: returns dictionary
         """
         if print_name:
             title = self.name
@@ -47,7 +46,6 @@ class ComponentBase:
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
             self.logger.log(parameter_str)
-        if return_dict:
-            component_dict = {"name": self.name}
-            component_dict.update({"parameters": self.parameters})
-            return component_dict
+        component_dict = {"name": self.name}
+        component_dict.update({"parameters": self.parameters})
+        return component_dict
