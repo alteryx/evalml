@@ -12,6 +12,14 @@ from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
 
 
+class classproperty:
+    def __init__(self, f):
+        self.f = f
+
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
+
 class PipelineBase(ABC):
     """Base class for all pipelines."""
 
@@ -56,8 +64,22 @@ class PipelineBase(ABC):
         self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
-    def _generate_name(self):
-        "Generates name from components in self.component_graph"
+    @classproperty
+    def name(cls):
+        "Returns either `_name` defined on pipeline class or the pipeline class name"
+        try:
+            name = cls._name
+        except AttributeError:
+            rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
+            name = rex.sub(' ', cls.__name__)
+        return name
+
+    @property
+    def summary(self):
+        "Returns string of pipeline structure: `Logistic Regression Classifier w/ ... + ..."
+        return self._generate_summary()
+
+    def _generate_summary(self):
         if self.estimator is not None:
             name = "{}".format(self.estimator.name)
         else:
@@ -126,7 +148,7 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters if return_dict is True, else None
         """
-        self.logger.log_title(self.name)
+        self.logger.log_title(self.logger.log_title(type(self).name))
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
