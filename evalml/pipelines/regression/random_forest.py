@@ -6,7 +6,7 @@ from evalml.pipelines import PipelineBase
 
 class RFRegressionPipeline(PipelineBase):
     """Random Forest Pipeline for regression problems"""
-    name = "Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model"
+    _name = "Random Forest Regression Pipeline"
     model_type = ModelTypes.RANDOM_FOREST
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Regressor Select From Model', 'Random Forest Regressor']
     problem_types = ['regression']
