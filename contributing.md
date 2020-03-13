@@ -92,7 +92,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 * Make the title as short and descriptive as possible.
 * Make sure the body is concise and gets to the point quickly.
 * Check for duplicates before filing.
-* For bugs, a good general outline is: problem summary, root cause if known, symptoms and scope, proposed solution(s), and next steps.
+* For bugs, a good general outline is: problem summary, reproduction steps, symptoms and scope, root cause if known, proposed solution(s), and next steps.
 * If the issue writeup or conversation get too long and hard to follow, consider starting a design document.
 * Use the appropriate labels to help your issue get triaged quickly.
 * Make your issues as actionable as possible. If they track open discussions, consider prefixing the title with "[Discuss]", or refining the issue further before filing.
