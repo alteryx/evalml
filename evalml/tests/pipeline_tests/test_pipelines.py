@@ -1,4 +1,6 @@
 import os
+from importlib import import_module
+from unittest.mock import patch
 
 import pytest
 from skopt.space import Real
@@ -16,6 +18,7 @@ from evalml.pipelines.components import (
     Transformer
 )
 from evalml.pipelines.utils import (
+    all_pipelines,
     get_pipelines,
     list_model_families,
     load_pipeline,
@@ -29,6 +32,24 @@ def test_list_model_families():
     assert set(list_model_families(ProblemTypes.REGRESSION)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
 
 
+def test_all_pipelines():
+    assert len(all_pipelines()) == 7
+
+
+def make_mock_import_module(libs_to_blacklist):
+    def _import_module(library):
+        if library in libs_to_blacklist:
+            print('FOUND ONE: {}'.format(library))
+            raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
+        return import_module(library)
+    return _import_module
+
+
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_all_pipelines_minimal_dependencies():
+    assert len(all_pipelines()) == 4
+
+
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
@@ -36,6 +57,18 @@ def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
+    with pytest.raises(KeyError):
+        get_pipelines(problem_type="Not A Valid Problem Type")
+
+
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_get_pipelines_minimal_dependencies():
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
