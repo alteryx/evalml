@@ -164,7 +164,16 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
-          make circleci-test
+      - when:
+          condition: << parameters.minimal_dependencies >>
+          steps:
+            - run: |
+                make circleci-test-minimal
+      - unless:
+          condition: << parameters.minimal_dependencies >>
+          steps:
+            - run: |
+                make circleci-test
       - store_test_results:
           path: test-reports
       - store_artifacts:
