@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
@@ -36,18 +37,22 @@ class DropNaNRowsTransformer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X_t = X
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if not isinstance(X_t, pd.DataFrame):
+            X_t = pd.DataFrame(X_t)
 
-        # drop rows where corresponding y is NaN
-        null_indices = y.index[y.apply(np.isnan)]
-        X_t = X.drop(index=null_indices)
+        if y is not None:
+            if not isinstance(y, pd.Series):
+                y = pd.Series(y)
+
+            # drop rows where corresponding y is NaN
+            null_indices = y.index[y.apply(np.isnan)]
+            X_t = X_t.drop(index=null_indices)
 
         # drop any rows with NaN
         X_t = X_t.dropna(axis=0)
+
         return X_t
 
     def fit_transform(self, X, y=None):

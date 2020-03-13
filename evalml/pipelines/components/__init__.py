@@ -18,7 +18,9 @@ from .transformers import (
     SimpleImputer,
     StandardScaler,
     FeatureSelector,
-    CategoricalEncoder
+    CategoricalEncoder,
+    DropNaNRowsTransformer
     )
+
 
 from .utils import handle_component

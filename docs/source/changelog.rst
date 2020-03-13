@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
+        * Add transformer to drop rows with NaN values :pr:`487`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
