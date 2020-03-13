@@ -31,8 +31,10 @@ class GridSearchTuner(Tuner):
         raw_dimensions = list()
         for dimension in space:
             # Categorical dimension
-            print(type(dimension))
-            if isinstance(dimension, (Real, Integer, tuple)):
+            if isinstance(dimension, list) and all(isinstance(s, (str, bool)) for s in dimension):
+                range_values = dimension
+            elif isinstance(dimension, (Real, Integer, tuple, list)):
+                print(type(dimension), dimension)
                 if isinstance(dimension, (list, tuple)) and isinstance(dimension[0], (int, float)) and isinstance(dimension[1], (int, float)):
                     if dimension[1] > dimension[0]:
                         low = dimension[0]

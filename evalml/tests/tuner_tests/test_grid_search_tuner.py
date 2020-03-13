@@ -37,11 +37,8 @@ def test_autoreg_grid_search_tuner_no_params(X_y, capsys):
         clf.search(X, y)
 
 
-random_state = 0
-
-
 def test_grid_search_tuner_unique_values(test_space):
-    tuner = GridSearchTuner(test_space, random_state=random_state)
+    tuner = GridSearchTuner(test_space)
     generated_parameters = set()
     for i in range(10):
         params = tuner.propose()
@@ -50,7 +47,7 @@ def test_grid_search_tuner_unique_values(test_space):
 
 
 def test_grid_search_tuner_no_params(test_space_small):
-    tuner = GridSearchTuner(test_space_small, random_state=random_state)
+    tuner = GridSearchTuner(test_space_small)
     generated_parameters = set()
     error_text = "Grid search has exhausted all possible parameters."
     with pytest.raises(NoParamsException, match=error_text):
