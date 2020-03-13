@@ -166,11 +166,22 @@ def test_generate_confusion_matrix(X_y):
         search_plots.generate_confusion_matrix(1)
 
     cm_data = search_plots.get_confusion_matrix_data(0)
+
     for i, cm in enumerate(cm_data):
         labels = cm.columns
         assert all(label in y for label in labels)
         assert (cm.to_numpy().sum() == y_test_lens[i])
+
+    cm_data_normalized = search_plots.get_confusion_matrix_data(0, normalize='true')
+    for i, cm_normalized in enumerate(cm_data_normalized):
+        labels = cm_normalized.columns
+        assert all(label in y for label in labels)
+        assert all(cm_normalized.sum(axis=1) == 1.0)
+
     fig = search_plots.generate_confusion_matrix(0)
+    assert isinstance(fig, type(go.Figure()))
+
+    fig = search_plots.generate_confusion_matrix(0, normalize=True)
     assert isinstance(fig, type(go.Figure()))
 
 
