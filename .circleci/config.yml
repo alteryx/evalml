@@ -37,7 +37,7 @@ commands:
             source test_python/bin/activate
             mkdir /tmp/install_dependencies_minimal
             pip install --upgrade pip -q
-            export blacklist="plotly|ipywidgets"
+            export blacklist="xgboost|catboost|plotly|ipywidgets"
             cat requirements.txt | grep -vE $blacklist > /tmp/install_dependencies_minimal/requirements-minimal.txt
             cp /tmp/install_dependencies_minimal/requirements-minimal.txt requirements.txt
             pip install -e .  # this installs from requirements.txt via setup.py
