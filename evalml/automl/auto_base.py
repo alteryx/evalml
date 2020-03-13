@@ -1,3 +1,4 @@
+import inspect
 import random
 import time
 from collections import OrderedDict
@@ -12,6 +13,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
+from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -38,7 +40,7 @@ class AutoBase:
         self.logger = Logger(self.verbose)
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
-        if self.problem_type not in self.objective.problem_types:
+        if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
         if additional_objectives is not None:
@@ -87,7 +89,6 @@ class AutoBase:
             space = list(p.hyperparameters.items())
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
-
         self._MAX_NAME_LEN = 40
 
         self.plot = PipelineSearchPlots(self)
@@ -214,11 +215,35 @@ class AutoBase:
     def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
-        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
+        if self.objective.problem_type != ProblemTypes.MULTICLASS:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
-            if ProblemTypes.MULTICLASS not in obj.problem_types:
+            if obj.problem_type != ProblemTypes.MULTICLASS:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
+
+    def _transform_parameters(self, pipeline_class, parameters, number_features):
+        new_parameters = {}
+        component_graph = [handle_component(c) for c in pipeline_class.component_graph]
+        for component in component_graph:
+            component_parameters = {}
+            component_class = component.__class__
+
+            # Inspects each component and adds the following parameters when needed
+            if 'random_state' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['random_state'] = self.random_state
+            if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['n_jobs'] = self.n_jobs
+            if 'number_features' in inspect.signature(component_class.__init__).parameters:
+                component_parameters['number_features'] = number_features
+
+            # Inspects each component and checks the parameters list for the right parameters
+            # Sk_opt tuner returns a list of (name, value) tuples so must be accessed as follows
+            for parameter in parameters:
+                if parameter[0] in inspect.signature(component_class.__init__).parameters:
+                    component_parameters[parameter[0]] = parameter[1]
+
+            new_parameters[component.name] = component_parameters
+        return new_parameters
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
@@ -227,11 +252,9 @@ class AutoBase:
 
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(pipeline_class)
+
         # fit an score the pipeline
-        pipeline = pipeline_class(random_state=self.random_state,
-                                  n_jobs=self.n_jobs,
-                                  number_features=X.shape[1],
-                                  **dict(parameters))
+        pipeline = pipeline_class(parameters=self._transform_parameters(pipeline_class, parameters, X.shape[1]))
 
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline_class, parameters)
