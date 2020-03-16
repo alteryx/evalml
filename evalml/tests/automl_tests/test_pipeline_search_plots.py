@@ -25,7 +25,6 @@ def test_generate_roc(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            objective = 'ROC'
             parameters = {
                 'Simple Imputer': {
                     'impute_strategy': 'mean'
@@ -36,7 +35,7 @@ def test_generate_roc(X_y):
                     'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -108,7 +107,6 @@ def test_generate_confusion_matrix(X_y):
             self.problem_type = ProblemTypes.BINARY
 
         def search(self):
-            objective = 'confusion_matrix'
             parameters = {
                 'Simple Imputer': {
                     'impute_strategy': 'mean'
@@ -119,7 +117,7 @@ def test_generate_confusion_matrix(X_y):
                     'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):

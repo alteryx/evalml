@@ -8,7 +8,6 @@ from evalml.pipelines import CatBoostRegressionPipeline
 
 
 def test_catboost_init():
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -20,7 +19,7 @@ def test_catboost_init():
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
+    clf = CatBoostRegressionPipeline(parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -46,9 +45,9 @@ def test_catboost_regression(X_y_reg):
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf = CatBoostRegressionPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
+    clf_score = clf.score(X, y, objective)
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
@@ -69,7 +68,7 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = CatBoostRegressionPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

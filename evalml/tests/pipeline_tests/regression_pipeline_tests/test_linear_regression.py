@@ -13,7 +13,6 @@ from evalml.pipelines import LinearRegressionPipeline
 def test_lr_init(X_y_categorical_regression):
     X, y = X_y_categorical_regression
 
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -23,7 +22,7 @@ def test_lr_init(X_y_categorical_regression):
             'normalize': True,
         }
     }
-    clf = LinearRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LinearRegressionPipeline(parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -50,7 +49,7 @@ def test_linear_regression(X_y_categorical_regression):
             'normalize': False,
         }
     }
-    clf = LinearRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LinearRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -80,8 +79,8 @@ def test_lr_input_feature_names(X_y):
             'normalize': True,
         }
     }
-    clf = LinearRegressionPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = LinearRegressionPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

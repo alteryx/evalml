@@ -16,7 +16,6 @@ from evalml.pipelines import (
 def test_lor_init(X_y):
     X, y = X_y
 
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -26,7 +25,7 @@ def test_lor_init(X_y):
             'C': 0.5,
         }
     }
-    clf = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -59,7 +58,7 @@ def test_lor_multi(X_y_multi):
             'random_state': 1
         }
     }
-    clf = LogisticRegressionMulticlassPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionMulticlassPipeline(parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -93,8 +92,8 @@ def test_lor_input_feature_names(X_y):
         }
     }
 
-    clf = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
 
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

@@ -13,7 +13,6 @@ from evalml.pipelines import RFRegressionPipeline
 def test_rf_init(X_y_reg):
     X, y = X_y_reg
 
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -28,7 +27,7 @@ def test_rf_init(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    clf = RFRegressionPipeline(parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -67,9 +66,9 @@ def test_rf_regression(X_y_categorical_regression):
             "max_depth": 3,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    clf = RFRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_score = clf.score(X, y, objective)
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
@@ -96,8 +95,8 @@ def test_rfr_input_feature_names(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = RFRegressionPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

@@ -16,7 +16,6 @@ from evalml.pipelines import (
 def test_rf_init(X_y):
     X, y = X_y
 
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -32,7 +31,7 @@ def test_rf_init(X_y):
         }
     }
 
-    clf = RFBinaryClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFBinaryClassificationPipeline(parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -71,7 +70,7 @@ def test_rf_multi(X_y_multi):
             "max_depth": 3
         }
     }
-    clf = RFMulticlassClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFMulticlassClassificationPipeline(parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -108,8 +107,8 @@ def test_rf_input_feature_names(X_y):
             "max_depth": 5,
         }
     }
-    clf = RFBinaryClassificationPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = RFBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

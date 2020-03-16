@@ -16,7 +16,7 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
-    problem_types = ['binary', 'multiclass']
+    problem_types = ['binary']
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),
@@ -24,8 +24,7 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
         "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, parameters, objective):
+    def __init__(self, parameters):
 
         # note: impute_strategy must support both string and numeric data
-        super().__init__(parameters=parameters,
-                         objective=objective)
+        super().__init__(parameters=parameters)

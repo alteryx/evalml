@@ -5,11 +5,13 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
-from evalml.pipelines import CatBoostClassificationPipeline
+from evalml.pipelines import (
+    CatBoostBinaryClassificationPipeline,
+    CatBoostMulticlassClassificationPipeline
+)
 
 
 def test_catboost_init():
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -21,7 +23,7 @@ def test_catboost_init():
             "max_depth": 3,
         }
     }
-    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
 
     assert clf.parameters == parameters
 
@@ -49,9 +51,9 @@ def test_catboost_multi(X_y_multi):
         }
     }
 
-    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf = CatBoostMulticlassClassificationPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
+    clf_score = clf.score(X, y, objective)
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
@@ -78,8 +80,8 @@ def test_catboost_input_feature_names(X_y):
             "max_depth": 6,
         }
     }
-    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
@@ -100,7 +102,7 @@ def test_catboost_categorical(X_y_categorical_classification):
             "max_depth": 3,
         }
     }
-    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
-    clf.fit(X, y)
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y, objective)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

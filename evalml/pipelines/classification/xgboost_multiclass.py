@@ -9,7 +9,7 @@ class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
     name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.XGBOOST
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
-    problem_types = ['binary', 'multiclass']
+    problem_types = ['binary']
 
     hyperparameters = {
         "eta": Real(0, 1),
@@ -20,6 +20,5 @@ class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
         "percent_features": Real(.01, 1),
     }
 
-    def __init__(self, parameters, objective):
-        super().__init__(parameters=parameters,
-                         objective=objective)
+    def __init__(self, parameters):
+        super().__init__(parameters=parameters)

@@ -9,7 +9,7 @@ class RFMulticlassClassificationPipeline(MulticlassClassificationPipeline):
     name = "Random Forest Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.RANDOM_FOREST
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'Random Forest Classifier']
-    problem_types = ['binary', 'multiclass']
+    problem_types = ['multiclass']
 
     hyperparameters = {
         "n_estimators": Integer(10, 1000),

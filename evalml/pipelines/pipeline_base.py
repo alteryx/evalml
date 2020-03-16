@@ -26,7 +26,7 @@ class PipelineBase(ABC):
     def problem_types(cls):
         return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
 
-    def __init__(self, parameters, objective):
+    def __init__(self, parameters):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -34,8 +34,6 @@ class PipelineBase(ABC):
             problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
-            objective (ObjectiveBase): the objective to optimize
-
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                 If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
@@ -43,7 +41,6 @@ class PipelineBase(ABC):
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
         self.logger = Logger()
-        self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
         self.parameters = parameters
