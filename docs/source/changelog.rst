@@ -13,6 +13,7 @@ Changelog
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`
+        * Update automated dependency check comment :pr:`497`
 
 
 **v0.7.0 Mar. 9, 2020**
