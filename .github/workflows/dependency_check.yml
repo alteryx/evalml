@@ -24,7 +24,7 @@ jobs:
           title: Automated Latest Dependency Updates
           body: 'This is an auto-generated PR with dependency updates.
 
-          Please don''t delete the dep-update branch because it's needed by the auto-dependency bot.'
+          Please do not delete the dep-update branch because it's needed by the auto-dependency bot.'
           branch: dep-update
           base: master
           reviewers: angela97lin, dsherry, jeremyliweishih
