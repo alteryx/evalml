@@ -51,7 +51,7 @@ def test_catboost_regression(X_y_reg):
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_score[0], decimal=5)
+    np.testing.assert_almost_equal(sk_score, clf_score[objective.name], decimal=5)
 
 
 def test_cbr_input_feature_names(X_y_categorical_regression):
