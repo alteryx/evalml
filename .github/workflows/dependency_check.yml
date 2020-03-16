@@ -22,7 +22,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
-          body: This is an auto-generated PR with dependency updates.
+          body: 'This is an auto-generated PR with dependency updates.
+
+          Please don''t delete the dep-update branch because it's needed by the auto-dependency bot.'
           branch: dep-update
           base: master
           reviewers: angela97lin, dsherry, jeremyliweishih
