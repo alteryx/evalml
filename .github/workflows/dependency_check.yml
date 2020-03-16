@@ -28,4 +28,4 @@ jobs:
           body: This is an auto-generated PR with dependency updates.
           branch: dep-update-test
           base: master
-          team-reviewers: admins, maintainers
+          team-reviewers: evalml
