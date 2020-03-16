@@ -218,7 +218,7 @@ class AutoBase:
         if ProblemTypes.MULTICLASS not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
-            if obj.problem_type != ProblemTypes.MULTICLASS:
+            if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _transform_parameters(self, pipeline_class, parameters, number_features):

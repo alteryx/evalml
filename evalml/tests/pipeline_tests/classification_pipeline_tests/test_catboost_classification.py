@@ -57,7 +57,7 @@ def test_catboost_multi(X_y_multi):
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_score[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
