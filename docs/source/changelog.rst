@@ -9,9 +9,11 @@ Changelog
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
+        * Support pandas 1.0.0 :pr:`486`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
     * Testing Changes
+        * Added automated dependency check PR :pr:`482`
 
 
 **v0.7.0 Mar. 9, 2020**
@@ -34,6 +36,7 @@ Changelog
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
+        * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`

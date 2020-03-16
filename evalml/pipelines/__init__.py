@@ -19,6 +19,7 @@ from .components import (
 )
 
 from .pipeline_base import PipelineBase
+
 from .classification import (
     LogisticRegressionPipeline,
     RFClassificationPipeline,
