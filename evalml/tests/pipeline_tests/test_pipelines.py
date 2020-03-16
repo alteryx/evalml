@@ -147,19 +147,38 @@ def test_indexing(X_y, lr_pipeline):
         clf[:1]
 
 
-def test_describe(X_y, lr_pipeline):
+def test_describe(X_y, capsys, lr_pipeline):
     X, y = X_y
     lrp = lr_pipeline
-    assert lrp.describe(True) == {
+    lrp.describe()
+    out, _ = capsys.readouterr()
+
+    assert "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler" in out
+    assert "Problem Types: Binary Classification, Multiclass Classification" in out
+    assert "Model Type: Linear Model" in out
+    assert "Objective to Optimize: Precision (greater is better)" in out
+
+    for component in lrp.component_graph:
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
+
+
+def test_parameters(X_y, lr_pipeline):
+    X, y = X_y
+    lrp = lr_pipeline
+    params = {
         'Simple Imputer': {
             'impute_strategy': 'median'
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
-            'random_state': 1
         }
     }
+
+    assert params == lrp.parameters
 
 
 def test_name(X_y, lr_pipeline):
