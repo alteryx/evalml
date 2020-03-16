@@ -39,3 +39,4 @@ installdeps: installdeps-test
 dependenciesfile:
 		$(eval whitelist='pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels')
 		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $(whitelist) > $(DEPENDENCY_FILE_PATH)
+		touch tst.txt

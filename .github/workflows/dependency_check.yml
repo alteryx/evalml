@@ -2,6 +2,9 @@ name: Update Dependencies
 on:
   schedule:
       - cron: '30 12 * * *'
+  push:
+    branches:
+      - js_update_reviewers
 jobs:
   update-deps:
     runs-on: ubuntu-latest
