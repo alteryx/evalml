@@ -47,7 +47,6 @@ class PipelineBase(ABC):
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
-        self.parameters = parameters
 
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
@@ -117,15 +116,9 @@ class PipelineBase(ABC):
         """
         return next((component for component in self.component_graph if component.name == name), None)
 
-    def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters
-
-        Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
-
-        Returns:
-            dict: dictionary of all component parameters if return_dict is True, else None
-        """
+    def describe(self):
+        """Outputs pipeline details including component parameters"""
+     
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
@@ -144,9 +137,6 @@ class PipelineBase(ABC):
             component_string = str(number) + ". " + component.name
             self.logger.log(component_string)
             component.describe(print_name=False)
-
-        if return_dict:
-            return self.parameters
 
     def _transform(self, X):
         X_t = X
@@ -298,6 +288,20 @@ class PipelineBase(ABC):
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
         """
         return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
+
+    @property
+    def parameters(self):
+        """Returns parameter dictionary for this pipeline
+
+        Returns:
+            dict: dictionary of all component parameters
+        """
+        params = {}
+        for component in self.component_graph:
+            if component.parameters:
+                params[component.name] = {}
+                params[component.name].update(component.parameters)
+        return params
 
     @property
     def model_type(self):
