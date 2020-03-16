@@ -3,7 +3,11 @@ from colorama import Style
 
 class Logger:
     def __init__(self, verbose=True):
-        self.verbose = True
+        self.verbose = verbose
+
+    @property
+    def verbose(self):
+        return self.verbose
 
     def log(self, msg, color=None, new_line=True):
         if not self.verbose:
