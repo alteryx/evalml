@@ -9,6 +9,7 @@ def test_logger_verbose():
     logger.verbose = True
     assert logger.verbose
 
+
 def test_logger_log(capsys):
     logger = Logger()
     logger.log('Test message')
@@ -25,4 +26,3 @@ def test_logger_log(capsys):
     out, err = capsys.readouterr()
     assert 'Log subtitle' in out
     assert len(err) == 0
-
