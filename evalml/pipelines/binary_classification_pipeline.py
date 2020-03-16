@@ -34,7 +34,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is not None:
             objective = get_objective(objective)
             if objective.needs_fitting:
-                X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
+                X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
 
         self._fit(X, y)
 

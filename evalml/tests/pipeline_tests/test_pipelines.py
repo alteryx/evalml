@@ -273,7 +273,7 @@ def test_problem_types():
             super().__init__(parameters=parameters)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        TestPipeline(parameters={}, objective='precision')
+        TestPipeline(parameters={})
 
 
 def test_no_default_parameters():
@@ -296,9 +296,9 @@ def test_no_default_parameters():
             super().__init__(parameters=parameters)
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={}, objective='precision')
+        TestPipeline(parameters={})
 
-    assert TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision')
+    assert TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
 def test_init_components_invalid_parameters():
@@ -316,7 +316,7 @@ def test_init_components_invalid_parameters():
     }
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
-        TestPipeline(parameters=parameters, objective='precision')
+        TestPipeline(parameters=parameters)
 
 
 def test_correct_parameters(lr_pipeline):

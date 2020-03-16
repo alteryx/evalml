@@ -53,7 +53,7 @@ def test_catboost_multi(X_y_multi):
 
     clf = CatBoostMulticlassClassificationPipeline(parameters=parameters)
     clf.fit(X, y, objective)
-    clf_score = clf.score(X, y, objective)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())

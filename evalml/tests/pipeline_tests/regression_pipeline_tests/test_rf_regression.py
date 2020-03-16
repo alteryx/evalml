@@ -68,7 +68,7 @@ def test_rf_regression(X_y_categorical_regression):
     }
     clf = RFRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
-    clf_score = clf.score(X, y, objective)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)

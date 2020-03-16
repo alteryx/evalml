@@ -47,7 +47,7 @@ def test_catboost_regression(X_y_reg):
     }
     clf = CatBoostRegressionPipeline(parameters=parameters)
     clf.fit(X, y, objective)
-    clf_score = clf.score(X, y, objective)
+    clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
