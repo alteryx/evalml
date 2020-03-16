@@ -118,7 +118,7 @@ class PipelineBase(ABC):
 
     def describe(self):
         """Outputs pipeline details including component parameters"""
-     
+
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
         self.logger.log("Model Type: {}".format(str(self.model_type)))
