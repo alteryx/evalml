@@ -36,7 +36,7 @@ def test_pipeline():
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
-    return TestPipeline(objective='precision', parameters={})
+    return TestPipeline(parameters={})
 
 
 def test_returns_digraph_object(test_pipeline):

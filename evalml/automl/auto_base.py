@@ -215,7 +215,7 @@ class AutoBase:
     def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
-        if self.objective.problem_type != ProblemTypes.MULTICLASS:
+        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
             if obj.problem_type != ProblemTypes.MULTICLASS:
