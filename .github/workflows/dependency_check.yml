@@ -25,4 +25,4 @@ jobs:
           body: This is an auto-generated PR with dependency updates.
           branch: dep-update
           base: master
-          team-reviewers: FeatureLabs/evalml 
+          reviewers: angela97lin, dsherry, jeremyliweishih
