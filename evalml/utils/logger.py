@@ -2,6 +2,11 @@ from colorama import Style
 
 
 class Logger:
+    """Write log messages to stdout.
+
+    Arguments:
+        verbose (bool): If False, suppress log output. Default True.
+    """
     def __init__(self, verbose=True):
         self._verbose = verbose
 
