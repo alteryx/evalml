@@ -2,9 +2,6 @@ name: Update Dependencies
 on:
   schedule:
       - cron: '30 12 * * *'
-  push:
-    branches:
-      - js_update_reviewers
 jobs:
   update-deps:
     runs-on: ubuntu-latest
@@ -26,6 +23,6 @@ jobs:
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
           body: This is an auto-generated PR with dependency updates.
-          branch: dep-update-test
+          branch: dep-update
           base: master
           reviewers: angela97lin, dsherry, jeremyliweishih
