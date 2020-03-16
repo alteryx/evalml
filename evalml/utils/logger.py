@@ -8,15 +8,7 @@ class Logger:
         verbose (bool): If False, suppress log output. Default True.
     """
     def __init__(self, verbose=True):
-        self._verbose = verbose
-
-    @property
-    def verbose(self):
-        return self._verbose
-
-    @verbose.setter
-    def verbose(self, verbose):
-        self._verbose = verbose
+        self.verbose = verbose
 
     def log(self, msg, color=None, new_line=True):
         if not self.verbose:
