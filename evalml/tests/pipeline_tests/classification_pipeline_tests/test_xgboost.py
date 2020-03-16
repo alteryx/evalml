@@ -33,7 +33,7 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostBinaryPipeline(objective=objective, parameters=parameters)
 
     assert clf.parameters == parameters
 
@@ -79,7 +79,7 @@ def test_xg_multi(X_y_multi):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostMulticlassPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -120,7 +120,7 @@ def test_xg_input_feature_names(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostBinaryPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

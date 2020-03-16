@@ -124,7 +124,7 @@ Pipelines
     PipelineBase
     RFClassificationPipeline
     XGBoostPipeline
-    LogisticRegressionPipeline
+    LogisticRegressionBinaryPipeline
     RFRegressionPipeline
     LinearRegressionPipeline
 

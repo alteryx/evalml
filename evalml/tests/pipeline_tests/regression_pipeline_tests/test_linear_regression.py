@@ -71,6 +71,10 @@ def test_lr_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = R2()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,

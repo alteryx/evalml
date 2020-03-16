@@ -2,8 +2,6 @@ from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
 from evalml.pipelines import BinaryClassificationPipeline
-from evalml.pipelines.components import CatBoostClassifier, SimpleImputer
-from evalml.problem_types import ProblemTypes
 
 
 class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):

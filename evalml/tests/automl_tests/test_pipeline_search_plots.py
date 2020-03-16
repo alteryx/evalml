@@ -36,7 +36,7 @@ def test_generate_roc(X_y):
                     'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -119,7 +119,7 @@ def test_generate_confusion_matrix(X_y):
                     'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):

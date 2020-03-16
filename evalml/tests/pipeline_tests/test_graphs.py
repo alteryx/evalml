@@ -41,7 +41,7 @@ def test_pipeline():
 
 def test_returns_digraph_object(test_pipeline):
     clf = test_pipeline
-    graph = test_pipeline.graph()
+    graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
 
 

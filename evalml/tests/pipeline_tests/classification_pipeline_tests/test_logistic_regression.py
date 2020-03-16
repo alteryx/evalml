@@ -26,7 +26,7 @@ def test_lor_init(X_y):
             'C': 0.5,
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -59,7 +59,7 @@ def test_lor_multi(X_y_multi):
             'random_state': 1
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionMulticlassPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -93,7 +93,7 @@ def test_lor_input_feature_names(X_y):
         }
     }
 
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
 
     assert len(clf.feature_importances) == len(X.columns)

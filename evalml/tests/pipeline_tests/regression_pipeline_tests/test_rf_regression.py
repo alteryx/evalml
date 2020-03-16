@@ -69,20 +69,11 @@ def test_rf_regression(X_y_categorical_regression):
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
-    clf_scores = clf.score(X, y, [objective])
+    clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
+
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
-
-    # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-    # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(sk_score, clf_score[0], decimal=5)
 
 
 def test_rfr_input_feature_names(X_y_reg):

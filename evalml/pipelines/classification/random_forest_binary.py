@@ -1,7 +1,7 @@
 from skopt.space import Integer, Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines import MulticlassClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 class RFBinaryClassificationPipeline(BinaryClassificationPipeline):

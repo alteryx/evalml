@@ -32,7 +32,7 @@ def test_rf_init(X_y):
         }
     }
 
-    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFBinaryClassificationPipeline(objective=objective, parameters=parameters)
     assert clf.parameters == parameters
 
 
@@ -71,7 +71,7 @@ def test_rf_multi(X_y_multi):
             "max_depth": 3
         }
     }
-    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFMulticlassClassificationPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
@@ -108,7 +108,7 @@ def test_rf_input_feature_names(X_y):
             "max_depth": 5,
         }
     }
-    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFBinaryClassificationPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

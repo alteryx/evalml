@@ -32,9 +32,20 @@ def test_binary_average(X_y):
     X, y = X_y
 
     objective = Precision()
-    pipeline = LogisticRegressionBinaryPipeline(penalty='l2', C=1.0, impute_strategy='mean', number_features=0)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'random_state': 0
+        }
+    }
+
+    pipeline = LogisticRegressionBinaryPipeline(parameters=parameters)
     pipeline.fit(X, y, objective)
-    y_pred = pipeline.predict(X, objective=objective)
+    y_pred = pipeline.predict(X)
 
     assert Precision().score(y, y_pred) == PrecisionMicro().score(y, y_pred)
     assert Precision().score(y, y_pred) == PrecisionMacro().score(y, y_pred)

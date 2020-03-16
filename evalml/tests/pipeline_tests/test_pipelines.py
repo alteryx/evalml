@@ -1,16 +1,11 @@
 import os
 
-import numpy as np
 import pytest
 from skopt.space import Real
 
 from evalml.model_types import ModelTypes
-from evalml.objectives import FraudCost, Precision, Recall
-from evalml.pipelines import (
-    LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
-    PipelineBase
-)
+from evalml.objectives import FraudCost, Precision
+from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -57,7 +52,7 @@ def lr_pipeline():
         }
     }
 
-    return LogisticRegressionPipeline(parameters=parameters)
+    return LogisticRegressionBinaryPipeline(parameters=parameters)
 
 
 def test_required_fields():
@@ -80,7 +75,7 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     pipeline = lr_pipeline
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
-    assert pipeline.score(X, y, [objective]) == load_pipeline(path).score(X, y, [objective])
+    assert pipeline.score(X, y, ['precision']) == load_pipeline(path).score(X, y, ['precision'])
 
 
 @pytest.fixture
@@ -88,7 +83,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
-    pipeline = LogisticRegressionPipeline(parameters=lr_pipeline.parameters)
+    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y, MockPrecision())
     save_pipeline(pipeline, path)
     return path
@@ -100,7 +95,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = LogisticRegressionPipeline(parameters=lr_pipeline.parameters)
+    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y, objective)
     assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
@@ -125,10 +120,10 @@ def test_reproducibility(X_y):
         }
     }
 
-    clf = LogisticRegressionPipeline(parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionPipeline(parameters=parameters)
+    clf_1 = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
@@ -186,7 +181,7 @@ def test_estimator_not_last(X_y):
         }
     }
 
-    class MockLogisticRegressionPipeline(PipelineBase):
+    class MockLogisticRegressionBinaryPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
         problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
@@ -196,8 +191,7 @@ def test_estimator_not_last(X_y):
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockLogisticRegressionPipeline(parameters=parameters)
->>>>>> > 873b5137... starting to fix merge conflicts, still more to go
+        MockLogisticRegressionBinaryPipeline(parameters=parameters)
 
 
 def test_multi_format_creation(X_y):

@@ -5,10 +5,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
-from evalml.pipelines import (
-    CatBoostBinaryClassificationPipeline,
-    CatBoostMulticlassClassificationPipeline
-)
+from evalml.pipelines import CatBoostClassificationPipeline
 
 
 def test_catboost_init():
@@ -22,10 +19,9 @@ def test_catboost_init():
             "bootstrap_type": 'Bernoulli',
             "eta": 0.1,
             "max_depth": 3,
-            "random_state": 2
         }
     }
-    clf = CatBoostClassificationPipeline(parameters=parameters)
+    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
 
     assert clf.parameters == parameters
 
@@ -53,21 +49,16 @@ def test_catboost_multi(X_y_multi):
         }
     }
 
-    clf = CatBoostClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
-    clf_scores = clf.score(X, y, [objective])
+    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
+    clf.fit(X, y)
+    clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_scores[objective.name])
+    assert (sk_score == clf_score[0])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
-
-    # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X)
-    assert((y_pred == y_pred_with_objective).all())
 
 
 def test_catboost_input_feature_names(X_y):
@@ -87,8 +78,8 @@ def test_catboost_input_feature_names(X_y):
             "max_depth": 6,
         }
     }
-    clf = CatBoostClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
@@ -109,7 +100,7 @@ def test_catboost_categorical(X_y_categorical_classification):
             "max_depth": 3,
         }
     }
-    clf = CatBoostClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
