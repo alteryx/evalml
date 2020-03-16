@@ -26,6 +26,6 @@ jobs:
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
           body: This is an auto-generated PR with dependency updates.
-          branch: dep-update
+          branch: dep-update-test
           base: master
-          team-reviewers: admins, maintainers 
+          team-reviewers: admins, maintainers
