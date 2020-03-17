@@ -1,3 +1,4 @@
+import copy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -296,12 +297,7 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters
         """
-        params = {}
-        for component in self.component_graph:
-            if component.parameters:
-                params[component.name] = {}
-                params[component.name].update(component.parameters)
-        return params
+        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
     @property
     def model_type(self):
