@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
-
 import pytest
+from sklearn.model_selection import StratifiedKFold
 
 from evalml.automl.auto_base import AutoBase
 from evalml.automl.pipeline_search_plots import (

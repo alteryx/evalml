@@ -3,8 +3,6 @@
 import numpy as np
 import pytest
 
-import pytest
-
 from evalml.tuners.skopt_tuner import SKOptTuner
 from evalml.tuners.tuner import Tuner
 

@@ -3,9 +3,8 @@ import os
 import graphviz
 import numpy as np
 import pandas as pd
-from skopt.space import Real
-
 import pytest
+from skopt.space import Real
 from evalml.pipelines import PipelineBase
 from evalml.tests.conftest import has_minimal_deps
 
