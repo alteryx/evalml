@@ -7,27 +7,27 @@ class ObjectiveBase(ABC):
     greater_is_better = None
     score_needs_proba = None
 
+    @property
     @staticmethod
     @abstractmethod
-    @property
     def name(self):
         raise NotImplementedError("This objective must have a `name` attribute as a class variable")
 
+    @property
     @staticmethod
     @abstractmethod
-    @property
     def problem_type(self):
         raise NotImplementedError("This objective must have a `problem_type` attribute as a class variable")
 
+    @property
     @staticmethod
     @abstractmethod
-    @property
     def greater_is_better(self):
         raise NotImplementedError("This objective must have a `greater_is_better` boolean attribute as a class variable")
 
+    @property
     @staticmethod
     @abstractmethod
-    @property
     def score_needs_proba(self):
         raise NotImplementedError("This objective must have a `score_needs_proba` boolean attribute as a class variable")
 

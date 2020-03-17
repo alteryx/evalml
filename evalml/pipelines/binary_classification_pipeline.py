@@ -9,6 +9,8 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 class BinaryClassificationPipeline(ClassificationPipeline):
 
+    self.threshold = None
+
     def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
 
@@ -48,7 +50,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         # for f1/auc to use accuracy by default
         if objective is None or not objective.can_optimize_threshold:
             objective_to_optimize = Accuracy()
-        self.classifier_threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
+        self.threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
         self.optimized_objective = objective_to_optimize
 
     def predict(self, X):
@@ -68,7 +70,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.optimized_objective is not None:
             y_predicted_proba = self.predict_proba(X)
             y_predicted_proba = y_predicted_proba[:, 1]
-            return self.optimized_objective.decision_function(y_predicted_proba, threshold=self.classifier_threshold, X=X)
+            return self.optimized_objective.decision_function(y_predicted_proba, threshold=self.threshold, X=X)
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):
