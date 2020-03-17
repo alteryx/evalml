@@ -23,9 +23,9 @@ class GridSearchTuner(Tuner):
         """ Generate all of the possible points to search for in the grid
 
         Arguments:
-            n_points: The number of points to uniformly sample from \
-                Real dimensions.
             space: A list of all dimensions available to tune
+            n_points: The number of points to sample from along each dimension
+                defined in the ``space`` argument
             random_state: Unused in this class
         """
         raw_dimensions = list()
@@ -67,6 +67,8 @@ class GridSearchTuner(Tuner):
 
     def propose(self):
         """ Returns hyperparameters from _grid_points iterations
+
+        If all possible combinations of parameters have been scored, then ``NoParamsException`` is raised.
 
         Returns:
             dict: proposed hyperparameters

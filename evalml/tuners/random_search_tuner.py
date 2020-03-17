@@ -52,6 +52,9 @@ class RandomSearchTuner(Tuner):
     def propose(self):
         """Generate a unique set of parameters.
 
+        If tuner was initialized with ``with_replacement=True`` and the tuner is unable to
+        generate a unique set of parameters after ``replacement_max_attempts`` tries, then ``NoParamsException`` is raised.
+
         Returns:
             A list of unique parameters
         """
