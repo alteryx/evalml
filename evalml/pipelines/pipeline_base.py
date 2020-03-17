@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator, handle_component
 from .graphs import make_feature_importance_graph, make_pipeline_graph
 
+from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
@@ -66,17 +67,23 @@ class PipelineBase(ABC):
 
     @classproperty
     def name(cls):
-        "Returns either `_name` defined on pipeline class or the pipeline class name"
+        """Returns a name describing the pipeline.
+        By default, this will take the class name and add a space between each capitalized word. If the pipeline has a _name attribute, this will be returned instead.
+        """
         try:
             name = cls._name
         except AttributeError:
             rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
             name = rex.sub(' ', cls.__name__)
+            if name == cls.__name__:
+                raise IllFormattedClassNameError("Pipeline Class {} needs to follow pascall case standards or `_name` must be defined.".format(cls.__name__))
         return name
 
-    @property
+    @classproperty
     def summary(self):
-        "Returns string of pipeline structure: `Logistic Regression Classifier w/ ... + ..."
+        """Returns a short summary of the pipeline structure, describing the list of components used.
+        Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+        """
         return self._generate_summary()
 
     def _generate_summary(self):

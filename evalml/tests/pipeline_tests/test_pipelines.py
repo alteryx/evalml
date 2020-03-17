@@ -3,6 +3,7 @@ import os
 import pytest
 from skopt.space import Real
 
+from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
@@ -172,9 +173,15 @@ def test_name():
         component_graph = ['Logistic Regression Classifier']
         problem_types = ['binary']
 
+    class testillformattednamepipeline(PipelineBase):
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary']
+
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
     assert TestDefinedNamePipeline(parameters={}, objective='precision').name == "Cool Logistic Regression"
+    with pytest.raises(IllFormattedClassNameError):
+        testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
 
 def test_summary(X_y, lr_pipeline):
