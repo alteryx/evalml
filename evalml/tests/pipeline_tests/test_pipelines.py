@@ -59,7 +59,6 @@ def test_all_pipelines():
 def make_mock_import_module(libs_to_blacklist):
     def _import_module(library):
         if library in libs_to_blacklist:
-            print('FOUND ONE: {}'.format(library))
             raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
         return import_module(library)
     return _import_module
