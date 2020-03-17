@@ -120,7 +120,7 @@ class PipelineBase(ABC):
 
     def describe(self):
         """Outputs pipeline details including component parameters
-        
+
         Arguments:
             return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
