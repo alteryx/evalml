@@ -1,7 +1,9 @@
 import pytest
 
 from evalml import AutoRegressionSearch
-from evalml.tests.tuner_tests.tuner_test_utils import assert_params_almost_equal
+from evalml.tests.tuner_tests.tuner_test_utils import (
+    assert_params_almost_equal
+)
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.tuners.tuner import Tuner
 
