@@ -3,9 +3,8 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import ROC, ConfusionMatrix
+from evalml.objectives import ROC, ConfusionMatrix, get_objective
 from evalml.problem_types import ProblemTypes
-from evalml.utils import get_objective
 
 
 class AutoClassificationSearch(AutoBase):
