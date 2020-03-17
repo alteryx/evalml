@@ -36,7 +36,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is not None:
             objective = get_objective(objective)
 
-        X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
+        X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
 
         self._fit(X, y)
         self._optimize_threshold(X_objective, y_objective, objective)
