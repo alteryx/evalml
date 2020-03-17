@@ -25,6 +25,7 @@ from evalml.pipelines.utils import (
     save_pipeline
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import import_or_raise
 
 
 def test_list_model_families():

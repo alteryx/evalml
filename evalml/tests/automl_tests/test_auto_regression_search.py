@@ -111,11 +111,6 @@ def test_early_stopping(capsys):
 
 def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
-    try:
-        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-        assert isinstance(plot, go.Figure)
-    except ImportError:
-        assert plot is None
 
     automl = AutoRegressionSearch(max_pipelines=3)
     automl.search(X, y)
@@ -124,7 +119,11 @@ def test_plot_iterations_max_pipelines(X_y):
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
 
-    assert isinstance(plot, go.Figure)
+    try:
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        assert isinstance(plot, go.Figure)
+    except ImportError:
+        assert plot is None
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
     assert len(x) == 3
@@ -133,11 +132,6 @@ def test_plot_iterations_max_pipelines(X_y):
 
 def test_plot_iterations_max_time(X_y):
     X, y = X_y
-    try:
-        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-        assert isinstance(plot, go.Figure)
-    except ImportError:
-        assert plot is None
 
     automl = AutoRegressionSearch(max_time=10)
     automl.search(X, y, show_iteration_plot=False)
@@ -146,7 +140,11 @@ def test_plot_iterations_max_time(X_y):
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
 
-    assert isinstance(plot, go.Figure)
+    try:
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        assert isinstance(plot, go.Figure)
+    except ImportError:
+        assert plot is None
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
     assert len(x) > 0
