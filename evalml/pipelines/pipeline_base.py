@@ -11,15 +11,7 @@ from .graphs import make_feature_importance_graph, make_pipeline_graph
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger
-
-
-class classproperty:
-    def __init__(self, f):
-        self.f = f
-
-    def __get__(self, obj, owner):
-        return self.f(owner)
+from evalml.utils import Logger, classproperty
 
 
 class PipelineBase(ABC):
