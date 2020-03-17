@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import ROC, ConfusionMatrix, get_objective
+from evalml.objectives import ROC, ConfusionMatrix
 from evalml.problem_types import ProblemTypes
 
 
@@ -86,7 +86,7 @@ class AutoClassificationSearch(AutoBase):
             objective = "precision_micro"
             problem_type = ProblemTypes.MULTICLASS
         else:
-            problem_type = self._set_problem_type(objective, multiclass)
+            problem_type = objective.problem_type
 
         super().__init__(
             tuner=tuner,
@@ -110,27 +110,3 @@ class AutoClassificationSearch(AutoBase):
             self.plot_metrics = [ROC(), ConfusionMatrix()]
         else:
             self.plot_metrics = [ConfusionMatrix()]
-
-    def _set_problem_type(self, objective, multiclass):
-        """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
-
-        If there is an objective either:
-            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
-            b. Set problem_type to MUTLICLASS if multiclass is true
-            c. Default to BINARY
-
-        Arguments:
-            objective (Object): the objective to optimize
-            multiclass (bool): boolean representing whether search is for multiclass problems or not
-
-        Returns:
-            ProblemTypes enum representing type of problem to set AutoClassificationSearch to
-
-        """
-        problem_type = ProblemTypes.BINARY
-        # if exclusively multiclass: infer
-        if get_objective(objective).problem_type == ProblemTypes.MULTICLASS:
-            problem_type = ProblemTypes.MULTICLASS
-        elif multiclass:
-            problem_type = ProblemTypes.MULTICLASS
-        return problem_type

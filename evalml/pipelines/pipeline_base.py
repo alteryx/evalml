@@ -214,14 +214,10 @@ class PipelineBase(ABC):
 
         objectives = [get_objective(o) for o in objectives]
         y_predicted = None
-        y_predicted_proba = None
-
         scores = OrderedDict()
         for objective in objectives:
             if objective.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                raise Exception("Problem should not support predict_proba")
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
@@ -248,13 +244,10 @@ class PipelineBase(ABC):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
         y_predicted = None
-        y_predicted_proba = None
         scores = OrderedDict()
         for plot_metric in plot_metrics:
             if plot_metric.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                raise Exception("Problem and metric do not align and should not support predict_proba")
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)

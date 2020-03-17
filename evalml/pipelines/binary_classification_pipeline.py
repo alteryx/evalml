@@ -37,11 +37,11 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.random_state)
 
         self._fit(X, y)
-        self._optimize_threshold(y_objective, X_objective, objective)
+        self._optimize_threshold(X_objective, y_objective, objective)
 
         return self
 
-    def _optimize_threshold(self, y_objective, X_objective, objective):
+    def _optimize_threshold(self, X_objective, y_objective, objective):
         y_predicted_proba = self.predict_proba(X_objective)
         y_predicted_proba = y_predicted_proba[:, 1]
         objective_to_optimize = objective

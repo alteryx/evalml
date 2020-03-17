@@ -1,10 +1,11 @@
 import os
 
+import numpy as np
 import pytest
 from skopt.space import Real
 
 from evalml.model_types import ModelTypes
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import FraudCost, Precision, Recall
 from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
@@ -272,8 +273,11 @@ def test_problem_types():
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
 
+
 def test_score_with_list_of_multiple_objectives(X_y):
     X, y = X_y
+    objective = Recall()
+
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -287,7 +291,6 @@ def test_score_with_list_of_multiple_objectives(X_y):
 
     clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf.fit(X, y, objective)
-    clf.fit(X, y)
     recall_name = Recall.name
     precision_name = Precision.name
     objective_names = [recall_name, precision_name]
@@ -295,8 +298,6 @@ def test_score_with_list_of_multiple_objectives(X_y):
     assert len(scores.values()) == 2
     assert all(name in scores.keys() for name in objective_names)
     assert not any(np.isnan(val) for val in scores.values())
-    with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        TestPipeline(parameters={})
 
 
 def test_no_default_parameters():
