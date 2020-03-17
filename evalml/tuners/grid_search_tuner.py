@@ -54,6 +54,7 @@ class GridSearchTuner(Tuner):
                 raise TypeError("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
         self._grid_points = itertools.product(*raw_dimensions)
+        self.curr_params = None
 
     def add(self, parameters, score):
         """Not applicable to grid search tuner as generated parameters are
@@ -73,7 +74,25 @@ class GridSearchTuner(Tuner):
         Returns:
             dict: proposed hyperparameters
         """
+        if not self.curr_params:
+            self.is_search_space_exhausted()
+        params = self.curr_params
+        self.curr_params = None
+        return params
+
+    def is_search_space_exhausted(self):
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
+        ``self.curr_params`` to be returned by ``propose()``.
+
+        Raises:
+            NoParamsException: If a search space is exhausted, then this exception is thrown.
+
+        Returns:
+            bool: If no more valid parameters exists in the search space, return false.
+        """
         try:
-            return next(self._grid_points)
+            self.curr_params = next(self._grid_points)
+            return False
         except StopIteration:
             raise NoParamsException("Grid search has exhausted all possible parameters.")
+            return True

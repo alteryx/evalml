@@ -35,6 +35,7 @@ class RandomSearchTuner(Tuner):
         self._replacement_max_attempts = replacement_max_attempts
         self._used_parameters = set()
         self._used_parameters.add(())
+        self.curr_params = None
 
     def add(self, parameters, score):
         """Not applicable to random search tuner as generated parameters are
@@ -60,12 +61,33 @@ class RandomSearchTuner(Tuner):
         """
         if self._with_replacement:
             return self._get_sample()
-        curr_params = ()
-        attempts = 0
-        while curr_params in self._used_parameters:
-            if attempts >= self._replacement_max_attempts:
-                raise NoParamsException("Cannot create a unique set of unexplored parameters. Try expanding the search space.")
-            attempts += 1
-            curr_params = self._get_sample()
-        self._used_parameters.add(curr_params)
-        return curr_params
+        elif not self.curr_params:
+            self.is_search_space_exhausted()
+        params = self.curr_params
+        self.curr_params = None
+        return params
+
+    def is_search_space_exhausted(self):
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
+        ``self.curr_params`` to be returned by ``propose()``.
+
+        Raises:
+            NoParamsException: If a search space is exhausted, then this exception is thrown.
+
+        Returns:
+            bool: If no more valid parameters exists in the search space, return false.
+        """
+        if self._with_replacement:
+            return False
+        else:
+            curr_params = ()
+            attempts = 0
+            while curr_params in self._used_parameters:
+                if attempts >= self._replacement_max_attempts:
+                    raise NoParamsException("Cannot create a unique set of unexplored parameters. Try expanding the search space.")
+                    return True
+                attempts += 1
+                curr_params = self._get_sample()
+            self._used_parameters.add(curr_params)
+            self.curr_params = curr_params
+            return False
