@@ -1,9 +1,24 @@
 import os
+import importlib
 
 import pandas as pd
 import pytest
 from sklearn import datasets
 from skopt.space import Integer, Real
+
+
+def has_minimal_deps():
+    for module in ['xgboost', 'catboost', 'plotly', 'plotly.graph_objects']:
+        try:
+            importlib.import_module(module)
+        except ImportError:
+            return True
+    return False
+
+
+@pytest.fixture
+def minimal_deps():
+    return has_minimal_deps()
 
 
 @pytest.fixture

@@ -7,6 +7,7 @@ from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
+from evalml.tests.conftest import has_minimal_deps
 from evalml.utils import import_or_raise
 
 
@@ -109,7 +110,20 @@ def test_early_stopping(capsys):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
+def test_plot_disabled_missing_dependency(X_y, minimal_deps):
+    X, y = X_y
+
+    automl = AutoRegressionSearch(max_pipelines=3)
+    if has_minimal_deps:
+        with pytest.raises(AttributeError):
+            automl.plot.search_iteration_plot
+    else:
+        automl.plot.search_iteration_plot
+
+
+@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_pipelines(X_y):
+    go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
 
     automl = AutoRegressionSearch(max_pipelines=3)
@@ -119,18 +133,16 @@ def test_plot_iterations_max_pipelines(X_y):
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
 
-    try:
-        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-        assert isinstance(plot, go.Figure)
-    except ImportError:
-        assert plot is None
+    assert isinstance(plot, go.Figure)
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
     assert len(x) == 3
     assert len(y) == 3
 
 
+@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_time(X_y):
+    go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
 
     automl = AutoRegressionSearch(max_time=10)
@@ -140,11 +152,7 @@ def test_plot_iterations_max_time(X_y):
     x = pd.Series(plot_data['x'])
     y = pd.Series(plot_data['y'])
 
-    try:
-        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-        assert isinstance(plot, go.Figure)
-    except ImportError:
-        assert plot is None
+    assert isinstance(plot, go.Figure)
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
     assert len(x) > 0
