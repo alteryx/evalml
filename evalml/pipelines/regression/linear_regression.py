@@ -4,7 +4,6 @@ from evalml.pipelines import PipelineBase
 
 class LinearRegressionPipeline(PipelineBase):
     """Linear Regression Pipeline for regression problems"""
-    _name = "Linear Regression Pipeline"
     model_type = ModelTypes.LINEAR_MODEL
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'Standard Scaler', 'Linear Regressor']
     problem_types = ['regression']
