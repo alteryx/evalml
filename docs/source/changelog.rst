@@ -12,6 +12,7 @@ Changelog
         * Changed the output of `score` to return one dictionary :pr:`429`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
         * Created binary and multiclass objective subclasses :pr:`419`
+        * Made all references to the logger static :pr:`503`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463`

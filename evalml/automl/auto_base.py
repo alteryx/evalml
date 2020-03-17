@@ -18,6 +18,8 @@ from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
 
+logger = Logger()
+
 
 class AutoBase:
 
@@ -37,7 +39,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        self.logger = Logger(self.verbose)
+        logger.verbose = verbose
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
         self.objective = get_objective(objective)
         if self.problem_type not in self.objective.problem_types:
@@ -131,30 +133,30 @@ class AutoBase:
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
 
-        self.logger.log_title("Beginning pipeline search")
-        self.logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
+        logger.log_title("Beginning pipeline search")
+        logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
 
         if self.objective.greater_is_better:
-            self.logger.log("Greater score is better.\n")
+            logger.log("Greater score is better.\n")
         else:
-            self.logger.log("Lower score is better.\n")
+            logger.log("Lower score is better.\n")
 
         # Set default max_pipeline if none specified
         if self.max_pipelines is None and self.max_time is None:
             self.max_pipelines = 5
-            self.logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
+            logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
 
         if self.max_pipelines:
-            self.logger.log("Searching up to %s pipelines. " % self.max_pipelines)
+            logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
-            self.logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        self.logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
+            logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+        logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
 
         if self.detect_label_leakage:
             leaked = guardrails.detect_label_leakage(X, y)
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
-                self.logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+                logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
@@ -188,7 +190,7 @@ class AutoBase:
             if num_pipelines >= self.max_pipelines:
                 return False
             elif self.max_time and elapsed >= self.max_time:
-                self.logger.log("\n\nMax time elapsed. Stopping search early.")
+                logger.log("\n\nMax time elapsed. Stopping search early.")
                 return False
 
         # check for early stopping
@@ -208,7 +210,7 @@ class AutoBase:
             else:
                 num_without_improvement += 1
             if num_without_improvement >= self.patience:
-                self.logger.log("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
+                logger.log("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
                 return False
         return should_continue
 
@@ -395,15 +397,15 @@ class AutoBase:
         pipeline_results = self.results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
-        self.logger.log_subtitle("Training")
+        logger.log_subtitle("Training")
         # Ideally, we want this information available on pipeline instead
-        self.logger.log("Training for {} problems.".format(self.problem_type))
-        self.logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
-        self.logger.log_subtitle("Cross Validation", underline="-")
+        logger.log("Training for {} problems.".format(self.problem_type))
+        logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
+        logger.log_subtitle("Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
-            self.logger.log("Warning! High variance within cross validation scores. " +
-                            "Model may not perform as estimated on unseen data.")
+            logger.log("Warning! High variance within cross validation scores. " +
+                       "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
@@ -422,7 +424,7 @@ class AutoBase:
         all_objective_scores = all_objective_scores.fillna("-")
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            self.logger.log(all_objective_scores)
+            logger.log(all_objective_scores)
 
         if return_dict:
             return pipeline_results
