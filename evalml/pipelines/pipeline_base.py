@@ -12,6 +12,8 @@ from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger
 
+logger = Logger()
+
 
 class PipelineBase(ABC):
     """Base class for all pipelines."""
@@ -44,7 +46,6 @@ class PipelineBase(ABC):
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
-        self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
@@ -118,25 +119,31 @@ class PipelineBase(ABC):
         return next((component for component in self.component_graph if component.name == name), None)
 
     def describe(self):
-        """Outputs pipeline details including component parameters"""
+        """Outputs pipeline details including component parameters
+        
+        Arguments:
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
-        self.logger.log_title(self.name)
-        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        self.logger.log("Model Type: {}".format(str(self.model_type)))
+        Returns:
+            dict: dictionary of all component parameters if return_dict is True, else None
+        """
+        logger.log_title(self.name)
+        logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        logger.log("Model Type: {}".format(str(self.model_type)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
         objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        self.logger.log(objective_string)
+        logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
-            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+            logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
 
         # Summary of steps
-        self.logger.log_subtitle("Pipeline Steps")
+        logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_graph, 1):
             component_string = str(number) + ". " + component.name
-            self.logger.log(component_string)
+            logger.log(component_string)
             component.describe(print_name=False)
 
     def _transform(self, X):
