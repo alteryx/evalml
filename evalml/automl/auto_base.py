@@ -99,7 +99,7 @@ class AutoBase:
         try:
             self.plot = PipelineSearchPlots(self)
         except ImportError:
-            self.logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):

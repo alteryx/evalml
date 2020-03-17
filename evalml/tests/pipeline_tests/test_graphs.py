@@ -3,7 +3,6 @@ import os
 import graphviz
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from skopt.space import Real
 from evalml.pipelines import PipelineBase
@@ -70,14 +69,18 @@ def test_invalid_path(tmpdir, test_pipeline):
         pipeline.graph(filepath=filepath)
 
 
+@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
 def test_feature_importance_plot(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
     assert isinstance(clf.feature_importance_graph(), go.Figure)
 
 
+@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
 def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
