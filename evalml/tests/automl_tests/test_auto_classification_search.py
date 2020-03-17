@@ -233,7 +233,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
-    objectives_names = [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
+    objectives_names = [obj.name for obj in objectives]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''

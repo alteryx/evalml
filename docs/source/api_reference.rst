@@ -122,9 +122,14 @@ Pipelines
     :nosignatures:
 
     PipelineBase
-    RFClassificationPipeline
-    XGBoostPipeline
-    LogisticRegressionBinaryPipeline
+    CatBoostBinaryClassificationPipeline,
+    CatBoostMulticlassClassificationPipeline,
+    LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline,
+    RFBinaryClassificationPipeline,
+    RFMulticlassClassificationPipeline,
+    XGBoostBinaryPipeline,
+    XGBoostMulticlassPipeline
     RFRegressionPipeline
     LinearRegressionPipeline
 

@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -319,6 +319,7 @@ class PlotMetric(ABC):
     score_needs_proba = True
     name = None
 
+    @abstractmethod
     def score(self, y_predicted, y_true):
         raise NotImplementedError("score() is not implemented!")
 
