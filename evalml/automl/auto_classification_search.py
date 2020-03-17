@@ -5,6 +5,7 @@ from .auto_base import AutoBase
 
 from evalml.objectives import ROC, ConfusionMatrix
 from evalml.problem_types import ProblemTypes
+from evalml.utils import get_objective
 
 
 class AutoClassificationSearch(AutoBase):
@@ -86,6 +87,7 @@ class AutoClassificationSearch(AutoBase):
             objective = "precision_micro"
             problem_type = ProblemTypes.MULTICLASS
         else:
+            objective = get_objective(objective)
             problem_type = objective.problem_type
 
         super().__init__(
