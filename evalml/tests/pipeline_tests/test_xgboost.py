@@ -35,7 +35,23 @@ def test_xg_init(X_y):
 
     clf = XGBoostPipeline(objective=objective, parameters=parameters)
 
-    assert clf.parameters == parameters
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            'percent_features': 1.0,
+            'threshold': -np.inf,
+        },
+        'XGBoost Classifier': {
+            'eta': 0.2,
+            'max_depth': 5,
+            'min_child_weight': 3,
+            'n_estimators': 20
+        }
+    }
+
+    assert clf.parameters == expected_parameters
 
 
 def test_xg_multi(X_y_multi):
