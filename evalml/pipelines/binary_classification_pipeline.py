@@ -9,7 +9,7 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 class BinaryClassificationPipeline(ClassificationPipeline):
 
-    self.threshold = None
+    threshold = None
 
     def fit(self, X, y, objective=None, objective_fit_size=0.2):
         """Build a model
