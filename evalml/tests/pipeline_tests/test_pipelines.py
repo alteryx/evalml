@@ -151,7 +151,7 @@ def test_describe(X_y, capsys, lr_pipeline):
     X, y = X_y
     lrp = lr_pipeline
     lrp.describe()
-    out, _ = capsys.readouterr()
+    out, err = capsys.readouterr()
 
     assert "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler" in out
     assert "Problem Types: Binary Classification, Multiclass Classification" in out
