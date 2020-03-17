@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
+from evalml.pipelines import LogisticRegressionBinaryPipeline
 
 
 def test_pipeline_limits(capsys, X_y):
@@ -65,3 +66,15 @@ def test_search_order(X_y):
     automl.search(X, y)
     correct_order = [0, 1, 2]
     assert automl.results['search_order'] == correct_order
+
+
+def test_transform_parameters():
+    automl = AutoClassificationSearch(max_pipelines=1, random_state=100, n_jobs=6)
+    parameters = [('penalty', 'l2'), ('C', 8.444214828324364), ('impute_strategy', 'most_frequent')]
+    parameters_dict = {
+        'Simple Imputer': {'impute_strategy': 'most_frequent'},
+        'One Hot Encoder': {},
+        'Standard Scaler': {},
+        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6, 'random_state': 100}
+    }
+    assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict

@@ -4,12 +4,41 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Add normalization option and information to confusion matrix :pr:`484`
+    * Fixes
+    * Changes
+        * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
+        * Support pandas 1.0.0 :pr:`486`
+        * Changed the output of `score` to return one dictionary :pr:`429`
+        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Created binary and multiclass objective subclasses :pr:`419`
+        * Made all references to the logger static :pr:`503`
+        * Created binary and multiclass objective subclasses :pr:`419`
+    * Documentation Changes
+        * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
+        * Add code style and github issue guides :pr:`463`
+    * Testing Changes
+        * Added automated dependency check PR :pr:`482`
+        * Update automated dependency check comment :pr:`497`
+
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
+    * ``score()`` will now return one dictionary of all objective scores.
+
+**v0.7.0 Mar. 9, 2020**
+    * Enhancements
         * Added emacs buffers to .gitignore :pr:`350`
         * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
         * Added Tuner abstract base class :pr:`351`
         * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
         * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
         * Added PipelineBase graph and feature_importance_graph methods, moved from previous location :pr:`423`
+        * Added support for python 3.8 :pr:`462`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
         * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
@@ -18,12 +47,10 @@ Changelog
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
-        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
-        * Created binary and multiclass objective subclasses :pr:`419`
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
         * Remove `_needs_fitting` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
-        * Changed the output of `score` to return one dictionary :pr:`429`
+        * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
@@ -43,14 +70,7 @@ Changelog
 
     * Python 3.5 will not be actively supported.
 
-.. warning::
 
-    **Breaking Changes**
-
-    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
-    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
-    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
-    * ``score()`` will now return one dictionary of all objective scores.
 **v0.6.0 Dec. 16, 2019**
     * Enhancements
         * Added ability to create a plot of feature importances :pr:`133`

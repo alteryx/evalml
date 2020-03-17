@@ -33,9 +33,8 @@ def detect_label_leakage(X, y, threshold=.95):
     if len(X.columns) == 0:
         return {}
 
-    corrs = X.corrwith(y).abs()
-    out = corrs[corrs >= threshold]
-    return out.to_dict()
+    corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= threshold}
+    return corrs
 
 
 def detect_highly_null(X, percent_threshold=.95):
