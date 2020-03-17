@@ -113,7 +113,7 @@ def test_plot_disabled_missing_dependency(X_y, minimal_deps):
     X, y = X_y
 
     automl = AutoRegressionSearch(max_pipelines=3)
-    if has_minimal_deps:
+    if minimal_deps:
         with pytest.raises(AttributeError):
             automl.plot.search_iteration_plot
     else:
