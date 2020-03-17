@@ -97,7 +97,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     objective = Precision()
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y, objective)
-    assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y, [objective])
+    assert load_pipeline(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
 def test_reproducibility(X_y):
