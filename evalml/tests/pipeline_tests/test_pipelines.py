@@ -2,11 +2,12 @@ import os
 from importlib import import_module
 from unittest.mock import patch
 
-import pytest
 from skopt.space import Real
 
+import pytest
+
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.model_family import ModelFamily
+from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (

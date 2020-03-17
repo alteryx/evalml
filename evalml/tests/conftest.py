@@ -1,10 +1,11 @@
-import os
 import importlib
+import os
 
 import pandas as pd
-import pytest
 from sklearn import datasets
 from skopt.space import Integer, Real
+
+import pytest
 
 
 def has_minimal_deps():

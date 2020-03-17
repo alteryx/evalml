@@ -2,8 +2,9 @@ import time
 
 import numpy as np
 import pandas as pd
-import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+
+import pytest
 
 from evalml import AutoClassificationSearch
 from evalml.model_family import ModelFamily
@@ -19,7 +20,6 @@ from evalml.objectives import (
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tests.conftest import has_minimal_deps
-from evalml.utils import import_or_raise
 
 
 def test_init(X_y):

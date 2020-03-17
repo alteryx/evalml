@@ -1,6 +1,7 @@
 import time
 
 import pandas as pd
+
 import pytest
 
 from evalml import AutoRegressionSearch
@@ -8,7 +9,6 @@ from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tests.conftest import has_minimal_deps
-from evalml.utils import import_or_raise
 
 
 @pytest.fixture

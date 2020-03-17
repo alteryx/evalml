@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import numpy as np
+
 import pytest
 
 from evalml.tuners.skopt_tuner import SKOptTuner
