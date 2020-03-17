@@ -188,6 +188,7 @@ def test_summary(X_y, lr_pipeline):
     X, y = X_y
     clf = lr_pipeline
     assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert LogisticRegressionPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
