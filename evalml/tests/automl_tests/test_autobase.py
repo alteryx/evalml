@@ -1,3 +1,4 @@
+import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
