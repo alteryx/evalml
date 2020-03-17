@@ -16,7 +16,7 @@ Changelog
         * Add code style and github issue guides :pr:`463`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`
-        * Update automated dependency check comment :pr:`497`
+        * Update automated dependency check comment :pr:`497`, :pr:`505`
 
 
 **v0.7.0 Mar. 9, 2020**
