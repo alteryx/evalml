@@ -2,9 +2,8 @@ import os
 from importlib import import_module
 from unittest.mock import patch
 
-from skopt.space import Real
-
 import pytest
+from skopt.space import Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_types import ModelTypes

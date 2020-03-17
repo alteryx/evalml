@@ -1,7 +1,6 @@
 import time
 
 import pandas as pd
-
 import pytest
 
 from evalml import AutoRegressionSearch
