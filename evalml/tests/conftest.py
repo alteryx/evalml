@@ -7,6 +7,8 @@ from skopt.space import Integer, Real
 
 import pytest
 
+import pytest
+
 
 def has_minimal_deps():
     for module in ['xgboost', 'catboost', 'plotly', 'plotly.graph_objects']:

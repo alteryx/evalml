@@ -2,8 +2,9 @@ import time
 
 import numpy as np
 import pandas as pd
-import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+
+import pytest
 
 from evalml import AutoClassificationSearch
 from evalml.model_family import ModelFamily

@@ -1,5 +1,6 @@
-import pytest
 from sklearn.model_selection import StratifiedKFold
+
+import pytest
 
 from evalml import AutoClassificationSearch
 from evalml.pipelines import LogisticRegressionPipeline
