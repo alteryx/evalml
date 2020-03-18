@@ -14,7 +14,7 @@ Changelog
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
-        * Add code style and github issue guides :pr:`463`
+        * Add code style and github issue guides :pr:`463` :pr:`512`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`

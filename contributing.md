@@ -86,7 +86,7 @@ If your work includes a [breaking change](https://en.wiktionary.org/wiki/breakin
 * Make PRs as small as possible! Consider breaking your large changes into separate PRs. This will make code review easier, quicker, less bug-prone and more effective.
 * In the name of every branch you create, include the associated issue number if applicable.
 * If new changes are added to the branch you're basing your changes off of, consider using `git rebase -i base_branch` rather than merging the base branch, to keep history clean.
-* Always include a docstring for public methods and classes. Consider including docstrings for private methods too.
+* Always include a docstring for public methods and classes. Consider including docstrings for private methods too. Our docstring convention is [`sphinx.ext.napoleon`](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html).
 * Use [PascalCase (upper camel case)](https://en.wikipedia.org/wiki/Camel_case#Variations_and_synonyms) for class names, and [snake_case](https://en.wikipedia.org/wiki/Snake_case) for method and class member names.
 * To distinguish private methods and class attributes from public ones, those which are private should be prefixed with an underscore
 * Any code which doesn't need to be public should be private. Use `@staticmethod` and `@classmethod` where applicable, to indicate no side effects.
