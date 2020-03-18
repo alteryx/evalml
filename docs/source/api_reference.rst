@@ -54,12 +54,10 @@ Plotting
 
     AutoClassificationSearch.plot.get_roc_data
     AutoClassificationSearch.plot.generate_roc_plot
-    AutoRegressionSearch.plot.get_roc_data
-    AutoRegressionSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoRegressionSearch.plot.get_confusion_matrix_data
-    AutoRegressionSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
@@ -80,7 +78,6 @@ Model Family
 
     list_model_families
 
-.. currentmodule:: evalml.pipelines.components
 
 Components
 ==========
@@ -148,7 +145,8 @@ Plotting
    :toctree: generated
    :template: accessor_callable.rst
 
-   PipelineBase.plot
+   PipelineBase.graph
+   PipelineBase.feature_importance_graph
 
 
 .. currentmodule:: evalml.objectives
