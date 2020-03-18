@@ -299,10 +299,10 @@ class PipelineBase(ABC):
         """
         return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
 
-    @property
-    def model_type(self):
-        """Returns model family of this pipeline template"""
-        return self.estimator.model_type
+    @classproperty
+    def model_family(cls):
+        "Returns model family of this pipeline template"""
+        return component_graph[-1].model_family if isinstance(component_graph[-1], Estimator) else None
 
     @property
     def feature_importances(self):
