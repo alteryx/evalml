@@ -9,6 +9,7 @@ Changelog
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
+        * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
     * Testing Changes
