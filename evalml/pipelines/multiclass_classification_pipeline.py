@@ -2,4 +2,5 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
 class MulticlassClassificationPipeline(ClassificationPipeline):
-    pass
+    problem_types = ['multiclass']
+

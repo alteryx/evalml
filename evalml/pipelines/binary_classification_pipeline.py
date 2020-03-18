@@ -10,6 +10,7 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 class BinaryClassificationPipeline(ClassificationPipeline):
 
     threshold = None
+    problem_types = ['binary']
 
     # def fit(self, X, y, objective=None, objective_fit_size=0.2):
     #     """Build a model

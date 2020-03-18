@@ -15,7 +15,6 @@ class CatBoostMulticlassClassificationPipeline(MulticlassClassificationPipeline)
     name = "CatBoost Classifier w/ Simple Imputer"
     model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
-    problem_types = ['multiclass']
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),

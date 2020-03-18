@@ -9,7 +9,6 @@ class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
     name = "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler"
     model_type = ModelTypes.LINEAR_MODEL
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'Standard Scaler', 'Logistic Regression Classifier']
-    problem_types = ['multiclass']
 
     hyperparameters = {
         "penalty": ["l2"],

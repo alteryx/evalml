@@ -9,7 +9,6 @@ class XGBoostBinaryPipeline(BinaryClassificationPipeline):
     name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     model_type = ModelTypes.XGBOOST
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
-    problem_types = ['binary']
 
     hyperparameters = {
         "eta": Real(0, 1),
