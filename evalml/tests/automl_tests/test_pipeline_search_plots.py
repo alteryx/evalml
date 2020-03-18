@@ -48,7 +48,7 @@ def test_generate_roc(X_y):
                 else:
                     y_train, y_test = y[train], y[test]
 
-                pipeline.fit(X_train, y_train, "precision")
+                pipeline.fit(X_train, y_train)
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, [ROC()]))
 
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,

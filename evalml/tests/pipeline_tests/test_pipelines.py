@@ -154,15 +154,15 @@ def test_describe(X_y, capsys, lr_pipeline):
     out, err = capsys.readouterr()
 
     assert "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler" in out
-    assert "Problem Types: Binary Classification, Multiclass Classification" in out
+    assert "Problem Types: Binary Classification" in out
     assert "Model Type: Linear Model" in out
-    assert "Objective to Optimize: Precision (greater is better)" in out
 
     for component in lrp.component_graph:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
         assert component.name in out
+    lrp.describe()
 
 
 def test_parameters(X_y, lr_pipeline):
@@ -249,7 +249,7 @@ def test_multi_format_creation(X_y):
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    clf.fit(X, y, 'precision')
+    clf.fit(X, y)
     clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
@@ -278,7 +278,7 @@ def test_multiple_feature_selectors(X_y):
     assert clf.model_type == ModelTypes.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    clf.fit(X, y, 'precision')
+    clf.fit(X, y)
     clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
@@ -287,10 +287,13 @@ def test_problem_types():
     class TestPipeline(PipelineBase):
         model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary', 'regression']
+        problem_type = ['binary', 'regression']
 
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
+
+    with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
+        TestPipeline(parameters={}, objective='precision')
 
 
 def test_score_with_list_of_multiple_objectives(X_y):
