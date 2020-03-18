@@ -17,7 +17,7 @@ class AutoClassificationSearch(AutoBase):
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 model_types=None,
+                 model_families=None,
                  cv=None,
                  tuner=None,
                  detect_label_leakage=True,
@@ -48,8 +48,8 @@ class AutoClassificationSearch(AutoBase):
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            model_types (list): The model types to search. By default searches over all
-                model_types. Run evalml.list_model_types("classification") to see options.
+            model_families (list): The model families to search. By default searches over all
+                model_families. Run evalml.list_model_families("classification") to see options.
 
             cv: cross validation method to use. By default StratifiedKFold
 
@@ -96,7 +96,7 @@ class AutoClassificationSearch(AutoBase):
             max_time=max_time,
             patience=patience,
             tolerance=tolerance,
-            model_types=model_types,
+            model_families=model_families,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
