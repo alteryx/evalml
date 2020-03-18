@@ -287,7 +287,7 @@ def test_problem_types():
     class TestPipeline(PipelineBase):
         model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Logistic Regression Classifier']
-        problem_type = ['binary', 'regression']
+        problem_types = ['binary', 'regression']
 
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
