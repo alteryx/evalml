@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
-from evalml.objectives import Accuracy, get_objective
+from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
