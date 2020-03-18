@@ -11,66 +11,68 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
     threshold = None
 
-    def fit(self, X, y, objective=None, objective_fit_size=0.2):
-        """Build a model
+    # def fit(self, X, y, objective=None, objective_fit_size=0.2):
+    #     """Build a model
 
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+    #     Arguments:
+    #         X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training labels of length [n_samples]
+    #         y (pd.Series): the target training labels of length [n_samples]
 
-            objective (Object or string): the objective to optimize
+    #         objective (Object or string): the objective to optimize
 
-            objective_fit_size (float): the proportion of the dataset to include in the test split.
-        Returns:
+    #         objective_fit_size (float): the proportion of the dataset to include in the test split.
+    #     Returns:
 
-            self
+    #         self
 
-        """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+    #     """
+    #     if not isinstance(X, pd.DataFrame):
+    #         X = pd.DataFrame(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+    #     if not isinstance(y, pd.Series):
+    #         y = pd.Series(y)
 
-        if objective is not None:
-            objective = get_objective(objective)
+    #     if objective is not None:
+    #         objective = get_objective(objective)
 
-        X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
+    #     # X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
+    #     self._fit(X, y)
+    #     # self._optimize_threshold(X_objective, y_objective, objective)
 
-        self._fit(X, y)
-        self._optimize_threshold(X_objective, y_objective, objective)
+    #     return self
 
-        return self
+    # def _optimize_threshold(self, X_objective, y_objective, objective):
+    #     y_predicted_proba = self.predict_proba(X_objective)
+    #     y_predicted_proba = y_predicted_proba[:, 1]
+    #     objective_to_optimize = objective
+    #     # for f1/auc to use accuracy by default
+    #     if objective is None or not objective.can_optimize_threshold:
+    #         objective_to_optimize = Accuracy()
+    #     self.threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
+    #     self.optimized_objective = objective_to_optimize
 
-    def _optimize_threshold(self, X_objective, y_objective, objective):
-        y_predicted_proba = self.predict_proba(X_objective)
-        y_predicted_proba = y_predicted_proba[:, 1]
-        objective_to_optimize = objective
-        # for f1/auc to use accuracy by default
-        if objective is None or not objective.can_optimize_threshold:
-            objective_to_optimize = Accuracy()
-        self.threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
-        self.optimized_objective = objective_to_optimize
-
-    def predict(self, X):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-
+            objective (Object or string): the objective to use to make predictions
         Returns:
             pd.Series : estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
+        if objective is not None:
+            objective = get_objective(objective)
+
         X_t = self._transform(X)
 
-        if self.optimized_objective is not None:
+        if objective is not None and self.threshold is not None:
             y_predicted_proba = self.predict_proba(X)
             y_predicted_proba = y_predicted_proba[:, 1]
-            return self.optimized_objective.decision_function(y_predicted_proba, threshold=self.threshold, X=X)
+            return objective.decision_function(y_predicted_proba, threshold=self.threshold, X=X)
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):

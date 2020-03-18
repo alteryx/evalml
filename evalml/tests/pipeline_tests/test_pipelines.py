@@ -97,7 +97,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
-    pipeline.fit(X, y, objective)
+    pipeline.fit(X, y)
     assert load_pipeline(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
@@ -122,10 +122,10 @@ def test_reproducibility(X_y):
     }
 
     clf = LogisticRegressionBinaryPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
 
     clf_1 = LogisticRegressionBinaryPipeline(parameters=parameters)
-    clf_1.fit(X, y, objective)
+    clf_1.fit(X, y)
 
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
@@ -309,7 +309,7 @@ def test_score_with_list_of_multiple_objectives(X_y):
     }
 
     clf = LogisticRegressionBinaryPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     recall_name = Recall.name
     precision_name = Precision.name
     objective_names = [recall_name, precision_name]

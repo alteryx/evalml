@@ -283,7 +283,8 @@ class AutoBase:
 
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
-                pipeline.fit(X_train, y_train, self.objective)
+                pipeline.fit(X_train, y_train)
+                # TODO: test that threshold is not null after fitting for autoML :)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))

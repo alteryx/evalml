@@ -153,7 +153,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-    def fit(self, X, y, objective=None, objective_fit_size=0.2):
+    def fit(self, X, y):
         """Build a model
 
         Arguments:
@@ -161,11 +161,7 @@ class PipelineBase(ABC):
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            objective (Object or string): the objective to optimize
-
-            objective_fit_size (float): the proportion of the dataset to include in the test split.
         Returns:
-
             self
 
         """
@@ -182,6 +178,7 @@ class PipelineBase(ABC):
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to make predictions
 
         Returns:
             pd.Series : estimated labels
