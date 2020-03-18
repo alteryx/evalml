@@ -17,10 +17,11 @@ def test_rf_init(X_y_reg):
         'Simple Imputer': {
             'impute_strategy': 'mean'
         },
-        'RF Classifier Select From Model': {
+        'RF Regressor Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
-            "n_estimators": 20
+            "n_estimators": 20,
+            "max_depth": 5
         },
         'Random Forest Regressor': {
             "n_estimators": 20,
@@ -28,7 +29,21 @@ def test_rf_init(X_y_reg):
         }
     }
     clf = RFRegressionPipeline(parameters=parameters)
-    assert clf.parameters == parameters
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Regressor Select From Model': {
+            'percent_features': 1.0,
+            'threshold': -np.inf
+        },
+        'Random Forest Regressor': {
+            'max_depth': 5,
+            'n_estimators': 20
+        }
+    }
+
+    assert clf.parameters == expected_parameters
 
 
 def test_rf_regression(X_y_categorical_regression):
