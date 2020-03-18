@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import classproperty, Logger
+from evalml.utils import Logger
 
 
 class ComponentBase(ABC):

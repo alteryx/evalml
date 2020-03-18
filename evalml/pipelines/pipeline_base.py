@@ -9,7 +9,7 @@ from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger
+from evalml.utils import Logger, classproperty
 
 
 class PipelineBase(ABC):
@@ -302,7 +302,7 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-        return component_graph[-1].model_family if isinstance(component_graph[-1], Estimator) else None
+        return cls.component_graph[-1].model_family
 
     @property
     def feature_importances(self):
