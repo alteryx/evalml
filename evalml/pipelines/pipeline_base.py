@@ -302,7 +302,8 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-        return cls.component_graph[-1].model_family
+
+        return handle_component(cls.component_graph[-1]).model_family
 
     @property
     def feature_importances(self):
