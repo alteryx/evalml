@@ -12,7 +12,7 @@ with warnings.catch_warnings():
     import skopt
 
 import evalml.demos
-import evalml.model_types
+import evalml.model_family
 import evalml.objectives
 import evalml.pipelines
 import evalml.preprocessing
