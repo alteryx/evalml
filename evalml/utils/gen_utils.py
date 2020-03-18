@@ -65,19 +65,3 @@ def normalize_confusion_matrix(conf_mat, option='true'):
         conf_mat = np.nan_to_num(conf_mat)
 
     return conf_mat
-
-
-class classproperty:
-    """Allows function to be accessed as a class level property.
-        Example:
-            @classproperty
-            def func(cls):
-                return pprint(cls.__name__)
-            print(Klass.func)
-    """
-
-    def __init__(self, func):
-        self.func = func
-
-    def __get__(self, _, klass):
-        return self.func(klass)
