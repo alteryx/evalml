@@ -9,9 +9,18 @@ class SimpleImputer(Transformer):
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent"):
-        parameters = {"impute_strategy": impute_strategy}
-        imputer = SkImputer(strategy=impute_strategy)
+    def __init__(self, impute_strategy="most_frequent", fill_value=None):
+        """Initalizes self.
+
+        Arguments:
+            impute_strategy (string): Impute strategy to use.
+            fill_value (string): When impute_strategy == “constant”, fill_value is used to replace missing data.
+               Defaults to 0 when imputing numerical data and “missing_value” for strings or object data types.
+        """
+        parameters = {"impute_strategy": impute_strategy,
+                      "fill_value": fill_value}
+        imputer = SkImputer(strategy=impute_strategy,
+                            fill_value=fill_value)
         super().__init__(parameters=parameters,
                          component_obj=imputer,
                          random_state=0)
