@@ -1,19 +1,24 @@
+from abc import ABC, abstractmethod
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger
+from evalml.utils import classproperty, Logger
 
 
-class ComponentBase:
+class ComponentBase(ABC):
     def __init__(self, parameters, component_obj, random_state):
         self.random_state = random_state
         self._component_obj = component_obj
         self.parameters = parameters
         self.logger = Logger()
 
-        attributes_to_check = ["name"]
+    @classproperty
+    @abstractmethod
+    def name(cls):
+        return NotImplementedError("This component must have `name` as a class variable.")
 
-        for attribute in attributes_to_check:
-            if not hasattr(self, attribute):
-                raise AttributeError("Component missing attribute: `{}`".format(attribute))
+    @classproperty
+    @abstractmethod
+    def model_family(cls):
+        return NotImplementedError("This component must have `model_family` as a class variable.")
 
     def fit(self, X, y=None):
         """Fits component to data
