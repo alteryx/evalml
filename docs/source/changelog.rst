@@ -6,14 +6,18 @@ Changelog
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add transformer to drop rows with NaN values :pr:`487`
+        * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
+        * Made all references to the logger static :pr:`503`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
+        * Add code style and github issue guides :pr:`463`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`
+        * Update automated dependency check comment :pr:`497`
 
 
 **v0.7.0 Mar. 9, 2020**
