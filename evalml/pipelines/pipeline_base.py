@@ -128,7 +128,7 @@ class PipelineBase(ABC):
         """
         self.logger.log_title(self.name)
         self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        self.logger.log("Model Type: {}".format(str(self.model_type)))
+        self.logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
