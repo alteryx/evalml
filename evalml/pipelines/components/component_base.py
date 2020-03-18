@@ -3,13 +3,14 @@ from abc import ABC, abstractmethod
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import Logger
 
+logger = Logger()
+
 
 class ComponentBase(ABC):
     def __init__(self, parameters, component_obj, random_state):
         self.random_state = random_state
         self._component_obj = component_obj
         self.parameters = parameters
-        self.logger = Logger()
 
     @property
     @classmethod
@@ -51,10 +52,10 @@ class ComponentBase(ABC):
         """
         if print_name:
             title = self.name
-            self.logger.log_subtitle(title)
+            logger.log_subtitle(title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
-            self.logger.log(parameter_str)
+            logger.log(parameter_str)
         if return_dict:
             component_dict = {"name": self.name}
             component_dict.update({"parameters": self.parameters})

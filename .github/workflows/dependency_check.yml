@@ -1,7 +1,7 @@
 name: Update Dependencies
 on:
   schedule:
-      - cron: '30 12 * * *'
+      - cron: '0 * * * *'
 jobs:
   update-deps:
     runs-on: ubuntu-latest
@@ -22,7 +22,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
-          body: This is an auto-generated PR with dependency updates.
+          body: "This is an auto-generated PR with dependency updates.
+                 Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
           branch: dep-update
           base: master
-          team-reviewers: FeatureLabs/evalml 
+          reviewers: angela97lin, dsherry, jeremyliweishih

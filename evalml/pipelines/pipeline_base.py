@@ -1,3 +1,4 @@
+import copy
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -10,6 +11,8 @@ from .graphs import make_feature_importance_graph, make_pipeline_graph
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
 from evalml.utils import Logger, classproperty
+
+logger = Logger()
 
 
 class PipelineBase(ABC):
@@ -43,11 +46,9 @@ class PipelineBase(ABC):
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
-        self.logger = Logger()
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
-        self.parameters = parameters
 
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
@@ -117,7 +118,7 @@ class PipelineBase(ABC):
         """
         return next((component for component in self.component_graph if component.name == name), None)
 
-    def describe(self, return_dict=False):
+    def describe(self):
         """Outputs pipeline details including component parameters
 
         Arguments:
@@ -126,27 +127,24 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters if return_dict is True, else None
         """
-        self.logger.log_title(self.name)
-        self.logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        self.logger.log("Model Family: {}".format(str(self.model_family)))
+        logger.log_title(self.name)
+        logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
         objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        self.logger.log(objective_string)
+        logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
-            self.logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+            logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
 
         # Summary of steps
-        self.logger.log_subtitle("Pipeline Steps")
+        logger.log_subtitle("Pipeline Steps")
         for number, component in enumerate(self.component_graph, 1):
             component_string = str(number) + ". " + component.name
-            self.logger.log(component_string)
+            logger.log(component_string)
             component.describe(print_name=False)
-
-        if return_dict:
-            return self.parameters
 
     def _transform(self, X):
         X_t = X
@@ -304,6 +302,15 @@ class PipelineBase(ABC):
         "Returns model family of this pipeline template"""
 
         return handle_component(cls.component_graph[-1]).model_family
+
+    @property
+    def parameters(self):
+        """Returns parameter dictionary for this pipeline
+
+        Returns:
+            dict: dictionary of all component parameters
+        """
+        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
     @property
     def feature_importances(self):
