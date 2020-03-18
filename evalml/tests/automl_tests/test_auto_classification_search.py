@@ -64,7 +64,7 @@ def test_cv(X_y):
 
 def test_init_select_model_families():
     model_families = [ModelFamily.RANDOM_FOREST]
-    automl = AutoClassificationSearch(model_families=model_families)
+    automl = AutoClassificationSearch(allowed_model_families=model_families)
 
     assert get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
     assert model_families == automl.possible_model_families
@@ -243,7 +243,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
 
 def test_model_families_as_list():
     with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        AutoClassificationSearch(objective='AUC', model_families='linear_model', max_pipelines=2)
+        AutoClassificationSearch(objective='AUC', allowed_model_families='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():
@@ -268,12 +268,12 @@ def test_max_time_units():
 
 def test_early_stopping(capsys):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_families=['linear_model'], patience=-1, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
