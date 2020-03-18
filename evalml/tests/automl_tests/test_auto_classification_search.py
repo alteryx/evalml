@@ -7,7 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
     ROC,
     ConfusionMatrix,
@@ -63,7 +63,7 @@ def test_cv(X_y):
 
 
 def test_init_select_model_types():
-    model_types = [ModelTypes.RANDOM_FOREST]
+    model_types = [ModelFamily.RANDOM_FOREST]
     automl = AutoClassificationSearch(model_types=model_types)
 
     assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == automl.possible_pipelines
