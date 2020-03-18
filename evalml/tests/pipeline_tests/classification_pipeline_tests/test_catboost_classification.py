@@ -91,8 +91,6 @@ def test_catboost_input_feature_names(X_y):
 def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     objective = Precision()
-    clf = CatBoostBinaryClassificationPipeline(impute_strategy='most_frequent',
-                                               number_features=len(X.columns), n_estimators=1000, eta=0.03, max_depth=6, random_state=0)
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'

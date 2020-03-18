@@ -132,10 +132,6 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
-    with pytest.raises(ValueError, match=error_msg):
-        automl = AutoClassificationSearch(objective="recall", multiclass=True)
-
     automl = AutoClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
 

@@ -11,7 +11,7 @@ def test_create_custom_objective():
         def objective_function(self, y_predicted, y_true, X=None):
             pass
 
-    with pytest.raises(NameError):
+    with pytest.raises(TypeError):
         MockEmptyObjective()
 
     class MockNoObjectiveFunctionObjective(ObjectiveBase):
