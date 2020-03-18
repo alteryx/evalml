@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
