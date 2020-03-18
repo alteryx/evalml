@@ -11,7 +11,8 @@ def test_catboost_init():
     objective = R2()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
+            'impute_strategy': 'most_frequent',
+            'fill_value': None
         },
         'CatBoost Regressor': {
             "n_estimators": 1000,

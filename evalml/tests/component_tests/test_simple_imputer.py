@@ -11,8 +11,8 @@ def test_fit():
     # test impute_strategy
     transformer = SimpleImputer(impute_strategy='mean')
     X_expected_arr = pd.DataFrame([[1.0, 0, 1, 1.0],
-                                  [1.0, 2, 3, 2.0],
-                                  [1.0, 2, 3, 0.0]])
+                                   [1.0, 2, 3, 2.0],
+                                   [1.0, 2, 3, 0.0]])
     X_t = transformer.fit_transform(X)
     assert X_t.equals(X_expected_arr)
 
@@ -26,8 +26,8 @@ def test_fit():
 
     transformer = SimpleImputer(impute_strategy='constant', fill_value=3)
     X_expected_arr = pd.DataFrame([[3, 0, 1.0, 3.0],
-                                  ["a", 2, 3.0, 3.0],
-                                  ["b", 2, 3.0, 0.0]])
+                                   ["a", 2, 3.0, 3.0],
+                                   ["b", 2, 3.0, 0.0]])
     X_t = transformer.fit_transform(X)
     assert X_t.equals(X_expected_arr)
 
