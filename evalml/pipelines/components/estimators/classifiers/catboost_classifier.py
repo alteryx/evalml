@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
 
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
@@ -22,7 +22,7 @@ class CatBoostClassifier(Estimator):
         "eta": Real(0, 1),
         "max_depth": Integer(1, 16),
     }
-    model_type = ModelTypes.CATBOOST
+    model_family = ModelFamily.CATBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
