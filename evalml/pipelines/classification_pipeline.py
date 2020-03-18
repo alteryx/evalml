@@ -1,6 +1,9 @@
 
+from collections import OrderedDict
+
 import pandas as pd
 
+from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 
 
@@ -21,7 +24,6 @@ class ClassificationPipeline(PipelineBase):
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
         return proba
-
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
