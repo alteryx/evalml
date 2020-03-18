@@ -1,3 +1,3 @@
 # flake8:noqas
-from .model_types import ModelTypes
-from .utils import handle_model_types
+from .model_family import ModelFamily
+from .utils import handle_model_family
