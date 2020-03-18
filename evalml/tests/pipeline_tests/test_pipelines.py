@@ -85,7 +85,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     MockPrecision = type('MockPrecision', (Precision,), {})
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
-    pipeline.fit(X, y, MockPrecision())
+    pipeline.fit(X, y)
     save_pipeline(pipeline, path)
     return path
 
