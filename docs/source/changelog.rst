@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
+        * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
     * Fixes
     * Changes
@@ -26,6 +27,8 @@ Changelog
     * `ModelTypes` enum has been changed to `ModelFamily`
     * Components and Pipelines now have a `model_family` field instead of `model_type`
     * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
