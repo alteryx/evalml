@@ -21,6 +21,7 @@ def test_sys_info():
 
 def test_installed_packages():
     installed_packages = get_installed_packages()
+    print (installed_packages)
     requirements = ["numpy", "pandas", "tqdm", "toolz", "cloudpickle",
                     "dask", "distributed", "psutil", "Click",
                     "scikit-learn", "pip", "setuptools"]
