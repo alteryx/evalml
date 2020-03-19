@@ -60,16 +60,24 @@ Plotting
     AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
-Model Types
+.. currentmodule:: evalml.model_family
+
+Model Family
 ===========
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ModelFamily
 
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
-    list_model_types
+    list_model_families
 
-.. currentmodule:: evalml.pipelines.components
 
 Components
 ==========

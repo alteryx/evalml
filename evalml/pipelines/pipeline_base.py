@@ -1,4 +1,5 @@
 import copy
+import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -8,9 +9,10 @@ from sklearn.model_selection import train_test_split
 from .components import Estimator, handle_component
 from .graphs import make_feature_importance_graph, make_pipeline_graph
 
+from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger
+from evalml.utils import Logger, classproperty
 
 logger = Logger()
 
@@ -54,22 +56,43 @@ class PipelineBase(ABC):
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self.name = self._generate_name()
         self._validate_problem_types(self.problem_types)
 
-    def _generate_name(self):
-        "Generates name from components in self.component_graph"
-        if self.estimator is not None:
-            name = "{}".format(self.estimator.name)
-        else:
-            name = "Pipeline"
-        for index, component in enumerate(self.component_graph[:-1]):
-            if index == 0:
-                name += " w/ {}".format(component.name)
-            else:
-                name += " + {}".format(component.name)
-
+    @classproperty
+    def name(cls):
+        """Returns a name describing the pipeline.
+        By default, this will take the class name and add a space between each capitalized word. If the pipeline has a _name attribute, this will be returned instead.
+        """
+        try:
+            name = cls._name
+        except AttributeError:
+            rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
+            name = rex.sub(' ', cls.__name__)
+            if name == cls.__name__:
+                raise IllFormattedClassNameError("Pipeline Class {} needs to follow pascall case standards or `_name` must be defined.".format(cls.__name__))
         return name
+
+    @classproperty
+    def summary(cls):
+        """Returns a short summary of the pipeline structure, describing the list of components used.
+        Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+        """
+        def _generate_summary(component_graph):
+            component_graph[-1] = handle_component(component_graph[-1])
+            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
+            if estimator is not None:
+                summary = "{}".format(estimator.name)
+            else:
+                summary = "Pipeline"
+            for index, component in enumerate(component_graph[:-1]):
+                component = handle_component(component)
+                if index == 0:
+                    summary += " w/ {}".format(component.name)
+                else:
+                    summary += " + {}".format(component.name)
+            return summary
+
+        return _generate_summary(cls.component_graph)
 
     def _validate_problem_types(self, problem_types):
         """Validates provided `problem_types` against the estimator in `self.component_graph`
@@ -129,7 +152,7 @@ class PipelineBase(ABC):
         """
         logger.log_title(self.name)
         logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        logger.log("Model Type: {}".format(str(self.model_type)))
+        logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
@@ -297,6 +320,12 @@ class PipelineBase(ABC):
         """
         return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
 
+    @classproperty
+    def model_family(cls):
+        "Returns model family of this pipeline template"""
+
+        return handle_component(cls.component_graph[-1]).model_family
+
     @property
     def parameters(self):
         """Returns parameter dictionary for this pipeline
@@ -305,11 +334,6 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
-
-    @property
-    def model_type(self):
-        """Returns model family of this pipeline template"""
-        return self.estimator.model_type
 
     @property
     def feature_importances(self):

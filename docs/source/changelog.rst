@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
+        * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
         * Added `fill_value` parameter for SimpleImputer :pr:`509`    
     * Fixes
@@ -12,13 +13,23 @@ Changelog
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
         * Made all references to the logger static :pr:`503`
+        * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+.. warning::
 
+    **Breaking Changes**
+
+    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
+    * `ModelTypes` enum has been changed to `ModelFamily`
+    * Components and Pipelines now have a `model_family` field instead of `model_type`
+    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
