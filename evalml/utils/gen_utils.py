@@ -70,7 +70,7 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
-        class LogisticRegressionPipeline
+        class LogisticRegressionPipeline:
             component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
 
             @classproperty

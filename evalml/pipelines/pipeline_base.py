@@ -152,7 +152,7 @@ class PipelineBase(ABC):
         """
         logger.log_title(self.name)
         logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
-        logger.log("Model Type: {}".format(str(self.model_type)))
+        logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
             better_string = "greater is better"
@@ -320,6 +320,12 @@ class PipelineBase(ABC):
         """
         return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
 
+    @classproperty
+    def model_family(cls):
+        "Returns model family of this pipeline template"""
+
+        return handle_component(cls.component_graph[-1]).model_family
+
     @property
     def parameters(self):
         """Returns parameter dictionary for this pipeline
@@ -328,11 +334,6 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
-
-    @property
-    def model_type(self):
-        """Returns model family of this pipeline template"""
-        return self.estimator.model_type
 
     @property
     def feature_importances(self):

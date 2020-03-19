@@ -4,7 +4,7 @@ import pytest
 from skopt.space import Real
 
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
@@ -17,25 +17,25 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.utils import (
     get_pipelines,
-    list_model_types,
+    list_model_families,
     load_pipeline,
     save_pipeline
 )
 from evalml.problem_types import ProblemTypes
 
 
-def test_list_model_types():
-    assert set(list_model_types(ProblemTypes.BINARY)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.XGBOOST, ModelTypes.LINEAR_MODEL, ModelTypes.CATBOOST])
-    assert set(list_model_types(ProblemTypes.REGRESSION)) == set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL, ModelTypes.CATBOOST])
+def test_list_model_families():
+    assert set(list_model_families(ProblemTypes.BINARY)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
+    assert set(list_model_families(ProblemTypes.REGRESSION)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
 
 
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_types=["random_forest", "xgboost"])
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
@@ -156,7 +156,7 @@ def test_describe(X_y, capsys, lr_pipeline):
 
     assert "Logistic Regression Pipeline" in out
     assert "Problem Types: Binary Classification, Multiclass Classification" in out
-    assert "Model Type: Linear Model" in out
+    assert "Model Family: Linear Model" in out
     assert "Objective to Optimize: Precision (greater is better)" in out
 
     for component in lrp.component_graph:
@@ -242,7 +242,6 @@ def test_multi_format_creation(X_y):
     X, y = X_y
 
     class TestPipeline(PipelineBase):
-        model_type = ModelTypes.LINEAR_MODEL
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 
@@ -271,7 +270,7 @@ def test_multi_format_creation(X_y):
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
-    assert clf.model_type == ModelTypes.LINEAR_MODEL
+    assert clf.model_family == ModelFamily.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
@@ -283,7 +282,6 @@ def test_multiple_feature_selectors(X_y):
     X, y = X_y
 
     class TestPipeline(PipelineBase):
-        model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 
@@ -301,7 +299,7 @@ def test_multiple_feature_selectors(X_y):
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
-    assert clf.model_type == ModelTypes.LINEAR_MODEL
+    assert clf.model_family == ModelFamily.LINEAR_MODEL
     assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
@@ -311,7 +309,6 @@ def test_multiple_feature_selectors(X_y):
 
 def test_problem_types():
     class TestPipeline(PipelineBase):
-        model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Logistic Regression Classifier']
         problem_types = ['binary', 'regression']
 
