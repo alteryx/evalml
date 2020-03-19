@@ -17,7 +17,7 @@ class DropNaNRowsTransformer(Transformer):
                          random_state=0)
 
     def fit(self, X, y=None):
-        """Fits component to data
+        """Fits component to data. For DropNaNRowsTransformer, fit() is a no-op function which simply returns the transformer itself.
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
@@ -64,4 +64,4 @@ class DropNaNRowsTransformer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        return self.transform(X, y)
+        return self.transform(X, y=y)
