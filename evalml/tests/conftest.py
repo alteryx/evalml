@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import pytest
 from sklearn import datasets
@@ -27,7 +29,9 @@ def X_y_multi():
 
 @pytest.fixture
 def X_y_categorical_regression():
-    flights = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/tips.csv')
+    data_path = os.path.join(os.path.dirname(__file__), "data/tips.csv")
+    flights = pd.read_csv(data_path)
+
     y = flights['tip']
     X = flights.drop('tip', axis=1)
 
@@ -38,7 +42,9 @@ def X_y_categorical_regression():
 
 @pytest.fixture
 def X_y_categorical_classification():
-    titanic = pd.read_csv('https://featuretools-static.s3.amazonaws.com/evalml/Titanic/train.csv')
+    data_path = os.path.join(os.path.dirname(__file__), "data/titanic.csv")
+    titanic = pd.read_csv(data_path)
+
     y = titanic['Survived']
     X = titanic.drop('Survived', axis=1)
     return X, y

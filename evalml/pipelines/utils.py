@@ -1,16 +1,27 @@
 import cloudpickle
 
 from .classification import (
+    CatBoostClassificationPipeline,
     LogisticRegressionPipeline,
     RFClassificationPipeline,
     XGBoostPipeline
 )
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
+from .regression import (
+    CatBoostRegressionPipeline,
+    LinearRegressionPipeline,
+    RFRegressionPipeline
+)
 
 from evalml.model_types import handle_model_types
 from evalml.problem_types import handle_problem_types
 
-ALL_PIPELINES = [RFClassificationPipeline, XGBoostPipeline, LogisticRegressionPipeline, LinearRegressionPipeline, RFRegressionPipeline]
+ALL_PIPELINES = [RFClassificationPipeline,
+                 XGBoostPipeline,
+                 LogisticRegressionPipeline,
+                 LinearRegressionPipeline,
+                 RFRegressionPipeline,
+                 CatBoostClassificationPipeline,
+                 CatBoostRegressionPipeline]
 
 
 def get_pipelines(problem_type, model_types=None):
@@ -35,7 +46,8 @@ def get_pipelines(problem_type, model_types=None):
 
     problem_type = handle_problem_types(problem_type)
     for p in ALL_PIPELINES:
-        if problem_type in p.problem_types:
+        problem_types = [handle_problem_types(pt) for pt in p.problem_types]
+        if problem_type in problem_types:
             problem_pipelines.append(p)
 
     if model_types is None:
@@ -68,7 +80,8 @@ def list_model_types(problem_type):
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
     for p in ALL_PIPELINES:
-        if problem_type in p.problem_types:
+        problem_types = [handle_problem_types(pt) for pt in p.problem_types]
+        if problem_type in problem_types:
             problem_pipelines.append(p)
 
     return list(set([p.model_type for p in problem_pipelines]))

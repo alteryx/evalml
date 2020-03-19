@@ -1,13 +1,14 @@
 # flake8:noqa
 from .component_base import ComponentBase
-from .component_types import ComponentTypes
 from .estimators import (
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
-    XGBoostClassifier
+    XGBoostClassifier,
+    CatBoostClassifier,
+    CatBoostRegressor
 )
 from .transformers import (
     Transformer,
@@ -20,4 +21,4 @@ from .transformers import (
     CategoricalEncoder
     )
 
-from .utils import handle_component, str_to_component_type
+from .utils import handle_component

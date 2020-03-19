@@ -1,0 +1,29 @@
+name: Update Dependencies
+on:
+  schedule:
+      - cron: '0 * * * *'
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8.2'
+      - name: Update dependencies
+        id: vars
+        run: |
+          make installdeps-test
+          make dependenciesfile DEPENDENCY_FILE_PATH=evalml/tests/latest_dependency_versions.txt
+          cat evalml/tests/latest_dependency_versions.txt
+      - name: Create Pull Request
+        uses: Featurelabs/create-pull-request@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Update latest dependencies
+          title: Automated Latest Dependency Updates
+          body: "This is an auto-generated PR with dependency updates.
+                 Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
+          branch: dep-update
+          base: master
+          reviewers: angela97lin, dsherry, jeremyliweishih

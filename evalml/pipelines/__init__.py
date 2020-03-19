@@ -10,20 +10,27 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    ComponentTypes,
     FeatureSelector,
     CategoricalEncoder,
     RFClassifierSelectFromModel,
-    RFRegressorSelectFromModel
+    RFRegressorSelectFromModel,
+    CatBoostClassifier,
+    CatBoostRegressor
 )
 
 from .pipeline_base import PipelineBase
+
 from .classification import (
     LogisticRegressionPipeline,
     RFClassificationPipeline,
-    XGBoostPipeline
+    XGBoostPipeline,
+    CatBoostClassificationPipeline,
 )
-from .regression import LinearRegressionPipeline, RFRegressionPipeline
+from .regression import (
+    LinearRegressionPipeline,
+    RFRegressionPipeline,
+    CatBoostRegressionPipeline
+)
 from .utils import (
     get_pipelines,
     list_model_types,

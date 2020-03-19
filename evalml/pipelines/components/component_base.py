@@ -1,4 +1,7 @@
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import Logger
+
+logger = Logger()
 
 
 class ComponentBase:
@@ -6,9 +9,8 @@ class ComponentBase:
         self.random_state = random_state
         self._component_obj = component_obj
         self.parameters = parameters
-        self.logger = Logger()
 
-        attributes_to_check = ['_needs_fitting', "name", "component_type"]
+        attributes_to_check = ["name"]
 
         for attribute in attributes_to_check:
             if not hasattr(self, attribute):
@@ -28,7 +30,7 @@ class ComponentBase:
             self._component_obj.fit(X, y)
             return self
         except AttributeError:
-            raise RuntimeError("Component requires a fit method or a component_obj that implements fit")
+            raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
 
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters
@@ -42,10 +44,10 @@ class ComponentBase:
         """
         if print_name:
             title = self.name
-            self.logger.log_subtitle(title)
+            logger.log_subtitle(title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
-            self.logger.log(parameter_str)
+            logger.log(parameter_str)
         if return_dict:
             component_dict = {"name": self.name}
             component_dict.update({"parameters": self.parameters})

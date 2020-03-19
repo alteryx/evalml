@@ -14,11 +14,39 @@ def test_rf_init(X_y):
     X, y = X_y
 
     objective = PrecisionMicro()
-    clf = RFClassificationPipeline(objective=objective, n_estimators=20, max_depth=5, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]), random_state=2)
-    expected_parameters = {'impute_strategy': 'mean', 'percent_features': 1.0,
-                           'threshold': -np.inf, 'n_estimators': 20, 'max_depth': 5}
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'Random Forest Classifier': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+
+    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
+
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            'percent_features': 1.0,
+            'threshold': -np.inf
+        },
+        'Random Forest Classifier': {
+            'max_depth': 5,
+            'n_estimators': 20
+        }
+    }
+
     assert clf.parameters == expected_parameters
-    assert clf.random_state == 2
 
 
 def test_rf_multi(X_y_multi):
@@ -42,7 +70,21 @@ def test_rf_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = RFClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 10
+        },
+        'Random Forest Classifier': {
+            "n_estimators": 10,
+            "max_depth": 3
+        }
+    }
+    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -60,8 +102,23 @@ def test_rf_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = RFClassificationPipeline(objective=objective, n_estimators=10, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X.columns),
+            "n_estimators": 20
+        },
+        'Random Forest Classifier': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
-    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
+    for col_name in clf.feature_importances["feature"]:
+        assert "col_" in col_name

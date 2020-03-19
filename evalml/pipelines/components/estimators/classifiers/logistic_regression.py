@@ -3,7 +3,6 @@ from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Real
 
 from evalml.model_types import ModelTypes
-from evalml.pipelines.components import ComponentTypes
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -13,8 +12,6 @@ class LogisticRegressionClassifier(Estimator):
     Logistic Regression Classifier
     """
     name = "Logistic Regression Classifier"
-    component_type = ComponentTypes.CLASSIFIER
-    _needs_fitting = True
     hyperparameter_ranges = {
         "penalty": ["l2"],
         "C": Real(.01, 10),
