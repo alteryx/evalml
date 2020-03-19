@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.utils.gen_utils import (
+    classproperty,
     convert_to_seconds,
     import_or_raise,
     normalize_confusion_matrix
@@ -65,3 +66,14 @@ def test_normalize_confusion_matrix():
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
     assert conf_mat_normalized.sum().sum() == 1.0
+
+
+def test_class_property():
+    class MockClass:
+        name = "MockClass"
+
+        @classproperty
+        def caps_name(cls):
+            return cls.name.upper()
+
+    assert MockClass.caps_name == "MOCKCLASS"
