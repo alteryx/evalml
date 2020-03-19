@@ -293,7 +293,7 @@ def test_problem_types():
             super().__init__(parameters=parameters)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        TestPipeline(parameters={}, objective='precision')
+        TestPipeline(parameters={})
 
 
 def test_score_with_list_of_multiple_objectives(X_y):
