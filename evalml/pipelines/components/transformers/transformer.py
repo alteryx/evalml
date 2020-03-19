@@ -1,6 +1,7 @@
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 
 
@@ -9,7 +10,7 @@ class Transformer(ComponentBase):
     These components are used before an estimator.
     """
 
-    model_family = None
+    model_family = ModelFamily.NONE
 
     def transform(self, X, y=None):
         """Transforms data X
