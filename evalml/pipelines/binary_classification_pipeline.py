@@ -5,7 +5,6 @@ import pandas as pd
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
-# from sklearn.model_selection import train_test_split
 
 
 class BinaryClassificationPipeline(ClassificationPipeline):
@@ -78,7 +77,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):
-        """Evaluate model performance on current and additional objectives
+        """Evaluate model performance on objectives
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
@@ -107,7 +106,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 y_predictions = y_predicted_proba
             else:
                 if y_predicted is None:
-                    y_predicted = self.predict(X)
+                    # does this make sense? One threshold for all objectives.
+                    y_predicted = self.predict(X, objective)
                 y_predictions = y_predicted
             scores.update({objective.name: objective.score(y_predictions, y, X)})
 

@@ -17,6 +17,7 @@ from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
+from sklearn.model_selection import train_test_split
 
 logger = Logger()
 
@@ -284,7 +285,16 @@ class AutoBase:
 
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
+                if self.problem_type == ProblemTypes.BINARY:
+                    X_train, X_objective, y_train, y_objective = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
                 pipeline.fit(X_train, y_train)
+                if self.problem_type == ProblemTypes.BINARY:
+                    if self.objective.can_optimize_threshold:
+                        y_predict_proba = pipeline.predict_proba(X_objective)
+                        y_predict_proba = y_predict_proba[:,1]
+                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_objective, X=X_objective)
+                    else:
+                        pipeline.threshold = 0.5
                 # TODO: test that threshold is not null after fitting for autoML :)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]

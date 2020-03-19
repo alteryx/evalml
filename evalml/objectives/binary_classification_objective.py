@@ -11,6 +11,19 @@ class BinaryClassificationObjective(ObjectiveBase):
     can_optimize_threshold = False
     # threshold = None
 
+    # def _optimize_threshold(self, X_objective, y_objective, objective):
+    #     y_predicted_proba = self.predict_proba(X_objective)
+    #     y_predicted_proba = y_predicted_proba[:, 1]
+    #     objective_to_optimize = objective
+    #     # for f1/auc to use accuracy by default
+    #     if objective is None or not objective.can_optimize_threshold:
+    #         objective_to_optimize = Accuracy()
+    #     self.threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
+    #     self.optimized_objective = objective_to_optimize
+
+
+
+
     def optimize_threshold(self, y_predicted, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.
 
