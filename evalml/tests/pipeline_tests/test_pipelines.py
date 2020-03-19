@@ -151,7 +151,7 @@ def test_describe(X_y, capsys, lr_pipeline):
     X, y = X_y
     lrp = lr_pipeline
     lrp.describe()
-    # out, err = capsys.readouterr()
+    out, err = capsys.readouterr()
     lrp.describe()
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Types: Binary Classification, Multiclass Classification" in out
