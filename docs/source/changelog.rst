@@ -18,7 +18,10 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+.. warning::
 
+    **Breaking Changes**
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
