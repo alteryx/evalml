@@ -15,7 +15,6 @@ Changelog
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
         * Created binary and multiclass objective subclasses :pr:`504`
         * Made all references to the logger static :pr:`503`
-        * Created binary and multiclass objective subclasses :pr:`419`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
