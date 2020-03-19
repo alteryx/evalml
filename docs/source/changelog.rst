@@ -18,7 +18,14 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+.. warning::
 
+    **Breaking Changes**
+
+    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
+    * `ModelTypes` enum has been changed to `ModelFamily`
+    * Components and Pipelines now have a `model_family` field instead of `model_type`
+    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
