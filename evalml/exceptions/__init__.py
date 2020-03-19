@@ -1,2 +1,2 @@
 # flake8:noqa
-from .exceptions import MethodPropertyNotFoundError
+from .exceptions import IllFormattedClassNameError, MethodPropertyNotFoundError

@@ -65,3 +65,28 @@ def normalize_confusion_matrix(conf_mat, option='true'):
         conf_mat = np.nan_to_num(conf_mat)
 
     return conf_mat
+
+
+class classproperty:
+    """Allows function to be accessed as a class level property.
+        Example:
+        class LogisticRegressionPipeline
+            component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
+
+            @classproperty
+            def summary(cls):
+            summary = ""
+            for component in cls.component_graph:
+                component = handle_component(component)
+                summary += component.name + " + "
+            return summary
+
+            assert LogisticRegressionPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
+            assert LogisticRegressionPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
+    """
+
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, _, klass):
+        return self.func(klass)

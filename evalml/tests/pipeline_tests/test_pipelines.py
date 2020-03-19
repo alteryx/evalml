@@ -3,6 +3,7 @@ import os
 import pytest
 from skopt.space import Real
 
+from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_types import ModelTypes
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
@@ -153,7 +154,7 @@ def test_describe(X_y, capsys, lr_pipeline):
     lrp.describe()
     out, err = capsys.readouterr()
 
-    assert "Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler" in out
+    assert "Logistic Regression Pipeline" in out
     assert "Problem Types: Binary Classification, Multiclass Classification" in out
     assert "Model Type: Linear Model" in out
     assert "Objective to Optimize: Precision (greater is better)" in out
@@ -181,10 +182,32 @@ def test_parameters(X_y, lr_pipeline):
     assert params == lrp.parameters
 
 
-def test_name(X_y, lr_pipeline):
+def test_name():
+    class TestNamePipeline(PipelineBase):
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary']
+
+    class TestDefinedNamePipeline(PipelineBase):
+        _name = "Cool Logistic Regression"
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary']
+
+    class testillformattednamepipeline(PipelineBase):
+        component_graph = ['Logistic Regression Classifier']
+        problem_types = ['binary']
+
+    assert TestNamePipeline.name == "Test Name Pipeline"
+    assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
+    assert TestDefinedNamePipeline(parameters={}, objective='precision').name == "Cool Logistic Regression"
+    with pytest.raises(IllFormattedClassNameError):
+        testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
+
+
+def test_summary(X_y, lr_pipeline):
     X, y = X_y
     clf = lr_pipeline
-    assert clf.name == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert LogisticRegressionPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
