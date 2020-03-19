@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add transformer to drop rows with NaN values :pr:`487`
+        * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
     * Fixes
     * Changes
@@ -18,7 +19,10 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+.. warning::
 
+    **Breaking Changes**
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
