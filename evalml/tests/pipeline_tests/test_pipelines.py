@@ -156,7 +156,6 @@ def test_describe(X_y, capsys, lr_pipeline):
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Types: Binary Classification" in out
     assert "Model Family: Linear Model" in out
-    assert "Objective to Optimize: Precision (greater is better)" in out
 
     for component in lrp.component_graph:
         if component.hyperparameter_ranges:
