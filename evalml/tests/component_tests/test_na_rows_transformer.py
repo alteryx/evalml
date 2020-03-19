@@ -16,7 +16,7 @@ def test_fit():
     X_t = transformer.fit_transform(X)
     assert len(X_t) == 3
 
-    transformer = transformer.fit()
+    transformer = transformer.fit(X)
     X_t = transformer.transform(X)
     assert len(X_t) == 3
 
