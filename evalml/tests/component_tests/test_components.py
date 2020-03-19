@@ -23,7 +23,7 @@ from evalml.pipelines.components import (
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
-        model_family = None
+        model_family = ModelFamily.NONE
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -219,3 +219,11 @@ def test_component_fit_transform(X_y):
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
         component.fit_transform(X, y)
+
+
+def test_model_family_components(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    assert MockComponent.model_family == ModelFamily.NONE
+    assert MockTransformer.model_family == ModelFamily.NONE
+    assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
