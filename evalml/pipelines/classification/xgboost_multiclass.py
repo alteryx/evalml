@@ -1,13 +1,11 @@
 from skopt.space import Integer, Real
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import MulticlassClassificationPipeline
 
 
 class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
     """XGBoost Pipeline for multiclass classification"""
     name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
-    model_type = ModelTypes.XGBOOST
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
     problem_types = ['multiclass']
 

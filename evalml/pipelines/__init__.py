@@ -41,7 +41,7 @@ from .regression import (
 )
 from .utils import (
     get_pipelines,
-    list_model_types,
+    list_model_families,
     load_pipeline,
     save_pipeline
 )

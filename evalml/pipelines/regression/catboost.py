@@ -1,6 +1,5 @@
 from skopt.space import Integer, Real
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import RegressionPipeline
 
 
@@ -13,8 +12,6 @@ class CatBoostRegressionPipeline(RegressionPipeline):
 
     Note: impute_strategy must support both string and numeric data
     """
-    name = "CatBoost Regressor w/ Simple Imputer"
-    model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
     problem_types = ['regression']
     hyperparameters = {

@@ -6,3 +6,8 @@ class MethodPropertyNotFoundError(Exception):
 class ObjectiveNotFoundError(Exception):
     """Exception to raise when specified objective does not exist."""
     pass
+
+
+class IllFormattedClassNameError(Exception):
+    """Exception to raise when a class name does not comply with EvalML standards"""
+    pass

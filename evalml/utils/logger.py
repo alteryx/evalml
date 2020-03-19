@@ -7,6 +7,7 @@ class Logger:
     Arguments:
         verbose (bool): If False, suppress log output. Default True.
     """
+
     def __init__(self, verbose=True):
         self.verbose = verbose
 
