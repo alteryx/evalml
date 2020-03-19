@@ -1,6 +1,5 @@
 from skopt.space import Integer, Real
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import BinaryClassificationPipeline
 
 
@@ -10,11 +9,8 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
-
     Note: impute_strategy must support both string and numeric data
     """
-    name = "CatBoost Classifier w/ Simple Imputer"
-    model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
     hyperparameters = {
         "impute_strategy": ["most_frequent"],

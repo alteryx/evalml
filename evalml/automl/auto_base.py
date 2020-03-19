@@ -27,23 +27,24 @@ class AutoBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.model_types = model_types
+        self.allowed_model_families = allowed_model_families
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        logger.verbose = verbose
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
+
+        logger.verbose = verbose
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
@@ -83,7 +84,7 @@ class AutoBase:
         np.random.seed(seed=self.random_state)
 
         self.n_jobs = n_jobs
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+        self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
 
         self.tuners = {}
         self.search_spaces = {}
@@ -150,7 +151,7 @@ class AutoBase:
             logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
             logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
+            logger.log("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
 
         if self.detect_label_leakage:
             leaked = guardrails.detect_label_leakage(X, y)
@@ -339,14 +340,14 @@ class AutoBase:
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
 
-        pipeline_class_name = trained_pipeline.__class__.__name__
         pipeline_name = trained_pipeline.name
+        pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self.results['pipeline_results'])
 
         self.results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_class_name": pipeline_class_name,
             "pipeline_name": pipeline_name,
+            "pipeline_summary": pipeline_summary,
             "parameters": dict(parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
@@ -438,7 +439,7 @@ class AutoBase:
             ascending = False
 
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
-        rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
+        * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
     * Fixes
     * Changes
@@ -15,12 +16,16 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Made all references to the logger static :pr:`503`
         * Created binary and multiclass objective subclasses :pr:`419`
+        * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
-        * Add code style and github issue guides :pr:`463`
+        * Add code style and github issue guides :pr:`463` :pr:`512`
     * Testing Changes
-        * Added automated dependency check PR :pr:`482`
-        * Update automated dependency check comment :pr:`497`
+        * Added automated dependency check PR :pr:`482`, :pr:`505`
+        * Updated automated dependency check comment :pr:`497`
+.. warning::
+
+    **Breaking Changes**
 
 .. warning::
 
@@ -30,6 +35,12 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
+    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
+    * `ModelTypes` enum has been changed to `ModelFamily`
+    * Components and Pipelines now have a `model_family` field instead of `model_type`
+    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
