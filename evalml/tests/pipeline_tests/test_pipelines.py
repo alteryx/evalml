@@ -151,9 +151,9 @@ def test_describe(X_y, capsys, lr_pipeline):
     X, y = X_y
     lrp = lr_pipeline
     lrp.describe()
-    out, err = capsys.readouterr()
-
-    assert "Logistic Regression Pipeline" in out
+    # out, err = capsys.readouterr()
+    lrp.describe()
+    assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Types: Binary Classification, Multiclass Classification" in out
     assert "Model Family: Linear Model" in out
     assert "Objective to Optimize: Precision (greater is better)" in out
@@ -197,7 +197,7 @@ def test_name():
 
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
-    assert TestDefinedNamePipeline(parameters={}, objective='precision').name == "Cool Logistic Regression"
+    assert TestDefinedNamePipeline(parameters={}).name == "Cool Logistic Regression"
     with pytest.raises(IllFormattedClassNameError):
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
