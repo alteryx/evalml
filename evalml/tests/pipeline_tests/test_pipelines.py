@@ -84,7 +84,6 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
 def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    MockPrecision = type('MockPrecision', (Precision,), {})
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
     save_pipeline(pipeline, path)
@@ -318,8 +317,6 @@ def test_problem_types():
 
 def test_score_with_list_of_multiple_objectives(X_y):
     X, y = X_y
-    objective = Recall()
-
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'

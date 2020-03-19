@@ -6,57 +6,15 @@ from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
-
 class BinaryClassificationPipeline(ClassificationPipeline):
 
     threshold = None
     problem_types = ['binary']
 
-    # def fit(self, X, y, objective=None, objective_fit_size=0.2):
-    #     """Build a model
-
-    #     Arguments:
-    #         X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-
-    #         y (pd.Series): the target training labels of length [n_samples]
-
-    #         objective (Object or string): the objective to optimize
-
-    #         objective_fit_size (float): the proportion of the dataset to include in the test split.
-    #     Returns:
-
-    #         self
-
-    #     """
-    #     if not isinstance(X, pd.DataFrame):
-    #         X = pd.DataFrame(X)
-
-    #     if not isinstance(y, pd.Series):
-    #         y = pd.Series(y)
-
-    #     if objective is not None:
-    #         objective = get_objective(objective)
-
-    #     # X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
-    #     self._fit(X, y)
-    #     # self._optimize_threshold(X_objective, y_objective, objective)
-
-    #     return self
-
-    # def _optimize_threshold(self, X_objective, y_objective, objective):
-    #     y_predicted_proba = self.predict_proba(X_objective)
-    #     y_predicted_proba = y_predicted_proba[:, 1]
-    #     objective_to_optimize = objective
-    #     # for f1/auc to use accuracy by default
-    #     if objective is None or not objective.can_optimize_threshold:
-    #         objective_to_optimize = Accuracy()
-    #     self.threshold = objective_to_optimize.optimize_threshold(y_predicted_proba, y_objective, X=X_objective)
-    #     self.optimized_objective = objective_to_optimize
-
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
         Returns:
@@ -79,7 +37,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
             objectives (list): list of objectives to score

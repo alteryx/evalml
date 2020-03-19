@@ -99,7 +99,6 @@ def test_rfr_input_feature_names(X_y_reg):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'

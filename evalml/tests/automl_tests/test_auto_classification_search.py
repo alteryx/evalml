@@ -90,6 +90,8 @@ def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
     automl.search(X, y, raise_errors=True)
+    assert isinstance(automl.objective, Precision)
+    assert automl.best_pipeline.threshold is not None
 
 
 def test_binary_auto(X_y):

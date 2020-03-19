@@ -196,7 +196,7 @@ class PipelineBase(ABC):
         self._fit(X, y)
         return self
 
-    def predict(self, X):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:

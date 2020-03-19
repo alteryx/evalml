@@ -6,7 +6,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import Precision, PrecisionMicro
+from evalml.objectives import PrecisionMicro
 from evalml.pipelines import (
     RFBinaryClassificationPipeline,
     RFMulticlassClassificationPipeline
@@ -106,7 +106,6 @@ def test_rf_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = Precision()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'

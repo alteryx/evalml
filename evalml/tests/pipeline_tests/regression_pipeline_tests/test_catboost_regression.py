@@ -61,7 +61,6 @@ def test_catboost_regression(X_y_reg):
 
 def test_cbr_input_feature_names(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
