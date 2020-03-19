@@ -13,7 +13,7 @@ Changelog
         * Support pandas 1.0.0 :pr:`486`
         * Changed the output of `score` to return one dictionary :pr:`429`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
-        * Created binary and multiclass objective subclasses :pr:`419`
+        * Created binary and multiclass objective subclasses :pr:`504`
         * Made all references to the logger static :pr:`503`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
     * Documentation Changes
