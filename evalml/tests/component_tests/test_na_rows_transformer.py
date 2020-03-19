@@ -30,9 +30,9 @@ def test_fit():
 
     # testing using numpy arrays
     X_arr = np.array([[1, 2, 3, 0],
-                     [np.nan, 0, 0, 1],
-                     [np.nan, 0, np.nan, 0],
-                     [np.nan, 0, 0, 0]])
+                      [np.nan, 0, 0, 1],
+                      [np.nan, 0, np.nan, 0],
+                      [np.nan, 0, 0, 0]])
     y_arr = y.values
     transformer = DropNaNRowsTransformer()
     X_t = transformer.fit_transform(X_arr, y_arr)
