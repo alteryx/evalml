@@ -32,6 +32,8 @@ class PipelineBase(ABC):
     def problem_types(cls):
         return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
 
+    _hyperparameters = None
+
     def __init__(self, parameters, objective):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -326,13 +328,16 @@ class PipelineBase(ABC):
         return handle_component(cls.component_graph[-1]).model_family
 
     @classproperty
-    def hyperparameter_ranges(cls):
+    def hyperparameters(cls):
         "Returns hyperparameter ranges from components"
-        hyperparameters = dict()
+        hyperparameter_ranges = dict()
         for component in cls.component_graph:
             component = handle_component(component)
-            hyperparameters.update(component.hyperparameter_ranges)
-        return hyperparameters
+            hyperparameter_ranges.update(component.hyperparameter_ranges)
+
+        if cls._hyperparameters:
+            hyperparameter_ranges.update(cls._hyperparameters)
+        return hyperparameter_ranges
 
     @property
     def parameters(self):

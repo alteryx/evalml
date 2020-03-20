@@ -1,5 +1,3 @@
-from skopt.space import Integer, Real
-
 from evalml.pipelines import PipelineBase
 
 
@@ -14,11 +12,8 @@ class CatBoostRegressionPipeline(PipelineBase):
     """
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
     problem_types = ['regression']
-    hyperparameters = {
+    _hyperparameters = {
         "impute_strategy": ["most_frequent"],
-        "n_estimators": Integer(10, 1000),
-        "eta": Real(0, 1),
-        "max_depth": Integer(1, 8),
     }
 
     def __init__(self, parameters, objective):
