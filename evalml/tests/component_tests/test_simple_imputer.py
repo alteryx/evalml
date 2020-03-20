@@ -90,3 +90,24 @@ def test_col_with_all_nan():
 
     X_t = transformer.transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+
+    # test that names of columns are retained
+    col = pd.Series([np.nan, 0, 1, 1])
+    X = pd.DataFrame()
+    X["a"] = y
+    X["b"] = y - 1
+    X["c"] = y
+    X["d"] = y
+
+    # test impute_strategy
+    transformer = SimpleImputer(impute_strategy='mean')
+    X_expected_arr = pd.DataFrame([[0, 1, 1],
+                                   [0, 1, 1],
+                                   [0, 1, 1],
+                                   [0, 1, 1]])
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    # check names of columns
+
+    X_t = transformer.transform(X)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
