@@ -11,7 +11,7 @@ class Estimator(ComponentBase):
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
-        return NotImplementedError("This component must have `name` as a class variable.")
+        return NotImplementedError("This component must have `supported_problem_types` as a class variable.")
 
     def predict(self, X):
         """Make predictions using selected features.

@@ -30,7 +30,7 @@ class PipelineBase(ABC):
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
-        return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
+        return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     def __init__(self, parameters, objective):
         """Machine learning pipeline made out of transformers and a estimator.
