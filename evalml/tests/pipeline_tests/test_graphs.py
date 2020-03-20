@@ -14,7 +14,7 @@ from evalml.pipelines import PipelineBase
 def test_pipeline():
     class TestPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],

@@ -17,7 +17,7 @@ class LogisticRegressionClassifier(Estimator):
         "C": Real(.01, 10),
     }
     model_family = ModelFamily.LINEAR_MODEL
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         parameters = {"penalty": penalty,

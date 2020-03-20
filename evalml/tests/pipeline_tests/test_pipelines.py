@@ -185,16 +185,16 @@ def test_parameters(X_y, lr_pipeline):
 def test_name():
     class TestNamePipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class TestDefinedNamePipeline(PipelineBase):
         _name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class testillformattednamepipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
@@ -226,7 +226,7 @@ def test_estimator_not_last(X_y):
 
     class MockLogisticRegressionPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
         def __init__(self, objective, parameters):
@@ -243,7 +243,7 @@ def test_multi_format_creation(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -271,7 +271,7 @@ def test_multi_format_creation(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)
@@ -283,7 +283,7 @@ def test_multiple_feature_selectors(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -300,7 +300,7 @@ def test_multiple_feature_selectors(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)
@@ -310,7 +310,7 @@ def test_multiple_feature_selectors(X_y):
 def test_problem_types():
     class TestPipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary', 'regression']
+        supported_problem_types = ['binary', 'regression']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
@@ -334,7 +334,7 @@ def test_no_default_parameters():
 
     class TestPipeline(PipelineBase):
         component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
@@ -349,7 +349,7 @@ def test_no_default_parameters():
 def test_init_components_invalid_parameters():
     class TestPipeline(PipelineBase):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
