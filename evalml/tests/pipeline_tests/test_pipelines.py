@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from skopt.space import Real
+from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
@@ -371,3 +371,21 @@ def test_correct_parameters(lr_pipeline):
     assert lr_pipeline.estimator.random_state == 1
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
+
+
+def test_hyperparameters():
+    class MockPipeline(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        problem_types = ['binary']
+        _hyperparameters = {
+            "impute_strategy": ['median']
+        }
+
+    hyperparameters = {
+        "impute_strategy": ['median'],
+        "n_estimators": Integer(10, 1000),
+        "max_depth": Integer(1, 32),
+    }
+
+    assert MockPipeline.hyperparameters == hyperparameters
+    assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
