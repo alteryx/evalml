@@ -323,8 +323,16 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-
         return handle_component(cls.component_graph[-1]).model_family
+
+    @classproperty
+    def hyperparameter_ranges(cls):
+        "Returns hyperparameter ranges from components"
+        hyperparameters = dict()
+        for component in cls.component_graph:
+            component = handle_component(component)
+            hyperparameters.update(component.hyperparameter_ranges)
+        return hyperparameters
 
     @property
     def parameters(self):
