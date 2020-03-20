@@ -152,7 +152,6 @@ def test_describe(X_y, capsys, lr_pipeline):
     lrp = lr_pipeline
     lrp.describe()
     out, err = capsys.readouterr()
-    lrp.describe()
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Types: Binary Classification" in out
     assert "Model Family: Linear Model" in out
@@ -162,7 +161,6 @@ def test_describe(X_y, capsys, lr_pipeline):
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
         assert component.name in out
-    lrp.describe()
 
 
 def test_parameters(X_y, lr_pipeline):

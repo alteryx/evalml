@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+import pytest
 from catboost import CatBoostClassifier as CBClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline
@@ -26,6 +27,40 @@ def test_catboost_init():
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
 
     assert clf.parameters == parameters
+
+
+def test_catboost_objective_tuning(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 500,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_catboost_multi(X_y_multi):

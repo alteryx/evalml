@@ -1,12 +1,13 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline as SKPipeline
 from sklearn.preprocessing import StandardScaler as SkScaler
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline
@@ -27,6 +28,38 @@ def test_lor_init(X_y):
     }
     clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     assert clf.parameters == parameters
+
+
+def test_lor_objective_tuning(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 0.5,
+        }
+    }
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_lor_multi(X_y_multi):
