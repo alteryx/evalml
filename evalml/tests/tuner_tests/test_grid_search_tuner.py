@@ -16,7 +16,7 @@ def test_autoreg_grid_search_tuner(X_y):
 
 def test_autoreg_grid_search_tuner_no_params(X_y, capsys):
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, model_types=['linear_model'], tuner=GridSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=GridSearchTuner)
     error_text = "Grid search has exhausted all possible parameters"
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
