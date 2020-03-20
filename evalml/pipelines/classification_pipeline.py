@@ -12,7 +12,7 @@ class ClassificationPipeline(PipelineBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:
@@ -28,7 +28,7 @@ class ClassificationPipeline(PipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
             objectives (list): list of objectives to score
