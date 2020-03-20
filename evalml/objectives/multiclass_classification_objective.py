@@ -1,9 +1,9 @@
-from .objective_base import ObjectiveBase
+from .classification_objective import ClassificationObjective
 
 from evalml.problem_types import ProblemTypes
 
 
-class MultiClassificationObjective(ObjectiveBase):
+class MultiClassificationObjective(ClassificationObjective):
     """
     Base class for all multi-class classification objectives.
 
