@@ -37,7 +37,7 @@ class PipelineBase(ABC):
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-            problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
+            supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             objective (ObjectiveBase): the objective to optimize
@@ -100,7 +100,7 @@ class PipelineBase(ABC):
         Arguments:
             problem_types (list): list of ProblemTypes
         """
-        estimator_problem_types = self.estimator.problem_types
+        estimator_problem_types = self.estimator.supported_problem_types
         for problem_type in self.supported_problem_types:
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
@@ -151,7 +151,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
+        logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
         logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
