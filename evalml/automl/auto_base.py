@@ -286,7 +286,8 @@ class AutoBase:
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
                 if self.objective.problem_type == ProblemTypes.BINARY:
-                    X_train, X_objective, y_train, y_objective = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
+                    if self.objective.can_optimize_threshold:
+                        X_train, X_objective, y_train, y_objective = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
                 pipeline.fit(X_train, y_train)
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     if self.objective.can_optimize_threshold:
