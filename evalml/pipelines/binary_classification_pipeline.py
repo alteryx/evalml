@@ -23,13 +23,10 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
-        if objective is not None:
-            objective = get_objective(objective)
-
         X_t = self._transform(X)
 
         if objective is not None:
+            objective = get_objective(objective)
             if objective.problem_type != ProblemTypes.BINARY:
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
             if self.threshold is not None:
@@ -68,7 +65,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 y_predictions = y_predicted_proba
             else:
                 if y_predicted is None:
-                    # does this make sense? One threshold for all objectives.
                     y_predicted = self.predict(X, objective)
                 y_predictions = y_predicted
             scores.update({objective.name: objective.score(y_predictions, y, X)})
