@@ -54,17 +54,21 @@ class OneHotEncoder(CategoricalEncoder):
         self.feature_names = list(X.columns)
         to_encode = self.get_cat_cols(X)
         encoded = pd.DataFrame()
+        # select_n = min(len(val_counts), top_n)
         for col in to_encode:
             v = X[col].value_counts().to_frame()
             index_name = list(v.index)
             v.reset_index(inplace=True)
-            sorted_counts = v.sort_values([col,'index'], ascending=[False, True])
-            sorted_counts['index'][:self.top_n]  
+            v = v.sort_values([col,'index'], ascending=[False, True])
+            v.set_index('index', inplace=True)
+            v.head(3).index.tolist()
+
             dummies = pd.get_dummies(X[col], prefix=col, drop_first=False)
             encoded = pd.concat([encoded, dummies], axis=1)
             print ("encoding ", col)
             print (encoded)
 
+            X.drop(X[col], axis=1, inplace=True)
     # def fit_transform(self, X, y=None):
     #     pass
 
