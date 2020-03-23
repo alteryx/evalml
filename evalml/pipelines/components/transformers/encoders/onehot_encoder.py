@@ -1,5 +1,5 @@
 import category_encoders as ce
-
+import pandas as pd
 from .encoder import CategoricalEncoder
 
 
@@ -15,3 +15,102 @@ class OneHotEncoder(CategoricalEncoder):
         super().__init__(parameters=parameters,
                          component_obj=encoder,
                          random_state=0)
+
+
+    def get_cat_cols(self, df):
+        """Get names of 'object' or 'categorical' columns in the DataFrame."""
+        obj_cols = []
+        for idx, dt in enumerate(df.dtypes):
+            if dt == 'object' or pd.api.types.is_categorical_dtype(dt):
+                obj_cols.append(df.columns.values[idx])
+        return obj_cols
+
+
+    def transform(self, X, y=None):
+        """
+        One-hot encode the input DataFrame.
+
+        Arguments:
+            X (pd.DataFrame): Dataframe of features.
+        
+        Returns:
+            Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
+        """
+        if X.isnull().any().any():
+            raise ValueError("Dataframe to be encoded can not contain null values.")
+        print (self.get_cat_cols(X))
+        self.feature_names = list(X.columns)
+        to_encode = self.get_cat_cols(X)
+        for col in to_encode:
+            n_unique = col.value_counts()
+            # val_counts.sort_values([],ascending=False)
+            # if n_unique > 10:
+            v = col.value_counts().to_frame()
+            index_name = list(v.index)
+
+            # v.sort_values([index_name]).reset_index()
+            v.reset_index(inplace=True)
+
+                
+            # dummies = pd.get_dummies(df[each], prefix=each, drop_first=False)
+            # df = pd.concat([df, dummies], axis=1)
+    # def fit_transform(self, X, y=None):
+    #     pass
+
+
+
+# def encode_features(feature_matrix):
+#     encoded = []
+#     feature_names = []
+#     for feature in features:
+#         feature_names.append(fname)
+#     iterator = features
+#     for f in iterator:
+#         val_counts = X[f.get_name()].value_counts().to_frame()
+#         index_name = val_counts.index.name
+#         if index_name is None:
+#             if 'index' in val_counts.columns:
+#                 index_name = 'level_0'
+#             else:
+#                 index_name = 'index'
+#         val_counts.reset_index(inplace=True)
+#         val_counts = val_counts.sort_values([f.get_name(), index_name],
+#                                             ascending=False)
+#         val_counts.set_index(index_name, inplace=True)
+#         select_n = top_n
+#         if isinstance(top_n, dict):
+#             select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
+#         if drop_first:
+#             select_n = min(len(val_counts), top_n)
+#             select_n = max(select_n - 1, 1)
+#         unique = val_counts.head(select_n).index.tolist()
+#         for label in unique:
+#             add = f == label
+#             encoded.append(add)
+#             X[add.get_name()] = (X[f.get_name()] == label).astype(int)
+
+#         if include_unknown:
+#             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
+#             encoded.append(unknown)
+#             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
+
+#         X.drop(f.get_name(), axis=1, inplace=True)
+
+#     new_columns = []
+#     for e in encoded:
+#         new_columns.extend(e.get_feature_names())
+
+#     new_X = X[new_columns]
+#     iterator = new_X.columns
+#     if verbose:
+#         iterator = make_tqdm_iterator(iterable=new_X.columns,
+#                                       total=len(new_X.columns),
+#                                       desc="Encoding pass 2",
+#                                       unit="feature")
+#     for c in iterator:
+#         try:
+#             new_X[c] = pd.to_numeric(new_X[c], errors='raise')
+#         except (TypeError, ValueError):
+#             pass
+
+#     return new_X, encoded
