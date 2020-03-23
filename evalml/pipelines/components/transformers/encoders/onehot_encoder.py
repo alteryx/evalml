@@ -8,6 +8,7 @@ class OneHotEncoder(CategoricalEncoder):
     """Creates one-hot encoding for non-numeric data"""
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
+    top_n = 10
 
     def __init__(self):
         parameters = {}
@@ -35,25 +36,35 @@ class OneHotEncoder(CategoricalEncoder):
         
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
+
+        Ange's own notes:
+            1. Check which columns need to be encoded
+                - check if dtype is object or category
+            2. For each column that needs to be encoded:
+                - check how many unique values are in the column
+                - if greater than 10, get the top 10 most frequent values
+                - otherwise, get all of them :)
+
+                - Encode values for that column and add to the DataFrame
+                - Make sure the column before encoding does not stay!
         """
         if X.isnull().any().any():
             raise ValueError("Dataframe to be encoded can not contain null values.")
         print (self.get_cat_cols(X))
         self.feature_names = list(X.columns)
         to_encode = self.get_cat_cols(X)
+        encoded = pd.DataFrame()
         for col in to_encode:
-            n_unique = col.value_counts()
-            # val_counts.sort_values([],ascending=False)
-            # if n_unique > 10:
-            v = col.value_counts().to_frame()
+            v = X[col].value_counts().to_frame()
             index_name = list(v.index)
-
-            # v.sort_values([index_name]).reset_index()
             v.reset_index(inplace=True)
+            sorted_counts = v.sort_values([col,'index'], ascending=[False, True])
+            sorted_counts['index'][:self.top_n]  
+            dummies = pd.get_dummies(X[col], prefix=col, drop_first=False)
+            encoded = pd.concat([encoded, dummies], axis=1)
+            print ("encoding ", col)
+            print (encoded)
 
-                
-            # dummies = pd.get_dummies(df[each], prefix=each, drop_first=False)
-            # df = pd.concat([df, dummies], axis=1)
     # def fit_transform(self, X, y=None):
     #     pass
 
