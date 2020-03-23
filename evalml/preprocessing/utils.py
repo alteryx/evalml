@@ -89,4 +89,3 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
-
