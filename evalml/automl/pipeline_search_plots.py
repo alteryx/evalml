@@ -5,6 +5,7 @@ from IPython.display import display
 from scipy import interp
 
 from evalml.problem_types import ProblemTypes
+from evalml.utils import normalize_confusion_matrix
 
 
 class SearchIterationPlot():
@@ -165,8 +166,12 @@ class PipelineSearchPlots:
         figure = go.Figure(layout=layout, data=data)
         return figure
 
-    def get_confusion_matrix_data(self, pipeline_id):
+    def get_confusion_matrix_data(self, pipeline_id, normalize=None):
         """Gets data that can be used to create a confusion matrix plot.
+
+        Arguments:
+            pipeline_id (int): ID of pipeline to get confusion matrix data for
+            normalize ({'true', 'pred', 'all', None}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. If option is None, returns original confusion matrix. Defaults to 'true'.
 
         Returns:
             List containing information used to generate a confusion matrix plot. Each element in the list contains the confusion matrix data for that fold.
@@ -186,17 +191,32 @@ class PipelineSearchPlots:
 
         confusion_matrix_data = []
         for fold in cv_data:
-            confusion_matrix_data.append(fold["all_objective_scores"]["Confusion Matrix"])
+            conf_mat = fold["all_objective_scores"]["Confusion Matrix"]
+            # reverse columns in confusion matrix to change axis order to match sklearn's
+            conf_mat = conf_mat.iloc[:, ::-1]
+            if normalize is not None:
+                conf_mat = normalize_confusion_matrix(conf_mat, option=normalize)
+            confusion_matrix_data.append(conf_mat)
         return confusion_matrix_data
 
-    def generate_confusion_matrix(self, pipeline_id, fold_num=None):
+    def generate_confusion_matrix(self, pipeline_id, fold_num=None, normalize=None):
         """Generate confusion matrix plot for a given pipeline using the data returned from get_confusion_matrix_data().
+
+        Arguments:
+            pipeline_id (int): ID of pipeline to get confusion matrix data for
+            fold_num (int): Fold number of pipeline to get confusion matrix data for
+            option ({'true', 'pred', 'all', None}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. If option is None, returns original confusion matrix. Defaults to 'true'.
 
         Returns:
             plotly.Figure representing the confusion matrix plot generated
 
         """
-        data = self.get_confusion_matrix_data(pipeline_id)
+        data = self.get_confusion_matrix_data(pipeline_id, normalize=None)
+        if normalize is not None:
+            data_normalized = self.get_confusion_matrix_data(pipeline_id, normalize=normalize)
+        else:
+            data_normalized = self.get_confusion_matrix_data(pipeline_id, normalize='true')
+
         results = self.data.results['pipeline_results']
         pipeline_name = results[pipeline_id]["pipeline_name"]
         # defaults to last fold if none specified. May need to think of better approach.
@@ -204,16 +224,32 @@ class PipelineSearchPlots:
             fold_num = -1
 
         conf_mat = data[fold_num]
-        labels = conf_mat.columns
+        conf_mat_normalized = data_normalized[fold_num]
 
-        layout = go.Layout(title={'text': 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)},
-                           xaxis={'title': 'Predicted Label', 'tickvals': labels},
-                           yaxis={'title': 'True Label', 'tickvals': labels})
-        figure = go.Figure(data=go.Heatmap(x=labels, y=labels, z=conf_mat,
+        labels = conf_mat.columns
+        reversed_labels = labels[::-1]
+
+        title_text = 'Confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+        z_data = conf_mat
+        custom_data = conf_mat_normalized
+        hover_text = '<br><b>Number of times</b>: %{z}' + '<br><b>Normalized</b>: %{customdata:.3f} <br>'
+
+        if normalize is not None:
+            title_text = 'Normalized confusion matrix of<br>{} w/ ID={}'.format(pipeline_name, pipeline_id)
+            z_data = conf_mat_normalized
+            custom_data = conf_mat
+            hover_text = '<br><b>Number of times</b>: %{customdata}' + '<br><b>Normalized</b>: %{z:.3f} <br>'
+
+        layout = go.Layout(title={'text': title_text},
+                           xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                           yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
+        figure = go.Figure(data=go.Heatmap(x=labels, y=reversed_labels, z=z_data,
+                                           customdata=custom_data,
                                            hovertemplate='<b>True</b>: %{y}' +
-                                                         '<br><b>Predicted</b>: %{x}' +
-                                                         '<br><b>Number of times</b>: %{z}' +
-                                                         '<extra></extra>'),  # necessary to remove unwanted trace info
+                                           '<br><b>Predicted</b>: %{x}' +
+                                           hover_text +
+                                           '<extra></extra>',  # necessary to remove unwanted trace info
+                                           colorscale='Blues'),
                            layout=layout)
         return figure
 

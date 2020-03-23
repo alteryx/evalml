@@ -5,16 +5,71 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added basic correlation guardrail :pr:`141`
+        * Add normalization option and information to confusion matrix :pr:`484`
+        * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
+        * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
+    * Fixes
+    * Changes
+        * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
+        * Support pandas 1.0.0 :pr:`486`
+        * Made all references to the logger static :pr:`503`
+        * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
+    * Documentation Changes
+        * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
+        * Add code style and github issue guides :pr:`463` :pr:`512`
+    * Testing Changes
+        * Added automated dependency check PR :pr:`482`, :pr:`505`
+        * Updated automated dependency check comment :pr:`497`
+.. warning::
+
+    **Breaking Changes**
+
+    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
+    * `ModelTypes` enum has been changed to `ModelFamily`
+    * Components and Pipelines now have a `model_family` field instead of `model_type`
+    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
+    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    
+
+**v0.7.0 Mar. 9, 2020**
+    * Enhancements
+        * Added emacs buffers to .gitignore :pr:`350`
+        * Add CatBoost (gradient-boosted trees) classification and regression components and pipelines :pr:`247`
+        * Added Tuner abstract base class :pr:`351`
+        * Added n_jobs as parameter for AutoClassificationSearch and AutoRegressionSearch :pr:`403`
+        * Changed colors of confusion matrix to shades of blue and updated axis order to match scikit-learn's :pr:`426`
+        * Added PipelineBase graph and feature_importance_graph methods, moved from previous location :pr:`423`
+        * Added support for python 3.8 :pr:`462`
     * Fixes
         * Fixed ROC and confusion matrix plots not being calculated if user passed own additional_objectives :pr:`276`
+        * Fixed ReadtheDocs FileNotFoundError exception for fraud dataset :pr:`439`
     * Changes
         * Added n_estimators as a tunable parameter for XGBoost :pr:`307`
         * Remove unused parameter ObjectiveBase.fit_needs_proba :pr:`320`
+        * Remove extraneous parameter component_type from all components :pr:`361`
+        * Remove unused rankings.csv file :pr:`397`
+        * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
+        * Remove `_needs_fitting` attribute from Components :pr:`398`
+        * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
+        * Refactored `PipelineBase` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
+        * Dropped support for Python 3.5 :pr:`438`
+        * Removed unused `apply.py` file :pr:`449`
+        * Clean up requirements.txt to remove unused deps :pr:`451`
     * Documentation Changes
+        * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
         * Added tests for utils (and moved current utils to gen_utils) :pr:`297`
         * Moved XGBoost install into it's own separate step on Windows using Conda :pr:`313`
         * Rewind pandas version to before 1.0.0, to diagnose test failures for that version :pr:`325`
+        * Added dependency update checkin test :pr:`324`
+        * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
+        * Update dependency check to use a whitelist :pr:`417`
+        * Update unit test jobs to not install dev deps :pr:`455`
+.. warning::
+
+    **Breaking Changes**
+
+    * Python 3.5 will not be actively supported.
 
 **v0.6.0 Dec. 16, 2019**
     * Enhancements

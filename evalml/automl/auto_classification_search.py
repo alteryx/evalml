@@ -17,7 +17,7 @@ class AutoClassificationSearch(AutoBase):
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 model_types=None,
+                 allowed_model_families=None,
                  cv=None,
                  tuner=None,
                  detect_label_leakage=True,
@@ -25,6 +25,7 @@ class AutoClassificationSearch(AutoBase):
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
+                 n_jobs=-1,
                  verbose=True):
         """Automated classifier pipeline search
 
@@ -47,8 +48,8 @@ class AutoClassificationSearch(AutoBase):
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            model_types (list): The model types to search. By default searches over all
-                model_types. Run evalml.list_model_types("classification") to see options.
+            allowed_model_families (list): The model families to search. By default searches over all
+                model families. Run evalml.list_model_families("classification") to see options.
 
             cv: cross validation method to use. By default StratifiedKFold
 
@@ -68,7 +69,10 @@ class AutoClassificationSearch(AutoBase):
 
             random_state (int): the random_state
 
-            verbose (bool): If True, turn verbosity on. Defaults to True
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
+                None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+
+            verbose (boolean): If True, turn verbosity on. Defaults to True
         """
 
         if cv is None:
@@ -92,13 +96,14 @@ class AutoClassificationSearch(AutoBase):
             max_time=max_time,
             patience=patience,
             tolerance=tolerance,
-            model_types=model_types,
+            allowed_model_families=allowed_model_families,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
+            n_jobs=n_jobs,
             verbose=verbose
         )
 

@@ -20,14 +20,22 @@ test:
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
 .PHONY: win-circleci-test
 win-circleci-test:
-	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
-.PHONY: installdeps
-installdeps:
+.PHONY: installdeps-test
+installdeps-test:
 	pip install --upgrade pip -q
 	pip install -e . -q
+
+.PHONY: installdeps
+installdeps: installdeps-test
 	pip install -r dev-requirements.txt -q
+
+.PHONY: dependenciesfile
+dependenciesfile:
+		$(eval whitelist='pandas|numpy|scikit|xgboost|catboost|category-encoders|cloudpickle|dask|distributed|pyzmq|statsmodels')
+		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $(whitelist) > $(DEPENDENCY_FILE_PATH)

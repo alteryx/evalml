@@ -1,6 +1,10 @@
+import numpy as np
 import pytest
 
-from evalml.pipelines import (
+from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.model_family import ModelFamily
+from evalml.pipelines.components import (
+    ComponentBase,
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -13,42 +17,51 @@ from evalml.pipelines import (
     Transformer,
     XGBoostClassifier
 )
-from evalml.pipelines.components import ComponentBase, ComponentTypes
 
 
-def test_init():
-    # testing transformers
-    enc = OneHotEncoder()
-    imputer = SimpleImputer()
-    scaler = StandardScaler()
-    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5)
-    assert enc.component_type == ComponentTypes.CATEGORICAL_ENCODER
-    assert imputer.component_type == ComponentTypes.IMPUTER
-    assert scaler.component_type == ComponentTypes.SCALER
-    assert feature_selection.component_type == ComponentTypes.FEATURE_SELECTION_CLASSIFIER
+@pytest.fixture
+def test_classes():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
 
-    # testing estimators
-    lr_classifier = LogisticRegressionClassifier()
-    rf_classifier = RandomForestClassifier(n_estimators=10)
-    xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3)
-    rf_regressor = RandomForestRegressor(n_estimators=10)
-    linear_regressor = LinearRegressor()
-    assert lr_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert rf_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert xgb_classifier.component_type == ComponentTypes.CLASSIFIER
-    assert rf_regressor.component_type == ComponentTypes.REGRESSOR
-    assert linear_regressor.component_type == ComponentTypes.REGRESSOR
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+
+    class MockTransformer(Transformer):
+        name = "Mock Transformer"
+
+    return MockComponent, MockEstimator, MockTransformer
+
+
+def test_init(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    assert MockComponent({}, None, 0).name == "Mock Component"
+    assert MockEstimator({}, None, 0).name == "Mock Estimator"
+    assert MockTransformer({}, None, 0).name == "Mock Transformer"
+
+
+def test_describe(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    params = {'param_a': 'value_a', 'param_b': 123}
+    component = MockComponent(params, None, random_state=0)
+    assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
+    estimator = MockEstimator(params, None, random_state=0)
+    assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
+    transformer = MockTransformer(params, None, random_state=0)
+    assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
 
 
 def test_describe_component():
     enc = OneHotEncoder()
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
-    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=10)
+    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {}}
     assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
-    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': 10}}
+    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf}}
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
@@ -64,55 +77,49 @@ def test_describe_component():
 
 
 def test_missing_attributes(X_y):
-    class mockComponentFitting(ComponentBase):
-        name = "mock"
-        component_type = ComponentTypes.REGRESSOR
+    class MockComponentName(ComponentBase):
+        model_family = None
 
-    class mockComponentName(ComponentBase):
-        component_type = ComponentTypes.REGRESSOR
-        _needs_fitting = True
+    with pytest.raises(TypeError):
+        MockComponentName(parameters={}, component_obj=None, random_state=0)
 
-    class mockComponentType(ComponentBase):
-        name = "mock"
-        _needs_fitting = True
+    class MockComponentModelFamily(ComponentBase):
+        name = "Mock Component"
 
-    with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
-        mockComponentName(parameters={}, component_obj=None, random_state=0)
-
-    with pytest.raises(AttributeError, match="Component missing attribute: `_needs_fitting`"):
-        mockComponentFitting(parameters={}, component_obj=None, random_state=0)
-
-    with pytest.raises(AttributeError, match="Component missing attribute: `component_type`"):
-        mockComponentType(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(TypeError):
+        MockComponentModelFamily(parameters={}, component_obj=None, random_state=0)
 
 
-def test_missing_methods_on_components(X_y):
-    # test that estimator doesn't have
+def test_missing_methods_on_components(X_y, test_classes):
     X, y = X_y
+    MockComponent, MockEstimator, MockTransformer = test_classes
 
-    class mockEstimator(Estimator):
-        name = "mock Estimator"
-        component_type = ComponentTypes.REGRESSOR
-        _needs_fitting = True
+    class MockTransformerWithFit(Transformer):
+        name = "Mock Transformer"
 
-    class mockTransformer(Transformer):
-        name = "mock Transformer"
-        component_type = ComponentTypes.IMPUTER
-        _needs_fitting = False
+        def fit(self, X, y=None):
+            return X
 
-    estimator = mockEstimator(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict method or a component_obj that implements predict"):
+    component = MockComponent(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
+        component.fit(X)
+
+    estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
-    with pytest.raises(RuntimeError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
-    transformer = mockTransformer(parameters={}, component_obj=None, random_state=0)
-    with pytest.raises(RuntimeError, match="Component requires a fit method or a component_obj that implements fit"):
+    transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
+    transformer_with_fit = MockTransformerWithFit(parameters={}, component_obj=None, random_state=0)
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
-    with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
         transformer.transform(X)
-    with pytest.raises(RuntimeError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit_transform(X)
+    with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
+        transformer_with_fit.fit_transform(X)
 
 
 def test_component_fit(X_y):
@@ -123,12 +130,11 @@ def test_component_fit(X_y):
             pass
 
         def predict(self, X):
-            pass
+            raise NotImplementedError()
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
-        component_type = ComponentTypes.CLASSIFIER
-        _needs_fitting = True
+        model_family = ModelFamily.LINEAR_MODEL
         hyperparameter_ranges = {}
 
         def __init__(self):
@@ -140,3 +146,84 @@ def test_component_fit(X_y):
 
     est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
+
+
+def test_component_fit_transform(X_y):
+    X, y = X_y
+
+    class MockTransformerWithFitTransform(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithFitTransformButError(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit_transform(self, X, y=None):
+            raise RuntimeError
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithFitAndTransform(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def transform(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    class MockTransformerWithOnlyFit(Transformer):
+        name = "Mock Transformer"
+        hyperparameter_ranges = {}
+
+        def fit(self, X, y=None):
+            return X
+
+        def __init__(self):
+            parameters = {}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+    component = MockTransformerWithFitTransform()
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerWithFitTransformButError()
+    with pytest.raises(RuntimeError):
+        component.fit_transform(X, y)
+
+    component = MockTransformerWithFitAndTransform()
+    assert isinstance(component.fit_transform(X, y), np.ndarray)
+
+    component = MockTransformerWithOnlyFit()
+    with pytest.raises(MethodPropertyNotFoundError):
+        component.fit_transform(X, y)
+
+
+def test_model_family_components(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    assert MockComponent.model_family == ModelFamily.NONE
+    assert MockTransformer.model_family == ModelFamily.NONE
+    assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
