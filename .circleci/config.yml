@@ -1,45 +1,131 @@
 version: 2.1
 
+orbs:
+  windows: circleci/windows@2.0.0
 
 executors:
   python:
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
+        environment:
+          OMP_NUM_THREADS: 8
 
 commands:
-  install_dependencies:
+  install_dependencies_test:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps-test
+            pip install -r test-requirements.txt
+  install_dependencies_dev:
     steps:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps
+            pip install -r test-requirements.txt
 
 jobs:
   lint_test:
       parameters:
         python_version:
           type: string
-          default: "3.7"
+          default: "3.8"
       executor:
         name: python
         python_version: << parameters.python_version >>
       steps:
         - checkout
-        - install_dependencies
+        - install_dependencies_dev
         - run: |
             source test_python/bin/activate
             make lint
-
-  unit_tests:
+  win_unit_tests:
+    working_directory: C:/evalml
     parameters:
       python_version:
         type: string
-        default: "3.7"
+        default: "3.8"
+      miniconda_pkg_name:
+        type: string
+        default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+      miniconda_hash:
+        type: string
+        default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+    executor:
+      name: windows/default
+    steps:
+      - checkout
+      - run:
+          name: Download Miniconda
+          command: |
+              $File = "./<< parameters.miniconda_pkg_name >>"
+              $Uri = "https://repo.anaconda.com/miniconda/<< parameters.miniconda_pkg_name >>"
+              $ProgressPreference = "silentlyContinue"
+              Invoke-WebRequest -Uri $Uri -Outfile $File
+              $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
+              $hashFromUrl = "<< parameters.miniconda_hash >>"
+              if ($hashFromFile.Hash -ne "$hashFromUrl") {
+                Throw "File hashes did not match!"
+              }
+      - run:
+          name: Install Miniconda
+          command: start /wait C:\evalml\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
+          shell: cmd.exe
+      - run:
+          name: Set Python Version
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda create -n curr_py python=<< parameters.python_version >>
+      - run:
+          name: Install make
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda config --add channels conda-forge
+              conda activate curr_py
+              conda install make -q -y
+      - run:
+          name: Install Graphviz
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda install python-graphviz -q -y
+      - run:
+          name: Install XGBoost
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda install -c anaconda py-xgboost
+      - run:
+          name: Install EvalML
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              python -m pip install --upgrade pip
+              python -m pip install .
+              python -m pip install -r test-requirements.txt
+      - run:
+          name: Run Unit Tests
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              make win-circleci-test
+      - store_test_results:
+          path: C:/evalml/test-reports
+      - store_artifacts:
+          path: C:/evalml/test-reports
+  unit_tests:
+    resource_class: xlarge
+    parameters:
+      python_version:
+        type: string
+        default: "3.8"
       codecov:
         type: boolean
         default: false
@@ -47,8 +133,9 @@ jobs:
         name: python
         python_version: << parameters.python_version >>
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies
+      - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -63,7 +150,7 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov
-  
+
   changelog_updated:
     working_directory: ~/evalml
     docker:
@@ -72,6 +159,44 @@ jobs:
       - checkout
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
       - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+
+  build_docs:
+    working_directory: ~/evalml/
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - install_dependencies_dev
+      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
+      - run: source test_python/bin/activate ; make -C docs/ html
+      - run: ls docs/build/html
+  check_dependencies_updated_linux:
+    parameters:
+      python_version:
+        type: string
+        default: "3.8"
+    executor:
+      name: python
+      python_version: << parameters.python_version >>
+    steps:
+      - checkout
+      - install_dependencies_dev
+      - run:
+          name: "Detect Dependency Changes"
+          command: |
+            source test_python/bin/activate
+            mkdir /tmp/dependencies_updated_artifacts
+            make dependenciesfile DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
+            diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+            exit $?
+      - run:
+          name: "Display Dependency Diff"
+          command: |
+            echo Displaying dependencies which have changed, with master on the left and the new branch on the right:
+            cat /tmp/dependencies_updated_artifacts/diff.txt
+          when: on_fail
+      - store_artifacts:
+          path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
@@ -82,24 +207,56 @@ workflows:
           filters:
             branches:
               ignore: /^master?/
+  build_docs:
+    jobs:
+      - build_docs:
+          name: "build docs"
+  windows_test_all_python_versions:
+    jobs:
+        - win_unit_tests:
+            name: "windows python 3.6 unit tests"
+            python_version: "3.6"
+            filters:
+              branches:
+                only: master
+        - win_unit_tests:
+            name: "windows python 3.7 unit tests"
+            python_version: "3.7"
+            filters:
+              branches:
+                only: master
+        - win_unit_tests:
+            name: "windows python 3.8 unit tests"
+            python_version: "3.8"
+            filters:
+              branches:
+                only: master
+  check_dependencies_updated_linux:
+    jobs:
+        - check_dependencies_updated_linux:
+            name: "linux python 3.8 check dependencies for updates"
+            python_version: "3.8"
+            filters:
+              branches:
+                ignore: /^master?/
   test_all_python_versions:
     jobs:
-      - lint_test:
-          name: "python 3.5 lint test"
-          python_version: "3.5"
-      - lint_test:
-          name: "python 3.6 lint test"
-          python_version: "3.6"
-      - lint_test:
-          name: "python 3.7 lint test"
-          python_version: "3.7"
-      - unit_tests:
-          name: "python 3.5 unit tests"
-          python_version: "3.5"
-      - unit_tests:
-          name: "python 3.6 unit tests"
-          python_version: "3.6"
-      - unit_tests:
-          name: "python 3.7 unit tests"
-          python_version: "3.7"
-          codecov: true
+        - lint_test:
+            name: "python 3.6 lint test"
+            python_version: "3.6"
+        - lint_test:
+            name: "python 3.7 lint test"
+            python_version: "3.7"
+        - lint_test:
+            name: "python 3.8 lint test"
+            python_version: "3.8"
+        - unit_tests:
+            name: "linux python 3.6 unit tests"
+            python_version: "3.6"
+        - unit_tests:
+            name: "linux python 3.7 unit tests"
+            python_version: "3.7"
+        - unit_tests:
+            name: "linux python 3.8 unit tests"
+            python_version: "3.8"
+            codecov: true

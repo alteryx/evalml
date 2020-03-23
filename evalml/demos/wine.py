@@ -3,6 +3,12 @@ from sklearn.datasets import load_wine as load_wine_sk
 
 
 def load_wine():
-    """Load wine dataset. Multiclass problem"""
-    X, y = load_wine_sk(return_X_y=True)
-    return pd.DataFrame(X), pd.Series(y)
+    """Load wine dataset. Multiclass problem
+
+    Returns:
+        pd.DataFrame, pd.Series: X, y
+    """
+    data = load_wine_sk()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    return X, y

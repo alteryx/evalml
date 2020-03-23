@@ -2,3 +2,5 @@ pytest==4.4.1
 pytest-xdist==1.26.1
 pytest-cov==2.6.1
 nbval==0.9.3
+graphviz>=0.13
+codecov==2.0.15

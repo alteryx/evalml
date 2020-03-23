@@ -18,7 +18,6 @@ def test_detect_label_leakage():
     y = y.astype(bool)
 
     result = detect_label_leakage(X, y)
-
     assert set(["a", "b", "c", "d"]) == set(result.keys())
 
 

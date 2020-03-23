@@ -6,7 +6,6 @@ from evalml.problem_types import handle_problem_types
 class ObjectiveBase:
     needs_fitting = False
     greater_is_better = True
-    fit_needs_proba = True
     score_needs_proba = False
     uses_extra_columns = False
     problem_types = []
@@ -14,9 +13,17 @@ class ObjectiveBase:
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def supports_problem_type(self, problem_type):
+    @classmethod
+    def supports_problem_type(cls, problem_type):
+        """ Checks if objective supports given ProblemType
+
+        Arguments:
+            problem_type(str or ProblemType): problem type to check
+        Returns:
+            bool: whether objective supports ProblemType
+        """
         problem_type = handle_problem_types(problem_type)
-        if problem_type in self.__class__.problem_types:
+        if problem_type in cls.problem_types:
             return True
         return False
 
@@ -31,7 +38,7 @@ class ObjectiveBase:
 
             y_true (list): the ground truth for the predictions.
 
-            extra_cols (extra_cols): any extra columns that are needed from training
+            extra_cols (pd.DataFrame): any extra columns that are needed from training
                 data to fit. Only provided if uses_extra_columns is True.
 
         Returns:
@@ -89,7 +96,7 @@ class ObjectiveBase:
 
             y_true (list): the ground truth for the predictions.
 
-            extra_cols (extra_cols): any extra columns that are needed from training
+            extra_cols (pd.DataFrame): any extra columns that are needed from training
                 data to fit. Only provided if uses_extra_columns is True.
 
         Returns:

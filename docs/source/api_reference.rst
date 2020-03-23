@@ -9,7 +9,6 @@ Demo Datasets
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     load_fraud
@@ -25,7 +24,6 @@ Preprocessing
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     load_data
@@ -34,18 +32,37 @@ Preprocessing
 
 .. currentmodule:: evalml
 
-Models
+AutoML
 ======
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: class_with_properties.rst
     :nosignatures:
 
-    AutoClassifier
-    AutoRegressor
+    AutoClassificationSearch
+    AutoRegressionSearch
 
-Model Types
+
+Plotting
+~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: accessor_method.rst
+    :nosignatures:
+
+    AutoClassificationSearch.plot.get_roc_data
+    AutoClassificationSearch.plot.generate_roc_plot
+    AutoClassificationSearch.plot.get_confusion_matrix_data
+    AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.normalize_confusion_matrix
+
+
+.. currentmodule:: evalml.model_family
+
+Model Family
 ===========
 
 .. autosummary::
@@ -53,7 +70,45 @@ Model Types
     :template: class.rst
     :nosignatures:
 
-    list_model_types
+    ModelFamily
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    list_model_families
+
+
+Components
+==========
+
+Transformers
+~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    OneHotEncoder
+    RFRegressorSelectFromModel
+    RFClassifierSelectFromModel
+    SimpleImputer
+    StandardScaler
+
+Estimators
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    LogisticRegressionClassifier
+    RandomForestClassifier
+    XGBoostClassifier
+    LinearRegressor
+    RandomForestRegressor
 
 
 .. currentmodule:: evalml.pipelines
@@ -63,16 +118,35 @@ Pipelines
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     get_pipelines
     save_pipeline
     load_pipeline
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    PipelineBase
     RFClassificationPipeline
     XGBoostPipeline
     LogisticRegressionPipeline
     RFRegressionPipeline
+    LinearRegressionPipeline
+
+
+Plotting
+~~~~~~~~
+
+
+.. autosummary::
+   :toctree: generated
+   :template: accessor_callable.rst
+
+   PipelineBase.graph
+   PipelineBase.feature_importance_graph
 
 
 .. currentmodule:: evalml.objectives
@@ -118,6 +192,9 @@ Classification
     AUCWeighted
     LogLoss
     MCC
+    ROC
+    ConfusionMatrix
+
 
 Regression
 ~~~~~~~~~~
@@ -147,6 +224,11 @@ Problem Types
     :nosignatures:
 
     ProblemTypes
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
     handle_problem_types
 
 
@@ -160,6 +242,7 @@ Tuners
     :template: class.rst
     :nosignatures:
 
+    Tuner
     SKOptTuner
 
 
@@ -170,8 +253,9 @@ Guardrails
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     detect_highly_null
     detect_label_leakage
+    detect_outliers
+    detect_id_columns

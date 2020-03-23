@@ -1,7 +1,6 @@
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
-from evalml.model_types import ModelTypes
-from evalml.pipelines.components import ComponentTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -9,13 +8,11 @@ from evalml.problem_types import ProblemTypes
 class LinearRegressor(Estimator):
     """Linear Regressor"""
     name = "Linear Regressor"
-    component_type = ComponentTypes.REGRESSOR
-    _needs_fitting = True
     hyperparameter_ranges = {
         'fit_intercept': [True, False],
         'normalize': [True, False]
     }
-    model_type = ModelTypes.LINEAR_MODEL
+    model_family = ModelFamily.LINEAR_MODEL
     problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1):

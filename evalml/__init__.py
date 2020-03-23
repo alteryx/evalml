@@ -6,26 +6,25 @@ import warnings
 # must import sklearn first
 import sklearn
 
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", FutureWarning)
+    warnings.simplefilter("ignore", DeprecationWarning)
+    import skopt
+
 import evalml.demos
-import evalml.model_types
+import evalml.model_family
 import evalml.objectives
 import evalml.pipelines
-# import evalml.models
 import evalml.preprocessing
 import evalml.problem_types
 import evalml.utils
 import evalml.guardrails
 
-from evalml.pipelines import list_model_types, save_pipeline, load_pipeline
-from evalml.models import AutoClassifier, AutoRegressor
-from evalml.pipelines import list_model_types, load_pipeline, save_pipeline
+from evalml.pipelines import list_model_families, save_pipeline, load_pipeline
+from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", DeprecationWarning)
-    import skopt
-
-
+warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.5.0'
+__version__ = '0.7.0'

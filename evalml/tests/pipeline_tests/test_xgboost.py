@@ -5,21 +5,66 @@ from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
+from evalml.utils import import_or_raise
+
+
+def test_xg_init(X_y):
+    X, y = X_y
+
+    objective = PrecisionMicro()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+
+    expected_parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            'percent_features': 1.0,
+            'threshold': -np.inf,
+        },
+        'XGBoost Classifier': {
+            'eta': 0.2,
+            'max_depth': 5,
+            'min_child_weight': 3,
+            'n_estimators': 20
+        }
+    }
+
+    assert clf.parameters == expected_parameters
 
 
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
+    xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = XGBClassifier(random_state=0,
-                              eta=0.1,
-                              max_depth=3,
-                              min_child_weight=1)
+    estimator = xgb.XGBClassifier(random_state=0,
+                                  eta=0.1,
+                                  max_depth=3,
+                                  min_child_weight=1,
+                                  n_estimators=10)
     rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
@@ -32,7 +77,25 @@ def test_xg_multi(X_y_multi):
     sk_score = sk_pipeline.score(X, y)
 
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X[0]))
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 3,
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 10,
+            "eta": 0.1,
+            "min_child_weight": 1,
+            "max_depth": 3
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -50,8 +113,27 @@ def test_xg_input_feature_names(X_y):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     objective = PrecisionMicro()
-    clf = XGBoostPipeline(objective=objective, eta=0.1, min_child_weight=1, max_depth=3, impute_strategy='mean', percent_features=1.0, number_features=len(X.columns))
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": X.shape[1],
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostPipeline(objective=objective, parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
-    assert ("col_" in col_name for col_name in clf.feature_importances["feature"])
+    for col_name in clf.feature_importances["feature"]:
+        assert "col_" in col_name

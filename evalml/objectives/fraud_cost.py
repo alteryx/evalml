@@ -1,3 +1,5 @@
+import pandas as pd
+
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
@@ -10,14 +12,13 @@ class FraudCost(ObjectiveBase):
     needs_fitting = True
     greater_is_better = False
     uses_extra_columns = True
-    fit_needs_proba = True
     score_needs_proba = False
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, amount_col='amount', verbose=False):
         """Create instance of FraudCost
 
-        Args:
+        Arguments:
             retry_percentage (float): what percentage of customers will retry a transaction if it
                 is declined? Between 0 and 1. Defaults to .5
 
@@ -36,14 +37,44 @@ class FraudCost(ObjectiveBase):
         super().__init__(verbose=verbose)
 
     def decision_function(self, y_predicted, extra_cols, threshold):
-        """Determine if transaction is fraud given predicted probabilities,
-            dataframe with transaction amount, and threshold"""
-        transformed_probs = (y_predicted * extra_cols[self.amount_col])
+        """Determine if transaction is fraud given predicted probabilities, dataframe with transaction amount, and threshold
+
+            Arguments:
+                y_predicted (pd.Series): predicted labels
+                extra_cols (pd.DataFrame): extra data needed
+                threshold (float): dollar threshold to determine if transaction is fraud
+
+            Returns:
+                pd.Series: series of predicted fraud label using extra cols and threshold
+        """
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
+        transformed_probs = (y_predicted.values * extra_cols[self.amount_col])
         return transformed_probs > threshold
 
     def objective_function(self, y_predicted, y_true, extra_cols):
-        """Calculate amount lost to fraud given predictions, true values, and dataframe
-            with transaction amount"""
+        """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount
+
+            Arguments:
+                y_predicted (pd.Series): predicted fraud labels
+                y_true (pd.Series): true fraud labels
+                extra_cols (pd.DataFrame): extra data needed
+
+            Returns:
+                float: amount lost to fraud per transaction
+        """
+        if not isinstance(extra_cols, pd.DataFrame):
+            extra_cols = pd.DataFrame(extra_cols)
+
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
+
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
 
         # extract transaction using the amount columns in users data
         transaction_amount = extra_cols[self.amount_col]
