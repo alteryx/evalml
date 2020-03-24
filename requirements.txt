@@ -7,7 +7,3 @@ tqdm>=4.33.0
 colorama
 category_encoders>=2.0.0
 cloudpickle>=0.2.2
-plotly>=4.2.1
-ipywidgets>=7.5
-xgboost>=0.82
-catboost>=0.20

@@ -37,12 +37,13 @@ commands:
             source test_python/bin/activate
             mkdir /tmp/install_dependencies_minimal
             pip install --upgrade pip -q
-            export blacklist="xgboost|catboost|plotly|ipywidgets"
             cat requirements.txt | grep -vE $blacklist > /tmp/install_dependencies_minimal/requirements-minimal.txt
             cp /tmp/install_dependencies_minimal/requirements-minimal.txt requirements.txt
-            pip install -e .  # this installs from requirements.txt via setup.py
+            pip install -e . --no-dependencies
+            pip install -r requirements.txt
             pip install -r test-requirements.txt
-            pip uninstall --yes plotly # catboost requires plotly, so for now manually uninstall
+            pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
+            exit $?
       - store_artifacts:
           path: /tmp/install_dependencies_minimal
 
