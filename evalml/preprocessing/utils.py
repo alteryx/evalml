@@ -89,3 +89,29 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
+
+
+def drop_nan_rows(X, y, drop_X_nans=False):
+    """Drops rows that have a NaN value from given input(s).
+
+    Arguments:
+        X (pd.DataFrame): Data to transform
+        y (pd.Series): Input Labels
+    Returns:
+        pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
+    """
+    X_t = X
+    y_t = y
+
+    if not isinstance(X_t, pd.DataFrame):
+        X_t = pd.DataFrame(X_t)
+
+    if not isinstance(y_t, pd.Series):
+        y_t = pd.Series(y_t)
+
+    # drop rows where corresponding y is NaN
+    y_null_indices = y_t.index[y_t.isna()]
+    X_t = X_t.drop(index=y_null_indices)
+    y_t = y_t.drop(index=y_null_indices)
+
+    return X_t, y_t
