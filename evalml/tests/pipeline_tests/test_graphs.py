@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from skopt.space import Real
+
 from evalml.pipelines import PipelineBase
 from evalml.tests.conftest import has_minimal_deps
 

@@ -5,7 +5,8 @@ from unittest.mock import patch
 import pytest
 from skopt.space import Real
 
-from evalml.model_types import ModelTypes
+from evalml.exceptions import IllFormattedClassNameError
+from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
@@ -34,16 +35,16 @@ def test_list_model_families():
     expected_model_families_binary.add(ModelFamily.XGBOOST)
     expected_model_families_binary.add(ModelFamily.CATBOOST)
     expected_model_families_regression.add(ModelFamily.CATBOOST)
-    assert set(list_model_families(ProblemFamily.BINARY)) == expected_model_families_binary
-    assert set(list_model_families(ProblemFamily.REGRESSION)) == expected_model_families_regression
+    assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
+    assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
 @pytest.mark.skipif(not has_minimal_deps(), reason="Skipping test because xgboost/catboost are installed")
-def test_list_model_types_minimal_dependencies():
-    expected_model_types_binary = set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL])
-    expected_model_types_regression = set([ModelTypes.RANDOM_FOREST, ModelTypes.LINEAR_MODEL])
-    assert set(list_model_types(ProblemTypes.BINARY)) == expected_model_types_binary
-    assert set(list_model_types(ProblemTypes.REGRESSION)) == expected_model_types_regression
+def test_list_model_families_minimal_dependencies():
+    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
+    assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
 @pytest.mark.skipif(has_minimal_deps(), reason="Skipping test because xgboost/catboost not installed")
@@ -96,7 +97,7 @@ def test_get_pipelines_minimal_dependencies():
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_get_pipelines_minimal_dependencies_mock():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelTypes.LINEAR_MODEL])) == 1
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_types=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
