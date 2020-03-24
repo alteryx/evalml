@@ -94,6 +94,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
+        self._next_pipeline_class = None
 
         self.plot = PipelineSearchPlots(self)
 
@@ -179,8 +180,8 @@ class AutoBase:
 
     def _check_stopping_condition(self, start):
         # get new pipeline and check tuner
-        self._current_pipeline_class = self._select_pipeline()
-        if self.tuners[self._current_pipeline_class.name].is_search_space_exhausted():
+        self._next_pipeline_class = self._select_pipeline()
+        if self.tuners[self._next_pipeline_class.name].is_search_space_exhausted():
             return False
 
         should_continue = True
@@ -257,18 +258,18 @@ class AutoBase:
         pbar.update(1)
 
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(self._current_pipeline_class)
+        parameters = self._propose_parameters(self._next_pipeline_class)
 
         # fit an score the pipeline
-        pipeline = self._current_pipeline_class(
+        pipeline = self._next_pipeline_class(
             objective=self.objective,
-            parameters=self._transform_parameters(self._current_pipeline_class, parameters, X.shape[1])
+            parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1])
         )
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(self._current_pipeline_class, parameters)
+            self.start_iteration_callback(self._next_pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(self._current_pipeline_class.name)
+        desc = "▹ {}: ".format(self._next_pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
