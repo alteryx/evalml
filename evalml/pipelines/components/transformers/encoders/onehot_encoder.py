@@ -38,7 +38,6 @@ class OneHotEncoder(CategoricalEncoder):
             if col in self.cols_to_encode:
                 # if X_t[col].isnull().any():
                 #     X_t[col].fillna(-1, inplace=True)
-
                 v = X_t[col].value_counts().to_frame()
                 v.reset_index(inplace=True)
                 v = v.sort_values([col, 'index'], ascending=[False, True])
@@ -50,7 +49,6 @@ class OneHotEncoder(CategoricalEncoder):
                     add = add.rename(new_name)
                     encoded_X = pd.concat([encoded_X, add], axis=1)
                     # self.encoded_cols = pd.concat([self.encoded_cols, add])
-
 
                 self.cols_to_drop.append(col)
             # else:

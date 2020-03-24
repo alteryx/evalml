@@ -22,6 +22,7 @@ def test_less_than_top_n_unique_values():
  
     encoder = OneHotEncoder()
     encoder.top_n = 5
+    encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d",
                           "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"]
@@ -39,6 +40,7 @@ def test_more_top_n_unique_values():
 
     encoder = OneHotEncoder()
     encoder.top_n = 5
+    encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                           "col_2_e", "col_2_a", "col_2_b", "col_2_c", "col_2_d",
@@ -58,6 +60,7 @@ def test_categorical_dtype():
 
     encoder = OneHotEncoder()
     encoder.top_n = 5
+    encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                           "col_2_d", "col_2_e", "col_2_a", "col_2_f", "col_3_a",
@@ -76,5 +79,6 @@ def test_all_numerical_dtype():
 
     encoder = OneHotEncoder()
     encoder.top_n = 5
+    encoder.fit(X)
     X_t = encoder.transform(X)
     assert X.equals(X_t)
