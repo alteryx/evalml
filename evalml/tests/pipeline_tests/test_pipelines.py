@@ -8,6 +8,7 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
 from evalml.pipelines.components import (
+    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -407,3 +408,21 @@ def test_hyperparameters_override():
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters
     assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_none():
+    class MockEstimator(Estimator):
+        hyperparameter_ranges = {}
+        model_family = ModelFamily.NONE
+        name = "Mock Estimator"
+        problem_types = [ProblemTypes.BINARY]
+
+        def __init__(self):
+            super().__init__(parameters={}, component_obj={}, random_state=0)
+
+    class MockPipelineNone(PipelineBase):
+        component_graph = [MockEstimator()]
+        problem_types = ['binary']
+
+    assert MockPipelineNone.hyperparameters == {}
+    assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}
