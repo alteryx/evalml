@@ -377,15 +377,33 @@ def test_hyperparameters():
     class MockPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
         problem_types = ['binary']
-        _hyperparameters = {
-            "impute_strategy": ['median']
-        }
 
     hyperparameters = {
-        "impute_strategy": ['median'],
+        "impute_strategy": ['mean', 'median', 'most_frequent'],
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
     }
 
     assert MockPipeline.hyperparameters == hyperparameters
     assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_override():
+    class MockPipelineOverRide(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        problem_types = ['binary']
+
+        _hyperparameters = {
+            "impute_strategy": ['median'],
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        }
+
+    hyperparameters = {
+        "impute_strategy": ['median'],
+        "n_estimators": [1, 100, 200],
+        "max_depth": [5]
+    }
+
+    assert MockPipelineOverRide.hyperparameters == hyperparameters
+    assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
