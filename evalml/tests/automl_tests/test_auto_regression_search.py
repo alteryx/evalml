@@ -108,11 +108,11 @@ def test_early_stopping(capsys):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
-def test_plot_disabled_missing_dependency(X_y, core_deps):
+def test_plot_disabled_missing_dependency(X_y, minimal_deps):
     X, y = X_y
 
     automl = AutoRegressionSearch(max_pipelines=3)
-    if core_deps:
+    if minimal_deps:
         with pytest.raises(AttributeError):
             automl.plot.search_iteration_plot
     else:
