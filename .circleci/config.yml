@@ -253,8 +253,8 @@ jobs:
           command: |
             source test_python/bin/activate
             mv /tmp/workspace/coverage/* .
-            codecov combine coverage*
-            codecov
+            coverage combine coverage*
+            coverage
 
 workflows:
   version: 2
