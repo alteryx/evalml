@@ -11,10 +11,10 @@ from evalml.automl.pipeline_search_plots import (
 )
 from evalml.pipelines import LogisticRegressionPipeline
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import has_minimal_deps
+from evalml.tests.conftest import has_core_deps
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_generate_roc(X_y):
     go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
@@ -85,7 +85,7 @@ def test_generate_roc(X_y):
     assert isinstance(fig, type(go.Figure()))
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_generate_roc_multi_raises_errors(X_y):
 
     class MockAutoMulti(AutoBase):
@@ -103,7 +103,7 @@ def test_generate_roc_multi_raises_errors(X_y):
         search_plots.generate_roc_plot(0)
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_generate_confusion_matrix(X_y):
     go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
@@ -190,7 +190,7 @@ def test_generate_confusion_matrix(X_y):
     assert isinstance(fig, type(go.Figure()))
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_confusion_matrix_regression_throws_error():
     # Make mock class and generate mock results
     class MockAutoRegressionSearch(AutoBase):
@@ -208,7 +208,7 @@ def test_confusion_matrix_regression_throws_error():
         search_plots.generate_confusion_matrix(0)
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_search_iteration_plot_class(X_y):
 
     class MockObjective:

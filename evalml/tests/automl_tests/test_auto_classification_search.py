@@ -18,7 +18,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import has_minimal_deps
+from evalml.tests.conftest import has_core_deps
 
 
 def test_init(X_y):
@@ -290,18 +290,18 @@ def test_early_stopping(capsys):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
-def test_plot_disabled_missing_dependency(X_y, minimal_deps):
+def test_plot_disabled_missing_dependency(X_y, core_deps):
     X, y = X_y
 
     automl = AutoClassificationSearch(max_pipelines=3)
-    if minimal_deps:
+    if core_deps:
         with pytest.raises(AttributeError):
             automl.plot.search_iteration_plot
     else:
         automl.plot.search_iteration_plot
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_pipelines(X_y):
     go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y
@@ -320,7 +320,7 @@ def test_plot_iterations_max_pipelines(X_y):
     assert len(y) == 3
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping plotting test because plotly not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_time(X_y):
     go = pytest.importorskip('plotly.graph_objects')
     X, y = X_y

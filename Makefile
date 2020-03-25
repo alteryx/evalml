@@ -23,7 +23,7 @@ circleci-test:
 	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
 .PHONY: circleci-test
-circleci-test-minimal:
+circleci-test-core:
 	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --ignore=evalml/tests/pipeline_tests/test_xgboost.py --ignore-glob='evalml/tests/pipeline_tests/test_catboost_*'
 
 .PHONY: win-circleci-test

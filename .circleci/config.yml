@@ -30,7 +30,7 @@ commands:
             source test_python/bin/activate
             make installdeps
             pip install -r test-requirements.txt
-  install_dependencies_minimal:
+  install_dependencies_core:
     steps:
       - run: |
             virtualenv test_python -q
@@ -43,7 +43,7 @@ commands:
             ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
             exit $?
       - store_artifacts:
-          path: /tmp/install_dependencies_minimal
+          path: /tmp/install_dependencies_core
 
 jobs:
   lint_test:
@@ -143,7 +143,7 @@ jobs:
       codecov:
         type: boolean
         default: false
-      minimal_dependencies:
+      core_dependencies:
         type: boolean
         default: false
     executor:
@@ -153,11 +153,11 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - when:
-          condition: << parameters.minimal_dependencies >>
+          condition: << parameters.core_dependencies >>
           steps:
-            - install_dependencies_minimal
+            - install_dependencies_core
       - unless:
-          condition: << parameters.minimal_dependencies >>
+          condition: << parameters.core_dependencies >>
           steps:
             - install_dependencies_test
       - run: |
@@ -165,13 +165,13 @@ jobs:
           coverage erase
           rm -rf coverage/
       - when:
-          condition: << parameters.minimal_dependencies >>
+          condition: << parameters.core_dependencies >>
           steps:
             - run: |
                 source test_python/bin/activate
-                make circleci-test-minimal
+                make circleci-test-core
       - unless:
-          condition: << parameters.minimal_dependencies >>
+          condition: << parameters.core_dependencies >>
           steps:
             - run: |
                 source test_python/bin/activate
@@ -185,7 +185,7 @@ jobs:
           steps:
             - run: |
                 mkdir -p coverage
-                coverage_filename=coverage_<< parameters.python_version >>_<< parameters.minimal_dependencies >>
+                coverage_filename=coverage_<< parameters.python_version >>_<< parameters.core_dependencies >>
                 echo $coverage_filename
                 cp .coverage "coverage/$coverage_filename"
             - persist_to_workspace:
@@ -193,7 +193,7 @@ jobs:
                 paths:
                   - coverage
             - unless:
-                condition: << parameters.minimal_dependencies >>
+                condition: << parameters.core_dependencies >>
                 steps:
                   - persist_to_workspace:
                       root: .
@@ -317,23 +317,23 @@ workflows:
         - unit_tests:
             name: "linux python 3.6 unit tests"
             python_version: "3.6"
-            minimal_dependencies: false
+            core_dependencies: false
         - unit_tests:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
-            minimal_dependencies: false
+            core_dependencies: false
         - unit_tests:
             name: "linux python 3.8 unit tests"
             python_version: "3.8"
-            minimal_dependencies: false
+            core_dependencies: false
             codecov: true
         - unit_tests:
-            name: "linux python 3.8 unit tests, minimal dependencies"
+            name: "linux python 3.8 unit tests, core dependencies"
             python_version: "3.8"
             codecov: true
-            minimal_dependencies: true
+            core_dependencies: true
         - make_codecov:
             name: "make codecov"
             requires:
               - "linux python 3.8 unit tests"
-              - "linux python 3.8 unit tests, minimal dependencies"
+              - "linux python 3.8 unit tests, core dependencies"

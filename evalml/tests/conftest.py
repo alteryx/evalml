@@ -7,7 +7,7 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 
-def has_minimal_deps():
+def has_core_deps():
     for module in ['xgboost', 'catboost', 'plotly', 'plotly.graph_objects']:
         try:
             importlib.import_module(module)
@@ -17,8 +17,8 @@ def has_minimal_deps():
 
 
 @pytest.fixture
-def minimal_deps():
-    return has_minimal_deps()
+def core_deps():
+    return has_core_deps()
 
 
 @pytest.fixture

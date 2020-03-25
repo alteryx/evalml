@@ -25,10 +25,10 @@ from evalml.pipelines.utils import (
     save_pipeline
 )
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import has_minimal_deps
+from evalml.tests.conftest import has_core_deps
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping test because xgboost/catboost not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping test because xgboost/catboost not installed")
 def test_list_model_families():
     expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
     expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
@@ -39,21 +39,21 @@ def test_list_model_families():
     assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-@pytest.mark.skipif(not has_minimal_deps(), reason="Skipping test because xgboost/catboost are installed")
-def test_list_model_families_minimal_dependencies():
+@pytest.mark.skipif(not has_core_deps(), reason="Skipping test because xgboost/catboost are installed")
+def test_list_model_families_core_dependencies():
     expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
     expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
     assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping test because xgboost/catboost not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping test because xgboost/catboost not installed")
 def test_all_pipelines():
     assert len(all_pipelines()) == 7
 
 
-@pytest.mark.skipif(not has_minimal_deps(), reason="Skipping test because xgboost/catboost are installed")
-def test_all_pipelines_minimal_dependencies():
+@pytest.mark.skipif(not has_core_deps(), reason="Skipping test because xgboost/catboost are installed")
+def test_all_pipelines_core_dependencies():
     assert len(all_pipelines()) == 4
 
 
@@ -66,11 +66,11 @@ def make_mock_import_module(libs_to_blacklist):
 
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_pipelines_minimal_dependencies_mock():
+def test_all_pipelines_core_dependencies_mock():
     assert len(all_pipelines()) == 4
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping test because xgboost/catboost not installed")
+@pytest.mark.skipif(has_core_deps(), reason="Skipping test because xgboost/catboost not installed")
 def test_get_pipelines():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
@@ -82,8 +82,8 @@ def test_get_pipelines():
         get_pipelines(problem_type="Not A Valid Problem Type")
 
 
-@pytest.mark.skipif(not has_minimal_deps(), reason="Skipping test because xgboost/catboost are installed")
-def test_get_pipelines_minimal_dependencies():
+@pytest.mark.skipif(not has_core_deps(), reason="Skipping test because xgboost/catboost are installed")
+def test_get_pipelines_core_dependencies():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
@@ -95,7 +95,7 @@ def test_get_pipelines_minimal_dependencies():
 
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_get_pipelines_minimal_dependencies_mock():
+def test_get_pipelines_core_dependencies_mock():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
