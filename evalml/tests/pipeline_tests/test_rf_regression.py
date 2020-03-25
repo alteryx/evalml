@@ -17,7 +17,7 @@ def test_rf_init(X_y_reg):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean',
-            'fill_value': 2
+            'fill_value': None
         },
         'RF Regressor Select From Model': {
             "percent_features": 1.0,
@@ -35,7 +35,7 @@ def test_rf_init(X_y_reg):
     expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean',
-            'fill_value': 2
+            'fill_value': None
         },
         'RF Regressor Select From Model': {
             'percent_features': 1.0,
