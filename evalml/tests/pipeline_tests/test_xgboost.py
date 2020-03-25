@@ -17,7 +17,8 @@ def test_xg_init(X_y):
     objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
@@ -37,7 +38,8 @@ def test_xg_init(X_y):
 
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             'percent_features': 1.0,

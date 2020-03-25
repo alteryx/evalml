@@ -12,7 +12,8 @@ def test_catboost_init():
     objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
+            'impute_strategy': 'most_frequent',
+            'fill_value': None
         },
         'CatBoost Classifier': {
             "n_estimators": 500,

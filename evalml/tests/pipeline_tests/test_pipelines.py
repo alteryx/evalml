@@ -171,7 +171,8 @@ def test_parameters(X_y, lr_pipeline):
     lrp = lr_pipeline
     params = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
