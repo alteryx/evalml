@@ -188,9 +188,9 @@ jobs:
                 echo $coverage_filename
                 cp .coverage "coverage/$coverage_filename"
             - persist_to_workspace:
-                root: /tmp/workspace
+                root: .
                 paths:
-                  - coverage/
+                  - coverage
 
   changelog_updated:
     working_directory: ~/evalml
