@@ -192,6 +192,13 @@ jobs:
                 root: .
                 paths:
                   - coverage
+            - unless:
+                condition: << parameters.minimal_dependencies >>
+                steps:
+                  - persist_to_workspace:
+                      root: .
+                      paths:
+                        - .*
 
   changelog_updated:
     working_directory: ~/evalml
@@ -244,15 +251,14 @@ jobs:
       name: python
       python_version: "3.8"
     steps:
-      - checkout
-      - install_dependencies_dev
       - attach_workspace:
           at: /tmp/workspace
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
+            cd /tmp/workspace/
             source test_python/bin/activate
-            mv /tmp/workspace/coverage/* .
+            mv coverage/* .
             coverage combine coverage*
             coverage
 
