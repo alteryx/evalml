@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import pytest
 from sklearn import datasets
+from skopt.space import Integer, Real
 
 
 @pytest.fixture
@@ -48,3 +49,21 @@ def X_y_categorical_classification():
     y = titanic['Survived']
     X = titanic.drop('Survived', axis=1)
     return X, y
+
+
+@pytest.fixture
+def test_space():
+    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c']]
+
+
+@pytest.fixture
+def test_space_unicode():
+    return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
+
+
+@pytest.fixture
+def test_space_small():
+    list_of_space = list()
+    list_of_space.append(['most_frequent', 'median', 'mean'])
+    list_of_space.append(['a', 'b', 'c'])
+    return list_of_space
