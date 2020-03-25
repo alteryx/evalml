@@ -3,7 +3,6 @@ from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
 from evalml.pipelines import LogisticRegressionPipeline
-from evalml.tests.conftest import has_core_deps
 
 
 def test_pipeline_limits(capsys, X_y):
@@ -31,9 +30,8 @@ def test_pipeline_limits(capsys, X_y):
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 
-@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_generate_roc(X_y):
-    go = pytest.importorskip('plotly.graph_objects')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)
@@ -47,9 +45,8 @@ def test_generate_roc(X_y):
     assert isinstance(fig, type(go.Figure()))
 
 
-@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_generate_confusion_matrix(X_y):
-    go = pytest.importorskip('plotly.graph_objects')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)

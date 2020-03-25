@@ -7,7 +7,6 @@ from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
-from evalml.tests.conftest import has_core_deps
 
 
 @pytest.fixture
@@ -120,9 +119,8 @@ def test_plot_disabled_missing_dependency(X_y, core_deps):
         automl.plot.search_iteration_plot
 
 
-@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_pipelines(X_y):
-    go = pytest.importorskip('plotly.graph_objects')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
     automl = AutoRegressionSearch(max_pipelines=3)
@@ -139,9 +137,8 @@ def test_plot_iterations_max_pipelines(X_y):
     assert len(y) == 3
 
 
-@pytest.mark.skipif(has_core_deps(), reason="Skipping plotting test because plotly not installed")
 def test_plot_iterations_max_time(X_y):
-    go = pytest.importorskip('plotly.graph_objects')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
     automl = AutoRegressionSearch(max_time=10)
