@@ -1,5 +1,9 @@
 version: 2.1
 
+references:
+  workspace_root: &workspace_root
+    /tmp/workspace
+
 orbs:
   windows: circleci/windows@2.0.0
 
@@ -185,8 +189,13 @@ jobs:
           condition: << parameters.codecov >>
           steps:
             - run: |
-                source test_python/bin/activate
-                codecov
+                mkdir -p coverage
+                coverage_filename=coverage_<< parameters.python_version >>_<< parameters.minimal_dependencies >>
+                cp .coverage "coverage/$coverage_filename"
+            - persist_to_workspace:
+                root: *workspace_root
+                paths:
+                  - coverage/
 
   changelog_updated:
     working_directory: ~/evalml
@@ -234,6 +243,20 @@ jobs:
           when: on_fail
       - store_artifacts:
           path: /tmp/dependencies_updated_artifacts
+  make_codecov:
+    executor:
+      name: python
+      python_version: "3.8"
+    steps:
+      - attach_workspace:
+          at: *workspace_root
+      - run:
+          name: Copy coverage file to workspace for make_codecov workflow
+          command: |
+            source test_python/bin/activate
+            mv /tmp/workspace/codecov/* .
+            codecov combine coverage*
+            codecov
 
 workflows:
   version: 2
@@ -303,4 +326,10 @@ workflows:
         - unit_tests:
             name: "linux python 3.8 unit tests, minimal dependencies"
             python_version: "3.8"
+            codecov: true
             minimal_dependencies: true
+        - make_codecov:
+            name: "make codecov"
+            requires:
+              - "linux python 3.8 unit tests"
+              - "linux python 3.8 unit tests, minimal dependencies"
