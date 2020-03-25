@@ -164,18 +164,9 @@ jobs:
           source test_python/bin/activate
           coverage erase
           rm -rf coverage/
-      - when:
-          condition: << parameters.core_dependencies >>
-          steps:
-            - run: |
-                source test_python/bin/activate
-                make circleci-test-core
-      - unless:
-          condition: << parameters.core_dependencies >>
-          steps:
-            - run: |
-                source test_python/bin/activate
-                make circleci-test
+      - run: |
+          source test_python/bin/activate
+          make circleci-test
       - store_test_results:
           path: test-reports
       - store_artifacts:

@@ -84,7 +84,7 @@ def test_generate_roc(X_y):
 
 
 def test_generate_roc_multi_raises_errors(X_y):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockAutoMulti(AutoBase):
         def __init__(self):
@@ -188,7 +188,8 @@ def test_generate_confusion_matrix(X_y):
 
 
 def test_confusion_matrix_regression_throws_error():
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
     # Make mock class and generate mock results
     class MockAutoRegressionSearch(AutoBase):
         def __init__(self):
@@ -206,7 +207,7 @@ def test_confusion_matrix_regression_throws_error():
 
 
 def test_search_iteration_plot_class(X_y):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockObjective:
         def __init__(self):
