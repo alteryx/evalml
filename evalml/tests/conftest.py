@@ -1,39 +1,20 @@
-import importlib
 import os
-import pathlib
 
 import pandas as pd
 import pytest
-import requirements
 from sklearn import datasets
 from skopt.space import Integer, Real
 
 
-def has_minimal_deps():
-    """Returns True if all of the extra dependencies defined in requirements.txt are
-    currently installed, and False otherwise.
-
-    The deps in core-requirements.txt are required by evalml to run. Including the extra
-    dependencies from requirements.txt will enable the use of extra pipelines and features
-    which are not considered part of the evalml core functionality.
-    """
-    reqs_path = pathlib.Path(__file__).absolute().parents[2].joinpath('requirements.txt')
-    lines = open(reqs_path, 'r').readlines()
-    lines = [line for line in lines if '-r ' not in line]
-    reqs = requirements.parse(''.join(lines))
-    extra_deps = [req.name for req in reqs]
-    extra_deps += ['plotly.graph_objects']
-    for module in extra_deps:
-        try:
-            importlib.import_module(module)
-        except ImportError:
-            return True
-    return False
+def pytest_addoption(parser):
+    parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
+                     help="If true, tests will assume only the dependencies in"
+                     "core-requirements.txt have been installed.")
 
 
 @pytest.fixture
-def minimal_deps():
-    return has_minimal_deps()
+def has_minimal_dependencies(pytestconfig):
+    return pytestconfig.getoption("--has-minimal-dependencies")
 
 
 @pytest.fixture

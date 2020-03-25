@@ -4,17 +4,13 @@ from unittest.mock import patch
 import pytest
 
 from evalml.pipelines.components import all_components, handle_component
-from evalml.tests.conftest import has_minimal_deps
 
 
-@pytest.mark.skipif(has_minimal_deps(), reason="Skipping test because xgboost/catboost not installed")
-def test_all_components():
-    assert len(all_components()) == 12
-
-
-@pytest.mark.skipif(not has_minimal_deps(), reason="Skipping test because xgboost/catboost are installed")
-def test_all_components_core_dependencies():
-    assert len(all_components()) == 9
+def test_all_components(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        assert len(all_components()) == 9
+    else:
+        assert len(all_components()) == 12
 
 
 def make_mock_import_module(libs_to_blacklist):
