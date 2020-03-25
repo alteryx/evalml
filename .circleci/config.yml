@@ -260,7 +260,7 @@ jobs:
             source test_python/bin/activate
             mv coverage/* .
             coverage combine coverage*
-            coverage
+            codecov
 
 workflows:
   version: 2
