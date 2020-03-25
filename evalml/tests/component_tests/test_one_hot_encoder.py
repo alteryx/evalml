@@ -24,9 +24,9 @@ def test_less_than_top_n_unique_values():
     encoder.top_n = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
-    expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d",
-                          "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"]
-    col_names = list(X_t.columns)
+    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d",
+                          "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
+    col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
 
@@ -42,10 +42,10 @@ def test_more_top_n_unique_values():
     encoder.top_n = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
-    expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
+    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                           "col_2_e", "col_2_a", "col_2_b", "col_2_c", "col_2_d",
-                          "col_3_a", "col_4"]
-    col_names = list(X_t.columns)
+                          "col_3_a", "col_4"])
+    col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
 
@@ -62,10 +62,10 @@ def test_categorical_dtype():
     encoder.top_n = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
-    expected_col_names = ["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
+    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                           "col_2_d", "col_2_e", "col_2_a", "col_2_f", "col_3_a",
-                          "col_4_1", "col_4_2", "col_4_3"]
-    col_names = list(X_t.columns)
+                          "col_4_1", "col_4_2", "col_4_3"])
+    col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
 
