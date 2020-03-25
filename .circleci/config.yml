@@ -1,9 +1,5 @@
 version: 2.1
 
-references:
-  workspace_root: &workspace_root
-    /home/circleci/workspace
-
 orbs:
   windows: circleci/windows@2.0.0
 
@@ -166,6 +162,7 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
+          rm -rf coverage/
       - when:
           condition: << parameters.minimal_dependencies >>
           steps:
@@ -190,7 +187,7 @@ jobs:
                 coverage_filename=coverage_<< parameters.python_version >>_<< parameters.minimal_dependencies >>
                 cp .coverage "coverage/$coverage_filename"
             - persist_to_workspace:
-                root: *workspace_root
+                root: /tmp/workspace
                 paths:
                   - coverage/
 
@@ -246,12 +243,12 @@ jobs:
       python_version: "3.8"
     steps:
       - attach_workspace:
-          at: *workspace_root
+          at: /tmp/workspace
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
             source test_python/bin/activate
-            mv /home/circleci/workspace/codecov/* .
+            mv /tmp/workspace/coverage/* .
             codecov combine coverage*
             codecov
 
