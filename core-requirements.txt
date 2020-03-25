@@ -1,5 +1,9 @@
--r requirements.txt
-plotly>=4.2.1
-ipywidgets>=7.5
-xgboost>=0.82
-catboost>=0.20
+numpy>=1.16.4
+pandas>=0.25.0
+scipy>=1.2.1
+scikit-learn>=0.21.3,!=0.22
+scikit-optimize[plots]
+tqdm>=4.33.0
+colorama
+category_encoders>=2.0.0
+cloudpickle>=0.2.2

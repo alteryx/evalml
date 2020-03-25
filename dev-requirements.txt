@@ -1,5 +1,4 @@
 -r requirements.txt
--r core-requirements.txt
 -r test-requirements.txt
 flake8==3.7.0
 autopep8==1.4.3

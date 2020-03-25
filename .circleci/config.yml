@@ -37,7 +37,7 @@ commands:
             source test_python/bin/activate
             pip install --upgrade pip -q
             pip install -e . --no-dependencies
-            pip install -r requirements.txt
+            pip install -r core-requirements.txt
             pip install -r test-requirements.txt
             # "!" negates return code. exit nonzero if any of these deps are found
             ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
