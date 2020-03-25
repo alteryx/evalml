@@ -185,6 +185,7 @@ jobs:
             - run: |
                 mkdir -p coverage
                 coverage_filename=coverage_<< parameters.python_version >>_<< parameters.minimal_dependencies >>
+                echo $coverage_filename
                 cp .coverage "coverage/$coverage_filename"
             - persist_to_workspace:
                 root: /tmp/workspace
