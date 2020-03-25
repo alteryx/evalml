@@ -2,7 +2,7 @@ version: 2.1
 
 references:
   workspace_root: &workspace_root
-    /tmp/workspace
+    /home/circleci/workspace
 
 orbs:
   windows: circleci/windows@2.0.0
@@ -251,7 +251,7 @@ jobs:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
             source test_python/bin/activate
-            mv /tmp/workspace/codecov/* .
+            mv /home/circleci/workspace/codecov/* .
             codecov combine coverage*
             codecov
 
