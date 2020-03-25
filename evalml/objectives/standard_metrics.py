@@ -238,7 +238,6 @@ class R2(ObjectiveBase):
     problem_types = [ProblemTypes.REGRESSION]
 
     def score(self, y_predicted, y_true):
-        import pdb; pdb.set_trace()
         return metrics.r2_score(y_true, y_predicted)
 
 

@@ -67,17 +67,14 @@ class OneHotEncoder(CategoricalEncoder):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        # import pdb; pdb.set_trace()
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
         # if X.isnull().any().any():
         #     raise ValueError("Dataframe to be encoded can not contain null values.")
         X_t = X
-        # import pdb; pdb.set_trace()
         X_t = pd.concat([X_t, self.encoded_cols], axis=1)
         X_t = X_t.drop(self.cols_to_drop, axis=1)
-        # import pdb; pdb.set_trace()
         return X_t
     # def transform(self, X, y=None):
     #     """One-hot encode the input DataFrame.
@@ -101,7 +98,6 @@ class OneHotEncoder(CategoricalEncoder):
     #     ## todo: will this affect the original input? should it?
 
     #     """
-    #     # import pdb; pdb.set_trace()
     #     if not isinstance(X, pd.DataFrame):
     #         X = pd.DataFrame(X)
 
