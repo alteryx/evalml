@@ -86,14 +86,12 @@ def test_col_with_non_numeric():
         transformer.fit_transform(X)
     with pytest.raises(ValueError, match="Cannot use mean strategy with non-numeric data"):
         transformer.fit(X)
-        transformer.transform(X)
 
     transformer = SimpleImputer(impute_strategy='median')
     with pytest.raises(ValueError, match="Cannot use median strategy with non-numeric data"):
         transformer.fit_transform(X)
     with pytest.raises(ValueError, match="Cannot use median strategy with non-numeric data"):
         transformer.fit(X)
-        transformer.transform(X)
 
     transformer = SimpleImputer(impute_strategy='most_frequent')
     X_expected_arr = pd.DataFrame([["a", 0, 1, 0],
