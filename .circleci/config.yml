@@ -244,6 +244,8 @@ jobs:
       name: python
       python_version: "3.8"
     steps:
+      - checkout
+      - install_dependencies_dev
       - attach_workspace:
           at: /tmp/workspace
       - run:
