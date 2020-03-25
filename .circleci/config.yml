@@ -39,7 +39,8 @@ commands:
             pip install -e . --no-dependencies
             pip install -r requirements.txt
             pip install -r test-requirements.txt
-            pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
+            # "!" negates return code. exit nonzero if any of these deps are found
+            ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
             exit $?
       - store_artifacts:
           path: /tmp/install_dependencies_minimal
