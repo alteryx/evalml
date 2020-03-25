@@ -89,6 +89,7 @@ Changelog
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
         * Enforcing that pipelines must have an estimator as last component :pr:`277`
         * Added ipywidgets as a dependency in requirements.txt :pr:`278`
+        * Added Random and Grid Search Tuners :pr:`240`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257`
