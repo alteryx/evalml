@@ -164,16 +164,18 @@ jobs:
           source test_python/bin/activate
           coverage erase
           rm -rf coverage/
-      - run: |
-          source test_python/bin/activate
       - when:
           condition: << parameters.core_dependencies >>
           steps:
-            - run: make circleci-test-minimal-deps
+            - run: |
+                source test_python/bin/activate
+                make circleci-test-minimal-deps
       - unless:
           condition: << parameters.core_dependencies >>
           steps:
-            - run: make circleci-test
+            - run: |
+                source test_python/bin/activate
+                make circleci-test
       - store_test_results:
           path: test-reports
       - store_artifacts:
