@@ -6,7 +6,7 @@ setup(
     author='Feature Labs, Inc.',
     author_email='support@featurelabs.com',
     url='http://www.featurelabs.com/',
-    install_requires=open('core-requirements.txt').readlines(),
+    install_requires=open('requirements.txt').readlines() + open('core-requirements.txt').readlines()[1:],
     tests_require=open('test-requirements.txt').readlines(),
     packages=find_packages(),
     include_package_data=True,
