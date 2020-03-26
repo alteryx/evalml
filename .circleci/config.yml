@@ -256,14 +256,11 @@ jobs:
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
-            pwd
-            ls -lhAtr
-            ls -lhAtr evalml/
-            cd evalml/
             source test_python/bin/activate
             mv coverage/* .
-            coverage combine coverage*
-            codecov
+            rm .coverage
+            coverage combine coverage_*
+            codecov --file .coverage
 
 workflows:
   version: 2
