@@ -23,24 +23,24 @@ class BinaryClassificationObjective(ObjectiveBase):
         """Returns a boolean determining if we can optimize the objective threshold."""
         raise NotImplementedError("This objective must have a `can_optimize_threshold` attribute as a class variable")
 
-    def optimize_threshold(self, y_predicted, y_true, X=None):
+    def optimize_threshold(self, ypred_proba, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.
 
         Arguments:
-            y_predicted (list): the probability estimators from the model.
+            ypred_proba (list): The classifier's predicted probabilities
 
-            y_true (list): the ground truth for the predictions.
+            y_true (list): The ground truth for the predictions.
 
-            X (pd.DataFrame): any extra columns that are needed from training data.
+            X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
-            optimal threshold
+            Optimal threshold for this objective
         """
         if not self.can_optimize_threshold:
             raise RuntimeError("Trying to optimize objective that can't be optimized!")
 
         def cost(threshold):
-            predictions = self.decision_function(ypred_proba=y_predicted, threshold=threshold, X=X)
+            predictions = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
             cost = self.objective_function(predictions, y_true, X=X)
             return -cost if self.greater_is_better else cost
 

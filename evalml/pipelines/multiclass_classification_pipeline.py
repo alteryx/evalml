@@ -35,11 +35,10 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                scores.update({objective.name: objective.score(y_predicted_proba, y, X=X)})
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
-                y_predictions = y_predicted
-            scores.update({objective.name: objective.score(y_predictions, y, X)})
+                scores.update({objective.name: objective.score(y_predicted, y, X=X)})
 
         return scores
