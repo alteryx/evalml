@@ -1,4 +1,5 @@
 import time
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -6,6 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
+from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     ROC,
@@ -346,3 +348,41 @@ def test_plots_as_main_objectives(X_y):
     assert roc
     cfm = next((obj for obj in automl.additional_objectives if isinstance(obj, ConfusionMatrix)), None)
     assert cfm
+
+
+@patch('IPython.display.display')
+def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
+    pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y
+
+    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl.search(X, y, raise_errors=True)
+    plot = automl.plot.search_iteration_plot(interactive_plot=True)
+    assert isinstance(plot, SearchIterationPlot)
+    assert isinstance(plot.data, AutoClassificationSearch)
+    mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
+
+
+@patch('IPython.display.display')
+def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
+    pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y
+
+    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl.search(X, y, raise_errors=True)
+
+    mock_ipython_display.side_effect = ImportError('KABOOOOOOMMMM')
+    plot = automl.plot.search_iteration_plot(interactive_plot=True)
+    mock_ipython_display.assert_called_once()
+
+    assert isinstance(plot, go.Figure)
+    assert isinstance(plot.data, tuple)
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) == 3
+    assert len(y) == 3
