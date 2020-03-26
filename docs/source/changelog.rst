@@ -30,6 +30,7 @@ Changelog
     * Components and Pipelines now have a `model_family` field instead of `model_type`
     * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase`
     
 
 **v0.7.0 Mar. 9, 2020**
