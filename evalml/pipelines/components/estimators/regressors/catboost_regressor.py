@@ -26,21 +26,23 @@ class CatBoostRegressor(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
-        parameters = {"n_estimators": n_estimators,
-                      "eta": eta,
-                      "max_depth": max_depth}
-        if bootstrap_type is not None:
-            parameters['bootstrap_type'] = bootstrap_type
-
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
-        cb_regressor = catboost.CatBoostRegressor(**parameters,
-                                                  random_seed=random_seed,
-                                                  silent=True,
-                                                  allow_writing_files=False)
-        super().__init__(parameters=parameters,
-                         component_obj=cb_regressor,
+        self.n_estimators = n_estimators
+        self.eta = eta
+        self.max_depth = max_depth
+        self.bootstrap_type = bootstrap_type
+        self.random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
+        catboost_parameters = {"n_estimators": n_estimators,
+                               "eta": eta,
+                               "max_depth": max_depth,
+                               "random_state": self.random_seed,
+                               "silent": True,
+                               "allow_writing_files": False}
+        if bootstrap_type is not None:
+            catboost_parameters['bootstrap_type'] = bootstrap_type
+        cb_regressor = catboost.CatBoostRegressor(**catboost_parameters)
+        super().__init__(component_obj=cb_regressor,
                          random_state=random_state)
 
     def fit(self, X, y=None):

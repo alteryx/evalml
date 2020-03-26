@@ -17,14 +17,14 @@ class RandomForestClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.n_jobs = n_jobs
         rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
                                                  max_depth=max_depth,
                                                  n_jobs=n_jobs,
                                                  random_state=random_state)
-        super().__init__(parameters=parameters,
-                         component_obj=rf_classifier,
+        super().__init__(component_obj=rf_classifier,
                          random_state=random_state)
 
     @property

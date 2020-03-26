@@ -10,6 +10,7 @@ Changelog
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
         * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
+        * Made components have consistent initialization args and pass parameters as dicts :pr:`527`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
@@ -129,7 +130,7 @@ Changelog
     * ``PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ``PipelineBase.summary``
     * ``PipelineBase.problem_types`` and ``Estimator.problem_types`` has been renamed to ``supported_problem_types``
     * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ``PipelineBase.save`` and ``PipelineBase.load``
-
+    * Pipelines' ``component_graph`` fields cannot contain component instances, only component classes or names
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements

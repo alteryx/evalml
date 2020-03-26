@@ -43,30 +43,8 @@ def test_xg_init(X_y):
     }
 
     clf = XGBoostBinaryPipeline(parameters=parameters, random_state=1)
-
-    expected_parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'median',
-            'fill_value': None
-        },
-        'One Hot Encoder': {
-            'top_n': 10
-        },
-        'RF Classifier Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf,
-        },
-        'XGBoost Classifier': {
-            'eta': 0.2,
-            'max_depth': 5,
-            'min_child_weight': 3,
-            'n_estimators': 20
-        }
-    }
-
-    assert clf.parameters == expected_parameters
+    assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
-    assert clf.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
 
 
 def test_summary():

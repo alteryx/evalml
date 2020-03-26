@@ -7,7 +7,6 @@ from .component_base import ComponentBase
 from .estimators import (
     CatBoostClassifier,
     CatBoostRegressor,
-    Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
@@ -16,14 +15,11 @@ from .estimators import (
     XGBoostRegressor
 )
 from .transformers import (
-    CategoricalEncoder,
-    FeatureSelector,
     OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
-    StandardScaler,
-    Transformer
+    StandardScaler
 )
 
 from evalml.utils import import_or_raise
@@ -39,7 +35,7 @@ def _components_dict():
     components = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
-        if issubclass(obj, ComponentBase):
+        if issubclass(obj, ComponentBase) and obj is not ComponentBase:
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
                     components[obj.name] = obj
@@ -67,27 +63,3 @@ def all_components():
         components.pop(CatBoostClassifier.name)
         components.pop(CatBoostRegressor.name)
     return components
-
-
-def handle_component(component):
-    """Standardizes input to a new ComponentBase instance if necessary.
-
-    If a str is provided, will attempt to look up a ComponentBase class by that name and
-    return a new instance. Otherwise if a ComponentBase instance is provided, will return that
-    without modification.
-
-    Arguments:
-        component (str, ComponentBase) : input to be standardized
-
-    Returns:
-        ComponentBase
-    """
-    if isinstance(component, ComponentBase):
-        return component
-    if not isinstance(component, str):
-        raise ValueError("handle_component only takes in str or ComponentBase")
-    components = all_components()
-    if component not in components:
-        raise KeyError("Component {} was not found".format(component))
-    component_class = all_components()[component]
-    return component_class()

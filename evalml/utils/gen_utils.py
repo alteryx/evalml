@@ -88,9 +88,8 @@ class classproperty:
             @classproperty
             def summary(cls):
             summary = ""
-            for component in cls.component_graph:
-                component = handle_component(component)
-                summary += component.name + " + "
+            for component_class in cls.component_graph:
+                summary += component_class.name + " + "
             return summary
 
             assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "

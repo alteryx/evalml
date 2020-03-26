@@ -211,7 +211,6 @@ def test_parameters(X_y, lr_pipeline):
     params = {
         'Simple Imputer': {
             'impute_strategy': 'median',
-            'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
@@ -269,7 +268,7 @@ def test_multi_format_creation(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
+        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -302,7 +301,7 @@ def test_multiple_feature_selectors(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -367,10 +366,11 @@ def test_no_default_parameters():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
 
-    with pytest.raises(ValueError, match="Error received when instantiating component *."):
+    with pytest.raises(ValueError, match="component_graph may only contain str or ComponentBase subclasses, not .*"):
         TestPipeline(parameters={})
 
-    assert TestPipeline(parameters={'Mock Component': {'a': 42}})
+    with pytest.raises(ValueError, match="component_graph may only contain str or ComponentBase subclasses, not .*"):
+        TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
 def test_no_random_state_argument_in_component():
@@ -402,14 +402,15 @@ def test_init_components_invalid_parameters():
         }
     }
 
-    with pytest.raises(ValueError, match="Error received when instantiating component"):
-        TestPipeline(parameters=parameters)
+    TestPipeline(parameters=parameters)
 
 
 def test_correct_parameters(lr_pipeline):
     lr_pipeline = lr_pipeline
 
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
+    assert lr_pipeline.estimator.random_state == 0
+    assert lr_pipeline.estimator.parameters['penalty'] == 'l2'
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
 

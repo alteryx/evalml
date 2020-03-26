@@ -22,4 +22,5 @@ from .transformers import (
     CategoricalEncoder,
     )
 
-from .utils import all_components, handle_component
+from .utils import all_components
+from .validation_error import ValidationError

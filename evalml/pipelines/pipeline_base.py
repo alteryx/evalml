@@ -1,5 +1,6 @@
 import copy
 import os
+import inspect
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -7,7 +8,7 @@ from collections import OrderedDict
 import cloudpickle
 import pandas as pd
 
-from .components import Estimator, handle_component
+from .components import ComponentBase, Estimator, all_components
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
@@ -85,9 +86,9 @@ class PipelineBase(ABC):
         summary = "Pipeline"
         component_graph[-1] = component_graph[-1]
 
-        if isinstance(component_graph[-1], Estimator):
-            estimator = component_graph.pop()
-            summary = estimator.name
+        if inspect.isclass(component_graph[-1]) and issubclass(component_graph[-1], Estimator):
+            estimator_class = component_graph.pop(-1)
+            summary = estimator_class.name
         if len(component_graph) == 0:
             return summary
         component_names = [component.name for component in component_graph]
@@ -100,16 +101,40 @@ class PipelineBase(ABC):
             raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
                              .format(self.problem_type, estimator_problem_types))
 
+    @staticmethod
+    def handle_component(component_class):
+        """Standardizes input to a new ComponentBase subclass, if necessary.
+
+        If a str is provided, will attempt to look up a ComponentBase class by that name and
+        return that class. Otherwise if a ComponentBase subclass is provided, will return that
+        without modification.
+
+        Arguments:
+            component_class (str, ComponentBase subclass) : input to be standardized
+
+        Returns:
+            a class which is a subclass of ComponentBase
+        """
+        if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
+            return component_class
+        if not isinstance(component_class, str):
+            raise ValueError(("component_graph may only contain str or ComponentBase subclasses, " +
+                              "not '{}'").format(type(component_class)))
+        component_classes = all_components()
+        if component_class not in component_classes:
+            raise KeyError("Component {} was not found".format(component_class))
+        return component_classes[component_class]
+
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component = handle_component(component)
-        component_class = component.__class__
-        component_name = component.name
+        component_class = self.handle_component(component)
+        component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
             new_component = component_class(**component_parameters, random_state=self.random_state)
         except (ValueError, TypeError) as e:
-            err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
+            err = "Error received when instantiating component {} with the following arguments {}"\
+                .format(component_name, component_parameters)
             raise ValueError(err) from e
         return new_component
 
@@ -246,16 +271,14 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-        component_graph = copy.copy(cls.component_graph)
-        return handle_component(component_graph[-1]).model_family
+        return cls.handle_component(cls.component_graph[-1]).model_family
 
     @classproperty
     def hyperparameters(cls):
         "Returns hyperparameter ranges as a flat dictionary from all components "
         hyperparameter_ranges = dict()
-        component_graph = copy.copy(cls.component_graph)
-        for component in component_graph:
-            component = handle_component(component)
+        for component in cls.component_graph:
+            component = cls.handle_component(component)
             hyperparameter_ranges.update(component.hyperparameter_ranges)
 
         if cls.custom_hyperparameters:
