@@ -256,7 +256,7 @@ jobs:
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
-            cd /tmp/workspace/
+            cd /tmp/workspace/evalml/
             source test_python/bin/activate
             mv coverage/* .
             coverage combine coverage*
