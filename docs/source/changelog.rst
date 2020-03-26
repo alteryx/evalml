@@ -7,6 +7,7 @@ Changelog
         * Add normalization option and information to confusion matrix :pr:`484`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
@@ -55,6 +56,7 @@ Changelog
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
+        * Support installation without all required dependencies :pr:`459`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
@@ -89,6 +91,7 @@ Changelog
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
         * Enforcing that pipelines must have an estimator as last component :pr:`277`
         * Added ipywidgets as a dependency in requirements.txt :pr:`278`
+        * Added Random and Grid Search Tuners :pr:`240`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257`

@@ -30,6 +30,18 @@ commands:
             source test_python/bin/activate
             make installdeps
             pip install -r test-requirements.txt
+  install_dependencies_core:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            pip install --upgrade pip -q
+            pip install -e . --no-dependencies
+            pip install -r core-requirements.txt
+            pip install -r test-requirements.txt
+            # "!" negates return code. exit nonzero if any of these deps are found
+            ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
+            exit $?
 
 jobs:
   lint_test:
@@ -129,17 +141,38 @@ jobs:
       codecov:
         type: boolean
         default: false
+      core_dependencies:
+        type: boolean
+        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - install_dependencies_test
+      - when:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - install_dependencies_core
+      - unless:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
-          make circleci-test
+      - when:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                make circleci-test-minimal-deps
+      - unless:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                make circleci-test
       - store_test_results:
           path: test-reports
       - store_artifacts:
@@ -253,10 +286,18 @@ workflows:
         - unit_tests:
             name: "linux python 3.6 unit tests"
             python_version: "3.6"
+            core_dependencies: false
         - unit_tests:
             name: "linux python 3.7 unit tests"
             python_version: "3.7"
+            core_dependencies: false
         - unit_tests:
             name: "linux python 3.8 unit tests"
             python_version: "3.8"
+            core_dependencies: false
             codecov: true
+        - unit_tests:
+            name: "linux python 3.8 unit tests, core dependencies"
+            python_version: "3.8"
+            codecov: true
+            core_dependencies: true
