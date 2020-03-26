@@ -163,7 +163,6 @@ jobs:
       - run: |
           source test_python/bin/activate
           coverage erase
-          rm -rf coverage/
       - when:
           condition: << parameters.core_dependencies >>
           steps:
@@ -184,21 +183,8 @@ jobs:
           condition: << parameters.codecov >>
           steps:
             - run: |
-                mkdir -p coverage
-                coverage_filename=coverage_<< parameters.python_version >>_<< parameters.core_dependencies >>
-                echo $coverage_filename
-                cp .coverage "coverage/$coverage_filename"
-            - persist_to_workspace:
-                root: ~/evalml
-                paths:
-                  - coverage
-            - unless:
-                condition: << parameters.core_dependencies >>
-                steps:
-                  - persist_to_workspace:
-                      root: ~/evalml
-                      paths:
-                        - ./
+                source test_python/bin/activate
+                codecov
 
   changelog_updated:
     working_directory: ~/evalml
@@ -246,22 +232,6 @@ jobs:
           when: on_fail
       - store_artifacts:
           path: /tmp/dependencies_updated_artifacts
-  make_codecov:
-    executor:
-      name: python
-      python_version: "3.8"
-    steps:
-      - attach_workspace:
-          at: ~/evalml
-      - run:
-          name: Copy coverage file to workspace for make_codecov workflow
-          command: |
-            source test_python/bin/activate
-            rm .coverage
-            mv coverage/* .
-            coverage combine coverage_*
-            coverage xml
-            codecov --file coverage.xml
 
 workflows:
   version: 2
@@ -333,8 +303,3 @@ workflows:
             python_version: "3.8"
             codecov: true
             core_dependencies: true
-        - make_codecov:
-            name: "make codecov"
-            requires:
-              - "linux python 3.8 unit tests"
-              - "linux python 3.8 unit tests, core dependencies"
