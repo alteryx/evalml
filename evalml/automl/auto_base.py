@@ -304,8 +304,9 @@ class AutoBase:
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
         space = self.search_spaces[pipeline_class.name]
-        proposal = zip(space, values)
-        return list(proposal)
+        proposal = list(zip(space, values))
+        component_graph = [self._handle_component(c) for c in pipeline_class.component_graph]
+        return {cls.name: proposal for cls in component_graph}
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
