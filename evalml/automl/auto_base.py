@@ -1,4 +1,3 @@
-import inspect
 import random
 import time
 from collections import OrderedDict
@@ -13,7 +12,6 @@ from .pipeline_search_plots import PipelineSearchPlots
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
-from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -237,30 +235,6 @@ class AutoBase:
             if ProblemTypes.MULTICLASS not in obj.problem_types:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
-    def _transform_parameters(self, pipeline_class, parameters, number_features):
-        new_parameters = {}
-        component_graph = [handle_component(c) for c in pipeline_class.component_graph]
-        for component in component_graph:
-            component_parameters = {}
-            component_class = component.__class__
-
-            # Inspects each component and adds the following parameters when needed
-            if 'random_state' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['random_state'] = self.random_state
-            if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['n_jobs'] = self.n_jobs
-            if 'number_features' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['number_features'] = number_features
-
-            # Inspects each component and checks the parameters list for the right parameters
-            # Sk_opt tuner returns a list of (name, value) tuples so must be accessed as follows
-            for parameter in parameters:
-                if parameter[0] in inspect.signature(component_class.__init__).parameters:
-                    component_parameters[parameter[0]] = parameter[1]
-
-            new_parameters[component.name] = component_parameters
-        return new_parameters
-
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
 
@@ -270,7 +244,7 @@ class AutoBase:
         # fit an score the pipeline
         pipeline = self._next_pipeline_class(
             objective=self.objective,
-            parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1])
+            parameters=parameters
         )
 
         if self.start_iteration_callback:

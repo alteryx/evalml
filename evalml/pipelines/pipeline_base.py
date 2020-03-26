@@ -77,22 +77,16 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        def _generate_summary(component_graph):
-            component_graph[-1] = handle_component(component_graph[-1])
-            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-            if estimator is not None:
-                summary = "{}".format(estimator.name)
-            else:
-                summary = "Pipeline"
-            for index, component in enumerate(component_graph[:-1]):
-                component = handle_component(component)
-                if index == 0:
-                    summary += " w/ {}".format(component.name)
-                else:
-                    summary += " + {}".format(component.name)
-            return summary
-
-        return _generate_summary(cls.component_graph)
+        if len(cls.component_graph) == 0:
+            raise ValueError("Pipeline '{}' has an empty component_graph".format(cls.name))
+        transformer_classes = list(map(lambda el: handle_component(el), cls.component_graph))
+        estimator_class = None
+        if isinstance(transformer_classes[-1], Estimator):
+            estimator_class = transformer_classes.pop()
+        estimator_name = "Pipeline" if estimator_class is None else estimator_class.name
+        if len(transformer_classes) == 0:
+            return estimator_name
+        return ('{} w/ ' + ' + '.join(map(lambda cls: cls.name, transformer_classes))).format(estimator_name)
 
     def _validate_problem_types(self, problem_types):
         """Validates provided `problem_types` against the estimator in `self.component_graph`
@@ -107,12 +101,11 @@ class PipelineBase(ABC):
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component = handle_component(component)
-        component_class = component.__class__
-        component_name = component.name
+        component_class = handle_component(component)
+        component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
-            new_component = component_class(**component_parameters)
+            new_component = component_class(component_parameters)
         except (ValueError, TypeError) as e:
             err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
             raise ValueError(err) from e
