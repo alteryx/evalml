@@ -356,7 +356,7 @@ class PipelineBase(ABC):
         """
         return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
 
-    def save_pipeline(self, file_path):
+    def save(self, file_path):
         """Saves pipeline at file path
 
         Args:
@@ -369,14 +369,14 @@ class PipelineBase(ABC):
             cloudpickle.dump(self, f)
 
     @staticmethod
-    def load_pipeline(file_path):
+    def load(file_path):
         """Loads pipeline at file path
 
         Args:
             file_path (str) : location to load file
 
         Returns:
-            Pipeline obj
+            PipelineBase obj
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
