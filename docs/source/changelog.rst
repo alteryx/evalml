@@ -8,6 +8,7 @@ Changelog
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
@@ -55,6 +56,7 @@ Changelog
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
+        * Support installation without all required dependencies :pr:`459`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
