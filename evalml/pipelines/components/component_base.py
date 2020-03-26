@@ -7,10 +7,10 @@ logger = Logger()
 
 
 class ComponentBase(ABC):
-    def __init__(self, parameters, component_obj, random_state):
-        self.random_state = random_state
-        self._component_obj = component_obj
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
         self.parameters = parameters
+        self._component_obj = component_obj
+        self.random_state = random_state
 
     @property
     @classmethod

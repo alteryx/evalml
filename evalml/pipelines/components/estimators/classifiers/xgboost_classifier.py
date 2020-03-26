@@ -18,18 +18,14 @@ class XGBoostClassifier(Estimator):
     model_family = ModelFamily.XGBOOST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, n_estimators=100, random_state=0):
-        parameters = {"eta": eta,
-                      "max_depth": max_depth,
-                      "min_child_weight": min_child_weight,
-                      "n_estimators": n_estimators}
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(random_state=random_state,
-                                           eta=eta,
-                                           max_depth=max_depth,
-                                           n_estimators=n_estimators,
-                                           min_child_weight=min_child_weight)
+                                           eta=parameters.get('eta', 0.1),
+                                           max_depth=parameters.get('max_depth', 3),
+                                           n_estimators=parameters.get('n_estimators', 100),
+                                           min_child_weight=parameters.get('min_child_weight', 1))
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
                          random_state=random_state)

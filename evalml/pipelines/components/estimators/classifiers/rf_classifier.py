@@ -16,12 +16,10 @@ class RandomForestClassifier(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
-        rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
-                                                 max_depth=max_depth,
-                                                 n_jobs=n_jobs,
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
+        rf_classifier = SKRandomForestClassifier(n_estimators=parameters.get('n_estimators', 10),
+                                                 max_depth=parameters.get('max_depth', None),
+                                                 n_jobs=parameters.get('n_jobs', -1),
                                                  random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=rf_classifier,

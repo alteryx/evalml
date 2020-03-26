@@ -14,21 +14,16 @@ class RFRegressorSelectFromModel(FeatureSelector):
         "threshold": ['mean', -np.inf]
     }
 
-    def __init__(self, number_features=None, n_estimators=10, max_depth=None,
-                 percent_features=0.5, threshold=-np.inf, n_jobs=-1, random_state=0):
-        max_features = None
-        if number_features:
-            max_features = max(1, int(percent_features * number_features))
-        parameters = {"percent_features": percent_features,
-                      "threshold": threshold}
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
+        max_features = parameters.get('number_features') and \
+            max(1, int(parameters.get('percent_features', 0.5) * parameters.get('number_features')))
         estimator = SKRandomForestRegressor(random_state=random_state,
-                                            n_estimators=n_estimators,
-                                            max_depth=max_depth,
-                                            n_jobs=n_jobs)
+                                            n_estimators=parameters.get('n_estimators', 10),
+                                            max_depth=parameters.get('max_depth', None),
+                                            n_jobs=parameters.get('n_jobs', -1))
         feature_selection = SkSelect(estimator=estimator,
                                      max_features=max_features,
-                                     threshold=threshold)
-
+                                     threshold=parameters.get('threshold', -np.inf))
         super().__init__(parameters=parameters,
                          component_obj=feature_selection,
                          random_state=random_state)

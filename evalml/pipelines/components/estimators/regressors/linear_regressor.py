@@ -15,17 +15,13 @@ class LinearRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1):
-        parameters = {
-            'fit_intercept': fit_intercept,
-            'normalize': normalize
-        }
-        linear_regressor = SKLinearRegression(fit_intercept=fit_intercept,
-                                              normalize=normalize,
-                                              n_jobs=n_jobs)
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
+        linear_regressor = SKLinearRegression(fit_intercept=parameters.get('fit_intercept', True),
+                                              normalize=parameters.get('normalize', False),
+                                              n_jobs=parameters.get('n_jobs', -1))
         super().__init__(parameters=parameters,
                          component_obj=linear_regressor,
-                         random_state=0)
+                         random_state=random_state)
 
     @property
     def feature_importances(self):

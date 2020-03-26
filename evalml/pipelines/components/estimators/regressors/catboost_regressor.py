@@ -22,16 +22,16 @@ class CatBoostRegressor(Estimator):
     model_family = ModelFamily.CATBOOST
     problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "eta": eta,
-                      "max_depth": max_depth}
-        if bootstrap_type is not None:
-            parameters['bootstrap_type'] = bootstrap_type
-
+    def __init__(self, parameters={}, component_obj=None, random_state=0):
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
-        cb_regressor = catboost.CatBoostRegressor(**parameters,
+
+        catboost_parameters = {"n_estimators": parameters.get('n_estimators', 1000),
+                               "eta": parameters.get('eta', 0.03),
+                               "max_depth": parameters.get('max_depth', 6)}
+        if parameters.get('bootstrap_type'):
+            catboost_parameters['bootstrap_type'] = parameters.get('bootstrap_type')
+        cb_regressor = catboost.CatBoostRegressor(**catboost_parameters,
                                                   random_state=random_state,
                                                   silent=True,
                                                   allow_writing_files=False)
