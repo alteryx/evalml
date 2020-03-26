@@ -82,7 +82,7 @@ class PipelineBase(ABC):
             raise ValueError("Pipeline '{}' has an empty component_graph".format(cls.name))
         transformer_classes = list(map(lambda el: cls._handle_component(el), cls.component_graph))
         estimator_class = None
-        if isinstance(transformer_classes[-1], Estimator):
+        if inspect.isclass(transformer_classes[-1]) and issubclass(transformer_classes[-1], Estimator):
             estimator_class = transformer_classes.pop(-1)
         estimator_name = "Pipeline" if estimator_class is None else estimator_class.name
         if len(transformer_classes) == 0:
