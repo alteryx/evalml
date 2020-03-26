@@ -50,7 +50,7 @@ class ObjectiveBase(ABC):
         """
         raise NotImplementedError("`objective_function` must be implemented.")
 
-    def score(cls, y_predicted, y_true, X=None):
+    def score(self, y_predicted, y_true, X=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:

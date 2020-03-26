@@ -2,6 +2,7 @@ import pandas as pd
 from scipy.optimize import minimize_scalar
 
 from .objective_base import ObjectiveBase
+from abc import abstractmethod
 
 from evalml.problem_types import ProblemTypes
 
@@ -14,7 +15,13 @@ class BinaryClassificationObjective(ObjectiveBase):
     can_optimize_threshold (bool): Determines if threshold used by objective can be optimized or not.
     """
     problem_type = ProblemTypes.BINARY
-    can_optimize_threshold = False
+
+    @property
+    @classmethod
+    @abstractmethod
+    def can_optimize_threshold(cls):
+        """Returns a boolean determining if we can optimize the objective threshold."""
+        raise NotImplementedError("This objective must have a `can_optimize_threshold` attribute as a class variable")
 
     def optimize_threshold(self, y_predicted, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.

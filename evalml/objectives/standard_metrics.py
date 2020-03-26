@@ -28,6 +28,7 @@ class F1(BinaryClassificationObjective):
     name = "F1"
     greater_is_better = True
     score_needs_proba = False
+    can_optimize_threshold = False
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted)
@@ -150,6 +151,7 @@ class AUC(BinaryClassificationObjective):
     name = "AUC"
     greater_is_better = True
     score_needs_proba = True
+    can_optimize_threshold = False
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.roc_auc_score(y_true, y_predicted)
