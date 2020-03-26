@@ -1,8 +1,6 @@
 from importlib import import_module
 from unittest.mock import patch
 
-import pytest
-
 from evalml.pipelines.components import all_components
 
 
@@ -10,6 +8,7 @@ def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_components()) == 9
     else:
+        print(all_components())
         assert len(all_components()) == 12
 
 

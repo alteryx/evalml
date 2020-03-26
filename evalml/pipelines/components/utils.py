@@ -21,8 +21,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
-    StandardScaler,
-    Transformer
+    StandardScaler
 )
 
 from evalml.utils import import_or_raise
