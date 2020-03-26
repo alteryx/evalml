@@ -189,16 +189,16 @@ jobs:
                 echo $coverage_filename
                 cp .coverage "coverage/$coverage_filename"
             - persist_to_workspace:
-                root: .
+                root: ~/evalml
                 paths:
                   - coverage
             - unless:
                 condition: << parameters.core_dependencies >>
                 steps:
                   - persist_to_workspace:
-                      root: /home/circleci
+                      root: ~/evalml
                       paths:
-                        - evalml/
+                        - ./
 
   changelog_updated:
     working_directory: ~/evalml
@@ -252,14 +252,14 @@ jobs:
       python_version: "3.8"
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: ~/evalml
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
             pwd
             ls -lhAtr
             ls -lhAtr evalml/
-            cd /tmp/workspace/evalml/
+            cd evalml/
             source test_python/bin/activate
             mv coverage/* .
             coverage combine coverage*
