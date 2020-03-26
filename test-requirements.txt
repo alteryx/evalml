@@ -4,3 +4,4 @@ pytest-cov==2.6.1
 nbval==0.9.3
 graphviz>=0.13
 codecov==2.0.15
+requirements-parser>=0.2.0

@@ -1,11 +1,13 @@
 import numpy as np
 import pandas as pd
-from catboost import CatBoostClassifier as CBClassifier
+from pytest import importorskip
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import CatBoostClassificationPipeline
+
+importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
 def test_catboost_init():
@@ -28,6 +30,7 @@ def test_catboost_init():
 
 
 def test_catboost_multi(X_y_multi):
+    from catboost import CatBoostClassifier as CBClassifier
     X, y = X_y_multi
 
     imputer = SimpleImputer(strategy='mean')

@@ -96,7 +96,11 @@ class AutoBase:
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
 
-        self.plot = PipelineSearchPlots(self)
+        try:
+            self.plot = PipelineSearchPlots(self)
+        except ImportError:
+            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            self.plot = None
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -160,7 +164,9 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+        search_iteration_plot = None
+        if self.plot:
+            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
@@ -172,7 +178,8 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
+            if search_iteration_plot:
+                search_iteration_plot.update()
         desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)

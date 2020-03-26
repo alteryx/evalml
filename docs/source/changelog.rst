@@ -55,6 +55,7 @@ Changelog
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
+        * Support installation without all required dependencies :pr:`459`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
