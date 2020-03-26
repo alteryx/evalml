@@ -6,6 +6,17 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 
+def pytest_addoption(parser):
+    parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
+                     help="If true, tests will assume only the dependencies in"
+                     "core-requirements.txt have been installed.")
+
+
+@pytest.fixture
+def has_minimal_dependencies(pytestconfig):
+    return pytestconfig.getoption("--has-minimal-dependencies")
+
+
 @pytest.fixture
 def X_y():
     X, y = datasets.make_classification(n_samples=100, n_features=20,

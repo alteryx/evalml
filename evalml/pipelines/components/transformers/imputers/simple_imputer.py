@@ -5,13 +5,23 @@ from evalml.pipelines.components.transformers import Transformer
 
 
 class SimpleImputer(Transformer):
-    """Imputes missing data with either mean, median and most_frequent for numerical data or most_frequent for categorical data"""
+    """Imputes missing data according to a specified imputation strategy"""
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent"):
-        parameters = {"impute_strategy": impute_strategy}
-        imputer = SkImputer(strategy=impute_strategy)
+    def __init__(self, impute_strategy="most_frequent", fill_value=None):
+        """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
+
+        Arguments:
+            impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
+               numerical data, and "most_frequent", "constant" for object data types.
+            fill_value (string): When impute_strategy == “constant”, fill_value is used to replace missing data.
+               Defaults to 0 when imputing numerical data and “missing_value” for strings or object data types.
+        """
+        parameters = {"impute_strategy": impute_strategy,
+                      "fill_value": fill_value}
+        imputer = SkImputer(strategy=impute_strategy,
+                            fill_value=fill_value)
         super().__init__(parameters=parameters,
                          component_obj=imputer,
                          random_state=0)
@@ -29,7 +39,7 @@ class SimpleImputer(Transformer):
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
-            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
+            X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
         return X_t
 
     def fit_transform(self, X, y=None):
@@ -45,5 +55,5 @@ class SimpleImputer(Transformer):
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
-            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index).astype(X.dtypes.to_dict())
+            X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
         return X_t
