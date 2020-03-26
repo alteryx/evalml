@@ -1,12 +1,12 @@
 import pandas as pd
 from scipy.optimize import minimize_scalar
 
-from .classification_objective import ClassificationObjective
+from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
 
 
-class BinaryClassificationObjective(ClassificationObjective):
+class BinaryClassificationObjective(ObjectiveBase):
     """
     Base class for all binary classification objectives.
 
