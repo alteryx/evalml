@@ -7,7 +7,6 @@ from .component_base import ComponentBase
 from .estimators import (
     CatBoostClassifier,
     CatBoostRegressor,
-    Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
@@ -15,8 +14,6 @@ from .estimators import (
     XGBoostClassifier
 )
 from .transformers import (
-    CategoricalEncoder,
-    FeatureSelector,
     OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
@@ -37,7 +34,7 @@ def _components_dict():
     components = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
-        if issubclass(obj, ComponentBase):
+        if issubclass(obj, ComponentBase) and obj is not ComponentBase:
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
                     components[obj.name] = obj
