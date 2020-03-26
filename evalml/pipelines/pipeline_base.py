@@ -80,7 +80,7 @@ class PipelineBase(ABC):
         """
         if len(cls.component_graph) == 0:
             raise ValueError("Pipeline '{}' has an empty component_graph".format(cls.name))
-        transformer_classes = list(map(lambda el: cls._handle_component(el), cls.component_graph))
+        transformer_classes = list(map(lambda el: cls.handle_component(el), cls.component_graph))
         estimator_class = None
         if inspect.isclass(transformer_classes[-1]) and issubclass(transformer_classes[-1], Estimator):
             estimator_class = transformer_classes.pop(-1)
@@ -101,7 +101,7 @@ class PipelineBase(ABC):
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
     @staticmethod
-    def _handle_component(component_class):
+    def handle_component(component_class):
         """Standardizes input to a new ComponentBase subclass, if necessary.
 
         If a str is provided, will attempt to look up a ComponentBase class by that name and
@@ -126,7 +126,7 @@ class PipelineBase(ABC):
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component_class = self._handle_component(component)
+        component_class = self.handle_component(component)
         component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
@@ -343,7 +343,7 @@ class PipelineBase(ABC):
     def model_family(cls):
         "Returns model family of this pipeline template"""
 
-        return cls._handle_component(cls.component_graph[-1]).model_family
+        return cls.handle_component(cls.component_graph[-1]).model_family
 
     @property
     def parameters(self):

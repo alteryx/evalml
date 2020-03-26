@@ -11,7 +11,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines
+from evalml.pipelines import get_pipelines, PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds
@@ -304,8 +304,8 @@ class AutoBase:
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
         space = self.search_spaces[pipeline_class.name]
-        proposal = list(zip(space, values))
-        component_graph = [self._handle_component(c) for c in pipeline_class.component_graph]
+        proposal = dict(zip(space, values))
+        component_graph = [PipelineBase.handle_component(c) for c in pipeline_class.component_graph]
         return {cls.name: proposal for cls in component_graph}
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
@@ -317,7 +317,8 @@ class AutoBase:
         else:
             score_to_minimize = score
 
-        self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
+        local_parameters = list(parameters.values())[0]
+        self.tuners[trained_pipeline.name].add([p[1] for p in local_parameters.items()], score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
@@ -330,7 +331,7 @@ class AutoBase:
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
             "pipeline_summary": pipeline_summary,
-            "parameters": dict(parameters),
+            "parameters": dict(local_parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
