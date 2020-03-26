@@ -15,12 +15,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
-from evalml.pipelines.utils import (
-    get_pipelines,
-    list_model_families,
-    load_pipeline,
-    save_pipeline
-)
+from evalml.pipelines.utils import get_pipelines, list_model_families
 from evalml.problem_types import ProblemTypes
 
 
@@ -76,8 +71,8 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     pipeline = lr_pipeline
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
-    assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
+    pipeline.save_pipeline(path)
+    assert pipeline.score(X, y) == PipelineBase.load_pipeline(path).score(X, y)
 
 
 @pytest.fixture
@@ -87,7 +82,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     MockPrecision = type('MockPrecision', (Precision,), {})
     pipeline = LogisticRegressionPipeline(objective=MockPrecision(), parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
+    pipeline.save_pipeline(path)
     return path
 
 
@@ -99,7 +94,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     objective = Precision()
     pipeline = LogisticRegressionPipeline(objective=objective, parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
+    assert PipelineBase.load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
 
 def test_reproducibility(X_y):
