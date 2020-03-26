@@ -16,24 +16,6 @@ class SimpleImputer(Transformer):
                          component_obj=imputer,
                          random_state=0)
 
-
-    def fit(self, X, y=None):
-        """Fits component to data
-
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
-
-        Returns:
-            self
-        """
-        try:
-            
-            self._component_obj.fit(X, y)
-            return self
-        except AttributeError:
-            raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
-
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values
 
@@ -43,8 +25,6 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        # import pdb; pdb.set_trace()
-
         X_t = self._component_obj.transform(X)
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):

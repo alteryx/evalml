@@ -1,15 +1,22 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 from evalml.pipelines.components import OneHotEncoder
 
 
 def test_null_values_in_dataframe():
-    X = pd.DataFrame([[2, 0, 1, 0], [np.nan, "b", "a", "c"]])
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "b", "c", "d", np.nan]
+    X["col_2"] = ["a", "b", "a", "c", "b"]
+    X["col_3"] = ["a", "a", "a", "a", "a"]
+    X["col_4"] = [2, 0, 1, 0, 0]
     encoder = OneHotEncoder()
-    # with pytest.raises(ValueError, match="Dataframe to be encoded can not contain null values."):
-    #     encoder.transform(X)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_nan",
+                              "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
 
 
 def test_less_than_top_n_unique_values():
@@ -19,13 +26,13 @@ def test_less_than_top_n_unique_values():
     X["col_2"] = ["a", "b", "a", "c", "b"]
     X["col_3"] = ["a", "a", "a", "a", "a"]
     X["col_4"] = [2, 0, 1, 0, 0]
- 
+
     encoder = OneHotEncoder()
     encoder.top_n = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d",
-                          "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
+                              "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
@@ -43,8 +50,8 @@ def test_more_top_n_unique_values():
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
-                          "col_2_e", "col_2_a", "col_2_b", "col_2_c", "col_2_d",
-                          "col_3_a", "col_4"])
+                              "col_2_e", "col_2_a", "col_2_b", "col_2_c", "col_2_d",
+                              "col_3_a", "col_4"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
@@ -63,8 +70,8 @@ def test_categorical_dtype():
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
-                          "col_2_d", "col_2_e", "col_2_a", "col_2_f", "col_3_a",
-                          "col_4_1", "col_4_2", "col_4_3"])
+                              "col_2_d", "col_2_e", "col_2_a", "col_2_f", "col_3_a",
+                              "col_4_1", "col_4_2", "col_4_3"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
 
