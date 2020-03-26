@@ -27,5 +27,5 @@ def test_lead_scoring_objective(X_y):
     out = objective.decision_function(predicted, 1)
     assert out.tolist() == y_true
 
-    score = objective.objective_function(out, y_true)
+    score = objective.score(out, y_true)
     assert (score == 0.5)

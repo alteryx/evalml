@@ -10,7 +10,7 @@ class BinaryClassificationObjective(ClassificationObjective):
     """
     Base class for all binary classification objectives.
 
-    problem_type (ProblemTypes): Type of problem this objective is. Set to ProblemTypes.BINARY.
+    problem_type (ProblemTypes): Specifies the type of problem this objective is defined for (binary classification)
     can_optimize_threshold (bool): Determines if threshold used by objective can be optimized or not.
     """
     problem_type = ProblemTypes.BINARY
@@ -29,6 +29,9 @@ class BinaryClassificationObjective(ClassificationObjective):
         Returns:
             optimal threshold
         """
+        if not self.can_optimize_threshold:
+            raise RuntimeError("Trying to optimize objective that can't be optimized!")
+
         def cost(threshold):
             predictions = self.decision_function(ypred_proba=y_predicted, threshold=threshold, X=X)
             cost = self.objective_function(predictions, y_true, X=X)
@@ -41,11 +44,11 @@ class BinaryClassificationObjective(ClassificationObjective):
         """Apply a learned threshold to predicted probabilities to get predicted classes.
 
         Arguments:
-            ypred_proba (list): the prediction to transform to final prediction
+            ypred_proba (list): The classifier's predicted probabilities
 
-            threshold (float): threshold used to make a prediction. Defaults to 0.5.
+            threshold (float, optional): Threshold used to make a prediction. Defaults to 0.5.
 
-            X (pd.DataFrame): any extra columns that are needed from training data.
+            X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
             predictions

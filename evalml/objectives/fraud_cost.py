@@ -14,13 +14,13 @@ class FraudCost(BinaryClassificationObjective):
         """Create instance of FraudCost
 
         Arguments:
-            retry_percentage (float): What percentage of customers will retry a transaction if it
+            retry_percentage (float): What percentage of customers that will retry a transaction if it
                 is declined. Between 0 and 1. Defaults to .5
 
             interchange_fee (float): How much of each successful transaction you can collect.
                 Between 0 and 1. Defaults to .02
 
-            fraud_payout_percentage (float): Percentage of fraud will you be unable to collect.
+            fraud_payout_percentage (float): Percentage of fraud you will not be able to collect.
                 Between 0 and 1. Defaults to 1.0
 
             amount_col (str): Name of column in data that contains the amount. Defaults to "amount"

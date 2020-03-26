@@ -38,15 +38,23 @@ class ObjectiveBase(ABC):
 
     @abstractmethod
     def objective_function(self, y_predicted, y_true, X=None):
-        """Returns a boolean determining if `score()` needs probability estimates."""
+        """Computes the relative value of the provided predictions compared to the true values, according a specified metric
+         Arguments:
+            y_predicted (pd.Series) : predicted values of length [n_samples]
+            y_true (pd.Series) : true values of length [n_samples]
+            X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
+
+        Returns:
+            numerical value used to calculate score
+        """
         raise NotImplementedError("`objective_function` must be implemented.")
 
     def score(self, y_predicted, y_true, X=None):
-        """Returns a numerical score indicating performance based on the differences between the predicted and actual labels.
+        """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:
-            y_predicted (pd.Series) : predicted labels of length [n_samples]
-            y_true (pd.Series) : true labels of length [n_samples]
+            y_predicted (pd.Series) : predicted values of length [n_samples]
+            y_true (pd.Series) : true values of length [n_samples]
             X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
