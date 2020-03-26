@@ -224,6 +224,13 @@ def test_additional_objectives(X_y):
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
+def test_non_optimizable_threshold(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl.search(X, y, raise_errors=True)
+    assert automl.best_pipeline.threshold == 0.5
+
+
 def test_describe_pipeline_objective_ordered(X_y, capsys):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)

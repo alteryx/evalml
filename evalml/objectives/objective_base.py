@@ -9,33 +9,34 @@ class ObjectiveBase(ABC):
     score_needs_proba = None
 
     @property
-    @staticmethod
+    @classmethod
     @abstractmethod
     def name(self):
         """Returns a name describing the objective."""
         raise NotImplementedError("This objective must have a `name` attribute as a class variable")
 
     @property
-    @staticmethod
+    @classmethod
     @abstractmethod
     def problem_type(self):
         """Returns a ProblemTypes enum describing the problem type the objective can handle."""
         raise NotImplementedError("This objective must have a `problem_type` attribute as a class variable")
 
     @property
-    @staticmethod
+    @classmethod
     @abstractmethod
     def greater_is_better(self):
         """Returns a boolean determining if a greater score indicates better model performance."""
         raise NotImplementedError("This objective must have a `greater_is_better` boolean attribute as a class variable")
 
     @property
-    @staticmethod
+    @classmethod
     @abstractmethod
     def score_needs_proba(self):
         """Returns a boolean determining if `score()` needs probability estimates."""
         raise NotImplementedError("This objective must have a `score_needs_proba` boolean attribute as a class variable")
 
+    @classmethod
     @abstractmethod
     def objective_function(self, y_predicted, y_true, X=None):
         """Computes the relative value of the provided predictions compared to the true values, according a specified metric
