@@ -17,14 +17,14 @@ class RandomForestRegressor(Estimator):
     supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
-        rf_regressor = SKRandomForestRegressor(random_state=random_state,
-                                               n_estimators=n_estimators,
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.n_jobs = n_jobs
+        rf_regressor = SKRandomForestRegressor(n_estimators=n_estimators,
                                                max_depth=max_depth,
-                                               n_jobs=n_jobs)
-        super().__init__(parameters=parameters,
-                         component_obj=rf_regressor,
+                                               n_jobs=n_jobs,
+                                               random_state=random_state)
+        super().__init__(component_obj=rf_regressor,
                          random_state=random_state)
 
     @property

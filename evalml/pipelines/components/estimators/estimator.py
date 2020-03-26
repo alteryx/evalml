@@ -5,7 +5,16 @@ from evalml.pipelines.components import ComponentBase
 
 
 class Estimator(ComponentBase):
-    """A component that fits and predicts given data"""
+    """A component that fits and predicts given data.
+
+    To implement a new Estimator, define your own class which is a subclass of Estimator. Define
+    a name for the estimator, and a list of acceptable ranges for hyperparameters. Then define
+    an `__init__` method which sets up any necessary state and objects. Make sure your `__init__` only
+    uses standard keyword arguments, and ends with a call to `super().__init__()`. You may
+    also override the `fit`, `predict`/`predict_proba` and other methods in this class if appropriate.
+
+    Check out the definitions of any Estimator components to see some examples.
+    """
 
     @property
     @classmethod

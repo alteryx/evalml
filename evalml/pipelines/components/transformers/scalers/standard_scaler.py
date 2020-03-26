@@ -9,8 +9,6 @@ class StandardScaler(Transformer):
     hyperparameter_ranges = {}
 
     def __init__(self, random_state=0):
-        parameters = {}
         scaler = SkScaler()
-        super().__init__(parameters=parameters,
-                         component_obj=scaler,
+        super().__init__(component_obj=scaler,
                          random_state=random_state)

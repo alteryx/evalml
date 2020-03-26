@@ -35,8 +35,7 @@ def test_less_than_top_n_unique_values():
     X["col_3"] = ["a", "a", "a", "a", "a"]
     X["col_4"] = [2, 0, 1, 0, 0]
 
-    encoder = OneHotEncoder()
-    encoder.parameters['top_n'] = 5
+    encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d",
@@ -54,9 +53,8 @@ def test_more_top_n_unique_values():
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
 
     random_seed = 2
-    encoder = OneHotEncoder(random_state=random_seed)
+    encoder = OneHotEncoder(top_n=5, random_state=random_seed)
     test_random_state = get_random_state(random_seed)
-    encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
@@ -87,9 +85,8 @@ def test_more_top_n_unique_values_large():
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 4, 1]
 
     random_seed = 2
-    encoder = OneHotEncoder(random_state=random_seed)
+    encoder = OneHotEncoder(top_n=3, random_state=random_seed)
     test_random_state = get_random_state(random_seed)
-    encoder.parameters['top_n'] = 3
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
@@ -113,8 +110,7 @@ def test_categorical_dtype():
     X["col_4"] = [3, 3, 2, 2, 1]
     X["col_4"] = X["col_4"].astype('category')
 
-    encoder = OneHotEncoder()
-    encoder.parameters['top_n'] = 5
+    encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
 
@@ -133,8 +129,7 @@ def test_all_numerical_dtype():
     X["col_3"] = [0, 0, 1, 3, 2]
     X["col_4"] = [2, 4, 1, 4, 0]
 
-    encoder = OneHotEncoder()
-    encoder.parameters['top_n'] = 5
+    encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert X.equals(X_t)

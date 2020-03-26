@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added verbose parameter to load_fraud :pr:`560`
+        * Made components have consistent initialization args and pass parameters as dicts :pr:`527`
     * Fixes
     * Changes
     * Documentation Changes
@@ -57,7 +58,7 @@ Changelog
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
     * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
-
+    * Pipelines' `component_graph` fields cannot contain component instances, only component classes or names
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements

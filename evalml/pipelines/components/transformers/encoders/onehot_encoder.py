@@ -12,11 +12,8 @@ class OneHotEncoder(CategoricalEncoder):
     hyperparameter_ranges = {}
 
     def __init__(self, top_n=10, random_state=0):
-        """Initalizes self."""
-        parameters = {"top_n": top_n}
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_state=random_state)
+        self.top_n = top_n
+        super().__init__(random_state=random_state)
 
     def _get_cat_cols(self, X):
         """Get names of 'object' or 'categorical' columns in the DataFrame."""
@@ -27,7 +24,6 @@ class OneHotEncoder(CategoricalEncoder):
         return obj_cols
 
     def fit(self, X, y=None):
-        top_n = self.parameters['top_n']
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_t = X
@@ -36,12 +32,12 @@ class OneHotEncoder(CategoricalEncoder):
         for col in X_t.columns:
             if col in cols_to_encode:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                if len(value_counts) <= top_n:
+                if len(value_counts) <= self.top_n:
                     unique_values = value_counts.index.tolist()
                 else:
                     value_counts = value_counts.sample(frac=1, random_state=self.random_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
-                    unique_values = value_counts.head(top_n).index.tolist()
+                    unique_values = value_counts.head(self.top_n).index.tolist()
                 self.col_unique_values[col] = unique_values
         return self
 

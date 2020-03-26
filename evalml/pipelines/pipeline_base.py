@@ -1,4 +1,5 @@
 import copy
+import inspect
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -7,7 +8,7 @@ import cloudpickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Estimator, handle_component
+from .components import ComponentBase, Estimator, all_components
 from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.exceptions import IllFormattedClassNameError
@@ -92,22 +93,16 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        def _generate_summary(component_graph):
-            component_graph[-1] = handle_component(component_graph[-1])
-            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-            if estimator is not None:
-                summary = "{}".format(estimator.name)
-            else:
-                summary = "Pipeline"
-            for index, component in enumerate(component_graph[:-1]):
-                component = handle_component(component)
-                if index == 0:
-                    summary += " w/ {}".format(component.name)
-                else:
-                    summary += " + {}".format(component.name)
-            return summary
-
-        return _generate_summary(cls.component_graph)
+        if len(cls.component_graph) == 0:
+            raise ValueError("Pipeline '{}' has an empty component_graph".format(cls.name))
+        transformer_classes = list(map(lambda el: cls.handle_component(el), cls.component_graph))
+        estimator_class = None
+        if inspect.isclass(transformer_classes[-1]) and issubclass(transformer_classes[-1], Estimator):
+            estimator_class = transformer_classes.pop(-1)
+        estimator_name = "Pipeline" if estimator_class is None else estimator_class.name
+        if len(transformer_classes) == 0:
+            return estimator_name
+        return ('{} w/ ' + ' + '.join(map(lambda cls: cls.name, transformer_classes))).format(estimator_name)
 
     def _validate_problem_types(self, problem_types):
         """Validates provided `problem_types` against the estimator in `self.component_graph`
@@ -120,16 +115,40 @@ class PipelineBase(ABC):
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
+    @staticmethod
+    def handle_component(component_class):
+        """Standardizes input to a new ComponentBase subclass, if necessary.
+
+        If a str is provided, will attempt to look up a ComponentBase class by that name and
+        return that class. Otherwise if a ComponentBase subclass is provided, will return that
+        without modification.
+
+        Arguments:
+            component_class (str, ComponentBase subclass) : input to be standardized
+
+        Returns:
+            a class which is a subclass of ComponentBase
+        """
+        if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
+            return component_class
+        if not isinstance(component_class, str):
+            raise ValueError(("component_graph may only contain str or ComponentBase subclasses, " +
+                              "not '{}'").format(type(component_class)))
+        component_classes = all_components()
+        if component_class not in component_classes:
+            raise KeyError("Component {} was not found".format(component_class))
+        return component_classes[component_class]
+
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component = handle_component(component)
-        component_class = component.__class__
-        component_name = component.name
+        component_class = self.handle_component(component)
+        component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
             new_component = component_class(**component_parameters, random_state=self.random_state)
         except (ValueError, TypeError) as e:
-            err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
+            err = "Error received when instantiating component {} with the following arguments {}"\
+                .format(component_name, component_parameters)
             raise ValueError(err) from e
         return new_component
 
@@ -338,14 +357,15 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-        return handle_component(cls.component_graph[-1]).model_family
+
+        return cls.handle_component(cls.component_graph[-1]).model_family
 
     @classproperty
     def hyperparameters(cls):
         "Returns hyperparameter ranges as a flat dictionary from all components "
         hyperparameter_ranges = dict()
         for component in cls.component_graph:
-            component = handle_component(component)
+            component = cls.handle_component(component)
             hyperparameter_ranges.update(component.hyperparameter_ranges)
 
         if cls.custom_hyperparameters:
