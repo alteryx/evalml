@@ -11,7 +11,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines, PipelineBase
+from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds

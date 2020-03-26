@@ -2,7 +2,6 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
-from evalml.pipelines import LogisticRegressionPipeline
 
 
 def test_pipeline_limits(capsys, X_y):
