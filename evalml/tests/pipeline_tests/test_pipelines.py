@@ -97,8 +97,7 @@ def lr_pipeline():
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0,
-            'random_state': 1
+            'C': 3.0
         }
     }
 
@@ -223,8 +222,7 @@ def test_parameters(X_y, lr_pipeline):
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0,
-            'random_state': 1
+            'C': 3.0
         }
     }
 
@@ -417,6 +415,7 @@ def test_init_components_unrelated_parameters():
 def test_correct_parameters(lr_pipeline):
     lr_pipeline = lr_pipeline
 
-    assert lr_pipeline.estimator.random_state == 1
+    assert lr_pipeline.estimator.random_state == 0
+    assert lr_pipeline.estimator.parameters['penalty'] == 'l2'
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
