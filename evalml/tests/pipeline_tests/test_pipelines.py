@@ -220,11 +220,11 @@ def test_parameters(X_y, lr_pipeline):
     params = {
         'Simple Imputer': {
             'impute_strategy': 'median',
-            'fill_value': None
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0
+            'C': 3.0,
+            'random_state': 1
         }
     }
 
@@ -291,7 +291,7 @@ def test_multi_format_creation(X_y):
     X, y = X_y
 
     class TestPipeline(PipelineBase):
-        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
+        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
@@ -331,7 +331,7 @@ def test_multiple_feature_selectors(X_y):
     X, y = X_y
 
     class TestPipeline(PipelineBase):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
         problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
@@ -389,10 +389,11 @@ def test_no_default_parameters():
             super().__init__(objective=objective,
                              parameters=parameters)
 
-    with pytest.raises(ValueError, match="Error received when instantiating component *."):
+    with pytest.raises(ValueError, match="component_graph may only contain str or ComponentBase subclasses, not .*"):
         TestPipeline(parameters={}, objective='precision')
 
-    assert TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision')
+    with pytest.raises(ValueError, match="component_graph may only contain str or ComponentBase subclasses, not .*"):
+        TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision')
 
 
 def test_init_components_invalid_parameters():

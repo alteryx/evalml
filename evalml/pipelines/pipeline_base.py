@@ -1,4 +1,5 @@
 import copy
+import inspect
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -82,7 +83,7 @@ class PipelineBase(ABC):
         transformer_classes = list(map(lambda el: cls._handle_component(el), cls.component_graph))
         estimator_class = None
         if isinstance(transformer_classes[-1], Estimator):
-            estimator_class = transformer_classes.pop()
+            estimator_class = transformer_classes.pop(-1)
         estimator_name = "Pipeline" if estimator_class is None else estimator_class.name
         if len(transformer_classes) == 0:
             return estimator_name
@@ -113,10 +114,11 @@ class PipelineBase(ABC):
         Returns:
             a class which is a subclass of ComponentBase
         """
-        if issubclass(component_class, ComponentBase):
+        if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
             return component_class
         if not isinstance(component_class, str):
-            raise ValueError("_handle_component only takes in str or ComponentBase subclass")
+            raise ValueError(("component_graph may only contain str or ComponentBase subclasses, " +
+                              "not '{}'").format(type(component_class)))
         component_classes = all_components()
         if component_class not in component_classes:
             raise KeyError("Component {} was not found".format(component_class))
@@ -130,7 +132,8 @@ class PipelineBase(ABC):
             component_parameters = parameters.get(component_name, {})
             new_component = component_class(component_parameters)
         except (ValueError, TypeError) as e:
-            err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
+            err = "Error received when instantiating component {} with the following arguments {}"\
+                .format(component_name, component_parameters)
             raise ValueError(err) from e
         return new_component
 
