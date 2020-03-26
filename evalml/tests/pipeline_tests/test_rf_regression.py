@@ -32,22 +32,7 @@ def test_rf_init(X_y_reg):
     }
     clf = RFRegressionPipeline(objective=objective, parameters=parameters)
 
-    expected_parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean',
-            'fill_value': None
-        },
-        'RF Regressor Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
-        'Random Forest Regressor': {
-            'max_depth': 5,
-            'n_estimators': 20
-        }
-    }
-
-    assert clf.parameters == expected_parameters
+    assert clf.parameters == parameters
 
 
 def test_rf_regression(X_y_categorical_regression):

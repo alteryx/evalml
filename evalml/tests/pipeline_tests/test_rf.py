@@ -33,22 +33,7 @@ def test_rf_init(X_y):
 
     clf = RFClassificationPipeline(objective=objective, parameters=parameters)
 
-    expected_parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean',
-            'fill_value': None
-        },
-        'RF Classifier Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
-        'Random Forest Classifier': {
-            'max_depth': 5,
-            'n_estimators': 20
-        }
-    }
-
-    assert clf.parameters == expected_parameters
+    assert clf.parameters == parameters
 
 
 def test_rf_multi(X_y_multi):
