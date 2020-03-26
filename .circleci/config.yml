@@ -42,8 +42,6 @@ commands:
             # "!" negates return code. exit nonzero if any of these deps are found
             ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
             exit $?
-      - store_artifacts:
-          path: /tmp/install_dependencies_core
 
 jobs:
   lint_test:
