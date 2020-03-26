@@ -13,6 +13,7 @@ Changelog
         * Support pandas 1.0.0 :pr:`486`
         * Made all references to the logger static :pr:`503`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
+        * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase` :pr:`526`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
