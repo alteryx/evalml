@@ -257,10 +257,11 @@ jobs:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
             source test_python/bin/activate
-            mv coverage/* .
             rm .coverage
+            mv coverage/* .
             coverage combine coverage_*
-            codecov --file .coverage
+            coverage xml
+            codecov --file coverage.xml
 
 workflows:
   version: 2
