@@ -196,9 +196,9 @@ jobs:
                 condition: << parameters.core_dependencies >>
                 steps:
                   - persist_to_workspace:
-                      root: .
+                      root: /home/circleci
                       paths:
-                        - .*
+                        - evalml/
 
   changelog_updated:
     working_directory: ~/evalml
@@ -256,6 +256,9 @@ jobs:
       - run:
           name: Copy coverage file to workspace for make_codecov workflow
           command: |
+            pwd
+            ls -lhAtr
+            ls -lhAtr evalml/
             cd /tmp/workspace/evalml/
             source test_python/bin/activate
             mv coverage/* .
