@@ -122,8 +122,8 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     pipeline = lr_pipeline
     pipeline.fit(X, y)
-    pipeline.save_pipeline(path)
-    assert pipeline.score(X, y) == PipelineBase.load_pipeline(path).score(X, y)
+    pipeline.save(path)
+    assert pipeline.score(X, y) == PipelineBase.load(path).score(X, y)
 
 
 @pytest.fixture
@@ -133,7 +133,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     MockPrecision = type('MockPrecision', (Precision,), {})
     pipeline = LogisticRegressionPipeline(objective=MockPrecision(), parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    pipeline.save_pipeline(path)
+    pipeline.save(path)
     return path
 
 
@@ -145,7 +145,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     objective = Precision()
     pipeline = LogisticRegressionPipeline(objective=objective, parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    assert PipelineBase.load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
+    assert PipelineBase.load(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
 
 def test_reproducibility(X_y):
