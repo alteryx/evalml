@@ -67,26 +67,3 @@ def all_components():
         components.pop(CatBoostClassifier.name)
         components.pop(CatBoostRegressor.name)
     return components
-
-
-def handle_component(component_class):
-    """Standardizes input to a new ComponentBase subclass, if necessary.
-
-    If a str is provided, will attempt to look up a ComponentBase class by that name and
-    return that class. Otherwise if a ComponentBase subclass is provided, will return that
-    without modification.
-
-    Arguments:
-        component_class (str, ComponentBase subclass) : input to be standardized
-
-    Returns:
-        a class which is a subclass of ComponentBase
-    """
-    if issubclass(component, ComponentBase):
-        return component
-    if not isinstance(component, str):
-        raise ValueError("handle_component only takes in str or ComponentBase subclass")
-    components = all_components()
-    if component not in components:
-        raise KeyError("Component {} was not found".format(component))
-    return components[component]

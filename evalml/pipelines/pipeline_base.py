@@ -6,7 +6,7 @@ from collections import OrderedDict
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .components import Estimator, handle_component
+from .components import ComponentBase, Estimator, all_components
 from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.exceptions import IllFormattedClassNameError
@@ -79,7 +79,7 @@ class PipelineBase(ABC):
         """
         if len(cls.component_graph) == 0:
             raise ValueError("Pipeline '{}' has an empty component_graph".format(cls.name))
-        transformer_classes = list(map(lambda el: handle_component(el), cls.component_graph))
+        transformer_classes = list(map(lambda el: cls._handle_component(el), cls.component_graph))
         estimator_class = None
         if isinstance(transformer_classes[-1], Estimator):
             estimator_class = transformer_classes.pop()
@@ -99,9 +99,32 @@ class PipelineBase(ABC):
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
+    @staticmethod
+    def _handle_component(component_class):
+        """Standardizes input to a new ComponentBase subclass, if necessary.
+
+        If a str is provided, will attempt to look up a ComponentBase class by that name and
+        return that class. Otherwise if a ComponentBase subclass is provided, will return that
+        without modification.
+
+        Arguments:
+            component_class (str, ComponentBase subclass) : input to be standardized
+
+        Returns:
+            a class which is a subclass of ComponentBase
+        """
+        if issubclass(component_class, ComponentBase):
+            return component_class
+        if not isinstance(component_class, str):
+            raise ValueError("_handle_component only takes in str or ComponentBase subclass")
+        component_classes = all_components()
+        if component_class not in component_classes:
+            raise KeyError("Component {} was not found".format(component_class))
+        return component_classes[component_class]
+
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component_class = handle_component(component)
+        component_class = self._handle_component(component)
         component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
@@ -317,7 +340,7 @@ class PipelineBase(ABC):
     def model_family(cls):
         "Returns model family of this pipeline template"""
 
-        return handle_component(cls.component_graph[-1]).model_family
+        return cls._handle_component(cls.component_graph[-1]).model_family
 
     @property
     def parameters(self):
