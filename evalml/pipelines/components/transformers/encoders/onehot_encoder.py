@@ -32,33 +32,35 @@ class OneHotEncoder(CategoricalEncoder):
 
         X_t = X
         self.cols_to_encode = self._get_cat_cols(X_t)
-        self.cols_to_drop = []
         encoded_X = pd.DataFrame()
+        self.col_values = {} # map from columns to values in columns
+
         for col in X_t.columns:
             if col in self.cols_to_encode:
-                # if X_t[col].isnull().any():
-                #     X_t[col].fillna(-1, inplace=True)
-                v = X_t[col].value_counts().to_frame()
+                v = X_t[col].value_counts(dropna=False).to_frame()
                 v.reset_index(inplace=True)
                 v = v.sort_values([col, 'index'], ascending=[False, True])
                 v.set_index('index', inplace=True)
                 unique = v.head(self.top_n).index.tolist()
-                for label in unique:
-                    new_name = str(col) + "_" + str(label)
-                    add = (X[col] == label).astype(int)
-                    add = add.rename(new_name)
-                    encoded_X = pd.concat([encoded_X, add], axis=1)
+                self.col_values[col] = list(unique)
+                # for label in unique:
+                #     new_name = str(col) + "_" + str(label)
+                #     add = (X[col] == label).astype(int)
+                #     add = add.rename(new_name)
+                #     encoded_X.reset_index(drop=True, inplace=True)
+                #     add.reset_index(drop=True, inplace=True)
+                #     encoded_X = pd.concat([encoded_X, add], axis=1)
                     # self.encoded_cols = pd.concat([self.encoded_cols, add])
 
-                self.cols_to_drop.append(col)
             # else:
             #     encoded_X = pd.concat([encoded_X, X_t[col]], axis=1)
-        print (encoded_X.columns)
-        self.encoded_cols = encoded_X
+        # encoded_X.sort_index(axis=1)
+        # self.encoded_cols = list(encoded_X.columns)
         return self
 
 
     def transform(self, X, y=None):
+    
         """One-hot encode the input DataFrame.
 
         Arguments:
@@ -70,12 +72,45 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
+
         # if X.isnull().any().any():
         #     raise ValueError("Dataframe to be encoded can not contain null values.")
+        # import pdb; pdb.set_trace()
         X_t = X
-        X_t = pd.concat([X_t, self.encoded_cols], axis=1)
-        X_t = X_t.drop(self.cols_to_drop, axis=1)
+        self.cols_to_encode = self._get_cat_cols(X_t)
+        encoded_X = pd.DataFrame()
+        for col in X_t.columns:
+            if col in self.cols_to_encode:
+                # import pdb; pdb.set_trace()
+
+                # v = X_t[col].value_counts(dropna=False).to_frame()
+                # v.reset_index(inplace=True)
+                # v = v.sort_values([col, 'index'], ascending=[False, True])
+                # v.set_index('index', inplace=True)
+                # unique = v.head(self.top_n).index.tolist()
+                unique = self.col_values[col]
+                for label in unique:
+                    new_name = str(col) + "_" + str(label)
+                    add = (X[col] == label).astype(int)
+                    add = add.rename(new_name)
+                    # encoded_X.reset_index(drop=True, inplace=True)
+                    # add.reset_index(drop=True, inplace=True)
+                    encoded_X = pd.concat([encoded_X, add], axis=1)
+                    # self.encoded_cols = pd.concat([self.encoded_cols, add])
+
+            else:
+                encoded_X = pd.concat([encoded_X, X_t[col]], axis=1)
+        # encoded_X.sort_index(axis=1)
+        # import pdb; pdb.set_trace()
+        X_t = encoded_X
+
+
+
+        # X_t = pd.concat([X_t, self.encoded_cols], axis=1)
+        # X_t = X_t.drop(self.cols_to_encode, axis=1)
         return X_t
+
+
     # def transform(self, X, y=None):
     #     """One-hot encode the input DataFrame.
 

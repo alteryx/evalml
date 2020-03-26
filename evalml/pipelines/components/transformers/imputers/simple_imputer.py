@@ -43,6 +43,8 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        # import pdb; pdb.set_trace()
+
         X_t = self._component_obj.transform(X)
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
