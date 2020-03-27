@@ -14,7 +14,7 @@ class RandomForestRegressor(Estimator):
         "max_depth": Integer(1, 32),
     }
     model_family = ModelFamily.RANDOM_FOREST
-    problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
         parameters = {"n_estimators": n_estimators,
