@@ -24,9 +24,10 @@ def test_catboost_init():
             "max_depth": 3,
         }
     }
-    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters)
+    clf = CatBoostClassificationPipeline(objective=objective, parameters=parameters, random_state=2)
 
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_catboost_multi(X_y_multi):

@@ -23,8 +23,9 @@ def test_catboost_init():
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
+    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters, random_state=2)
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_catboost_regression(X_y_reg):

@@ -19,4 +19,5 @@ class CatBoostClassificationPipeline(PipelineBase):
 
         # note: impute_strategy must support both string and numeric data
         super().__init__(parameters=parameters,
-                         objective=objective)
+                         objective=objective,
+                         random_state=random_state)
