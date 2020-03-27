@@ -32,7 +32,7 @@ class FraudCost(BinaryClassificationObjective):
         self.amount_col = amount_col
         super().__init__()
 
-    def decision_function(self, ypred_proba, threshold, X):
+    def decision_function(self, ypred_proba, threshold=0.0, X=None):
         """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount
 
             Arguments:

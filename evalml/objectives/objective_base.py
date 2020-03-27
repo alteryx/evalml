@@ -18,13 +18,6 @@ class ObjectiveBase(ABC):
     @property
     @classmethod
     @abstractmethod
-    def problem_type(cls):
-        """Returns a ProblemTypes enum describing the problem type the objective can handle."""
-        raise NotImplementedError("This objective must have a `problem_type` attribute as a class variable")
-
-    @property
-    @classmethod
-    @abstractmethod
     def greater_is_better(cls):
         """Returns a boolean determining if a greater score indicates better model performance."""
         raise NotImplementedError("This objective must have a `greater_is_better` boolean attribute as a class variable")
