@@ -35,24 +35,21 @@ class OneHotEncoder(CategoricalEncoder):
         self.col_unique_values = {}
         for col in X_t.columns:
             if col in self.cols_to_encode:
-                v = X_t[col].value_counts(dropna=False).to_frame()
-                unique = []
-                if len(v) <= self.top_n:
-                    unique = v.index.tolist()
+                value_counts = X_t[col].value_counts(dropna=False).to_frame()
+                if len(value_counts) <= self.top_n:
+                    unique_values = value_counts.index.tolist()
                 else:
-                    # v.reset_index(inplace=True)
-                    v = v.sort_values([col], ascending=False)
-                    # v.set_index('index', inplace=True)
+                    value_counts = value_counts.sort_values([col], ascending=False)
+                    edge_freq = value_counts[col].iloc[self.top_n - 1]
+                    accepted_values = value_counts.loc[value_counts[col] > edge_freq]
 
-                    last_row_val = v[col].iloc[-1]
-                    # grab all that are less than that value
-                    v_temp = v.loc[v[col] < last_row_val]
-                    candidates = v.loc[v[col] == last_row_val]
-                    num_to_sample = self.top_n - len(v_temp)
+                    candidates = value_counts.loc[value_counts[col] == edge_freq]
+                    num_to_sample = self.top_n - len(accepted_values)
                     random_subset = candidates.sample(n=num_to_sample, random_state=self.random_state)
-                    v_temp = v_temp.append(random_subset)
-                    unique = v_temp.index.tolist()
-                self.col_unique_values[col] = unique
+
+                    accepted_values = accepted_values.append(random_subset)
+                    unique_values = accepted_values.index.tolist()
+                self.col_unique_values[col] = unique_values
         return self
 
     def transform(self, X, y=None):

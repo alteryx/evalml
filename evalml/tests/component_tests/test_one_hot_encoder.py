@@ -58,20 +58,42 @@ def test_more_top_n_unique_values():
     X_t = encoder.transform(X)
 
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    # col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False)
+    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False)
     col_1_samples = col_1_counts.sample(encoder.top_n, random_state=encoder.random_state)
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
-    col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False)
-
     col_2_counts = col_2_counts.loc[col_2_counts["col_2"] == 1]
-
-    col_2_samples = col_2_counts.sample(5, random_state=encoder.random_state)
-    expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
+    col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False)
+    col_2_samples = col_2_counts.sample(4, random_state=encoder.random_state)
+    expected_col_names = set(["col_2_e", "col_3_a", "col_3_b", "col_4"])
     for val in col_1_samples.index:
         expected_col_names.add("col_1_" + val)
     for val in col_2_samples.index:
         expected_col_names.add("col_2_" + val)
+
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+
+
+def test_more_top_n_unique_values_large():
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
+    X["col_2"] = ["a", "a", "a", "b", "b", "c", "c", "d", "e"]
+    X["col_3"] = ["a", "a", "a", "b", "b", "b", "c", "c", "d"]
+    X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 4, 1]
+
+    encoder = OneHotEncoder()
+    encoder.top_n = 3
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
+    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False)
+    col_1_samples = col_1_counts.sample(encoder.top_n, random_state=encoder.random_state)
+
+    expected_col_names = set(["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"])
+    for val in col_1_samples.index:
+        expected_col_names.add("col_1_" + val)
 
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
