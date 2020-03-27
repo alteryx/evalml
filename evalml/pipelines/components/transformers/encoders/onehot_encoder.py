@@ -1,6 +1,6 @@
+
 import numpy as np
 import pandas as pd
-import random
 
 from .encoder import CategoricalEncoder
 
@@ -48,7 +48,7 @@ class OneHotEncoder(CategoricalEncoder):
                     # grab all that are less than that value
                     v_temp = v.loc[v[col] < last_row_val]
                     candidates = v.loc[v[col] == last_row_val]
-                    num_to_sample = self.top_n-len(v_temp)
+                    num_to_sample = self.top_n - len(v_temp)
                     random_subset = candidates.sample(n=num_to_sample, random_state=self.random_state)
                     v_temp = v_temp.append(random_subset)
                     unique = v_temp.index.tolist()
