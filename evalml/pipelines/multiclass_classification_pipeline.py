@@ -40,5 +40,4 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
                 if y_predicted is None:
                     y_predicted = self.predict(X)
                 scores.update({objective.name: objective.score(y_predicted, y, X=X)})
-
         return scores

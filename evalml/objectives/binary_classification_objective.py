@@ -1,8 +1,9 @@
+from abc import abstractmethod
+
 import pandas as pd
 from scipy.optimize import minimize_scalar
 
 from .objective_base import ObjectiveBase
-from abc import abstractmethod
 
 from evalml.problem_types import ProblemTypes
 

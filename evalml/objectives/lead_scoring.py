@@ -8,6 +8,7 @@ class LeadScoring(BinaryClassificationObjective):
     name = "Lead Scoring"
     greater_is_better = True
     score_needs_proba = False
+    can_optimize_threshold = True
 
     def __init__(self, true_positives=1, false_positives=-1):
         """Create instance.
