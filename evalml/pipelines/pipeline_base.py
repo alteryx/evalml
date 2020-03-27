@@ -264,7 +264,7 @@ class PipelineBase(ABC):
         scores = OrderedDict()
         for plot_metric in plot_metrics:
             if plot_metric.score_needs_proba:
-                raise Exception("Problem and metric do not align and should not support predict_proba")
+                raise Exception("Plot metric `{}` does not support score_needs_proba".format(plot_metric.name))
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)

@@ -25,14 +25,15 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             X = pd.DataFrame(X)
         X_t = self._transform(X)
 
-        if objective is not None:
-            objective = get_objective(objective)
-            if objective.problem_type != ProblemTypes.BINARY:
-                raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
-            if self.threshold is not None:
-                y_predicted_proba = self.predict_proba(X)
-                y_predicted_proba = y_predicted_proba[:, 1]
-                return objective.decision_function(y_predicted_proba, threshold=self.threshold, X=X)
+        if self.threshold is not None:
+            ypred_proba = self.predict_proba(X)
+            ypred_proba = ypred_proba[:, 1]
+            if objective is not None:
+                objective = get_objective(objective)
+                if objective.problem_type != ProblemTypes.BINARY:
+                    raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
+                return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+            return ypred_proba > self.threshold
         return self.estimator.predict(X_t)
 
     def score(self, X, y, objectives):
