@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import random
 
 from .encoder import CategoricalEncoder
 
@@ -35,11 +36,23 @@ class OneHotEncoder(CategoricalEncoder):
         for col in X_t.columns:
             if col in self.cols_to_encode:
                 v = X_t[col].value_counts(dropna=False).to_frame()
-                v.reset_index(inplace=True)
-                v = v.sort_values([col, 'index'], ascending=[False, True])
-                v.set_index('index', inplace=True)
-                unique = v.head(self.top_n).index.tolist()
-                self.col_unique_values[col] = list(unique)
+                unique = []
+                if len(v) <= self.top_n:
+                    unique = v.index.tolist()
+                else:
+                    # v.reset_index(inplace=True)
+                    v = v.sort_values([col], ascending=False)
+                    # v.set_index('index', inplace=True)
+
+                    last_row_val = v[col].iloc[-1]
+                    # grab all that are less than that value
+                    v_temp = v.loc[v[col] < last_row_val]
+                    candidates = v.loc[v[col] == last_row_val]
+                    num_to_sample = self.top_n-len(v_temp)
+                    random_subset = candidates.sample(n=num_to_sample, random_state=self.random_state)
+                    v_temp = v_temp.append(random_subset)
+                    unique = v_temp.index.tolist()
+                self.col_unique_values[col] = unique
         return self
 
     def transform(self, X, y=None):
