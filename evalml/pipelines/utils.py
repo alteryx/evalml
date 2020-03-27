@@ -1,4 +1,4 @@
-import cloudpickle
+import copy
 
 from .classification import (
     CatBoostClassificationPipeline,
@@ -14,25 +14,45 @@ from .regression import (
 
 from evalml.model_family import handle_model_family
 from evalml.problem_types import handle_problem_types
+from evalml.utils import import_or_raise
 
-ALL_PIPELINES = [RFClassificationPipeline,
-                 XGBoostPipeline,
-                 LogisticRegressionPipeline,
-                 LinearRegressionPipeline,
-                 RFRegressionPipeline,
-                 CatBoostClassificationPipeline,
-                 CatBoostRegressionPipeline]
+_ALL_PIPELINES = [RFClassificationPipeline,
+                  XGBoostPipeline,
+                  LogisticRegressionPipeline,
+                  LinearRegressionPipeline,
+                  RFRegressionPipeline,
+                  CatBoostClassificationPipeline,
+                  CatBoostRegressionPipeline]
+
+
+def all_pipelines():
+    """Returns a complete list of all supported pipeline classes.
+
+    Returns:
+        list[PipelineBase]: a list of pipeline classes
+    """
+    pipelines = copy.copy(_ALL_PIPELINES)
+    try:
+        import_or_raise("xgboost", error_msg="XGBoost not installed.")
+    except ImportError:
+        pipelines.remove(XGBoostPipeline)
+    try:
+        import_or_raise("catboost", error_msg="Catboost not installed.")
+    except ImportError:
+        pipelines.remove(CatBoostClassificationPipeline)
+        pipelines.remove(CatBoostRegressionPipeline)
+    return pipelines
 
 
 def get_pipelines(problem_type, model_families=None):
-    """Returns potential pipelines by model type
+    """Returns the pipelines allowed for a particular problem type.
 
-    Args:
-        problem_type(ProblemTypes or str): the problem type the pipelines work for.
-        model_families(list[ModelFamily or str]): model types to match. if none, return all pipelines
+    Can also optionally filter by a list of model types.
+
+    Arguments:
 
     Returns:
-        pipelines, list of all pipeline
+        list[PipelineBase]: a list of pipeline classes
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -43,7 +63,7 @@ def get_pipelines(problem_type, model_families=None):
         model_families = [handle_model_family(model_family) for model_family in model_families]
 
     problem_type = handle_problem_types(problem_type)
-    for p in ALL_PIPELINES:
+    for p in all_pipelines():
         problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
         if problem_type in problem_types:
             problem_pipelines.append(p)
@@ -72,40 +92,14 @@ def list_model_families(problem_type):
         problem_types (ProblemTypes or str): binary, multiclass, or regression
 
     Returns:
-        model_families, list of model families
+        list[ModelFamily]: a list of model families
     """
 
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in ALL_PIPELINES:
+    for p in all_pipelines():
         problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
         if problem_type in problem_types:
             problem_pipelines.append(p)
 
     return list(set([p.model_family for p in problem_pipelines]))
-
-
-def save_pipeline(pipeline, file_path):
-    """Saves pipeline at file path
-
-    Args:
-        file_path (str) : location to save file
-
-    Returns:
-        None
-    """
-    with open(file_path, 'wb') as f:
-        cloudpickle.dump(pipeline, f)
-
-
-def load_pipeline(file_path):
-    """Loads pipeline at file path
-
-    Args:
-        file_path (str) : location to load file
-
-    Returns:
-        Pipeline obj
-    """
-    with open(file_path, 'rb') as f:
-        return cloudpickle.load(f)

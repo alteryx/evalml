@@ -3,7 +3,6 @@ import os
 import graphviz
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from skopt.space import Real
 
@@ -72,6 +71,7 @@ def test_invalid_path(tmpdir, test_pipeline):
 
 
 def test_feature_importance_plot(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
@@ -79,6 +79,7 @@ def test_feature_importance_plot(X_y, test_pipeline):
 
 
 def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)

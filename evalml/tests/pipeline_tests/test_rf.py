@@ -16,7 +16,8 @@ def test_rf_init(X_y):
     objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
@@ -34,7 +35,8 @@ def test_rf_init(X_y):
 
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             'percent_features': 1.0,
