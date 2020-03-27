@@ -30,15 +30,15 @@ class PipelineBase(ABC):
     @property
     @classmethod
     @abstractmethod
-    def problem_types(cls):
-        return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
+    def supported_problem_types(cls):
+        return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     def __init__(self, parameters, objective):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-            problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
+            supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             objective (ObjectiveBase): the objective to optimize
@@ -48,7 +48,7 @@ class PipelineBase(ABC):
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
-        self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
@@ -57,7 +57,7 @@ class PipelineBase(ABC):
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self._validate_problem_types(self.problem_types)
+        self._validate_problem_types(self.supported_problem_types)
 
     @classproperty
     def name(cls):
@@ -101,8 +101,8 @@ class PipelineBase(ABC):
         Arguments:
             problem_types (list): list of ProblemTypes
         """
-        estimator_problem_types = self.estimator.problem_types
-        for problem_type in self.problem_types:
+        estimator_problem_types = self.estimator.supported_problem_types
+        for problem_type in self.supported_problem_types:
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
@@ -152,7 +152,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
         logger.log("Model Family: {}".format(str(self.model_family)))
         better_string = "lower is better"
         if self.objective.greater_is_better:
