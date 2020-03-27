@@ -28,6 +28,7 @@ def test_classes():
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
@@ -81,7 +82,7 @@ def test_describe_component():
 
 def test_missing_attributes(X_y):
     class MockComponentName(ComponentBase):
-        model_family = None
+        model_family = ModelFamily.NONE
 
     with pytest.raises(TypeError):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
@@ -91,6 +92,13 @@ def test_missing_attributes(X_y):
 
     with pytest.raises(TypeError):
         MockComponentModelFamily(parameters={}, component_obj=None, random_state=0)
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+
+    with pytest.raises(TypeError):
+        MockEstimator(parameters={}, component_obj=None, random_state=0)
 
 
 def test_missing_methods_on_components(X_y, test_classes):
@@ -138,6 +146,7 @@ def test_component_fit(X_y):
     class MockComponent(Estimator):
         name = 'Mock Estimator'
         model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
         hyperparameter_ranges = {}
 
         def __init__(self):

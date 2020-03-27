@@ -23,7 +23,7 @@ class CatBoostClassifier(Estimator):
         "max_depth": Integer(1, 16),
     }
     model_family = ModelFamily.CATBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
         parameters = {"n_estimators": n_estimators,

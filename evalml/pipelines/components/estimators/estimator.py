@@ -1,9 +1,17 @@
+from abc import abstractmethod
+
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import ComponentBase
 
 
 class Estimator(ComponentBase):
     """A component that fits and predicts given data"""
+
+    @property
+    @classmethod
+    @abstractmethod
+    def supported_problem_types(cls):
+        return NotImplementedError("This component must have `supported_problem_types` as a class variable.")
 
     def predict(self, X):
         """Make predictions using selected features.

@@ -64,7 +64,7 @@ def get_pipelines(problem_type, model_families=None):
 
     problem_type = handle_problem_types(problem_type)
     for p in all_pipelines():
-        problem_types = [handle_problem_types(pt) for pt in p.problem_types]
+        problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
         if problem_type in problem_types:
             problem_pipelines.append(p)
 
@@ -98,7 +98,7 @@ def list_model_families(problem_type):
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
     for p in all_pipelines():
-        problem_types = [handle_problem_types(pt) for pt in p.problem_types]
+        problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
         if problem_type in problem_types:
             problem_pipelines.append(p)
 

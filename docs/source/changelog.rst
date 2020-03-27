@@ -15,6 +15,7 @@ Changelog
         * Support pandas 1.0.0 :pr:`486`
         * Made all references to the logger static :pr:`503`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
+        * Refactored `problem_types` for pipelines and components into `supported_problem_types` :pr:`515`
         * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase.save` and `PipelineBase.load` :pr:`526`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
@@ -31,6 +32,7 @@ Changelog
     * Components and Pipelines now have a `model_family` field instead of `model_type`
     * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
     
 
