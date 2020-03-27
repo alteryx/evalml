@@ -15,7 +15,7 @@ class CatBoostClassificationPipeline(PipelineBase):
         "impute_strategy": ["most_frequent"],
     }
 
-    def __init__(self, parameters, objective):
+    def __init__(self, parameters, objective, random_state=0):
 
         # note: impute_strategy must support both string and numeric data
         super().__init__(parameters=parameters,
