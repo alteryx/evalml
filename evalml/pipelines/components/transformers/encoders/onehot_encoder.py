@@ -70,7 +70,7 @@ class OneHotEncoder(CategoricalEncoder):
                     add = add.rename(new_name)
                     X_t = pd.concat([X_t, add], axis=1)
             else:
-                X_t = pd.concat([X_t, X_t[col]], axis=1)
+                X_t = pd.concat([X_t, X[col]], axis=1)
         return X_t
 
     def fit_transform(self, X, y=None):
