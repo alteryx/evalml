@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml.pipelines.components import OneHotEncoder
+
+
+def test_fit_first():
+    encoder = OneHotEncoder()
+    with pytest.raises(RuntimeError, match="You must fit one hot encoder before calling transform!"):
+        encoder.transform(pd.DataFrame())
 
 
 def test_null_values_in_dataframe():
