@@ -424,7 +424,7 @@ def test_correct_parameters(lr_pipeline):
 def test_hyperparameters():
     class MockPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     hyperparameters = {
         "impute_strategy": ['mean', 'median', 'most_frequent'],
@@ -439,7 +439,7 @@ def test_hyperparameters():
 def test_hyperparameters_override():
     class MockPipelineOverRide(PipelineBase):
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         _hyperparameters = {
             "impute_strategy": ['median'],
@@ -462,14 +462,14 @@ def test_hyperparameters_none():
         hyperparameter_ranges = {}
         model_family = ModelFamily.NONE
         name = "Mock Estimator"
-        problem_types = [ProblemTypes.BINARY]
+        supported_problem_types = [ProblemTypes.BINARY]
 
         def __init__(self):
             super().__init__(parameters={}, component_obj={}, random_state=0)
 
     class MockPipelineNone(PipelineBase):
         component_graph = [MockEstimator()]
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     assert MockPipelineNone.hyperparameters == {}
     assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}
