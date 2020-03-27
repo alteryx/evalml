@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+import cloudpickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -367,3 +368,28 @@ class PipelineBase(ABC):
             plotly.Figure, a bar graph showing features and their importances
         """
         return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
+
+    def save(self, file_path):
+        """Saves pipeline at file path
+
+        Args:
+            file_path (str) : location to save file
+
+        Returns:
+            None
+        """
+        with open(file_path, 'wb') as f:
+            cloudpickle.dump(self, f)
+
+    @staticmethod
+    def load(file_path):
+        """Loads pipeline at file path
+
+        Args:
+            file_path (str) : location to load file
+
+        Returns:
+            PipelineBase obj
+        """
+        with open(file_path, 'rb') as f:
+            return cloudpickle.load(f)
