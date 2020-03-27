@@ -1,3 +1,4 @@
+import numpy as np
 import os
 from importlib import import_module
 from unittest.mock import patch
@@ -417,7 +418,7 @@ def test_init_components_invalid_parameters():
 def test_correct_parameters(lr_pipeline):
     lr_pipeline = lr_pipeline
 
-    assert lr_pipeline.estimator.random_state == 1
+    assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
 
