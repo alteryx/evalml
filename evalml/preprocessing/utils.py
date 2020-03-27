@@ -91,7 +91,7 @@ def label_distribution(labels):
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
 
 
-def drop_nan_rows(X, y, drop_X_nans=False):
+def drop_nan_rows(X, y):
     """Drops rows that have a NaN value from given input(s).
 
     Arguments:
@@ -112,6 +112,5 @@ def drop_nan_rows(X, y, drop_X_nans=False):
     # drop rows where corresponding y is NaN
     y_null_indices = y_t.index[y_t.isna()]
     X_t = X_t.drop(index=y_null_indices)
-    y_t = y_t.drop(index=y_null_indices)
-
+    y_t.dropna(inplace=True)
     return X_t, y_t
