@@ -91,12 +91,12 @@ def label_distribution(labels):
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
 
 
-def drop_nan_rows(X, y):
-    """Drops rows that have a NaN value from given input(s).
+def drop_nan_target_rows(X, y):
+    """Drops rows in X and y when row in the target y has a value of NaN.
 
     Arguments:
         X (pd.DataFrame): Data to transform
-        y (pd.Series): Input Labels
+        y (pd.Series): Target values
     Returns:
         pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """
