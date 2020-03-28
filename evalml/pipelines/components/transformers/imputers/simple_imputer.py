@@ -36,7 +36,6 @@ class SimpleImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_t = self._component_obj.transform(X)
-
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
@@ -52,7 +51,6 @@ class SimpleImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_t = self._component_obj.fit_transform(X, y)
-
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())

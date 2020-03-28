@@ -39,7 +39,6 @@ class OneHotEncoder(CategoricalEncoder):
                 if len(value_counts) <= self.top_n:
                     unique_values = value_counts.index.tolist()
                 else:
-                    # import pdb; pdb.set_trace()
                     value_counts = value_counts.sample(frac=1, random_state=self.random_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(self.top_n).index.tolist()
