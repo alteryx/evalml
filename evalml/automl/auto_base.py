@@ -95,10 +95,9 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
-
+        self.plot_metrics = []
         try:
             self.plot = PipelineSearchPlots(self)
-            self.plot_metrics = []
 
         except ImportError:
             logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
