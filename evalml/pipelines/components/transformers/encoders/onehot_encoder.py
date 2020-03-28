@@ -10,11 +10,10 @@ class OneHotEncoder(CategoricalEncoder):
     """One-hot encoder to encode non-numeric data"""
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
-    top_n = 10
 
-    def __init__(self):
+    def __init__(self, top_n=10):
         """Initalizes self."""
-        parameters = {}
+        parameters = {"top_n": top_n}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=0)
@@ -28,6 +27,7 @@ class OneHotEncoder(CategoricalEncoder):
         return obj_cols
 
     def fit(self, X, y=None):
+        top_n = self.parameters['top_n']
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_t = X
@@ -36,12 +36,12 @@ class OneHotEncoder(CategoricalEncoder):
         for col in X_t.columns:
             if col in cols_to_encode:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                if len(value_counts) <= self.top_n:
+                if len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
                     value_counts = value_counts.sample(frac=1, random_state=self.random_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
-                    unique_values = value_counts.head(self.top_n).index.tolist()
+                    unique_values = value_counts.head(top_n).index.tolist()
                 self.col_unique_values[col] = unique_values
         return self
 
@@ -54,7 +54,6 @@ class OneHotEncoder(CategoricalEncoder):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        col_values = None
         try:
             col_values = self.col_unique_values
         except AttributeError:

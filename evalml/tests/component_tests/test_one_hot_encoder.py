@@ -35,7 +35,7 @@ def test_less_than_top_n_unique_values():
     X["col_4"] = [2, 0, 1, 0, 0]
 
     encoder = OneHotEncoder()
-    encoder.top_n = 5
+    encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d",
@@ -53,18 +53,18 @@ def test_more_top_n_unique_values():
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
 
     encoder = OneHotEncoder()
-    encoder.top_n = 5
+    encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
-    col_1_samples = col_1_counts.head(encoder.top_n).index.tolist()
+    col_1_samples = col_1_counts.head(encoder.parameters['top_n']).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
     col_2_counts = col_2_counts.sample(frac=1, random_state=encoder.random_state)
     col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False, kind='mergesort')
-    col_2_samples = col_2_counts.head(encoder.top_n).index.tolist()
+    col_2_samples = col_2_counts.head(encoder.parameters['top_n']).index.tolist()
 
     expected_col_names = set(["col_2_e", "col_3_a", "col_3_b", "col_4"])
     for val in col_1_samples:
@@ -84,13 +84,13 @@ def test_more_top_n_unique_values_large():
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 4, 1]
 
     encoder = OneHotEncoder()
-    encoder.top_n = 3
+    encoder.parameters['top_n'] = 3
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
-    col_1_samples = col_1_counts.head(encoder.top_n).index.tolist()
+    col_1_samples = col_1_counts.head(encoder.parameters['top_n']).index.tolist()
     expected_col_names = set(["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"])
     for val in col_1_samples:
         expected_col_names.add("col_1_" + val)
@@ -109,7 +109,7 @@ def test_categorical_dtype():
     X["col_4"] = X["col_4"].astype('category')
 
     encoder = OneHotEncoder()
-    encoder.top_n = 5
+    encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
 
@@ -129,7 +129,7 @@ def test_all_numerical_dtype():
     X["col_4"] = [2, 4, 1, 4, 0]
 
     encoder = OneHotEncoder()
-    encoder.top_n = 5
+    encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert X.equals(X_t)
@@ -138,7 +138,6 @@ def test_all_numerical_dtype():
 def test_numpy_input():
     X = np.array([[2, 0, 1, 0, 0], [3, 2, 5, 1, 3]])
     encoder = OneHotEncoder()
-    encoder.fit(X)
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert pd.DataFrame(X).equals(X_t)
