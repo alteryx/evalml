@@ -40,7 +40,7 @@ def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_pipelines()) == 4
     else:
-        assert len(all_pipelines()) == 7
+        assert len(all_pipelines()) == 11
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -53,7 +53,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_pipelines_core_dependencies_mock():
-    assert len(all_pipelines()) == 4
+    assert len(all_pipelines()) == 6
 
 
 def test_get_pipelines(has_minimal_dependencies):
