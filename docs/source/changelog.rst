@@ -27,6 +27,8 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+
+
 .. warning::
 
     **Breaking Changes**
@@ -83,6 +85,7 @@ Changelog
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
         * Update unit test jobs to not install dev deps :pr:`455`
+
 .. warning::
 
     **Breaking Changes**
