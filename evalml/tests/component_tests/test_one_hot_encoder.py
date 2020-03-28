@@ -56,19 +56,20 @@ def test_more_top_n_unique_values():
     encoder.top_n = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
-
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False)
-    col_1_samples = col_1_counts.sample(encoder.top_n, random_state=encoder.random_state)
+    col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
+    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
+    col_1_samples = col_1_counts.head(encoder.top_n).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
-    col_2_counts = col_2_counts.loc[col_2_counts["col_2"] == 1]
-    col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False)
-    col_2_samples = col_2_counts.sample(4, random_state=encoder.random_state)
+    col_2_counts = col_2_counts.sample(frac=1, random_state=encoder.random_state)
+    col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False, kind='mergesort')
+    col_2_samples = col_2_counts.head(encoder.top_n).index.tolist()
+
     expected_col_names = set(["col_2_e", "col_3_a", "col_3_b", "col_4"])
-    for val in col_1_samples.index:
+    for val in col_1_samples:
         expected_col_names.add("col_1_" + val)
-    for val in col_2_samples.index:
+    for val in col_2_samples:
         expected_col_names.add("col_2_" + val)
 
     col_names = set(X_t.columns)
@@ -86,13 +87,12 @@ def test_more_top_n_unique_values_large():
     encoder.top_n = 3
     encoder.fit(X)
     X_t = encoder.transform(X)
-
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False)
-    col_1_samples = col_1_counts.sample(encoder.top_n, random_state=encoder.random_state)
-
+    col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
+    col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
+    col_1_samples = col_1_counts.head(encoder.top_n).index.tolist()
     expected_col_names = set(["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"])
-    for val in col_1_samples.index:
+    for val in col_1_samples:
         expected_col_names.add("col_1_" + val)
 
     col_names = set(X_t.columns)

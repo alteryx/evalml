@@ -31,24 +31,18 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_t = X
-        self.cols_to_encode = self._get_cat_cols(X_t)
+        cols_to_encode = self._get_cat_cols(X_t)
         self.col_unique_values = {}
         for col in X_t.columns:
-            if col in self.cols_to_encode:
+            if col in cols_to_encode:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if len(value_counts) <= self.top_n:
                     unique_values = value_counts.index.tolist()
                 else:
-                    value_counts = value_counts.sort_values([col], ascending=False)
-                    edge_freq = value_counts[col].iloc[self.top_n - 1]
-                    accepted_values = value_counts.loc[value_counts[col] > edge_freq]
-
-                    candidates = value_counts.loc[value_counts[col] == edge_freq]
-                    num_to_sample = self.top_n - len(accepted_values)
-                    random_subset = candidates.sample(n=num_to_sample, random_state=self.random_state)
-
-                    accepted_values = accepted_values.append(random_subset)
-                    unique_values = accepted_values.index.tolist()
+                    # import pdb; pdb.set_trace()
+                    value_counts = value_counts.sample(frac=1, random_state=self.random_state)
+                    value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
+                    unique_values = value_counts.head(self.top_n).index.tolist()
                 self.col_unique_values[col] = unique_values
         return self
 
@@ -69,10 +63,9 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        self.cols_to_encode = self._get_cat_cols(X)
         X_t = pd.DataFrame()
         for col in X.columns:
-            if col in self.cols_to_encode:
+            if col in col_values:
                 unique = col_values[col]
                 for label in unique:
                     new_name = str(col) + "_" + str(label)
@@ -82,7 +75,3 @@ class OneHotEncoder(CategoricalEncoder):
             else:
                 X_t = pd.concat([X_t, X[col]], axis=1)
         return X_t
-
-    def fit_transform(self, X, y=None):
-        self.fit(X, y)
-        return self.transform(X, y)
