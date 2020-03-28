@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pytest
-from skopt.space import Integer, Real
 
 from evalml.tuners.skopt_tuner import SKOptTuner
 from evalml.tuners.tuner import Tuner
@@ -23,16 +22,6 @@ def assert_params_almost_equal(a, b, decimal=7):
     assert a_str == b_str
     np.testing.assert_almost_equal(a_num, b_num, decimal=decimal,
                                    err_msg="Numeric parameter values are not approximately equal")
-
-
-@pytest.fixture
-def test_space():
-    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c']]
-
-
-@pytest.fixture
-def test_space_unicode():
-    return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
 
 
 random_state = 0

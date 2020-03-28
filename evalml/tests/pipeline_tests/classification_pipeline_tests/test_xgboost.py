@@ -1,6 +1,7 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+from pytest import importorskip
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
@@ -10,13 +11,16 @@ from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostBinaryPipeline, XGBoostMulticlassPipeline
 from evalml.utils import import_or_raise
 
+importorskip('xgboost', reason='Skipping test because xgboost not installed')
+
 
 def test_xg_init(X_y):
     X, y = X_y
 
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
@@ -36,7 +40,8 @@ def test_xg_init(X_y):
 
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
         'RF Classifier Select From Model': {
             'percent_features': 1.0,

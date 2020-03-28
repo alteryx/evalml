@@ -7,8 +7,7 @@ class XGBoostMulticlassPipeline(MulticlassClassificationPipeline):
     """XGBoost Pipeline for multiclass classification"""
     name = "XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model"
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
-    problem_types = ['multiclass']
-
+    supported_problem_types = ['multiclass']
     hyperparameters = {
         "eta": Real(0, 1),
         "min_child_weight": Real(1, 10),

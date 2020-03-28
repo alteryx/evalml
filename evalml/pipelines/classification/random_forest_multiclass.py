@@ -7,8 +7,7 @@ class RFMulticlassClassificationPipeline(MulticlassClassificationPipeline):
     """Random Forest Pipeline for multiclass classification"""
     _name = "Random Forest Multi-class Classification Pipeline"
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'Random Forest Classifier']
-    problem_types = ['multiclass']
-
+    supported_problem_types = ['multiclass']
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),

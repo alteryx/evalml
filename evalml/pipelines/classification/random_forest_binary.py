@@ -7,8 +7,7 @@ class RFBinaryClassificationPipeline(BinaryClassificationPipeline):
     """Random Forest Pipeline for binary classification"""
     _name = "Random Forest Binary Classification Pipeline"
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'Random Forest Classifier']
-    problem_types = ['binary']
-
+    supported_problem_types = ['binary']
     hyperparameters = {
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),

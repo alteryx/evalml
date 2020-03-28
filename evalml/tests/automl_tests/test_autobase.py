@@ -1,4 +1,4 @@
-import plotly.graph_objects as go
+import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
@@ -31,6 +31,7 @@ def test_pipeline_limits(capsys, X_y):
 
 
 def test_generate_roc(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)
@@ -45,6 +46,7 @@ def test_generate_roc(X_y):
 
 
 def test_generate_confusion_matrix(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)

@@ -16,7 +16,7 @@ class XGBoostClassifier(Estimator):
         "n_estimators": Integer(1, 1000),
     }
     model_family = ModelFamily.XGBOOST
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, n_estimators=100, random_state=0):
         parameters = {"eta": eta,

@@ -12,7 +12,7 @@ class CatBoostMulticlassClassificationPipeline(MulticlassClassificationPipeline)
     Note: impute_strategy must support both string and numeric data
     """
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
-    problem_types = ['multiclass']
+    supported_problem_types = ['multiclass']
     hyperparameters = {
         "impute_strategy": ["most_frequent"],
         "n_estimators": Integer(10, 1000),

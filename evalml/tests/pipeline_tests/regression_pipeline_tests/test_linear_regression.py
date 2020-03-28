@@ -15,7 +15,8 @@ def test_lr_init(X_y_categorical_regression):
 
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
         'Linear Regressor': {
             'fit_intercept': True,

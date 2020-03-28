@@ -18,7 +18,8 @@ def test_lor_init(X_y):
 
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',

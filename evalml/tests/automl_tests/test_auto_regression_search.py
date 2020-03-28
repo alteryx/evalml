@@ -1,7 +1,6 @@
 import time
 
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 
 from evalml import AutoRegressionSearch
@@ -109,7 +108,19 @@ def test_early_stopping(capsys):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
+def test_plot_disabled_missing_dependency(X_y, has_minimal_dependencies):
+    X, y = X_y
+
+    automl = AutoRegressionSearch(max_pipelines=3)
+    if has_minimal_dependencies:
+        with pytest.raises(AttributeError):
+            automl.plot.search_iteration_plot
+    else:
+        automl.plot.search_iteration_plot
+
+
 def test_plot_iterations_max_pipelines(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
     automl = AutoRegressionSearch(max_pipelines=3)
@@ -127,7 +138,9 @@ def test_plot_iterations_max_pipelines(X_y):
 
 
 def test_plot_iterations_max_time(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
+
     automl = AutoRegressionSearch(max_time=10)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()

@@ -249,6 +249,8 @@ Tuners
 
     Tuner
     SKOptTuner
+    GridSearchTuner
+    RandomSearchTuner
 
 
 .. currentmodule:: evalml.guardrails

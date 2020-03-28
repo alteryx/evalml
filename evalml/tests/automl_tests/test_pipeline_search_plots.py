@@ -1,5 +1,4 @@
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
@@ -14,6 +13,7 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_generate_roc(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
     # Make mock class and generate mock results
@@ -79,6 +79,7 @@ def test_generate_roc(X_y):
 
 
 def test_generate_roc_multi_raises_errors(X_y):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockAutoMulti(AutoBase):
         def __init__(self):
@@ -96,6 +97,7 @@ def test_generate_roc_multi_raises_errors(X_y):
 
 
 def test_generate_confusion_matrix(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     y_test_lens = []
 
@@ -172,6 +174,8 @@ def test_generate_confusion_matrix(X_y):
 
 
 def test_confusion_matrix_regression_throws_error():
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
     # Make mock class and generate mock results
     class MockAutoRegressionSearch(AutoBase):
         def __init__(self):
@@ -189,6 +193,7 @@ def test_confusion_matrix_regression_throws_error():
 
 
 def test_search_iteration_plot_class(X_y):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockObjective:
         def __init__(self):
