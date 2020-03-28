@@ -20,9 +20,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     all_pipelines,
     get_pipelines,
-    list_model_families,
-    load_pipeline,
-    save_pipeline
+    list_model_families
 )
 from evalml.problem_types import ProblemTypes
 
@@ -124,8 +122,8 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     pipeline = lr_pipeline
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
-    assert pipeline.score(X, y) == load_pipeline(path).score(X, y)
+    pipeline.save(path)
+    assert pipeline.score(X, y) == PipelineBase.load(path).score(X, y)
 
 
 @pytest.fixture
@@ -135,7 +133,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     MockPrecision = type('MockPrecision', (Precision,), {})
     pipeline = LogisticRegressionPipeline(objective=MockPrecision(), parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
+    pipeline.save(path)
     return path
 
 
@@ -147,7 +145,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     objective = Precision()
     pipeline = LogisticRegressionPipeline(objective=objective, parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    assert load_pipeline(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
+    assert PipelineBase.load(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
 
 
 def test_reproducibility(X_y):
@@ -234,16 +232,16 @@ def test_parameters(X_y, lr_pipeline):
 def test_name():
     class TestNamePipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class TestDefinedNamePipeline(PipelineBase):
         _name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class testillformattednamepipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
@@ -275,7 +273,7 @@ def test_estimator_not_last(X_y):
 
     class MockLogisticRegressionPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
         def __init__(self, objective, parameters):
@@ -292,7 +290,7 @@ def test_multi_format_creation(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -320,7 +318,7 @@ def test_multi_format_creation(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)
@@ -332,7 +330,7 @@ def test_multiple_feature_selectors(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -349,7 +347,7 @@ def test_multiple_feature_selectors(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y)
@@ -359,7 +357,7 @@ def test_multiple_feature_selectors(X_y):
 def test_problem_types():
     class TestPipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary', 'regression']
+        supported_problem_types = ['binary', 'regression']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
@@ -383,7 +381,7 @@ def test_no_default_parameters():
 
     class TestPipeline(PipelineBase):
         component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
@@ -398,7 +396,7 @@ def test_no_default_parameters():
 def test_init_components_invalid_parameters():
     class TestPipeline(PipelineBase):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, objective, parameters):
             super().__init__(objective=objective,
