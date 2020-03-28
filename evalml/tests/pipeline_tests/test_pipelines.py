@@ -38,7 +38,7 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_pipelines()) == 4
+        assert len(all_pipelines()) == 6
     else:
         assert len(all_pipelines()) == 11
 
