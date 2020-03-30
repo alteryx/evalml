@@ -38,6 +38,7 @@ class PipelineBase(ABC):
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+
             supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
