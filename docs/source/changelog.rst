@@ -8,7 +8,8 @@ Changelog
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
-        * Added `fill_value` parameter for SimpleImputer :pr:`509`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
+        * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
