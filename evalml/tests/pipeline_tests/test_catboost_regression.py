@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline
+from evalml.utils import get_random_state
 
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
@@ -32,8 +33,10 @@ def test_catboost_regression(X_y_reg):
     from catboost import CatBoostRegressor as CBRegressor
     X, y = X_y_reg
 
+    random_seed = 42
+    catboost_random_seed = get_random_state(random_seed).randint(0, 2**32 - 1)
     imputer = SimpleImputer(strategy='mean')
-    estimator = CBRegressor(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_state=0)
+    estimator = CBRegressor(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_seed=catboost_random_seed)
     sk_pipeline = Pipeline([("imputer", imputer),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
@@ -51,7 +54,7 @@ def test_catboost_regression(X_y_reg):
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters)
+    clf = CatBoostRegressionPipeline(objective=objective, parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
