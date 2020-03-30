@@ -426,7 +426,7 @@ def test_hyperparameters():
     }
 
     assert MockPipeline.hyperparameters == hyperparameters
-    assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
+    assert MockPipeline(parameters={}).hyperparameters == hyperparameters
 
 
 def test_hyperparameters_override():
@@ -447,7 +447,7 @@ def test_hyperparameters_override():
     }
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters
-    assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
+    assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
 def test_hyperparameters_none():
@@ -465,4 +465,4 @@ def test_hyperparameters_none():
         supported_problem_types = ['binary']
 
     assert MockPipelineNone.hyperparameters == {}
-    assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}
+    assert MockPipelineNone(parameters={}).hyperparameters == {}
