@@ -127,7 +127,7 @@ class PipelineBase(ABC):
         component_name = component.name
         try:
             component_parameters = parameters.get(component_name, {})
-            new_component = component_class(**component_parameters)
+            new_component = component_class(**component_parameters, random_state=self.random_state)
         except (ValueError, TypeError) as e:
             err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
             raise ValueError(err) from e

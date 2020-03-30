@@ -241,8 +241,6 @@ class AutoBase:
             component_class = component.__class__
 
             # Inspects each component and adds the following parameters when needed
-            if 'random_state' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['random_state'] = self.random_state
             if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in inspect.signature(component_class.__init__).parameters:
