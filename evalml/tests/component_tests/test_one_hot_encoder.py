@@ -52,7 +52,7 @@ def test_more_top_n_unique_values():
     X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
 
-    encoder = OneHotEncoder()
+    encoder = OneHotEncoder(random_state=2)
     encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)

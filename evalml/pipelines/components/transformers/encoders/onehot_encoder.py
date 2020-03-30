@@ -11,12 +11,12 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, top_n=10):
+    def __init__(self, top_n=10, random_state=0):
         """Initalizes self."""
         parameters = {"top_n": top_n}
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=0)
+                         random_state=random_state)
 
     def _get_cat_cols(self, X):
         """Get names of 'object' or 'categorical' columns in the DataFrame."""
