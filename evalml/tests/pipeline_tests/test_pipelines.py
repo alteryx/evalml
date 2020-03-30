@@ -1,8 +1,8 @@
-import numpy as np
 import os
 from importlib import import_module
 from unittest.mock import patch
 
+import numpy as np
 import pytest
 from skopt.space import Integer, Real
 
