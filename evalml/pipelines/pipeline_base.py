@@ -25,12 +25,14 @@ class PipelineBase(ABC):
     @classmethod
     @abstractmethod
     def component_graph(cls):
+        """Returns list of components representing pipeline graph structure"""
         return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
 
     @property
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
+        """Returns a list of problem_types that this pipeline supports"""
         return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     custom_hyperparameters = None
