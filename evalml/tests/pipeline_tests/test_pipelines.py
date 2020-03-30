@@ -458,8 +458,8 @@ def test_hyperparameters_none():
         name = "Mock Estimator"
         supported_problem_types = [ProblemTypes.BINARY]
 
-        def __init__(self):
-            super().__init__(parameters={}, component_obj={}, random_state=0)
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj={}, random_state=random_state)
 
     class MockPipelineNone(PipelineBase):
         component_graph = [MockEstimator()]
