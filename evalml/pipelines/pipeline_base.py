@@ -21,12 +21,14 @@ logger = Logger()
 class PipelineBase(ABC):
     """Base class for all pipelines."""
 
-    @classproperty
+    @property
+    @classmethod
     @abstractmethod
     def component_graph(cls):
         return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
 
-    @classproperty
+    @property
+    @classmethod
     @abstractmethod
     def supported_problem_types(cls):
         return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
