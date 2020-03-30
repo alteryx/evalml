@@ -10,7 +10,6 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
     Note: impute_strategy must support both string and numeric data
     """
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
-    supported_problem_types = ['binary']
     custom_hyperparameters = {
         "impute_strategy": ["most_frequent"],
     }

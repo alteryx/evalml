@@ -7,7 +7,7 @@ from evalml.pipelines.classification_pipeline import ClassificationPipeline
 
 
 class MulticlassClassificationPipeline(ClassificationPipeline):
-    problem_types = ['multiclass']
+    supported_problem_types = ['multiclass']
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives

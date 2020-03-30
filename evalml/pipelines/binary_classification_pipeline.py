@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class BinaryClassificationPipeline(ClassificationPipeline):
 
     threshold = None
-    problem_types = ['binary']
+    supported_problem_types = ['binary']
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.

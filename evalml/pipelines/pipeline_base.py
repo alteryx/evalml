@@ -47,10 +47,9 @@ class PipelineBase(ABC):
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.input_feature_names = {}
         self.results = {}
-
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
