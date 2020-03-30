@@ -101,7 +101,7 @@ def lr_pipeline():
         }
     }
 
-    return LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    return LogisticRegressionPipeline(objective=objective, parameters=parameters, random_state=42)
 
 
 def test_required_fields():
