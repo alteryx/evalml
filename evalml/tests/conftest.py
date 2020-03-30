@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 import pytest
 from sklearn import datasets
@@ -64,12 +65,12 @@ def X_y_categorical_classification():
 
 @pytest.fixture
 def test_space():
-    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c']]
+    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c'], ['option_a', 'option_b', 100, np.inf]]
 
 
 @pytest.fixture
 def test_space_unicode():
-    return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩']]
+    return [Integer(0, 10), Real(0, 10), ['option_a 💩', u'option_b 💩', 'option_c 💩'], ['option_a', 'option_b', 100, np.inf]]
 
 
 @pytest.fixture

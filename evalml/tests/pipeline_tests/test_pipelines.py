@@ -3,13 +3,14 @@ from importlib import import_module
 from unittest.mock import patch
 
 import pytest
-from skopt.space import Real
+from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
+    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -410,3 +411,57 @@ def test_correct_parameters(lr_pipeline):
     assert lr_pipeline.estimator.random_state == 1
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
+
+
+def test_hyperparameters():
+    class MockPipeline(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        supported_problem_types = ['binary']
+
+    hyperparameters = {
+        "impute_strategy": ['mean', 'median', 'most_frequent'],
+        "n_estimators": Integer(10, 1000),
+        "max_depth": Integer(1, 32),
+    }
+
+    assert MockPipeline.hyperparameters == hyperparameters
+    assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_override():
+    class MockPipelineOverRide(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        supported_problem_types = ['binary']
+
+        custom_hyperparameters = {
+            "impute_strategy": ['median'],
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        }
+
+    hyperparameters = {
+        "impute_strategy": ['median'],
+        "n_estimators": [1, 100, 200],
+        "max_depth": [5]
+    }
+
+    assert MockPipelineOverRide.hyperparameters == hyperparameters
+    assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_none():
+    class MockEstimator(Estimator):
+        hyperparameter_ranges = {}
+        model_family = ModelFamily.NONE
+        name = "Mock Estimator"
+        supported_problem_types = [ProblemTypes.BINARY]
+
+        def __init__(self):
+            super().__init__(parameters={}, component_obj={}, random_state=0)
+
+    class MockPipelineNone(PipelineBase):
+        component_graph = [MockEstimator()]
+        supported_problem_types = ['binary']
+
+    assert MockPipelineNone.hyperparameters == {}
+    assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}
