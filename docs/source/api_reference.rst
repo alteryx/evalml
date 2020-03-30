@@ -56,14 +56,12 @@ Plotting
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
 
 Model Family
-===========
+============
 
 .. autosummary::
     :toctree: generated
@@ -76,8 +74,10 @@ Model Family
     :toctree: generated
     :nosignatures:
 
-    list_model_families
+    handle_model_family
 
+
+.. currentmodule:: evalml.pipelines
 
 Components
 ==========
@@ -111,8 +111,6 @@ Estimators
     RandomForestRegressor
 
 
-.. currentmodule:: evalml.pipelines
-
 Pipelines
 =========
 
@@ -121,8 +119,7 @@ Pipelines
     :nosignatures:
 
     get_pipelines
-    save_pipeline
-    load_pipeline
+
 
 .. autosummary::
     :toctree: generated
@@ -261,3 +258,16 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
+
+
+.. currentmodule:: evalml.utils
+
+Guardrails
+=============
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    normalize_confusion_matrix
+
