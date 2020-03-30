@@ -12,7 +12,7 @@ class CatBoostRegressionPipeline(PipelineBase):
     """
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
     supported_problem_types = ['regression']
-    _hyperparameters = {
+    custom_hyperparameters = {
         "impute_strategy": ["most_frequent"],
     }
 

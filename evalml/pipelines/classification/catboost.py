@@ -11,7 +11,7 @@ class CatBoostClassificationPipeline(PipelineBase):
     """
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
     supported_problem_types = ['binary', 'multiclass']
-    _hyperparameters = {
+    custom_hyperparameters = {
         "impute_strategy": ["most_frequent"],
     }
 

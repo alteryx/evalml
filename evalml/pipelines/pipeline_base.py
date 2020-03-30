@@ -33,7 +33,7 @@ class PipelineBase(ABC):
     def supported_problem_types(cls):
         return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
-    _hyperparameters = None
+    custom_hyperparameters = None
 
     def __init__(self, parameters, objective):
         """Machine learning pipeline made out of transformers and a estimator.
@@ -336,8 +336,8 @@ class PipelineBase(ABC):
             component = handle_component(component)
             hyperparameter_ranges.update(component.hyperparameter_ranges)
 
-        if cls._hyperparameters:
-            hyperparameter_ranges.update(cls._hyperparameters)
+        if cls.custom_hyperparameters:
+            hyperparameter_ranges.update(cls.custom_hyperparameters)
         return hyperparameter_ranges
 
     @property

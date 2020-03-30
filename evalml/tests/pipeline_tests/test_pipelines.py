@@ -441,7 +441,7 @@ def test_hyperparameters_override():
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
         supported_problem_types = ['binary']
 
-        _hyperparameters = {
+        custom_hyperparameters = {
             "impute_strategy": ['median'],
             "n_estimators": [1, 100, 200],
             "max_depth": [5]
