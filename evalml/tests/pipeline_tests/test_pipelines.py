@@ -357,7 +357,7 @@ def test_no_default_parameters():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2',random_state=0):
+        def __init__(self, a, b=1, c='2', random_state=0):
             self.a = a
             self.b = b
             self.c = c
