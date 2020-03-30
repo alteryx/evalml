@@ -77,6 +77,6 @@ def test_transform_parameters():
         'Simple Imputer': {'impute_strategy': 'most_frequent'},
         'One Hot Encoder': {'random_state': 100},
         'Standard Scaler': {},
-        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6, 'random_state': 100}
+        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
     }
     assert automl._transform_parameters(LogisticRegressionPipeline, parameters, 0) == parameters_dict
