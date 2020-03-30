@@ -38,6 +38,7 @@ def test_rf_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             'percent_features': 1.0,
             'threshold': -np.inf
