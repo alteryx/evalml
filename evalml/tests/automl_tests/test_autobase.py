@@ -75,7 +75,7 @@ def test_transform_parameters():
     parameters = [('penalty', 'l2'), ('C', 8.444214828324364), ('impute_strategy', 'most_frequent')]
     parameters_dict = {
         'Simple Imputer': {'impute_strategy': 'most_frequent'},
-        'One Hot Encoder': {},
+        'One Hot Encoder': {'random_state': 100},
         'Standard Scaler': {},
         'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6, 'random_state': 100}
     }
