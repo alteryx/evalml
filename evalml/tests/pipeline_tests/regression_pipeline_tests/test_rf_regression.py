@@ -15,8 +15,10 @@ def test_rf_init(X_y_reg):
 
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
@@ -31,8 +33,10 @@ def test_rf_init(X_y_reg):
     clf = RFRegressionPipeline(parameters=parameters)
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             'percent_features': 1.0,
             'threshold': -np.inf

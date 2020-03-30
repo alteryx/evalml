@@ -15,12 +15,14 @@ def test_lr_init(X_y_categorical_regression):
 
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
-        }
+        },
     }
     clf = LinearRegressionPipeline(parameters=parameters)
     assert clf.parameters == parameters

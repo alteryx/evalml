@@ -1,14 +1,17 @@
 import os
+from importlib import import_module
+from unittest.mock import patch
 
 import numpy as np
 import pytest
-from skopt.space import Real
+from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision, Recall
 from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
+    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -17,24 +20,68 @@ from evalml.pipelines.components import (
     Transformer
 )
 from evalml.pipelines.utils import (
+    all_pipelines,
     get_pipelines,
-    list_model_families,
-    load_pipeline,
-    save_pipeline
+    list_model_families
 )
 from evalml.problem_types import ProblemTypes
 
 
-def test_list_model_families():
-    assert set(list_model_families(ProblemTypes.BINARY)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
-    assert set(list_model_families(ProblemTypes.REGRESSION)) == set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.CATBOOST])
+def test_list_model_families(has_minimal_dependencies):
+    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    if not has_minimal_dependencies:
+        expected_model_families_binary.add(ModelFamily.XGBOOST)
+        expected_model_families_binary.add(ModelFamily.CATBOOST)
+        expected_model_families_regression.add(ModelFamily.CATBOOST)
+    assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
+    assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-def test_get_pipelines():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
+def test_all_pipelines(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        assert len(all_pipelines()) == 6
+    else:
+        assert len(all_pipelines()) == 11
+
+
+def make_mock_import_module(libs_to_blacklist):
+    def _import_module(library):
+        if library in libs_to_blacklist:
+            raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
+        return import_module(library)
+    return _import_module
+
+
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_all_pipelines_core_dependencies_mock():
+    assert len(all_pipelines()) == 6
+
+
+def test_get_pipelines(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
+        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
+        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+    else:
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
+        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
+        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
+
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
+    with pytest.raises(KeyError):
+        get_pipelines(problem_type="Not A Valid Problem Type")
+
+
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_get_pipelines_core_dependencies_mock():
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
     with pytest.raises(KeyError):
@@ -76,8 +123,8 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     pipeline = lr_pipeline
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
-    assert pipeline.score(X, y, ['precision']) == load_pipeline(path).score(X, y, ['precision'])
+    pipeline.save(path)
+    assert pipeline.score(X, y, ['precision']) == PipelineBase.load(path).score(X, y, ['precision'])
 
 
 @pytest.fixture
@@ -86,7 +133,7 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    save_pipeline(pipeline, path)
+    pipeline.save(path)
     return path
 
 
@@ -98,7 +145,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     objective = Precision()
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    assert load_pipeline(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
+    assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
 def test_reproducibility(X_y):
@@ -168,8 +215,10 @@ def test_parameters(X_y, lr_pipeline):
     lrp = lr_pipeline
     params = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0
@@ -182,16 +231,16 @@ def test_parameters(X_y, lr_pipeline):
 def test_name():
     class TestNamePipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class TestDefinedNamePipeline(PipelineBase):
         _name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     class testillformattednamepipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
@@ -223,7 +272,7 @@ def test_estimator_not_last(X_y):
 
     class MockLogisticRegressionBinaryPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
         def __init__(self, parameters):
@@ -239,7 +288,7 @@ def test_multi_format_creation(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -266,7 +315,7 @@ def test_multi_format_creation(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y, ['precision'])
@@ -278,7 +327,7 @@ def test_multiple_feature_selectors(X_y):
 
     class TestPipeline(PipelineBase):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -294,7 +343,7 @@ def test_multiple_feature_selectors(X_y):
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
-    assert clf.problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
     clf.score(X, y, ['precision'])
@@ -304,7 +353,7 @@ def test_multiple_feature_selectors(X_y):
 def test_problem_types():
     class TestPipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
-        problem_types = ['binary', 'regression']
+        supported_problem_types = ['binary', 'regression']
 
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
@@ -351,7 +400,7 @@ def test_no_default_parameters():
 
     class TestPipeline(PipelineBase):
         component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
@@ -365,7 +414,7 @@ def test_no_default_parameters():
 def test_init_components_invalid_parameters():
     class TestPipeline(PipelineBase):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-        problem_types = ['binary']
+        supported_problem_types = ['binary']
 
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
@@ -386,3 +435,57 @@ def test_correct_parameters(lr_pipeline):
     assert lr_pipeline.estimator.random_state == 1
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
+
+
+def test_hyperparameters():
+    class MockPipeline(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        supported_problem_types = ['binary']
+
+    hyperparameters = {
+        "impute_strategy": ['mean', 'median', 'most_frequent'],
+        "n_estimators": Integer(10, 1000),
+        "max_depth": Integer(1, 32),
+    }
+
+    assert MockPipeline.hyperparameters == hyperparameters
+    assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_override():
+    class MockPipelineOverRide(PipelineBase):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+        supported_problem_types = ['binary']
+
+        custom_hyperparameters = {
+            "impute_strategy": ['median'],
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        }
+
+    hyperparameters = {
+        "impute_strategy": ['median'],
+        "n_estimators": [1, 100, 200],
+        "max_depth": [5]
+    }
+
+    assert MockPipelineOverRide.hyperparameters == hyperparameters
+    assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
+
+
+def test_hyperparameters_none():
+    class MockEstimator(Estimator):
+        hyperparameter_ranges = {}
+        model_family = ModelFamily.NONE
+        name = "Mock Estimator"
+        supported_problem_types = [ProblemTypes.BINARY]
+
+        def __init__(self):
+            super().__init__(parameters={}, component_obj={}, random_state=0)
+
+    class MockPipelineNone(PipelineBase):
+        component_graph = [MockEstimator()]
+        supported_problem_types = ['binary']
+
+    assert MockPipelineNone.hyperparameters == {}
+    assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}

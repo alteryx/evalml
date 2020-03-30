@@ -1,16 +1,19 @@
 import numpy as np
-from catboost import CatBoostRegressor as CBRegressor
+from pytest import importorskip
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline
 
+importorskip('catboost', reason='Skipping test because catboost not installed')
+
 
 def test_catboost_init():
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
+            'impute_strategy': 'most_frequent',
+            'fill_value': None
         },
         'CatBoost Regressor': {
             "n_estimators": 1000,
@@ -24,6 +27,7 @@ def test_catboost_init():
 
 
 def test_catboost_regression(X_y_reg):
+    from catboost import CatBoostRegressor as CBRegressor
     X, y = X_y_reg
 
     imputer = SimpleImputer(strategy='mean')

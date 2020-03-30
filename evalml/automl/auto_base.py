@@ -94,9 +94,14 @@ class AutoBase:
             self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
         self._MAX_NAME_LEN = 40
-
-        self.plot = PipelineSearchPlots(self)
+        self._next_pipeline_class = None
         self.plot_metrics = []
+        try:
+            self.plot = PipelineSearchPlots(self)
+
+        except ImportError:
+            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            self.plot = None
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -160,7 +165,9 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+        search_iteration_plot = None
+        if self.plot:
+            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
@@ -172,13 +179,19 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
+            if search_iteration_plot:
+                search_iteration_plot.update()
         desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
     def _check_stopping_condition(self, start):
+        # get new pipeline and check tuner
+        self._next_pipeline_class = self._select_pipeline()
+        if self.tuners[self._next_pipeline_class.name].is_search_space_exhausted():
+            return False
+
         should_continue = True
         num_pipelines = len(self.results['pipeline_results'])
         if num_pipelines == 0:
@@ -251,19 +264,17 @@ class AutoBase:
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
-        # determine which pipeline to build
-        pipeline_class = self._select_pipeline()
 
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
+        parameters = self._propose_parameters(self._next_pipeline_class)
 
         # fit an score the pipeline
-        pipeline = pipeline_class(parameters=self._transform_parameters(pipeline_class, parameters, X.shape[1]))
+        pipeline = self._next_pipeline_class(parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1]))
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline_class, parameters)
+            self.start_iteration_callback(self._next_pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(pipeline_class.name)
+        desc = "▹ {}: ".format(self._next_pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)

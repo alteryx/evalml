@@ -1,4 +1,4 @@
-import plotly.graph_objects as go
+import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
@@ -31,6 +31,7 @@ def test_pipeline_limits(capsys, X_y):
 
 
 def test_generate_roc(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)
@@ -45,6 +46,7 @@ def test_generate_roc(X_y):
 
 
 def test_generate_confusion_matrix(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     n_splits = 5
     cv = StratifiedKFold(n_splits=n_splits, random_state=0)
@@ -73,7 +75,7 @@ def test_transform_parameters():
     parameters = [('penalty', 'l2'), ('C', 8.444214828324364), ('impute_strategy', 'most_frequent')]
     parameters_dict = {
         'Simple Imputer': {'impute_strategy': 'most_frequent'},
-        'One Hot Encoder': {},
+        'One Hot Encoder': {'random_state': 100},
         'Standard Scaler': {},
         'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6, 'random_state': 100}
     }

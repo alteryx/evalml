@@ -3,6 +3,7 @@ import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+import cloudpickle
 import pandas as pd
 
 from .components import Estimator, handle_component
@@ -28,15 +29,17 @@ class PipelineBase(ABC):
     @property
     @classmethod
     @abstractmethod
-    def problem_types(cls):
-        return NotImplementedError("This pipeline must have `problem_types` as a class variable.")
+    def supported_problem_types(cls):
+        return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
+
+    custom_hyperparameters = None
 
     def __init__(self, parameters):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-            problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
+            supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -44,7 +47,7 @@ class PipelineBase(ABC):
                 value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
-        self.problem_types = [handle_problem_types(problem_type) for problem_type in self.problem_types]
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.input_feature_names = {}
         self.results = {}
 
@@ -52,7 +55,7 @@ class PipelineBase(ABC):
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self._validate_problem_types(self.problem_types)
+        self._validate_problem_types(self.supported_problem_types)
 
     @classproperty
     def name(cls):
@@ -96,8 +99,8 @@ class PipelineBase(ABC):
         Arguments:
             problem_types (list): list of ProblemTypes
         """
-        estimator_problem_types = self.estimator.problem_types
-        for problem_type in self.problem_types:
+        estimator_problem_types = self.estimator.supported_problem_types
+        for problem_type in self.supported_problem_types:
             if problem_type not in estimator_problem_types:
                 raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
 
@@ -147,7 +150,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.problem_types])))
+        logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
         logger.log("Model Family: {}".format(str(self.model_family)))
 
         if self.estimator.name in self.input_feature_names:
@@ -286,8 +289,19 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-
         return handle_component(cls.component_graph[-1]).model_family
+
+    @classproperty
+    def hyperparameters(cls):
+        "Returns hyperparameter ranges as a flat dictionary from all components "
+        hyperparameter_ranges = dict()
+        for component in cls.component_graph:
+            component = handle_component(component)
+            hyperparameter_ranges.update(component.hyperparameter_ranges)
+
+        if cls.custom_hyperparameters:
+            hyperparameter_ranges.update(cls.custom_hyperparameters)
+        return hyperparameter_ranges
 
     @property
     def parameters(self):
@@ -317,3 +331,28 @@ class PipelineBase(ABC):
             plotly.Figure, a bar graph showing features and their importances
         """
         return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
+
+    def save(self, file_path):
+        """Saves pipeline at file path
+
+        Args:
+            file_path (str) : location to save file
+
+        Returns:
+            None
+        """
+        with open(file_path, 'wb') as f:
+            cloudpickle.dump(self, f)
+
+    @staticmethod
+    def load(file_path):
+        """Loads pipeline at file path
+
+        Args:
+            file_path (str) : location to load file
+
+        Returns:
+            PipelineBase obj
+        """
+        with open(file_path, 'rb') as f:
+            return cloudpickle.load(f)

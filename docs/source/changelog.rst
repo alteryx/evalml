@@ -5,8 +5,11 @@ Changelog
 **Future Releases**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
+        * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
+        * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
@@ -16,12 +19,18 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Made all references to the logger static :pr:`503`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
+        * Refactored `problem_types` for pipelines and components into `supported_problem_types` :pr:`515`
+        * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase.save` and `PipelineBase.load` :pr:`526`
+        * Updated objectives API :pr:`445`
+        * Limit number of categories encoded by OneHotEncoder :pr:`517`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+
+
 .. warning::
 
     **Breaking Changes**
@@ -39,6 +48,8 @@ Changelog
     * Components and Pipelines now have a `model_family` field instead of `model_type`
     * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
+    * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
+    * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
     
 
 **v0.7.0 Mar. 9, 2020**
@@ -65,6 +76,7 @@ Changelog
         * Dropped support for Python 3.5 :pr:`438`
         * Removed unused `apply.py` file :pr:`449`
         * Clean up requirements.txt to remove unused deps :pr:`451`
+        * Support installation without all required dependencies :pr:`459`
     * Documentation Changes
         * Update release.md with instructions to release to internal license key :pr:`354`
     * Testing Changes
@@ -75,6 +87,7 @@ Changelog
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
         * Update unit test jobs to not install dev deps :pr:`455`
+
 .. warning::
 
     **Breaking Changes**
@@ -100,6 +113,7 @@ Changelog
         * Standarizing inputs as pd.Dataframe / pd.Series :pr:`130`
         * Enforcing that pipelines must have an estimator as last component :pr:`277`
         * Added ipywidgets as a dependency in requirements.txt :pr:`278`
+        * Added Random and Grid Search Tuners :pr:`240`
     * Documentation Changes
         * Adding class properties to API reference :pr:`244`
         * Fix and filter FutureWarnings from scikit-learn :pr:`249`, :pr:`257`
