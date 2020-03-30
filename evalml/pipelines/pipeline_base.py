@@ -60,10 +60,10 @@ class PipelineBase(ABC):
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
+        self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.objective = get_objective(objective)
-        self.random_state = get_random_state(random_state)
         self.input_feature_names = {}
         self.results = {}
 
