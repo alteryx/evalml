@@ -24,6 +24,7 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+        * Skip release PRs in changelog check :pr:`536`
 .. warning::
 
     **Breaking Changes**
