@@ -191,7 +191,12 @@ jobs:
     steps:
       - checkout
       - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+      - run: |
+          version=grep "version=" setup.py | grep -oE "[0-9.]+"
+          if [[ `grep ${version} docs/source/changelog.rst` ]]; then
+            exit 0;
+          fi
+          cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
   build_docs:
     working_directory: ~/evalml/
