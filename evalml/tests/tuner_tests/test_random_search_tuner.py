@@ -32,6 +32,7 @@ def test_random_search_tuner_unique_values(test_space):
         params = tuner.propose()
         generated_parameters.add(tuple(params))
     assert len(generated_parameters) == 10
+    assert len(generated_parameters[0]) == 4
 
 
 def test_random_search_tuner_no_params(test_space_small):
