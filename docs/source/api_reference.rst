@@ -82,7 +82,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: class_with_members
     :nosignatures:
 
     OneHotEncoder
@@ -96,7 +96,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: class_with_members.rst
     :nosignatures:
 
     LogisticRegressionClassifier
@@ -119,6 +119,12 @@ Pipelines
     :nosignatures:
 
     PipelineBase
+
+.. autosummary::
+    :toctree: generated
+    :template: class_with_members.rst
+    :nosignatures:
+
     RFClassificationPipeline
     XGBoostPipeline
     CatBoostClassificationPipeline
