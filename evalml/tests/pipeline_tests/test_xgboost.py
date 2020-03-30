@@ -23,6 +23,9 @@ def test_xg_init(X_y):
             'impute_strategy': 'median',
             'fill_value': None
         },
+        'One Hot Encoder': {
+            'top_n': 10
+        },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
@@ -43,6 +46,9 @@ def test_xg_init(X_y):
         'Simple Imputer': {
             'impute_strategy': 'median',
             'fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 10
         },
         'RF Classifier Select From Model': {
             'percent_features': 1.0,
