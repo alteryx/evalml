@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger
+from evalml.utils import Logger, classproperty
 
 logger = Logger()
 
@@ -12,14 +12,12 @@ class ComponentBase(ABC):
         self._component_obj = component_obj
         self.parameters = parameters
 
-    @property
-    @classmethod
+    @classproperty
     @abstractmethod
     def name(cls):
         return NotImplementedError("This component must have `name` as a class variable.")
 
-    @property
-    @classmethod
+    @classproperty
     @abstractmethod
     def model_family(cls):
         return NotImplementedError("This component must have `model_family` as a class variable.")

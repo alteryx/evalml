@@ -106,13 +106,13 @@ def lr_pipeline():
 
 def test_required_fields():
     class TestPipelineWithComponentGraph(PipelineBase):
-        component_graph = ['Logistic Regression']
+        component_graph = ['Logistic Regression Classifier']
 
     with pytest.raises(TypeError):
         TestPipelineWithComponentGraph(parameters={}, objective='precision')
 
     class TestPipelineWithProblemTypes(PipelineBase):
-        component_graph = ['Logistic Regression']
+        component_graph = ['Logistic Regression Classifier']
 
     with pytest.raises(TypeError):
         TestPipelineWithProblemTypes(parameters={}, objective='precision')
