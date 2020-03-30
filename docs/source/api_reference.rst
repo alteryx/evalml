@@ -57,13 +57,12 @@ Plotting
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
 
 Model Family
-===========
+============
 
 .. autosummary::
     :toctree: generated
@@ -72,12 +71,8 @@ Model Family
 
     ModelFamily
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
 
-    list_model_families
-
+.. currentmodule:: evalml.pipelines.components
 
 Components
 ==========
@@ -121,8 +116,7 @@ Pipelines
     :nosignatures:
 
     get_pipelines
-    save_pipeline
-    load_pipeline
+    list_model_families
 
 .. autosummary::
     :toctree: generated
