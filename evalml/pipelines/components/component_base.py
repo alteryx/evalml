@@ -16,12 +16,14 @@ class ComponentBase(ABC):
     @classmethod
     @abstractmethod
     def name(cls):
+        """Returns string name of this component"""
         return NotImplementedError("This component must have `name` as a class variable.")
 
     @property
     @classmethod
     @abstractmethod
     def model_family(cls):
+        """Returns ModelFamily of this component"""
         return NotImplementedError("This component must have `model_family` as a class variable.")
 
     def fit(self, X, y=None):

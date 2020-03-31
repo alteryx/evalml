@@ -43,6 +43,11 @@ class Estimator(ComponentBase):
 
     @property
     def feature_importances(self):
+        """Returns feature importances.
+
+        Returns:
+            list(float) : importance associated with each feature
+        """
         try:
             return self._component_obj.feature_importances_
         except AttributeError:

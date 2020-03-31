@@ -25,12 +25,22 @@ class PipelineBase(ABC):
     @classmethod
     @abstractmethod
     def component_graph(cls):
+        """Returns list of components representing pipeline graph structure
+
+        Returns:
+            list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
+        """
         return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
 
     @property
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
+        """Returns a list of ProblemTypes that this pipeline supports
+
+        Returns:
+            list(str/ProblemType): list of ProblemType objects or strings that this pipeline supports
+        """
         return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     custom_hyperparameters = None
@@ -40,14 +50,14 @@ class PipelineBase(ABC):
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+
             supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             objective (ObjectiveBase): the objective to optimize
 
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
-                If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
-                value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
+                 An empty dictionary {} implies using all default values for component parameters.
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
