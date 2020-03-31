@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
@@ -15,21 +16,9 @@ from evalml.problem_types import ProblemTypes
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
                                                 mock_predict, mock_predict_proba,
-                                                mock_obj_decision, X_y):
+                                                mock_obj_decision, X_y, dummy_estimator, dummy_binary_pipeline):
     X, y = X_y
-
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-
-        def __init__(self):
-            super().__init__(parameters={}, component_obj=None, random_state=0)
-
-    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        estimator = MockEstimator()
-        component_graph = [estimator]
-    binary_pipeline = MockBinaryClassificationPipeline(parameters={})
+    binary_pipeline = dummy_binary_pipeline
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X)
     mock_predict.assert_called()
@@ -66,3 +55,12 @@ def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
     mock_predict.assert_not_called()
     mock_predict_proba.assert_called()
     mock_obj_decision.assert_called()
+
+
+@patch('evalml.pipelines.PipelineBase._transform')
+def test_binary_classification_pipeline_predict(mock_transform, X_y, dummy_binary_pipeline):
+    X, y = X_y
+    binary_pipeline = dummy_binary_pipeline
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        binary_pipeline.predict(X, "recall_micro")
+    mock_transform.assert_called()
