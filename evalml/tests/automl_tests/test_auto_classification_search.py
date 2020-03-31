@@ -18,6 +18,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
+from unittest.mock import patch
 
 
 def test_init(X_y):
@@ -229,6 +230,17 @@ def test_non_optimizable_threshold(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
     automl.search(X, y, raise_errors=True)
+    assert automl.best_pipeline.threshold == 0.5
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
     assert automl.best_pipeline.threshold == 0.5
 
 
