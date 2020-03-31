@@ -49,6 +49,14 @@ def test_init(X_y):
     automl.describe_pipeline(0)
 
 
+def test_get_pipeline_none(X_y):
+    X, y = X_y
+
+    automl = AutoClassificationSearch()
+    with pytest.raises(RuntimeError, match="Pipeline not found"):
+        automl.describe_pipeline(0)
+
+
 def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
@@ -400,3 +408,11 @@ def test_large_number_of_categories():
     X['categorical_col_2'] = X['categorical_col_2'].astype('category')
     automl = AutoClassificationSearch(objective="f1", max_pipelines=5)
     automl.search(X, y, raise_errors=True)
+
+    
+def test_max_time(X_y):
+    X, y = X_y
+    clf = AutoClassificationSearch(max_time=1e-16)
+    clf.search(X, y)
+    # search will always run at least one pipeline
+    assert len(clf.results['pipeline_results']) == 1

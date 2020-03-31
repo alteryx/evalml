@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from evalml import AutoRegressionSearch
@@ -77,3 +79,12 @@ def test_random_search_tuner_invalid_space():
         RandomSearchTuner(((0, 1)))
     with pytest.raises(ValueError):
         RandomSearchTuner([(0, 0)])
+
+
+@patch('evalml.tuners.RandomSearchTuner.is_search_space_exhausted')
+def test_random_search_tuner_exhausted_space(mock_is_search_space_exhausted, X_y):
+    mock_is_search_space_exhausted.side_effects = lambda: False
+    X, y = X_y
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
+    clf.search(X, y)
+    assert len(clf.results['pipeline_results']) == 0
