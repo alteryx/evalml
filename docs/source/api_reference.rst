@@ -96,7 +96,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: component_class.rst
+    :template: estimator_class.rst
     :nosignatures:
 
     LogisticRegressionClassifier
