@@ -30,7 +30,7 @@ Preprocessing
     split_data
 
 
-.. currentmodule:: evalml
+.. currentmodule:: evalml.automl
 
 AutoML
 ======
@@ -112,8 +112,6 @@ Estimators
     RandomForestRegressor
 
 
-.. currentmodule:: evalml.pipelines
-
 Pipelines
 =========
 
@@ -143,7 +141,6 @@ Pipelines
 
 Plotting
 ~~~~~~~~
-
 
 .. autosummary::
    :toctree: generated
@@ -227,7 +224,6 @@ Plot Metrics
 
     ROC
     ConfusionMatrix
-
 
 
 .. currentmodule:: evalml.problem_types
