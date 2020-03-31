@@ -71,14 +71,7 @@ Model Family
     ModelFamily
 
 
-.. currentmodule:: evalml.pipelines
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    list_model_families
-
+.. currentmodule:: evalml.pipelines.components
 
 Components
 ==========
@@ -88,7 +81,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
@@ -102,7 +95,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: estimator_class.rst
     :nosignatures:
 
     LogisticRegressionClassifier
@@ -115,18 +108,20 @@ Estimators
 Pipelines
 =========
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    get_pipelines
-
+Pipelines
+~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
+
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     CatBoostBinaryClassificationPipeline
@@ -138,6 +133,15 @@ Pipelines
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
 
+
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_pipelines
+    list_model_families
 
 Plotting
 ~~~~~~~~
