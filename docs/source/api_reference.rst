@@ -30,7 +30,7 @@ Preprocessing
     split_data
 
 
-.. currentmodule:: evalml
+.. currentmodule:: evalml.automl
 
 AutoML
 ======
@@ -69,6 +69,7 @@ Model Family
     :nosignatures:
 
     ModelFamily
+
 
 .. currentmodule:: evalml.pipelines
 
@@ -111,8 +112,6 @@ Estimators
     RandomForestRegressor
 
 
-.. currentmodule:: evalml.pipelines
-
 Pipelines
 =========
 
@@ -138,8 +137,6 @@ Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-    RFRegressionPipeline
-    LinearRegressionPipeline
 
 
 Plotting
@@ -199,6 +196,7 @@ Classification
     ROC
     ConfusionMatrix
 
+
 Regression
 ~~~~~~~~~~
 
@@ -214,6 +212,7 @@ Regression
     MedianAE
     MaxError
     ExpVariance
+
 
 Plot Metrics
 ~~~~~~~~~~~~
