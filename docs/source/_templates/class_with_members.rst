@@ -3,11 +3,11 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% block methods %}
+   {% block members %}
    .. rubric Members
    :members:
-   
    {% endblock %}
+   
    {% block methods %}
    {% if methods %}
    .. rubric:: Methods
