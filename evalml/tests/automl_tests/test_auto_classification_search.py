@@ -226,6 +226,19 @@ def test_additional_objectives(X_y):
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold(mock_fit, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_optimize_threshold.assert_called()
+    assert automl.best_pipeline.threshold == 0.8
+
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
@@ -235,6 +248,9 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     mock_fit.assert_called()
     mock_score.assert_called()
     assert automl.best_pipeline.threshold == 0.5
+
+
+
 
 
 def test_describe_pipeline_objective_ordered(X_y, capsys):
