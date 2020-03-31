@@ -47,6 +47,14 @@ def test_init(X_y):
     automl.describe_pipeline(0)
 
 
+def test_get_pipeline_none(X_y):
+    X, y = X_y
+
+    automl = AutoClassificationSearch()
+    with pytest.raises(RuntimeError, match="Pipeline not found"):
+        automl.describe_pipeline(0)
+
+
 def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
