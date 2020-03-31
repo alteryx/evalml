@@ -3,17 +3,14 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'summary', 'component_graph', 'supported_problem_types', 'model_family', 'hyperparameters', 'custom_hyperparameters'] %}
+   {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges', 'supported_problem_types'] %}
 
    {% block attributes %}
    .. Class attributes:
    .. autoattribute:: name
-   .. autoattribute:: summary
-   .. autoattribute:: component_graph
-   .. autoattribute:: supported_problem_types
    .. autoattribute:: model_family
-   .. autoattribute:: hyperparameters
-   .. autoattribute:: custom_hyperparameters
+   .. autoattribute:: supported_problem_types
+   .. autoattribute:: hyperparameter_ranges
    {% endblock %}
 
    {% block instance_attributes %}

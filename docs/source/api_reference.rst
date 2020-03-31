@@ -82,7 +82,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: class_with_properties.rst
+    :template: component_class.rst
     :nosignatures:
 
     OneHotEncoder
@@ -96,7 +96,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: class_with_properties.rst
+    :template: component_class.rst
     :nosignatures:
 
     LogisticRegressionClassifier
