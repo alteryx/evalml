@@ -30,11 +30,8 @@ Changelog
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+        * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
 
-
-.. warning::
-
-    **Breaking Changes**
 
 .. warning::
 
