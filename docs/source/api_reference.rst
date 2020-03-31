@@ -82,7 +82,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: component_class.rst
+    :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
