@@ -49,8 +49,7 @@ class PipelineBase(ABC):
             objective (ObjectiveBase): the objective to optimize
 
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
-                If `random_state`, `n_jobs`, or 'number_features' are provided as component parameters they will override the corresponding
-                value provided as arguments to the pipeline. An empty dictionary {} implies using all default values for component parameters.
+                 An empty dictionary {} implies using all default values for component parameters.
         """
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
