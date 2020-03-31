@@ -16,7 +16,9 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import (PipelineBase, 
+get_pipelines, 
+BinaryClassificationPipeline)
 from evalml.problem_types import ProblemTypes
 from unittest.mock import patch
 
@@ -227,16 +229,17 @@ def test_additional_objectives(X_y):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold(mock_fit, mock_optimize_threshold, X_y):
+def test_optimizable_threshold(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
     automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
     automl.search(X, y)
     mock_fit.assert_called()
+    mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
     assert automl.best_pipeline.threshold == 0.8
-
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -248,9 +251,6 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     mock_fit.assert_called()
     mock_score.assert_called()
     assert automl.best_pipeline.threshold == 0.5
-
-
-
 
 
 def test_describe_pipeline_objective_ordered(X_y, capsys):
