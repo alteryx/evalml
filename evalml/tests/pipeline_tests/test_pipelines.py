@@ -112,7 +112,7 @@ def test_required_fields():
         TestPipelineWithComponentGraph(parameters={}, objective='precision')
 
     class TestPipelineWithProblemTypes(PipelineBase):
-        component_graph = ['Logistic Regression Classifier']
+        supported_problem_types = ['binary']
 
     with pytest.raises(TypeError):
         TestPipelineWithProblemTypes(parameters={}, objective='precision')
