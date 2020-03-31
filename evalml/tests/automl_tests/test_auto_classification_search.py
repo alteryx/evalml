@@ -16,11 +16,8 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import (PipelineBase, 
-get_pipelines, 
-BinaryClassificationPipeline)
+from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
-from unittest.mock import patch
 
 
 def test_init(X_y):
