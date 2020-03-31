@@ -19,6 +19,7 @@ Changelog
         * Refactored `problem_types` for pipelines and components into `supported_problem_types` :pr:`515`
         * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase.save` and `PipelineBase.load` :pr:`526`
         * Limit number of categories encoded by OneHotEncoder :pr:`517`
+        * Noop :pr:`545`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
