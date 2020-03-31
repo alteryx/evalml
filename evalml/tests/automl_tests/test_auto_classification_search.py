@@ -1,10 +1,11 @@
+import random
 import time
 from unittest.mock import patch
-import random
 
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn import datasets
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
@@ -21,7 +22,6 @@ from evalml.objectives import (
 )
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
-from sklearn import datasets
 
 
 def test_init(X_y):
@@ -391,12 +391,12 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
 
 
 def test_large_number_of_categories():
-    X, y = datasets.make_classification(n_samples=20000, n_features=20, 
+    X, y = datasets.make_classification(n_samples=20000, n_features=20,
                                         n_informative=2, n_redundant=2, random_state=0)
     X = pd.DataFrame(X)
     X.insert(loc=0, column='categorical_col', value=random.sample(range(0, 20000), 20000))
     X.insert(loc=0, column='categorical_col_2', value=random.sample(range(0, 20000), 20000))
     X['categorical_col'] = X['categorical_col'].astype('category')
     X['categorical_col_2'] = X['categorical_col_2'].astype('category')
-    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl = AutoClassificationSearch(objective="f1", max_pipelines=5)
     automl.search(X, y, raise_errors=True)
