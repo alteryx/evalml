@@ -71,7 +71,6 @@ class FraudCost(BinaryClassificationObjective):
 
         if not isinstance(y_true, pd.Series):
             y_true = pd.Series(y_true)
-
         # extract transaction using the amount columns in users data
         transaction_amount = X[self.amount_col]
 
