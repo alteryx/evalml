@@ -56,14 +56,12 @@ Plotting
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
 
 Model Family
-===========
+============
 
 .. autosummary::
     :toctree: generated
@@ -71,6 +69,9 @@ Model Family
     :nosignatures:
 
     ModelFamily
+
+
+.. currentmodule:: evalml.pipelines
 
 .. autosummary::
     :toctree: generated
@@ -121,8 +122,6 @@ Pipelines
     :nosignatures:
 
     get_pipelines
-    save_pipeline
-    load_pipeline
 
 .. autosummary::
     :toctree: generated
@@ -130,11 +129,16 @@ Pipelines
     :nosignatures:
 
     PipelineBase
-    RFClassificationPipeline
-    XGBoostPipeline
-    LogisticRegressionPipeline
-    RFRegressionPipeline
-    LinearRegressionPipeline
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
+    CatBoostBinaryClassificationPipeline
+    CatBoostMulticlassClassificationPipeline
+    LogisticRegressionBinaryPipeline
+    LogisticRegressionMulticlassPipeline
+    RFBinaryClassificationPipeline
+    RFMulticlassClassificationPipeline
+    XGBoostBinaryPipeline
+    XGBoostMulticlassPipeline
 
 
 Plotting
@@ -213,6 +217,19 @@ Regression
     ExpVariance
 
 
+Plot Metrics
+~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ROC
+    ConfusionMatrix
+
+
+
 .. currentmodule:: evalml.problem_types
 
 Problem Types
@@ -261,3 +278,16 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
+
+
+.. currentmodule:: evalml.utils
+
+Guardrails
+=============
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    convert_to_seconds
+    normalize_confusion_matrix
