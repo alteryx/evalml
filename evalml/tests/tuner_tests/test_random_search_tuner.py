@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.tests.tuner_tests.tuner_test_utils import (
