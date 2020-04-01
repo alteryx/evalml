@@ -45,6 +45,14 @@ def test_init(X_y):
     automl.describe_pipeline(0)
 
 
+def test_get_pipeline_none(X_y):
+    X, y = X_y
+
+    automl = AutoClassificationSearch()
+    with pytest.raises(RuntimeError, match="Pipeline not found"):
+        automl.describe_pipeline(0)
+
+
 def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
@@ -399,3 +407,11 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     assert y.is_monotonic_increasing
     assert len(x) == 3
     assert len(y) == 3
+
+
+def test_max_time(X_y):
+    X, y = X_y
+    clf = AutoClassificationSearch(max_time=1e-16)
+    clf.search(X, y)
+    # search will always run at least one pipeline
+    assert len(clf.results['pipeline_results']) == 1

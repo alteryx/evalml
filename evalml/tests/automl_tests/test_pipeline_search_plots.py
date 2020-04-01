@@ -32,10 +32,9 @@ def test_generate_roc(X_y):
                 'Logistic Regression Classifier': {
                     'penalty': 'l2',
                     'C': 0.5,
-                    'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=0)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):
@@ -116,10 +115,9 @@ def test_generate_confusion_matrix(X_y):
                 'Logistic Regression Classifier': {
                     'penalty': 'l2',
                     'C': 0.5,
-                    'random_state': 0
                 }
             }
-            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters)
+            pipeline = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=0)
             cv = StratifiedKFold(n_splits=5, random_state=0)
             plot_data = []
             for train, test in cv.split(X, y):

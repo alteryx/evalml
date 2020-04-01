@@ -6,5 +6,6 @@ class XGBoostBinaryPipeline(BinaryClassificationPipeline):
     _name = "XGBoost Binary Classification Pipeline"
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
 
-    def __init__(self, parameters):
-        super().__init__(parameters=parameters)
+    def __init__(self, parameters, random_state=0):
+        super().__init__(parameters=parameters,
+                         random_state=random_state)

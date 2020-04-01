@@ -14,6 +14,7 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
         "impute_strategy": ["most_frequent"],
     }
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, random_state=0):
         # note: impute_strategy must support both string and numeric data
-        super().__init__(parameters=parameters)
+        super().__init__(parameters=parameters,
+                         random_state=random_state)

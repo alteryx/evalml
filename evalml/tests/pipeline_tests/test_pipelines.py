@@ -97,11 +97,9 @@ def lr_pipeline():
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
-            'random_state': 1
         }
     }
-
-    return LogisticRegressionBinaryPipeline(parameters=parameters)
+    return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)
 
 
 def test_required_fields():
@@ -164,7 +162,6 @@ def test_reproducibility(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
 
@@ -266,7 +263,6 @@ def test_estimator_not_last(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
 
@@ -274,9 +270,6 @@ def test_estimator_not_last(X_y):
         name = "Mock Logistic Regression Pipeline"
         supported_problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
-
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
@@ -296,9 +289,6 @@ def test_multi_format_creation(X_y):
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
-
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -306,7 +296,6 @@ def test_multi_format_creation(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
 
@@ -335,9 +324,6 @@ def test_multiple_feature_selectors(X_y):
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
-
     clf = TestPipeline(parameters={})
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
@@ -354,9 +340,6 @@ def test_problem_types():
     class TestPipeline(PipelineBase):
         component_graph = ['Logistic Regression Classifier']
         supported_problem_types = ['binary', 'regression']
-
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
         TestPipeline(parameters={})
@@ -393,7 +376,7 @@ def test_no_default_parameters():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2',):
+        def __init__(self, a, b=1, c='2', random_state=0):
             self.a = a
             self.b = b
             self.c = c
@@ -402,22 +385,36 @@ def test_no_default_parameters():
         component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
         supported_problem_types = ['binary']
 
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
-
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
 
     assert TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
+def test_no_random_state_argument_in_component():
+    class MockComponent(Transformer):
+        name = "Mock Component"
+        hyperparameter_ranges = {
+            'a': [0, 1, 2]
+        }
+
+        def __init__(self, a, b=1, c='2'):
+            self.a = a
+            self.b = b
+            self.c = c
+
+    class TestPipeline(PipelineBase):
+        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
+        supported_problem_types = ['binary']
+
+    with pytest.raises(ValueError, match="Error received when instantiating component *."):
+        TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
+
+
 def test_init_components_invalid_parameters():
     class TestPipeline(PipelineBase):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
         supported_problem_types = ['binary']
-
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
 
     parameters = {
         'Logistic Regression Classifier': {
@@ -432,7 +429,7 @@ def test_init_components_invalid_parameters():
 def test_correct_parameters(lr_pipeline):
     lr_pipeline = lr_pipeline
 
-    assert lr_pipeline.estimator.random_state == 1
+    assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
 
@@ -474,7 +471,6 @@ def test_hyperparameters_override():
 
 
 def test_hyperparameters_none(dummy_estimator):
-
     class MockPipelineNone(PipelineBase):
         component_graph = [dummy_estimator]
         supported_problem_types = ['binary']

@@ -10,6 +10,7 @@ from evalml.pipelines import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline
 )
+from evalml.utils import get_random_state
 
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
@@ -27,9 +28,9 @@ def test_catboost_init():
             "max_depth": 3,
         }
     }
-    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
-
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_catboost_objective_tuning(X_y):
@@ -70,8 +71,10 @@ def test_catboost_multi(X_y_multi):
     from catboost import CatBoostClassifier as CBClassifier
     X, y = X_y_multi
 
+    random_seed = 42
+    catboost_random_seed = get_random_state(random_seed).randint(0, 2**32 - 1)
     imputer = SimpleImputer(strategy='mean')
-    estimator = CBClassifier(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_state=0)
+    estimator = CBClassifier(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_seed=catboost_random_seed)
     sk_pipeline = Pipeline([("imputer", imputer),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
@@ -89,8 +92,7 @@ def test_catboost_multi(X_y_multi):
             "max_depth": 3,
         }
     }
-
-    clf = CatBoostMulticlassClassificationPipeline(parameters=parameters)
+    clf = CatBoostMulticlassClassificationPipeline(parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)

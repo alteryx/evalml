@@ -34,7 +34,7 @@ def test_rf_init(X_y):
             "max_depth": 5,
         }
     }
-    clf = RFBinaryClassificationPipeline(parameters=parameters)
+    clf = RFBinaryClassificationPipeline(parameters=parameters, random_state=2)
     expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean',
@@ -52,6 +52,7 @@ def test_rf_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_objective_tuning(X_y):

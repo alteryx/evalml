@@ -24,8 +24,9 @@ def test_lr_init(X_y_categorical_regression):
             'normalize': True,
         },
     }
-    clf = LinearRegressionPipeline(parameters=parameters)
+    clf = LinearRegressionPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_linear_regression(X_y_categorical_regression):
