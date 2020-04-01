@@ -34,7 +34,7 @@ def test_rf_init(X_y):
         }
     }
 
-    clf = RFClassificationPipeline(parameters=parameters, random_state=2)
+    clf = RFBinaryClassificationPipeline(parameters=parameters, random_state=2)
 
     expected_parameters = {
         'Simple Imputer': {

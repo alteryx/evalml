@@ -27,7 +27,7 @@ def test_catboost_init():
             "max_depth": 3,
         }
     }
-    clf = CatBoostClassificationPipeline(parameters=parameters, random_state=2)
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
@@ -58,7 +58,7 @@ def test_catboost_multi(X_y_multi):
         }
     }
 
-    clf = CatBoostClassificationPipeline(parameters=parameters, random_state=get_random_state(random_seed))
+    clf = CatBoostMulticlassClassificationPipeline(parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y, objective)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)

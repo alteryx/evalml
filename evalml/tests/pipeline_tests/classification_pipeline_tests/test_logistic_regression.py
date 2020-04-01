@@ -60,7 +60,7 @@ def test_lor_multi(X_y_multi):
             'C': 1.0,
         }
     }
-    clf = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=1)
+    clf = LogisticRegressionMulticlassPipeline(parameters=parameters, random_state=1)
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)

@@ -39,7 +39,7 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostPipeline(parameters=parameters, random_state=1)
+    clf = XGBoostBinaryPipeline(parameters=parameters, random_state=1)
 
     expected_parameters = {
         'Simple Imputer': {

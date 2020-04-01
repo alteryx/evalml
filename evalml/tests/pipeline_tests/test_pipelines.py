@@ -386,7 +386,7 @@ def test_no_random_state_argument_in_component():
         supported_problem_types = ['binary']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision', random_state=0)
+        TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
 
 
 def test_init_components_invalid_parameters():
