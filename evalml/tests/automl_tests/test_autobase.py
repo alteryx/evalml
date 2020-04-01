@@ -85,7 +85,7 @@ def test_transform_parameters():
     assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
 
 
-@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_pipeline_fit_raises(mock_fit, X_y):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)

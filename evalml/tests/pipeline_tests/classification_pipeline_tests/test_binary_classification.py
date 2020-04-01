@@ -3,11 +3,6 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline
-from evalml.pipelines.components import Estimator
-from evalml.problem_types import ProblemTypes
-
 
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba')
@@ -58,7 +53,7 @@ def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
 
 
 @patch('evalml.pipelines.PipelineBase._transform')
-def test_binary_classification_pipeline_predict(mock_transform, X_y, dummy_binary_pipeline):
+def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y, dummy_binary_pipeline):
     X, y = X_y
     binary_pipeline = dummy_binary_pipeline
     with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):

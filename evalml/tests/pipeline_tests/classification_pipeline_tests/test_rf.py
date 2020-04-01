@@ -140,6 +140,8 @@ def test_rf_multi(X_y_multi):
     assert not clf.feature_importances.isnull().all().all()
 
     # testing objective parameter passed in does not change results
+    clf = RFMulticlassClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
     y_pred_with_objective = clf.predict(X, objective)
     np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 

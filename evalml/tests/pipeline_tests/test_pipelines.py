@@ -11,7 +11,6 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision, Recall
 from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
-    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
