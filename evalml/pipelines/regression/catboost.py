@@ -16,7 +16,6 @@ class CatBoostRegressionPipeline(PipelineBase):
         "impute_strategy": ["most_frequent"],
     }
 
-    def __init__(self, parameters, objective, random_state=0):
+    def __init__(self, parameters, objective):
         super().__init__(parameters=parameters,
-                         objective=objective,
-                         random_state=random_state)
+                         objective=objective)

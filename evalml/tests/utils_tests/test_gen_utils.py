@@ -5,7 +5,6 @@ import pytest
 from evalml.utils.gen_utils import (
     classproperty,
     convert_to_seconds,
-    get_random_state,
     import_or_raise,
     normalize_confusion_matrix
 )
@@ -38,12 +37,6 @@ def test_convert_to_seconds():
     assert convert_to_seconds("10 hr") == 36000
     assert convert_to_seconds("10 hour") == 36000
     assert convert_to_seconds("10 hours") == 36000
-
-
-def test_get_random_state():
-    assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
-    assert get_random_state(42).rand() == np.random.RandomState(42).rand()
-    assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
 
 
 def test_normalize_confusion_matrix():
