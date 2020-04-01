@@ -32,7 +32,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if self.threshold is not None:
             ypred_proba = self.predict_proba(X)
-            ypred_proba = ypred_proba.iloc[:, 1]
+            ypred_proba = ypred_proba[:, 1]
             if objective is not None:
                 return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
             return ypred_proba > self.threshold
