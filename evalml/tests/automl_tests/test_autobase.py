@@ -82,7 +82,7 @@ def test_transform_parameters():
         'Standard Scaler': {},
         'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
     }
-    assert automl._transform_parameters(LogisticRegressionPipeline, parameters, 0) == parameters_dict
+    assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
 
 
 @patch('evalml.pipelines.PipelineBase.fit')

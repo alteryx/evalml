@@ -42,7 +42,7 @@ def test_binary_average(X_y):
         }
     }
 
-    pipeline = LogisticRegressionPipeline(parameters=parameters, random_state=0)
+    pipeline = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=0)
     pipeline.fit(X, y, objective)
     y_pred = pipeline.predict(X)
 
