@@ -471,7 +471,7 @@ def test_hyperparameters_override():
 
 def test_hyperparameters_none(dummy_estimator):
     class MockPipelineNone(PipelineBase):
-        component_graph = [dummy_estimator]
+        component_graph = [dummy_estimator()]
         supported_problem_types = ['binary']
 
     assert MockPipelineNone.hyperparameters == {}
@@ -479,7 +479,9 @@ def test_hyperparameters_none(dummy_estimator):
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_estimator, dummy_multiclass_pipeline, X_y):
+def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline, X_y):
     X, y = X_y
     mock_predict.return_value = np.array([1] * 100)
-    dummy_multiclass_pipeline.score(X, y, ['recall', 'auc'])
+    with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
+        dummy_regression_pipeline.score(X, y, ['recall', 'auc'])
+    mock_predict.assert_called()

@@ -248,7 +248,7 @@ class PipelineBase(ABC):
         scores = OrderedDict()
         for objective in objectives:
             if objective.score_needs_proba:
-                raise Exception("Objective `{}` does not support score_needs_proba".format(objective.name))
+                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)

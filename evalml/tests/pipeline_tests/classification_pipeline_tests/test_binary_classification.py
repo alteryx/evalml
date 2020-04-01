@@ -11,7 +11,7 @@ import pytest
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
                                                 mock_predict, mock_predict_proba,
-                                                mock_obj_decision, X_y, dummy_estimator, dummy_binary_pipeline):
+                                                mock_obj_decision, X_y, dummy_binary_pipeline):
     X, y = X_y
     binary_pipeline = dummy_binary_pipeline
     # test no objective passed and no custom threshold uses underlying estimator's predict method
