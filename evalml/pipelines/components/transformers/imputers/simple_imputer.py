@@ -9,7 +9,7 @@ class SimpleImputer(Transformer):
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -24,7 +24,7 @@ class SimpleImputer(Transformer):
                             fill_value=fill_value)
         super().__init__(parameters=parameters,
                          component_obj=imputer,
-                         random_state=0)
+                         random_state=random_state)
 
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values

@@ -3,8 +3,11 @@ import pandas as pd
 import pytest
 
 from evalml.utils.gen_utils import (
+    SEED_BOUNDS,
     classproperty,
     convert_to_seconds,
+    get_random_seed,
+    get_random_state,
     import_or_raise,
     normalize_confusion_matrix
 )
@@ -37,6 +40,35 @@ def test_convert_to_seconds():
     assert convert_to_seconds("10 hr") == 36000
     assert convert_to_seconds("10 hour") == 36000
     assert convert_to_seconds("10 hours") == 36000
+
+
+def test_get_random_state():
+    assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
+    assert get_random_state(42).rand() == np.random.RandomState(42).rand()
+    assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
+
+
+def test_get_random_seed():
+    assert get_random_seed(0) == 0
+    assert get_random_seed(1) == 1
+    assert get_random_seed(42) == 42
+    assert get_random_seed(-42) == -42
+    assert get_random_seed(42, min_bound=42) == 42
+    assert get_random_seed(42, max_bound=43) == 42
+    assert get_random_seed(42, min_bound=42, max_bound=43) == 42
+    assert get_random_seed(-42, min_bound=-42, max_bound=0) == -42
+    assert get_random_seed(420, min_bound=-500, max_bound=400) == 420 % 400
+    assert get_random_seed(-420, min_bound=-400, max_bound=500) == -420 % 400
+
+    assert get_random_seed(SEED_BOUNDS.max_bound) == 0
+    assert get_random_seed(SEED_BOUNDS.max_bound + 1) == 1
+    assert get_random_seed(SEED_BOUNDS.min_bound) == SEED_BOUNDS.min_bound
+    assert get_random_seed(SEED_BOUNDS.min_bound - 1) == abs(SEED_BOUNDS.max_bound) - 1
+
+    with pytest.raises(ValueError):
+        get_random_seed(42, min_bound=42, max_bound=42)
+    with pytest.raises(ValueError):
+        get_random_seed(42, min_bound=420, max_bound=4)
 
 
 def test_normalize_confusion_matrix():

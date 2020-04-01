@@ -19,7 +19,7 @@ class GridSearchTuner(Tuner):
         (3.25, 'A')
     """
 
-    def __init__(self, space, n_points=10, random_state=None):
+    def __init__(self, space, n_points=10, random_state=0):
         """ Generate all of the possible points to search for in the grid
 
         Arguments:
