@@ -2,7 +2,6 @@ from evalml.model_family import handle_model_family
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.utils import all_pipelines
 from evalml.problem_types import handle_problem_types
-from evalml.utils import import_or_raise
 
 
 class Registry:
@@ -15,12 +14,22 @@ class Registry:
         return cls.default_pipelines + cls.other_pipelines
 
     @classmethod
-    def register(cls, pipeline_class): 
+    def register(cls, pipeline_class):
         if issubclass(pipeline_class, PipelineBase):
             cls.other_pipelines.append(pipeline_class)
         else:
             raise TypeError("Provided pipeline {} is not a subclass of `PipelineBase`".format(pipeline_class))
     
+    @classmethod
+    def register_from_components(cls, component_graph, supported_problem_types, name):
+        base_class = PipelineBase
+        class_dict = {
+            'component_graph' : component_graph,
+            'supported_problem_types': supported_problem_types
+        }
+        name.encode(encoding='utf8')
+        temp_pipeline = type(name, (base_class,),class_dict)
+        cls.register(temp_pipeline)
 
     @classmethod
     def get_registry_pipelines(cls, problem_type, model_families=None):
@@ -82,12 +91,3 @@ class Registry:
                 problem_pipelines.append(p)
 
         return list(set([p.model_family for p in problem_pipelines]))
-
-    # # in order to support signature b:
-    # def register_from_components(component_graph, problem_type, name):
-    #     base_class = RegressionPipeline if problem_type is x else ...
-    #     class Temp(base_class):
-    #         component_graph = component_graph
-    #         name = name
-    #         def __init__(...): ...
-    #     self.register(Temp)
