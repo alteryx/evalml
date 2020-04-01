@@ -28,24 +28,27 @@ After the release pull request has been merged into the master branch, it is tim
 * Release title is the same as the tag.
 * Release description should be the full changelog updates for the release, reformatted as github markdown.
 
-Save the draft and review it. When it's ready to go, hit "Publish release."
+Save the draft and review it. You could start the draft while waiting for the release PR to be ready to merge. When it's ready to go, hit "Publish release."
 
 ## 3. Update Public Documentation
-After creating the GitHub release, activate the release version on ReadTheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
+After creating the GitHub release, we need to activate the release version on ReadTheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
 
 Please do the following:
-* Find `vX.X.X` in the version list, and click "Edit" on the right.
-* Check the `Active` checkbox and set privacy level to `Public`, then click "Save"
+* Find "vX.X.X" in the version list, and click "Edit" on the right.
+* Check the "Active" checkbox and set privacy level to "Public", then click "Save"
 
-Readthedocs will kick off fresh builds of the new version `vX.X.X` and will use that for the default `stable` docs branch.
+Readthedocs will now a) list "vX.X.X" as a viewable branch of our public documentation, and b) update the default "stable" branch to point to the new documentation. Please verify that both of these things are true before proceeding.
 
 ## 4. Release using Release-tools
+Now that the release has been made in the repo and in our documentation, the final step is deploying the code to make it pip-installable.
 
-Do the following assuming you have [release-tools](https://github.com/FeatureLabs/release-tools) installed to upload to our internal license key (connected to admin@featurelabs.com):
+First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
 
-Navigate to the root directory
+to upload to our internal license key (connected to admin@featurelabs.com):
+
+Make sure you're in the top directory in the evalml repo:
 ```shell
-cd evalml
+cd {your_workspace}/evalml
 ```
 
 If necessary, add a folder called "licenses" and create an `admin.json` file in that folder:
