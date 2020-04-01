@@ -26,6 +26,42 @@ class AutoBase:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
+    def __repr__(self):
+        def _pipeline_names():
+            all_pipelines = "\n\t"
+            for pipeline in self.tuners:
+                all_pipelines += pipeline
+                all_pipelines += '\n\t'
+            return all_pipelines[:-2]
+
+        def _obj_names():
+            all_objectives = "\n\t"
+            for objective in self.additional_objectives:
+                all_objectives += objective.name
+                all_objectives += '\n\t'
+            return all_objectives[:-2]
+
+        def _max_limit():
+            max_limit = ""
+            if self.max_time:
+                max_limit += f"Max Time: {self.max_time}\n"
+            if self.max_pipelines:
+                max_limit += f"Max Pipelines: {self.max_pipelines}\n"
+            return max_limit
+
+        output = (
+            f"Search Details: \n{'='*20}\n"
+            f"Objective: {self.objective.name}\n"
+            f"{_max_limit()}"
+            f"Tuner: {type(list(self.tuners.values())[0])}\n"
+            f"Searchable Pipelines: {_pipeline_names()}\n"
+            f"Cross Validation: {self.cv}\n"
+            f"Additional Objectives: {_obj_names()}\n"
+            f"Random State: {self.random_state}\n"
+            f"n_jobs: {self.n_jobs}\n"
+        )
+        return output
+
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
