@@ -36,6 +36,8 @@ Changelog
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
         * Run windows unit tests on PRs :pr:`557`
+
+
 .. warning::
 
     **Breaking Changes**
