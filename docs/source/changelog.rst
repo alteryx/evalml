@@ -4,14 +4,6 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-
-
-**v0.8.0 Mar. 31, 2020**
-    * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
