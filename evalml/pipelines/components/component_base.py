@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger, get_random_state
+from evalml.utils import Logger
 
 logger = Logger()
 
 
 class ComponentBase(ABC):
     def __init__(self, parameters, component_obj, random_state):
-        self.random_state = get_random_state(random_state)
+        self.random_state = random_state
         self._component_obj = component_obj
         self.parameters = parameters
 
