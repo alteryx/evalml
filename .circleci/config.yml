@@ -252,21 +252,12 @@ workflows:
         - win_unit_tests:
             name: "windows python 3.6 unit tests"
             python_version: "3.6"
-            filters:
-              branches:
-                only: master
         - win_unit_tests:
             name: "windows python 3.7 unit tests"
             python_version: "3.7"
-            filters:
-              branches:
-                only: master
         - win_unit_tests:
             name: "windows python 3.8 unit tests"
             python_version: "3.8"
-            filters:
-              branches:
-                only: master
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
