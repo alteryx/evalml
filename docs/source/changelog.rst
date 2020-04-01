@@ -19,6 +19,7 @@ Changelog
         * Added `fill_value` parameter for SimpleImputer :pr:`509`    
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`530`
+        * Added accuracy as an standard objective :pr:`559`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
