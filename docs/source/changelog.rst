@@ -10,6 +10,7 @@ Changelog
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
         * Added `fill_value` parameter for SimpleImputer :pr:`509`    
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
+        * Allow numpy.random.RandomState for random_state parameters :pr:`530`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
@@ -18,13 +19,16 @@ Changelog
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
         * Refactored `problem_types` for pipelines and components into `supported_problem_types` :pr:`515`
         * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase.save` and `PipelineBase.load` :pr:`526`
+        * Limit number of categories encoded by OneHotEncoder :pr:`517`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
+        * Updated API reference for to surface class variables for pipelines and components :pr:`537`
         * Fixed README documentation link :pr:`535`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
+        * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
 .. warning::
 
     **Breaking Changes**

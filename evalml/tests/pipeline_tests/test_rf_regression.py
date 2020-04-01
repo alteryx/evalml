@@ -19,6 +19,7 @@ def test_rf_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
@@ -30,13 +31,14 @@ def test_rf_init(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    clf = RFRegressionPipeline(objective=objective, parameters=parameters, random_state=2)
 
     expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean',
             'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             'percent_features': 1.0,
             'threshold': -np.inf
@@ -48,6 +50,7 @@ def test_rf_init(X_y_reg):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_regression(X_y_categorical_regression):

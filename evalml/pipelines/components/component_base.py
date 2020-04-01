@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger
+from evalml.utils import Logger, get_random_state
 
 logger = Logger()
 
 
 class ComponentBase(ABC):
     def __init__(self, parameters, component_obj, random_state):
-        self.random_state = random_state
+        self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
         self.parameters = parameters
 
@@ -16,12 +16,14 @@ class ComponentBase(ABC):
     @classmethod
     @abstractmethod
     def name(cls):
+        """Returns string name of this component"""
         return NotImplementedError("This component must have `name` as a class variable.")
 
     @property
     @classmethod
     @abstractmethod
     def model_family(cls):
+        """Returns ModelFamily of this component"""
         return NotImplementedError("This component must have `model_family` as a class variable.")
 
     def fit(self, X, y=None):

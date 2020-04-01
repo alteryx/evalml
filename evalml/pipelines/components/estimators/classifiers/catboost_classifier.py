@@ -26,6 +26,7 @@ class CatBoostClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
+        random_seed = random_state if isinstance(random_state, int) else random_state.randint(0, 2**32 - 1)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth}
@@ -36,6 +37,7 @@ class CatBoostClassifier(Estimator):
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         self._label_encoder = None
         cb_classifier = catboost.CatBoostClassifier(**parameters,
+                                                    random_seed=random_seed,
                                                     silent=True,
                                                     allow_writing_files=False)
         super().__init__(parameters=parameters,

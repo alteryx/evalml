@@ -195,13 +195,16 @@ jobs:
 
   build_docs:
     working_directory: ~/evalml/
-    docker:
-      - image: circleci/python:3.8
+    executor:
+      name: python
+      python_version: "3.8"
     steps:
       - checkout
       - install_dependencies_dev
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
-      - run: source test_python/bin/activate ; make -C docs/ html
+      - run: |
+          source test_python/bin/activate
+          make -C docs/ html
       - run: ls docs/build/html
   check_dependencies_updated_linux:
     parameters:

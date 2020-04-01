@@ -57,13 +57,12 @@ Plotting
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
 
 Model Family
-===========
+============
 
 .. autosummary::
     :toctree: generated
@@ -72,12 +71,8 @@ Model Family
 
     ModelFamily
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
 
-    list_model_families
-
+.. currentmodule:: evalml.pipelines.components
 
 Components
 ==========
@@ -87,7 +82,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
@@ -101,7 +96,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: estimator_class.rst
     :nosignatures:
 
     LogisticRegressionClassifier
@@ -116,26 +111,36 @@ Estimators
 Pipelines
 =========
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    get_pipelines
-    save_pipeline
-    load_pipeline
-
+Pipelines
+~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
+
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
     RFClassificationPipeline
     XGBoostPipeline
+    CatBoostClassificationPipeline
     LogisticRegressionPipeline
     RFRegressionPipeline
+    CatBoostRegressionPipeline
     LinearRegressionPipeline
 
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_pipelines
+    list_model_families
 
 Plotting
 ~~~~~~~~
