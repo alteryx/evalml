@@ -14,6 +14,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
+from evalml.registry import Registry
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds, get_random_state
 
@@ -39,7 +40,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
+        self.possible_pipelines = Registry.get_registry_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
 
         logger.verbose = verbose
