@@ -1,11 +1,9 @@
-import random
 import time
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn import datasets
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
@@ -47,14 +45,6 @@ def test_init(X_y):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
     automl.describe_pipeline(0)
-
-
-def test_get_pipeline_none(X_y):
-    X, y = X_y
-
-    automl = AutoClassificationSearch()
-    with pytest.raises(RuntimeError, match="Pipeline not found"):
-        automl.describe_pipeline(0)
 
 
 def test_cv(X_y):
@@ -396,23 +386,3 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     assert y.is_monotonic_increasing
     assert len(x) == 3
     assert len(y) == 3
-
-
-def test_large_number_of_categories():
-    X, y = datasets.make_classification(n_samples=20000, n_features=20,
-                                        n_informative=2, n_redundant=2, random_state=0)
-    X = pd.DataFrame(X)
-    X.insert(loc=0, column='categorical_col', value=random.sample(range(0, 20000), 20000))
-    X.insert(loc=0, column='categorical_col_2', value=random.sample(range(0, 20000), 20000))
-    X['categorical_col'] = X['categorical_col'].astype('category')
-    X['categorical_col_2'] = X['categorical_col_2'].astype('category')
-    automl = AutoClassificationSearch(objective="f1", max_pipelines=5)
-    automl.search(X, y, raise_errors=True)
-
-    
-def test_max_time(X_y):
-    X, y = X_y
-    clf = AutoClassificationSearch(max_time=1e-16)
-    clf.search(X, y)
-    # search will always run at least one pipeline
-    assert len(clf.results['pipeline_results']) == 1

@@ -4,21 +4,12 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-
-
-**v0.8.0 Mar. 31, 2020**
-    * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
         * Added `fill_value` parameter for SimpleImputer :pr:`509`    
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
-        * Allow numpy.random.RandomState for random_state parameters :pr:`530`
     * Fixes
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
@@ -37,7 +28,7 @@ Changelog
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
         * Added simple test to make sure OneHotEncoder's top_n works with large number of categories :pr:`552`
-
+        * Run windows unit tests on PRs :pr:`557`
 .. warning::
 
     **Breaking Changes**

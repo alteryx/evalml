@@ -1,7 +1,8 @@
+from numpy.random import RandomState
 from skopt import Space
 
-from evalml.tuners import NoParamsException, Tuner
-from evalml.utils import get_random_state
+from .tuner import Tuner
+from .tuner_exceptions import NoParamsException
 
 
 class RandomSearchTuner(Tuner):
@@ -17,7 +18,7 @@ class RandomSearchTuner(Tuner):
         (5, 'A')
     """
 
-    def __init__(self, space, random_state=0, with_replacement=False, replacement_max_attempts=10):
+    def __init__(self, space, random_state=None, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
 
         Arguments:
@@ -29,7 +30,7 @@ class RandomSearchTuner(Tuner):
                 with_replacement=True
         """
         self._space = Space(space)
-        self._random_state = get_random_state(random_state)
+        self._random_state = RandomState(random_state)
         self._with_replacement = with_replacement
         self._replacement_max_attempts = replacement_max_attempts
         self._used_parameters = set()
