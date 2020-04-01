@@ -48,6 +48,27 @@ def get_random_state(seed):
     return check_random_state(seed)
 
 
+def get_random_seed(random_state, min_bound=None, max_bound=None):
+    """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, simply pass that int.
+
+    Arguments:
+        random_state (int, numpy.random.RandomState): random state
+        min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive)
+        max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive)
+
+    Returns:
+        int: seed for random number generator
+    """
+    if isinstance(random_state, (int, np.integer)):
+        return random_state
+    iinfo = np.iinfo(np.integer)
+    if min_bound is None:
+        min_bound = iinfo.min
+    if max_bound is None:
+        max_bound = iinfo.max
+    return random_state.randint(min_bound, max_bound)
+
+
 def normalize_confusion_matrix(conf_mat, option='true'):
     """Normalizes a confusion matrix.
 

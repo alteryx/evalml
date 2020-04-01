@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline
-from evalml.utils import get_random_state
+from evalml.utils import get_random_seed, get_random_state
 
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
@@ -34,7 +34,7 @@ def test_catboost_regression(X_y_reg):
     X, y = X_y_reg
 
     random_seed = 42
-    catboost_random_seed = get_random_state(random_seed).randint(0, 2**32 - 1)
+    catboost_random_seed = get_random_seed(get_random_state(random_seed), min_bound=0)
     imputer = SimpleImputer(strategy='mean')
     estimator = CBRegressor(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_seed=catboost_random_seed)
     sk_pipeline = Pipeline([("imputer", imputer),
