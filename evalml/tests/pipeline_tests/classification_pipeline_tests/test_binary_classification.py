@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-import pandas as pd
+import numpy as np
 import pytest
 
 
@@ -34,7 +34,7 @@ def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
 
     # test custom threshold set but no objective passed
     mock_predict.reset_mock()
-    mock_predict_proba.return_value = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X)
     mock_predict.assert_not_called()
@@ -44,7 +44,7 @@ def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
     # test custom threshold set and objective passed
     mock_predict.reset_mock()
     mock_predict_proba.reset_mock()
-    mock_predict_proba.return_value = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X, 'recall')
     mock_predict.assert_not_called()
