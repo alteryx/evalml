@@ -32,7 +32,7 @@ def test_rf_init(X_y):
         }
     }
 
-    clf = RFClassificationPipeline(objective=objective, parameters=parameters, random_state=2)
+    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
 
     expected_parameters = {
         'Simple Imputer': {
@@ -51,7 +51,6 @@ def test_rf_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
-    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_multi(X_y_multi):
