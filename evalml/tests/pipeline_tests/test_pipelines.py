@@ -353,7 +353,6 @@ def test_score_with_list_of_multiple_objectives(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
 
