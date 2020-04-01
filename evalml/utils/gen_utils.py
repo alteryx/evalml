@@ -56,7 +56,7 @@ SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(-2**30, 2**3
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int modulo the magnitude of the smallest bound to avoid numerical issues.
 
-    Invariant: min_bound + 1 < max_bound
+    Invariant: min_bound < max_bound
 
     Arguments:
         random_state (int, numpy.random.RandomState): random state
