@@ -6,7 +6,7 @@ Before starting the release process, verify the following:
 * [All circleci tests are green on master](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=master).
 * The [readthedocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed.
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on master.
-* The [performance tests](https://evalml.featurelabs.com/en/latest/changelog.html) have passed on latest master, and the team has reviewed the results.
+* The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
 
 ## 1. Create release PR to update version and changelog
 A release PR should have the version number as the title (i.e. "vX.X.X") and the changelog updates as the PR body text. The PR should be based off master. Please use a branch name which is different than "vX.X.X" because we create tags with that format in step 2.
