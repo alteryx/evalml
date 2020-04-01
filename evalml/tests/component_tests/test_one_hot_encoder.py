@@ -156,8 +156,7 @@ def test_large_number_of_categories():
     for i in range(10):
         X[i] = random.choices(range(0, 20000), k=100000)
         X.iloc[:, i] = X.iloc[:, i].astype('category')
-    encoder = OneHotEncoder()
-    encoder.parameters['top_n'] = 20
+    encoder = OneHotEncoder(parameters={'top_n': 20})
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert len(X_t) == 100000
