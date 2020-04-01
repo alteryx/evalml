@@ -18,11 +18,9 @@ class BinaryClassificationObjective(ObjectiveBase):
     problem_type = ProblemTypes.BINARY
 
     @property
-    @classmethod
-    @abstractmethod
     def can_optimize_threshold(cls):
-        """Returns a boolean determining if we can optimize the objective threshold."""
-        raise NotImplementedError("This objective must have a `can_optimize_threshold` attribute as a class variable")
+        """Returns a boolean determining if we can optimize the binary classification objective threshold."""
+        return not cls.score_needs_proba
 
     def optimize_threshold(self, ypred_proba, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.

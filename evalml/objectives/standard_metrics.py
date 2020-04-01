@@ -16,7 +16,6 @@ class Accuracy(BinaryClassificationObjective):
     name = "Accuracy"
     greater_is_better = True
     score_needs_proba = False
-    can_optimize_threshold = True
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.accuracy_score(y_true, y_predicted)
@@ -28,7 +27,6 @@ class F1(BinaryClassificationObjective):
     name = "F1"
     greater_is_better = True
     score_needs_proba = False
-    can_optimize_threshold = False
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted)
@@ -69,7 +67,6 @@ class Precision(BinaryClassificationObjective):
     name = "Precision"
     greater_is_better = True
     score_needs_proba = False
-    can_optimize_threshold = True
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.precision_score(y_true, y_predicted)
@@ -110,7 +107,6 @@ class Recall(BinaryClassificationObjective):
     name = "Recall"
     greater_is_better = True
     score_needs_proba = False
-    can_optimize_threshold = True
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted)
@@ -151,7 +147,6 @@ class AUC(BinaryClassificationObjective):
     name = "AUC"
     greater_is_better = True
     score_needs_proba = True
-    can_optimize_threshold = False
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.roc_auc_score(y_true, y_predicted)
@@ -195,7 +190,6 @@ class LogLossBinary(BinaryClassificationObjective):
     name = "Log Loss Binary"
     greater_is_better = False
     score_needs_proba = True
-    can_optimize_threshold = True
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.log_loss(y_true, y_predicted)
@@ -216,7 +210,6 @@ class MCCBinary(BinaryClassificationObjective):
     name = "MCC Binary"
     greater_is_better = True
     score_needs_proba = False
-    can_optimize_threshold = True
 
     def objective_function(self, y_predicted, y_true, X=None):
         return metrics.matthews_corrcoef(y_true, y_predicted)

@@ -8,7 +8,6 @@ class FraudCost(BinaryClassificationObjective):
     name = "Fraud Cost"
     greater_is_better = False
     score_needs_proba = False
-    can_optimize_threshold = True
 
     def __init__(self, retry_percentage=.5, interchange_fee=.02,
                  fraud_payout_percentage=1.0, amount_col='amount'):
