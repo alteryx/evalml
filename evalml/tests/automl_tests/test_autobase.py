@@ -72,3 +72,18 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert score > 0
             else:
                 assert np.isnan(score)
+    assert automl._transform_parameters(LogisticRegressionPipeline, parameters, 0) == parameters_dict
+
+
+def test_autobase_repr():
+    automl = AutoClassificationSearch(max_pipelines=20, max_time=20, n_jobs=1)
+    automl_repr = repr(automl)
+    assert "Max Time: 20" in automl_repr
+    assert "Max Pipelines: 20" in automl_repr
+    assert "n_jobs: 1" in automl_repr
+
+    automl = AutoRegressionSearch(objective='r2', max_time="200 minutes", tuner=GridSearchTuner)
+    automl_repr = repr(automl)
+    assert "Max Time: 12000.0" in automl_repr
+    assert "Objective: R2" in automl_repr
+    assert "Tuner: <class 'evalml.tuners.grid_search_tuner.GridSearchTuner'>" in automl_repr
