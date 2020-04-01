@@ -15,7 +15,7 @@ class LinearRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1, random_state=0):
+    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1):
         parameters = {
             'fit_intercept': fit_intercept,
             'normalize': normalize
@@ -25,7 +25,7 @@ class LinearRegressor(Estimator):
                                               n_jobs=n_jobs)
         super().__init__(parameters=parameters,
                          component_obj=linear_regressor,
-                         random_state=random_state)
+                         random_state=0)
 
     @property
     def feature_importances(self):

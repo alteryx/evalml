@@ -8,7 +8,6 @@ class XGBoostPipeline(PipelineBase):
     component_graph = ['One Hot Encoder', 'Simple Imputer', 'RF Classifier Select From Model', 'XGBoost Classifier']
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, parameters, objective, random_state=0):
+    def __init__(self, parameters, objective):
         super().__init__(parameters=parameters,
-                         objective=objective,
-                         random_state=random_state)
+                         objective=objective)

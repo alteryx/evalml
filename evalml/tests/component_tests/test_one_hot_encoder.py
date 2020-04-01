@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 
 from evalml.pipelines.components import OneHotEncoder
-from evalml.utils import get_random_state
 
 
 def test_fit_first():
@@ -53,19 +52,17 @@ def test_more_top_n_unique_values():
     X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
 
-    random_seed = 2
-    encoder = OneHotEncoder(random_state=random_seed)
-    test_random_state = get_random_state(random_seed)
+    encoder = OneHotEncoder(random_state=2)
     encoder.parameters['top_n'] = 5
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    col_1_counts = col_1_counts.sample(frac=1, random_state=test_random_state)
+    col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
     col_1_samples = col_1_counts.head(encoder.parameters['top_n']).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
-    col_2_counts = col_2_counts.sample(frac=1, random_state=test_random_state)
+    col_2_counts = col_2_counts.sample(frac=1, random_state=encoder.random_state)
     col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False, kind='mergesort')
     col_2_samples = col_2_counts.head(encoder.parameters['top_n']).index.tolist()
 
@@ -86,14 +83,12 @@ def test_more_top_n_unique_values_large():
     X["col_3"] = ["a", "a", "a", "b", "b", "b", "c", "c", "d"]
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 4, 1]
 
-    random_seed = 2
-    encoder = OneHotEncoder(random_state=random_seed)
-    test_random_state = get_random_state(random_seed)
+    encoder = OneHotEncoder()
     encoder.parameters['top_n'] = 3
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    col_1_counts = col_1_counts.sample(frac=1, random_state=test_random_state)
+    col_1_counts = col_1_counts.sample(frac=1, random_state=encoder.random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
     col_1_samples = col_1_counts.head(encoder.parameters['top_n']).index.tolist()
     expected_col_names = set(["col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_3_b", "col_3_c", "col_4"])
