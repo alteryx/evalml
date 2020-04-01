@@ -117,14 +117,14 @@ Pipelines
     :nosignatures:
 
     PipelineBase
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
 
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
