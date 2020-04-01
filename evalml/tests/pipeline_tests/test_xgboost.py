@@ -9,7 +9,12 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
-from evalml.utils import get_random_seed, get_random_state, import_or_raise
+from evalml.utils import (
+    SEED_BOUNDS,
+    get_random_seed,
+    get_random_state,
+    import_or_raise
+)
 
 importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
@@ -70,7 +75,7 @@ def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
     random_seed = 42
-    xgb_random_seed = get_random_seed(get_random_state(random_seed), min_bound=-2**30, max_bound=2**30)
+    xgb_random_seed = get_random_seed(get_random_state(random_seed), min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound)
     xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
