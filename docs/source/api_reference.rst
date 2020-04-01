@@ -104,6 +104,7 @@ Estimators
     LinearRegressor
     RandomForestRegressor
 
+.. currentmodule:: evalml.pipelines
 
 Pipelines
 =========
