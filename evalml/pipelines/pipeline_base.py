@@ -12,7 +12,7 @@ from .graphs import make_feature_importance_graph, make_pipeline_graph
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger, classproperty
+from evalml.utils import Logger, classproperty, get_random_state
 
 logger = Logger()
 
@@ -44,7 +44,7 @@ class PipelineBase(ABC):
 
     custom_hyperparameters = None
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -55,7 +55,9 @@ class PipelineBase(ABC):
         Arguments:
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
+        self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.input_feature_names = {}
@@ -121,7 +123,7 @@ class PipelineBase(ABC):
         component_name = component.name
         try:
             component_parameters = parameters.get(component_name, {})
-            new_component = component_class(**component_parameters)
+            new_component = component_class(**component_parameters, random_state=self.random_state)
         except (ValueError, TypeError) as e:
             err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
             raise ValueError(err) from e

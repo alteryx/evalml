@@ -39,7 +39,7 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostBinaryPipeline(parameters=parameters)
+    clf = XGBoostPipeline(parameters=parameters, random_state=1)
 
     expected_parameters = {
         'Simple Imputer': {
@@ -62,6 +62,7 @@ def test_xg_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
 def test_xg_multi(X_y_multi):
