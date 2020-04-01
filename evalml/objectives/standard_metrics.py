@@ -11,16 +11,6 @@ from .multiclass_classification_objective import MultiClassificationObjective
 from .regression_objective import RegressionObjective
 
 
-class Accuracy(BinaryClassificationObjective):
-    """Accuracy score for binary classification"""
-    name = "Accuracy"
-    greater_is_better = True
-    score_needs_proba = False
-
-    def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.accuracy_score(y_true, y_predicted)
-
-
 # todo does this need tuning?
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
