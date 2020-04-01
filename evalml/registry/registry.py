@@ -19,16 +19,16 @@ class Registry:
             cls.other_pipelines.append(pipeline_class)
         else:
             raise TypeError("Provided pipeline {} is not a subclass of `PipelineBase`".format(pipeline_class))
-    
+
     @classmethod
     def register_from_components(cls, component_graph, supported_problem_types, name):
         base_class = PipelineBase
         class_dict = {
-            'component_graph' : component_graph,
+            'component_graph': component_graph,
             'supported_problem_types': supported_problem_types
         }
         name.encode(encoding='utf8')
-        temp_pipeline = type(name, (base_class,),class_dict)
+        temp_pipeline = type(name, (base_class,), class_dict)
         cls.register(temp_pipeline)
 
     @classmethod
