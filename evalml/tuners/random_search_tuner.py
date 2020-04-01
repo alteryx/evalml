@@ -16,7 +16,6 @@ class RandomSearchTuner(Tuner):
         >>> print(tuner.propose())
         (5, 'A')
     """
-    name = "Random search tuner"
 
     def __init__(self, space, random_state=0, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
