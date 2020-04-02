@@ -4,6 +4,18 @@ import logging
 import sys
 
 
+# Logging features we should have
+
+# Support different log levels
+# Include timestamp and file label in every log message
+# All references to logger are static (this is already done I think)
+# If AutoBase.__init__ has verbose=False, we should only log to file, except for fatal errors
+# We should always log to a file in addition to stdout.
+# Ability in code to enable/disable output to stdout/stderr
+# Ability in code to configure verbosity level for stdout stream (or file stream)
+# Ability in code to log to file instead of / in addition to stdout/stderr
+
+
 def get_logger(logger_name):
     logger = logging.getLogger(logger_name)
     out_handler = logging.StreamHandler(sys.stdout)
@@ -14,20 +26,20 @@ def get_logger(logger_name):
     logger.addHandler(out_handler)
     return logger
 
-
-def log(logger, msg, color=None, new_line=True):
+def log(logger, msg, color=None):
     if color:
         msg = color + msg + Style.RESET_ALL
-
-    if new_line:
-        print(msg)
-    else:
-        print(msg, end="")
 
 def log_title(logger, title):
     log(logger, "*" * (len(title) + 4), color=Fore.RED+Back.GREEN)
     log(logger, "* %s *" % title, color=Fore.RED)
     log(logger, "*" * (len(title) + 4), color=Fore.RED)
+    log(logger, "")
+
+def log_subtitle(logger, title, underline="=", color=None):
+    log(logger, "")
+    log(logger, "%s" % title, color=color)
+    log(logger, underline * len(title), color=color)
 
 # def log_subtitle(logger, title, underline="=", color=None):
 #     self.log("")
@@ -63,18 +75,7 @@ class LevelFormatter(logging.Formatter):
 
 
 
-
-
-
-
-
-
 class Logger:
-    """Write log messages to stdout.
-
-    Arguments:
-        verbose (bool): If False, suppress log output. Default True.
-    """
 
     def __init__(self, verbose=True):
         self.verbose = verbose
