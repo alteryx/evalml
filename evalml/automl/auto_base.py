@@ -290,8 +290,6 @@ class AutoBase:
 
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
-                X_train = None
-                y_train = None
                 X_threshold_tuning = None
                 y_threshold_tuning = None
 
