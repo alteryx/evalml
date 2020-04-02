@@ -33,10 +33,7 @@ def test_register_from_components(clean_registry):
 
 
 def test_registry_with_automl(clean_registry, mock_pipeline, X_y):
-    X, y = X_y
-    automl = AutoClassificationSearch(objective="precision", allowed_model_families=['linear_model'])
     Registry.register(mock_pipeline)
+    automl = AutoClassificationSearch(objective="precision", allowed_model_families=['linear_model'])
 
-    automl.search(X, y)
-    assert mock_pipeline.name in automl.rankings['pipeline_name'].values
-    assert not automl.rankings.isnull().values.any()
+    assert mock_pipeline in automl.possible_pipelines
