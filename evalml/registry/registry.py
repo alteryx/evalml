@@ -32,6 +32,13 @@ class Registry:
         cls.register(temp_pipeline)
 
     @classmethod
+    def find_pipeline(cls, name):
+        for pipeline in cls.all_pipelines():
+            if pipeline.name == name:
+                return pipeline
+        return None
+
+    @classmethod
     def get_registry_pipelines(cls, problem_type, model_families=None):
         """Returns the pipelines allowed for a particular problem type.
 

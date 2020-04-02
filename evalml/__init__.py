@@ -22,6 +22,7 @@ import evalml.guardrails
 
 from evalml.pipelines import list_model_families
 from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
+from evalml.registry import Registry
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
