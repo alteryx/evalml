@@ -5,5 +5,4 @@ scikit-learn>=0.21.3,!=0.22
 scikit-optimize
 tqdm>=4.33.0
 colorama
-category_encoders>=2.0.0
 cloudpickle>=0.2.2
