@@ -27,7 +27,6 @@ class Registry:
             'component_graph': component_graph,
             'supported_problem_types': supported_problem_types
         }
-        name.encode(encoding='utf8')
         temp_pipeline = type(name, (base_class,), class_dict)
         cls.register(temp_pipeline)
 
