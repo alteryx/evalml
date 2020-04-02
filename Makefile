@@ -30,13 +30,17 @@ circleci-test-minimal-deps:
 win-circleci-test:
 	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
-.PHONY: installdeps-test
-installdeps-test:
+.PHONY: installdeps
+installdeps:
 	pip install --upgrade pip -q
 	pip install -e . -q
 
-.PHONY: installdeps
-installdeps: installdeps-test
+.PHONY: installdeps-test
+installdeps-test: installdeps-test
+	pip install -r test-requirements.txt -q
+
+.PHONY: installdeps-dev
+installdeps-dev: installdeps-dev
 	pip install -r dev-requirements.txt -q
 
 .PHONY: dependenciesfile

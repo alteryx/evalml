@@ -16,20 +16,22 @@ executors:
           OMP_NUM_THREADS: 8
 
 commands:
+  install_dependencies:
+    virtualenv test_python -q
+    source test_python/bin/activate
+    make installdeps
   install_dependencies_test:
     steps:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-test
-            pip install -r test-requirements.txt
   install_dependencies_dev:
     steps:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps
-            pip install -r test-requirements.txt
+            make installdeps-dev
   install_dependencies_core:
     steps:
       - run: |
@@ -157,6 +159,7 @@ jobs:
       - unless:
           condition: << parameters.core_dependencies >>
           steps:
+            - install_dependencies
             - install_dependencies_test
       - run: |
           source test_python/bin/activate
@@ -216,7 +219,7 @@ jobs:
       python_version: << parameters.python_version >>
     steps:
       - checkout
-      - install_dependencies_dev
+      - install_dependencies
       - run:
           name: "Detect Dependency Changes"
           command: |
