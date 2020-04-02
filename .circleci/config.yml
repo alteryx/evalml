@@ -33,6 +33,7 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
+            make installdeps
             make installdeps-dev
   install_dependencies_core:
     steps:
