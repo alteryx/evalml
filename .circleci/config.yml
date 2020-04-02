@@ -23,7 +23,6 @@ commands:
   install_dependencies_test:
     steps:
       - run: |
-            virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-test
   install_dependencies_dev:
