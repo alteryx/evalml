@@ -8,6 +8,7 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -19,6 +20,7 @@ Changelog
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
     * Fixes
+        * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
