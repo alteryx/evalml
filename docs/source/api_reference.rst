@@ -107,6 +107,8 @@ Estimators
 .. currentmodule:: evalml.pipelines
 
 
+.. currentmodule:: evalml.pipelines
+
 Pipelines
 =========
 
@@ -119,6 +121,9 @@ Pipelines
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
 
+
+Classification
+~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
@@ -132,6 +137,18 @@ Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
+
+
+Regression
+~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    CatBoostRegressionPipeline
+    LinearRegressionPipeline
+    RFRegressionPipeline
 
 
 Pipeline Utils
