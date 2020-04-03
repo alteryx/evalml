@@ -134,7 +134,6 @@ Changelog
         * Added simple test to make sure OneHotEncoder's top_n works with large number of categories :pr:`552`
         * Run windows unit tests on PRs :pr:`557`
 
-
 .. warning::
 
     **Breaking Changes**
