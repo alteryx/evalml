@@ -107,6 +107,7 @@ Estimators
 
 .. currentmodule:: evalml.pipelines
 
+
 Pipelines
 =========
 
@@ -157,6 +158,7 @@ Pipeline Utils
 
     get_pipelines
     list_model_families
+
 
 Plotting
 ~~~~~~~~
