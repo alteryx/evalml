@@ -30,13 +30,13 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             if objective.problem_type != ProblemTypes.BINARY:
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
-        if self.threshold is not None:
-            ypred_proba = self.predict_proba(X)
-            ypred_proba = ypred_proba[:, 1]
-            if objective is not None:
-                return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+        if self.threshold is None:
+            return self.estimator.predict(X_t)
+        ypred_proba = self.predict_proba(X)
+        ypred_proba = ypred_proba[:, 1]
+        if objective is None:
             return ypred_proba > self.threshold
-        return self.estimator.predict(X_t)
+        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives
