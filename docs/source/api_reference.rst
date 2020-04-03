@@ -30,7 +30,7 @@ Preprocessing
     split_data
 
 
-.. currentmodule:: evalml.automl
+.. currentmodule:: evalml
 
 AutoML
 ======
@@ -110,6 +110,10 @@ Estimators
 
 Pipelines
 =========
+
+
+Pipelines	
+~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
