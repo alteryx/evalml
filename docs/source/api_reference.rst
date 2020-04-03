@@ -105,6 +105,8 @@ Estimators
     RandomForestRegressor
 
 
+.. currentmodule:: evalml.pipelines
+
 Pipelines
 =========
 
@@ -116,14 +118,17 @@ Pipelines
     :nosignatures:
 
     PipelineBase
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
 
+
+Classification
+~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
@@ -132,6 +137,18 @@ Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
+
+
+Regression
+~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    CatBoostRegressionPipeline
+    LinearRegressionPipeline
+    RFRegressionPipeline
 
 
 Pipeline Utils
