@@ -110,8 +110,6 @@ Estimators
 Pipelines
 =========
 
-Pipelines
-~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
