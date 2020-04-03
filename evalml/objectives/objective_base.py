@@ -45,7 +45,7 @@ class ObjectiveBase(ABC):
 
         Arguments:
             y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : actual class labels of length [n_samples] 
+            y_true (pd.Series) : actual class labels of length [n_samples]
             X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:

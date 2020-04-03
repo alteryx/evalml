@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml import AutoClassificationSearch
 from evalml.objectives import FraudCost
 
-import pytest
 
 def test_fraud_objective(X_y):
     X, y = X_y
