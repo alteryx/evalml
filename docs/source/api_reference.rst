@@ -56,6 +56,7 @@ Plotting
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.generate_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
@@ -107,52 +108,30 @@ Estimators
 
 .. currentmodule:: evalml.pipelines
 
-
 Pipelines
 =========
 
-
-Pipelines	
+Pipelines
 ~~~~~~~~~
-
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
 
-
-Classification
-~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
-
-
-Regression
-~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
+    CatBoostBinaryClassificationPipeline
+    LogisticRegressionBinaryPipeline
+    RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
-    RFRegressionPipeline
-
 
 Pipeline Utils
 ~~~~~~~~~~~~~~
@@ -163,9 +142,9 @@ Pipeline Utils
     get_pipelines
     list_model_families
 
-
 Plotting
 ~~~~~~~~
+
 
 .. autosummary::
    :toctree: generated
@@ -239,18 +218,6 @@ Regression
     ExpVariance
 
 
-Plot Metrics
-~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ROC
-    ConfusionMatrix
-
-
 .. currentmodule:: evalml.problem_types
 
 Problem Types
@@ -299,16 +266,3 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
-
-
-.. currentmodule:: evalml.utils
-
-Guardrails
-=============
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    convert_to_seconds
-    normalize_confusion_matrix
