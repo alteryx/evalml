@@ -87,3 +87,25 @@ def test_autobase_repr():
     assert "Max Time: 12000.0" in automl_repr
     assert "Objective: R2" in automl_repr
     assert "Tuner: <class 'evalml.tuners.grid_search_tuner.GridSearchTuner'>" in automl_repr
+
+
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_pipeline_fit_raises(mock_fit, X_y):
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    with pytest.raises(Exception, match=msg):
+        automl.search(X, y, raise_errors=True)
+
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    for cv_scores in cv_scores_all:
+        for name, score in cv_scores['all_objective_scores'].items():
+            if name in ['# Training', '# Testing']:
+                assert score > 0
+            else:
+                assert np.isnan(score)
