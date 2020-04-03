@@ -290,16 +290,18 @@ class AutoBase:
 
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
-                if self.objective.problem_type == ProblemTypes.BINARY:
-                    if self.objective.can_optimize_threshold:
-                        X_train, X_objective, y_train, y_objective = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+
+                if self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
                 pipeline.fit(X_train, y_train)
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     pipeline.threshold = 0.5
                     if self.objective.can_optimize_threshold:
-                        y_predict_proba = pipeline.predict_proba(X_objective)
+                        y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
                         y_predict_proba = y_predict_proba[:, 1]
-                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_objective, X=X_objective)
+                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
                 plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))

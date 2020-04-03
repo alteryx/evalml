@@ -117,14 +117,14 @@ Pipelines
     :nosignatures:
 
     PipelineBase
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
 
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
@@ -171,7 +171,6 @@ Domain Specific
     FraudCost
     LeadScoring
 
-
 Classification
 ~~~~~~~~~~~~~~
 
@@ -180,10 +179,18 @@ Classification
     :template: class.rst
     :nosignatures:
 
+    AUC
+    AUCMacro
+    AUCMicro
+    AUCWeighted
     F1
     F1Micro
     F1Macro
     F1Weighted
+    LogLossBinary
+    LogLossMulticlass
+    MCCBinary
+    MCCMulticlass
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -192,15 +199,6 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
-    AUC
-    AUCMicro
-    AUCMacro
-    AUCWeighted
-    LogLoss
-    MCC
-    ROC
-    ConfusionMatrix
-
 
 Regression
 ~~~~~~~~~~
@@ -210,14 +208,13 @@ Regression
     :template: class.rst
     :nosignatures:
 
-    R2
+    ExpVariance
     MAE
+    MaxError
+    MedianAE
     MSE
     MSLE
-    MedianAE
-    MaxError
-    ExpVariance
-
+    R2
 
 Plot Metrics
 ~~~~~~~~~~~~

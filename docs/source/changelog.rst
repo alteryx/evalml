@@ -9,8 +9,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
 
-
-**v0.8.0 Mar. 31, 2020**
+**v0.8.0 Apr. 1, 2020**
     * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add util function to drop rows with NaN values :pr:`487`
@@ -41,6 +40,7 @@ Changelog
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
+        * Run windows unit tests on PRs :pr:`557`
 
 
 .. warning::

@@ -1,4 +1,5 @@
 import importlib
+from collections import namedtuple
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,32 @@ def get_random_state(seed):
         seed (None, int, np.random.RandomState object): seed to generate numpy.random.RandomState with
     """
     return check_random_state(seed)
+
+
+# define safe numbers to use as a lower/upper bound for the seed on both 32-bit and 64-bit systems
+SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(-2**30, 2**30)
+
+
+def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
+    """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int modulo the magnitude of the smallest bound to avoid numerical issues.
+
+    Invariant: min_bound < max_bound
+
+    Arguments:
+        random_state (int, numpy.random.RandomState): random state
+        min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive)
+        max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive)
+
+    Returns:
+        int: seed for random number generator
+    """
+    if not min_bound < max_bound:
+        raise ValueError("Provided min_bound {} is not less than max_bound {}".format(min_bound, max_bound))
+    if isinstance(random_state, np.random.RandomState):
+        return random_state.randint(min_bound, max_bound)
+    if random_state < min_bound or random_state >= max_bound:
+        return random_state % min(abs(min_bound), abs(max_bound))
+    return random_state
 
 
 def normalize_confusion_matrix(conf_mat, option='true'):
