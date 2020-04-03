@@ -59,10 +59,9 @@ class PipelineBase(ABC):
         """
         self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.input_feature_names = {}
         self.results = {}
-
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -191,7 +190,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-    def fit(self, X, y, objective=None, objective_fit_size=0.2):
+    def fit(self, X, y):
         """Build a model
 
         Arguments:
@@ -199,11 +198,7 @@ class PipelineBase(ABC):
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            objective (Object or string): the objective to optimize
-
-            objective_fit_size (float): the proportion of the dataset to include in the test split.
         Returns:
-
             self
 
         """
@@ -220,7 +215,7 @@ class PipelineBase(ABC):
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to predict
+            objective (Object or string): the objective to use to make predictions
 
         Returns:
             pd.Series : estimated labels
@@ -250,23 +245,16 @@ class PipelineBase(ABC):
 
         objectives = [get_objective(o) for o in objectives]
         y_predicted = None
-        y_predicted_proba = None
-
         scores = OrderedDict()
         for objective in objectives:
             if objective.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
 
-            if objective.uses_extra_columns:
-                scores.update({objective.name: objective.score(y_predictions, y, X)})
-            else:
-                scores.update({objective.name: objective.score(y_predictions, y)})
+            scores.update({objective.name: objective.score(y_predictions, y, X)})
 
         return scores
 
@@ -287,13 +275,10 @@ class PipelineBase(ABC):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
         y_predicted = None
-        y_predicted_proba = None
         scores = OrderedDict()
         for plot_metric in plot_metrics:
             if plot_metric.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                raise Exception("Plot metric `{}` does not support score_needs_proba".format(plot_metric.name))
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)

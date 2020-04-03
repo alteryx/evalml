@@ -1,16 +1,16 @@
 
+
 import pandas as pd
 
 from evalml.pipelines import PipelineBase
 
 
 class ClassificationPipeline(PipelineBase):
-    threshold_selection_split = True
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
 
         Returns:

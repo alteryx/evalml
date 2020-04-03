@@ -99,13 +99,15 @@ def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
     automl.search(X, y, raise_errors=True)
+    assert isinstance(automl.objective, Precision)
+    assert automl.best_pipeline.threshold is not None
 
 
 def test_binary_auto(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective="recall", multiclass=False, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
     automl.search(X, y, raise_errors=True)
-    y_pred = automl.best_pipeline.predict(X, "recall")
+    y_pred = automl.best_pipeline.predict(X)
 
     assert len(np.unique(y_pred)) == 2
 
@@ -141,12 +143,11 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
-    with pytest.raises(ValueError, match=error_msg):
-        automl = AutoClassificationSearch(objective="recall", multiclass=True)
-
-    automl = AutoClassificationSearch(objective="log_loss")
+    automl = AutoClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
+
+    automl = AutoClassificationSearch(objective="log_loss_multi")
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch(objective='recall_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
@@ -230,6 +231,31 @@ def test_additional_objectives(X_y):
 
     results = automl.describe_pipeline(0, return_dict=True)
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_predict_proba.assert_called()
+    mock_optimize_threshold.assert_called()
+    assert automl.best_pipeline.threshold == 0.8
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert automl.best_pipeline.threshold == 0.5
 
 
 def test_describe_pipeline_objective_ordered(X_y, capsys):

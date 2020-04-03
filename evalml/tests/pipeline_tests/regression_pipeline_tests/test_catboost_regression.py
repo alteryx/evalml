@@ -54,17 +54,21 @@ def test_catboost_regression(X_y_reg):
         }
     }
     clf = CatBoostRegressionPipeline(parameters=parameters, random_state=get_random_state(random_seed))
-    clf.fit(X, y, objective)
-    clf_score = clf.score(X, y, [objective])
+    clf.fit(X, y)
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_score[objective.name], decimal=5)
+    np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
+
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y)
+    y_pred_with_objective = clf.predict(X)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_cbr_input_feature_names(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -77,6 +81,6 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
         }
     }
     clf = CatBoostRegressionPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

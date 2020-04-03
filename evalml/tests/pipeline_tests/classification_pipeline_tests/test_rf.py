@@ -1,12 +1,13 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     RFBinaryClassificationPipeline,
     RFMulticlassClassificationPipeline
@@ -33,9 +34,7 @@ def test_rf_init(X_y):
             "max_depth": 5,
         }
     }
-
     clf = RFBinaryClassificationPipeline(parameters=parameters, random_state=2)
-
     expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean',
@@ -54,6 +53,44 @@ def test_rf_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
+
+
+def test_rf_objective_tuning(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'Random Forest Classifier': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_rf_multi(X_y_multi):
@@ -104,9 +141,9 @@ def test_rf_multi(X_y_multi):
 
     # testing objective parameter passed in does not change results
     clf = RFMulticlassClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X)
-    assert((y_pred == y_pred_with_objective).all())
+    clf.fit(X, y)
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_rf_input_feature_names(X_y):
@@ -114,7 +151,6 @@ def test_rf_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -129,8 +165,9 @@ def test_rf_input_feature_names(X_y):
             "max_depth": 5,
         }
     }
+
     clf = RFBinaryClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
