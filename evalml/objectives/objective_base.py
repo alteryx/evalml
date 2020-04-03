@@ -22,7 +22,8 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def score_needs_proba(cls):
-        """Returns a boolean determining if `score()` needs probability estimates."""
+        """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation.
+        """
         raise NotImplementedError("This objective must have a `score_needs_proba` boolean attribute as a class variable")
 
     @classmethod

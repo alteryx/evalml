@@ -17,8 +17,7 @@ class BinaryClassificationObjective(ObjectiveBase):
 
     @property
     def can_optimize_threshold(cls):
-        """Returns a boolean determining if we can optimize the binary classification objective threshold. 
-           This will be false for any objective that works directly with predicted probabilities, like log loss and AUC. Otherwise, it will be true."""
+        """Returns a boolean determining if we can optimize the binary classification objective threshold. This will be false for any objective that works directly with predicted probabilities, like log loss and AUC. Otherwise, it will be true."""
         return not cls.score_needs_proba
 
     def optimize_threshold(self, ypred_proba, y_true, X=None):
