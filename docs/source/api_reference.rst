@@ -106,11 +106,10 @@ Estimators
 
 .. currentmodule:: evalml.pipelines
 
+
 Pipelines
 =========
 
-Pipelines
-~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
