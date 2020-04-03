@@ -29,7 +29,6 @@ class FraudCost(BinaryClassificationObjective):
         self.interchange_fee = interchange_fee
         self.fraud_payout_percentage = fraud_payout_percentage
         self.amount_col = amount_col
-        super().__init__()
 
     def decision_function(self, ypred_proba, threshold=0.0, X=None):
         """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount

@@ -18,7 +18,6 @@ class LeadScoring(BinaryClassificationObjective):
         """
         self.true_positives = true_positives
         self.false_positives = false_positives
-        super().__init__()
 
     def objective_function(self, y_predicted, y_true, X=None):
         """Calculate the profit per lead.
