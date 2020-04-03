@@ -5,28 +5,6 @@ from logging.handlers import RotatingFileHandler
 from colorama import Back, Fore, Style
 
 
-"""
-Logging features we should have
-
-Support different log levels
-    - Make sure DEBUG, WARNING, ERROR do what they should via format!
-
-Include timestamp and file label in every log message
-
-All references to logger are static (this is already done I think)
-
-If AutoBase.__init__ has verbose=False, we should only log to file, except for fatal errors
-
-We should always log to a file in addition to stdout.
-
-Ability in code to enable/disable output to stdout/stderr
-
-Ability in code to configure verbosity level for stdout stream (or file stream)
-
-Ability in code to log to file instead of / in addition to stdout/stderr
-"""
-
-
 def get_logger(logger_name, print_std=False):
     logger = logging.getLogger(logger_name)
     if print_std:
@@ -36,7 +14,6 @@ def get_logger(logger_name, print_std=False):
     # out_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
     logger.setLevel('DEBUG')
     file_handler = RotatingFileHandler('evalml.log', maxBytes=20000, backupCount=5)
-
     logger.addHandler(file_handler)
     return logger
 
@@ -49,7 +26,6 @@ def log(logger, msg, color=None):
 
 
 def log_title(logger, title):
-    logger.setLevel('INFO')
     log(logger, "*" * (len(title) + 4), color=Fore.RED + Back.GREEN)
     log(logger, "* %s *" % title, color=Fore.RED)
     log(logger, "*" * (len(title) + 4), color=Fore.RED)
@@ -57,7 +33,6 @@ def log_title(logger, title):
 
 
 def log_subtitle(logger, title, underline="=", color=None):
-    logger.setLevel('INFO')
     log(logger, "")
     log(logger, "%s" % title, color=color)
     log(logger, underline * len(title), color=color)
@@ -67,8 +42,8 @@ class LevelFormatter(logging.Formatter):
 
     date_fmt = '%m/%d/%Y %I:%M:%S %p'
     default_fmt = "%(asctime)s %(name)s - %(levelname)s: %(message)s"
-    err_fmt = "ERROR: %(message)s"
-    debug_fmt = "DEBUG: %(module)s: %(lineno)d: %(message)s"
+    err_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
+    debug_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
     info_fmt = "%(message)s"
 
     def __init__(self):
