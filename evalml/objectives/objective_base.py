@@ -3,10 +3,6 @@ from abc import ABC, abstractmethod
 
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
-    name = None
-    problem_type = None
-    greater_is_better = None
-    score_needs_proba = None
 
     @property
     @classmethod
@@ -32,10 +28,10 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def objective_function(cls, y_predicted, y_true, X=None):
-        """Computes the relative value of the provided predictions compared to the true values, according a specified metric
+        """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
          Arguments:
             y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : true values of length [n_samples]
+            y_true (pd.Series) : actual class labels of length [n_samples]
             X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
@@ -48,7 +44,7 @@ class ObjectiveBase(ABC):
 
         Arguments:
             y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : true values of length [n_samples]
+            y_true (pd.Series) : actual class labels of length [n_samples] 
             X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:

@@ -7,8 +7,6 @@ from evalml.pipelines import PipelineBase
 
 class ClassificationPipeline(PipelineBase):
 
-    component_graph = []
-
     def predict_proba(self, X):
         """Make probability estimates for labels.
 

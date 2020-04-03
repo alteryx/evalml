@@ -70,8 +70,12 @@ class FraudCost(BinaryClassificationObjective):
 
         if not isinstance(y_true, pd.Series):
             y_true = pd.Series(y_true)
+
         # extract transaction using the amount columns in users data
-        transaction_amount = X[self.amount_col]
+        try:
+            transaction_amount = X[self.amount_col]
+        except KeyError:
+            raise ValueError("`{}` is not a valid column in X.".format(self.amount_col))
 
         # amount paid if transaction is fraud
         fraud_cost = transaction_amount * self.fraud_payout_percentage
