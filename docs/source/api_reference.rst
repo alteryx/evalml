@@ -207,7 +207,21 @@ Regression
     ExpVariance
 
 
+Plot Metrics	
+~~~~~~~~~~~~	
+
+.. autosummary::	
+    :toctree: generated	
+    :template: class.rst	
+    :nosignatures:	
+
+    ROC	
+    ConfusionMatrix	
+
+
+
 .. currentmodule:: evalml.problem_types
+
 
 Problem Types
 =============
@@ -255,3 +269,16 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
+
+
+.. currentmodule:: evalml.utils	
+
+Utils	
+=============	
+
+.. autosummary::	
+    :toctree: generated	
+    :nosignatures:	
+
+    convert_to_seconds	
+    normalize_confusion_matrix
