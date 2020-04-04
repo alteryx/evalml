@@ -41,18 +41,19 @@ def convert_to_seconds(input_str):
 
 
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
+# these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
-SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**32 - 1)
+SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**31 - 1)
 
 
 def get_random_state(seed):
     """Generates a numpy.random.RandomState instance using seed.
 
     Arguments:
-        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between 0 and 2**32 - 1, inclusive. Otherwise, an exception will be thrown.
+        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between 0 and 2**31 - 1, inclusive. Otherwise, an exception will be thrown.
     """
     if isinstance(seed, (int, np.integer)) and (seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed):
-        raise ValueError('Seed "{}" is not in the range [0, 2**32-1], inclusive'.format(seed))
+        raise ValueError('Seed "{}" is not in the range [0, 2**31-1], inclusive'.format(seed))
     return check_random_state(seed)
 
 
