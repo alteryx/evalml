@@ -71,7 +71,7 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
     if isinstance(random_state, np.random.RandomState):
         return random_state.randint(min_bound, max_bound)
     if random_state < min_bound or random_state >= max_bound:
-        return (random_state % (max_bound - min_bound)) + min_bound
+        return ((random_state - min_bound) % (max_bound - min_bound)) + min_bound
     return random_state
 
 
