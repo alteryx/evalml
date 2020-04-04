@@ -1,3 +1,4 @@
+import inspect
 import numpy as np
 import pandas as pd
 import pytest
@@ -49,22 +50,12 @@ def test_get_random_state():
 
 
 def test_get_random_seed():
-    for i in range(10):
-        print('Running get_random_seed test cases with i={}'.format(i))
-        assert get_random_seed(i) == i
-        assert get_random_seed(i, min_bound=0) == i
-        assert get_random_seed(i, min_bound=0, max_bound=11) == i
-        assert get_random_seed(i, min_bound=0, max_bound=10) == i % 10
-        assert get_random_seed(i, min_bound=0, max_bound=5) == i % 5
-        if 5 <= i and i < 11:
-            assert get_random_seed(i, min_bound=5, max_bound=11) == i
-        else:
-            assert get_random_seed(i, min_bound=5, max_bound=11) == ((i - 5) % 6) + 5
-        if 2 <= i and i < 8:
-            assert get_random_seed(i, min_bound=2, max_bound=8) == i
-        else:
-            assert get_random_seed(i, min_bound=2, max_bound=5) == ((i - 2) % 3) + 2
+    default_min_bound = inspect.signature(get_random_seed).parameters['min_bound'].default
+    default_max_bound = inspect.signature(get_random_seed).parameters['max_bound'].default
+    assert default_min_bound == SEED_BOUNDS.min_bound
+    assert default_max_bound == SEED_BOUNDS.max_bound
 
+    # test default boundaries - value should modulate within the default range
     assert get_random_seed(SEED_BOUNDS.max_bound - 2) == SEED_BOUNDS.max_bound - 2
     assert get_random_seed(SEED_BOUNDS.max_bound - 1) == SEED_BOUNDS.max_bound - 1
     assert get_random_seed(SEED_BOUNDS.max_bound)     == SEED_BOUNDS.min_bound
@@ -75,6 +66,36 @@ def test_get_random_seed():
     assert get_random_seed(SEED_BOUNDS.min_bound)     == SEED_BOUNDS.min_bound
     assert get_random_seed(SEED_BOUNDS.min_bound + 1) == SEED_BOUNDS.min_bound + 1
     assert get_random_seed(SEED_BOUNDS.min_bound + 2) == SEED_BOUNDS.min_bound + 2
+
+    # test some simple cases
+    def get_random_seed_vec(min_bound=None, max_bound=None):
+        def get_random_seed_wrapper(random_seed):
+            return get_random_seed(random_seed,
+                                   min_bound = min_bound if min_bound is not None else default_min_bound,
+                                   max_bound = max_bound if max_bound is not None else default_max_bound)
+        return np.vectorize(get_random_seed_wrapper)
+    vals = np.arange(10)
+    np.testing.assert_equal(get_random_seed_vec()(vals), vals)
+    np.testing.assert_equal(get_random_seed_vec(min_bound=0)(vals), vals)
+    np.testing.assert_equal(get_random_seed_vec(min_bound=0, max_bound=11)(vals), vals % 11)
+    np.testing.assert_equal(get_random_seed_vec(min_bound=0, max_bound=11)(vals), vals % 10)
+
+    # test some more complex cases. the value should always stay between min (inclusive) and max (exclusive)
+    # this particular implementation was designed to modulate evenly through the defined range as it exceeded the limits.
+    vals = np.arange(-100, 100)
+    def make_expected_values(vals, min_bound, max_bound):
+        return np.array([i if (min_bound <= i and i < max_bound) else ((i - min_bound) % (max_bound - min_bound)) + min_bound
+                         for i in vals])
+    np.testing.assert_equal(get_random_seed_vec(       min_bound=   0, max_bound=  5)(vals),
+                            make_expected_values(vals, min_bound=   0, max_bound=  5))
+    np.testing.assert_equal(get_random_seed_vec(       min_bound=  -5, max_bound=  0)(vals),
+                            make_expected_values(vals, min_bound=  -5, max_bound=  0))
+    np.testing.assert_equal(get_random_seed_vec(       min_bound=  -5, max_bound=  5)(vals),
+                            make_expected_values(vals, min_bound=  -5, max_bound=  5))
+    np.testing.assert_equal(get_random_seed_vec(       min_bound=   5, max_bound= 10)(vals),
+                            make_expected_values(vals, min_bound=   5, max_bound= 10))
+    np.testing.assert_equal(get_random_seed_vec(       min_bound= -10, max_bound= -5)(vals),
+                            make_expected_values(vals, min_bound= -10, max_bound= -5))
 
     assert get_random_seed(-2, min_bound=0, max_bound=43) == 41
     assert get_random_seed(-1, min_bound=0, max_bound=43) == 42
