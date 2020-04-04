@@ -50,10 +50,10 @@ def get_random_state(seed):
     """Generates a numpy.random.RandomState instance using seed.
 
     Arguments:
-        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between 0 and 2**31 - 1, inclusive. Otherwise, an exception will be thrown.
+        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
     """
     if isinstance(seed, (int, np.integer)) and (seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed):
-        raise ValueError('Seed "{}" is not in the range [0, 2**31-1], inclusive'.format(seed))
+        raise ValueError('Seed "{}" is not in the range [{}, {}], inclusive'.format(seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound))
     return check_random_state(seed)
 
 

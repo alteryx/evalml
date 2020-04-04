@@ -44,15 +44,17 @@ def test_convert_to_seconds():
     assert convert_to_seconds("10 hours") == 36000
 
 
-def test_get_random_state():
+def test_get_random_state_int():
     assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
     assert get_random_state(42).rand() == np.random.RandomState(42).rand()
     assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
     assert get_random_state(SEED_BOUNDS.min_bound).rand() == np.random.RandomState(SEED_BOUNDS.min_bound).rand()
     assert get_random_state(SEED_BOUNDS.max_bound).rand() == np.random.RandomState(SEED_BOUNDS.max_bound).rand()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
+            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
         get_random_state(SEED_BOUNDS.min_bound - 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
+            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
         get_random_state(SEED_BOUNDS.max_bound + 1)
 
 
