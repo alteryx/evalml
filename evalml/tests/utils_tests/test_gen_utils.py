@@ -49,21 +49,49 @@ def test_get_random_state():
 
 
 def test_get_random_seed():
+    for i in range(10):
+        print('Running get_random_seed test cases with i={}'.format(i))
+        assert get_random_seed(i) == i
+        assert get_random_seed(i, min_bound=0) == i
+        assert get_random_seed(i, min_bound=0, max_bound=11) == i
+        assert get_random_seed(i, min_bound=0, max_bound=10) == i % 10
+        assert get_random_seed(i, min_bound=0, max_bound=5) == i % 5
+        if 5 <= i and i < 11:
+            assert get_random_seed(i, min_bound=5, max_bound=11) == i
+        else:
+            assert get_random_seed(i, min_bound=5, max_bound=11) == (i % 6) + 5
+        if 2 <= i and i < 8:
+            assert get_random_seed(i, min_bound=2, max_bound=8) == i
+        else:
+            assert get_random_seed(i, min_bound=2, max_bound=5) == (i % 3) + 2
+
     assert get_random_seed(0) == 0
     assert get_random_seed(1) == 1
     assert get_random_seed(42) == 42
     assert get_random_seed(-42) == -42
+    assert get_random_seed(-2, min_bound=0, max_bound=43) == 41
+    assert get_random_seed(-1, min_bound=0, max_bound=43) == 42
+    assert get_random_seed(0,  min_bound=0, max_bound=43) == 0
+    assert get_random_seed(42, min_bound=0, max_bound=43) == 42
+    assert get_random_seed(43, min_bound=0, max_bound=43) == 0
+    assert get_random_seed(44, min_bound=0, max_bound=43) == 1
     assert get_random_seed(42, min_bound=42) == 42
     assert get_random_seed(42, max_bound=43) == 42
     assert get_random_seed(42, min_bound=42, max_bound=43) == 42
     assert get_random_seed(-42, min_bound=-42, max_bound=0) == -42
-    assert get_random_seed(420, min_bound=-500, max_bound=400) == 420 % 400
-    assert get_random_seed(-420, min_bound=-400, max_bound=500) == -420 % 400
+    assert get_random_seed(420, min_bound=-500, max_bound=400) == -500 + (420 % (400 - -500))
+    assert get_random_seed(-420, min_bound=-400, max_bound=500) == -400 + (-420 % (500 - -400))
 
-    assert get_random_seed(SEED_BOUNDS.max_bound) == 0
+    assert get_random_seed(SEED_BOUNDS.max_bound - 2) == SEED_BOUNDS.max_bound - 2
+    assert get_random_seed(SEED_BOUNDS.max_bound - 1) == SEED_BOUNDS.max_bound - 1
+    assert get_random_seed(SEED_BOUNDS.max_bound)     == 0
     assert get_random_seed(SEED_BOUNDS.max_bound + 1) == 1
-    assert get_random_seed(SEED_BOUNDS.min_bound) == SEED_BOUNDS.min_bound
-    assert get_random_seed(SEED_BOUNDS.min_bound - 1) == abs(SEED_BOUNDS.max_bound) - 1
+    assert get_random_seed(SEED_BOUNDS.max_bound + 2) == 2
+    assert get_random_seed(SEED_BOUNDS.min_bound - 2) == -2
+    assert get_random_seed(SEED_BOUNDS.min_bound - 1) == -1
+    assert get_random_seed(SEED_BOUNDS.min_bound)     == SEED_BOUNDS.min_bound
+    assert get_random_seed(SEED_BOUNDS.min_bound + 1) == SEED_BOUNDS.min_bound + 1
+    assert get_random_seed(SEED_BOUNDS.min_bound + 2) == SEED_BOUNDS.min_bound + 2
 
     with pytest.raises(ValueError):
         get_random_seed(42, min_bound=42, max_bound=42)
