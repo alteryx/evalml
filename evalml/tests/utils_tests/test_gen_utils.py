@@ -48,9 +48,37 @@ def test_get_random_state():
     assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
     assert get_random_state(42).rand() == np.random.RandomState(42).rand()
     assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
+    assert get_random_state(SEED_BOUNDS.min_bound).rand() == np.random.RandomState(SEED_BOUNDS.min_bound).rand()
+    assert get_random_state(SEED_BOUNDS.max_bound).rand() == np.random.RandomState(SEED_BOUNDS.max_bound).rand()
+    with pytest.raises(ValueError):
+        get_random_state(SEED_BOUNDS.min_bound - 1)
+    with pytest.raises(ValueError):
+        get_random_state(SEED_BOUNDS.max_bound + 1)
 
 
-def test_get_random_seed():
+def test_get_random_seed_rng():
+
+    def make_mock_random_state(return_value):
+
+        class MockRandomState(np.random.RandomState):
+            def __init__(self):
+                self.min_bound = None
+                self.max_bound = None
+                super().__init__()
+
+            def randint(self, min_bound, max_bound):
+                self.min_bound = min_bound
+                self.max_bound = max_bound
+                return return_value
+        return MockRandomState()
+
+    rng = make_mock_random_state(42)
+    assert get_random_seed(rng) == 42
+    assert rng.min_bound == SEED_BOUNDS.min_bound
+    assert rng.max_bound == SEED_BOUNDS.max_bound
+
+
+def test_get_random_seed_int():
     # ensure the invariant "min_bound < max_bound" is enforced
     with pytest.raises(ValueError):
         get_random_seed(0, min_bound=0, max_bound=0)

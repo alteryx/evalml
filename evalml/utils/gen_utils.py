@@ -40,18 +40,20 @@ def convert_to_seconds(input_str):
         raise AssertionError(msg)
 
 
-def get_random_state(seed):
-    """Generates a numpy.random.RandomState instance using seed
-
-    Arguments:
-        seed (None, int, np.random.RandomState object): seed to generate numpy.random.RandomState with
-    """
-    return check_random_state(seed)
-
-
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
 SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**32 - 1)
+
+
+def get_random_state(seed):
+    """Generates a numpy.random.RandomState instance using seed.
+
+    Arguments:
+        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between 0 and 2**32 - 1, inclusive. Otherwise, an exception will be thrown.
+    """
+    if isinstance(seed, (int, np.integer)) and (seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed):
+        raise ValueError('Seed "{}" is not in the range [0, 2**32-1], inclusive'.format(seed))
+    return check_random_state(seed)
 
 
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
