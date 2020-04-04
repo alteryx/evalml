@@ -49,8 +49,9 @@ def get_random_state(seed):
     return check_random_state(seed)
 
 
-# define safe numbers to use as a lower/upper bound for the seed on both 32-bit and 64-bit systems
-SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(-2**30, 2**30)
+# specifies the min and max values a seed to np.random.RandomState is allowed to take.
+# see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
+SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**32 - 1)
 
 
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):

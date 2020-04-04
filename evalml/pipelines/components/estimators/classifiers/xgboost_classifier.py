@@ -18,6 +18,9 @@ class XGBoostClassifier(Estimator):
     model_family = ModelFamily.XGBOOST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
+    SEED_MIN = 0
+    SEED_MAX = SEED_BOUNDS.max_bound
+
     def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, n_estimators=100, random_state=0):
         random_seed = get_random_seed(random_state, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)
         parameters = {"eta": eta,
