@@ -20,6 +20,7 @@ Changelog
         * Added `fill_value` parameter for SimpleImputer :pr:`509`
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
+        * Clarified how random seeds can be set for each component. Changed xgboost seed bounds :pr:`583`
     * Fixes
         * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
