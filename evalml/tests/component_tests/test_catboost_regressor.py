@@ -3,7 +3,7 @@ import pandas as pd
 from pytest import importorskip
 
 from evalml.pipelines.components import CatBoostRegressor
-from evalml.utils import SEED_BOUNDS, get_random_seed, get_random_state
+from evalml.utils import SEED_BOUNDS
 
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
