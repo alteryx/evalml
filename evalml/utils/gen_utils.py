@@ -40,28 +40,32 @@ def convert_to_seconds(input_str):
         raise AssertionError(msg)
 
 
+# specifies the min and max values a seed to np.random.RandomState is allowed to take.
+# these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
+# see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
+SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**31 - 1)
+
+
 def get_random_state(seed):
-    """Generates a numpy.random.RandomState instance using seed
+    """Generates a numpy.random.RandomState instance using seed.
 
     Arguments:
-        seed (None, int, np.random.RandomState object): seed to generate numpy.random.RandomState with
+        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
     """
+    if isinstance(seed, (int, np.integer)) and (seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed):
+        raise ValueError('Seed "{}" is not in the range [{}, {}], inclusive'.format(seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound))
     return check_random_state(seed)
 
 
-# define safe numbers to use as a lower/upper bound for the seed on both 32-bit and 64-bit systems
-SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(-2**30, 2**30)
-
-
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
-    """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int modulo the magnitude of the smallest bound to avoid numerical issues.
+    """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
 
-    Invariant: min_bound < max_bound
+    To protect against invalid input to a particular library's random number generator, if an int value is provided, and it is outside the bounds "[min_bound, max_bound)", the value will be projected into the range between the min_bound (inclusive) and max_bound (exclusive) using modular arithmetic.
 
     Arguments:
         random_state (int, numpy.random.RandomState): random state
-        min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive)
-        max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive)
+        min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive). Must be less than max_bound.
+        max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive). Must be greater than min_bound.
 
     Returns:
         int: seed for random number generator
@@ -71,7 +75,7 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
     if isinstance(random_state, np.random.RandomState):
         return random_state.randint(min_bound, max_bound)
     if random_state < min_bound or random_state >= max_bound:
-        return random_state % min(abs(min_bound), abs(max_bound))
+        return ((random_state - min_bound) % (max_bound - min_bound)) + min_bound
     return random_state
 
 
