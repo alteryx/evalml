@@ -17,7 +17,8 @@ EvalML is an AutoML library to build optimized machine learning pipelines for do
 ```shell
 pip install evalml --index-url https://install.featurelabs.com/<KEY>
 ```
-
+## Docs
+- [Link](https://evalml.featurelabs.com/en/stable/)
 ## Quick Start
 
 #### Define objective
