@@ -195,6 +195,7 @@ Classification
     :template: class.rst
     :nosignatures:
 
+    Accuracy
     AUC
     AUCMacro
     AUCMicro
