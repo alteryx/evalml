@@ -7,6 +7,7 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Add link to Docs :pr:`585`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
 
