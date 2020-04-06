@@ -32,6 +32,8 @@ OPTIONS = {
     "median_ae": standard_metrics.MedianAE(),
     "max_error": standard_metrics.MaxError(),
     "exp_var": standard_metrics.ExpVariance()
+    "accuracy": standard_metrics.Accuracy()
+
 }
 
 
