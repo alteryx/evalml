@@ -31,8 +31,4 @@ from .regression import (
     RFRegressionPipeline,
     CatBoostRegressionPipeline
 )
-from .utils import (
-    all_pipelines,
-    get_pipelines,
-    list_model_families
-)
+

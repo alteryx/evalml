@@ -39,7 +39,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        self.possible_pipelines = Registry.get_registry_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
+        self.possible_pipelines = Registry.get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
 
         logger.verbose = verbose

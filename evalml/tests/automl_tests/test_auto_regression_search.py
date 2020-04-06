@@ -5,8 +5,9 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
+from evalml.registry import Registry
 
 
 @pytest.fixture
@@ -22,7 +23,7 @@ def test_init(X_y):
     assert automl.n_jobs == 4
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
+    assert Registry.get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
 
     automl.search(X, y, raise_errors=True)
 

@@ -18,8 +18,9 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
+from evalml.registry import Registry
 
 
 def test_init(X_y):
@@ -30,7 +31,7 @@ def test_init(X_y):
     assert automl.n_jobs == 4
 
     # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
+    assert Registry.get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
 
     automl.search(X, y, raise_errors=True)
 
@@ -75,7 +76,7 @@ def test_init_select_model_families():
     model_families = [ModelFamily.RANDOM_FOREST]
     automl = AutoClassificationSearch(allowed_model_families=model_families)
 
-    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
+    assert Registry.get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
     assert model_families == automl.possible_model_families
 
 

@@ -1,13 +1,50 @@
+import copy
+
 from evalml.model_family import handle_model_family
-from evalml.pipelines import PipelineBase
-from evalml.pipelines.utils import all_pipelines
+from evalml.pipelines import (
+    CatBoostClassificationPipeline,
+    CatBoostRegressionPipeline,
+    LinearRegressionPipeline,
+    LogisticRegressionPipeline,
+    PipelineBase,
+    RFClassificationPipeline,
+    RFRegressionPipeline,
+    XGBoostPipeline
+)
 from evalml.problem_types import handle_problem_types
+from evalml.utils import classproperty, import_or_raise
+
+_DEFAULT_PIPELINES = [RFClassificationPipeline,
+                      XGBoostPipeline,
+                      LogisticRegressionPipeline,
+                      LinearRegressionPipeline,
+                      RFRegressionPipeline,
+                      CatBoostClassificationPipeline,
+                      CatBoostRegressionPipeline]
 
 
 class Registry:
 
-    default_pipelines = all_pipelines()
     other_pipelines = []
+
+    @classproperty
+    def default_pipelines(cls):
+        """Returns a complete list of all supported pipeline classes.
+
+        Returns:
+            list[PipelineBase]: a list of pipeline classes
+        """
+        pipelines = copy.copy(_DEFAULT_PIPELINES)
+        try:
+            import_or_raise("xgboost", error_msg="XGBoost not installed.")
+        except ImportError:
+            pipelines.remove(XGBoostPipeline)
+        try:
+            import_or_raise("catboost", error_msg="Catboost not installed.")
+        except ImportError:
+            pipelines.remove(CatBoostClassificationPipeline)
+            pipelines.remove(CatBoostRegressionPipeline)
+        return pipelines
 
     @classmethod
     def all_pipelines(cls):
@@ -38,7 +75,7 @@ class Registry:
         return None
 
     @classmethod
-    def get_registry_pipelines(cls, problem_type, model_families=None):
+    def get_pipelines(cls, problem_type, model_families=None):
         """Returns the pipelines allowed for a particular problem type.
 
         Can also optionally filter by a list of model types.
