@@ -127,14 +127,15 @@ Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
     RFMulticlassClassificationPipeline
+    XGBoostBinaryPipeline
+    XGBoostMulticlassPipeline
+
 
 Regression	
 ~~~~~~~~~~	

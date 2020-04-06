@@ -206,7 +206,7 @@ templates_path = ["_templates"]
 
 html_show_sphinx = False
 nbsphinx_execute = 'always'
-nbsphinx_timeout = 6000 # sphinx defaults each cell to 30 seconds so we need to override here
+nbsphinx_timeout = -1 # sphinx defaults each cell to 30 seconds so we need to override here
 
 
 class AccessorLevelDocumenter(Documenter):
