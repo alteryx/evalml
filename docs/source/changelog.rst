@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added accuracy as an standard objective :pr:`584`
     * Fixes
     * Changes
     * Documentation Changes
