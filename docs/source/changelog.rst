@@ -4,6 +4,14 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+
+**v0.8.0 Apr. 1, 2020**
+    * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
@@ -13,6 +21,7 @@ Changelog
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
         * Implemented `evalml.Registry` that allows custom pipelines to be added to automl :pr:`564`
     * Fixes
+        * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
@@ -30,6 +39,8 @@ Changelog
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
         * Run windows unit tests on PRs :pr:`557`
+
+
 .. warning::
 
     **Breaking Changes**
