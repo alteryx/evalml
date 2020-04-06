@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added verbose parameter to load_fraud :pr:`560`
     * Fixes
     * Changes
     * Documentation Changes
@@ -16,7 +17,7 @@ Changelog
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
-        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
     * Fixes
@@ -51,7 +52,7 @@ Changelog
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
     * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
-    
+
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
