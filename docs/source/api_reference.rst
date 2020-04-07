@@ -218,8 +218,6 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
-    ROC
-    ConfusionMatrix
 
 
 Regression
