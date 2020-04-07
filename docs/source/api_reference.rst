@@ -146,7 +146,7 @@ Plotting
    PipelineBase.feature_importance_graph
 
 
-.. currentmodule:: evalml.Registry
+.. currentmodule:: evalml.registry
 
 Pipeline Registry
 =================
