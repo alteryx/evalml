@@ -56,11 +56,26 @@ def test_init(test_classes):
     assert MockEstimator()
     assert MockTransformer()
 
+
+def test_default_parameters():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+        def __init__(self, param_a=1, param_b='two', random_state=0):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
+
+    assert MockComponent.default_parameters == {'param_a': 1, 'param_b': 'two'}
+
+
 def test_init_invalid_args():
     class MockComponentNoInit(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ should not provide argument 'component_obj'"):
+        MockComponentNoInit.default_parameters
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ should not provide argument 'component_obj'"):
         MockComponentNoInit()
 
@@ -75,6 +90,8 @@ def test_init_invalid_args():
     with pytest.raises(TypeError, match=r"__init__\(\) missing 1 required positional argument: 'param_a'"):
         MockComponentFixedArg()
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has no default value for argument 'param_a'"):
+        MockComponentFixedArg.default_parameters
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has no default value for argument 'param_a'"):
         MockComponentFixedArg(1)
 
     class MockComponentVarArgs(ComponentBase):
@@ -85,6 +102,8 @@ def test_init_invalid_args():
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ uses \*args or \*\*kwargs"):
+        MockComponentVarArgs.default_parameters
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ uses \*args or \*\*kwargs"):
         MockComponentVarArgs()
 
@@ -97,6 +116,8 @@ def test_init_invalid_args():
             super().__init__(random_state=random_state)
 
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ uses \*args or \*\*kwargs"):
+        MockComponentKWArgs.default_parameters
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ uses \*args or \*\*kwargs"):
         MockComponentKWArgs()
 
     class MockComponentNoSavedState(ComponentBase):
@@ -106,6 +127,8 @@ def test_init_invalid_args():
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has not saved state for parameter 'param_a'"):
+        MockComponentNoSavedState.default_parameters
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has not saved state for parameter 'param_a'"):
         MockComponentNoSavedState()
 
@@ -117,6 +140,8 @@ def test_init_invalid_args():
             self.param_b = param_b
             super().__init__()
 
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ missing values for required parameters: '{'random_state'}'"):
+        MockComponentMissingRandomState.default_parameters
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ missing values for required parameters: '{'random_state'}'"):
         MockComponentMissingRandomState()
 
