@@ -56,7 +56,6 @@ Plotting
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.generate_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
