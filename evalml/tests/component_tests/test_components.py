@@ -66,7 +66,7 @@ def test_default_parameters():
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
-    assert MockComponent.default_parameters == {'param_a': 1, 'param_b': 'two'}
+    assert MockComponent.default_parameters == {'param_a': 1, 'param_b': 'two', 'random_state': 0}
 
 
 def test_init_invalid_args():
@@ -123,12 +123,12 @@ def test_init_invalid_args():
     class MockComponentNoSavedState(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
-        def __init__(self, param_a=1, param_b='two', random_state=0, **kwargs):
+        def __init__(self, param_a=1, param_b='two', random_state=0):
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
-    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has not saved state for parameter 'param_a'"):
-        MockComponentNoSavedState.default_parameters
+    # unfortunately, since our validation for this case can only run at instantiation, default_parameters doesn't throw.
+    MockComponentNoSavedState.default_parameters
     with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has not saved state for parameter 'param_a'"):
         MockComponentNoSavedState()
 
