@@ -47,13 +47,16 @@ release = evalml.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'autoapi.extension',
     'nbsphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx.ext.extlinks',
+    'sphinx.ext.extlinks'
 ]
+
+autoapi_dirs = ['../../evalml']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
