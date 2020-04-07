@@ -62,8 +62,8 @@ def test_linear_regression(X_y_categorical_regression):
     assert not clf.feature_importances.isnull().all().all()
 
     # testing objective parameter passed in does not change results
-    clf.fit(X, y, objective)
-    y_pred_with_objective = clf.predict(X, objective)
+    clf.fit(X, y)
+    y_pred_with_objective = clf.predict(X)
     assert((y_pred == y_pred_with_objective).all())
 
 
@@ -72,7 +72,6 @@ def test_lr_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -83,7 +82,7 @@ def test_lr_input_feature_names(X_y):
         }
     }
     clf = LinearRegressionPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:

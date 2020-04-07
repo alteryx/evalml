@@ -56,6 +56,7 @@ Plotting
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
     AutoClassificationSearch.plot.generate_confusion_matrix
+    AutoClassificationSearch.plot.generate_confusion_matrix
 
 
 .. currentmodule:: evalml.model_family
@@ -121,6 +122,8 @@ Pipelines
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
 
+Classification	
+~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
@@ -138,15 +141,18 @@ Pipelines
     CatBoostRegressionPipeline
     LinearRegressionPipeline
 
-Plotting	
-~~~~~~~~	
 
-.. autosummary::	
-   :toctree: generated	
-   :template: accessor_callable.rst	
+Regression	
+~~~~~~~~~~
 
-   PipelineBase.graph	
-   PipelineBase.feature_importance_graph
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    RFRegressionPipeline
+    CatBoostRegressionPipeline
+    LinearRegressionPipeline
 
 
 Pipeline Utils
@@ -157,6 +163,17 @@ Pipeline Utils
 
     get_pipelines
     list_model_families
+
+
+Plotting
+~~~~~~~~
+
+.. autosummary::
+   :toctree: generated
+   :template: accessor_callable.rst
+
+   PipelineBase.graph
+   PipelineBase.feature_importance_graph
 
 
 .. currentmodule:: evalml.objectives
@@ -235,7 +252,6 @@ Plot Metrics
 
     ROC	
     ConfusionMatrix	
-
 
 
 .. currentmodule:: evalml.problem_types

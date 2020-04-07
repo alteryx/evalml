@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pytest import importorskip
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline
@@ -32,6 +33,40 @@ def test_catboost_init():
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
+def test_catboost_objective_tuning(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 500,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+
 def test_catboost_multi(X_y_multi):
     from catboost import CatBoostClassifier as CBClassifier
     X, y = X_y_multi
@@ -57,9 +92,8 @@ def test_catboost_multi(X_y_multi):
             "max_depth": 3,
         }
     }
-
     clf = CatBoostMulticlassClassificationPipeline(parameters=parameters, random_state=get_random_state(random_seed))
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
@@ -75,7 +109,6 @@ def test_catboost_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -88,7 +121,7 @@ def test_catboost_input_feature_names(X_y):
         }
     }
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
@@ -97,7 +130,6 @@ def test_catboost_input_feature_names(X_y):
 
 def test_catboost_categorical(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -110,6 +142,6 @@ def test_catboost_categorical(X_y_categorical_classification):
         }
     }
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
-    clf.fit(X, y, objective)
+    clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

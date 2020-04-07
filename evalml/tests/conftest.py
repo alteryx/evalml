@@ -6,6 +6,11 @@ import pytest
 from sklearn import datasets
 from skopt.space import Integer, Real
 
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
+from evalml.pipelines.components import Estimator
+from evalml.problem_types import ProblemTypes
+
 
 def pytest_addoption(parser):
     parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
@@ -79,3 +84,39 @@ def test_space_small():
     list_of_space.append(['most_frequent', 'median', 'mean'])
     list_of_space.append(['a', 'b', 'c'])
     return list_of_space
+
+
+@pytest.fixture
+def dummy_estimator():
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
+    return MockEstimator
+
+
+@pytest.fixture
+def dummy_binary_pipeline(dummy_estimator):
+    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        estimator = dummy_estimator()
+        component_graph = [estimator]
+    return MockBinaryClassificationPipeline(parameters={})
+
+
+@pytest.fixture
+def dummy_regression_pipeline():
+    class MockRegressor(Estimator):
+        name = "Mock Regressor"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.REGRESSION]
+
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
+
+    class MockRegressionPipeline(RegressionPipeline):
+        component_graph = [MockRegressor()]
+    return MockRegressionPipeline(parameters={})
