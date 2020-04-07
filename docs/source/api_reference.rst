@@ -118,9 +118,8 @@ Pipelines
     :nosignatures:
 
     PipelineBase
-    BinaryClassificationPipeline	
+    BinaryClassificationPipeline
     MulticlassClassificationPipeline
-
 
 .. autosummary::
     :toctree: generated
@@ -135,16 +134,6 @@ Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-
-
-Regression	
-~~~~~~~~~~	
-
-.. autosummary::	
-    :toctree: generated	
-    :template: pipeline_class.rst	
-    :nosignatures:
-
     RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
@@ -195,10 +184,18 @@ Classification
     :template: class.rst
     :nosignatures:
 
+    AUC
+    AUCMacro
+    AUCMicro
+    AUCWeighted
     F1
     F1Micro
     F1Macro
     F1Weighted
+    LogLossBinary
+    LogLossMulticlass
+    MCCBinary
+    MCCMulticlass
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -207,12 +204,6 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
-    AUC
-    AUCMicro
-    AUCMacro
-    AUCWeighted
-    LogLoss
-    MCC
     ROC
     ConfusionMatrix
 
@@ -298,14 +289,14 @@ Guardrails
     detect_id_columns
 
 
-.. currentmodule:: evalml.utils	
+.. currentmodule:: evalml.utils
 
-Utils	
-=============	
+Utils
+=====
 
-.. autosummary::	
-    :toctree: generated	
-    :nosignatures:	
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
 
-    convert_to_seconds	
+    convert_to_seconds
     normalize_confusion_matrix
