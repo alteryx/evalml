@@ -133,14 +133,6 @@ Pipelines
     CatBoostRegressionPipeline
     LinearRegressionPipeline
 
-Pipeline Utils
-~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    get_pipelines
-    list_model_families
 
 Plotting
 ~~~~~~~~

@@ -40,7 +40,7 @@ class AutoRegressionSearch(AutoBase):
                 For strings, time can be specified as seconds, minutes, or hours.
 
             allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("regression") to see options.
+                model families. Run evalml.Registry.list_model_families("regression") to see options.
 
             patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.

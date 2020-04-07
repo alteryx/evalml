@@ -49,7 +49,7 @@ class AutoClassificationSearch(AutoBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("classification") to see options.
+                model families. Run evalml.Registry.list_model_families("classification") to see options.
 
             cv: cross validation method to use. By default StratifiedKFold
 
