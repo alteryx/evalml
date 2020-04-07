@@ -11,7 +11,8 @@ from evalml.problem_types import ProblemTypes
 
 @pytest.fixture
 def clean_registry():
-    Registry._other_pipelines = []
+    yield
+    Registry.reset_pipelines()
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ def test_register_from_components(clean_registry):
     assert Registry.find_pipeline("Mock Pipeline")
 
 
-def test_registry_with_automl(clean_registry, mock_pipeline, X_y):
+def test_registry_with_automl(mock_pipeline, X_y, clean_registry):
     Registry.register(mock_pipeline)
     automl = AutoClassificationSearch(objective="precision", allowed_model_families=['linear_model'])
 
@@ -75,7 +76,7 @@ def test_default_pipelines_core_dependencies_mock():
     assert len(Registry.default_pipelines) == 4
 
 
-def test_get_pipelines(has_minimal_dependencies, clean_registry):
+def test_get_pipelines(clean_registry, has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(Registry.get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
         assert len(Registry.get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1

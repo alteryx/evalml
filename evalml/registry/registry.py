@@ -68,6 +68,10 @@ class Registry:
         cls.register(temp_pipeline)
 
     @classmethod
+    def reset_pipelines(cls):
+        cls.other_pipelines = []
+
+    @classmethod
     def find_pipeline(cls, name):
         for pipeline in cls.all_pipelines():
             if pipeline.name == name:
