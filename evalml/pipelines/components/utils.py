@@ -42,8 +42,6 @@ def _components_dict():
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
                     components[obj.name] = obj
-            elif len(params.args) == 1:
-                components[obj.name] = obj
     return components
 
 

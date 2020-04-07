@@ -6,7 +6,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
+from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
 
 
 class CatBoostClassifier(Estimator):
@@ -25,7 +25,11 @@ class CatBoostClassifier(Estimator):
     model_family = ModelFamily.CATBOOST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
+    SEED_MIN = 0
+    SEED_MAX = SEED_BOUNDS.max_bound
+
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
+        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth}
@@ -36,6 +40,7 @@ class CatBoostClassifier(Estimator):
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         self._label_encoder = None
         cb_classifier = catboost.CatBoostClassifier(**parameters,
+                                                    random_seed=random_seed,
                                                     silent=True,
                                                     allow_writing_files=False)
         super().__init__(parameters=parameters,

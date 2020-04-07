@@ -4,13 +4,25 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added verbose parameter to load_fraud :pr:`560`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+
+**v0.8.0 Apr. 1, 2020**
+    * Enhancements
         * Add normalization option and information to confusion matrix :pr:`484`
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
-        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
+        * Allow numpy.random.RandomState for random_state parameters :pr:`556`
+        * Clarified how random seeds can be set for each component. Changed xgboost seed bounds :pr:`583`
     * Fixes
+        * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
@@ -29,6 +41,8 @@ Changelog
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
         * Run windows unit tests on PRs :pr:`557`
+
+
 .. warning::
 
     **Breaking Changes**
@@ -40,7 +54,7 @@ Changelog
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
     * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
-    
+
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements

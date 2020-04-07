@@ -9,7 +9,8 @@ from sklearn.pipeline import Pipeline
 
 from evalml.objectives import PrecisionMicro
 from evalml.pipelines import XGBoostPipeline
-from evalml.utils import import_or_raise
+from evalml.pipelines.components import XGBoostClassifier
+from evalml.utils import get_random_seed, get_random_state, import_or_raise
 
 importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
@@ -40,7 +41,7 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=1)
 
     expected_parameters = {
         'Simple Imputer': {
@@ -63,20 +64,23 @@ def test_xg_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
+    random_seed = 42
+    xgb_random_seed = get_random_seed(get_random_state(random_seed), min_bound=XGBoostClassifier.SEED_MIN, max_bound=XGBoostClassifier.SEED_MAX)
     xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = xgb.XGBClassifier(random_state=0,
+    estimator = xgb.XGBClassifier(random_state=xgb_random_seed,
                                   eta=0.1,
                                   max_depth=3,
                                   min_child_weight=1,
                                   n_estimators=10)
-    rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
+    rf_estimator = SKRandomForestClassifier(random_state=get_random_state(random_seed), n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
                                         threshold=-np.inf)
