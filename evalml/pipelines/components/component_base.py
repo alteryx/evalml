@@ -61,7 +61,7 @@ class ComponentBase(ABC):
         name = self.name
         for param_name, param_obj in sig.parameters.items():
             if param_obj.kind in (Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY):
-                raise ValidationError(("Component '{}' __init__ uses non-keyword argument '{}' " +
+                raise ValidationError(("Component '{}' __init__ uses non-keyword argument '{}', which is not " +
                                  "supported").format(name, param_name))
             if param_obj.kind in (Parameter.VAR_KEYWORD, Parameter.VAR_POSITIONAL):
                 raise ValidationError(("Component '{}' __init__ uses *args or **kwargs, which is not " +
@@ -77,7 +77,7 @@ class ComponentBase(ABC):
         missing_subclass_init_args = set(self._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
         if len(missing_subclass_init_args):
             name = self.name
-            raise ValidationError('Component {} __init__ missing values for required parameters: {}'.format(name, missing_subclass_init_args))
+            raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
         self._default_parameters = defaults
         self._parameters = values
 
