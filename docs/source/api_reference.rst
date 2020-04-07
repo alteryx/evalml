@@ -146,6 +146,17 @@ Plotting
    PipelineBase.feature_importance_graph
 
 
+.. currentmodule:: evalml.Registry
+
+Pipeline Registry
+=================
+.. autosummary::
+    :toctree: generated
+    :template: registry_class.rst
+    :nosignatures:
+
+    Registry
+
 .. currentmodule:: evalml.objectives
 
 Objective Functions
