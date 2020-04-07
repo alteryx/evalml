@@ -57,16 +57,43 @@ def test_init(test_classes):
     assert MockTransformer()
 
 
-def test_default_parameters():
+def test_default_parameters(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    assert MockComponent.default_parameters == {'param_a': 1, 'param_b': 'two', 'random_state': 0}
+
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
-        def __init__(self, param_a=1, param_b='two', random_state=0):
+        def __init__(self, param_a=1, param_b='two', random_state=np.random.RandomState(42)):
             self.param_a = param_a
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
-    assert MockComponent.default_parameters == {'param_a': 1, 'param_b': 'two', 'random_state': 0}
+    dp = MockComponent.default_parameters
+    random_state = dp.pop('random_state')
+    assert dp == {'param_a': 1, 'param_b': 'two'}
+    assert random_state.rand() == np.random.RandomState(42).rand()
+
+
+def test_parameters(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    c = MockComponent()
+    p = c.parameters
+    random_state = p.pop('random_state')
+    assert p == {'param_a': 1, 'param_b': 'two'}
+    assert random_state.rand() == np.random.RandomState(0).rand()
+
+    c = MockComponent(param_b='three')
+    p = c.parameters
+    random_state = p.pop('random_state')
+    assert p == {'param_a': 1, 'param_b': 'three'}
+    assert random_state.rand() == np.random.RandomState(0).rand()
+
+    c = MockComponent(param_b='three', random_state=np.random.RandomState(42))
+    p = c.parameters
+    random_state = p.pop('random_state')
+    assert p == {'param_a': 1, 'param_b': 'three'}
+    assert random_state.rand() == np.random.RandomState(42).rand()
 
 
 def test_init_invalid_args():
