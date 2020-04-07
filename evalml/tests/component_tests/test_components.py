@@ -17,6 +17,8 @@ from evalml.pipelines.components import (
     Transformer,
     XGBoostClassifier
 )
+from evalml.utils import get_random_state
+from evalml.pipelines.components.validation_error import ValidationError
 
 
 @pytest.fixture
@@ -24,33 +26,105 @@ def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        def __init__(self, param_a=1, param_b='two', random_state=0):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
+        def __init__(self, param_a=1, param_b='two', random_state=0):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
+        def __init__(self, param_a=1, param_b='two', random_state=0):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
 
     return MockComponent, MockEstimator, MockTransformer
 
 
 def test_init(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
-    assert MockComponent({}, None, 0).name == "Mock Component"
-    assert MockEstimator({}, None, 0).name == "Mock Estimator"
-    assert MockTransformer({}, None, 0).name == "Mock Transformer"
+    assert MockComponent()
+    assert MockEstimator()
+    assert MockTransformer()
+
+def test_init_invalid_args():
+    class MockComponentNoInit(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ should not provide argument 'component_obj'"):
+        MockComponentNoInit()
+
+    class MockComponentFixedArg(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+        def __init__(self, param_a, param_b='two', random_state=0):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
+
+    with pytest.raises(TypeError, match=r"__init__\(\) missing 1 required positional argument: 'param_a'"):
+        MockComponentFixedArg()
+    with pytest.raises(ValidationError, match=r"Component 'Mock Component' __init__ has no default value for argument 'param_a'"):
+        MockComponentFixedArg(1)
+
+    class MockComponentVarArgs(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+        def __init__(self, param_a=1, param_b='two', random_state=0, *args):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
+
+    with pytest.raises(ValidationError):
+        MockComponentVarArgs()
+
+    class MockComponentKWArgs(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+        def __init__(self, param_a=1, param_b='two', random_state=0, **kwargs):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
+
+    with pytest.raises(ValidationError):
+        MockComponentKWArgs()
+
+
+
+def test_random_state(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    c = MockComponent(random_state=42)
+    assert c.random_state.rand()
+    assert (c.random_state.get_state()[0] == np.random.RandomState(42).get_state()[0])
+    assert MockEstimator(random_state=0)
+    assert MockTransformer(random_state=0)
+
+
+def test_name(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    assert MockComponent.name == "Mock Component"
+    assert MockEstimator.name == "Mock Estimator"
+    assert MockTransformer.name == "Mock Transformer"
 
 
 def test_describe(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
     params = {'param_a': 'value_a', 'param_b': 123}
-    component = MockComponent(params, None, random_state=0)
+    component = MockComponent(**params, random_state=0)
     assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
-    estimator = MockEstimator(params, None, random_state=0)
+    estimator = MockEstimator(**params, random_state=0)
     assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
-    transformer = MockTransformer(params, None, random_state=0)
+    transformer = MockTransformer(**params, random_state=0)
     assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
 
 

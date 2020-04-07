@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from inspect import Parameter, signature
+from inspect import Parameter, signature, Signature
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import Logger, get_random_state
+from evalml.pipelines.components.validation_error import ValidationError
 
 logger = Logger()
 
@@ -60,21 +61,23 @@ class ComponentBase(ABC):
         name = self.name
         for param_name, param_obj in sig.parameters.items():
             if param_obj.kind in (Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY):
-                raise Exception(("Component '{}' __init__ uses non-keyword argument '{}' " +
+                raise ValidationError(("Component '{}' __init__ uses non-keyword argument '{}' " +
                                  "supported").format(name, param_name))
             if param_obj.kind in (Parameter.VAR_KEYWORD, Parameter.VAR_POSITIONAL):
-                raise Exception(("Component '{}' __init__ uses *args or **kwargs, which is not " +
+                raise ValidationError(("Component '{}' __init__ uses *args or **kwargs, which is not " +
                                  "supported").format(name))
             if param_name in self._INVALID_SUBCLASS_INIT_ARGS:
-                raise Exception(("Component '{}' __init__ should not provide argument '{}'").format(name, param_name))
+                raise ValidationError(("Component '{}' __init__ should not provide argument '{}'").format(name, param_name))
+            if param_obj.default == Signature.empty:
+                raise ValidationError(("Component '{}' __init__ has no default value for argument '{}'").format(name, param_name))
             defaults[param_name] = param_obj.default
             if param_name not in self._REQUIRED_SUBCLASS_INIT_ARGS and not hasattr(self, param_name):
-                raise Exception(("Component '{}' __init__ has not saved state for parameter '{}'").format(name, param_name))
+                raise ValidationError(("Component '{}' __init__ has not saved state for parameter '{}'").format(name, param_name))
             values[param_name] = getattr(self, param_name)
         missing_subclass_init_args = set(self._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
         if len(missing_subclass_init_args):
             name = self.name
-            raise Exception('Component {} __init__ missing values for required parameters: {}'.format(name, missing_subclass_init_args))
+            raise ValidationError('Component {} __init__ missing values for required parameters: {}'.format(name, missing_subclass_init_args))
         self._default_parameters = defaults
         self._parameters = values
 
