@@ -28,6 +28,13 @@ def test_register(clean_registry, mock_pipeline):
     Registry.register(mock_pipeline)
     assert mock_pipeline in Registry.all_pipelines()
 
+    class BadPipeline():
+        component_graph = ['Logistic Regression Classifier']
+        supported_problem_types = ['binary']
+
+    with pytest.raises(TypeError):
+        Registry.register(BadPipeline)
+
 
 def test_register_from_components(clean_registry):
     component_graph = ["Logistic Regression Classifier"]
@@ -36,6 +43,11 @@ def test_register_from_components(clean_registry):
 
     Registry.register_from_components(component_graph, supported_problem_types, name)
     assert Registry.find_pipeline("Mock Pipeline")
+
+
+def test_find_pipeline():
+    assert Registry.find_pipeline("Logistic Regression Pipeline")
+    assert not Registry.find_pipeline("Cool Pipeline")
 
 
 def test_registry_with_automl(mock_pipeline, X_y, clean_registry):
