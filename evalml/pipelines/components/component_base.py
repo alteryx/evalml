@@ -18,7 +18,7 @@ class ComponentBase(ABC):
         if not hasattr(self, 'random_state'):
             self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
-        self._parameters = self._introspect_parameters()
+        self._parameters = self._get_parameters()
 
     @property
     @classmethod
@@ -40,14 +40,16 @@ class ComponentBase(ABC):
 
     @classproperty
     def default_parameters(cls):
-        return cls._introspect_default_parameters()
+        return cls._get_default_parameters()
 
     _REQUIRED_SUBCLASS_INIT_ARGS = ['random_state']
     _INVALID_SUBCLASS_INIT_ARGS = ['component_obj']
 
     @classmethod
-    def _introspect_default_parameter(cls, param_name, param_obj):
+    def _validate_default_parameter(cls, param_name, param_obj):
         name = cls.name
+        if param_name in ['self']:
+            return False
         if param_obj.kind in (Parameter.POSITIONAL_ONLY, Parameter.KEYWORD_ONLY):
             raise ValidationError(("Component '{}' __init__ uses non-keyword argument '{}', which is not " +
                                    "supported").format(name, param_name))
@@ -58,10 +60,10 @@ class ComponentBase(ABC):
             raise ValidationError(("Component '{}' __init__ should not provide argument '{}'").format(name, param_name))
         if param_obj.default == Signature.empty:
             raise ValidationError(("Component '{}' __init__ has no default value for argument '{}'").format(name, param_name))
-        return param_obj.default
+        return True
 
     @classmethod
-    def _introspect_default_parameters(cls):
+    def _get_default_parameters(cls):
         """Introspect on subclass __init__ method to determine default values of each argument.
 
         Raises exception if subclass __init__ uses any args other than standard keyword args.
@@ -70,18 +72,24 @@ class ComponentBase(ABC):
             dict: map from parameter name to default value
         """
         sig = signature(cls.__init__)
-        defaults = {}
-        for param_name, param_obj in sig.parameters.items():
-            if param_name == 'self':
-                continue
-            defaults[param_name] = cls._introspect_default_parameter(param_name, param_obj)
+
+        def validate(pair):
+            param_name, param_obj = pair
+            return cls._validate_default_parameter(param_name, param_obj)
+        valid_pairs = filter(lambda pair: validate(pair), sig.parameters.items())
+
+        def get_value(pair):
+            param_name, param_obj = pair
+            return (param_name, param_obj.default)
+        defaults = dict(map(lambda pair: get_value(pair), valid_pairs))
+
         missing_subclass_init_args = set(cls._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
         if len(missing_subclass_init_args):
             name = cls.name
             raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
         return defaults
 
-    def _introspect_parameters(self):
+    def _get_parameters(self):
         """Introspect on subclass __init__ method to determine the values saved as state.
 
         Raises exception if subclass __init__ uses any args other than standard keyword args.
@@ -92,14 +100,27 @@ class ComponentBase(ABC):
             dict: map from parameter name to default value
         """
         sig = signature(self.__init__)
-        defaults = self._introspect_default_parameters()
-        values = {}
-        for param_name, param_obj in sig.parameters.items():
-            defaults[param_name] = self._introspect_default_parameter(param_name, param_obj)
+        defaults = self.default_parameters
+
+        def validate(pair):
+            param_name, param_obj = pair
+            if not self._validate_default_parameter(param_name, param_obj):
+                return False
             if param_name not in self._REQUIRED_SUBCLASS_INIT_ARGS and not hasattr(self, param_name):
                 name = self.name
                 raise ValidationError(("Component '{}' __init__ has not saved state for parameter '{}'").format(name, param_name))
-            values[param_name] = getattr(self, param_name)
+            return True
+        valid_pairs = filter(lambda pair: validate(pair), sig.parameters.items())
+
+        def get_value(pair):
+            param_name, param_obj = pair
+            return (param_name, getattr(self, param_name))
+        values = dict(map(lambda pair: get_value(pair), valid_pairs))
+
+        missing_subclass_init_args = set(self._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
+        if len(missing_subclass_init_args):
+            name = self.name
+            raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
         return values
 
     def fit(self, X, y=None):
