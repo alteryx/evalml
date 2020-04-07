@@ -137,9 +137,6 @@ Classification
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-    RFRegressionPipeline
-    CatBoostRegressionPipeline
-    LinearRegressionPipeline
 
 
 Regression	
