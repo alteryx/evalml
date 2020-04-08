@@ -42,8 +42,8 @@ class ComponentBase(ABC):
     def default_parameters(cls):
         return cls._get_default_parameters()
 
-    _REQUIRED_SUBCLASS_INIT_ARGS = ['random_state']
-    _INVALID_SUBCLASS_INIT_ARGS = ['component_obj']
+    _REQUIRED_INIT_ARGS = ['random_state']
+    _INVALID_INIT_ARGS = ['component_obj']
 
     @classmethod
     def _validate_default_parameter(cls, param_name, param_obj):
@@ -56,7 +56,7 @@ class ComponentBase(ABC):
         if param_obj.kind in (Parameter.VAR_KEYWORD, Parameter.VAR_POSITIONAL):
             raise ValidationError(("Component '{}' __init__ uses *args or **kwargs, which is not " +
                                    "supported").format(name))
-        if param_name in cls._INVALID_SUBCLASS_INIT_ARGS:
+        if param_name in cls._INVALID_INIT_ARGS:
             raise ValidationError(("Component '{}' __init__ should not provide argument '{}'").format(name, param_name))
         if param_obj.default == Signature.empty:
             raise ValidationError(("Component '{}' __init__ has no default value for argument '{}'").format(name, param_name))
@@ -83,7 +83,7 @@ class ComponentBase(ABC):
             return (param_name, param_obj.default)
         defaults = dict(map(lambda pair: get_value(pair), valid_pairs))
 
-        missing_subclass_init_args = set(cls._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
+        missing_subclass_init_args = set(cls._REQUIRED_INIT_ARGS) - defaults.keys()
         if len(missing_subclass_init_args):
             name = cls.name
             raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
@@ -106,7 +106,7 @@ class ComponentBase(ABC):
             param_name, param_obj = pair
             if not self._validate_default_parameter(param_name, param_obj):
                 return False
-            if param_name not in self._REQUIRED_SUBCLASS_INIT_ARGS and not hasattr(self, param_name):
+            if param_name not in self._REQUIRED_INIT_ARGS and not hasattr(self, param_name):
                 name = self.name
                 raise ValidationError(("Component '{}' __init__ has not saved state for parameter '{}'").format(name, param_name))
             return True
@@ -117,7 +117,7 @@ class ComponentBase(ABC):
             return (param_name, getattr(self, param_name))
         values = dict(map(lambda pair: get_value(pair), valid_pairs))
 
-        missing_subclass_init_args = set(self._REQUIRED_SUBCLASS_INIT_ARGS) - defaults.keys()
+        missing_subclass_init_args = set(self._REQUIRED_INIT_ARGS) - defaults.keys()
         if len(missing_subclass_init_args):
             name = self.name
             raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
