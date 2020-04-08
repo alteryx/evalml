@@ -4,11 +4,13 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added verbose parameter to load_fraud :pr:`560`
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+        * Added Github app to auto assign PR author as assignee :pr:`477`
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -16,9 +18,10 @@ Changelog
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
-        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`
         * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
+        * Clarified how random seeds can be set for each component. Changed xgboost seed bounds :pr:`583`
     * Fixes
         * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
@@ -33,6 +36,8 @@ Changelog
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
+        * Fixed README documentation link :pr:`535`
+        * Limit readthedocs formats to html and pdf, not epub :pr:`594`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
@@ -52,7 +57,7 @@ Changelog
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
     * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
-    
+
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
