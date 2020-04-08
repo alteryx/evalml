@@ -146,3 +146,19 @@ def test_numpy_input():
     encoder.fit(X)
     X_t = encoder.transform(X)
     assert pd.DataFrame(X).equals(X_t)
+
+
+def test_large_number_of_categories():
+    n_categories = 200000
+    frequency_per_category = 5
+    X = np.repeat(np.arange(n_categories), frequency_per_category).reshape((-1, 1))
+    X_extra = np.repeat(np.arange(10) + n_categories, 10).reshape((-1, 1))
+    X = np.array(np.concatenate([X, X_extra]))
+    X = pd.DataFrame(X, columns=['cat'])
+    X['cat'] = X['cat'].astype('category')
+    encoder = OneHotEncoder(top_n=10)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = ['cat_' + str(200000 + i) for i in range(10)]
+    assert X_t.shape == (1000100, 10)
+    assert set(expected_col_names) == set(list(X_t.columns))
