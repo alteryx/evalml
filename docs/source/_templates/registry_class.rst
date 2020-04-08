@@ -8,7 +8,12 @@
    {% block attributes %}
    .. Class attributes:
    .. autoattribute:: default_pipelines
-   
+
+   .. rubric:: Instance Attributes
+
+   .. autosummary::
+      :nosignatures:
+      
    {% for item in attributes %}
    {%- if item not in class_attributes %}
       ~{{ name }}.{{ item }}

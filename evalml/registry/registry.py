@@ -24,12 +24,14 @@ _DEFAULT_PIPELINES = [RFClassificationPipeline,
 
 
 class Registry:
+    """Registry containing default pipelines and additional pipelines for automl"""
 
     other_pipelines = []
+    """list(PipelineBase): additional pipelines registered in Registry"""
 
     @classproperty
     def default_pipelines(cls):
-        """Returns a complete list of all supported pipeline classes.
+        """Returns a list of default pipelines provided by evalml
 
         Returns:
             list[PipelineBase]: a list of pipeline classes
@@ -48,10 +50,20 @@ class Registry:
 
     @classmethod
     def all_pipelines(cls):
+        """Returns a list of all pipelines currently registered
+
+        Returns:
+            list[PipelineBase]: a list of pipeline classes
+        """
         return cls.default_pipelines + cls.other_pipelines
 
     @classmethod
     def register(cls, pipeline_class):
+        """Registers a given pipeline class. Note: pipeline must inherit from `PipelineBase`
+
+        Arguments:
+            pipeline_class (PipelineBase): pipeline class which inherits from `PipelineBase`
+        """
         if issubclass(pipeline_class, PipelineBase):
             cls.other_pipelines.append(pipeline_class)
         else:
@@ -59,6 +71,13 @@ class Registry:
 
     @classmethod
     def register_from_components(cls, component_graph, supported_problem_types, name):
+        """Registers a given pipeline with a component graph, supported problem types and pipeline class name
+
+        Arguments:
+            component_graph (list(str/ComponentBase)): list of components that make up this pipeline
+            supported_problem_types (list(str/ProblemTypes)): list of problem types this pipeline supports
+            name (str): name of this pipeline class
+        """
         base_class = PipelineBase
         class_dict = {
             'component_graph': component_graph,
@@ -69,10 +88,16 @@ class Registry:
 
     @classmethod
     def reset_pipelines(cls):
+        """Reset non-default additional pipelines"""
         cls.other_pipelines = []
 
     @classmethod
     def find_pipeline(cls, name):
+        """Finds and returns pipeline given pipeline class name
+
+        Arguments:
+            name (str): pipeline class name
+        """
         for pipeline in cls.all_pipelines():
             if pipeline.name == name:
                 return pipeline
