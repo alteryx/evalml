@@ -239,7 +239,7 @@ def test_additional_objectives(X_y):
 def test_optimizable_threshold(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
     automl.search(X, y)
     mock_fit.assert_called()
     mock_predict_proba.assert_called()
