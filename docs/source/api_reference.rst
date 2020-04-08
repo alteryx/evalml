@@ -30,7 +30,7 @@ Preprocessing
     split_data
 
 
-.. currentmodule:: evalml.automl
+.. currentmodule:: evalml
 
 AutoML
 ======
@@ -55,6 +55,7 @@ Plotting
     AutoClassificationSearch.plot.get_roc_data
     AutoClassificationSearch.plot.generate_roc_plot
     AutoClassificationSearch.plot.get_confusion_matrix_data
+    AutoClassificationSearch.plot.generate_confusion_matrix
     AutoClassificationSearch.plot.generate_confusion_matrix
 
 
@@ -104,52 +105,33 @@ Estimators
     LinearRegressor
     RandomForestRegressor
 
-.. currentmodule:: evalml.pipelines
-
 
 .. currentmodule:: evalml.pipelines
 
 Pipelines
 =========
 
+Pipelines
+~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
 
-
-Classification
-~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
-    RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
-
-
-Regression
-~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
+    RFClassificationPipeline
+    XGBoostPipeline
+    CatBoostClassificationPipeline
+    LogisticRegressionPipeline
+    RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
-    RFRegressionPipeline
-
 
 Pipeline Utils
 ~~~~~~~~~~~~~~
@@ -162,6 +144,7 @@ Pipeline Utils
 
 Plotting
 ~~~~~~~~
+
 
 .. autosummary::
    :toctree: generated
@@ -187,6 +170,7 @@ Domain Specific
     FraudCost
     LeadScoring
 
+
 Classification
 ~~~~~~~~~~~~~~
 
@@ -204,10 +188,6 @@ Classification
     F1Micro
     F1Macro
     F1Weighted
-    LogLossBinary
-    LogLossMulticlass
-    MCCBinary
-    MCCMulticlass
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -216,6 +196,11 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
+    LogLoss
+    MCC
+    ROC
+    ConfusionMatrix
+
 
 Regression
 ~~~~~~~~~~
@@ -225,24 +210,13 @@ Regression
     :template: class.rst
     :nosignatures:
 
-    ExpVariance
+    R2
     MAE
-    MaxError
-    MedianAE
     MSE
     MSLE
-    R2
-
-Plot Metrics
-~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ROC
-    ConfusionMatrix
+    MedianAE
+    MaxError
+    ExpVariance
 
 
 .. currentmodule:: evalml.problem_types
@@ -293,16 +267,3 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
-
-
-.. currentmodule:: evalml.utils
-
-Guardrails
-=============
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    convert_to_seconds
-    normalize_confusion_matrix
