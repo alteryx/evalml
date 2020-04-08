@@ -11,6 +11,7 @@ Changelog
         * Fixed some sphinx warnings :pr:`593`
         * Limit readthedocs formats to html and pdf, not epub :pr:`594`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
+        # Fixed function on Exploring search results page :pr:`603`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
