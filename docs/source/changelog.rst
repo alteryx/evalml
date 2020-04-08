@@ -9,8 +9,11 @@ Changelog
         * Removed direct access to `cls.component_graph` :pr:`595`
     * Changes
     * Documentation Changes
+        * Fixed some sphinx warnings :pr:`593`
+        * Limit readthedocs formats to html and pdf, not epub :pr:`594`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+        * Added Github app to auto assign PR author as assignee :pr:`477`
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -92,6 +95,7 @@ Changelog
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
         * Update unit test jobs to not install dev deps :pr:`455`
+
 .. warning::
 
     **Breaking Changes**
