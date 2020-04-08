@@ -4,16 +4,29 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-    * Fixes
+        * Clean up objectives API documentation :pr:`605`
     * Changes
-         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
-         * Changed the output of `score` to return one dictionary :pr:`429`
+        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Changed the output of `score` to return one dictionary :pr:`429`
+        * Created binary and multiclass objective subclasses :pr:`504`
+        * Updated objectives API :pr:`445`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Limit readthedocs formats to html and pdf, not epub :pr:`594`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+
+
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
+    * ``score()`` will now return one dictionary of all objective scores.
+    
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -29,12 +42,10 @@ Changelog
     * Changes
         * Undo version cap in XGBoost placed in :pr:`402` and allowed all released of XGBoost :pr:`407`
         * Support pandas 1.0.0 :pr:`486`
-        * Created binary and multiclass objective subclasses :pr:`504`
         * Made all references to the logger static :pr:`503`
         * Refactored `model_type` parameter for components and pipelines to `model_family` :pr:`507`
         * Refactored `problem_types` for pipelines and components into `supported_problem_types` :pr:`515`
         * Moved `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` to `PipelineBase.save` and `PipelineBase.load` :pr:`526`
-        * Updated objectives API :pr:`445`
         * Limit number of categories encoded by OneHotEncoder :pr:`517`
     * Documentation Changes
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
