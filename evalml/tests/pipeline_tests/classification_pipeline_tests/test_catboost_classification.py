@@ -10,7 +10,8 @@ from evalml.pipelines import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline
 )
-from evalml.utils import SEED_BOUNDS, get_random_seed, get_random_state
+from evalml.pipelines.components import CatBoostClassifier
+from evalml.utils import get_random_seed, get_random_state
 
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
@@ -72,7 +73,7 @@ def test_catboost_multi(X_y_multi):
     X, y = X_y_multi
 
     random_seed = 42
-    catboost_random_seed = get_random_seed(get_random_state(random_seed), min_bound=0, max_bound=SEED_BOUNDS.max_bound)
+    catboost_random_seed = get_random_seed(get_random_state(random_seed), min_bound=CatBoostClassifier.SEED_MIN, max_bound=CatBoostClassifier.SEED_MAX)
     imputer = SimpleImputer(strategy='mean')
     estimator = CBClassifier(n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type='Bayesian', allow_writing_files=False, random_seed=catboost_random_seed)
     sk_pipeline = Pipeline([("imputer", imputer),
