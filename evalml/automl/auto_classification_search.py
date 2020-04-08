@@ -50,7 +50,7 @@ class AutoClassificationSearch(AutoBase):
 
             allowed_model_families (list): The model families to search. By default searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`
-                to `multiclass` if your problem type is different. 
+                to `multiclass` if your problem type is different.
 
             cv: cross validation method to use. By default StratifiedKFold
 
