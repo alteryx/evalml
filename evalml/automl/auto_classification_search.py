@@ -49,7 +49,8 @@ class AutoClassificationSearch(AutoBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("classification") to see options.
+                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
+                to `regression` or `multiclass` if your problem type is different. 
 
             cv: cross validation method to use. By default StratifiedKFold
 
