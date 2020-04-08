@@ -413,14 +413,6 @@ def test_component_inheritance():
             self.param_b = param_b
             super().__init__(random_state=random_state)
 
-    assert MockComponent1.name == "Mock Component 1"
-    default_parameters, random_state = split_random_state(MockComponent1.default_parameters)
-    assert default_parameters == {'param_a': 'c1 param_a', 'param_b': 'c1 param_b'}
-    assert random_state == 42
-    component = MockComponent1(param_a='c1 param_a init', param_b='c1 param_b init')
-    parameters, _ = split_random_state(component.parameters)
-    assert parameters == {'param_a': 'c1 param_a init', 'param_b': 'c1 param_b init'}
-
     class MockComponent2(MockComponent1):
         name = "Mock Component 2"
         def __init__(self, param_a='c2 param_a', param_b='c2 param_b', random_state=42):

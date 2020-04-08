@@ -87,7 +87,12 @@ class ComponentBase(ABC):
         if len(missing_subclass_init_args):
             name = cls.name
             raise ValidationError("Component '{}' __init__ missing values for required parameters: '{}'".format(name, str(missing_subclass_init_args)))
-        return defaults
+        print(hasattr(super(), 'default_parameters'))
+        try:
+            super_defaults = super().default_parameters
+            return {**defaults, **super_defaults}
+        except AttributeError:
+            return defaults
 
     def _get_parameters(self):
         """Introspect on subclass __init__ method to determine the values saved as state.
