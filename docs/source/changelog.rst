@@ -10,6 +10,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+        * Added Github app to auto assign PR author as assignee :pr:`477`
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
