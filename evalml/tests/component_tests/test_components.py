@@ -402,3 +402,71 @@ def test_model_family_components(test_classes):
     assert MockComponent.model_family == ModelFamily.NONE
     assert MockTransformer.model_family == ModelFamily.NONE
     assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
+
+
+def test_component_inheritance():
+    class MockComponent1(ComponentBase):
+        name = "Mock Component 1"
+        model_family = ModelFamily.NONE
+        def __init__(self, param_a='c1 param_a', param_b='c1 param_b', random_state=42):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(random_state=random_state)
+
+    assert MockComponent1.name == "Mock Component 1"
+    default_parameters, random_state = split_random_state(MockComponent1.default_parameters)
+    assert default_parameters == {'param_a': 'c1 param_a', 'param_b': 'c1 param_b'}
+    assert random_state == 42
+    component = MockComponent1(param_a='c1 param_a init', param_b='c1 param_b init')
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c1 param_a init', 'param_b': 'c1 param_b init'}
+
+    class MockComponent2(MockComponent1):
+        name = "Mock Component 2"
+        def __init__(self, param_a='c2 param_a', param_b='c2 param_b', random_state=42):
+            self.param_a = param_a
+            self.param_b = param_b
+            super().__init__(param_a=param_a, param_b=param_b, random_state=random_state)
+
+    assert MockComponent2.name == "Mock Component 2"
+    assert MockComponent2.default_parameters == {'param_a': 'c2 param_a', 'param_b': 'c2 param_b', 'random_state': 42}
+    component = MockComponent2(param_a='c2 param_a init', param_b='c2 param_b init')
+    assert isinstance(component, MockComponent1)
+    assert isinstance(component, MockComponent2)
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c2 param_a init', 'param_b': 'c2 param_b init'}
+
+    class MockComponent2(MockComponent1):
+        name = "Mock Component 2"
+        def __init__(self, param_a='c2 param_a', param_b='c2 param_b', param_c='c2 param_c', random_state=42):
+            self.param_a = param_a
+            self.param_b = param_b
+            self.param_c = param_c
+            super().__init__(param_a=param_a, param_b=param_b, random_state=random_state)
+
+    assert MockComponent2.name == "Mock Component 2"
+    assert MockComponent2.default_parameters == {'param_a': 'c2 param_a', 'param_b': 'c2 param_b', 'param_c': 'c2 param_c', 'random_state': 42}
+
+    component = MockComponent2(param_a='c2 param_a init', param_b='c2 param_b init')
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c2 param_a init', 'param_b': 'c2 param_b init', 'param_c': 'c2 param_c'}
+    component = MockComponent2(param_a='c2 param_a init', param_c='c2 param_c init')
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c2 param_a init', 'param_b': 'c2 param_b', 'param_c': 'c2 param_c init'}
+
+    class MockComponent2(MockComponent1):
+        name = "Mock Component 2"
+        def __init__(self, param_a='c2 param_a', param_c='c2 param_c', random_state=42):
+            self.param_a = param_a
+            self.param_c = param_c
+            super().__init__(param_a=param_a, random_state=random_state)
+
+    assert MockComponent2.name == "Mock Component 2"
+    assert MockComponent2.default_parameters == {'param_a': 'c2 param_a', 'param_b': 'c2 param_b', 'param_c': 'c2 param_c', 'random_state': 42}
+
+    component = MockComponent2(param_a='c2 param_a init')
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c2 param_a init', 'param_b': 'c2 param_b', 'param_c': 'c2 param_c'}
+    component = MockComponent2(param_a='c3 param_a init', param_c='c2 param_c init')
+    parameters, _ = split_random_state(component.parameters)
+    assert parameters == {'param_a': 'c2 param_a init', 'param_b': 'c2 param_b', 'param_c': 'c2 param_c init'}
