@@ -8,6 +8,8 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed some sphinx warnings :pr:`593`
+        * Limit readthedocs formats to html and pdf, not epub :pr:`594`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -37,7 +39,6 @@ Changelog
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
         * Fixed README documentation link :pr:`535`
-        * Limit readthedocs formats to html and pdf, not epub :pr:`594`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
