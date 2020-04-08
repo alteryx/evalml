@@ -9,6 +9,9 @@ Changelog
          * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
          * Changed the output of `score` to return one dictionary :pr:`429`
     * Documentation Changes
+        * Fixed some sphinx warnings :pr:`593`
+        * Limit readthedocs formats to html and pdf, not epub :pr:`594`
+        * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
 
