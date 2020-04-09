@@ -183,11 +183,15 @@ Classification
     :template: class.rst
     :nosignatures:
 
+<<<<<<< HEAD
     AccuracyBinary
     AUC
     AUCMacro
     AUCMicro
     AUCWeighted
+=======
+    BalancedAccuracy
+>>>>>>> changelog updated
     F1
     F1Micro
     F1Macro
