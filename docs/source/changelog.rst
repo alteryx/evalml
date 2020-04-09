@@ -4,16 +4,29 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added verbose parameter to load_fraud :pr:`560`
-    * Fixes
     * Changes
+        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Changed the output of `score` to return one dictionary :pr:`429`
+        * Created binary and multiclass objective subclasses :pr:`504`
+        * Updated objectives API :pr:`445`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
         * Limit readthedocs formats to pdf, not htmlzip and epub :pr:`594` :pr:`600`
+        * Clean up objectives API documentation :pr:`605`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
-        * Added Github app to auto assign PR author as assignee :pr:`477`
+
+
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
+    * ``score()`` will now return one dictionary of all objective scores.
+    
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -22,9 +35,8 @@ Changelog
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
         * Added `fill_value` parameter for SimpleImputer :pr:`509`
-        * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
+        * Added functionality to override component hyperparameters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
-        * Clarified how random seeds can be set for each component. Changed xgboost seed bounds :pr:`583`
     * Fixes
         * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
     * Changes
@@ -39,7 +51,7 @@ Changelog
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
-        * Fixed README documentation link :pr:`535`
+        * Fixed README documentation link :pr:`535`	
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`

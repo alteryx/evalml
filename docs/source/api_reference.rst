@@ -118,19 +118,38 @@ Pipelines
     :nosignatures:
 
     PipelineBase
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
+
+Classification	
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    CatBoostBinaryClassificationPipeline
+    CatBoostMulticlassClassificationPipeline
+    LogisticRegressionBinaryPipeline
+    LogisticRegressionMulticlassPipeline
+    RFBinaryClassificationPipeline
+    RFMulticlassClassificationPipeline
+    XGBoostBinaryPipeline
+    XGBoostMulticlassPipeline
+
+
+Regression	
+~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
     :nosignatures:
 
-    RFClassificationPipeline
-    XGBoostPipeline
-    CatBoostClassificationPipeline
-    LogisticRegressionPipeline
     RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
+
 
 Pipeline Utils
 ~~~~~~~~~~~~~~
@@ -141,9 +160,9 @@ Pipeline Utils
     get_pipelines
     list_model_families
 
+
 Plotting
 ~~~~~~~~
-
 
 .. autosummary::
    :toctree: generated
@@ -178,10 +197,18 @@ Classification
     :template: class.rst
     :nosignatures:
 
+    AUC
+    AUCMacro
+    AUCMicro
+    AUCWeighted
     F1
     F1Micro
     F1Macro
     F1Weighted
+    LogLossBinary
+    LogLossMulticlass
+    MCCBinary
+    MCCMulticlass
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -190,14 +217,6 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
-    AUC
-    AUCMicro
-    AUCMacro
-    AUCWeighted
-    LogLoss
-    MCC
-    ROC
-    ConfusionMatrix
 
 
 Regression
@@ -217,7 +236,20 @@ Regression
     ExpVariance
 
 
+Plot Metrics	
+~~~~~~~~~~~~	
+
+.. autosummary::	
+    :toctree: generated	
+    :template: class.rst	
+    :nosignatures:	
+
+    ROC	
+    ConfusionMatrix	
+
+
 .. currentmodule:: evalml.problem_types
+
 
 Problem Types
 =============
@@ -265,3 +297,16 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
+
+
+.. currentmodule:: evalml.utils
+
+Utils
+=====
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    convert_to_seconds
+    normalize_confusion_matrix
