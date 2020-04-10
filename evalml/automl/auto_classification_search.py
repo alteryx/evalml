@@ -26,7 +26,8 @@ class AutoClassificationSearch(AutoBase):
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
-                 verbose=True):
+                 verbose=True,
+                 optimize_thresholds=False):
         """Automated classifier pipeline search
 
         Arguments:
@@ -106,7 +107,8 @@ class AutoClassificationSearch(AutoBase):
             additional_objectives=additional_objectives,
             random_state=random_state,
             n_jobs=n_jobs,
-            verbose=verbose
+            verbose=verbose,
+            optimize_thresholds=optimize_thresholds
         )
         if self.problem_type == ProblemTypes.BINARY:
             self.plot_metrics = [ROC(), ConfusionMatrix()]
