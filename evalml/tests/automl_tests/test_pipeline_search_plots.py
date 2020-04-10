@@ -48,12 +48,14 @@ def test_generate_roc(X_y):
                     y_train, y_test = y[train], y[test]
 
                 pipeline.fit(X_train, y_train)
-                plot_data.append(pipeline.get_plot_data(X_test, y_test, [ROC()]))
-
+                scores = {}
+                plot_metric = ROC()
+                y_predicted_proba = pipeline.predict_proba(X_test)
+                y_predicted_proba = y_predicted_proba[:, 1]
+                scores.update({plot_metric.name: plot_metric.score(y_predicted_proba, y_test)})
+                plot_data.append(scores)
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,
                                                          "pipeline_name": pipeline.name}})
-
-            self.results['pipeline_results'].update({0: {"plot_data": plot_data, "pipeline_name": pipeline.name}})
 
     mock_automl = MockAuto()
     search_plots = PipelineSearchPlots(mock_automl)
@@ -131,7 +133,11 @@ def test_generate_confusion_matrix(X_y):
                     y_train, y_test = y[train], y[test]
 
                 pipeline.fit(X_train, y_train)
-                plot_data.append(pipeline.get_plot_data(X_test, y_test, [ConfusionMatrix()]))
+                scores = {}
+                plot_metric = ConfusionMatrix()
+                y_predicted = pipeline.predict(X_test)
+                scores.update({plot_metric.name: plot_metric.score(y_test, y_predicted)})
+                plot_data.append(scores)
                 # store information for testing purposes later
                 y_test_lens.append(len(y_test))
             self.results['pipeline_results'].update({0: {"plot_data": plot_data,

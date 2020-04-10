@@ -304,7 +304,6 @@ class AutoBase:
                         pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
-                plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))
             except Exception as e:
                 if raise_errors:
                     raise e
