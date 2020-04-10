@@ -118,7 +118,7 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
-              conda install -c anaconda py-xgboost
+              conda install -c conda-forge xgboost
       - run:
           name: Install EvalML
           command: |
