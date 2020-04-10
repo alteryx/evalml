@@ -9,7 +9,7 @@ Changelog
         * Changed the output of `score` to return one dictionary :pr:`429`
         * Created binary and multiclass objective subclasses :pr:`504`
         * Updated objectives API :pr:`445`
-        * Remove call to `get_plot_data` from AutoML :pr:`607`
+        * Remove call to `get_plot_data` from AutoML :pr:`615`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -28,7 +28,7 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`607`
+    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
