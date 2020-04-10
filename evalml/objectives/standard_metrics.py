@@ -65,7 +65,7 @@ class F1Micro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted, average='micro')
+        return metrics.f1_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
 class F1Macro(MultiClassificationObjective):
@@ -75,7 +75,7 @@ class F1Macro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted, average='macro')
+        return metrics.f1_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
 class F1Weighted(MultiClassificationObjective):
@@ -95,7 +95,7 @@ class Precision(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.precision_score(y_true, y_predicted)
+        return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
 class PrecisionMicro(MultiClassificationObjective):

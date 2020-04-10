@@ -3,9 +3,11 @@ import pytest
 
 from evalml.exceptions import DimensionMismatchError
 from evalml.objectives import (
+    F1,
     AccuracyBinary,
     BalancedAccuracyBinary,
-    BalancedAccuracyMulticlass
+    BalancedAccuracyMulticlass,
+    Precision
 )
 
 
@@ -47,3 +49,33 @@ def test_binary_accuracy_multi():
 
     assert baccm.score(np.array([1, 0, 3, 1, 2, 1, 0]),
                        np.array([0, 1, 2, 0, 1, 2, 3])) == 0.000
+
+
+def test_f1():
+    f1 = F1()
+    assert f1.score(np.array([0, 1, 0, 0, 1, 0]),
+                    np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
+
+    assert f1.score(np.array([0, 1, 0, 0, 1, 1]),
+                    np.array([0, 1, 0, 0, 1, 1])) == 1.000
+
+    assert f1.score(np.array([0, 0, 0, 0, 1, 0]),
+                    np.array([0, 1, 0, 0, 0, 1])) == 0.000
+
+    assert f1.score(np.array([0, 0]),
+                    np.array([0, 0])) == 0.0
+
+
+def test_precision():
+    precision = Precision()
+    assert precision.score(np.array([0, 1, 0, 0, 1, 0]),
+                           np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
+
+    assert precision.score(np.array([0, 1, 0, 0, 1, 1]),
+                           np.array([0, 1, 0, 0, 1, 1])) == 1.000
+
+    assert precision.score(np.array([0, 0, 0, 0, 1, 0]),
+                           np.array([0, 1, 0, 0, 0, 1])) == 0.000
+
+    assert precision.score(np.array([0, 0]),
+                           np.array([1, 1])) == 0.0

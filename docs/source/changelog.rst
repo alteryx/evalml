@@ -29,6 +29,7 @@ Changelog
         * Pipeline `_name` field changed to `custom_name` :pr:`650`
         * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
         * Remove s3fs as a dev dependency :pr:`664`
+        * Changed `zero_division` behavior for F1 and Precision to return 0.0 :pr:`588`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
