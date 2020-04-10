@@ -93,6 +93,7 @@ class PipelineBase(ABC):
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         def _generate_summary(component_graph):
+            component_graph = copy.copy(component_graph)
             component_graph[-1] = handle_component(component_graph[-1])
             estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
             if estimator is not None:
@@ -338,13 +339,15 @@ class PipelineBase(ABC):
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
-        return handle_component(cls.component_graph[-1]).model_family
+        component_graph = copy.copy(cls.component_graph)
+        return handle_component(component_graph[-1]).model_family
 
     @classproperty
     def hyperparameters(cls):
         "Returns hyperparameter ranges as a flat dictionary from all components "
         hyperparameter_ranges = dict()
-        for component in cls.component_graph:
+        component_graph = copy.copy(cls.component_graph)
+        for component in component_graph:
             component = handle_component(component)
             hyperparameter_ranges.update(component.hyperparameter_ranges)
 
