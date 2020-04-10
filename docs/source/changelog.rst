@@ -8,7 +8,7 @@ Changelog
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
     * Changes
-        * Updated default objectives for classification (log loss) and regression (MSE) :pr:`613`
+        * Updated default objective for binary/multiseries classification to log loss :pr:`613`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`

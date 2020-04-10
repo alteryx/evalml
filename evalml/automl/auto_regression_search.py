@@ -73,7 +73,7 @@ class AutoRegressionSearch(AutoBase):
 
         """
         if objective is None:
-            objective = "mse"
+            objective = "R2"
 
         problem_type = ProblemTypes.REGRESSION
 
