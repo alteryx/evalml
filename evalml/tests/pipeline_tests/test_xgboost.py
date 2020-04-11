@@ -111,7 +111,7 @@ def test_xg_multi(X_y_multi):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
     y_pred = clf.predict(X)
     clf_score = accuracy_score(y, y_pred)
@@ -148,7 +148,7 @@ def test_xg_input_feature_names(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=42)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
