@@ -82,10 +82,10 @@ class AutoClassificationSearch(AutoBase):
 
         # set default objective if none provided
         if objective is None and not multiclass:
-            objective = "precision"
+            objective = "log_loss"
             problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
-            objective = "precision_micro"
+            objective = "log_loss"
             problem_type = ProblemTypes.MULTICLASS
         else:
             objective = get_objective(objective)

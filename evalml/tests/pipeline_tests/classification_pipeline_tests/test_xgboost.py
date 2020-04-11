@@ -6,9 +6,10 @@ from pytest import importorskip
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
+from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import Precision, PrecisionMicro
+from evalml.objectives import Precision, AUCMicro, PrecisionMicro
 from evalml.pipelines import XGBoostBinaryPipeline, XGBoostMulticlassPipeline
 from evalml.pipelines.components import XGBoostClassifier
 from evalml.utils import get_random_seed, get_random_state, import_or_raise
@@ -67,7 +68,7 @@ def test_xg_init(X_y):
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
-def test_lor_objective_tuning(X_y):
+def test_xgboost_objective_tuning(X_y):
     X, y = X_y
 
     parameters = {
@@ -132,7 +133,7 @@ def test_xg_multi(X_y_multi):
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
 
-    objective = PrecisionMicro()
+    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -151,13 +152,13 @@ def test_xg_multi(X_y_multi):
         }
     }
 
-    clf = XGBoostMulticlassPipeline(parameters=parameters)
+    clf = XGBoostMulticlassPipeline(parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
-    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
-
+    clf_score = accuracy_score(y, y_pred)
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_scores[objective.name])
+    assert (sk_score == clf_score)
+    np.testing.assert_almost_equal(sk_score, 0.95, decimal=5)
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
@@ -191,7 +192,7 @@ def test_xg_input_feature_names(X_y):
         }
     }
 
-    clf = XGBoostBinaryPipeline(parameters=parameters)
+    clf = XGBoostBinaryPipeline(parameters=parameters, random_state=42)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
