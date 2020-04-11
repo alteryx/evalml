@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  windows: circleci/windows@2.0.0
+  windows: circleci/windows@2.2.0
 
 executors:
   python:
@@ -113,12 +113,6 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               conda install python-graphviz -q -y
-      - run:
-          name: Install XGBoost
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              conda install -c conda-forge xgboost
       - run:
           name: Install EvalML
           command: |
