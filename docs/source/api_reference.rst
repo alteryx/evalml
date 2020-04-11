@@ -44,20 +44,6 @@ AutoML
     AutoRegressionSearch
 
 
-Plotting
-~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: accessor_method.rst
-    :nosignatures:
-
-    AutoClassificationSearch.plot.get_roc_data
-    AutoClassificationSearch.plot.generate_roc_plot
-    AutoClassificationSearch.plot.get_confusion_matrix_data
-    AutoClassificationSearch.plot.generate_confusion_matrix
-
-
 .. currentmodule:: evalml.model_family
 
 Model Family
