@@ -155,7 +155,7 @@ def test_multi_objective(X_y_multi):
     automl = AutoClassificationSearch(objective='recall')
     assert automl.problem_type == ProblemTypes.BINARY
 
-    automl = AutoClassificationSearch(objective="log_loss_multi", multiclass=True)
+    automl = AutoClassificationSearch(multiclass=True)
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch()

@@ -85,7 +85,7 @@ class AutoClassificationSearch(AutoBase):
             objective = "log_loss_binary"
             problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
-            objective = "log_loss_binary"
+            objective = "log_loss_multi"
             problem_type = ProblemTypes.MULTICLASS
         else:
             objective = get_objective(objective)
