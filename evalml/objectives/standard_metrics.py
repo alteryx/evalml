@@ -9,7 +9,9 @@ from sklearn.utils.multiclass import unique_labels
 from .binary_classification_objective import BinaryClassificationObjective
 from .multiclass_classification_objective import MultiClassificationObjective
 from .regression_objective import RegressionObjective
+
 from evalml.exceptions import DimensionMismatchError
+
 
 class Accuracy(BinaryClassificationObjective):
     """Accuracy score for binary classification"""
