@@ -33,7 +33,7 @@ class BalancedAccuracy(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
