@@ -3,11 +3,8 @@ from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
 from .objective_base import ObjectiveBase
 from .standard_metrics import (
-<<<<<<< HEAD
     AccuracyBinary,
-=======
     BalancedAccuracy,
->>>>>>> changelog updated
     AUC,
     AUCMacro,
     AUCMicro,
