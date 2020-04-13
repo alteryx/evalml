@@ -27,7 +27,7 @@ class AccuracyBinary(BinaryClassificationObjective):
         return metrics.accuracy_score(y_true, y_predicted)
 
 
-class BalancedAccuracy(ObjectiveBase):
+class BalancedAccuracy(BinaryClassificationObjective):
     """Balanced accuracy score for binary classification"""
     name = "Balanced Accuracy"
     greater_is_better = True
