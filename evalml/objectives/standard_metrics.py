@@ -1,335 +1,311 @@
+from abc import ABC, abstractmethod
+
 import numpy as np
 import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 from sklearn.utils.multiclass import unique_labels
 
-from .objective_base import ObjectiveBase
-
-from evalml.problem_types import ProblemTypes
+from .binary_classification_objective import BinaryClassificationObjective
+from .multiclass_classification_objective import MultiClassificationObjective
+from .regression_objective import RegressionObjective
 
 
 # todo does this need tuning?
-class F1(ObjectiveBase):
+class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
-    needs_fitting = False
+    name = "F1"
     greater_is_better = True
     score_needs_proba = False
-    name = "F1"
-    problem_types = [ProblemTypes.BINARY]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted)
 
 
-class F1Micro(ObjectiveBase):
+class F1Micro(MultiClassificationObjective):
     """F1 score for multiclass classification using micro averaging"""
-    needs_fitting = False
+    name = "F1 Micro"
     greater_is_better = True
     score_needs_proba = False
-    name = "F1 Micro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted, average='micro')
 
 
-class F1Macro(ObjectiveBase):
+class F1Macro(MultiClassificationObjective):
     """F1 score for multiclass classification using macro averaging"""
-    needs_fitting = False
+    name = "F1 Macro"
     greater_is_better = True
     score_needs_proba = False
-    name = "F1 Macro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted, average='macro')
 
 
-class F1Weighted(ObjectiveBase):
+class F1Weighted(MultiClassificationObjective):
     """F1 score for multiclass classification using weighted averaging"""
-    needs_fitting = False
+    name = "F1 Weighted"
     greater_is_better = True
     score_needs_proba = False
-    name = "F1 Weighted"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.f1_score(y_true, y_predicted, average='weighted')
 
 
-class Precision(ObjectiveBase):
+class Precision(BinaryClassificationObjective):
     """Precision score for binary classification"""
-    needs_fitting = False
+    name = "Precision"
     greater_is_better = True
     score_needs_proba = False
-    name = "Precision"
-    problem_types = [ProblemTypes.BINARY]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.precision_score(y_true, y_predicted)
 
 
-class PrecisionMicro(ObjectiveBase):
+class PrecisionMicro(MultiClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
-    needs_fitting = False
+    name = "Precision Micro"
     greater_is_better = True
     score_needs_proba = False
-    name = "Precision Micro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.precision_score(y_true, y_predicted, average='micro')
 
 
-class PrecisionMacro(ObjectiveBase):
+class PrecisionMacro(MultiClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
-    needs_fitting = False
+    name = "Precision Macro"
     greater_is_better = True
     score_needs_proba = False
-    name = "Precision Macro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.precision_score(y_true, y_predicted, average='macro')
 
 
-class PrecisionWeighted(ObjectiveBase):
+class PrecisionWeighted(MultiClassificationObjective):
     """Precision score for multiclass classification using weighted averaging"""
-    needs_fitting = False
+    name = "Precision Weighted"
     greater_is_better = True
     score_needs_proba = False
-    name = "Precision Weighted"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.precision_score(y_true, y_predicted, average='weighted')
 
 
-class Recall(ObjectiveBase):
+class Recall(BinaryClassificationObjective):
     """Recall score for binary classification"""
-    needs_fitting = False
+    name = "Recall"
     greater_is_better = True
     score_needs_proba = False
-    name = "Recall"
-    problem_types = [ProblemTypes.BINARY]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted)
 
 
-class RecallMicro(ObjectiveBase):
+class RecallMicro(MultiClassificationObjective):
     """Recall score for multiclass classification using micro averaging"""
-    needs_fitting = False
+    name = "Recall Micro"
     greater_is_better = True
     score_needs_proba = False
-    name = "Recall Micro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted, average='micro')
 
 
-class RecallMacro(ObjectiveBase):
+class RecallMacro(MultiClassificationObjective):
     """Recall score for multiclass classification using macro averaging"""
-    needs_fitting = False
+    name = "Recall Macro"
     greater_is_better = True
     score_needs_proba = False
-    name = "Recall Macro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted, average='macro')
 
 
-class RecallWeighted(ObjectiveBase):
+class RecallWeighted(MultiClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
-    needs_fitting = False
+    name = "Recall Weighted"
     greater_is_better = True
     score_needs_proba = False
-    name = "Recall Weighted"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.recall_score(y_true, y_predicted, average='weighted')
 
 
-class AUC(ObjectiveBase):
+class AUC(BinaryClassificationObjective):
     """AUC score for binary classification"""
-    needs_fitting = False
+    name = "AUC"
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC"
-    problem_types = [ProblemTypes.BINARY]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.roc_auc_score(y_true, y_predicted)
 
 
-class AUCMicro(ObjectiveBase):
+class AUCMicro(MultiClassificationObjective):
     """AUC score for multiclass classification using micro averaging"""
-    needs_fitting = False
+    name = "AUC Micro"
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC Micro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
 
-class AUCMacro(ObjectiveBase):
+class AUCMacro(MultiClassificationObjective):
     """AUC score for multiclass classification using macro averaging"""
-    needs_fitting = False
+    name = "AUC Macro"
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC Macro"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
 
-class AUCWeighted(ObjectiveBase):
+class AUCWeighted(MultiClassificationObjective):
     """AUC Score for multiclass classification using weighted averaging"""
-    needs_fitting = False
+    name = "AUC Weighted"
     greater_is_better = True
     score_needs_proba = True
-    name = "AUC Weighted"
-    problem_types = [ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='weighted')
 
 
-class LogLoss(ObjectiveBase):
-    """Log Loss for both binary and multiclass classification"""
-    needs_fitting = False
+class LogLossBinary(BinaryClassificationObjective):
+    """Log Loss for binary classification"""
+    name = "Log Loss Binary"
     greater_is_better = False
     score_needs_proba = True
-    name = "Log Loss"
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.log_loss(y_true, y_predicted)
 
 
-class MCC(ObjectiveBase):
-    """Matthews correlation coefficient for both binary and multiclass classification"""
-    needs_fitting = False
+class LogLossMulticlass(MultiClassificationObjective):
+    """Log Loss for multiclass classification"""
+    name = "Log Loss Multiclass"
+    greater_is_better = False
+    score_needs_proba = True
+
+    def objective_function(self, y_predicted, y_true, X=None):
+        return metrics.log_loss(y_true, y_predicted)
+
+
+class MCCBinary(BinaryClassificationObjective):
+    """Matthews correlation coefficient for binary classification"""
+    name = "MCC Binary"
     greater_is_better = True
     score_needs_proba = False
-    name = "MCC"
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
-class R2(ObjectiveBase):
-    """Coefficient of determination for regression"""
-    needs_fitting = False
+class MCCMulticlass(MultiClassificationObjective):
+    """Matthews correlation coefficient for multiclass classification"""
+    name = "MCC Multiclass"
     greater_is_better = True
     score_needs_proba = False
-    name = "R2"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
+        return metrics.matthews_corrcoef(y_true, y_predicted)
+
+
+class R2(RegressionObjective):
+    """Coefficient of determination for regression"""
+    name = "R2"
+    greater_is_better = True
+    score_needs_proba = False
+
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.r2_score(y_true, y_predicted)
 
 
-class MAE(ObjectiveBase):
+class MAE(RegressionObjective):
     """Mean absolute error for regression"""
-    needs_fitting = False
+    name = "MAE"
     greater_is_better = False
     score_needs_proba = False
-    name = "MAE"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.mean_absolute_error(y_true, y_predicted)
 
 
-class MSE(ObjectiveBase):
+class MSE(RegressionObjective):
     """Mean squared error for regression"""
-    needs_fitting = False
+    name = "MSE"
     greater_is_better = False
     score_needs_proba = False
-    name = "MSE"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.mean_squared_error(y_true, y_predicted)
 
 
-class MSLE(ObjectiveBase):
+class MSLE(RegressionObjective):
     """Mean squared log error for regression"""
-    needs_fitting = False
+    name = "MSLE"
     greater_is_better = False
     score_needs_proba = False
-    name = "MSLE"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
 
 
-class MedianAE(ObjectiveBase):
+class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
-    needs_fitting = False
+    name = "MedianAE"
     greater_is_better = False
     score_needs_proba = False
-    name = "MedianAE"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.median_absolute_error(y_true, y_predicted)
 
 
-class MaxError(ObjectiveBase):
+class MaxError(RegressionObjective):
     """Maximum residual error for regression"""
-    needs_fitting = False
+    name = "MaxError"
     greater_is_better = False
     score_needs_proba = False
-    name = "MaxError"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.max_error(y_true, y_predicted)
 
 
-class ExpVariance(ObjectiveBase):
+class ExpVariance(RegressionObjective):
     """Explained variance score for regression"""
-    needs_fitting = False
+    name = "ExpVariance"
     greater_is_better = True
     score_needs_proba = False
-    name = "ExpVariance"
-    problem_types = [ProblemTypes.REGRESSION]
 
-    def score(self, y_predicted, y_true):
+    def objective_function(self, y_predicted, y_true, X=None):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class ROC(ObjectiveBase):
+class PlotMetric(ABC):
+    name = None
+    score_needs_proba = False
+
+    @abstractmethod
+    def score(self, y_predicted, y_true):
+        raise NotImplementedError("score() is not implemented!")
+
+
+class ROC(PlotMetric):
     """Receiver Operating Characteristic score for binary classification."""
-    score_needs_proba = True
     name = "ROC"
-    problem_types = [ProblemTypes.BINARY]
+    score_needs_proba = True
 
     def score(self, y_predicted, y_true):
         return metrics.roc_curve(y_true, y_predicted)
 
 
-class ConfusionMatrix(ObjectiveBase):
-    """Confusion matrix for classification problems"""
-    needs_fitting = False
-    greater_is_better = True
-    score_needs_proba = False
+class ConfusionMatrix(PlotMetric):
+    """Confusion matrix for binary and multiclass classification problems"""
     name = "Confusion Matrix"
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def score(self, y_predicted, y_true):
         labels = unique_labels(y_predicted, y_true)

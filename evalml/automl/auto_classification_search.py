@@ -26,7 +26,8 @@ class AutoClassificationSearch(AutoBase):
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
-                 verbose=True):
+                 verbose=True,
+                 optimize_thresholds=False):
         """Automated classifier pipeline search
 
         Arguments:
@@ -81,13 +82,14 @@ class AutoClassificationSearch(AutoBase):
 
         # set default objective if none provided
         if objective is None and not multiclass:
-            objective = "log_loss"
+            objective = "log_loss_binary"
             problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
-            objective = "log_loss"
+            objective = "log_loss_multi"
             problem_type = ProblemTypes.MULTICLASS
         else:
-            problem_type = self._set_problem_type(objective, multiclass)
+            objective = get_objective(objective)
+            problem_type = objective.problem_type
 
         super().__init__(
             tuner=tuner,
@@ -105,41 +107,10 @@ class AutoClassificationSearch(AutoBase):
             additional_objectives=additional_objectives,
             random_state=random_state,
             n_jobs=n_jobs,
-            verbose=verbose
+            verbose=verbose,
+            optimize_thresholds=optimize_thresholds
         )
-
-        # hacky, disallows non-numeric metrics from being primary objective
-        if isinstance(self.objective, ConfusionMatrix) or isinstance(self.objective, ROC):
-            raise RuntimeError("Cannot use Confusion Matrix or ROC as the main objective.")
-
-        # if ROC and ConfusionMatrix not specified as additional objectives, add so we can calculate plots
-        plot_metrics = [ROC(), ConfusionMatrix()]
-        for metric in plot_metrics:
-            if self.problem_type in metric.problem_types:
-                existing_metric = next((obj for obj in self.additional_objectives if obj.name == metric.name), None)
-                if existing_metric is None:
-                    self.additional_objectives.append(get_objective(metric))
-
-    def _set_problem_type(self, objective, multiclass):
-        """Sets the problem type of the AutoClassificationSearch to either binary or multiclass.
-
-        If there is an objective either:
-            a. Set problem_type to MULTICLASS if objective is only multiclass and multiclass is false
-            b. Set problem_type to MUTLICLASS if multiclass is true
-            c. Default to BINARY
-
-        Arguments:
-            objective (Object): the objective to optimize
-            multiclass (bool): boolean representing whether search is for multiclass problems or not
-
-        Returns:
-            ProblemTypes enum representing type of problem to set AutoClassificationSearch to
-
-        """
-        problem_type = ProblemTypes.BINARY
-        # if exclusively multiclass: infer
-        if [ProblemTypes.MULTICLASS] == get_objective(objective).problem_types:
-            problem_type = ProblemTypes.MULTICLASS
-        elif multiclass:
-            problem_type = ProblemTypes.MULTICLASS
-        return problem_type
+        if self.problem_type == ProblemTypes.BINARY:
+            self.plot_metrics = [ROC(), ConfusionMatrix()]
+        else:
+            self.plot_metrics = [ConfusionMatrix()]
