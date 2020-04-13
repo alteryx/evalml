@@ -3,7 +3,7 @@
 ## 0. Pre-release Checklist
 Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
-* [All circleci tests are green on master](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=master).
+* [All CircleCI tests are green on master](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=master).
 * The [Read the Docs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed.
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on master.
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
@@ -13,7 +13,7 @@ A release PR should have the version number as the title (i.e. "vX.X.X") and the
 
 Make the following changes in the release PR:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
-* Reformat the changelog to github markdown. This is currently done by hand and can be done faster with some clever text editor features.
+* Reformat the changelog to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). This is currently done by hand and can be done faster with some clever text editor features.
 * Move changelog items from `Future Releases` into the correct version number.
 * Confirm that all release items are in the changelog under the correct header, and that no extra items are listed.
 
@@ -22,11 +22,11 @@ An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 **Note**: get the PR reviewed and approved before merging. Also, verify again that all tests are currently green on master, that all checkin tests are passing, that the Read the Docs build for the release PR branch has passed and that the resulting docs contain the expected changelog. After merging, verify Read the Docs "latest" is correct.
 
 ## 2. Create GitHub Release
-After the release pull request has been merged into the master branch, it is time to draft the github release. [Here's github's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that.
+After the release pull request has been merged into the master branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that.
 * The target should be the master branch.
 * The tag should be the version number with a "v" prefix (e.g. "vX.X.X").
 * Release title is the same as the tag.
-* Release description should be the full changelog updates for the release, reformatted as github markdown.
+* Release description should be the full changelog updates for the release, reformatted as GitHub markdown.
 
 Save the draft and review it. You could start the draft while waiting for the release PR to be ready to merge. When it's ready to go, hit "Publish release."
 
