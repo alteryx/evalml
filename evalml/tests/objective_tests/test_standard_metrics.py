@@ -12,6 +12,6 @@ def test_accuracy():
     with pytest.raises(ValueError, match="Length of inputs is 0"):
         acc.score(y_predicted=[], y_true=[1])
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        acc.score(y_predicted=[], y_true=[0])
+        acc.score(y_predicted=[1], y_true=[])
     with pytest.raises(DimensionMismatchError):
         acc.score(y_predicted=[0], y_true=[1, 0])

@@ -13,7 +13,7 @@ from .regression_objective import RegressionObjective
 from evalml.exceptions import DimensionMismatchError
 
 
-class Accuracy(BinaryClassificationObjective):
+class AccuracyBinary(BinaryClassificationObjective):
     """Accuracy score for binary classification"""
     name = "Accuracy"
     greater_is_better = True

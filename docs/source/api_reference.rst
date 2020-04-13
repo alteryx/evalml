@@ -183,7 +183,7 @@ Classification
     :template: class.rst
     :nosignatures:
 
-    Accuracy
+    AccuracyBinary
     AUC
     AUCMacro
     AUCMicro
