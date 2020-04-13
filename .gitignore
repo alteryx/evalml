@@ -1,7 +1,10 @@
-#Licenses
+# Licenses
 licenses/
 # IDE
 .vscode
+# Test Files
+test1
+test1.xzy
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
