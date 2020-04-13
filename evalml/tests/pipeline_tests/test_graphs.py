@@ -21,9 +21,8 @@ def test_pipeline():
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, objective, parameters):
-            super().__init__(objective=objective,
-                             parameters=parameters)
+        def __init__(self, parameters):
+            super().__init__(parameters=parameters)
 
         @property
         def feature_importances(self):
@@ -33,7 +32,7 @@ def test_pipeline():
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
-    return TestPipeline(objective='precision', parameters={})
+    return TestPipeline(parameters={})
 
 
 def test_returns_digraph_object(test_pipeline):

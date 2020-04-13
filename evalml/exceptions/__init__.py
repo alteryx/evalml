@@ -1,2 +1,2 @@
 # flake8:noqa
-from .exceptions import IllFormattedClassNameError, MethodPropertyNotFoundError
+from .exceptions import MethodPropertyNotFoundError, ObjectiveNotFoundError, IllFormattedClassNameError, DimensionMismatchError

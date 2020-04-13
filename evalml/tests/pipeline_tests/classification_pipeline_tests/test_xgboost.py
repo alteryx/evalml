@@ -1,6 +1,7 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+import pytest
 from pytest import importorskip
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
@@ -8,8 +9,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import AUCMicro
-from evalml.pipelines import XGBoostPipeline
+from evalml.objectives import Precision, PrecisionMicro
+from evalml.pipelines import XGBoostBinaryPipeline, XGBoostMulticlassPipeline
 from evalml.pipelines.components import XGBoostClassifier
 from evalml.utils import get_random_seed, get_random_state, import_or_raise
 
@@ -19,7 +20,6 @@ importorskip('xgboost', reason='Skipping test because xgboost not installed')
 def test_xg_init(X_y):
     X, y = X_y
 
-    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median',
@@ -42,7 +42,7 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=1)
+    clf = XGBoostBinaryPipeline(parameters=parameters, random_state=1)
 
     expected_parameters = {
         'Simple Imputer': {
@@ -68,6 +68,47 @@ def test_xg_init(X_y):
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
+def test_xgboost_objective_tuning(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X[0]),
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostBinaryPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
@@ -91,8 +132,6 @@ def test_xg_multi(X_y_multi):
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
-
-    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -111,11 +150,10 @@ def test_xg_multi(X_y_multi):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=get_random_state(random_seed))
+    clf = XGBoostMulticlassPipeline(parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
     y_pred = clf.predict(X)
     clf_score = accuracy_score(y, y_pred)
-
     assert((y_pred == sk_pipeline.predict(X)).all())
     assert (sk_score == clf_score)
     np.testing.assert_almost_equal(sk_score, 0.95, decimal=5)
@@ -123,13 +161,17 @@ def test_xg_multi(X_y_multi):
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
 
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y)
+    y_pred_with_objective = clf.predict(X)
+    assert((y_pred == y_pred_with_objective).all())
+
 
 def test_xg_input_feature_names(X_y):
     X, y = X_y
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median'
@@ -148,7 +190,7 @@ def test_xg_input_feature_names(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=42)
+    clf = XGBoostBinaryPipeline(parameters=parameters, random_state=42)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

@@ -3,6 +3,16 @@ class MethodPropertyNotFoundError(Exception):
     pass
 
 
+class ObjectiveNotFoundError(Exception):
+    """Exception to raise when specified objective does not exist."""
+    pass
+
+
 class IllFormattedClassNameError(Exception):
     """Exception to raise when a class name does not comply with EvalML standards"""
+    pass
+
+
+class DimensionMismatchError(Exception):
+    """Exception to raise when two input dimensions are mismatched and cannot be compared"""
     pass

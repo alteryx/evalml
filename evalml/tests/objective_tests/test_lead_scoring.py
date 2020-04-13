@@ -16,7 +16,7 @@ def test_lead_scoring_objective(X_y):
     pipeline = automl.best_pipeline
     pipeline.predict(X)
     pipeline.predict_proba(X)
-    pipeline.score(X, y)
+    pipeline.score(X, y, [objective])
 
     predicted = pd.Series([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)

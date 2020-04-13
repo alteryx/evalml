@@ -8,10 +8,9 @@ from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision
-from evalml.pipelines import LogisticRegressionPipeline, PipelineBase
+from evalml.objectives import FraudCost, Precision, Recall
+from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.pipelines.components import (
-    Estimator,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RFClassifierSelectFromModel,
@@ -40,9 +39,9 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_pipelines()) == 4
+        assert len(all_pipelines()) == 6
     else:
-        assert len(all_pipelines()) == 7
+        assert len(all_pipelines()) == 11
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -55,7 +54,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_pipelines_core_dependencies_mock():
-    assert len(all_pipelines()) == 4
+    assert len(all_pipelines()) == 6
 
 
 def test_get_pipelines(has_minimal_dependencies):
@@ -90,7 +89,6 @@ def test_get_pipelines_core_dependencies_mock():
 
 @pytest.fixture
 def lr_pipeline():
-    objective = Precision()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median'
@@ -100,8 +98,7 @@ def lr_pipeline():
             'C': 3.0,
         }
     }
-
-    return LogisticRegressionPipeline(objective=objective, parameters=parameters, random_state=42)
+    return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)
 
 
 def test_required_fields():
@@ -109,13 +106,13 @@ def test_required_fields():
         component_graph = ['Logistic Regression Classifier']
 
     with pytest.raises(TypeError):
-        TestPipelineWithComponentGraph(parameters={}, objective='precision')
+        TestPipelineWithComponentGraph(parameters={})
 
     class TestPipelineWithProblemTypes(PipelineBase):
         supported_problem_types = ['binary']
 
     with pytest.raises(TypeError):
-        TestPipelineWithProblemTypes(parameters={}, objective='precision')
+        TestPipelineWithProblemTypes(parameters={})
 
 
 def test_serialization(X_y, tmpdir, lr_pipeline):
@@ -124,15 +121,14 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
     pipeline = lr_pipeline
     pipeline.fit(X, y)
     pipeline.save(path)
-    assert pipeline.score(X, y) == PipelineBase.load(path).score(X, y)
+    assert pipeline.score(X, y, ['precision']) == PipelineBase.load(path).score(X, y, ['precision'])
 
 
 @pytest.fixture
 def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     X, y = X_y
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    MockPrecision = type('MockPrecision', (Precision,), {})
-    pipeline = LogisticRegressionPipeline(objective=MockPrecision(), parameters=lr_pipeline.parameters)
+    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
     pipeline.save(path)
     return path
@@ -144,9 +140,9 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = LogisticRegressionPipeline(objective=objective, parameters=lr_pipeline.parameters)
+    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
-    assert PipelineBase.load(pickled_pipeline_path).score(X, y) == pipeline.score(X, y)
+    assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
 def test_reproducibility(X_y):
@@ -168,13 +164,13 @@ def test_reproducibility(X_y):
         }
     }
 
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf_1 = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf_1.fit(X, y)
 
-    assert clf_1.score(X, y) == clf.score(X, y)
+    assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
 
 def test_indexing(X_y, lr_pipeline):
@@ -199,11 +195,9 @@ def test_describe(X_y, capsys, lr_pipeline):
     lrp = lr_pipeline
     lrp.describe()
     out, err = capsys.readouterr()
-
-    assert "Logistic Regression Pipeline" in out
-    assert "Problem Types: Binary Classification, Multiclass Classification" in out
+    assert "Logistic Regression Binary Pipeline" in out
+    assert "Problem Types: Binary Classification" in out
     assert "Model Family: Linear Model" in out
-    assert "Objective to Optimize: Precision (greater is better)" in out
 
     for component in lrp.component_graph:
         if component.hyperparameter_ranges:
@@ -246,7 +240,7 @@ def test_name():
 
     assert TestNamePipeline.name == "Test Name Pipeline"
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
-    assert TestDefinedNamePipeline(parameters={}, objective='precision').name == "Cool Logistic Regression"
+    assert TestDefinedNamePipeline(parameters={}).name == "Cool Logistic Regression"
     with pytest.raises(IllFormattedClassNameError):
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
@@ -255,7 +249,7 @@ def test_summary(X_y, lr_pipeline):
     X, y = X_y
     clf = lr_pipeline
     assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
-    assert LogisticRegressionPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_estimator_not_last(X_y):
@@ -271,14 +265,14 @@ def test_estimator_not_last(X_y):
         }
     }
 
-    class MockLogisticRegressionPipeline(PipelineBase):
+    class MockLogisticRegressionBinaryPipeline(PipelineBase):
         name = "Mock Logistic Regression Pipeline"
         supported_problem_types = ['binary', 'multiclass']
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockLogisticRegressionPipeline(objective='recall', parameters=parameters)
+        MockLogisticRegressionBinaryPipeline(parameters=parameters)
 
 
 def test_multi_format_creation(X_y):
@@ -304,7 +298,7 @@ def test_multi_format_creation(X_y):
         }
     }
 
-    clf = TestPipeline(parameters=parameters, objective='precision')
+    clf = TestPipeline(parameters=parameters)
     correct_components = [SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
@@ -312,7 +306,7 @@ def test_multi_format_creation(X_y):
     assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
-    clf.score(X, y)
+    clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
 
@@ -329,7 +323,7 @@ def test_multiple_feature_selectors(X_y):
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-    clf = TestPipeline(parameters={}, objective='precision')
+    clf = TestPipeline(parameters={})
     correct_components = [SimpleImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
@@ -337,7 +331,7 @@ def test_multiple_feature_selectors(X_y):
     assert clf.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     clf.fit(X, y)
-    clf.score(X, y)
+    clf.score(X, y, ['precision'])
     assert not clf.feature_importances.isnull().all().all()
 
 
@@ -347,7 +341,30 @@ def test_problem_types():
         supported_problem_types = ['binary', 'regression']
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        TestPipeline(parameters={}, objective='precision')
+        TestPipeline(parameters={})
+
+
+def test_score_with_list_of_multiple_objectives(X_y):
+    X, y = X_y
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf.fit(X, y)
+    recall_name = Recall.name
+    precision_name = Precision.name
+    objective_names = [recall_name, precision_name]
+    scores = clf.score(X, y, objective_names)
+    assert len(scores.values()) == 2
+    assert all(name in scores.keys() for name in objective_names)
+    assert not any(np.isnan(val) for val in scores.values())
 
 
 def test_no_default_parameters():
@@ -367,9 +384,9 @@ def test_no_default_parameters():
         supported_problem_types = ['binary']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={}, objective='precision')
+        TestPipeline(parameters={})
 
-    assert TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision')
+    assert TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
 def test_no_random_state_argument_in_component():
@@ -389,7 +406,7 @@ def test_no_random_state_argument_in_component():
         supported_problem_types = ['binary']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={'Mock Component': {'a': 42}}, objective='precision', random_state=0)
+        TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
 
 
 def test_init_components_invalid_parameters():
@@ -404,7 +421,7 @@ def test_init_components_invalid_parameters():
     }
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
-        TestPipeline(parameters=parameters, objective='precision')
+        TestPipeline(parameters=parameters)
 
 
 def test_correct_parameters(lr_pipeline):
@@ -427,7 +444,7 @@ def test_hyperparameters():
     }
 
     assert MockPipeline.hyperparameters == hyperparameters
-    assert MockPipeline(parameters={}, objective='precision').hyperparameters == hyperparameters
+    assert MockPipeline(parameters={}).hyperparameters == hyperparameters
 
 
 def test_hyperparameters_override():
@@ -448,22 +465,22 @@ def test_hyperparameters_override():
     }
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters
-    assert MockPipelineOverRide(parameters={}, objective='precision').hyperparameters == hyperparameters
+    assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
-def test_hyperparameters_none():
-    class MockEstimator(Estimator):
-        hyperparameter_ranges = {}
-        model_family = ModelFamily.NONE
-        name = "Mock Estimator"
-        supported_problem_types = [ProblemTypes.BINARY]
-
-        def __init__(self, random_state=0):
-            super().__init__(parameters={}, component_obj={}, random_state=random_state)
-
+def test_hyperparameters_none(dummy_estimator):
     class MockPipelineNone(PipelineBase):
-        component_graph = [MockEstimator()]
+        component_graph = [dummy_estimator()]
         supported_problem_types = ['binary']
 
     assert MockPipelineNone.hyperparameters == {}
-    assert MockPipelineNone(parameters={}, objective='precision').hyperparameters == {}
+    assert MockPipelineNone(parameters={}).hyperparameters == {}
+
+
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline, X_y):
+    X, y = X_y
+    mock_predict.return_value = np.array([1] * 100)
+    with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
+        dummy_regression_pipeline.score(X, y, ['recall', 'auc'])
+    mock_predict.assert_called()

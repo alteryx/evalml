@@ -1,10 +1,14 @@
 import copy
 
 from .classification import (
-    CatBoostClassificationPipeline,
-    LogisticRegressionPipeline,
-    RFClassificationPipeline,
-    XGBoostPipeline
+    CatBoostBinaryClassificationPipeline,
+    CatBoostMulticlassClassificationPipeline,
+    LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline,
+    RFBinaryClassificationPipeline,
+    RFMulticlassClassificationPipeline,
+    XGBoostBinaryPipeline,
+    XGBoostMulticlassPipeline
 )
 from .regression import (
     CatBoostRegressionPipeline,
@@ -16,12 +20,16 @@ from evalml.model_family import handle_model_family
 from evalml.problem_types import handle_problem_types
 from evalml.utils import import_or_raise
 
-_ALL_PIPELINES = [RFClassificationPipeline,
-                  XGBoostPipeline,
-                  LogisticRegressionPipeline,
+_ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
+                  CatBoostMulticlassClassificationPipeline,
+                  LogisticRegressionBinaryPipeline,
+                  LogisticRegressionMulticlassPipeline,
+                  RFBinaryClassificationPipeline,
+                  RFMulticlassClassificationPipeline,
+                  XGBoostBinaryPipeline,
+                  XGBoostMulticlassPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
-                  CatBoostClassificationPipeline,
                   CatBoostRegressionPipeline]
 
 
@@ -35,11 +43,13 @@ def all_pipelines():
     try:
         import_or_raise("xgboost", error_msg="XGBoost not installed.")
     except ImportError:
-        pipelines.remove(XGBoostPipeline)
+        pipelines.remove(XGBoostBinaryPipeline)
+        pipelines.remove(XGBoostMulticlassPipeline)
     try:
         import_or_raise("catboost", error_msg="Catboost not installed.")
     except ImportError:
-        pipelines.remove(CatBoostClassificationPipeline)
+        pipelines.remove(CatBoostBinaryClassificationPipeline)
+        pipelines.remove(CatBoostMulticlassClassificationPipeline)
         pipelines.remove(CatBoostRegressionPipeline)
     return pipelines
 

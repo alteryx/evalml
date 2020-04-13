@@ -10,8 +10,6 @@ from evalml import AutoClassificationSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    ROC,
-    ConfusionMatrix,
     FraudCost,
     Precision,
     PrecisionMicro,
@@ -101,11 +99,13 @@ def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
     automl.search(X, y, raise_errors=True)
+    assert isinstance(automl.objective, Precision)
+    assert automl.best_pipeline.threshold is not None
 
 
 def test_binary_auto(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective="recall", multiclass=False, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
     automl.search(X, y, raise_errors=True)
     y_pred = automl.best_pipeline.predict(X)
 
@@ -137,17 +137,17 @@ def test_multi_auto(X_y_multi):
     expected_additional_objectives = get_objectives('multiclass')
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
+
     for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
         assert type(additional) is type(expected)
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
-    with pytest.raises(ValueError, match=error_msg):
-        automl = AutoClassificationSearch(objective="recall", multiclass=True)
-
-    automl = AutoClassificationSearch(objective="log_loss")
+    automl = AutoClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
+
+    automl = AutoClassificationSearch(objective="log_loss_multi")
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch(objective='recall_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
@@ -233,6 +233,45 @@ def test_additional_objectives(X_y):
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold_enabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_predict_proba.assert_called()
+    mock_optimize_threshold.assert_called()
+    assert automl.best_pipeline.threshold == 0.8
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold_disabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    assert not mock_predict_proba.called
+    assert not mock_optimize_threshold.called
+    assert automl.best_pipeline.threshold == 0.5
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert automl.best_pipeline.threshold == 0.5
+
+
 def test_describe_pipeline_objective_ordered(X_y, capsys):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
@@ -243,7 +282,7 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
-    objectives_names = [automl.objective.name] + [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
+    objectives_names = [obj.name for obj in objectives]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''
@@ -344,18 +383,6 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
-
-
-def test_plots_as_main_objectives(X_y):
-    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        automl = AutoClassificationSearch(objective='confusion_matrix')
-    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        automl = AutoClassificationSearch(objective='ROC')
-    automl = AutoClassificationSearch(objective='f1', additional_objectives=['recall'])
-    roc = next((obj for obj in automl.additional_objectives if isinstance(obj, ROC)), None)
-    assert roc
-    cfm = next((obj for obj in automl.additional_objectives if isinstance(obj, ConfusionMatrix)), None)
-    assert cfm
 
 
 @patch('IPython.display.display')

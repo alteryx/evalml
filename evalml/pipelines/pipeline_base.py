@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 import cloudpickle
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 from .components import Estimator, handle_component
 from .graphs import make_feature_importance_graph, make_pipeline_graph
@@ -45,7 +44,7 @@ class PipelineBase(ABC):
 
     custom_hyperparameters = None
 
-    def __init__(self, parameters, objective, random_state=0):
+    def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -54,19 +53,15 @@ class PipelineBase(ABC):
             supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
-            objective (ObjectiveBase): the objective to optimize
-
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
-        self.objective = get_objective(objective)
         self.input_feature_names = {}
         self.results = {}
-
+        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -169,11 +164,6 @@ class PipelineBase(ABC):
         logger.log_title(self.name)
         logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
         logger.log("Model Family: {}".format(str(self.model_family)))
-        better_string = "lower is better"
-        if self.objective.greater_is_better:
-            better_string = "greater is better"
-        objective_string = "Objective to Optimize: {} ({})".format(self.objective.name, better_string)
-        logger.log(objective_string)
 
         if self.estimator.name in self.input_feature_names:
             logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
@@ -201,7 +191,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
-    def fit(self, X, y, objective_fit_size=.2):
+    def fit(self, X, y):
         """Build a model
 
         Arguments:
@@ -209,39 +199,24 @@ class PipelineBase(ABC):
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
-
         Returns:
-
             self
 
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.objective.needs_fitting:
-            X, X_objective, y, y_objective = train_test_split(X, y, test_size=objective_fit_size, random_state=self.estimator.random_state)
-
         self._fit(X, y)
-
-        if self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X_objective)
-
-            if self.objective.uses_extra_columns:
-                self.objective.fit(y_predicted, y_objective, X_objective)
-            else:
-                self.objective.fit(y_predicted, y_objective)
         return self
 
-    def predict(self, X):
+    def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to make predictions
 
         Returns:
             pd.Series : estimated labels
@@ -250,47 +225,18 @@ class PipelineBase(ABC):
             X = pd.DataFrame(X)
 
         X_t = self._transform(X)
-
-        if self.objective and self.objective.needs_fitting:
-            y_predicted = self.predict_proba(X)
-
-            if self.objective.uses_extra_columns:
-                return self.objective.predict(y_predicted, X)
-
-            return self.objective.predict(y_predicted)
-
         return self.estimator.predict(X_t)
 
-    def predict_proba(self, X):
-        """Make probability estimates for labels.
-
-        Args:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-
-        Returns:
-            pd.DataFrame : probability estimates
-        """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        X = self._transform(X)
-        proba = self.estimator.predict_proba(X)
-
-        if proba.shape[1] <= 2:
-            return proba[:, 1]
-        else:
-            return proba
-
-    def score(self, X, y, other_objectives=None):
+    def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Args:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
-            other_objectives (list): list of other objectives to score
+            objectives (list): Non-empty list of objectives to score on
 
         Returns:
-            float, dict:  score, ordered dictionary of other objective scores
+            dict: ordered dictionary of objective scores
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -298,32 +244,20 @@ class PipelineBase(ABC):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        other_objectives = other_objectives or []
-        other_objectives = [get_objective(o) for o in other_objectives]
+        objectives = [get_objective(o) for o in objectives]
         y_predicted = None
-        y_predicted_proba = None
-
-        scores = []
-        for objective in [self.objective] + other_objectives:
+        scores = OrderedDict()
+        for objective in objectives:
             if objective.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                y_predictions = y_predicted_proba
+                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
                 y_predictions = y_predicted
 
-            if objective.uses_extra_columns:
-                scores.append(objective.score(y_predictions, y, X))
-            else:
-                scores.append(objective.score(y_predictions, y))
-        if not other_objectives:
-            return scores[0], {}
+            scores.update({objective.name: objective.score(y_predictions, y, X)})
 
-        other_scores = OrderedDict(zip([n.name for n in other_objectives], scores[1:]))
-
-        return scores[0], other_scores
+        return scores
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph
