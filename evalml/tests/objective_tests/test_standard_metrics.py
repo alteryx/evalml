@@ -24,7 +24,7 @@ def test_accuracy():
 def test_binary_accuracy():
     bacc = BalancedAccuracy()
     assert bacc.score(np.array([0, 1, 0, 0, 1, 0]),
-                      np.array([0, 1, 0, 0, 0, 1])) == 0.625
+                      np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.625, 1e-5)
 
     assert bacc.score(np.array([0, 1, 0, 0, 1, 0]),
                       np.array([0, 1, 0, 0, 1, 0])) == 1.000
