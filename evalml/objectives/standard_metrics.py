@@ -27,6 +27,16 @@ class AccuracyBinary(BinaryClassificationObjective):
         return metrics.accuracy_score(y_true, y_predicted)
 
 
+class BalancedAccuracy(BinaryClassificationObjective):
+    """Balanced accuracy score for binary classification"""
+    name = "Balanced Accuracy"
+    greater_is_better = True
+    score_needs_proba = False
+
+    def objective_function(self, y_predicted, y_true, X=None):
+        return metrics.balanced_accuracy_score(y_true, y_predicted)
+
+
 # todo does this need tuning?
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
