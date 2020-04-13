@@ -1,6 +1,6 @@
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
-from evalml.model_types import ModelTypes
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -12,10 +12,10 @@ class LinearRegressor(Estimator):
         'fit_intercept': [True, False],
         'normalize': [True, False]
     }
-    model_type = ModelTypes.LINEAR_MODEL
-    problem_types = [ProblemTypes.REGRESSION]
+    model_family = ModelFamily.LINEAR_MODEL
+    supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1):
+    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1, random_state=0):
         parameters = {
             'fit_intercept': fit_intercept,
             'normalize': normalize
@@ -25,7 +25,7 @@ class LinearRegressor(Estimator):
                                               n_jobs=n_jobs)
         super().__init__(parameters=parameters,
                          component_obj=linear_regressor,
-                         random_state=0)
+                         random_state=random_state)
 
     @property
     def feature_importances(self):

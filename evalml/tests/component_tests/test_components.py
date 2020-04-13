@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
     Estimator,
@@ -22,9 +23,12 @@ from evalml.pipelines.components import (
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
+        model_family = ModelFamily.NONE
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
@@ -55,30 +59,46 @@ def test_describe_component():
     imputer = SimpleImputer("mean")
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
-    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {}}
-    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean'}}
+    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10}}
+    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
     assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf}}
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
-    xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
-    assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
+    try:
+        xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
+        assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    except ImportError:
+        pass
 
 
 def test_missing_attributes(X_y):
     class MockComponentName(ComponentBase):
-        pass
+        model_family = ModelFamily.NONE
 
-    with pytest.raises(AttributeError, match="Component missing attribute: `name`"):
+    with pytest.raises(TypeError):
         MockComponentName(parameters={}, component_obj=None, random_state=0)
+
+    class MockComponentModelFamily(ComponentBase):
+        name = "Mock Component"
+
+    with pytest.raises(TypeError):
+        MockComponentModelFamily(parameters={}, component_obj=None, random_state=0)
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+
+    with pytest.raises(TypeError):
+        MockEstimator(parameters={}, component_obj=None, random_state=0)
 
 
 def test_missing_methods_on_components(X_y, test_classes):
@@ -125,6 +145,8 @@ def test_component_fit(X_y):
 
     class MockComponent(Estimator):
         name = 'Mock Estimator'
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
         hyperparameter_ranges = {}
 
         def __init__(self):
@@ -209,3 +231,11 @@ def test_component_fit_transform(X_y):
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
         component.fit_transform(X, y)
+
+
+def test_model_family_components(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    assert MockComponent.model_family == ModelFamily.NONE
+    assert MockTransformer.model_family == ModelFamily.NONE
+    assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL

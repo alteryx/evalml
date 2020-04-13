@@ -60,7 +60,7 @@ pipeline.predict(X_test)
 * [Defining your own objective functions]()
 * [API Reference]()
 
-Read more about EvalML in our [Documentation](evalml.featurelabs.com).
+Read more about EvalML in our [Documentation](https://evalml.featurelabs.com).
 
 ## Built at Feature Labs
 <a href="https://www.featurelabs.com/">

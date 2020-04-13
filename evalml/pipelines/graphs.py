@@ -1,7 +1,5 @@
 import os.path
 
-import plotly.graph_objects as go
-
 from evalml.utils.gen_utils import import_or_raise
 
 
@@ -81,6 +79,8 @@ def make_feature_importance_graph(feature_importances, show_all_features=False):
     Returns:
         plotly.Figure, a bar graph showing features and their importances
     """
+    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
     feat_imp = feature_importances
     feat_imp['importance'] = abs(feat_imp['importance'])
 

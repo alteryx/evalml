@@ -1,11 +1,11 @@
 import inspect
-import random
 import time
 from collections import OrderedDict
 from sys import stdout
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -16,7 +16,7 @@ from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds
+from evalml.utils import Logger, convert_to_seconds, get_random_state
 
 logger = Logger()
 
@@ -27,24 +27,25 @@ class AutoBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, model_types, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, n_jobs, verbose):
+                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
+                 add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
-        self.objective = get_objective(objective)
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
-        self.model_types = model_types
+        self.allowed_model_families = allowed_model_families
         self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
-        logger.verbose = verbose
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_types=model_types)
+        self.optimize_thresholds = optimize_thresholds
+        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
-        if self.problem_type not in self.objective.problem_types:
+        if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
+
+        logger.verbose = verbose
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
@@ -55,6 +56,8 @@ class AutoBase:
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
+
+        self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
@@ -76,24 +79,26 @@ class AutoBase:
             'search_order': []
         }
         self.trained_pipelines = {}
-
-        self.random_state = random_state
-        random.seed(self.random_state)
-        np.random.seed(seed=self.random_state)
+        self.random_state = get_random_state(random_state)
 
         self.n_jobs = n_jobs
-        self.possible_model_types = list(set([p.model_type for p in self.possible_pipelines]))
+        self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
 
         self.tuners = {}
         self.search_spaces = {}
         for p in self.possible_pipelines:
             space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=self.random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
-        self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
+        self._next_pipeline_class = None
+        self.plot_metrics = []
+        try:
+            self.plot = PipelineSearchPlots(self)
 
-        self.plot = PipelineSearchPlots(self)
+        except ImportError:
+            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            self.plot = None
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -103,8 +108,8 @@ class AutoBase:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
+            feature_types (list, optional): list of feature types, either numerical or categorical.
+                Categorical features will automatically be encoded
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
@@ -149,7 +154,7 @@ class AutoBase:
             logger.log("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
             logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        logger.log("Possible model types: %s\n" % ", ".join([model.value for model in self.possible_model_types]))
+            logger.log("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
 
         if self.detect_label_leakage:
             leaked = guardrails.detect_label_leakage(X, y)
@@ -157,7 +162,9 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+        search_iteration_plot = None
+        if self.plot:
+            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
@@ -169,13 +176,19 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
+            if search_iteration_plot:
+                search_iteration_plot.update()
         desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
     def _check_stopping_condition(self, start):
+        # get new pipeline and check tuner
+        self._next_pipeline_class = self._select_pipeline()
+        if self.tuners[self._next_pipeline_class.name].is_search_space_exhausted():
+            return False
+
         should_continue = True
         num_pipelines = len(self.results['pipeline_results'])
         if num_pipelines == 0:
@@ -216,10 +229,10 @@ class AutoBase:
     def _check_multiclass(self, y):
         if y.nunique() <= 2:
             return
-        if ProblemTypes.MULTICLASS not in self.objective.problem_types:
+        if self.objective.problem_type != ProblemTypes.MULTICLASS:
             raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
         for obj in self.additional_objectives:
-            if ProblemTypes.MULTICLASS not in obj.problem_types:
+            if obj.problem_type != ProblemTypes.MULTICLASS:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _transform_parameters(self, pipeline_class, parameters, number_features):
@@ -230,8 +243,6 @@ class AutoBase:
             component_class = component.__class__
 
             # Inspects each component and adds the following parameters when needed
-            if 'random_state' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['random_state'] = self.random_state
             if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in inspect.signature(component_class.__init__).parameters:
@@ -248,22 +259,17 @@ class AutoBase:
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
-        # determine which pipeline to build
-        pipeline_class = self._select_pipeline()
 
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
+        parameters = self._propose_parameters(self._next_pipeline_class)
 
         # fit an score the pipeline
-        pipeline = pipeline_class(
-            objective=self.objective,
-            parameters=self._transform_parameters(pipeline_class, parameters, X.shape[1])
-        )
+        pipeline = self._next_pipeline_class(parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1]))
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline_class, parameters)
+            self.start_iteration_callback(self._next_pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(pipeline_class.name)
+        desc = "▹ {}: ".format(self._next_pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
@@ -271,6 +277,8 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
+        plot_data = []
+
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
@@ -281,19 +289,32 @@ class AutoBase:
             else:
                 y_train, y_test = y[train], y[test]
 
+            objectives_to_score = [self.objective] + self.additional_objectives
             try:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+
+                if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
                 pipeline.fit(X_train, y_train)
-                score, other_scores = pipeline.score(X_test, y_test, other_objectives=self.additional_objectives)
+                if self.objective.problem_type == ProblemTypes.BINARY:
+                    pipeline.threshold = 0.5
+                    if self.optimize_thresholds and self.objective.can_optimize_threshold:
+                        y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+                        y_predict_proba = y_predict_proba[:, 1]
+                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                score = scores[self.objective.name]
             except Exception as e:
                 if raise_errors:
                     raise e
                 if pbar:
                     pbar.write(str(e))
                 score = np.nan
-                other_scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
-            ordered_scores.update(other_scores)
+            ordered_scores.update(scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
             cv_data.append({"all_objective_scores": ordered_scores, "score": score})
@@ -304,7 +325,8 @@ class AutoBase:
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=training_time,
-                         cv_data=cv_data)
+                         cv_data=cv_data,
+                         plot_data=plot_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -312,7 +334,7 @@ class AutoBase:
             print('')
 
     def _select_pipeline(self):
-        return random.choice(self.possible_pipelines)
+        return self.random_state.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()
@@ -320,7 +342,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, plot_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
@@ -334,19 +356,20 @@ class AutoBase:
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
 
-        pipeline_class_name = trained_pipeline.__class__.__name__
         pipeline_name = trained_pipeline.name
+        pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self.results['pipeline_results'])
 
         self.results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_class_name": pipeline_class_name,
             "pipeline_name": pipeline_name,
+            "pipeline_summary": pipeline_summary,
             "parameters": dict(parameters),
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "cv_data": cv_data
+            "cv_data": cv_data,
+            "plot_data": plot_data
         }
 
         self.results['search_order'].append(pipeline_id)
@@ -405,10 +428,6 @@ class AutoBase:
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
 
-        # note: we need to think about how to better handle metrics we don't want to display in our chart
-        # currently, just dropping the columns before displaying
-        all_objective_scores = all_objective_scores.drop(["ROC", "Confusion Matrix"], axis=1, errors="ignore")
-
         for c in all_objective_scores:
             if c in ["# Training", "# Testing"]:
                 all_objective_scores[c] = all_objective_scores[c].astype("object")
@@ -436,7 +455,7 @@ class AutoBase:
             ascending = False
 
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
-        rankings_df = rankings_df[["id", "pipeline_class_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

@@ -16,7 +16,7 @@ class AutoRegressionSearch(AutoBase):
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 model_types=None,
+                 allowed_model_families=None,
                  cv=None,
                  tuner=None,
                  detect_label_leakage=True,
@@ -39,8 +39,8 @@ class AutoRegressionSearch(AutoBase):
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
 
-            model_types (list): The model types to search. By default searches over all
-                model_types. Run evalml.list_model_types("regression") to see options.
+            allowed_model_families (list): The model families to search. By default searches over all
+                model families. Run evalml.list_model_families("regression") to see options.
 
             patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.
@@ -64,7 +64,7 @@ class AutoRegressionSearch(AutoBase):
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int): the random_state
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -88,7 +88,7 @@ class AutoRegressionSearch(AutoBase):
             max_time=max_time,
             patience=patience,
             tolerance=tolerance,
-            model_types=model_types,
+            allowed_model_families=allowed_model_families,
             problem_type=problem_type,
             detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,

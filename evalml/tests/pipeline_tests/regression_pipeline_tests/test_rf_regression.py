@@ -13,11 +13,12 @@ from evalml.pipelines import RFRegressionPipeline
 def test_rf_init(X_y_reg):
     X, y = X_y_reg
 
-    objective = R2()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
@@ -29,12 +30,13 @@ def test_rf_init(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
-
+    clf = RFRegressionPipeline(parameters=parameters, random_state=2)
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Regressor Select From Model': {
             'percent_features': 1.0,
             'threshold': -np.inf
@@ -46,6 +48,7 @@ def test_rf_init(X_y_reg):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_regression(X_y_categorical_regression):
@@ -83,13 +86,16 @@ def test_rf_regression(X_y_categorical_regression):
             "max_depth": 3,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    clf = RFRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
-
     np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_score[0], decimal=5)
+    np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
+
+    # testing objective parameter passed in does not change results
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_rfr_input_feature_names(X_y_reg):
@@ -97,7 +103,6 @@ def test_rfr_input_feature_names(X_y_reg):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = R2()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -112,7 +117,7 @@ def test_rfr_input_feature_names(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(objective=objective, parameters=parameters)
+    clf = RFRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

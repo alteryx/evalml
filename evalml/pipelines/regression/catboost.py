@@ -1,10 +1,7 @@
-from skopt.space import Integer, Real
-
-from evalml.model_types import ModelTypes
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import RegressionPipeline
 
 
-class CatBoostRegressionPipeline(PipelineBase):
+class CatBoostRegressionPipeline(RegressionPipeline):
     """
     CatBoost Pipeline for regression problems.
     CatBoost is an open-source library and natively supports categorical features.
@@ -13,17 +10,12 @@ class CatBoostRegressionPipeline(PipelineBase):
 
     Note: impute_strategy must support both string and numeric data
     """
-    name = "CatBoost Regressor w/ Simple Imputer"
-    model_type = ModelTypes.CATBOOST
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
-    problem_types = ['regression']
-    hyperparameters = {
+    supported_problem_types = ['regression']
+    custom_hyperparameters = {
         "impute_strategy": ["most_frequent"],
-        "n_estimators": Integer(10, 1000),
-        "eta": Real(0, 1),
-        "max_depth": Integer(1, 8),
     }
 
-    def __init__(self, parameters, objective):
+    def __init__(self, parameters, random_state=0):
         super().__init__(parameters=parameters,
-                         objective=objective)
+                         random_state=random_state)

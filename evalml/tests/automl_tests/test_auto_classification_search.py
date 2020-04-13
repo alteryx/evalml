@@ -1,16 +1,15 @@
 import time
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
-from evalml.model_types import ModelTypes
+from evalml.automl.pipeline_search_plots import SearchIterationPlot
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    ROC,
-    ConfusionMatrix,
     FraudCost,
     Precision,
     PrecisionMicro,
@@ -37,13 +36,21 @@ def test_init(X_y):
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
     # test with datafarmes
-    automl.search(pd.DataFrame(X), pd.Series(y))
+    automl.search(pd.DataFrame(X), pd.Series(y), raise_errors=True)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
     automl.describe_pipeline(0)
+
+
+def test_get_pipeline_none(X_y):
+    X, y = X_y
+
+    automl = AutoClassificationSearch()
+    with pytest.raises(RuntimeError, match="Pipeline not found"):
+        automl.describe_pipeline(0)
 
 
 def test_cv(X_y):
@@ -62,12 +69,12 @@ def test_cv(X_y):
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
 
-def test_init_select_model_types():
-    model_types = [ModelTypes.RANDOM_FOREST]
-    automl = AutoClassificationSearch(model_types=model_types)
+def test_init_select_model_families():
+    model_families = [ModelFamily.RANDOM_FOREST]
+    automl = AutoClassificationSearch(allowed_model_families=model_families)
 
-    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_types=model_types) == automl.possible_pipelines
-    assert model_types == automl.possible_model_types
+    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
+    assert model_families == automl.possible_model_families
 
 
 def test_max_pipelines(X_y):
@@ -92,11 +99,13 @@ def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
     automl.search(X, y, raise_errors=True)
+    assert isinstance(automl.objective, Precision)
+    assert automl.best_pipeline.threshold is not None
 
 
 def test_binary_auto(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective="recall", multiclass=False, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
     automl.search(X, y, raise_errors=True)
     y_pred = automl.best_pipeline.predict(X)
 
@@ -128,17 +137,17 @@ def test_multi_auto(X_y_multi):
     expected_additional_objectives = get_objectives('multiclass')
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
+
     for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
         assert type(additional) is type(expected)
 
 
 def test_multi_objective(X_y_multi):
-    error_msg = 'Given objective Recall is not compatible with a multiclass problem'
-    with pytest.raises(ValueError, match=error_msg):
-        automl = AutoClassificationSearch(objective="recall", multiclass=True)
-
-    automl = AutoClassificationSearch(objective="log_loss")
+    automl = AutoClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
+
+    automl = AutoClassificationSearch(objective="log_loss_multi")
+    assert automl.problem_type == ProblemTypes.MULTICLASS
 
     automl = AutoClassificationSearch(objective='recall_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
@@ -224,6 +233,45 @@ def test_additional_objectives(X_y):
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
 
 
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold_enabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_predict_proba.assert_called()
+    mock_optimize_threshold.assert_called()
+    assert automl.best_pipeline.threshold == 0.8
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_optimizable_threshold_disabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+    mock_optimize_threshold.return_value = 0.8
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    assert not mock_predict_proba.called
+    assert not mock_optimize_threshold.called
+    assert automl.best_pipeline.threshold == 0.5
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert automl.best_pipeline.threshold == 0.5
+
+
 def test_describe_pipeline_objective_ordered(X_y, capsys):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
@@ -234,16 +282,16 @@ def test_describe_pipeline_objective_ordered(X_y, capsys):
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
-    objectives_names = [automl.objective.name] + [obj.name for obj in objectives if obj.name not in ["ROC", "Confusion Matrix"]]
+    objectives_names = [obj.name for obj in objectives]
     expected_objective_order = " ".join(objectives_names)
 
     assert err == ''
     assert expected_objective_order in out_stripped
 
 
-def test_model_types_as_list():
-    with pytest.raises(TypeError, match="model_types parameter is not a list."):
-        AutoClassificationSearch(objective='AUC', model_types='linear_model', max_pipelines=2)
+def test_model_families_as_list():
+    with pytest.raises(TypeError, match="model_families parameter is not a list."):
+        AutoClassificationSearch(objective='AUC', allowed_model_families='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():
@@ -268,12 +316,12 @@ def test_max_time_units():
 
 def test_early_stopping(capsys):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=-1, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, model_types=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
@@ -290,7 +338,19 @@ def test_early_stopping(capsys):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
+def test_plot_disabled_missing_dependency(X_y, has_minimal_dependencies):
+    X, y = X_y
+
+    automl = AutoClassificationSearch(max_pipelines=3)
+    if has_minimal_dependencies:
+        with pytest.raises(AttributeError):
+            automl.plot.search_iteration_plot
+    else:
+        automl.plot.search_iteration_plot
+
+
 def test_plot_iterations_max_pipelines(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
@@ -308,7 +368,9 @@ def test_plot_iterations_max_pipelines(X_y):
 
 
 def test_plot_iterations_max_time(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
+
     automl = AutoClassificationSearch(objective="f1", max_time=10)
     automl.search(X, y, show_iteration_plot=False, raise_errors=True)
     plot = automl.plot.search_iteration_plot()
@@ -323,13 +385,47 @@ def test_plot_iterations_max_time(X_y):
     assert len(y) > 0
 
 
-def test_plots_as_main_objectives(X_y):
-    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        automl = AutoClassificationSearch(objective='confusion_matrix')
-    with pytest.raises(RuntimeError, match="Cannot use Confusion Matrix or ROC as the main objective."):
-        automl = AutoClassificationSearch(objective='ROC')
-    automl = AutoClassificationSearch(objective='f1', additional_objectives=['recall'])
-    roc = next((obj for obj in automl.additional_objectives if isinstance(obj, ROC)), None)
-    assert roc
-    cfm = next((obj for obj in automl.additional_objectives if isinstance(obj, ConfusionMatrix)), None)
-    assert cfm
+@patch('IPython.display.display')
+def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
+    pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y
+
+    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl.search(X, y, raise_errors=True)
+    plot = automl.plot.search_iteration_plot(interactive_plot=True)
+    assert isinstance(plot, SearchIterationPlot)
+    assert isinstance(plot.data, AutoClassificationSearch)
+    mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
+
+
+@patch('IPython.display.display')
+def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
+    pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y
+
+    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl.search(X, y, raise_errors=True)
+
+    mock_ipython_display.side_effect = ImportError('KABOOOOOOMMMM')
+    plot = automl.plot.search_iteration_plot(interactive_plot=True)
+    mock_ipython_display.assert_called_once()
+
+    assert isinstance(plot, go.Figure)
+    assert isinstance(plot.data, tuple)
+    plot_data = plot.data[0]
+    x = pd.Series(plot_data['x'])
+    y = pd.Series(plot_data['y'])
+    assert x.is_monotonic_increasing
+    assert y.is_monotonic_increasing
+    assert len(x) == 3
+    assert len(y) == 3
+
+
+def test_max_time(X_y):
+    X, y = X_y
+    clf = AutoClassificationSearch(max_time=1e-16)
+    clf.search(X, y)
+    # search will always run at least one pipeline
+    assert len(clf.results['pipeline_results']) == 1

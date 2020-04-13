@@ -44,30 +44,18 @@ AutoML
     AutoRegressionSearch
 
 
-Plotting
-~~~~~~~~
+.. currentmodule:: evalml.model_family
+
+Model Family
+============
 
 .. autosummary::
     :toctree: generated
-    :template: accessor_method.rst
+    :template: class.rst
     :nosignatures:
 
-    AutoClassificationSearch.plot.get_roc_data
-    AutoClassificationSearch.plot.generate_roc_plot
-    AutoClassificationSearch.plot.get_confusion_matrix_data
-    AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.generate_confusion_matrix
-    AutoClassificationSearch.plot.normalize_confusion_matrix
+    ModelFamily
 
-
-Model Types
-===========
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    list_model_types
 
 .. currentmodule:: evalml.pipelines.components
 
@@ -79,7 +67,7 @@ Transformers
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
@@ -93,7 +81,7 @@ Estimators
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: estimator_class.rst
     :nosignatures:
 
     LogisticRegressionClassifier
@@ -108,30 +96,59 @@ Estimators
 Pipelines
 =========
 
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    get_pipelines
-    save_pipeline
-    load_pipeline
-
+Pipelines
+~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
-    RFClassificationPipeline
-    XGBoostPipeline
-    LogisticRegressionPipeline
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
+
+Classification	
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    CatBoostBinaryClassificationPipeline
+    CatBoostMulticlassClassificationPipeline
+    LogisticRegressionBinaryPipeline
+    LogisticRegressionMulticlassPipeline
+    RFBinaryClassificationPipeline
+    RFMulticlassClassificationPipeline
+    XGBoostBinaryPipeline
+    XGBoostMulticlassPipeline
+
+
+Regression	
+~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
     RFRegressionPipeline
+    CatBoostRegressionPipeline
     LinearRegressionPipeline
+
+
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_pipelines
+    list_model_families
 
 
 Plotting
 ~~~~~~~~
-
 
 .. autosummary::
    :toctree: generated
@@ -166,10 +183,19 @@ Classification
     :template: class.rst
     :nosignatures:
 
+    AccuracyBinary
+    AUC
+    AUCMacro
+    AUCMicro
+    AUCWeighted
     F1
     F1Micro
     F1Macro
     F1Weighted
+    LogLossBinary
+    LogLossMulticlass
+    MCCBinary
+    MCCMulticlass
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -178,14 +204,6 @@ Classification
     RecallMicro
     RecallMacro
     RecallWeighted
-    AUC
-    AUCMicro
-    AUCMacro
-    AUCWeighted
-    LogLoss
-    MCC
-    ROC
-    ConfusionMatrix
 
 
 Regression
@@ -205,7 +223,20 @@ Regression
     ExpVariance
 
 
+Plot Metrics	
+~~~~~~~~~~~~	
+
+.. autosummary::	
+    :toctree: generated	
+    :template: class.rst	
+    :nosignatures:	
+
+    ROC	
+    ConfusionMatrix	
+
+
 .. currentmodule:: evalml.problem_types
+
 
 Problem Types
 =============
@@ -236,6 +267,8 @@ Tuners
 
     Tuner
     SKOptTuner
+    GridSearchTuner
+    RandomSearchTuner
 
 
 .. currentmodule:: evalml.guardrails
@@ -251,3 +284,16 @@ Guardrails
     detect_label_leakage
     detect_outliers
     detect_id_columns
+
+
+.. currentmodule:: evalml.utils
+
+Utils
+=====
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    convert_to_seconds
+    normalize_confusion_matrix

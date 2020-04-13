@@ -13,7 +13,7 @@ jobs:
       - name: Update dependencies
         id: vars
         run: |
-          make installdeps-test
+          make installdeps
           make dependenciesfile DEPENDENCY_FILE_PATH=evalml/tests/latest_dependency_versions.txt
           cat evalml/tests/latest_dependency_versions.txt
       - name: Create Pull Request

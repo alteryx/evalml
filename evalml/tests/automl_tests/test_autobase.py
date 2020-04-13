@@ -1,8 +1,10 @@
-import plotly.graph_objects as go
-from sklearn.model_selection import StratifiedKFold
+from unittest.mock import patch
+
+import numpy as np
+import pytest
 
 from evalml import AutoClassificationSearch
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.pipelines import LogisticRegressionBinaryPipeline
 
 
 def test_pipeline_limits(capsys, X_y):
@@ -30,36 +32,6 @@ def test_pipeline_limits(capsys, X_y):
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 
-def test_generate_roc(X_y):
-    X, y = X_y
-    n_splits = 5
-    cv = StratifiedKFold(n_splits=n_splits, random_state=0)
-    automl = AutoClassificationSearch(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
-    automl.search(X, y, raise_errors=True)
-    roc_data = automl.plot.get_roc_data(0)
-    assert len(roc_data["fpr_tpr_data"]) == 5
-    assert len(roc_data["roc_aucs"]) == 5
-
-    fig = automl.plot.generate_roc_plot(0)
-    assert isinstance(fig, type(go.Figure()))
-
-
-def test_generate_confusion_matrix(X_y):
-    X, y = X_y
-    n_splits = 5
-    cv = StratifiedKFold(n_splits=n_splits, random_state=0)
-    automl = AutoClassificationSearch(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
-    automl.search(X, y, raise_errors=True)
-    cm_data = automl.plot.get_confusion_matrix_data(0)
-    assert len(cm_data) == 5
-    for fold in cm_data:
-        labels = fold.columns
-        assert all(label in y for label in labels)
-
-    fig = automl.plot.generate_confusion_matrix(0)
-    assert isinstance(fig, type(go.Figure()))
-
-
 def test_search_order(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=3)
@@ -75,6 +47,28 @@ def test_transform_parameters():
         'Simple Imputer': {'impute_strategy': 'most_frequent'},
         'One Hot Encoder': {},
         'Standard Scaler': {},
-        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6, 'random_state': 100}
+        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
     }
-    assert automl._transform_parameters(LogisticRegressionPipeline, parameters, 0) == parameters_dict
+    assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipeline_fit_raises(mock_fit, X_y):
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    with pytest.raises(Exception, match=msg):
+        automl.search(X, y, raise_errors=True)
+
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    for cv_scores in cv_scores_all:
+        for name, score in cv_scores['all_objective_scores'].items():
+            if name in ['# Training', '# Testing']:
+                assert score > 0
+            else:
+                assert np.isnan(score)

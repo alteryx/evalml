@@ -1,40 +1,35 @@
 import pandas as pd
 
-from .objective_base import ObjectiveBase
-
-from evalml.problem_types import ProblemTypes
+from .binary_classification_objective import BinaryClassificationObjective
 
 
-class LeadScoring(ObjectiveBase):
+class LeadScoring(BinaryClassificationObjective):
     """Lead scoring"""
     name = "Lead Scoring"
-    problem_types = [ProblemTypes.BINARY]
-
-    needs_fitting = True
     greater_is_better = True
     score_needs_proba = False
-    name = "Lead Scoring"
 
-    def __init__(self, true_positives=1, false_positives=-1, verbose=False):
+    def __init__(self, true_positives=1, false_positives=-1):
         """Create instance.
 
         Arguments:
-            label (int) : label to optimize threshold for
             true_positives (int) : reward for a true positive
             false_positives (int) : cost for a false positive. Should be negative.
         """
         self.true_positives = true_positives
         self.false_positives = false_positives
 
-        super().__init__(verbose=verbose)
+    def objective_function(self, y_predicted, y_true, X=None):
+        """Calculate the profit per lead.
 
-    def decision_function(self, y_predicted, threshold):
-        if not isinstance(y_predicted, pd.Series):
-            y_predicted = pd.Series(y_predicted)
+            Arguments:
+                y_predicted (pd.Series): predicted labels
+                y_true (pd.Series): true labels
+                X (pd.DataFrame): None, not used.
 
-        return y_predicted > threshold
-
-    def objective_function(self, y_predicted, y_true):
+            Returns:
+                float: profit per lead
+        """
         if not isinstance(y_predicted, pd.Series):
             y_predicted = pd.Series(y_predicted)
 

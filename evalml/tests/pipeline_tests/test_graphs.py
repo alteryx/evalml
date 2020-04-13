@@ -3,20 +3,17 @@ import os
 import graphviz
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 from skopt.space import Real
 
-from evalml.model_types import ModelTypes
 from evalml.pipelines import PipelineBase
 
 
 @pytest.fixture
 def test_pipeline():
     class TestPipeline(PipelineBase):
-        model_type = ModelTypes.LINEAR_MODEL
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        problem_types = ['binary', 'multiclass']
+        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -24,9 +21,8 @@ def test_pipeline():
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, objective, parameters):
-            super().__init__(objective=objective,
-                             parameters=parameters)
+        def __init__(self, parameters):
+            super().__init__(parameters=parameters)
 
         @property
         def feature_importances(self):
@@ -36,7 +32,7 @@ def test_pipeline():
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
-    return TestPipeline(objective='precision', parameters={})
+    return TestPipeline(parameters={})
 
 
 def test_returns_digraph_object(test_pipeline):
@@ -74,6 +70,7 @@ def test_invalid_path(tmpdir, test_pipeline):
 
 
 def test_feature_importance_plot(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
@@ -81,6 +78,7 @@ def test_feature_importance_plot(X_y, test_pipeline):
 
 
 def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)

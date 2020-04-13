@@ -1,19 +1,41 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline as SKPipeline
 from sklearn.preprocessing import StandardScaler as SkScaler
 
-from evalml.objectives import PrecisionMicro
-from evalml.pipelines import LogisticRegressionPipeline
+from evalml.objectives import Precision, PrecisionMicro
+from evalml.pipelines import (
+    LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline
+)
 
 
 def test_lor_init(X_y):
     X, y = X_y
 
-    objective = PrecisionMicro()
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean',
+            'fill_value': None
+        },
+        'One Hot Encoder': {'top_n': 10},
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 0.5,
+        }
+    }
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=1)
+    assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
+
+
+def test_lor_objective_tuning(X_y):
+    X, y = X_y
+
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -23,8 +45,24 @@ def test_lor_init(X_y):
             'C': 0.5,
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
-    assert clf.parameters == parameters
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        y_pred_with_objective = clf.predict(X, objective)
+
+    # testing objective parameter passed in does not change results
+    objective = Precision()
+    y_pred_with_objective = clf.predict(X, objective)
+    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+    # testing objective parameter passed and set threshold does change results
+    with pytest.raises(AssertionError):
+        clf.threshold = 0.01
+        y_pred_with_objective = clf.predict(X, objective)
+        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
 def test_lor_multi(X_y_multi):
@@ -53,18 +91,22 @@ def test_lor_multi(X_y_multi):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionMulticlassPipeline(parameters=parameters, random_state=1)
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
+    clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_scores[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
+
+    # testing objective parameter passed in does not change results
+    clf.fit(X, y)
+    y_pred_with_objective = clf.predict(X)
+    assert((y_pred == y_pred_with_objective).all())
 
 
 def test_lor_input_feature_names(X_y):
@@ -72,8 +114,6 @@ def test_lor_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-
-    objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -81,11 +121,9 @@ def test_lor_input_feature_names(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
-
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=1)
     clf.fit(X, y)
 
     assert len(clf.feature_importances) == len(X.columns)
