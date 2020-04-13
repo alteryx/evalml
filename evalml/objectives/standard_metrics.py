@@ -9,7 +9,7 @@ from sklearn.utils.multiclass import unique_labels
 from .binary_classification_objective import BinaryClassificationObjective
 from .multiclass_classification_objective import MultiClassificationObjective
 from .regression_objective import RegressionObjective
-
+from evalml.exceptions import DimensionMismatchError
 
 class Accuracy(BinaryClassificationObjective):
     """Accuracy score for binary classification"""
@@ -18,6 +18,10 @@ class Accuracy(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
+        if len(y_true) == 0 or len(y_predicted) == 0:
+            raise ValueError("Length of inputs is 0")
+        if len(y_predicted) != len(y_true):
+            raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         return metrics.accuracy_score(y_true, y_predicted)
 
 

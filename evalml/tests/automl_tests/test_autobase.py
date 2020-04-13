@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch
 from evalml.pipelines import LogisticRegressionBinaryPipeline
@@ -31,38 +30,6 @@ def test_pipeline_limits(capsys, X_y):
     automl.search(X, y, raise_errors=True)
     out, err = capsys.readouterr()
     assert "No search limit is set. Set using max_time or max_pipelines." in out
-
-
-def test_generate_roc(X_y):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y
-    n_splits = 5
-    cv = StratifiedKFold(n_splits=n_splits, random_state=0)
-    automl = AutoClassificationSearch(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
-    automl.search(X, y, raise_errors=True)
-    roc_data = automl.plot.get_roc_data(0)
-    assert len(roc_data["fpr_tpr_data"]) == 5
-    assert len(roc_data["roc_aucs"]) == 5
-
-    fig = automl.plot.generate_roc_plot(0)
-    assert isinstance(fig, type(go.Figure()))
-
-
-def test_generate_confusion_matrix(X_y):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y
-    n_splits = 5
-    cv = StratifiedKFold(n_splits=n_splits, random_state=0)
-    automl = AutoClassificationSearch(multiclass=False, cv=cv, max_pipelines=2, random_state=0)
-    automl.search(X, y, raise_errors=True)
-    cm_data = automl.plot.get_confusion_matrix_data(0)
-    assert len(cm_data) == 5
-    for fold in cm_data:
-        labels = fold.columns
-        assert all(label in y for label in labels)
-
-    fig = automl.plot.generate_confusion_matrix(0)
-    assert isinstance(fig, type(go.Figure()))
 
 
 def test_search_order(X_y):

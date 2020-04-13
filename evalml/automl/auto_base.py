@@ -28,7 +28,7 @@ class AutoBase:
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, n_jobs, verbose):
+                 add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
@@ -39,6 +39,7 @@ class AutoBase:
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
+        self.optimize_thresholds = optimize_thresholds
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
         if self.problem_type != self.objective.problem_type:
@@ -293,18 +294,17 @@ class AutoBase:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
 
-                if self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
                 pipeline.fit(X_train, y_train)
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     pipeline.threshold = 0.5
-                    if self.objective.can_optimize_threshold:
+                    if self.optimize_thresholds and self.objective.can_optimize_threshold:
                         y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
                         y_predict_proba = y_predict_proba[:, 1]
                         pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
-                plot_data.append(pipeline.get_plot_data(X_test, y_test, self.plot_metrics))
             except Exception as e:
                 if raise_errors:
                     raise e

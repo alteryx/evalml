@@ -5,11 +5,37 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added accuracy as an standard objective :pr:`584`
+        * Added verbose parameter to load_fraud :pr:`560`
     * Fixes
+        * Removed direct access to `cls.component_graph` :pr:`595`
     * Changes
+        * Updated default objective for binary/multiseries classification to log loss :pr:`613`
+        * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
+        * Changed the output of `score` to return one dictionary :pr:`429`
+        * Created binary and multiclass objective subclasses :pr:`504`
+        * Updated objectives API :pr:`445`
+        * Removed call to `get_plot_data` from AutoML :pr:`615`
     * Documentation Changes
+        * Fixed some sphinx warnings :pr:`593`
+        * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
+        * Limit readthedocs formats to pdf, not htmlzip and epub :pr:`594` :pr:`600`
+        * Clean up objectives API documentation :pr:`605`
+        * Fixed function on Exploring search results page :pr:`604`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
+        * Added Github app to auto assign PR author as assignee :pr:`477`
+        * Removed unneeded conda installation of xgboost in windows checkin tests :pr:`618`
+
+.. warning::
+
+    **Breaking Changes**
+
+    * Pipelines will now no longer take an objective parameter during instantiation, and will no longer have an objective attribute.
+    * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
+    * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
+    * ``score()`` will now return one dictionary of all objective scores.
+    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+
 
 **v0.8.0 Apr. 1, 2020**
     * Enhancements
@@ -17,8 +43,8 @@ Changelog
         * Add util function to drop rows with NaN values :pr:`487`
         * Renamed `PipelineBase.name` as `PipelineBase.summary` and redefined `PipelineBase.name` as class property :pr:`491`
         * Added access to parameters in Pipelines with `PipelineBase.parameters` (used to be return of `PipelineBase.describe`) :pr:`501`
-        * Added `fill_value` parameter for SimpleImputer :pr:`509`    
-        * Added functionality to override component hyperparemeters and made pipelines take hyperparemeters from components :pr:`516`
+        * Added `fill_value` parameter for SimpleImputer :pr:`509`
+        * Added functionality to override component hyperparameters and made pipelines take hyperparemeters from components :pr:`516`
         * Allow numpy.random.RandomState for random_state parameters :pr:`556`
     * Fixes
         * Removed unused dependency `matplotlib`, and move `category_encoders` to test reqs :pr:`572`
@@ -34,10 +60,12 @@ Changelog
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
+        * Fixed README documentation link :pr:`535`	
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
         * Have build_docs job use python executor, so that env vars are set properly :pr:`547`
+        * Added simple test to make sure OneHotEncoder's top_n works with large number of categories :pr:`552`
         * Run windows unit tests on PRs :pr:`557`
 
 
@@ -52,7 +80,7 @@ Changelog
     * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
     * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
     * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
-    
+
 
 **v0.7.0 Mar. 9, 2020**
     * Enhancements
@@ -89,6 +117,7 @@ Changelog
         * Rewind XGBoost version to before 1.0.0 to diagnose test failures for that version :pr:`402`
         * Update dependency check to use a whitelist :pr:`417`
         * Update unit test jobs to not install dev deps :pr:`455`
+
 .. warning::
 
     **Breaking Changes**

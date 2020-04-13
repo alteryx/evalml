@@ -26,7 +26,8 @@ class AutoClassificationSearch(AutoBase):
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
-                 verbose=True):
+                 verbose=True,
+                 optimize_thresholds=False):
         """Automated classifier pipeline search
 
         Arguments:
@@ -49,7 +50,8 @@ class AutoClassificationSearch(AutoBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("classification") to see options.
+                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
+                to `multiclass` if your problem type is different.
 
             cv: cross validation method to use. By default StratifiedKFold
 
@@ -80,10 +82,10 @@ class AutoClassificationSearch(AutoBase):
 
         # set default objective if none provided
         if objective is None and not multiclass:
-            objective = "precision"
+            objective = "log_loss_binary"
             problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
-            objective = "precision_micro"
+            objective = "log_loss_multi"
             problem_type = ProblemTypes.MULTICLASS
         else:
             objective = get_objective(objective)
@@ -105,7 +107,8 @@ class AutoClassificationSearch(AutoBase):
             additional_objectives=additional_objectives,
             random_state=random_state,
             n_jobs=n_jobs,
-            verbose=verbose
+            verbose=verbose,
+            optimize_thresholds=optimize_thresholds
         )
         if self.problem_type == ProblemTypes.BINARY:
             self.plot_metrics = [ROC(), ConfusionMatrix()]
