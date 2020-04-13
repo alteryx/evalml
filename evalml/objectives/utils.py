@@ -5,6 +5,7 @@ from evalml.exceptions import ObjectiveNotFoundError
 from evalml.problem_types import handle_problem_types
 
 OPTIONS = {
+    "accuracy_binary": standard_metrics.AccuracyBinary(),
     "f1": standard_metrics.F1(),
     'f1_micro': standard_metrics.F1Micro(),
     'f1_macro': standard_metrics.F1Macro(),
