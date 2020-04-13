@@ -4,7 +4,7 @@
 Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
 * [All circleci tests are green on master](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=master).
-* The [readthedocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed.
+* The [Read the Docs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed.
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on master.
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
 
@@ -19,7 +19,7 @@ Make the following changes in the release PR:
 
 An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
-**Note**: get the PR reviewed and approved before merging. Also, verify again that all tests are currently green on master, that all checkin tests are passing, that the readthedocs build for the release PR branch has passed and that the resulting docs contain the expected changelog. And after merging, verify readthedocs "latest" is correct.
+**Note**: get the PR reviewed and approved before merging. Also, verify again that all tests are currently green on master, that all checkin tests are passing, that the Read the Docs build for the release PR branch has passed and that the resulting docs contain the expected changelog. After merging, verify Read the Docs "latest" is correct.
 
 ## 2. Create GitHub Release
 After the release pull request has been merged into the master branch, it is time to draft the github release. [Here's github's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that.
@@ -31,20 +31,18 @@ After the release pull request has been merged into the master branch, it is tim
 Save the draft and review it. You could start the draft while waiting for the release PR to be ready to merge. When it's ready to go, hit "Publish release."
 
 ## 3. Update Public Documentation
-After creating the GitHub release, we need to activate the release version on ReadTheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
+After creating the GitHub release, we need to activate the release version on Read the Docs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
 
 Please do the following:
 * Find "vX.X.X" in the version list, and click "Edit" on the right.
 * Check the "Active" checkbox and set privacy level to "Public", then click "Save"
-
-Readthedocs will now a) list "vX.X.X" as a viewable branch of our public documentation, and b) update the default "stable" branch to point to the new documentation. Please verify that both of these things are true before proceeding.
+* Verify "vX.X.X" is now visible as a branch on our Read the Docs page.
+* Verify "stable" has been updated to correspond with the new version.
 
 ## 4. Release using Release-tools
 Now that the release has been made in the repo and in our documentation, the final step is deploying the code to make it pip-installable.
 
 First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
-
-to upload to our internal license key (connected to admin@featurelabs.com):
 
 Make sure you're in the top directory in the evalml repo:
 ```shell
