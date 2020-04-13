@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from evalml.exceptions import DimensionMismatchError
-from evalml.objectives import AccuracyBinary
+from evalml.objectives import AccuracyBinary, BalancedAccuracy
 
 
 def test_accuracy():
@@ -19,3 +19,15 @@ def test_accuracy():
         acc.score(y_predicted=[0], y_true=[1, 0])
     with pytest.raises(DimensionMismatchError):
         acc.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
+
+
+def test_binary_accuracy():
+    bacc = BalancedAccuracy()
+    assert bacc.score(np.array([0, 1, 0, 0, 1, 0]),
+                      np.array([0, 1, 0, 0, 0, 1])) == 0.625
+
+    assert bacc.score(np.array([0, 1, 0, 0, 1, 0]),
+                      np.array([0, 1, 0, 0, 1, 0])) == 1.000
+
+    assert bacc.score(np.array([0, 1, 0, 0, 1, 0]),
+                      np.array([1, 0, 1, 1, 0, 1])) == 0.000
