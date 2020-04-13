@@ -16,8 +16,10 @@ def test_rf_init(X_y):
     objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X[0]),
@@ -30,12 +32,14 @@ def test_rf_init(X_y):
         }
     }
 
-    clf = RFClassificationPipeline(objective=objective, parameters=parameters)
+    clf = RFClassificationPipeline(objective=objective, parameters=parameters, random_state=2)
 
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'RF Classifier Select From Model': {
             'percent_features': 1.0,
             'threshold': -np.inf
@@ -47,6 +51,7 @@ def test_rf_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_rf_multi(X_y_multi):

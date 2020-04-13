@@ -1,23 +1,32 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+from pytest import importorskip
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
+from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
-from evalml.objectives import PrecisionMicro
+from evalml.objectives import AUCMicro
 from evalml.pipelines import XGBoostPipeline
-from evalml.utils import import_or_raise
+from evalml.pipelines.components import XGBoostClassifier
+from evalml.utils import get_random_seed, get_random_state, import_or_raise
+
+importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
 def test_xg_init(X_y):
     X, y = X_y
 
-    objective = PrecisionMicro()
+    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 10
         },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
@@ -33,11 +42,15 @@ def test_xg_init(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=1)
 
     expected_parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'median'
+            'impute_strategy': 'median',
+            'fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 10
         },
         'RF Classifier Select From Model': {
             'percent_features': 1.0,
@@ -52,20 +65,23 @@ def test_xg_init(X_y):
     }
 
     assert clf.parameters == expected_parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
 def test_xg_multi(X_y_multi):
     X, y = X_y_multi
 
+    random_seed = 42
+    xgb_random_seed = get_random_seed(get_random_state(random_seed), min_bound=XGBoostClassifier.SEED_MIN, max_bound=XGBoostClassifier.SEED_MAX)
     xgb = import_or_raise("xgboost")
     imputer = SimpleImputer(strategy='mean')
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = xgb.XGBClassifier(random_state=0,
+    estimator = xgb.XGBClassifier(random_state=xgb_random_seed,
                                   eta=0.1,
                                   max_depth=3,
                                   min_child_weight=1,
                                   n_estimators=10)
-    rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
+    rf_estimator = SKRandomForestClassifier(random_state=get_random_state(random_seed), n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
                                         threshold=-np.inf)
@@ -76,7 +92,7 @@ def test_xg_multi(X_y_multi):
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
 
-    objective = PrecisionMicro()
+    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -95,13 +111,14 @@ def test_xg_multi(X_y_multi):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=get_random_state(random_seed))
     clf.fit(X, y)
-    clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
+    clf_score = accuracy_score(y, y_pred)
 
     assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_score[0])
+    assert (sk_score == clf_score)
+    np.testing.assert_almost_equal(sk_score, 0.95, decimal=5)
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])
     assert not clf.feature_importances.isnull().all().all()
@@ -112,7 +129,7 @@ def test_xg_input_feature_names(X_y):
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
-    objective = PrecisionMicro()
+    objective = AUCMicro()
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median'
@@ -131,7 +148,7 @@ def test_xg_input_feature_names(X_y):
         }
     }
 
-    clf = XGBoostPipeline(objective=objective, parameters=parameters)
+    clf = XGBoostPipeline(objective=objective, parameters=parameters, random_state=42)
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()

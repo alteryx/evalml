@@ -3,7 +3,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
+from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
 
 
 class CatBoostRegressor(Estimator):
@@ -20,9 +20,13 @@ class CatBoostRegressor(Estimator):
         "max_depth": Integer(1, 16),
     }
     model_family = ModelFamily.CATBOOST
-    problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION]
+
+    SEED_MIN = 0
+    SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
+        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth}
@@ -32,7 +36,7 @@ class CatBoostRegressor(Estimator):
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         cb_regressor = catboost.CatBoostRegressor(**parameters,
-                                                  random_state=random_state,
+                                                  random_seed=random_seed,
                                                   silent=True,
                                                   allow_writing_files=False)
         super().__init__(parameters=parameters,

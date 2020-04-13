@@ -32,8 +32,7 @@ from .regression import (
     CatBoostRegressionPipeline
 )
 from .utils import (
+    all_pipelines,
     get_pipelines,
-    list_model_families,
-    load_pipeline,
-    save_pipeline
+    list_model_families
 )

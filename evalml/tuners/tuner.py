@@ -12,7 +12,7 @@ class Tuner(ABC):
 
         Arguments:
             space (dict): search space for hyperparameters
-            random_state (int): random state
+            random_state (int, np.random.RandomState): The random state
 
         Returns:
             Tuner: self
@@ -40,3 +40,12 @@ class Tuner(ABC):
             dict: proposed hyperparameters
         """
         raise NotImplementedError
+
+    def is_search_space_exhausted(self):
+        """ Optional. If possible search space for tuner is finite, this method indicates
+        whether or not all possible parameters have been scored.
+
+        Returns:
+            bool: Returns true if all possible parameters in a search space has been scored.
+        """
+        return False

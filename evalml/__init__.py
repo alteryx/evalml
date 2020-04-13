@@ -20,11 +20,11 @@ import evalml.problem_types
 import evalml.utils
 import evalml.guardrails
 
-from evalml.pipelines import list_model_families, save_pipeline, load_pipeline
+from evalml.pipelines import list_model_families
 from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'

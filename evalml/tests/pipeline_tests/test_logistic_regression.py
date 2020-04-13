@@ -16,15 +16,18 @@ def test_lor_init(X_y):
     objective = PrecisionMicro()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters, random_state=1)
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
 
 
 def test_lor_multi(X_y_multi):
@@ -53,10 +56,9 @@ def test_lor_multi(X_y_multi):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters, random_state=1)
     clf.fit(X, y)
     clf_score = clf.score(X, y)
     y_pred = clf.predict(X)
@@ -81,11 +83,10 @@ def test_lor_input_feature_names(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'random_state': 1
         }
     }
 
-    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LogisticRegressionPipeline(objective=objective, parameters=parameters, random_state=1)
     clf.fit(X, y)
 
     assert len(clf.feature_importances) == len(X.columns)

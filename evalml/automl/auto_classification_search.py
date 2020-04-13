@@ -49,7 +49,8 @@ class AutoClassificationSearch(AutoBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("classification") to see options.
+                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
+                to `multiclass` if your problem type is different.
 
             cv: cross validation method to use. By default StratifiedKFold
 
@@ -67,7 +68,7 @@ class AutoClassificationSearch(AutoBase):
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int): the random_state
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -80,10 +81,10 @@ class AutoClassificationSearch(AutoBase):
 
         # set default objective if none provided
         if objective is None and not multiclass:
-            objective = "precision"
+            objective = "log_loss"
             problem_type = ProblemTypes.BINARY
         elif objective is None and multiclass:
-            objective = "precision_micro"
+            objective = "log_loss"
             problem_type = ProblemTypes.MULTICLASS
         else:
             problem_type = self._set_problem_type(objective, multiclass)

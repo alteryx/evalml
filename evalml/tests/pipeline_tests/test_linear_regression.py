@@ -16,15 +16,18 @@ def test_lr_init(X_y_categorical_regression):
     objective = R2()
     parameters = {
         'Simple Imputer': {
-            'impute_strategy': 'mean'
+            'impute_strategy': 'mean',
+            'fill_value': None
         },
+        'One Hot Encoder': {'top_n': 10},
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
-        }
+        },
     }
-    clf = LinearRegressionPipeline(objective=objective, parameters=parameters)
+    clf = LinearRegressionPipeline(objective=objective, parameters=parameters, random_state=2)
     assert clf.parameters == parameters
+    assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
 
 
 def test_linear_regression(X_y_categorical_regression):

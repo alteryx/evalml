@@ -1,5 +1,4 @@
 import inspect
-import random
 import time
 from collections import OrderedDict
 from sys import stdout
@@ -16,7 +15,7 @@ from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds
+from evalml.utils import Logger, convert_to_seconds, get_random_state
 
 logger = Logger()
 
@@ -78,10 +77,7 @@ class AutoBase:
             'search_order': []
         }
         self.trained_pipelines = {}
-
-        self.random_state = random_state
-        random.seed(self.random_state)
-        np.random.seed(seed=self.random_state)
+        self.random_state = get_random_state(random_state)
 
         self.n_jobs = n_jobs
         self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
@@ -90,12 +86,17 @@ class AutoBase:
         self.search_spaces = {}
         for p in self.possible_pipelines:
             space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=random_state)
+            self.tuners[p.name] = tuner([s[1] for s in space], random_state=self.random_state)
             self.search_spaces[p.name] = [s[0] for s in space]
         self.additional_objectives = additional_objectives
         self._MAX_NAME_LEN = 40
+        self._next_pipeline_class = None
 
-        self.plot = PipelineSearchPlots(self)
+        try:
+            self.plot = PipelineSearchPlots(self)
+        except ImportError:
+            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            self.plot = None
 
     def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
         """Find best classifier
@@ -105,8 +106,8 @@ class AutoBase:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types. either numeric of categorical.
-                categorical features will automatically be encoded
+            feature_types (list, optional): list of feature types, either numerical or categorical.
+                Categorical features will automatically be encoded
 
             raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
 
@@ -159,7 +160,9 @@ class AutoBase:
                 leaked = [str(k) for k in leaked.keys()]
                 logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
-        plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+        search_iteration_plot = None
+        if self.plot:
+            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
@@ -171,13 +174,19 @@ class AutoBase:
         start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors)
-            plot.update()
+            if search_iteration_plot:
+                search_iteration_plot.update()
         desc = u"✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
 
     def _check_stopping_condition(self, start):
+        # get new pipeline and check tuner
+        self._next_pipeline_class = self._select_pipeline()
+        if self.tuners[self._next_pipeline_class.name].is_search_space_exhausted():
+            return False
+
         should_continue = True
         num_pipelines = len(self.results['pipeline_results'])
         if num_pipelines == 0:
@@ -232,8 +241,6 @@ class AutoBase:
             component_class = component.__class__
 
             # Inspects each component and adds the following parameters when needed
-            if 'random_state' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['random_state'] = self.random_state
             if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in inspect.signature(component_class.__init__).parameters:
@@ -250,22 +257,20 @@ class AutoBase:
 
     def _do_iteration(self, X, y, pbar, raise_errors):
         pbar.update(1)
-        # determine which pipeline to build
-        pipeline_class = self._select_pipeline()
 
         # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(pipeline_class)
+        parameters = self._propose_parameters(self._next_pipeline_class)
 
         # fit an score the pipeline
-        pipeline = pipeline_class(
+        pipeline = self._next_pipeline_class(
             objective=self.objective,
-            parameters=self._transform_parameters(pipeline_class, parameters, X.shape[1])
+            parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1])
         )
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline_class, parameters)
+            self.start_iteration_callback(self._next_pipeline_class, parameters)
 
-        desc = "▹ {}: ".format(pipeline_class.name)
+        desc = "▹ {}: ".format(self._next_pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
@@ -314,7 +319,7 @@ class AutoBase:
             print('')
 
     def _select_pipeline(self):
-        return random.choice(self.possible_pipelines)
+        return self.random_state.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
         values = self.tuners[pipeline_class.name].propose()

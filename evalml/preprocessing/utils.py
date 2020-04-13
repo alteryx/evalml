@@ -40,12 +40,12 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
 def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
-    Args:
+    Arguments:
         X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
         y (pd.Series) : labels of length [n_samples]
         regression (bool): if true, do not use stratified split
         test_size (float) : percent of train set to holdout for testing
-        random_state (int) : seed for the random number generator
+        random_state (int, np.random.RandomState) : seed for the random number generator
 
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series : features and labels each split into train and test sets
@@ -89,3 +89,28 @@ def number_of_features(dtypes):
 def label_distribution(labels):
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
+
+
+def drop_nan_target_rows(X, y):
+    """Drops rows in X and y when row in the target y has a value of NaN.
+
+    Arguments:
+        X (pd.DataFrame): Data to transform
+        y (pd.Series): Target values
+    Returns:
+        pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
+    """
+    X_t = X
+    y_t = y
+
+    if not isinstance(X_t, pd.DataFrame):
+        X_t = pd.DataFrame(X_t)
+
+    if not isinstance(y_t, pd.Series):
+        y_t = pd.Series(y_t)
+
+    # drop rows where corresponding y is NaN
+    y_null_indices = y_t.index[y_t.isna()]
+    X_t = X_t.drop(index=y_null_indices)
+    y_t.dropna(inplace=True)
+    return X_t, y_t

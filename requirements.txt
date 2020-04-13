@@ -1,15 +1,6 @@
-scipy>=1.2.1
-scikit-learn>=0.21.3,!=0.22
-numpy>=1.16.4
-pandas>=0.25.0
-xgboost>=0.82
-tqdm>=4.33.0
-scikit-optimize[plots]
-colorama
-joblib>=0.13
-category_encoders>=2.0.0
-cloudpickle>=0.2.2
+-r core-requirements.txt
 plotly>=4.2.1
 statsmodels>=0.10.2
 ipywidgets>=7.5
+xgboost>=0.82
 catboost>=0.20
