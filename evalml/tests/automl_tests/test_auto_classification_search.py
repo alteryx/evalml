@@ -30,13 +30,13 @@ def test_init(X_y):
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
 
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
     # test with datafarmes
-    automl.search(pd.DataFrame(X), pd.Series(y), raise_errors=True)
+    automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
@@ -57,13 +57,13 @@ def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
     automl = AutoClassificationSearch(cv=StratifiedKFold(cv_folds), max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
     automl = AutoClassificationSearch(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
@@ -81,7 +81,7 @@ def test_max_pipelines(X_y):
     X, y = X_y
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert len(automl.rankings) == max_pipelines
 
@@ -90,7 +90,7 @@ def test_best_pipeline(X_y):
     X, y = X_y
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert len(automl.rankings) == max_pipelines
 
@@ -98,7 +98,7 @@ def test_best_pipeline(X_y):
 def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     assert isinstance(automl.objective, Precision)
     assert automl.best_pipeline.threshold is not None
 
@@ -106,7 +106,7 @@ def test_specify_objective(X_y):
 def test_binary_auto(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
 
     assert len(np.unique(y_pred)) == 2
@@ -124,13 +124,13 @@ def test_multi_error(X_y_multi):
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
     automl = AutoClassificationSearch(objective="recall_micro", multiclass=True, max_pipelines=5)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     objective = PrecisionMicro()
     automl = AutoClassificationSearch(objective=objective, multiclass=True, max_pipelines=5)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
@@ -165,7 +165,7 @@ def test_multi_objective(X_y_multi):
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     automl = AutoClassificationSearch(objective="recall", max_pipelines=5, multiclass=False)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
 
@@ -179,18 +179,18 @@ def test_random_state(X_y):
                    amount_col=10)
 
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     automl_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
-    automl_1.search(X, y, raise_errors=True)
+    automl_1.search(X, y)
     assert automl.rankings.equals(automl_1.rankings)
 
     # test an objective that requires fitting
     automl = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     automl_1 = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl_1.search(X, y, raise_errors=True)
+    automl_1.search(X, y)
 
     assert automl.rankings.equals(automl_1.rankings)
 
@@ -213,7 +213,7 @@ def test_callback(X_y):
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=max_pipelines,
                                       start_iteration_callback=start_iteration_callback,
                                       add_result_callback=add_result_callback)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines
@@ -227,7 +227,7 @@ def test_additional_objectives(X_y):
                           fraud_payout_percentage=.75,
                           amount_col=10)
     automl = AutoClassificationSearch(objective='F1', max_pipelines=2, additional_objectives=[objective])
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     results = automl.describe_pipeline(0, return_dict=True)
     assert 'Fraud Cost' in list(results["cv_data"][0]["all_objective_scores"].keys())
@@ -275,7 +275,7 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
 def test_describe_pipeline_objective_ordered(X_y, capsys):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     automl.describe_pipeline(0)
     out, err = capsys.readouterr()
@@ -354,7 +354,7 @@ def test_plot_iterations_max_pipelines(X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
@@ -372,7 +372,7 @@ def test_plot_iterations_max_time(X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_time=10)
-    automl.search(X, y, show_iteration_plot=False, raise_errors=True)
+    automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data['x'])
@@ -392,7 +392,7 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     plot = automl.plot.search_iteration_plot(interactive_plot=True)
     assert isinstance(plot, SearchIterationPlot)
     assert isinstance(plot.data, AutoClassificationSearch)
@@ -406,7 +406,7 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     mock_ipython_display.side_effect = ImportError('KABOOOOOOMMMM')
     plot = automl.plot.search_iteration_plot(interactive_plot=True)
