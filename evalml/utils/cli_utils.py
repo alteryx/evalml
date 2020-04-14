@@ -13,6 +13,11 @@ core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
 
 
 def print_info():
+    """Prints information about the system, evalml, and dependencies of evalml.
+
+    Returns:
+        None
+    """
     print("EvalML version: %s" % evalml.__version__)
     print("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
@@ -20,14 +25,27 @@ def print_info():
 
 
 def print_sys_info():
+    """Prints system information.
+
+    Returns:
+        None
+    """
     print("\nSYSTEM INFO")
     print("-----------")
     sys_info = get_sys_info()
-    for k, stat in sys_info:
-        print("{k}: {stat}".format(k=k, stat=stat))
+    for title, stat in sys_info:
+        print("{title}: {stat}".format(title=title, stat=stat))
 
 
 def print_deps(dependencies):
+    """Prints the version number of each dependency.
+
+    Arguments:
+        dependencies (list): list of package names to get the version numbers for.
+
+    Returns:
+        None
+    """
     print("\nINSTALLED VERSIONS")
     print("------------------")
     installed_packages = get_installed_packages()
@@ -44,10 +62,12 @@ def print_deps(dependencies):
 # Modified from here
 # https://github.com/pandas-dev/pandas/blob/d9a037ec4ad0aab0f5bf2ad18a30554c38299e57/pandas/util/_print_versions.py#L11
 def get_sys_info():
-    "Returns system information as a dict"
+    """Returns system information.
 
+    Returns:
+        List of tuples about system stats.
+    """
     blob = []
-
     try:
         (sysname, nodename, release,
          version, machine, processor) = platform.uname()
@@ -70,6 +90,11 @@ def get_sys_info():
 
 
 def get_installed_packages():
+    """Get dictionary mapping installed package names to their versions.
+
+    Returns:
+        Dictionary mapping installed package names to their versions.
+    """
     installed_packages = {}
     for d in pkg_resources.working_set:
         installed_packages[d.project_name] = d.version
@@ -77,4 +102,9 @@ def get_installed_packages():
 
 
 def get_evalml_root():
+    """Gets location where evalml is installed.
+
+    Returns:
+        Location where evalml is installed.
+    """
     return os.path.dirname(evalml.__file__)

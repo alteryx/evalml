@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 
 from evalml.__main__ import cli
-from evalml.utils import (
+from evalml.utils.cli_utils import (
     get_evalml_root,
     get_installed_packages,
     get_sys_info,
@@ -12,6 +12,7 @@ from evalml.utils import (
     print_info,
     print_sys_info
 )
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -71,6 +72,13 @@ def test_sys_info():
                  "byteorder", "LC_ALL", "LANG", "LOCALE"]
     found_keys = [k for k, _ in sys_info]
     assert set(info_keys).issubset(found_keys)
+
+
+@patch('evalml.utils.cli_utils.getlocale')
+def test_sys_info_error(mock_uname):
+    mock_uname.side_effects = lambda: ValueError()
+    get_sys_info()
+    mock_uname.assert_called()
 
 
 def test_installed_packages():
