@@ -14,6 +14,3 @@ def info():
 
 
 cli.add_command(info)
-
-if __name__ == "__main__":
-    cli()
