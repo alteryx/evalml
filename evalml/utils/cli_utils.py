@@ -7,6 +7,9 @@ import sys
 import pkg_resources
 
 import evalml
+from evalml.utils import Logger
+
+logger = Logger()
 
 core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
                      "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
@@ -18,8 +21,8 @@ def print_info():
     Returns:
         None
     """
-    print("EvalML version: %s" % evalml.__version__)
-    print("EvalML installation directory: %s" % get_evalml_root())
+    logger.log("EvalML version: %s" % evalml.__version__)
+    logger.log("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
     print_deps(core_requirements)
 
@@ -30,11 +33,11 @@ def print_sys_info():
     Returns:
         None
     """
-    print("\nSYSTEM INFO")
-    print("-----------")
+    logger.log("\nSYSTEM INFO")
+    logger.log("-----------")
     sys_info = get_sys_info()
     for title, stat in sys_info:
-        print("{title}: {stat}".format(title=title, stat=stat))
+        logger.log("{title}: {stat}".format(title=title, stat=stat))
 
 
 def print_deps(dependencies):
@@ -46,8 +49,8 @@ def print_deps(dependencies):
     Returns:
         None
     """
-    print("\nINSTALLED VERSIONS")
-    print("------------------")
+    logger.log("\nINSTALLED VERSIONS")
+    logger.log("------------------")
     installed_packages = get_installed_packages()
 
     package_dep = []
@@ -56,7 +59,7 @@ def print_deps(dependencies):
         if x in installed_packages:
             package_dep.append((x, installed_packages[x]))
     for k, stat in package_dep:
-        print("{k}: {stat}".format(k=k, stat=stat))
+        logger.log("{k}: {stat}".format(k=k, stat=stat))
 
 
 # Modified from here
