@@ -8,6 +8,7 @@ Changelog
         * Added verbose parameter to load_fraud :pr:`560`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
+        * Add testing files to .gitignore :pr:`625`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -60,7 +61,7 @@ Changelog
         * Updated API reference to remove PipelinePlot and added moved PipelineBase plotting methods :pr:`483`
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
-        * Fixed README documentation link :pr:`535`	
+        * Fixed README documentation link :pr:`535`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
