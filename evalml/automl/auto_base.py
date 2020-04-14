@@ -178,7 +178,7 @@ class AutoBase:
             self._do_iteration(X, y, pbar, raise_errors)
             if search_iteration_plot:
                 search_iteration_plot.update()
-        desc = u"✔ Optimization finished"
+        desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
@@ -269,7 +269,7 @@ class AutoBase:
         if self.start_iteration_callback:
             self.start_iteration_callback(self._next_pipeline_class, parameters)
 
-        desc = u"▹ {}: ".format(self._next_pipeline_class.name)
+        desc = "▹ {}: ".format(self._next_pipeline_class.name)
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
@@ -328,7 +328,7 @@ class AutoBase:
                          cv_data=cv_data,
                          plot_data=plot_data)
 
-        desc = u"✔" + desc[1:]
+        desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
