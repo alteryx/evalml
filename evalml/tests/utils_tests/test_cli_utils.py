@@ -74,7 +74,7 @@ def test_sys_info():
     assert set(info_keys).issubset(found_keys)
 
 
-@patch('evalml.utils.cli_utils.getlocale')
+@patch('evalml.utils.cli_utils.locale.getlocale')
 def test_sys_info_error(mock_uname):
     mock_uname.side_effects = lambda: ValueError()
     get_sys_info()
