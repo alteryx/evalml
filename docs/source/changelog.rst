@@ -7,6 +7,7 @@ Changelog
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
         * Added Balanced Accuracy metric :pr:`612`
+        * Added XGBoost as possible estimator for regression pipelines :pr:`642`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
