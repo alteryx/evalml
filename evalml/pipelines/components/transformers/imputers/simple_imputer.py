@@ -15,8 +15,8 @@ class SimpleImputer(Transformer):
         Arguments:
             impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
                numerical data, and "most_frequent", "constant" for object data types.
-            fill_value (string): When impute_strategy == “constant”, fill_value is used to replace missing data.
-               Defaults to 0 when imputing numerical data and “missing_value” for strings or object data types.
+            fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
+               Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
         parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
