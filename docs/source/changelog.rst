@@ -10,7 +10,7 @@ Changelog
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
-        * Remove circular dependencies from `Makefile` :pr:`637` 
+        * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`

@@ -6,4 +6,5 @@ from .classifiers import (LogisticRegressionClassifier,
                           CatBoostClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
-                         CatBoostRegressor)
+                         CatBoostRegressor,
+                         XGBoostRegressor)
