@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
+        * Added Balanced Accuracy metric :pr:`612`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
@@ -22,6 +23,7 @@ Changelog
         * Limit readthedocs formats to pdf, not htmlzip and epub :pr:`594` :pr:`600`
         * Clean up objectives API documentation :pr:`605`
         * Fixed function on Exploring search results page :pr:`604`
+        * Update release process doc :pr:`567`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
