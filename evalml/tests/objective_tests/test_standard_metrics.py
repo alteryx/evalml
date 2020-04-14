@@ -33,17 +33,31 @@ def test_binary_accuracy():
                       np.array([1, 0, 1, 1, 0, 1])) == 0.000
 
 
-def test_f1_zero_division():
-    res = None
-
+def test_f1():
     f1 = F1()
-    res = f1.score(y_predicted=[0, 0], y_true=[0, 0])
-    assert res == 0.0
+    assert f1.score(np.array([0, 1, 0, 0, 1, 0]),
+                    np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
+
+    assert f1.score(np.array([0, 1, 0, 0, 1, 1]),
+                    np.array([0, 1, 0, 0, 1, 1])) == 1.000
+
+    assert f1.score(np.array([0, 0, 0, 0, 1, 0]),
+                    np.array([0, 1, 0, 0, 0, 1])) == 0.000
+
+    assert f1.score(np.array([0, 0]),
+                    np.array([0, 0])) == 0.0
 
 
-def test_precision_zero_divison():
-    res = None
+def test_precision():
+    precision = Precision()
+    assert precision.score(np.array([0, 1, 0, 0, 1, 0]),
+                           np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
 
-    precsion = Precision()
-    res = precsion.score(y_predicted=[0, 0], y_true=[1, 1])
-    assert res == 0.0
+    assert precision.score(np.array([0, 1, 0, 0, 1, 1]),
+                           np.array([0, 1, 0, 0, 1, 1])) == 1.000
+
+    assert precision.score(np.array([0, 0, 0, 0, 1, 0]),
+                           np.array([0, 1, 0, 0, 0, 1])) == 0.000
+
+    assert precision.score(np.array([0, 0]),
+                           np.array([1, 1])) == 0.0
