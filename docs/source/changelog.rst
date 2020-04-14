@@ -19,6 +19,7 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Updated objectives API :pr:`445`
         * Removed call to `get_plot_data` from AutoML :pr:`615`
+        * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
