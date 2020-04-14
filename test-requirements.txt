@@ -6,5 +6,4 @@ graphviz>=0.13
 codecov==2.0.15
 category_encoders>=2.0.0
 requirements-parser>=0.2.0
-click>=7.0.0
 

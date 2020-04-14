@@ -11,6 +11,8 @@ from evalml.utils import (
     print_sys_info
 )
 
+pytest.importorskip('click', reason='Skipping test because click not installed')
+
 
 @pytest.fixture
 def current_dir():
