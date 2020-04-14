@@ -178,7 +178,7 @@ class AutoBase:
             self._do_iteration(X, y, pbar, raise_errors)
             if search_iteration_plot:
                 search_iteration_plot.update()
-        desc = u"✔ Optimization finished"
+        desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
         pbar.close()
