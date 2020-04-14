@@ -235,13 +235,15 @@ def test_additional_objectives(X_y):
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
     automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
     automl.search(X, y)
     mock_fit.assert_called()
+    mock_score.assert_called()
     mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
     assert automl.best_pipeline.threshold == 0.8
@@ -249,13 +251,16 @@ def test_optimizable_threshold_enabled(mock_fit, mock_predict_proba, mock_optimi
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_disabled(mock_fit, mock_predict_proba, mock_optimize_threshold, X_y):
+def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
+    mock_score.return_value = {"AUC": 1.0}
     X, y = X_y
     automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
     automl.search(X, y)
     mock_fit.assert_called()
+    mock_score.assert_called()
     assert not mock_predict_proba.called
     assert not mock_optimize_threshold.called
     assert automl.best_pipeline.threshold == 0.5
@@ -264,6 +269,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_predict_proba, mock_optim
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+    mock_score.return_value = {"AUC": 1.0}
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
     automl.search(X, y)
