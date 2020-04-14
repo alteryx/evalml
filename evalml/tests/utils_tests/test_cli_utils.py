@@ -1,7 +1,9 @@
 import os
 
 import pytest
+from click.testing import CliRunner
 
+from evalml.__main__ import cli
 from evalml.utils import (
     get_evalml_root,
     get_installed_packages,
@@ -15,6 +17,16 @@ from evalml.utils import (
 @pytest.fixture
 def current_dir():
     return os.path.dirname(os.path.abspath(__file__))
+
+
+def test_print_info_cmd():
+    runner = CliRunner()
+    result = runner.invoke(cli, ['info'])
+    assert result.exit_code == 0
+    assert "EvalML version:" in result.output
+    assert "EvalML installation directory:" in result.output
+    assert "SYSTEM INFO" in result.output
+    assert "INSTALLED VERSIONS" in result.output
 
 
 def test_print_info(capsys):
