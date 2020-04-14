@@ -51,7 +51,7 @@ def test_grid_search_tuner_basic(test_space, test_space_unicode):
 
     tuner = GridSearchTuner(test_space_unicode)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩'])
+    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, u'option_c 💩'])
     tuner.add(proposed_params, 0.5)
 
 

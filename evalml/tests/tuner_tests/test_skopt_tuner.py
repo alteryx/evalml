@@ -41,7 +41,7 @@ def test_skopt_tuner_basic(test_space, test_space_unicode):
 
     tuner = SKOptTuner(test_space_unicode, random_state=random_state)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩', np.inf])
+    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, u'option_c 💩', np.inf])
     tuner.add(proposed_params, 0.5)
 
 
