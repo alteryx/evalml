@@ -111,7 +111,7 @@ class AutoBase:
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
-            raise_errors (boolean): If True, raise errors and exit search if a pipeline errors during fitting. Defaults to True.
+            raise_errors (boolean): If True, raise errors and exit search if a pipeline errors during fitting. If False, will set scores for that search iteration to NaN and continue search. Defaults to True.
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
