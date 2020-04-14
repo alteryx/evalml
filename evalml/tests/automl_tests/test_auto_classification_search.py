@@ -255,7 +255,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
-    mock_score.return_value = {"AUC": 1.0}
+    mock_score.return_value = {"recall": 1.0}
     X, y = X_y
     automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
     automl.search(X, y)
