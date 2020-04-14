@@ -19,6 +19,13 @@ def current_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def test_print_cli_cmd():
+    runner = CliRunner()
+    result = runner.invoke(cli)
+    assert result.exit_code == 0
+    assert "Usage:" in result.output
+
+
 def test_print_info_cmd():
     runner = CliRunner()
     result = runner.invoke(cli, ['info'])
