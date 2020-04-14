@@ -2,29 +2,21 @@ import locale
 import os
 import platform
 import struct
-import subprocess
 import sys
 
 import pkg_resources
 
 import evalml
 
-# TODO: check if these are accurate and up to date for EVALML
-deps = ["numpy", "pandas", "tqdm", "toolz", "cloudpickle",
-        "dask", "distributed", "psutil", "Click",
-        "scikit-learn", "pip", "setuptools"]
-
-
-def show_info():
-    res = subprocess.run(["evalml", "info"], stdout=subprocess.PIPE)
-    print(res.stdout.decode('utf-8'))
+core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
+                     "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
 
 
 def print_info():
     print("EvalML version: %s" % evalml.__version__)
     print("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
-    print_deps(deps)
+    print_deps(core_requirements)
 
 
 def print_sys_info():

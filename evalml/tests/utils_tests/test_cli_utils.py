@@ -2,12 +2,47 @@ import os
 
 import pytest
 
-from evalml.utils import get_evalml_root, get_installed_packages, get_sys_info
+from evalml.utils import (
+    get_evalml_root,
+    get_installed_packages,
+    get_sys_info,
+    print_deps,
+    print_info,
+    print_sys_info
+)
 
 
 @pytest.fixture
-def this_dir():
+def current_dir():
     return os.path.dirname(os.path.abspath(__file__))
+
+
+def test_print_info(capsys):
+    print_info()
+    out, err = capsys.readouterr()
+    assert "EvalML version:" in out
+    assert "EvalML installation directory:" in out
+    assert "SYSTEM INFO" in out
+    assert "INSTALLED VERSIONS" in out
+    assert len(err) == 0
+
+
+def test_print_sys_info(capsys):
+    print_sys_info()
+    out, err = capsys.readouterr()
+    assert "SYSTEM INFO" in out
+    assert len(err) == 0
+
+
+def test_print_deps_info(capsys):
+    core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
+                         "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
+    print_deps(core_requirements)
+    out, err = capsys.readouterr()
+    assert "INSTALLED VERSIONS" in out
+    for requirement in core_requirements:
+        assert requirement in out
+    assert len(err) == 0
 
 
 def test_sys_info():
@@ -21,13 +56,11 @@ def test_sys_info():
 
 def test_installed_packages():
     installed_packages = get_installed_packages()
-    print (installed_packages)
-    requirements = ["numpy", "pandas", "tqdm", "toolz", "cloudpickle",
-                    "dask", "distributed", "psutil", "Click",
-                    "scikit-learn", "pip", "setuptools"]
-    assert set(requirements).issubset(installed_packages.keys())
+    core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
+                         "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
+    assert set(core_requirements).issubset(installed_packages.keys())
 
 
-def test_get_featuretools_root(this_dir):
-    root = os.path.abspath(os.path.join(this_dir, '..', ".."))
+def test_get_evalml_root(current_dir):
+    root = os.path.abspath(os.path.join(current_dir, '..', ".."))
     assert get_evalml_root() == root
