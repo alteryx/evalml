@@ -107,7 +107,7 @@ def get_installed_packages():
     """
     installed_packages = {}
     for d in pkg_resources.working_set:
-        installed_packages[d.project_name] = d.version
+        installed_packages[d.project_name.lower()] = d.version
     return installed_packages
 
 

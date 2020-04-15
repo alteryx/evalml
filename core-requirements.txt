@@ -6,4 +6,4 @@ scikit-optimize
 tqdm>=4.33.0
 colorama
 cloudpickle>=0.2.2
-Click>=7.0.0
+click>=7.0.0
