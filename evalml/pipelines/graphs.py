@@ -34,6 +34,7 @@ def make_pipeline_graph(component_list, graph_name, filepath=None):
         filepath = str(filepath)
         try:
             f = open(filepath, 'w')
+            f.close()
         except IOError:
             if os.path.exists(filepath):
                 os.remove(filepath)

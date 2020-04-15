@@ -1,6 +1,4 @@
 import os
-import tempfile
-from unittest.mock import patch, MagicMock
 
 import graphviz
 import numpy as np
