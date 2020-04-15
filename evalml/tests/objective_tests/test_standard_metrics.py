@@ -2,7 +2,11 @@ import numpy as np
 import pytest
 
 from evalml.exceptions import DimensionMismatchError
-from evalml.objectives import AccuracyBinary, BalancedAccuracyBinary, BalancedAccuracyMulticlass
+from evalml.objectives import (
+    AccuracyBinary,
+    BalancedAccuracyBinary,
+    BalancedAccuracyMulticlass
+)
 
 
 def test_accuracy():
