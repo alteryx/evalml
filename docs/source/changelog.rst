@@ -20,6 +20,7 @@ Changelog
         * Updated objectives API :pr:`445`
         * Removed call to `get_plot_data` from AutoML :pr:`615`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
+        * Pipeline `_name` field changed to `custom_name` :pr:`650`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
