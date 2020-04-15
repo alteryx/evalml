@@ -40,6 +40,25 @@ class XGBoostClassifier(Estimator):
                          component_obj=xgb_classifier,
                          random_state=random_state)
 
+
+    def fit(self, X, y=None):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training labels of length [n_samples]
+
+        Returns:
+            self
+        """
+
+        import re
+        regex = re.compile(r"\[|\]|<|>", re.IGNORECASE)
+        original_col_names = X.columns.values
+        X.columns = [regex.sub("_", col) if any(x in str(col) for x in set(('[', ']', '<'))) else col for col in X.columns.values]
+        self._component_obj.fit(X, y)
+        return self
+
     @property
     def feature_importances(self):
         return self._component_obj.feature_importances_

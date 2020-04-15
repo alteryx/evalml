@@ -41,3 +41,15 @@ def test_xgboost_classifier_random_state_bounds_rng(X_y):
     rng = make_mock_random_state(XGBoostClassifier.SEED_MAX)
     clf = XGBoostClassifier(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
+
+
+def test_xgboost_feature_names():
+
+    np.random.seed(442)
+    nrows = 100
+    ncols = 2
+    X_arr = np.random.normal(size=(nrows, ncols))
+    X_bad = pd.DataFrame(X_arr, columns=["a<x", "b"])
+    y = np.random.normal(size=nrows)
+
+    XGBoostClassifier().fit(X_bad, y)
