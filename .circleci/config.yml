@@ -191,11 +191,11 @@ jobs:
     steps:
       - checkout
       - run: | # debugging info
-          echo $(sed '/^\*\*v/q' docs/source/changelog.rst | grep -iE ":pr:" | wc -l)
+          [[ "${CIRCLE_BRANCH}" =~ "^release_v[0-9\.]+" ]] && echo This is not a release PR || echo This is a release PR
           echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
       - run: |
           # for release PRs: if the "future release" segment of the changelog contains no PR refs (sed/grep/wc returns no lines), mark as successful
-          if [[ $(sed '/^\*\*v/q' docs/source/changelog.rst | grep -iE ":pr:" | wc -l) -eq 0 ]]; then
+          if [[ "${CIRCLE_BRANCH}" =~ "^release_v[0-9\.]+" ]]; then
             exit 0;
           fi
           cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
