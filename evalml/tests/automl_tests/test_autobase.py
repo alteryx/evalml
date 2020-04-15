@@ -11,23 +11,23 @@ def test_pipeline_limits(capsys, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     out, err = capsys.readouterr()
     assert "Searching up to 1 pipelines. " in out
 
     automl = AutoClassificationSearch(multiclass=False, max_time=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     out, err = capsys.readouterr()
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=5)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     out, err = capsys.readouterr()
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
     automl = AutoClassificationSearch(multiclass=False)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     out, err = capsys.readouterr()
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
@@ -59,7 +59,7 @@ def test_pipeline_fit_raises(mock_fit, X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
     with pytest.raises(Exception, match=msg):
-        automl.search(X, y, raise_errors=True)
+        automl.search(X, y)
 
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)

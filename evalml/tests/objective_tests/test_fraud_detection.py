@@ -15,7 +15,7 @@ def test_fraud_objective(X_y):
                           amount_col=10)
 
     automl = AutoClassificationSearch(objective=objective, max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     pipeline = automl.best_pipeline
     pipeline.predict(X, objective)
