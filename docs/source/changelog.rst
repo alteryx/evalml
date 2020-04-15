@@ -48,7 +48,7 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
     * Pipelines ``_name`` field changed to ``custom_name``
 
 
@@ -92,7 +92,7 @@ Changelog
     * ``AutoClassificationSearch`` and ``AutoRegressionSearch``'s ``model_types`` parameter has been refactored into ``allowed_model_families``
     * ``ModelTypes`` enum has been changed to ``ModelFamily``
     * Components and Pipelines now have a ``model_family`` field instead of ``model_type``
-    * ``get_pipelines` utility function now accepts ``model_families`` as an argument instead of ``model_types``
+    * ``get_pipelines`` utility function now accepts ``model_families`` as an argument instead of ``model_types``
     * ``PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ``PipelineBase.summary``
     * ``PipelineBase.problem_types`` and ``Estimator.problem_types`` has been renamed to ``supported_problem_types``
     * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ``PipelineBase.save`` and ``PipelineBase.load``
@@ -175,8 +175,8 @@ Changelog
     * The ``fit()`` method for ``AutoClassifier`` and ``AutoRegressor`` has been renamed to ``search()``.
     * ``AutoClassifier`` has been renamed to ``AutoClassificationSearch``
     * ``AutoRegressor`` has been renamed to ``AutoRegressionSearch``
-    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas,``search_order`` returns a list of the search order in terms of pipeline id.
-    * Pipelines now require an estimator as the last component in `component_list`. Slicing pipelines now throws an NotImplementedError to avoid returning Pipelines without an estimator.
+    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas, ``search_order`` returns a list of the search order in terms of ``pipeline_id``.
+    * Pipelines now require an estimator as the last component in ``component_list``. Slicing pipelines now throws an ``NotImplementedError`` to avoid returning pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
