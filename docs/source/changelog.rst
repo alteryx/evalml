@@ -80,13 +80,13 @@ Changelog
 
     **Breaking Changes**
 
-    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
-    * `ModelTypes` enum has been changed to `ModelFamily`
-    * Components and Pipelines now have a `model_family` field instead of `model_type`
-    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
-    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
-    * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
-    * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
+    * ``AutoClassificationSearch`` and ``AutoRegressionSearch``'s ``model_types`` parameter has been refactored into ``allowed_model_families``
+    * ``ModelTypes`` enum has been changed to ``ModelFamily``
+    * Components and Pipelines now have a ``model_family`` field instead of ``model_type``
+    * ``get_pipelines` utility function now accepts ``model_families`` as an argument instead of ``model_types``
+    * ``PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ``PipelineBase.summary``
+    * ``PipelineBase.problem_types`` and ``Estimator.problem_types`` has been renamed to ``supported_problem_types``
+    * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ``PipelineBase.save`` and ``PipelineBase.load``
 
 
 **v0.7.0 Mar. 9, 2020**
