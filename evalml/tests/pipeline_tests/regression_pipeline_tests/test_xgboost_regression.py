@@ -1,11 +1,10 @@
-import numpy as np
 import category_encoders as ce
+import numpy as np
 from pytest import importorskip
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 
 from evalml.objectives import R2
 from evalml.pipelines import XGBoostRegressionPipeline
