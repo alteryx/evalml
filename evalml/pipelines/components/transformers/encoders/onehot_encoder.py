@@ -67,7 +67,7 @@ class OneHotEncoder(CategoricalEncoder):
                 unique = col_values[col]
                 for label in unique:
                     new_name = str(col) + "_" + str(label)
-                    add = (X[col] == label).astype(int)
+                    add = (X[col] == label).astype("uint8")
                     add = add.rename(new_name)
                     X_t = pd.concat([X_t, add], axis=1)
             else:

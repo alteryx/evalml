@@ -22,6 +22,7 @@ Changelog
         * Removed call to `get_plot_data` from AutoML :pr:`615`
         * Set `raise_error` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
+        * Changed one-hot encoder to return uint8 dtypes instead of ints :pr:`653`
         * Pipeline `_name` field changed to `custom_name` :pr:`650`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
