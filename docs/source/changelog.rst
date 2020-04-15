@@ -10,8 +10,9 @@ Changelog
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
-        * Remove circular dependencies from `Makefile` :pr:`637` 
+        * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
+        * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -34,6 +35,7 @@ Changelog
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
         * Removed unneeded conda installation of xgboost in windows checkin tests :pr:`618`
+        * Update graph tests to always use tmpfile dir :pr:`649`
 
 .. warning::
 
