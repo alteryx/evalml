@@ -51,12 +51,12 @@ class XGBoostClassifier(Estimator):
         Returns:
             self
         """
-
         import re
-        regex = re.compile(r"\[|\]|<|>", re.IGNORECASE)
+        regex = re.compile(r"\[|\]|<", re.IGNORECASE)
         original_col_names = X.columns.values
         X.columns = [regex.sub("_", col) if any(x in str(col) for x in set(('[', ']', '<'))) else col for col in X.columns.values]
         self._component_obj.fit(X, y)
+        X.columns = original_col_names
         return self
 
     @property

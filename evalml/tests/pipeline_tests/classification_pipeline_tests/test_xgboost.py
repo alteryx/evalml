@@ -196,3 +196,34 @@ def test_xg_input_feature_names(X_y):
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
         assert "col_" in col_name
+
+
+def test_xg_input_feature_names_with_symbols(X_y):
+    X, y = X_y
+    # create a list of column names
+    col_names = ["[col<{}>]".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": X.shape[1],
+            "n_estimators": 20,
+            "max_depth": 5
+        },
+        'XGBoost Classifier': {
+            "n_estimators": 20,
+            "eta": 0.2,
+            "min_child_weight": 3,
+            "max_depth": 5,
+        }
+    }
+
+    clf = XGBoostBinaryPipeline(parameters=parameters, random_state=42)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not clf.feature_importances.isnull().all().all()
+    for col_name in clf.feature_importances["feature"]:
+        assert "[col<" in col_name

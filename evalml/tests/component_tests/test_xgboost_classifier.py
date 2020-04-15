@@ -49,7 +49,14 @@ def test_xgboost_feature_names():
     nrows = 100
     ncols = 2
     X_arr = np.random.normal(size=(nrows, ncols))
-    X_bad = pd.DataFrame(X_arr, columns=["a<x", "b"])
+    col_names = ["a<x", "b"]
+    X_bad = pd.DataFrame(X_arr, columns=col_names)
     y = np.random.normal(size=nrows)
+    clf = XGBoostClassifier()
+    clf.fit(X_bad, y)
+    print (X_bad)
+    print (X_bad.columns)
+    print (col_names)
 
-    XGBoostClassifier().fit(X_bad, y)
+    assert list(X_bad.columns) == col_names
+    print (clf.feature_importances)
