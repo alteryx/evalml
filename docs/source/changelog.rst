@@ -10,8 +10,9 @@ Changelog
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
-        * Remove circular dependencies from `Makefile` :pr:`637` 
+        * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
+        * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -21,6 +22,7 @@ Changelog
         * Removed call to `get_plot_data` from AutoML :pr:`615`
         * Set `raise_error` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
+        * Pipeline `_name` field changed to `custom_name` :pr:`650`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -34,6 +36,7 @@ Changelog
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
         * Removed unneeded conda installation of xgboost in windows checkin tests :pr:`618`
+        * Update graph tests to always use tmpfile dir :pr:`649`
 
 .. warning::
 
@@ -44,6 +47,7 @@ Changelog
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
     * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+    * Pipelines ``_name`` field changed to ``custom_name``
 
 
 **v0.8.0 Apr. 1, 2020**
