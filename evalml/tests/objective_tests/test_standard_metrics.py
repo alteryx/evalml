@@ -35,11 +35,11 @@ def test_binary_accuracy_binary():
 
 def test_binary_accuracy_multi():
     baccm = BalancedAccuracyMulticlass()
-    assert baccm.score(np.array([0, 1, 2, 0, 1, 2, 3]),
-                       np.array([0, 0, 2, 0, 0, 2, 3])) == pytest.approx(0.75, 1e-5)
+    assert baccm.score(np.array([0, 0, 2, 0, 0, 2, 3]),
+                       np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(0.75, 1e-5)
 
     assert baccm.score(np.array([0, 1, 2, 0, 1, 2, 3]),
                        np.array([0, 1, 2, 0, 1, 2, 3])) == 1.000
 
-    assert baccm.score(np.array([0, 1, 2, 0, 1, 2, 3]),
-                       np.array([1, 0, 3, 1, 2, 1, 0])) == 0.000
+    assert baccm.score(np.array([1, 0, 3, 1, 2, 1, 0]),
+                       np.array([0, 1, 2, 0, 1, 2, 3])) == 0.000
