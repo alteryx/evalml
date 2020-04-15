@@ -34,8 +34,9 @@ def make_pipeline_graph(component_list, graph_name, filepath=None):
         filepath = str(filepath)
         try:
             f = open(filepath, 'w')
-            f.close()
         except IOError:
+            if os.path.exists(filepath):
+                os.remove(filepath)
             raise ValueError(('Specified parent directory does not exist: {}'.format(filepath)))
         path_and_name, graph_format = os.path.splitext(filepath)
         graph_format = graph_format[1:].lower()  # ignore the dot
