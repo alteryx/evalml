@@ -198,7 +198,7 @@ jobs:
           fi
           echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
       - run: |
-          # for release PRs: if the "future release" segment of the changelog contains no PR refs (sed/grep/wc returns no lines), mark as successful
+          # for release PRs: if the branch name matches a release regex, skip the check
           if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
             exit 0;
           fi
