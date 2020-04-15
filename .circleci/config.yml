@@ -190,8 +190,15 @@ jobs:
       - image: busybox:latest
     steps:
       - checkout
-      - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+      - run: | # debugging info
+          echo $(sed '/^\*\*v/q' docs/source/changelog.rst | grep -iE ":pr:" | wc -l)
+          echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+      - run: |
+          # for release PRs: if the "future release" segment of the changelog contains no PR refs (sed/grep/wc returns no lines), mark as successful
+          if [[ $(sed '/^\*\*v/q' docs/source/changelog.rst | grep -iE ":pr:" | wc -l) -eq 0 ]]; then
+            exit 0;
+          fi
+          cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
   build_docs:
     working_directory: ~/evalml/
