@@ -43,6 +43,7 @@ class PipelineBase(ABC):
         return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     custom_hyperparameters = None
+    custom_name = None
 
     def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
@@ -73,9 +74,9 @@ class PipelineBase(ABC):
         """Returns a name describing the pipeline.
         By default, this will take the class name and add a space between each capitalized word (class name should be in Pascal Case). If the pipeline has a custom_name attribute, this will be returned instead.
         """
-        try:
+        if cls.custom_name:
             name = cls.custom_name
-        except AttributeError:
+        else:
             rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
             name = rex.sub(' ', cls.__name__)
             if name == cls.__name__:
