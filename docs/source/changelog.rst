@@ -19,6 +19,7 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Updated objectives API :pr:`445`
         * Removed call to `get_plot_data` from AutoML :pr:`615`
+        * Set `raise_error` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`

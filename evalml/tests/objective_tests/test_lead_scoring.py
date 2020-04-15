@@ -12,7 +12,7 @@ def test_lead_scoring_objective(X_y):
                             false_positives=-1)
 
     automl = AutoClassificationSearch(objective=objective, max_pipelines=1, random_state=0)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     pipeline = automl.best_pipeline
     pipeline.predict(X)
     pipeline.predict_proba(X)
