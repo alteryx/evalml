@@ -190,8 +190,19 @@ jobs:
       - image: busybox:latest
     steps:
       - checkout
-      - run: echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+      - run: | # debugging info
+          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
+            echo This is a release PR;
+          else
+            echo This is not a release PR;
+          fi
+          echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+      - run: |
+          # for release PRs: if the branch name matches a release regex, skip the check
+          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
+            exit 0;
+          fi
+          cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
   build_docs:
     working_directory: ~/evalml/
