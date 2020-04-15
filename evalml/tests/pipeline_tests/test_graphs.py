@@ -66,7 +66,7 @@ def test_invalid_path(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
     assert not os.path.exists(filepath)
     pipeline = test_pipeline
-    with pytest.raises(ValueError, match="Specified parent directory does not exist"):
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
         pipeline.graph(filepath=filepath)
     assert not os.path.exists(filepath)
 
