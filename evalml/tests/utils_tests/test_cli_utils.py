@@ -11,13 +11,18 @@ from evalml.utils.cli_utils import (
     get_sys_info,
     print_deps,
     print_info,
-    print_sys_info
+    print_sys_info,
+    get_core_requirements
 )
 
 
 @pytest.fixture
 def current_dir():
     return os.path.dirname(os.path.abspath(__file__))
+
+
+def test_get_core_requirements():
+    assert len(get_core_requirements()) == 9
 
 
 def test_print_cli_cmd():
@@ -55,8 +60,7 @@ def test_print_sys_info(capsys):
 
 
 def test_print_deps_info(capsys):
-    core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
-                         "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
+    core_requirements = get_core_requirements()
     print_deps(core_requirements)
     out, err = capsys.readouterr()
     assert "INSTALLED VERSIONS" in out
@@ -83,8 +87,7 @@ def test_sys_info_error(mock_uname):
 
 def test_installed_packages():
     installed_packages = get_installed_packages()
-    core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
-                         "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
+    core_requirements = get_core_requirements()
     assert set(core_requirements).issubset(installed_packages.keys())
 
 

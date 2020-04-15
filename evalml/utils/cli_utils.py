@@ -5,14 +5,21 @@ import struct
 import sys
 
 import pkg_resources
+import requirements
 
 import evalml
 from evalml.utils import Logger
 
 logger = Logger()
 
-core_requirements = ["numpy", "pandas", "cloudpickle", "scipy",
-                     "scikit-learn", "scikit-optimize", "tqdm", "colorama"]
+
+def get_core_requirements():
+    reqs_path = os.path.join(os.path.dirname(evalml.__file__), '../core-requirements.txt')
+    lines = open(reqs_path, 'r').readlines()
+    lines = [line for line in lines if '-r ' not in line]
+    reqs = requirements.parse(''.join(lines))
+    reqs_names = [req.name for req in reqs]
+    return reqs_names
 
 
 def print_info():
@@ -24,7 +31,7 @@ def print_info():
     logger.log("EvalML version: %s" % evalml.__version__)
     logger.log("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
-    print_deps(core_requirements)
+    print_deps(get_core_requirements())
 
 
 def print_sys_info():
@@ -53,13 +60,13 @@ def print_deps(dependencies):
     logger.log("------------------")
     installed_packages = get_installed_packages()
 
-    package_dep = []
+    packages_to_log = []
     for x in dependencies:
         # prevents uninstalled deps from being printed
         if x in installed_packages:
-            package_dep.append((x, installed_packages[x]))
-    for k, stat in package_dep:
-        logger.log("{k}: {stat}".format(k=k, stat=stat))
+            packages_to_log.append((x, installed_packages[x]))
+    for package, version in packages_to_log:
+        logger.log("{package}: {version}".format(package=package, version=version))
 
 
 # Modified from here
