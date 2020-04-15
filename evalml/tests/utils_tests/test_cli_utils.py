@@ -6,13 +6,13 @@ from click.testing import CliRunner
 
 from evalml.__main__ import cli
 from evalml.utils.cli_utils import (
+    get_core_requirements,
     get_evalml_root,
     get_installed_packages,
     get_sys_info,
     print_deps,
     print_info,
-    print_sys_info,
-    get_core_requirements
+    print_sys_info
 )
 
 
