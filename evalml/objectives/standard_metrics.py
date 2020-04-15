@@ -38,7 +38,7 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
 
 
 class BalancedAccuracyMulticlass(MultiClassificationObjective):
-    """Balanced accuracy score for multi classification"""
+    """Balanced accuracy score for multiclass classification"""
     name = "Balanced Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
