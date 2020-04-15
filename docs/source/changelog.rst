@@ -21,6 +21,7 @@ Changelog
         * Removed call to `get_plot_data` from AutoML :pr:`615`
         * Set `raise_error` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
+        * Pipeline `_name` field changed to `custom_name` :pr:`650`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -43,6 +44,7 @@ Changelog
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
     * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+    * Pipelines ``_name`` field changed to ``custom_name``
 
 
 **v0.8.0 Apr. 1, 2020**
