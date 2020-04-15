@@ -75,6 +75,7 @@ Changelog
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
         * Fixed README documentation link :pr:`535`
+        * Unhid PR references in changelog :pr:`656`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
