@@ -75,7 +75,8 @@ def test_sys_info():
     sys_info = get_sys_info()
     info_keys = ["python", "python-bits", "OS",
                  "OS-release", "machine", "processor",
-                 "byteorder", "LC_ALL", "LANG", "LOCALE"]
+                 "byteorder", "LC_ALL", "LANG", "LOCALE",
+                 "# of CPUS", "Available memory"]
     found_keys = [k for k, _ in sys_info]
     assert set(info_keys).issubset(found_keys)
 

@@ -5,7 +5,9 @@ import struct
 import sys
 
 import pkg_resources
+import psutil
 import requirements
+from psutil._common import bytes2human
 
 import evalml
 from evalml.utils import Logger
@@ -92,6 +94,8 @@ def get_sys_info():
             ("LC_ALL", "{lc}".format(lc=os.environ.get('LC_ALL', "None"))),
             ("LANG", "{lang}".format(lang=os.environ.get('LANG', "None"))),
             ("LOCALE", '.'.join(map(str, locale.getlocale()))),
+            ("# of CPUS", "{cpus}".format(cpus=psutil.cpu_count())),
+            ("Available memory", "{memory}".format(memory=bytes2human(psutil.virtual_memory().available)))
         ])
     except (KeyError, ValueError):
         pass
