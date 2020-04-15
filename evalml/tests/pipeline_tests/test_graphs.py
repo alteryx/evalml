@@ -48,15 +48,15 @@ def test_saving_png_file(tmpdir, test_pipeline):
     assert os.path.isfile(filepath)
 
 
-def test_missing_file_extension(test_pipeline):
-    filepath = "test1"
+def test_missing_file_extension(tmpdir, test_pipeline):
+    filepath = os.path.join(str(tmpdir), 'test1')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
-def test_invalid_format(test_pipeline):
-    filepath = "test1.xzy"
+def test_invalid_format(tmpdir, test_pipeline):
+    filepath = os.path.join(str(tmpdir), 'test1.xyz')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
@@ -64,9 +64,11 @@ def test_invalid_format(test_pipeline):
 
 def test_invalid_path(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
+    assert not os.path.exists(filepath)
     pipeline = test_pipeline
-    with pytest.raises(ValueError, match="Specified parent directory does not exist"):
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
         pipeline.graph(filepath=filepath)
+    assert not os.path.exists(filepath)
 
 
 def test_feature_importance_plot(X_y, test_pipeline):
