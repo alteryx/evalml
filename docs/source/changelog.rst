@@ -47,7 +47,7 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
     * Pipelines ``_name`` field changed to ``custom_name``
 
 
