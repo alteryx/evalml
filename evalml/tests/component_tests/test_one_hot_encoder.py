@@ -123,6 +123,8 @@ def test_categorical_dtype():
                               "col_4_1", "col_4_2", "col_4_3"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])
+
 
 
 def test_all_numerical_dtype():
