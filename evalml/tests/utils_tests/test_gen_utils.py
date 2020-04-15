@@ -141,7 +141,7 @@ def test_get_random_seed_int():
 
 
 def test_normalize_confusion_matrix():
-    conf_mat = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
+    conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
     conf_mat_normalized = normalize_confusion_matrix(conf_mat)
     assert all(conf_mat_normalized.sum(axis=1) == 1.0)
 
@@ -167,6 +167,19 @@ def test_normalize_confusion_matrix():
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
     assert conf_mat_normalized.sum().sum() == 1.0
+
+
+def test_normalize_confusion_matrix_error():
+    conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'true')
+
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'pred')
+
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'all')
 
 
 def test_class_property():

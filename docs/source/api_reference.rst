@@ -107,7 +107,7 @@ Pipelines
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
 
-Classification	
+Classification
 ~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
@@ -124,7 +124,7 @@ Classification
     XGBoostMulticlassPipeline
 
 
-Regression	
+Regression
 ~~~~~~~~~~
 
 .. autosummary::
@@ -188,6 +188,7 @@ Classification
     AUCMacro
     AUCMicro
     AUCWeighted
+    BalancedAccuracy
     F1
     F1Micro
     F1Macro
@@ -223,16 +224,16 @@ Regression
     ExpVariance
 
 
-Plot Metrics	
-~~~~~~~~~~~~	
+Plot Metrics
+~~~~~~~~~~~~
 
-.. autosummary::	
-    :toctree: generated	
-    :template: class.rst	
-    :nosignatures:	
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
 
-    ROC	
-    ConfusionMatrix	
+    ROC
+    ConfusionMatrix
 
 
 .. currentmodule:: evalml.problem_types

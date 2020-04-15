@@ -7,9 +7,12 @@ Changelog
         * Added basic correlation data checks :pr:`141`
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
+        * Added Balanced Accuracy metric :pr:`612`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
+        * Remove circular dependencies from `Makefile` :pr:`637` 
+        * Add error case for `normalize_confusion_matrix()` :pr:`640`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -17,12 +20,14 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Updated objectives API :pr:`445`
         * Removed call to `get_plot_data` from AutoML :pr:`615`
+        * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
         * Limit readthedocs formats to pdf, not htmlzip and epub :pr:`594` :pr:`600`
         * Clean up objectives API documentation :pr:`605`
         * Fixed function on Exploring search results page :pr:`604`
+        * Update release process doc :pr:`567`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -132,6 +137,7 @@ Changelog
         * Add early stopping to AutoML using patience and tolerance parameters :pr:`241`
         * Added ROC and confusion matrix metrics and plot for classification problems and introduce PipelineSearchPlots class :pr:`242`
         * Enhanced AutoML results with search order :pr:`260`
+        * Added utility function to show system and environment information :pr:`300`
     * Fixes
         * Lower botocore requirement :pr:`235`
         * Fixed decision_function calculation for FraudCost objective :pr:`254`
