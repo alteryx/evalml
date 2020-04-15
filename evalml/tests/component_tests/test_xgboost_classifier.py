@@ -43,20 +43,10 @@ def test_xgboost_classifier_random_state_bounds_rng(X_y):
     clf.fit(X, y)
 
 
-def test_xgboost_feature_names():
-
-    np.random.seed(442)
-    nrows = 100
-    ncols = 2
-    X_arr = np.random.normal(size=(nrows, ncols))
-    col_names = ["a<x", "b"]
-    X_bad = pd.DataFrame(X_arr, columns=col_names)
-    y = np.random.normal(size=nrows)
+def test_xgboost_feature_names_with_symbols(X_y):
+    X, y = X_y
+    col_names = ["[[<<col_{}>>]]".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
     clf = XGBoostClassifier()
-    clf.fit(X_bad, y)
-    print (X_bad)
-    print (X_bad.columns)
-    print (col_names)
-
-    assert list(X_bad.columns) == col_names
-    print (clf.feature_importances)
+    clf.fit(X, y)
+    assert list(X.columns) == col_names

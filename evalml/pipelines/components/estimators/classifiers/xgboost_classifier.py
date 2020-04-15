@@ -1,3 +1,5 @@
+import re
+
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -40,21 +42,11 @@ class XGBoostClassifier(Estimator):
                          component_obj=xgb_classifier,
                          random_state=random_state)
 
-
     def fit(self, X, y=None):
-        """Fits component to data
-
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
-
-        Returns:
-            self
-        """
-        import re
         regex = re.compile(r"\[|\]|<", re.IGNORECASE)
+        disallowed_symbols = set(['[', ']', '<'])
         original_col_names = X.columns.values
-        X.columns = [regex.sub("_", col) if any(x in str(col) for x in set(('[', ']', '<'))) else col for col in X.columns.values]
+        X.columns = [regex.sub("_", col) if any(w in str(col) for w in disallowed_symbols) else col for col in X.columns.values]
         self._component_obj.fit(X, y)
         X.columns = original_col_names
         return self
