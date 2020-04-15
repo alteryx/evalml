@@ -100,7 +100,7 @@ class AutoBase:
             logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
-    def search(self, X, y, feature_types=None, raise_errors=False, show_iteration_plot=True):
+    def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -111,7 +111,7 @@ class AutoBase:
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
-            raise_errors (boolean): If true, raise errors and exit search if a pipeline errors during fitting
+            raise_errors (boolean): If True, raise errors and exit search if a pipeline errors during fitting. If False, set scores for the errored pipeline to NaN and continue search. Defaults to True.
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
