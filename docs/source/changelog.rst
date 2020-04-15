@@ -27,6 +27,7 @@ Changelog
         * Clean up objectives API documentation :pr:`605`
         * Fixed function on Exploring search results page :pr:`604`
         * Update release process doc :pr:`567`
+        * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API referenfce :pr:`651`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
