@@ -230,7 +230,7 @@ def test_name():
         supported_problem_types = ['binary']
 
     class TestDefinedNamePipeline(PipelineBase):
-        _name = "Cool Logistic Regression"
+        custom_name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
         supported_problem_types = ['binary']
 

@@ -71,15 +71,15 @@ class PipelineBase(ABC):
     @classproperty
     def name(cls):
         """Returns a name describing the pipeline.
-        By default, this will take the class name and add a space between each capitalized word. If the pipeline has a _name attribute, this will be returned instead.
+        By default, this will take the class name and add a space between each capitalized word. If the pipeline has a custom_name attribute, this will be returned instead.
         """
         try:
-            name = cls._name
+            name = cls.custom_name
         except AttributeError:
             rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
             name = rex.sub(' ', cls.__name__)
             if name == cls.__name__:
-                raise IllFormattedClassNameError("Pipeline Class {} needs to follow pascall case standards or `_name` must be defined.".format(cls.__name__))
+                raise IllFormattedClassNameError("Pipeline Class {} needs to follow pascall case standards or `custom_name` must be defined.".format(cls.__name__))
         return name
 
     @classproperty
