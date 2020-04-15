@@ -126,7 +126,6 @@ def test_categorical_dtype():
     assert ([X_t[col].dtype == "uint8" for col in X_t])
 
 
-
 def test_all_numerical_dtype():
     # test that columns with the numerical type are preserved
     X = pd.DataFrame()
