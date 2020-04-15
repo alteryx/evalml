@@ -67,7 +67,7 @@ def test_print_deps_info(capsys):
     for requirement in core_requirements:
         assert requirement in out
     assert len(err) == 0
-    print (core_requirements)
+    print(core_requirements)
     print_deps(core_requirements)
 
 
