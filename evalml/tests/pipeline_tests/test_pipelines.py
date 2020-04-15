@@ -71,7 +71,7 @@ def test_get_pipelines(has_minimal_dependencies):
         assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
@@ -83,7 +83,7 @@ def test_get_pipelines_core_dependencies_mock():
     assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "xgboost"])
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
