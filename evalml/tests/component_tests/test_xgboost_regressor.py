@@ -8,7 +8,7 @@ from evalml.utils import SEED_BOUNDS
 xgb = importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
-def test_xgboost_classifier_random_state_bounds_seed(X_y_reg):
+def test_xgboost_regressor_random_state_bounds_seed(X_y_reg):
     """ensure xgboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_reg
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
@@ -20,7 +20,7 @@ def test_xgboost_classifier_random_state_bounds_seed(X_y_reg):
     clf.fit(X, y)
 
 
-def test_xgboost_classifier_random_state_bounds_rng(X_y_reg):
+def test_xgboost_regressor_random_state_bounds_rng(X_y_reg):
     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for xgboost is in xgboost's supported range"""
 
     def make_mock_random_state(return_value):
