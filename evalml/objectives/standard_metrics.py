@@ -27,9 +27,19 @@ class AccuracyBinary(BinaryClassificationObjective):
         return metrics.accuracy_score(y_true, y_predicted)
 
 
-class BalancedAccuracy(BinaryClassificationObjective):
+class BalancedAccuracyBinary(BinaryClassificationObjective):
     """Balanced accuracy score for binary classification"""
-    name = "Balanced Accuracy"
+    name = "Balanced Accuracy Binary"
+    greater_is_better = True
+    score_needs_proba = False
+
+    def objective_function(self, y_predicted, y_true, X=None):
+        return metrics.balanced_accuracy_score(y_true, y_predicted)
+
+
+class BalancedAccuracyMulticlass(MultiClassificationObjective):
+    """Balanced accuracy score for multiclass classification"""
+    name = "Balanced Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
 

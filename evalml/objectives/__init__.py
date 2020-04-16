@@ -4,7 +4,8 @@ from .lead_scoring import LeadScoring
 from .objective_base import ObjectiveBase
 from .standard_metrics import (
     AccuracyBinary,
-    BalancedAccuracy,
+    BalancedAccuracyBinary,
+    BalancedAccuracyMulticlass,
     AUC,
     AUCMacro,
     AUCMicro,

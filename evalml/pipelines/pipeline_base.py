@@ -1,4 +1,5 @@
 import copy
+import os
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -7,12 +8,16 @@ import cloudpickle
 import pandas as pd
 
 from .components import Estimator, handle_component
-from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger, classproperty, get_random_state
+from evalml.utils import (
+    Logger,
+    classproperty,
+    get_random_state,
+    import_or_raise
+)
 
 logger = Logger()
 
@@ -260,17 +265,6 @@ class PipelineBase(ABC):
 
         return scores
 
-    def graph(self, filepath=None):
-        """Generate an image representing the pipeline graph
-
-        Arguments:
-            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
-
-        Returns:
-            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
-        """
-        return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
-
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
@@ -308,6 +302,70 @@ class PipelineBase(ABC):
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
 
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
+
+        # Try rendering a dummy graph to see if a working backend is installed
+        try:
+            graphviz.Digraph().pipe()
+        except graphviz.backend.ExecutableNotFound:
+            raise RuntimeError(
+                "To graph entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz\n"
+            )
+
+        graph_format = None
+        path_and_name = None
+        if filepath:
+            # Explicitly cast to str in case a Path object was passed in
+            filepath = str(filepath)
+            try:
+                f = open(filepath, 'w')
+                f.close()
+            except (IOError, FileNotFoundError):
+                raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+            path_and_name, graph_format = os.path.splitext(filepath)
+            graph_format = graph_format[1:].lower()  # ignore the dot
+            supported_filetypes = graphviz.backend.FORMATS
+            if graph_format not in supported_filetypes:
+                raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
+                                  "following: {}").format(graph_format, supported_filetypes))
+
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(name=self.name, format=graph_format,
+                                 graph_attr={'splines': 'ortho'})
+        graph.attr(rankdir='LR')
+
+        # Draw components
+        for component in self.component_graph:
+            label = '%s\l' % (component.name)  # noqa: W605
+            if len(component.parameters) > 0:
+                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
+                                        else key + ' : ' + str(val)
+                                        for key, val in component.parameters.items()])  # noqa: W605
+                label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
+            graph.node(component.name, shape='record', label=label)
+
+        # Draw edges
+        for i in range(len(self.component_graph[:-1])):
+            graph.edge(self.component_graph[i].name, self.component_graph[i + 1].name)
+
+        if filepath:
+            graph.render(path_and_name, cleanup=True)
+
+        return graph
+
     def feature_importance_graph(self, show_all_features=False):
         """Generate a bar graph of the pipeline's feature importances
 
@@ -317,7 +375,38 @@ class PipelineBase(ABC):
         Returns:
             plotly.Figure, a bar graph showing features and their importances
         """
-        return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+        feat_imp = self.feature_importances
+        feat_imp['importance'] = abs(feat_imp['importance'])
+
+        if not show_all_features:
+            # Remove features with zero importance
+            feat_imp = feat_imp[feat_imp['importance'] != 0]
+
+        # List is reversed to go from ascending order to descending order
+        feat_imp = feat_imp.iloc[::-1]
+
+        title = 'Feature Importances'
+        subtitle = 'May display fewer features due to feature selection'
+        data = [go.Bar(
+            x=feat_imp['importance'],
+            y=feat_imp['feature'],
+            orientation='h'
+        )]
+
+        layout = {
+            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+            'height': 800,
+            'xaxis_title': 'Feature Importance',
+            'yaxis_title': 'Feature',
+            'yaxis': {
+                'type': 'category'
+            }
+        }
+
+        fig = go.Figure(data=data, layout=layout)
+        return fig
 
     def save(self, file_path):
         """Saves pipeline at file path
