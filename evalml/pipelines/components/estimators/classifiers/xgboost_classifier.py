@@ -44,10 +44,9 @@ class XGBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         regex = re.compile(r"\[|\]|<", re.IGNORECASE)
-        disallowed_symbols = set(['[', ']', '<'])
-        original_col_names = X.columns.values
-        X.columns = [regex.sub("_", col) if any(w in str(col) for w in disallowed_symbols) else col for col in X.columns.values]
-        self._component_obj.fit(X, y)
+        original_col_names = X.columns
+        X.columns = [regex.sub("_", str(col)) for col in X.columns]
+        super().fit(X, y)
         X.columns = original_col_names
         return self
 
