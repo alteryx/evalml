@@ -92,13 +92,15 @@ Classifiers
     RandomForestClassifier
     XGBoostClassifier
 
+
 Regressors
-----------
+-----------
 
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
     :nosignatures:
+
     LinearRegressor
     RandomForestRegressor
 
