@@ -65,16 +65,47 @@ Components
 Transformers
 ~~~~~~~~~~~~
 
+Encoders
+--------
+
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
-    RFRegressorSelectFromModel
-    RFClassifierSelectFromModel
+
+Imputers
+--------
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
     SimpleImputer
     StandardScaler
+
+Scalers
+-------
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    StandardScaler
+
+Feature Selectors
+-----------------
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    RFRegressorSelectFromModel
+    RFClassifierSelectFromModel
 
 
 Estimators
