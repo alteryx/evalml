@@ -7,8 +7,8 @@ Changelog
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
         * Added Balanced Accuracy metric for binary :pr:`612`
-        * Added XGBoost regressor and XGBoost regression pipeline :pr:`642`
         * Added Balanced Accuracy metric for multiclass :pr:`661`
+        * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
