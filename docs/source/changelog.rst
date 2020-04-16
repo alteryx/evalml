@@ -14,6 +14,7 @@ Changelog
         * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
+        * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -26,6 +27,7 @@ Changelog
         * Changed one-hot encoder to return uint8 dtypes instead of ints :pr:`653`
         * Pipeline `_name` field changed to `custom_name` :pr:`650`
         * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
+        * Remove s3fs as a dev dependency :pr:`664`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -36,6 +38,7 @@ Changelog
         * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API reference :pr:`651`
         * Fixed improperly formatted code in breaking changes for changelog :pr:`655`
         * Removed separate plotting section for pipelines in API reference :pr:`657`, :pr:`665`
+        * Have leads example notebook load S3 files using https, so we can delete s3fs dev dependency :pr:`664`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
