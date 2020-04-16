@@ -13,4 +13,3 @@ class CatBoostBinaryClassificationPipeline(BinaryClassificationPipeline):
     custom_hyperparameters = {
         "impute_strategy": ["most_frequent"],
     }
-
