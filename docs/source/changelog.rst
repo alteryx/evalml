@@ -33,6 +33,7 @@ Changelog
         * Update release process doc :pr:`567`
         * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API reference :pr:`651`
         * Fixed improperly formatted code in breaking changes for changelog :pr:`655`
+        * Added configuration to treat Sphinx warnings as errors :pr:`660`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
