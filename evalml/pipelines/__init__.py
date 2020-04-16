@@ -10,6 +10,7 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
+    XGBoostRegressor,
     FeatureSelector,
     CategoricalEncoder,
     RFClassifierSelectFromModel,
@@ -37,7 +38,8 @@ from .classification import (
 from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,
-    CatBoostRegressionPipeline
+    CatBoostRegressionPipeline,
+    XGBoostRegressionPipeline
 )
 from .utils import (
     all_pipelines,
