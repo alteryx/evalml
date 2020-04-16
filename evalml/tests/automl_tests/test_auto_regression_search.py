@@ -24,7 +24,7 @@ def test_init(X_y):
     # check loads all pipelines
     assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
 
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
 
@@ -32,7 +32,7 @@ def test_init(X_y):
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
 
     # test with datafarmes
-    automl.search(pd.DataFrame(X), pd.Series(y), raise_errors=True)
+    automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
 
@@ -46,10 +46,10 @@ def test_init(X_y):
 def test_random_state(X_y):
     X, y = X_y
     automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     automl_1 = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
-    automl_1.search(X, y, raise_errors=True)
+    automl_1.search(X, y)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
     assert pd.testing.assert_frame_equal(automl.rankings, automl_1.rankings) is None
@@ -58,7 +58,7 @@ def test_random_state(X_y):
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
 
@@ -81,7 +81,7 @@ def test_callback(X_y):
     automl = AutoRegressionSearch(objective="R2", max_pipelines=max_pipelines,
                                   start_iteration_callback=start_iteration_callback,
                                   add_result_callback=add_result_callback)
-    automl.search(X, y, raise_errors=True)
+    automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
     assert counts["add_result_callback"] == max_pipelines

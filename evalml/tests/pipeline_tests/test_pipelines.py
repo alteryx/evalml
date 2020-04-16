@@ -231,7 +231,7 @@ def test_name():
         supported_problem_types = ['binary']
 
     class TestDefinedNamePipeline(PipelineBase):
-        _name = "Cool Logistic Regression"
+        custom_name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
         supported_problem_types = ['binary']
 
@@ -240,7 +240,9 @@ def test_name():
         supported_problem_types = ['binary']
 
     assert TestNamePipeline.name == "Test Name Pipeline"
+    assert TestNamePipeline.custom_name is None
     assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
+    assert TestDefinedNamePipeline.custom_name == "Cool Logistic Regression"
     assert TestDefinedNamePipeline(parameters={}).name == "Cool Logistic Regression"
     with pytest.raises(IllFormattedClassNameError):
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"

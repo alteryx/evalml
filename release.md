@@ -9,7 +9,9 @@ Before starting the release process, verify the following:
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
 
 ## 1. Create release PR to update version and changelog
-A release PR should have the version number as the title (i.e. "vX.X.X") and the changelog updates as the PR body text. The PR should be based off master. Please use a branch name which is different than "vX.X.X" because we create tags with that format in step 2.
+A release PR should have the version number as the title (i.e. "vX.X.X") and the changelog updates as the PR body text. The PR should be based off master.
+
+Please use the following pattern for the branch name: "release_vX.X.X". Doing so will bypass our changelog checkin test which requires all other PRs to add a changelog entry.
 
 Make the following changes in the release PR:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
