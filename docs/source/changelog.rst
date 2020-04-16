@@ -6,7 +6,8 @@ Changelog
     * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
-        * Added Balanced Accuracy metric :pr:`612`
+        * Added Balanced Accuracy metric for binary :pr:`612`
+        * Added Balanced Accuracy metric for multiclass :pr:`661`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
