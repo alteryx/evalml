@@ -147,17 +147,6 @@ Pipeline Utils
     list_model_families
 
 
-Plotting
-~~~~~~~~
-
-.. autosummary::
-   :toctree: generated
-   :template: accessor_callable.rst
-
-   PipelineBase.graph
-   PipelineBase.feature_importance_graph
-
-
 .. currentmodule:: evalml.objectives
 
 Objective Functions
