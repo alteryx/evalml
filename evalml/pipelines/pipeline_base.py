@@ -265,17 +265,6 @@ class PipelineBase(ABC):
 
         return scores
 
-    def graph(self, filepath=None):
-        """Generate an image representing the pipeline graph
-
-        Arguments:
-            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
-
-        Returns:
-            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
-        """
-        return PipelineBase.make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
-
     @classproperty
     def model_family(cls):
         "Returns model family of this pipeline template"""
@@ -313,52 +302,14 @@ class PipelineBase(ABC):
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
 
-    def feature_importance_graph(self, show_all_features=False):
-        """Generate a bar graph of the pipeline's feature importances
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
 
         Arguments:
-            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
-
-        Returns:
-            plotly.Figure, a bar graph showing features and their importances
-        """
-        return PipelineBase.make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
-
-    def save(self, file_path):
-        """Saves pipeline at file path
-
-        Args:
-            file_path (str) : location to save file
-
-        Returns:
-            None
-        """
-        with open(file_path, 'wb') as f:
-            cloudpickle.dump(self, f)
-
-    @staticmethod
-    def load(file_path):
-        """Loads pipeline at file path
-
-        Args:
-            file_path (str) : location to load file
-
-        Returns:
-            PipelineBase obj
-        """
-        with open(file_path, 'rb') as f:
-            return cloudpickle.load(f)
-
-    @staticmethod
-    def make_pipeline_graph(component_list, graph_name, filepath=None):
-        """Create a graph of the pipeline, in a format similar to a UML diagram.
-
-        Arguments:
-            pipelne (PipelineBase) : The pipeline to make a graph of.
             filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
         Returns:
-            graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
         """
         graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
 
@@ -392,12 +343,12 @@ class PipelineBase(ABC):
                                   "following: {}").format(graph_format, supported_filetypes))
 
         # Initialize a new directed graph
-        graph = graphviz.Digraph(name=graph_name, format=graph_format,
+        graph = graphviz.Digraph(name=self.name, format=graph_format,
                                  graph_attr={'splines': 'ortho'})
         graph.attr(rankdir='LR')
 
         # Draw components
-        for component in component_list:
+        for component in self.component_graph:
             label = '%s\l' % (component.name)  # noqa: W605
             if len(component.parameters) > 0:
                 parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
@@ -407,20 +358,18 @@ class PipelineBase(ABC):
             graph.node(component.name, shape='record', label=label)
 
         # Draw edges
-        for i in range(len(component_list[:-1])):
-            graph.edge(component_list[i].name, component_list[i + 1].name)
+        for i in range(len(self.component_graph[:-1])):
+            graph.edge(self.component_graph[i].name, self.component_graph[i + 1].name)
 
         if filepath:
             graph.render(path_and_name, cleanup=True)
 
         return graph
 
-    @staticmethod
-    def make_feature_importance_graph(feature_importances, show_all_features=False):
-        """Create and return a bar graph of the pipeline's feature importances
+    def feature_importance_graph(self, show_all_features=False):
+        """Generate a bar graph of the pipeline's feature importances
 
         Arguments:
-            feature_importances (pd.DataFrame) : The pipeline with which to compute feature importances.
             show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
 
         Returns:
@@ -428,7 +377,7 @@ class PipelineBase(ABC):
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-        feat_imp = feature_importances
+        feat_imp = self.feature_importances
         feat_imp['importance'] = abs(feat_imp['importance'])
 
         if not show_all_features:
@@ -458,3 +407,28 @@ class PipelineBase(ABC):
 
         fig = go.Figure(data=data, layout=layout)
         return fig
+
+    def save(self, file_path):
+        """Saves pipeline at file path
+
+        Args:
+            file_path (str) : location to save file
+
+        Returns:
+            None
+        """
+        with open(file_path, 'wb') as f:
+            cloudpickle.dump(self, f)
+
+    @staticmethod
+    def load(file_path):
+        """Loads pipeline at file path
+
+        Args:
+            file_path (str) : location to load file
+
+        Returns:
+            PipelineBase obj
+        """
+        with open(file_path, 'rb') as f:
+            return cloudpickle.load(f)
