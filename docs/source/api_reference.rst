@@ -177,7 +177,8 @@ Classification
     AUCMacro
     AUCMicro
     AUCWeighted
-    BalancedAccuracy
+    BalancedAccuracyBinary
+    BalancedAccuracyMulticlass
     F1
     F1Micro
     F1Macro
