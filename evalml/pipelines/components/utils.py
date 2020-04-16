@@ -60,6 +60,7 @@ def all_components():
         import_or_raise("xgboost", error_msg="XGBoost not installed.")
     except ImportError:
         components.pop(XGBoostClassifier.name)
+        components.pop(XGBoostRegressor.name)
     try:
         import_or_raise("catboost", error_msg="Catboost not installed.")
     except ImportError:
