@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import graphviz
 import numpy as np
@@ -33,6 +34,14 @@ def test_pipeline():
             return df
 
     return TestPipeline(parameters={})
+
+
+@patch('graphviz.Digraph.pipe')
+def test_backend(mock_func, test_pipeline):
+    mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+    clf = test_pipeline
+    with pytest.raises(RuntimeError):
+        clf.graph()
 
 
 def test_returns_digraph_object(test_pipeline):
