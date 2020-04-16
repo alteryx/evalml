@@ -76,8 +76,12 @@ Transformers
     SimpleImputer
     StandardScaler
 
+
 Estimators
 ~~~~~~~~~~
+
+Classifiers
+-----------
 
 .. autosummary::
     :toctree: generated
@@ -87,6 +91,14 @@ Estimators
     LogisticRegressionClassifier
     RandomForestClassifier
     XGBoostClassifier
+
+Regressors
+----------
+
+.. autosummary::
+    :toctree: generated
+    :template: estimator_class.rst
+    :nosignatures:
     LinearRegressor
     RandomForestRegressor
 
