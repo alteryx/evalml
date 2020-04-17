@@ -98,3 +98,33 @@ def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, cap
     automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
     automl.search(X, y, raise_errors=False)
     mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_str_search(mock_fit, X_y):
+    X, y = X_y
+    search_params = {
+        'objective': 'F1',
+        'max_pipelines': 5,
+        'patience': 2,
+        'n_jobs': 2,
+    }
+
+    automl = AutoClassificationSearch(**search_params)
+    str_rep = str(automl)
+    str_rep = str_rep.lower()
+    for param, value in search_params.items():
+        param = param.lower()
+        if param != 'n_jobs':
+            param = param.replace('_', ' ')
+        if isinstance(value, str):
+            value = value.lower()
+        assert f"{param}: {value}" in str_rep
+
+    assert "Search Results" not in str_rep
+
+    automl.search(X, y, raise_errors=False)
+    str_rep = str(automl)
+    str_rep = str_rep.lower()
+    assert "search results:" in str_rep
+    assert str(automl.rankings.drop(['parameters'], axis='columns')).lower() in str_rep
