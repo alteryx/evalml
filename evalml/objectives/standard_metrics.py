@@ -15,7 +15,21 @@ from evalml.exceptions import DimensionMismatchError
 
 class AccuracyBinary(BinaryClassificationObjective):
     """Accuracy score for binary classification"""
-    name = "Accuracy"
+    name = "Accuracy Binary"
+    greater_is_better = True
+    score_needs_proba = False
+
+    def objective_function(self, y_predicted, y_true, X=None):
+        if len(y_true) == 0 or len(y_predicted) == 0:
+            raise ValueError("Length of inputs is 0")
+        if len(y_predicted) != len(y_true):
+            raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+        return metrics.accuracy_score(y_true, y_predicted)
+
+
+class AccuracyMulticlass(MultiClassificationObjective):
+    """Accuracy score for multiclass classification"""
+    name = "Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
 
@@ -47,7 +61,6 @@ class BalancedAccuracyMulticlass(MultiClassificationObjective):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
-# todo does this need tuning?
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
     name = "F1"
@@ -55,7 +68,7 @@ class F1(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted)
+        return metrics.f1_score(y_true, y_predicted, zero_division=0.0)
 
 
 class F1Micro(MultiClassificationObjective):
@@ -65,7 +78,7 @@ class F1Micro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted, average='micro')
+        return metrics.f1_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
 class F1Macro(MultiClassificationObjective):
@@ -75,7 +88,7 @@ class F1Macro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted, average='macro')
+        return metrics.f1_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
 class F1Weighted(MultiClassificationObjective):
@@ -85,7 +98,7 @@ class F1Weighted(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.f1_score(y_true, y_predicted, average='weighted')
+        return metrics.f1_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
 class Precision(BinaryClassificationObjective):
@@ -95,7 +108,7 @@ class Precision(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.precision_score(y_true, y_predicted)
+        return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
 class PrecisionMicro(MultiClassificationObjective):
@@ -105,7 +118,7 @@ class PrecisionMicro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.precision_score(y_true, y_predicted, average='micro')
+        return metrics.precision_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
 class PrecisionMacro(MultiClassificationObjective):
@@ -115,7 +128,7 @@ class PrecisionMacro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.precision_score(y_true, y_predicted, average='macro')
+        return metrics.precision_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
 class PrecisionWeighted(MultiClassificationObjective):
@@ -125,7 +138,7 @@ class PrecisionWeighted(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.precision_score(y_true, y_predicted, average='weighted')
+        return metrics.precision_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
 class Recall(BinaryClassificationObjective):
@@ -135,7 +148,7 @@ class Recall(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.recall_score(y_true, y_predicted)
+        return metrics.recall_score(y_true, y_predicted, zero_division=0.0)
 
 
 class RecallMicro(MultiClassificationObjective):
@@ -145,7 +158,7 @@ class RecallMicro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.recall_score(y_true, y_predicted, average='micro')
+        return metrics.recall_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
 class RecallMacro(MultiClassificationObjective):
@@ -155,7 +168,7 @@ class RecallMacro(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.recall_score(y_true, y_predicted, average='macro')
+        return metrics.recall_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
 class RecallWeighted(MultiClassificationObjective):
@@ -165,7 +178,7 @@ class RecallWeighted(MultiClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.recall_score(y_true, y_predicted, average='weighted')
+        return metrics.recall_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
 class AUC(BinaryClassificationObjective):

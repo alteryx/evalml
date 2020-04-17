@@ -227,6 +227,7 @@ Classification
     :nosignatures:
 
     AccuracyBinary
+    AccuracyMulticlass
     AUC
     AUCMacro
     AUCMicro
