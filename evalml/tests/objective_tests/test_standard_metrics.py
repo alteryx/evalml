@@ -51,6 +51,10 @@ def test_accuracy_multi():
                      np.array([0, 1, 0, 1])) == pytest.approx(0.5, EPS)
     assert obj.score(np.array([0, 0, 1, 1]),
                      np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1, 2, 2]),
+                     np.array([0, 0, 0, 0, 0, 0])) == pytest.approx(1 / 3.0, EPS)
+    assert obj.score(np.array([0, 0, 0, 0, 0, 0]),
+                     np.array([0, 0, 1, 1, 2, 2])) == pytest.approx(1 / 3.0, EPS)
 
     with pytest.raises(ValueError, match="Length of inputs is 0"):
         obj.score(y_predicted=[], y_true=[1])
