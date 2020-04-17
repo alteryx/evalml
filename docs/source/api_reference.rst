@@ -185,6 +185,7 @@ Regression
     RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
+    XGBostRegressionPipeline
 
 
 Pipeline Utils
