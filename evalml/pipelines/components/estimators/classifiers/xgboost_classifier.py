@@ -43,8 +43,9 @@ class XGBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        super().fit(X, y)
+            super().fit(X.to_numpy(), y)
+        else:
+            super().fit(X, y)
         return self
 
     @property
