@@ -174,6 +174,7 @@ Classification
     :nosignatures:
 
     AccuracyBinary
+    AccuracyBinaryMulticlass
     AUC
     AUCMacro
     AUCMicro
