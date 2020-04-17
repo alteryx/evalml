@@ -62,15 +62,8 @@ Model Family
 Components
 ==========
 
-Test
-
-
 Transformers
 ~~~~~~~~~~~~
-
-
-testing
-
 
 Encoders
 --------
