@@ -14,6 +14,7 @@ Changelog
         * Add testing files to .gitignore :pr:`625`
         * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
+        * Fixed XGBoostClassifier and XGBoostRegressor bug with feature names that contain [, ], or < :pr:`659`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
         * Removed zero division warning for F1/precision/recall metrics :pr:`671`
