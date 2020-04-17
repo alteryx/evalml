@@ -170,9 +170,11 @@ jobs:
           steps:
             - when:
               condition: << parameters.assisted_modeling >> 
+              steps:
                 - install_dependencies_am
             - unless:
               condition: << parameters.assisted_modeling >> 
+              steps:
                 - install_dependencies
                 - install_dependencies_test
       - run: |
