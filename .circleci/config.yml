@@ -169,14 +169,14 @@ jobs:
           condition: << parameters.core_dependencies >> 
           steps:
             - when:
-              condition: << parameters.assisted_modeling >> 
-              steps:
-                - install_dependencies_am
+                condition: << parameters.assisted_modeling >> 
+                steps:
+                  - install_dependencies_am
             - unless:
-              condition: << parameters.assisted_modeling >> 
-              steps:
-                - install_dependencies
-                - install_dependencies_test
+                condition: << parameters.assisted_modeling >> 
+                steps:
+                  - install_dependencies
+                  - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
