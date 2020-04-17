@@ -16,6 +16,7 @@ Changelog
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
+        * Removed zero division warning for F1/precision/recall metrics :pr:`671`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
