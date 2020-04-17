@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import string
+
 from pytest import importorskip
 
 from evalml.pipelines.components import XGBoostClassifier
@@ -49,18 +51,17 @@ def test_xgboost_feature_names_with_symbols(X_y):
     X = pd.DataFrame(X, columns=col_names)
     clf = XGBoostClassifier()
     clf.fit(X, y)
-    assert list(X.columns) == col_names
     assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
-    for col_name in clf.feature_importances["feature"]:
-        assert "[[<<col_" in col_name
+    assert not np.isnan(clf.feature_importances).all().all()
 
 
 def test_xgboost_feature_name_with_random_ascii(X_y):
     X, y = X_y
-
-    import string
-    rs = np.random.RandomState(42)
-    X = rs.random((X.shape[0], len(string.printable)))
+    clf = XGBoostClassifier()
+    X = clf.random_state.random((X.shape[0], len(string.printable)))
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
-    print (X)
+    X = pd.DataFrame(X, columns=col_names)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not np.isnan(clf.feature_importances).all().all()
+

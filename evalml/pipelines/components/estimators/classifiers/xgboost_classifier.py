@@ -7,7 +7,7 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
 
-
+import pandas as pd
 class XGBoostClassifier(Estimator):
     """XGBoost Classifier"""
     name = "XGBoost Classifier"
@@ -43,11 +43,9 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        regex = re.compile(r"\[|\]|<", re.IGNORECASE)
-        original_col_names = X.columns
-        X.columns = [regex.sub("_", str(col)) for col in X.columns]
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
         super().fit(X, y)
-        X.columns = original_col_names
         return self
 
     @property
