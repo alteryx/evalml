@@ -73,6 +73,9 @@ Testing testing
 Encoders
 --------
 
+this is a test
+
+
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
