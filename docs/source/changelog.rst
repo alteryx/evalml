@@ -31,6 +31,7 @@ Changelog
         * Pipeline `_name` field changed to `custom_name` :pr:`650`
         * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
         * Remove s3fs as a dev dependency :pr:`664`
+        * Changed requirements-parser to be a core dependency :pr:`673`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -40,8 +41,10 @@ Changelog
         * Update release process doc :pr:`567`
         * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API reference :pr:`651`
         * Fixed improperly formatted code in breaking changes for changelog :pr:`655`
+        * Added configuration to treat Sphinx warnings as errors :pr:`660`
         * Removed separate plotting section for pipelines in API reference :pr:`657`, :pr:`665`
         * Have leads example notebook load S3 files using https, so we can delete s3fs dev dependency :pr:`664`
+        * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
