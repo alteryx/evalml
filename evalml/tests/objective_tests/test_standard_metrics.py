@@ -23,6 +23,7 @@ from evalml.objectives import (
 
 EPS = 1e-5
 
+
 def test_accuracy_binary():
     obj = AccuracyBinary()
     assert obj.score(np.array([0, 0, 1, 1]),
