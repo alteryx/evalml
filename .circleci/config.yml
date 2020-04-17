@@ -132,16 +132,6 @@ jobs:
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
-      - when:
-          condition: << parameters.assisted_modeling >> 
-          steps:
-            - run: python -m pip install -r test-requirements.txt
-      - unless:
-          condition: << parameters.assisted_modeling >> 
-          steps:
-            - run: |
-              python -m pip install -r am-requirements.txt
-              python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
           command: |
@@ -299,9 +289,6 @@ workflows:
             python_version: "3.7"
         - win_unit_tests:
             name: "windows python 3.8 unit tests"
-            python_version: "3.8"
-        - win_unit_tests:
-            name: "windows python 3.8 unit tests, assisted modeling"
             python_version: "3.8"
   check_dependencies_updated_linux:
     jobs:
