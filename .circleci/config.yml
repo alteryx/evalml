@@ -47,6 +47,15 @@ commands:
             # "!" negates return code. exit nonzero if any of these deps are found
             ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
             exit $?
+  install_dependencies_am:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            pip install --upgrade pip -q
+            pip install -e . --no-dependencies
+            pip install -r am-requirements.txt
+            pip install -r test-requirements.txt
 
 jobs:
   lint_test:
@@ -143,6 +152,9 @@ jobs:
       core_dependencies:
         type: boolean
         default: false
+      assisted_modeling:
+        type: boolean
+        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
@@ -154,10 +166,15 @@ jobs:
           steps:
             - install_dependencies_core
       - unless:
-          condition: << parameters.core_dependencies >>
+          condition: << parameters.core_dependencies >> 
           steps:
-            - install_dependencies
-            - install_dependencies_test
+            - when:
+              condition: << parameters.assisted_modeling >> 
+                - install_dependencies_am
+            - unless:
+              condition: << parameters.assisted_modeling >> 
+                - install_dependencies
+                - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
