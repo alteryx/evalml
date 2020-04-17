@@ -1,4 +1,5 @@
 import copy
+
 import numpy as np
 import pytest
 
@@ -18,7 +19,6 @@ from evalml.pipelines.components import (
     Transformer,
     XGBoostClassifier
 )
-from evalml.utils import get_random_state
 from evalml.pipelines.components.validation_error import ValidationError
 
 
@@ -27,6 +27,7 @@ def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b='two', random_state=0):
             self.param_a = param_a
             self.param_b = param_b
@@ -36,6 +37,7 @@ def test_classes():
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
+
         def __init__(self, param_a=1, param_b='two', random_state=0):
             self.param_a = param_a
             self.param_b = param_b
@@ -43,6 +45,7 @@ def test_classes():
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
+
         def __init__(self, param_a=1, param_b='two', random_state=0):
             self.param_a = param_a
             self.param_b = param_b
@@ -71,6 +74,7 @@ def test_default_parameters(test_classes):
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b=None, random_state=np.random.RandomState(42)):
             self.param_a = param_a
             self.param_b = param_b
@@ -117,6 +121,7 @@ def test_init_invalid_args():
     class MockComponentFixedArg(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a, param_b='two', random_state=0):
             self.param_a = param_a
             self.param_b = param_b
@@ -132,6 +137,7 @@ def test_init_invalid_args():
     class MockComponentVarArgs(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b='two', random_state=0, *args):
             self.param_a = param_a
             self.param_b = param_b
@@ -145,6 +151,7 @@ def test_init_invalid_args():
     class MockComponentKWArgs(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b='two', random_state=0, **kwargs):
             self.param_a = param_a
             self.param_b = param_b
@@ -158,6 +165,7 @@ def test_init_invalid_args():
     class MockComponentNoSavedState(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b='two', random_state=0):
             self.param_b = param_b
             super().__init__(random_state=random_state)
@@ -170,6 +178,7 @@ def test_init_invalid_args():
     class MockComponentMissingRandomState(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a=1, param_b='two'):
             self.param_a = param_a
             self.param_b = param_b
@@ -342,9 +351,6 @@ def test_component_fit_transform(X_y):
         def fit_transform(self, X, y=None):
             return X
 
-        def __init__(self, random_state=0):
-            super().__init__(random_state=0)
-
     class MockTransformerWithFitTransformButError(Transformer):
         name = "Mock Transformer"
         hyperparameter_ranges = {}
@@ -355,12 +361,12 @@ def test_component_fit_transform(X_y):
         def fit_transform(self, X, y=None):
             raise RuntimeError
 
-        def __init__(self, random_state=0):
-            super().__init__(random_state=0)
-
     class MockTransformerWithFitAndTransform(Transformer):
         name = "Mock Transformer"
         hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            super().__init__(random_state=random_state)
 
         def fit(self, X, y=None):
             return X
@@ -368,18 +374,15 @@ def test_component_fit_transform(X_y):
         def transform(self, X, y=None):
             return X
 
-        def __init__(self, random_state=0):
-            super().__init__(random_state=random_state)
-
     class MockTransformerWithOnlyFit(Transformer):
         name = "Mock Transformer"
         hyperparameter_ranges = {}
 
-        def fit(self, X, y=None):
-            return X
-
         def __init__(self, random_state=0):
             super().__init__(random_state=random_state)
+
+        def fit(self, X, y=None):
+            return X
 
     component = MockTransformerWithFitTransform()
     assert isinstance(component.fit_transform(X, y), np.ndarray)
@@ -416,6 +419,7 @@ def test_component_inheritance():
     class MockComponent1(ComponentBase):
         name = "Mock Component 1"
         model_family = ModelFamily.NONE
+
         def __init__(self, param_a='c1 param_a', param_b='c1 param_b', random_state=42):
             self.param_a = param_a
             self.param_b = param_b
@@ -423,6 +427,7 @@ def test_component_inheritance():
 
     class MockComponent2(MockComponent1):
         name = "Mock Component 2"
+
         def __init__(self, param_a='c2 param_a', param_b='c2 param_b', random_state=42):
             self.param_a = param_a
             self.param_b = param_b
@@ -438,6 +443,7 @@ def test_component_inheritance():
 
     class MockComponent2(MockComponent1):
         name = "Mock Component 2"
+
         def __init__(self, param_a='c2 param_a', param_b='c2 param_b', param_c='c2 param_c', random_state=42):
             self.param_a = param_a
             self.param_b = param_b
@@ -456,6 +462,7 @@ def test_component_inheritance():
 
     class MockComponent2(MockComponent1):
         name = "Mock Component 2"
+
         def __init__(self, param_a='c2 param_a', param_c='c2 param_c', random_state=42):
             self.param_a = param_a
             self.param_c = param_c

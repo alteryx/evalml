@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from inspect import Parameter, signature, Signature
+from inspect import Parameter, Signature, signature
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger, classproperty, get_random_state
 from evalml.pipelines.components.validation_error import ValidationError
+from evalml.utils import Logger, classproperty, get_random_state
 
 logger = Logger()
 
