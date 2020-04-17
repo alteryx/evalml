@@ -1,3 +1,4 @@
+import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -39,6 +40,16 @@ class XGBoostRegressor(Estimator):
         super().__init__(parameters=parameters,
                          component_obj=xgb_Regressor,
                          random_state=random_state)
+
+    def fit(self, X, y=None):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        return super().fit(X, y)
+
+    def predict(self, X):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        return super().predict(X)
 
     @property
     def feature_importances(self):

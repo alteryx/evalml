@@ -1,11 +1,14 @@
+import string
+
 import numpy as np
 import pandas as pd
-from pytest import importorskip
+import pytest
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
-xgb = importorskip('xgboost', reason='Skipping test because xgboost not installed')
+xgb = pytest.importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
 def test_xgboost_regressor_random_state_bounds_seed(X_y_reg):
@@ -41,3 +44,18 @@ def test_xgboost_regressor_random_state_bounds_rng(X_y_reg):
     rng = make_mock_random_state(XGBoostRegressor.SEED_MAX)
     clf = XGBoostRegressor(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
+
+
+def test_xgboost_feature_name_with_random_ascii(X_y):
+    X, y = X_y
+    clf = XGBoostRegressor()
+    X = clf.random_state.random((X.shape[0], len(string.printable)))
+    col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
+    X = pd.DataFrame(X, columns=col_names)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not np.isnan(clf.feature_importances).all().all()
+    assert not np.isnan(clf.predict(X)).all()
+
+    with pytest.raises(MethodPropertyNotFoundError):
+        clf.predict_proba(X)

@@ -45,16 +45,6 @@ def test_xgboost_classifier_random_state_bounds_rng(X_y):
     clf.fit(X, y)
 
 
-def test_xgboost_feature_names_with_symbols(X_y):
-    X, y = X_y
-    col_names = ["[[<<col_{}>>]]".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    clf = XGBoostClassifier()
-    clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not np.isnan(clf.feature_importances).all().all()
-
-
 def test_xgboost_feature_name_with_random_ascii(X_y):
     X, y = X_y
     clf = XGBoostClassifier()
@@ -64,3 +54,6 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not np.isnan(clf.feature_importances).all().all()
+    assert list(X.columns) == col_names
+    assert not np.isnan(clf.predict(X)).all()
+    assert not np.isnan(clf.predict_proba(X)).all()
