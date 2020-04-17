@@ -43,22 +43,19 @@ class XGBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         if isinstance(X, pd.DataFrame):
-            super().fit(X.to_numpy(), y)
-        else:
-            super().fit(X, y)
+            X = X.to_numpy()
+        super().fit(X, y)
         return self
 
     def predict(self, X):
         if isinstance(X, pd.DataFrame):
-            return super().predict(X.to_numpy())
-        else:
-            return super().predict(X)
+            X = X.to_numpy()
+        return super().predict(X)
 
     def predict_proba(self, X):
         if isinstance(X, pd.DataFrame):
-            return super().predict_proba(X.to_numpy())
-        else:
-            return super().predict_proba(X)
+            X = X.to_numpy()
+        return super().predict_proba(X)
 
     @property
     def feature_importances(self):
