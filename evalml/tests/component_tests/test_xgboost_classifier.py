@@ -1,7 +1,7 @@
-import numpy as np
-import pandas as pd
 import string
 
+import numpy as np
+import pandas as pd
 from pytest import importorskip
 
 from evalml.pipelines.components import XGBoostClassifier
@@ -64,4 +64,3 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not np.isnan(clf.feature_importances).all().all()
-
