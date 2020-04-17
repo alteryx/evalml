@@ -6,9 +6,9 @@ Changelog
     * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
-        * Added Balanced Accuracy metric for binary :pr:`612`
-        * Added Balanced Accuracy metric for multiclass :pr:`661`
+        * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
+        * Added Accuracy metric for multiclass :pr:`672`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
@@ -16,6 +16,7 @@ Changelog
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
+        * Removed zero division warning for F1/precision/recall metrics :pr:`671`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -41,6 +42,7 @@ Changelog
         * Added configuration to treat Sphinx warnings as errors :pr:`660`
         * Removed separate plotting section for pipelines in API reference :pr:`657`, :pr:`665`
         * Have leads example notebook load S3 files using https, so we can delete s3fs dev dependency :pr:`664`
+        * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
