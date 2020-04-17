@@ -47,7 +47,6 @@ class BalancedAccuracyMulticlass(MultiClassificationObjective):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
-# todo does this need tuning?
 class F1(BinaryClassificationObjective):
     """F1 score for binary classification"""
     name = "F1"
