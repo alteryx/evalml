@@ -10,7 +10,7 @@ def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_components()) == 9
     else:
-        assert len(all_components()) == 12
+        assert len(all_components()) == 13
 
 
 def make_mock_import_module(libs_to_blacklist):

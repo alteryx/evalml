@@ -13,7 +13,8 @@ from .classification import (
 from .regression import (
     CatBoostRegressionPipeline,
     LinearRegressionPipeline,
-    RFRegressionPipeline
+    RFRegressionPipeline,
+    XGBoostRegressionPipeline
 )
 
 from evalml.model_family import handle_model_family
@@ -30,7 +31,8 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   XGBoostMulticlassPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
-                  CatBoostRegressionPipeline]
+                  CatBoostRegressionPipeline,
+                  XGBoostRegressionPipeline]
 
 
 def all_pipelines():
@@ -45,6 +47,7 @@ def all_pipelines():
     except ImportError:
         pipelines.remove(XGBoostBinaryPipeline)
         pipelines.remove(XGBoostMulticlassPipeline)
+        pipelines.remove(XGBoostRegressionPipeline)
     try:
         import_or_raise("catboost", error_msg="Catboost not installed.")
     except ImportError:
