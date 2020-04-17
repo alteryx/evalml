@@ -2,13 +2,12 @@ import string
 
 import numpy as np
 import pandas as pd
-import pytest
+from pytest import importorskip
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
-xgb = pytest.importorskip('xgboost', reason='Skipping test because xgboost not installed')
+xgb = importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
 def test_xgboost_regressor_random_state_bounds_seed(X_y_reg):
@@ -59,4 +58,3 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
     assert not np.isnan(predictions).all()
-
