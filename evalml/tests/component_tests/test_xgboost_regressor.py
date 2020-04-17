@@ -59,5 +59,4 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
     assert not np.isnan(predictions).all()
-    with pytest.raises(MethodPropertyNotFoundError):
-        clf.predict_proba(X)
+

@@ -55,7 +55,7 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     assert len(clf.feature_importances) == len(X.columns)
     assert not np.isnan(clf.feature_importances).all().all()
     assert list(X.columns) == col_names
-    
+
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
     assert not np.isnan(predictions).all()
