@@ -4,78 +4,106 @@ import pytest
 from evalml.exceptions import DimensionMismatchError
 from evalml.objectives import (
     F1,
+    F1Micro,
+    F1Macro,
+    F1Weighted,
+    Precision,
+    PrecisionMicro,
+    PrecisionMacro,
+    PrecisionWeighted,
+    Recall,
+    RecallMicro,
+    RecallMacro,
+    RecallWeighted,
     AccuracyBinary,
     BalancedAccuracyBinary,
     BalancedAccuracyMulticlass,
-    Precision
 )
 
 
-def test_binary_accuracy_binary():
-    acc = AccuracyBinary()
-    assert acc.score(np.array([0, 0, 1, 1]), np.array([1, 1, 0, 0])) == pytest.approx(0.0, 1e-5)
-    assert acc.score(np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1])) == pytest.approx(0.5, 1e-5)
-    assert acc.score(np.array([0, 0, 1, 1]), np.array([0, 0, 1, 1])) == pytest.approx(1.0, 1e-5)
+EPS = 1e-5
+
+
+def test_accuracy_binary():
+    obj = AccuracyBinary()
+    assert obj.score(np.array([0, 0, 1, 1]), np.array([1, 1, 0, 0])) == pytest.approx(0.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1])) == pytest.approx(0.5, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]), np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
 
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        acc.score(y_predicted=[], y_true=[1])
+        obj.score(y_predicted=[], y_true=[1])
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        acc.score(y_predicted=[1], y_true=[])
+        obj.score(y_predicted=[1], y_true=[])
     with pytest.raises(DimensionMismatchError):
-        acc.score(y_predicted=[0], y_true=[1, 0])
+        obj.score(y_predicted=[0], y_true=[1, 0])
     with pytest.raises(DimensionMismatchError):
-        acc.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
+        obj.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
 
 
 def test_balanced_accuracy_binary():
-    baccb = BalancedAccuracyBinary()
-    assert baccb.score(np.array([0, 1, 0, 0, 1, 0]),
-                       np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.625, 1e-5)
+    obj = BalancedAccuracyBinary()
+    assert obj.score(np.array([0, 1, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.625, EPS)
 
-    assert baccb.score(np.array([0, 1, 0, 0, 1, 0]),
-                       np.array([0, 1, 0, 0, 1, 0])) == 1.000
+    assert obj.score(np.array([0, 1, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 1, 0])) == pytest.approx(1.0, EPS)
 
-    assert baccb.score(np.array([0, 1, 0, 0, 1, 0]),
-                       np.array([1, 0, 1, 1, 0, 1])) == 0.000
+    assert obj.score(np.array([0, 1, 0, 0, 1, 0]),
+                     np.array([1, 0, 1, 1, 0, 1])) == pytest.approx(0.0, EPS)
 
 
 def test_balanced_accuracy_multi():
-    baccm = BalancedAccuracyMulticlass()
-    assert baccm.score(np.array([0, 0, 2, 0, 0, 2, 3]),
-                       np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(0.75, 1e-5)
+    obj = BalancedAccuracyMulticlass()
+    assert obj.score(np.array([0, 0, 2, 0, 0, 2, 3]),
+                     np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(0.75, EPS)
 
-    assert baccm.score(np.array([0, 1, 2, 0, 1, 2, 3]),
-                       np.array([0, 1, 2, 0, 1, 2, 3])) == 1.000
+    assert obj.score(np.array([0, 1, 2, 0, 1, 2, 3]),
+                     np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(1.0, EPS)
 
-    assert baccm.score(np.array([1, 0, 3, 1, 2, 1, 0]),
-                       np.array([0, 1, 2, 0, 1, 2, 3])) == 0.000
+    assert obj.score(np.array([1, 0, 3, 1, 2, 1, 0]),
+                     np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(0.0, EPS)
 
 
 def test_f1():
-    f1 = F1()
-    assert f1.score(np.array([0, 1, 0, 0, 1, 0]),
-                    np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
+    obj = F1()
+    assert obj.score(np.array([0, 1, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, EPS)
 
-    assert f1.score(np.array([0, 1, 0, 0, 1, 1]),
-                    np.array([0, 1, 0, 0, 1, 1])) == 1.000
+    assert obj.score(np.array([0, 1, 0, 0, 1, 1]),
+                     np.array([0, 1, 0, 0, 1, 1])) == pytest.approx(1.0, EPS)
 
-    assert f1.score(np.array([0, 0, 0, 0, 1, 0]),
-                    np.array([0, 1, 0, 0, 0, 1])) == 0.000
+    assert obj.score(np.array([0, 0, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.0, EPS)
 
-    assert f1.score(np.array([0, 0]),
-                    np.array([0, 0])) == 0.0
+    assert obj.score(np.array([0, 0]),
+                     np.array([0, 0])) == pytest.approx(0.0, EPS)
 
 
 def test_precision():
-    precision = Precision()
-    assert precision.score(np.array([0, 1, 0, 0, 1, 0]),
-                           np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, 1e-5)
+    obj = Precision()
+    assert obj.score(np.array([0, 1, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.5, EPS)
 
-    assert precision.score(np.array([0, 1, 0, 0, 1, 1]),
-                           np.array([0, 1, 0, 0, 1, 1])) == 1.000
+    assert obj.score(np.array([0, 1, 0, 0, 1, 1]),
+                     np.array([1, 1, 1, 1, 1, 1])) == pytest.approx(1.0, EPS)
 
-    assert precision.score(np.array([0, 0, 0, 0, 1, 0]),
-                           np.array([0, 1, 0, 0, 0, 1])) == 0.000
+    assert obj.score(np.array([0, 0, 0, 0, 1, 0]),
+                     np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.0, EPS)
 
-    assert precision.score(np.array([0, 0]),
-                           np.array([1, 1])) == 0.0
+    assert obj.score(np.array([0, 0]),
+                     np.array([1, 1])) == pytest.approx(0.0, EPS)
+
+
+def test_precision_micro_multi():
+    obj = PrecisionMicro()
+    assert obj.score(np.array([0, 1, 2, 0, 1, 2, 0, 1, 2]),
+                     np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])) == pytest.approx(1/3.0, EPS)
+
+    assert obj.score(np.array([0, 1, 2, 0, 1, 2, 0, 1, 2]),
+                     np.array([0, 1, 2, 0, 1, 2, 0, 1, 2])) == pytest.approx(1.0, EPS)
+
+    assert obj.score(np.array([0, 1, 2, 0, 1, 2, 0, 1, 2]),
+                     np.array([2, 2, 1, 1, 0, 0, 2, 2, 1])) == pytest.approx(0.0, EPS)
+
+    assert obj.score(np.array([0, 0]),
+                     np.array([1, 2])) == pytest.approx(0.0, EPS)
