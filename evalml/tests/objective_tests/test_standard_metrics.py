@@ -11,7 +11,7 @@ from evalml.objectives import (
 )
 
 
-def test_accuracy():
+def test_binary_accuracy_binary():
     acc = AccuracyBinary()
     assert acc.score(np.array([0, 0, 1, 1]), np.array([1, 1, 0, 0])) == pytest.approx(0.0, 1e-5)
     assert acc.score(np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1])) == pytest.approx(0.5, 1e-5)
@@ -27,7 +27,7 @@ def test_accuracy():
         acc.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
 
 
-def test_binary_accuracy_binary():
+def test_balanced_accuracy_binary():
     baccb = BalancedAccuracyBinary()
     assert baccb.score(np.array([0, 1, 0, 0, 1, 0]),
                        np.array([0, 1, 0, 0, 0, 1])) == pytest.approx(0.625, 1e-5)
@@ -39,7 +39,7 @@ def test_binary_accuracy_binary():
                        np.array([1, 0, 1, 1, 0, 1])) == 0.000
 
 
-def test_binary_accuracy_multi():
+def test_balanced_accuracy_multi():
     baccm = BalancedAccuracyMulticlass()
     assert baccm.score(np.array([0, 0, 2, 0, 0, 2, 3]),
                        np.array([0, 1, 2, 0, 1, 2, 3])) == pytest.approx(0.75, 1e-5)
