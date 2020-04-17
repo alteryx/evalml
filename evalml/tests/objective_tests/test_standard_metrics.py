@@ -5,6 +5,7 @@ from evalml.exceptions import DimensionMismatchError
 from evalml.objectives import (
     F1,
     AccuracyBinary,
+    AccuracyMulticlass,
     BalancedAccuracyBinary,
     BalancedAccuracyMulticlass,
     F1Macro,
@@ -25,9 +26,35 @@ EPS = 1e-5
 
 def test_accuracy_binary():
     obj = AccuracyBinary()
-    assert obj.score(np.array([0, 0, 1, 1]), np.array([1, 1, 0, 0])) == pytest.approx(0.0, EPS)
-    assert obj.score(np.array([0, 0, 1, 1]), np.array([0, 1, 0, 1])) == pytest.approx(0.5, EPS)
-    assert obj.score(np.array([0, 0, 1, 1]), np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([1, 1, 0, 0])) == pytest.approx(0.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([0, 1, 0, 1])) == pytest.approx(0.5, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
+
+    with pytest.raises(ValueError, match="Length of inputs is 0"):
+        obj.score(y_predicted=[], y_true=[1])
+    with pytest.raises(ValueError, match="Length of inputs is 0"):
+        obj.score(y_predicted=[1], y_true=[])
+    with pytest.raises(DimensionMismatchError):
+        obj.score(y_predicted=[0], y_true=[1, 0])
+    with pytest.raises(DimensionMismatchError):
+        obj.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
+
+
+def test_accuracy_multi():
+    obj = AccuracyMulticlass()
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([1, 1, 0, 0])) == pytest.approx(0.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([0, 1, 0, 1])) == pytest.approx(0.5, EPS)
+    assert obj.score(np.array([0, 0, 1, 1]),
+                     np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
+    assert obj.score(np.array([0, 0, 1, 1, 2, 2]),
+                     np.array([0, 0, 0, 0, 0, 0])) == pytest.approx(1 / 3.0, EPS)
+    assert obj.score(np.array([0, 0, 0, 0, 0, 0]),
+                     np.array([0, 0, 1, 1, 2, 2])) == pytest.approx(1 / 3.0, EPS)
 
     with pytest.raises(ValueError, match="Length of inputs is 0"):
         obj.score(y_predicted=[], y_true=[1])

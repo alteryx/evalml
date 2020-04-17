@@ -15,7 +15,21 @@ from evalml.exceptions import DimensionMismatchError
 
 class AccuracyBinary(BinaryClassificationObjective):
     """Accuracy score for binary classification"""
-    name = "Accuracy"
+    name = "Accuracy Binary"
+    greater_is_better = True
+    score_needs_proba = False
+
+    def objective_function(self, y_predicted, y_true, X=None):
+        if len(y_true) == 0 or len(y_predicted) == 0:
+            raise ValueError("Length of inputs is 0")
+        if len(y_predicted) != len(y_true):
+            raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+        return metrics.accuracy_score(y_true, y_predicted)
+
+
+class AccuracyMulticlass(MultiClassificationObjective):
+    """Accuracy score for multiclass classification"""
+    name = "Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
 
