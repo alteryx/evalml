@@ -1,5 +1,6 @@
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import ProblemTypes
 
 
 class RegressionPipeline(PipelineBase):
-    supported_problem_types = ['regression']
+    problem_type = ProblemTypes.REGRESSION
