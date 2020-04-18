@@ -32,6 +32,7 @@ Changelog
         * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
         * Remove s3fs as a dev dependency :pr:`664`
         * Changed requirements-parser to be a core dependency :pr:`673`
+        * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -62,6 +63,7 @@ Changelog
     * ``score()`` will now return one dictionary of all objective scores.
     * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
     * Pipelines ``_name`` field changed to ``custom_name``
+    * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
 
 
 **v0.8.0 Apr. 1, 2020**
