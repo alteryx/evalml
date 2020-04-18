@@ -9,7 +9,11 @@ from skopt.space import Integer, Real
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision, Recall
-from evalml.pipelines import LogisticRegressionBinaryPipeline, BinaryClassificationPipeline, PipelineBase
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    LogisticRegressionBinaryPipeline,
+    PipelineBase
+)
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,

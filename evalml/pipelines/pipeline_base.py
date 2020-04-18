@@ -11,7 +11,6 @@ from .components import Estimator, handle_component
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
-from evalml.problem_types import handle_problem_types
 from evalml.utils import (
     Logger,
     classproperty,
@@ -38,6 +37,7 @@ class PipelineBase(ABC):
 
     custom_hyperparameters = None
     custom_name = None
+    problem_type = None
 
     def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
@@ -101,7 +101,8 @@ class PipelineBase(ABC):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
         estimator_problem_types = self.estimator.supported_problem_types
         if self.problem_type not in estimator_problem_types:
-            raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
+            raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
+                             .format(self.problem_type, estimator_problem_types))
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
@@ -149,7 +150,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Problem Type: {}".format(self.problem_type)
+        logger.log("Problem Type: {}".format(self.problem_type))
         logger.log("Model Family: {}".format(str(self.model_family)))
 
         if self.estimator.name in self.input_feature_names:
