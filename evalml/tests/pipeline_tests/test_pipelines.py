@@ -107,11 +107,11 @@ def lr_pipeline():
 
 
 def test_required_fields():
-    class TestPipelineWithComponentGraph(PipelineBase):
-        component_graph = ['Logistic Regression Classifier']
+    class TestPipelineWithoutComponentGraph(PipelineBase):
+        pass
 
     with pytest.raises(TypeError):
-        TestPipelineWithComponentGraph(parameters={})
+        TestPipelineWithoutComponentGraph(parameters={})
 
 
 def test_serialization(X_y, tmpdir, lr_pipeline):
@@ -195,7 +195,7 @@ def test_describe(X_y, capsys, lr_pipeline):
     lrp.describe()
     out, err = capsys.readouterr()
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Types: Binary Classification" in out
+    assert "Problem Type: Binary Classification" in out
     assert "Model Family: Linear Model" in out
 
     for component in lrp.component_graph:
@@ -330,7 +330,7 @@ def test_multiple_feature_selectors(X_y):
 
 def test_problem_types():
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Logistic Regression Classifier']
+        component_graph = ['Random Forest Regressor']
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
         TestPipeline(parameters={})
