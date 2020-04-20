@@ -196,7 +196,7 @@ def test_describe(X_y, capsys, lr_pipeline):
     out, err = capsys.readouterr()
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Type: Binary Classification" in out
-    assert "Model Family: Linear Model" in out
+    assert "Model Family: Linear" in out
 
     for component in lrp.component_graph:
         if component.hyperparameter_ranges:
