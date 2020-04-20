@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class BinaryClassificationPipeline(ClassificationPipeline):
 
     threshold = None
-    supported_problem_types = ['binary']
+    problem_type = ProblemTypes.BINARY
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -27,7 +27,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            if objective.problem_type != ProblemTypes.BINARY:
+            if objective.problem_type != self.problem_type:
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:

@@ -239,3 +239,11 @@ def test_model_family_components(test_classes):
     assert MockComponent.model_family == ModelFamily.NONE
     assert MockTransformer.model_family == ModelFamily.NONE
     assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
+
+
+def test_regressor_call_predict_proba(test_classes):
+    X = np.array([])
+    _, MockEstimator, _ = test_classes
+    component = MockEstimator({}, None, 0)
+    with pytest.raises(MethodPropertyNotFoundError):
+        component.predict_proba(X)

@@ -1,3 +1,5 @@
+import string
+
 import numpy as np
 import pandas as pd
 from pytest import importorskip
@@ -41,3 +43,20 @@ def test_xgboost_classifier_random_state_bounds_rng(X_y):
     rng = make_mock_random_state(XGBoostClassifier.SEED_MAX)
     clf = XGBoostClassifier(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
+
+
+def test_xgboost_feature_name_with_random_ascii(X_y):
+    X, y = X_y
+    clf = XGBoostClassifier()
+    X = clf.random_state.random((X.shape[0], len(string.printable)))
+    col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
+    X = pd.DataFrame(X, columns=col_names)
+    clf.fit(X, y)
+    assert len(clf.feature_importances) == len(X.columns)
+    assert not np.isnan(clf.feature_importances).all().all()
+    assert list(X.columns) == col_names
+
+    predictions = clf.predict(X)
+    assert len(predictions) == len(y)
+    assert not np.isnan(predictions).all()
+    assert not np.isnan(clf.predict_proba(X)).all()

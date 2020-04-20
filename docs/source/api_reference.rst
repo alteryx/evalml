@@ -193,7 +193,7 @@ Regression
     RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
-    XGBostRegressionPipeline
+    XGBoostRegressionPipeline
 
 
 Pipeline Utils
@@ -237,7 +237,8 @@ Classification
     AUCMacro
     AUCMicro
     AUCWeighted
-    BalancedAccuracy
+    BalancedAccuracyBinary
+    BalancedAccuracyMulticlass
     F1
     F1Micro
     F1Macro

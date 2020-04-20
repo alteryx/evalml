@@ -14,6 +14,7 @@ Changelog
         * Add testing files to .gitignore :pr:`625`
         * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
+        * Fixed XGBoostClassifier and XGBoostRegressor bug with feature names that contain [, ], or < :pr:`659`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
         * Removed zero division warning for F1/precision/recall metrics :pr:`671`
@@ -30,6 +31,9 @@ Changelog
         * Pipeline `_name` field changed to `custom_name` :pr:`650`
         * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
         * Remove s3fs as a dev dependency :pr:`664`
+        * Changed requirements-parser to be a core dependency :pr:`673`
+        * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
+        * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -39,9 +43,11 @@ Changelog
         * Update release process doc :pr:`567`
         * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API reference :pr:`651`
         * Fixed improperly formatted code in breaking changes for changelog :pr:`655`
+        * Added configuration to treat Sphinx warnings as errors :pr:`660`
         * Removed separate plotting section for pipelines in API reference :pr:`657`, :pr:`665`
         * Have leads example notebook load S3 files using https, so we can delete s3fs dev dependency :pr:`664`
         * Categorized components in API reference and added descriptions for each category :pr:`663`
+        * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -59,6 +65,7 @@ Changelog
     * ``score()`` will now return one dictionary of all objective scores.
     * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
     * Pipelines ``_name`` field changed to ``custom_name``
+    * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
 
 
 **v0.8.0 Apr. 1, 2020**
