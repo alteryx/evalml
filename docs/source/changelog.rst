@@ -33,6 +33,7 @@ Changelog
         * Remove s3fs as a dev dependency :pr:`664`
         * Changed requirements-parser to be a core dependency :pr:`673`
         * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
+        * Only show best results for a given pipeline template in rankings, add `full_ranking` property to show all :pr:`682`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
