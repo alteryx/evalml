@@ -39,6 +39,8 @@ def test_init(X_y):
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
+    assert len(automl.rankings) == 1
+
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
