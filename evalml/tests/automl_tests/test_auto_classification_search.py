@@ -23,6 +23,7 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y):
     X, y = X_y
 
+
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1, n_jobs=4)
 
     assert automl.n_jobs == 4
@@ -39,7 +40,7 @@ def test_init(X_y):
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
-    assert len(automl.rankings) == 1
+    assert isinstance(automl.full_rankings, pd.DataFrame)
 
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
@@ -85,7 +86,7 @@ def test_max_pipelines(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert len(automl.rankings) == max_pipelines
+    assert len(automl.full_rankings) == max_pipelines
 
 
 def test_best_pipeline(X_y):
@@ -94,7 +95,7 @@ def test_best_pipeline(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert len(automl.rankings) == max_pipelines
+    assert len(automl.full_rankings) == max_pipelines
 
 
 def test_specify_objective(X_y):

@@ -3,7 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
-from evalml import AutoClassificationSearch
+from evalml import AutoClassificationSearch, AutoRegressionSearch
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 
 
@@ -72,3 +72,19 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert score > 0
             else:
                 assert np.isnan(score)
+
+
+def test_rankings(X_y, X_y_reg):
+    X, y = X_y
+    model_families = ['random_forest']
+    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl.search(X, y)
+
+    assert len(automl.full_rankings) == 2
+    assert len(automl.rankings) == 1
+
+    X, y = X_y_reg
+    automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl.search(X, y)
+    assert len(automl.full_rankings) == 2
+    assert len(automl.rankings) == 1
