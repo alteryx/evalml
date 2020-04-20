@@ -62,19 +62,13 @@ Model Family
 Components
 ==========
 
-this is a test
-
 Transformers
 ~~~~~~~~~~~~
-
-Testing testing
-
 
 Encoders
 --------
 
-this is a test
-
+Encoders are transformers that transform categorical or non-numerical data into numerical data.
 
 .. autosummary::
     :toctree: generated
@@ -86,16 +80,20 @@ this is a test
 Imputers
 --------
 
+Imputers are transformers that fill in missing data.
+
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
     :nosignatures:
 
     SimpleImputer
-    StandardScaler
+
 
 Scalers
 -------
+
+Scalers are transformers that transform and standardize the range of data.
 
 .. autosummary::
     :toctree: generated
@@ -104,8 +102,11 @@ Scalers
 
     StandardScaler
 
+
 Feature Selectors
 -----------------
+
+Feature selectors are transformers that select a subset of relevant features for the model.
 
 .. autosummary::
     :toctree: generated
@@ -122,6 +123,8 @@ Estimators
 Classifiers
 -----------
 
+Classifiers are estimators that learn from input data to predict a class label.
+
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
@@ -134,6 +137,8 @@ Classifiers
 
 Regressors
 -----------
+
+Regressors are estimators that learn from input data to a real output value.
 
 .. autosummary::
     :toctree: generated
