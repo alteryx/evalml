@@ -7,14 +7,13 @@ import pandas as pd
 import pytest
 from skopt.space import Real
 
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 @pytest.fixture
 def test_pipeline():
-    class TestPipeline(PipelineBase):
+    class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
