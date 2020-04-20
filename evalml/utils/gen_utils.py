@@ -17,9 +17,10 @@ def import_or_raise(library, error_msg=None):
     try:
         return importlib.import_module(library)
     except ImportError:
-        if error_msg:
-            raise ImportError(error_msg)
-        raise ImportError("Failed to import {}".format(library))
+        if error_msg is None:
+            error_msg = ""
+        msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
+        raise ImportError(msg)
 
 
 def convert_to_seconds(input_str):

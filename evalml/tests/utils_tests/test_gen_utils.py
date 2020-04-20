@@ -16,10 +16,10 @@ from evalml.utils.gen_utils import (
 
 
 def test_import_or_raise_errors():
-    with pytest.raises(ImportError, match="Failed to import _evalml"):
+    with pytest.raises(ImportError, match="Missing optional dependency '_evalml'"):
         import_or_raise("_evalml")
-    with pytest.raises(ImportError, match="error message"):
-        import_or_raise("_evalml", "error message")
+    with pytest.raises(ImportError, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
+        import_or_raise("_evalml", "Additional error message")
 
 
 def test_import_or_raise_imports():
