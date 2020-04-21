@@ -47,7 +47,7 @@ def test_init(X_y):
     automl.describe_pipeline(0)
 
     scores = automl.best_pipeline.score(X, y, ['precision'])
-    assert not any(np.isnan(val) for val in scores.values())
+    assert not np.isnan(np.array(scores.values())).any()
     assert not automl.best_pipeline.feature_importances.isnull().all().all()
 
 
