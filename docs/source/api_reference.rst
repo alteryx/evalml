@@ -68,7 +68,7 @@ Transformers
 Encoders
 --------
 
-Encoders are transformers that transform categorical or non-numerical data into numerical data.
+Encoders encode categorical or non-numerical data into numerical data.
 
 .. autosummary::
     :toctree: generated
@@ -80,7 +80,7 @@ Encoders are transformers that transform categorical or non-numerical data into 
 Imputers
 --------
 
-Imputers are transformers that fill in missing data.
+Imputers fill in missing data.
 
 .. autosummary::
     :toctree: generated
@@ -93,7 +93,7 @@ Imputers are transformers that fill in missing data.
 Scalers
 -------
 
-Scalers are transformers that transform and standardize the range of data.
+Scalers transform and standardize the range of data.
 
 .. autosummary::
     :toctree: generated
@@ -106,7 +106,7 @@ Scalers are transformers that transform and standardize the range of data.
 Feature Selectors
 -----------------
 
-Feature selectors are transformers that select a subset of relevant features for the model.
+Feature selectors select a subset of relevant features for the model.
 
 .. autosummary::
     :toctree: generated
@@ -123,7 +123,7 @@ Estimators
 Classifiers
 -----------
 
-Classifiers are estimators that learn from input data to predict a class label.
+Classifiers learn from input data to predict a class label.
 
 .. autosummary::
     :toctree: generated
@@ -138,7 +138,7 @@ Classifiers are estimators that learn from input data to predict a class label.
 Regressors
 -----------
 
-Regressors are estimators that learn from input data to a real output value.
+Regressors learn from input data to predict a real output value.
 
 .. autosummary::
     :toctree: generated
@@ -154,8 +154,8 @@ Regressors are estimators that learn from input data to a real output value.
 Pipelines
 =========
 
-Pipelines
-~~~~~~~~~
+Pipeline Base Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
