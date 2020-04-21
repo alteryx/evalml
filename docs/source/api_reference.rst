@@ -68,7 +68,7 @@ Transformers
 Encoders
 --------
 
-Encoders encode categorical or non-numerical data into numerical data.
+Encoders convert categorical or non-numerical features into numerical features.
 
 .. autosummary::
     :toctree: generated
