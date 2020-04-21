@@ -17,6 +17,8 @@ from evalml.objectives import (
     get_objectives
 )
 from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines.classification_pipeline import ClassificationPipeline
+from evalml.pipelines.utils import list_model_families
 from evalml.problem_types import ProblemTypes
 
 
@@ -45,6 +47,10 @@ def test_init(X_y):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
     automl.describe_pipeline(0)
+
+    scores = automl.best_pipeline.score(X, y, ['precision'])
+    assert not any(np.isnan(val) for val in scores.values())
+    assert not automl.best_pipeline.feature_importances.isnull().all().all()
 
 
 def test_get_pipeline_none(X_y):
@@ -86,15 +92,7 @@ def test_max_pipelines(X_y):
     automl.search(X, y)
 
     assert len(automl.full_rankings) == max_pipelines
-
-
-def test_best_pipeline(X_y):
-    X, y = X_y
-    max_pipelines = 5
-    automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    automl.search(X, y)
-
-    assert len(automl.full_rankings) == max_pipelines
+    assert len(automl.rankings) == len(list_model_families(automl.problem_type))
 
 
 def test_specify_objective(X_y):
