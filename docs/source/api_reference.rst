@@ -166,7 +166,7 @@ Pipeline Base Classes
     MulticlassClassificationPipeline
     RegressionPipeline
 
-Classification
+Classification Pipelines
 ~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
@@ -182,7 +182,7 @@ Classification
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
 
-Regression
+Regression Pipelines
 ~~~~~~~~~~
 
 .. autosummary::
