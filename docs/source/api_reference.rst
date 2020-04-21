@@ -65,19 +65,65 @@ Components
 Transformers
 ~~~~~~~~~~~~
 
+Encoders
+--------
+
+Encoders convert categorical or non-numerical features into numerical features.
+
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
+
+Imputers
+--------
+
+Imputers fill in missing data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    SimpleImputer
+
+
+Scalers
+-------
+
+Scalers transform and standardize the range of data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    StandardScaler
+
+
+Feature Selectors
+-----------------
+
+Feature selectors select a subset of relevant features for the model.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
-    SimpleImputer
-    StandardScaler
+
 
 Estimators
 ~~~~~~~~~~
+
+Classifiers
+-----------
+
+Classifiers are models which can be trained to predict a class label from input data.
 
 .. autosummary::
     :toctree: generated
@@ -87,6 +133,18 @@ Estimators
     LogisticRegressionClassifier
     RandomForestClassifier
     XGBoostClassifier
+
+
+Regressors
+-----------
+
+Regressors are models which can be trained to predict a target value from input data.
+
+.. autosummary::
+    :toctree: generated
+    :template: estimator_class.rst
+    :nosignatures:
+
     LinearRegressor
     RandomForestRegressor
 
@@ -96,8 +154,8 @@ Estimators
 Pipelines
 =========
 
-Pipelines
-~~~~~~~~~
+Pipeline Base Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
@@ -106,6 +164,7 @@ Pipelines
     PipelineBase
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
+    RegressionPipeline
 
 Classification
 ~~~~~~~~~~~~~~
@@ -122,7 +181,6 @@ Classification
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-
 
 Regression
 ~~~~~~~~~~
