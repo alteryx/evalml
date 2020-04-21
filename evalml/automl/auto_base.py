@@ -448,7 +448,7 @@ class AutoBase:
 
     @property
     def rankings(self):
-        """Returns a pandas.DataFrame with scoring results from the best pipeline from each model family"""
+        """Returns a pandas.DataFrame with scoring results from the highest-scoring set of parameters used with each pipeline."""
         return self.full_rankings.drop_duplicates(subset="pipeline_name", keep="first")
 
     @property
