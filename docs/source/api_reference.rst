@@ -22,13 +22,17 @@ Demo Datasets
 Preprocessing
 =============
 
+Utilities to preprocess data before using evalml.
+ 
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
+    drop_nan_target_rows
+    label_distribution
     load_data
+    number_of_features
     split_data
-
 
 .. currentmodule:: evalml
 
