@@ -123,7 +123,7 @@ Estimators
 Classifiers
 -----------
 
-Classifiers learn from input data to predict a class label.
+Classifiers are models which can be trained to predict a class label from input data.
 
 .. autosummary::
     :toctree: generated
@@ -138,7 +138,7 @@ Classifiers learn from input data to predict a class label.
 Regressors
 -----------
 
-Regressors learn from input data to predict a real output value.
+Regressors are models which can be trained to predict a target value from input data.
 
 .. autosummary::
     :toctree: generated
@@ -164,6 +164,7 @@ Pipeline Base Classes
     PipelineBase
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
+    RegressionPipeline
 
 Classification
 ~~~~~~~~~~~~~~
@@ -180,7 +181,6 @@ Classification
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-
 
 Regression
 ~~~~~~~~~~
