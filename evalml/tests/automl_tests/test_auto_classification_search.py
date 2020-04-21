@@ -251,7 +251,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 
     automl.describe_pipeline(0)
     out, err = capsys.readouterr()
-    assert "Objective to optimize threshold for" in out
+    assert "Objective to optimize binary classification pipeline thresholds for" in out
     assert err == ""
 
 
