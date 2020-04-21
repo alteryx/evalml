@@ -416,8 +416,7 @@ class AutoBase:
 
         pipeline.describe()
         logger.log_subtitle("Training")
-        # Ideally, we want this information available on pipeline instead
-        logger.log("Training for {} problems.".format(self.problem_type))
+        logger.log("Training for {} problems.".format(pipeline.problem_type))
 
         if self.optimize_thresholds and self.objective.can_optimize_threshold:
             logger.log("Objective to optimize threshold for: {}".format(self.objective))
