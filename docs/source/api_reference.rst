@@ -211,7 +211,7 @@ Pipeline Utils
 Objective Functions
 ====================
 
-Domain Specific
+Domain-Specific Objectives
 ~~~~~~~~~~~~~~~
 
 .. autosummary::
@@ -223,7 +223,7 @@ Domain Specific
     LeadScoring
 
 
-Classification
+Classification Objectives
 ~~~~~~~~~~~~~~
 
 .. autosummary::
@@ -257,7 +257,7 @@ Classification
     RecallWeighted
 
 
-Regression
+Regression Objectives
 ~~~~~~~~~~
 
 .. autosummary::
