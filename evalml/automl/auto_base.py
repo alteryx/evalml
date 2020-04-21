@@ -417,6 +417,10 @@ class AutoBase:
         pipeline.describe()
         logger.log_subtitle("Training")
         logger.log("Training for {} problems.".format(pipeline.problem_type))
+
+        if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+            logger.log("Objective to optimize binary classification pipeline thresholds for: {}".format(self.objective))
+
         logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         logger.log_subtitle("Cross Validation", underline="-")
 

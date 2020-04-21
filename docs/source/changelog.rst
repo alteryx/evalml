@@ -9,6 +9,7 @@ Changelog
         * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
+        * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
