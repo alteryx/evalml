@@ -35,6 +35,7 @@ Changelog
         * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
         * Changed AutoML to only show best results for a given pipeline template in `rankings`, added `full_rankings` property to show all :pr:`682`
         * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
+        * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
         * Standardize `import_or_raise` error messages :pr:`683`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
