@@ -17,8 +17,6 @@ from evalml.objectives import (
     get_objectives
 )
 from evalml.pipelines import PipelineBase, get_pipelines
-from evalml.pipelines.classification_pipeline import ClassificationPipeline
-from evalml.pipelines.utils import list_model_families
 from evalml.problem_types import ProblemTypes
 
 
@@ -92,7 +90,6 @@ def test_max_pipelines(X_y):
     automl.search(X, y)
 
     assert len(automl.full_rankings) == max_pipelines
-    assert len(automl.rankings) == len(list_model_families(automl.problem_type))
 
 
 def test_specify_objective(X_y):
