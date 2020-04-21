@@ -452,7 +452,12 @@ class AutoBase:
 
     @property
     def rankings(self):
-        """Returns the rankings of the models searched"""
+        """Returns a pandas.DataFrame with scoring results from the highest-scoring set of parameters used with each pipeline."""
+        return self.full_rankings.drop_duplicates(subset="pipeline_name", keep="first")
+
+    @property
+    def full_rankings(self):
+        """Returns a pandas.DataFrame with scoring results from all pipelines searched"""
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
