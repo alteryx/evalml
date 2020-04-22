@@ -87,3 +87,19 @@ def test_rankings(X_y, X_y_reg):
     automl.search(X, y)
     assert len(automl.full_rankings) == 2
     assert len(automl.rankings) == 1
+
+
+@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.utils.logger.Logger.log')
+@patch('evalml.guardrails.detect_label_leakage')
+def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
+    X, y = X_y
+    mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}
+
+    class DummyException(Exception):
+        pass
+
+    mock_fit.side_effect = DummyException  # a hack to avoid fitting models in unit test, not necessary here
+    automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
+    automl.search(X, y, raise_errors=False)
+    mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
