@@ -39,10 +39,16 @@ def test_init(X_y):
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.full_rankings, pd.DataFrame)
+
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
     automl.describe_pipeline(0)
+
+    scores = automl.best_pipeline.score(X, y, ['precision'])
+    assert not any(np.isnan(val) for val in scores.values())
+    assert not automl.best_pipeline.feature_importances.isnull().all().all()
 
 
 def test_get_pipeline_none(X_y):
@@ -83,16 +89,7 @@ def test_max_pipelines(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert len(automl.rankings) == max_pipelines
-
-
-def test_best_pipeline(X_y):
-    X, y = X_y
-    max_pipelines = 5
-    automl = AutoClassificationSearch(max_pipelines=max_pipelines)
-    automl.search(X, y)
-
-    assert len(automl.rankings) == max_pipelines
+    assert len(automl.full_rankings) == max_pipelines
 
 
 def test_specify_objective(X_y):
@@ -237,7 +234,7 @@ def test_additional_objectives(X_y):
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, capsys):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
     automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
@@ -248,6 +245,11 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
     mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
     assert automl.best_pipeline.threshold == 0.8
+
+    automl.describe_pipeline(0)
+    out, err = capsys.readouterr()
+    assert "Objective to optimize binary classification pipeline thresholds for" in out
+    assert err == ""
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')

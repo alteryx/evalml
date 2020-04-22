@@ -9,6 +9,7 @@ Changelog
         * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
+        * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
@@ -33,6 +34,7 @@ Changelog
         * Remove s3fs as a dev dependency :pr:`664`
         * Changed requirements-parser to be a core dependency :pr:`673`
         * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
+        * Changed AutoML to only show best results for a given pipeline template in `rankings`, added `full_rankings` property to show all :pr:`682`
         * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
         * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
         * Standardize `import_or_raise` error messages :pr:`683`
