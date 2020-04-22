@@ -12,7 +12,7 @@ from evalml.pipelines.plot_utils import (
 def test_roc_curve():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
-    fpr, tpr, thresholds = roc_curve(y_predict_proba, y_true)
+    fpr, tpr, thresholds = roc_curve(y_true, y_predict_proba)
     assert not np.isnan(fpr).any()
     assert not np.isnan(tpr).any()
     assert not np.isnan(thresholds).any()
@@ -21,7 +21,7 @@ def test_roc_curve():
 def test_confusion_matrix():
     y_true = [2, 0, 2, 2, 0, 1]
     y_predicted = [0, 0, 2, 2, 0, 2]
-    score = confusion_matrix(y_predicted, y_true)
+    score = confusion_matrix(y_true, y_predicted)
     cm_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(cm_expected, score)
 
