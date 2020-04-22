@@ -327,7 +327,7 @@ Guardrails
 .. currentmodule:: evalml.objectives
 
 Plot Metrics
-~~~~~~~~~~~~
+============
 
 .. autosummary::
     :toctree: generated
