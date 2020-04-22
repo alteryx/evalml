@@ -34,7 +34,8 @@ Utilities to preprocess data before using evalml.
     number_of_features
     split_data
 
-.. currentmodule:: evalml
+
+.. currentmodule:: evalml.automl
 
 AutoML
 ======
@@ -48,17 +49,62 @@ AutoML
     AutoRegressionSearch
 
 
-.. currentmodule:: evalml.model_family
+.. currentmodule:: evalml.pipelines
 
-Model Family
-============
+Pipelines
+=========
 
+Pipeline Base Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
-    ModelFamily
+    PipelineBase
+    ClassificationPipeline
+    BinaryClassificationPipeline
+    MulticlassClassificationPipeline
+    RegressionPipeline
+
+Classification Pipelines
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    CatBoostBinaryClassificationPipeline
+    CatBoostMulticlassClassificationPipeline
+    LogisticRegressionBinaryPipeline
+    LogisticRegressionMulticlassPipeline
+    RFBinaryClassificationPipeline
+    RFMulticlassClassificationPipeline
+    XGBoostBinaryPipeline
+    XGBoostMulticlassPipeline
+
+Regression Pipelines
+~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
+
+    RFRegressionPipeline
+    CatBoostRegressionPipeline
+    LinearRegressionPipeline
+    XGBoostRegressionPipeline
+
+
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_pipelines
+    list_model_families
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -134,10 +180,10 @@ Classifiers are models which can be trained to predict a class label from input 
     :template: estimator_class.rst
     :nosignatures:
 
-    LogisticRegressionClassifier
+    CatBoostClassifier
     RandomForestClassifier
+    LogisticRegressionClassifier
     XGBoostClassifier
-
 
 Regressors
 -----------
@@ -149,74 +195,18 @@ Regressors are models which can be trained to predict a target value from input 
     :template: estimator_class.rst
     :nosignatures:
 
+    CatBoostRegressor
     LinearRegressor
     RandomForestRegressor
-
-
-.. currentmodule:: evalml.pipelines
-
-Pipelines
-=========
-
-Pipeline Base Classes
-~~~~~~~~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    PipelineBase
-    BinaryClassificationPipeline
-    MulticlassClassificationPipeline
-    RegressionPipeline
-
-Classification
-~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
-    RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
-
-Regression
-~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
-    RFRegressionPipeline
-    CatBoostRegressionPipeline
-    LinearRegressionPipeline
-    XGBoostRegressionPipeline
-
-
-Pipeline Utils
-~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    get_pipelines
-    list_model_families
-
+    XGBoostRegressor
 
 .. currentmodule:: evalml.objectives
 
 Objective Functions
 ====================
 
-Domain Specific
-~~~~~~~~~~~~~~~
+Domain-Specific Objectives
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -227,8 +217,8 @@ Domain Specific
     LeadScoring
 
 
-Classification
-~~~~~~~~~~~~~~
+Classification Objectives
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -261,8 +251,8 @@ Classification
     RecallWeighted
 
 
-Regression
-~~~~~~~~~~
+Regression Objectives
+~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -278,20 +268,7 @@ Regression
     ExpVariance
 
 
-Plot Metrics
-~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ROC
-    ConfusionMatrix
-
-
 .. currentmodule:: evalml.problem_types
-
 
 Problem Types
 =============
@@ -308,6 +285,19 @@ Problem Types
     :nosignatures:
 
     handle_problem_types
+
+
+.. currentmodule:: evalml.model_family
+
+Model Family
+============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ModelFamily
 
 
 .. currentmodule:: evalml.tuners
@@ -341,6 +331,20 @@ Guardrails
     detect_id_columns
 
 
+.. currentmodule:: evalml.objectives
+
+Plot Metrics
+============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ROC
+    ConfusionMatrix
+
+
 .. currentmodule:: evalml.utils
 
 Utils
@@ -352,3 +356,4 @@ Utils
 
     convert_to_seconds
     normalize_confusion_matrix
+
