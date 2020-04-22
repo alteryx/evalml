@@ -334,35 +334,6 @@ class ExpVariance(RegressionObjective):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
-class PlotMetric(ABC):
-    name = None
-    score_needs_proba = False
-
-    @abstractmethod
-    def score(self, y_predicted, y_true):
-        raise NotImplementedError("score() is not implemented!")
-
-
-class ROC(PlotMetric):
-    """Receiver Operating Characteristic score for binary classification."""
-    name = "ROC"
-    score_needs_proba = True
-
-    def score(self, y_predicted, y_true):
-        return metrics.roc_curve(y_true, y_predicted)
-
-
-class ConfusionMatrix(PlotMetric):
-    """Confusion matrix for binary and multiclass classification problems"""
-    name = "Confusion Matrix"
-
-    def score(self, y_predicted, y_true):
-        labels = unique_labels(y_predicted, y_true)
-        conf_mat = metrics.confusion_matrix(y_true, y_predicted)
-        conf_mat = pd.DataFrame(conf_mat, columns=labels)
-        return conf_mat
-
-
 def _handle_predictions(y_true, y_pred):
     if len(np.unique(y_true)) > 2:
         classes = np.unique(y_true)
