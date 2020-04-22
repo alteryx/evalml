@@ -58,11 +58,14 @@ def test_normalize_confusion_matrix():
 def test_normalize_confusion_matrix_error():
     conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
 
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        normalize_confusion_matrix(conf_mat, option='invalid option')
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        normalize_confusion_matrix(conf_mat, option=None)
+
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'true')
-
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'pred')
-
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')

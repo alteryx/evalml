@@ -50,14 +50,14 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 
     """
     with warnings.catch_warnings(record=True) as w:
-        if option is None:
-            return conf_mat
-        elif option == 'true':
+        if option == 'true':
             conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
         elif option == 'pred':
             conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=0)
         elif option == 'all':
             conf_mat = conf_mat.astype('float') / conf_mat.sum().sum()
+        else:
+            raise ValueError('Invalid value provided for "option": %s'.format(option))
 
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
