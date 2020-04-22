@@ -62,7 +62,7 @@ Pipeline Base Classes
     RegressionPipeline
 
 Classification Pipelines
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
@@ -78,7 +78,7 @@ Classification Pipelines
     XGBoostMulticlassPipeline
 
 Regression Pipelines
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
