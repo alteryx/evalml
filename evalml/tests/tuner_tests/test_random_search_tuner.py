@@ -16,15 +16,12 @@ def test_autoreg_random_search_tuner(X_y):
     clf.search(X, y)
 
 
-def test_autoreg_random_search_tuner_no_params(X_y, capsys):
+def test_autoreg_random_search_tuner_no_params(X_y):
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=RandomSearchTuner)
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
-
-
-random_state = 0
 
 
 def test_random_search_tuner_unique_values(test_space):

@@ -7,28 +7,31 @@ from evalml import AutoClassificationSearch, AutoRegressionSearch
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 
 
-def test_pipeline_limits(capsys, X_y):
+def test_pipeline_limits(caplog, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 1 pipelines. " in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=5)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 

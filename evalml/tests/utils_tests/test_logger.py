@@ -10,19 +10,18 @@ def test_logger_verbose():
     assert logger.verbose
 
 
-def test_logger_log(capsys):
+def test_logger_log(caplog):
     logger = Logger()
     logger.log('Test message')
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert out == 'Test message\n'
-    assert len(err) == 0
 
+    caplog.clear()
     logger.log_title('Log title')
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert 'Log title' in out
-    assert len(err) == 0
 
+    caplog.clear()
     logger.log_subtitle('Log subtitle')
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert 'Log subtitle' in out
-    assert len(err) == 0

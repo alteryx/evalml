@@ -87,7 +87,7 @@ def test_callback(X_y):
     assert counts["add_result_callback"] == max_pipelines
 
 
-def test_early_stopping(capsys):
+def test_early_stopping(caplog):
     tolerance = 0.005
     patience = 2
     automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, allowed_model_families=['linear_model'], random_state=0)
@@ -104,7 +104,7 @@ def test_early_stopping(capsys):
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
-    out, _ = capsys.readouterr()
+    out = caplog.text
     assert "2 iterations without improvement. Stopping search early." in out
 
 

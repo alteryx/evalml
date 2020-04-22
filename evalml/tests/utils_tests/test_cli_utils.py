@@ -42,33 +42,28 @@ def test_print_info_cmd():
     assert "INSTALLED VERSIONS" in result.output
 
 
-def test_print_info(capsys):
+def test_print_info(caplog):
     print_info()
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "EvalML version:" in out
     assert "EvalML installation directory:" in out
     assert "SYSTEM INFO" in out
     assert "INSTALLED VERSIONS" in out
-    assert len(err) == 0
 
 
-def test_print_sys_info(capsys):
+def test_print_sys_info(caplog):
     print_sys_info()
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "SYSTEM INFO" in out
-    assert len(err) == 0
 
 
-def test_print_deps_info(capsys):
+def test_print_deps_info(caplog):
     core_requirements = get_core_requirements()
     print_deps(core_requirements)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "INSTALLED VERSIONS" in out
     for requirement in core_requirements:
         assert requirement in out
-    assert len(err) == 0
-    print(core_requirements)
-    print_deps(core_requirements)
 
 
 def test_sys_info():
