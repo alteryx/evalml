@@ -73,6 +73,15 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
 
 
 def number_of_features(dtypes):
+    """Get the number of features for specific dtypes
+
+    Arguments:
+
+        dtypes (pd.Series): dtypes to get the number of features for
+
+    Returns:
+        pd.Series: dtypes and the number of features for each input type
+    """
     dtype_to_vtype = {
         'bool': 'Boolean',
         'int32': 'Numeric',
@@ -92,7 +101,7 @@ def label_distribution(labels):
         labels (pd.Series): Label values
 
     Returns:
-
+        pd.Series: Label values and their frequency distribution as percentages.
     """
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
