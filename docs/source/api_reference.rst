@@ -324,7 +324,7 @@ Guardrails
     detect_id_columns
 
 
-.. currentmodule:: evalml.pipelines
+.. currentmodule:: evalml.objectives
 
 Plot Metrics
 ~~~~~~~~~~~~
