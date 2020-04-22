@@ -53,6 +53,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
+    'sphinx.ext.graphviz',
+    'sphinx.ext.inheritance_diagram'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -208,6 +210,8 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
+inheritance_graph_attrs = dict(rankdir="LR", size='"width,heigth!"',
+                               fontsize=30, labelfontsize=30, ratio='compress', dpi=960)
 
 class AccessorLevelDocumenter(Documenter):
     """
