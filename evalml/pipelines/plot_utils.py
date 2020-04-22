@@ -1,19 +1,21 @@
 import warnings
 
+import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix, roc_curve
+from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
 
 def roc_curve(y_true, y_predicted):
     """Receiver Operating Characteristic score for binary classification."""
-    return roc_curve(y_true, y_predicted)
+    return sklearn_roc_curve(y_true, y_predicted)
 
 
 def confusion_matrix(y_true, y_predicted):
     """Confusion matrix for binary and multiclass classification problems"""
     labels = unique_labels(y_predicted, y_true)
-    conf_mat = confusion_matrix(y_true, y_predicted)
+    conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, columns=labels)
     return conf_mat
 

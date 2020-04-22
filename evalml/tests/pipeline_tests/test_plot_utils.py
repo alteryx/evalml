@@ -2,7 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines.plot_utils import roc_curve, confusion_matrix, normalize_confusion_matrix
+from evalml.pipelines.plot_utils import (
+    confusion_matrix,
+    normalize_confusion_matrix,
+    roc_curve
+)
 
 
 def test_roc_curve():
