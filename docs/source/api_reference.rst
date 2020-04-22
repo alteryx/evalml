@@ -104,7 +104,7 @@ Pipeline Utils
 
 
 Pipeline Plot Utils
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
