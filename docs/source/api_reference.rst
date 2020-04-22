@@ -199,7 +199,7 @@ Objective Functions
 ====================
 
 Domain-Specific Objectives
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -211,7 +211,7 @@ Domain-Specific Objectives
 
 
 Classification Objectives
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -245,7 +245,7 @@ Classification Objectives
 
 
 Regression Objectives
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
