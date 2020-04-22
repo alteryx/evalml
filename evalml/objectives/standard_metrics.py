@@ -290,16 +290,6 @@ class MSE(RegressionObjective):
         return metrics.mean_squared_error(y_true, y_predicted)
 
 
-class MSLE(RegressionObjective):
-    """Mean squared log error for regression"""
-    name = "MSLE"
-    greater_is_better = False
-    score_needs_proba = False
-
-    def objective_function(self, y_predicted, y_true, X=None):
-        return metrics.mean_squared_log_error(y_true, y_predicted)
-
-
 class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
     name = "MedianAE"

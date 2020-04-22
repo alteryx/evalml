@@ -24,7 +24,6 @@ from .standard_metrics import (
     MAE,
     MedianAE,
     MSE,
-    MSLE,
     Precision,
     PrecisionMacro,
     PrecisionMicro,

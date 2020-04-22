@@ -75,6 +75,7 @@ Changelog
     * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`696`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
+    * Removed unsupported ``MSLE`` objective :pr:`696`
 
 
 **v0.8.0 Apr. 1, 2020**

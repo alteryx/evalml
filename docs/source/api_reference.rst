@@ -269,7 +269,6 @@ Regression Objectives
     R2
     MAE
     MSE
-    MSLE
     MedianAE
     MaxError
     ExpVariance
