@@ -57,6 +57,7 @@ Pipeline Base Classes
     :nosignatures:
 
     PipelineBase
+    ClassificationPipeline
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
