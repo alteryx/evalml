@@ -7,11 +7,15 @@ import traceback
 from colorama import Style
 
 
-class CustomLogger(logging.Logger):
+class UpStackLogger(logging.Logger):
+    """A custom logger class used to skip a stack frame when computing filename, line number, function name and stack information."""
+
     def findCaller(self, stack_info=False, stacklevel=2):
         """
         Find the stack frame of the caller so that we can note the source
         file name, line number and function name.
+
+        This is taken directly from Python source code (https://github.com/python/cpython/blob/master/Lib/logging/__init__.py); the only modification is to the default stacklevel parameter value.
         """
         f = logging.currentframe()
         if f is not None:
@@ -52,7 +56,7 @@ class Logger(logging.Logger):
 
     def __init__(self, verbose=True):
         self.verbose = verbose
-        logging.setLoggerClass(CustomLogger)
+        logging.setLoggerClass(UpStackLogger)
         logger = logging.getLogger('evalml')
         logging.setLoggerClass(logging.Logger)
 
