@@ -92,6 +92,7 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
+        self.plot_metrics = []
         try:
             self.plot = PipelineSearchPlots(self)
 
@@ -276,6 +277,7 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
+        plot_data = []
 
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
@@ -323,7 +325,8 @@ class AutoBase:
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=training_time,
-                         cv_data=cv_data)
+                         cv_data=cv_data,
+                         plot_data=plot_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -339,7 +342,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, plot_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
@@ -365,7 +368,8 @@ class AutoBase:
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "cv_data": cv_data
+            "cv_data": cv_data,
+            "plot_data": plot_data
         }
 
         self.results['search_order'].append(pipeline_id)
