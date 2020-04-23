@@ -26,6 +26,9 @@ class Logger:
             logger.setLevel('INFO')
         self.logger = logger
 
+    def get_logger(self):
+        return self.logger
+
     def warn(self):
         pass
 

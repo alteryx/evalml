@@ -44,6 +44,9 @@ def test_random_search_tuner_no_params(test_space_small):
             generated_parameters.add(tuple(params))
 
 
+random_state = 0
+
+
 def test_random_search_tuner_basic(test_space, test_space_unicode):
     tuner = RandomSearchTuner(test_space, random_state=random_state)
     assert isinstance(tuner, Tuner)

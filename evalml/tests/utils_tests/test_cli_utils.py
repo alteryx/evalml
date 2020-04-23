@@ -32,14 +32,14 @@ def test_print_cli_cmd():
     assert "Usage:" in result.output
 
 
-def test_print_info_cmd():
+def test_print_cli_info_cmd(caplog):
     runner = CliRunner()
     result = runner.invoke(cli, ['info'])
     assert result.exit_code == 0
-    assert "EvalML version:" in result.output
-    assert "EvalML installation directory:" in result.output
-    assert "SYSTEM INFO" in result.output
-    assert "INSTALLED VERSIONS" in result.output
+    assert "EvalML version:" in caplog.text
+    assert "EvalML installation directory:" in caplog.text
+    assert "SYSTEM INFO" in caplog.text
+    assert "INSTALLED VERSIONS" in caplog.text
 
 
 def test_print_info(caplog):
