@@ -38,6 +38,7 @@ Changelog
         * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
         * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
         * Standardize `import_or_raise` error messages :pr:`683`
+        * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`696`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -54,6 +55,7 @@ Changelog
         * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
         * Updated API reference to include missing components and clean up pipeline docstrings :pr:`689`
         * Reorganize API ref, and clarify pipeline sub-titles :pr:`688`
+        * Include more utils in API ref, like `import_or_raise` :pr:`696`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -69,9 +71,11 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` have been removed by :pr:`615` and are replaced by ``roc_curve`` and ``confusion_matrix`` in `evamlm.pipelines.plot_utils`` in :pr:`696`
+    * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`696`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
+    * Removed unsupported ``MSLE`` objective :pr:`696`
 
 
 **v0.8.0 Apr. 1, 2020**
