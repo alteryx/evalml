@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationPipeline(ClassificationPipeline):
-
+    """Pipeline subclass for all binary classification pipelines."""
     threshold = None
     problem_type = ProblemTypes.BINARY
 

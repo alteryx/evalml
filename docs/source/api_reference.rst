@@ -57,6 +57,7 @@ Pipeline Base Classes
     :nosignatures:
 
     PipelineBase
+    ClassificationPipeline
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
@@ -174,10 +175,10 @@ Classifiers are models which can be trained to predict a class label from input 
     :template: estimator_class.rst
     :nosignatures:
 
-    LogisticRegressionClassifier
+    CatBoostClassifier
     RandomForestClassifier
+    LogisticRegressionClassifier
     XGBoostClassifier
-
 
 Regressors
 -----------
@@ -189,9 +190,10 @@ Regressors are models which can be trained to predict a target value from input 
     :template: estimator_class.rst
     :nosignatures:
 
+    CatBoostRegressor
     LinearRegressor
     RandomForestRegressor
-
+    XGBoostRegressor
 
 .. currentmodule:: evalml.objectives
 
