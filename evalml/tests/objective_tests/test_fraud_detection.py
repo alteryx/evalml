@@ -46,7 +46,7 @@ def test_fraud_objective_score(X_y):
 
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     assert out.tolist() == y_true
-    score = fraud_cost.score(out, y_true, extra_columns)
+    score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
     # testing with other types of inputs
@@ -54,7 +54,7 @@ def test_fraud_objective_score(X_y):
     extra_columns = {"value": [100, 5, 250]}
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     assert out.tolist() == y_true
-    score = fraud_cost.score(out, y_true, extra_columns)
+    score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
     y_predicted = pd.Series([.2, .01, .01])
@@ -63,5 +63,5 @@ def test_fraud_objective_score(X_y):
     expected_y_pred = [True, False, False]
     out = fraud_cost.decision_function(y_predicted, 10, extra_columns)
     assert out.tolist() == expected_y_pred
-    score = fraud_cost.score(out, y_true, extra_columns)
+    score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.255)
