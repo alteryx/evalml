@@ -26,8 +26,6 @@ def test_get_objective():
     assert isinstance(get_objective('precision'), Precision)
     assert isinstance(get_objective(Precision()), Precision)
 
-    with pytest.raises(TypeError):
-        get_objective(None)
     with pytest.raises(ObjectiveNotFoundError):
         get_objective('this is not a valid objective')
     with pytest.raises(ObjectiveNotFoundError):

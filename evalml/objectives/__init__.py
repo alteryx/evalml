@@ -24,6 +24,7 @@ from .standard_metrics import (
     MAE,
     MedianAE,
     MSE,
+    MSLE,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -33,6 +34,8 @@ from .standard_metrics import (
     RecallMacro,
     RecallMicro,
     RecallWeighted,
+    ROC,
+    ConfusionMatrix
 )
 from .utils import get_objective, get_objectives
 from .binary_classification_objective import BinaryClassificationObjective
