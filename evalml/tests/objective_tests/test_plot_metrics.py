@@ -7,7 +7,7 @@ def test_confusion_matrix():
     y_true = [2, 0, 2, 2, 0, 1]
     y_predicted = [0, 0, 2, 2, 0, 2]
     cm = ConfusionMatrix()
-    score = cm.score(y_predicted, y_true)
+    score = cm.score(y_true, y_predicted)
     cm_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(cm_expected, score)
 

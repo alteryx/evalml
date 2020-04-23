@@ -19,7 +19,7 @@ class AccuracyBinary(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         if len(y_true) == 0 or len(y_predicted) == 0:
             raise ValueError("Length of inputs is 0")
         if len(y_predicted) != len(y_true):
@@ -33,7 +33,7 @@ class AccuracyMulticlass(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         if len(y_true) == 0 or len(y_predicted) == 0:
             raise ValueError("Length of inputs is 0")
         if len(y_predicted) != len(y_true):
@@ -47,7 +47,7 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
@@ -57,7 +57,7 @@ class BalancedAccuracyMulticlass(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
@@ -67,7 +67,7 @@ class F1(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.f1_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -77,7 +77,7 @@ class F1Micro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.f1_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
@@ -87,7 +87,7 @@ class F1Macro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.f1_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
@@ -97,7 +97,7 @@ class F1Weighted(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.f1_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
@@ -107,7 +107,7 @@ class Precision(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -117,7 +117,7 @@ class PrecisionMicro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.precision_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
@@ -127,7 +127,7 @@ class PrecisionMacro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.precision_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
@@ -137,7 +137,7 @@ class PrecisionWeighted(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.precision_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
@@ -147,7 +147,7 @@ class Recall(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.recall_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -157,7 +157,7 @@ class RecallMicro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.recall_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
@@ -167,7 +167,7 @@ class RecallMacro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.recall_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
@@ -177,7 +177,7 @@ class RecallWeighted(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.recall_score(y_true, y_predicted, average='weighted', zero_division=0.0)
 
 
@@ -187,7 +187,7 @@ class AUC(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.roc_auc_score(y_true, y_predicted)
 
 
@@ -197,7 +197,7 @@ class AUCMicro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
@@ -208,7 +208,7 @@ class AUCMacro(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
@@ -219,7 +219,7 @@ class AUCWeighted(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
         return metrics.roc_auc_score(y_true, y_predicted, average='weighted')
 
@@ -230,7 +230,7 @@ class LogLossBinary(BinaryClassificationObjective):
     greater_is_better = False
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.log_loss(y_true, y_predicted)
 
 
@@ -240,7 +240,7 @@ class LogLossMulticlass(MultiClassificationObjective):
     greater_is_better = False
     score_needs_proba = True
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.log_loss(y_true, y_predicted)
 
 
@@ -250,7 +250,7 @@ class MCCBinary(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
@@ -260,7 +260,7 @@ class MCCMulticlass(MultiClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
@@ -270,7 +270,7 @@ class R2(RegressionObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.r2_score(y_true, y_predicted)
 
 
@@ -280,7 +280,7 @@ class MAE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_absolute_error(y_true, y_predicted)
 
 
@@ -290,7 +290,7 @@ class MSE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_error(y_true, y_predicted)
 
 
@@ -300,7 +300,7 @@ class MSLE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
 
 
@@ -310,7 +310,7 @@ class MedianAE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.median_absolute_error(y_true, y_predicted)
 
 
@@ -320,7 +320,7 @@ class MaxError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.max_error(y_true, y_predicted)
 
 
@@ -330,7 +330,7 @@ class ExpVariance(RegressionObjective):
     greater_is_better = True
     score_needs_proba = False
 
-    def objective_function(self, y_predicted, y_true, X=None):
+    def objective_function(self, y_true, y_predicted, X=None):
         return metrics.explained_variance_score(y_true, y_predicted)
 
 
@@ -339,7 +339,7 @@ class PlotMetric(ABC):
     score_needs_proba = False
 
     @abstractmethod
-    def score(self, y_predicted, y_true):
+    def score(self, y_true, y_predicted):
         raise NotImplementedError("score() is not implemented!")
 
 
@@ -348,7 +348,7 @@ class ROC(PlotMetric):
     name = "ROC"
     score_needs_proba = True
 
-    def score(self, y_predicted, y_true):
+    def score(self, y_true, y_predicted):
         return metrics.roc_curve(y_true, y_predicted)
 
 
@@ -356,8 +356,8 @@ class ConfusionMatrix(PlotMetric):
     """Confusion matrix for binary and multiclass classification problems"""
     name = "Confusion Matrix"
 
-    def score(self, y_predicted, y_true):
-        labels = unique_labels(y_predicted, y_true)
+    def score(self, y_true, y_predicted):
+        labels = unique_labels(y_true, y_predicted)
         conf_mat = metrics.confusion_matrix(y_true, y_predicted)
         conf_mat = pd.DataFrame(conf_mat, columns=labels)
         return conf_mat
