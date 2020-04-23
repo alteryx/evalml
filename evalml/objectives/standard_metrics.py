@@ -1,10 +1,6 @@
-from abc import ABC, abstractmethod
-
 import numpy as np
-import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
-from sklearn.utils.multiclass import unique_labels
 
 from .binary_classification_objective import BinaryClassificationObjective
 from .multiclass_classification_objective import MultiClassificationObjective
@@ -294,6 +290,7 @@ class MSE(RegressionObjective):
         return metrics.mean_squared_error(y_true, y_predicted)
 
 
+<<<<<<< HEAD
 class MSLE(RegressionObjective):
     """Mean squared log error for regression"""
     name = "MSLE"
@@ -304,6 +301,8 @@ class MSLE(RegressionObjective):
         return metrics.mean_squared_log_error(y_true, y_predicted)
 
 
+=======
+>>>>>>> master
 class MedianAE(RegressionObjective):
     """Median absolute error for regression"""
     name = "MedianAE"
@@ -332,35 +331,6 @@ class ExpVariance(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.explained_variance_score(y_true, y_predicted)
-
-
-class PlotMetric(ABC):
-    name = None
-    score_needs_proba = False
-
-    @abstractmethod
-    def score(self, y_true, y_predicted):
-        raise NotImplementedError("score() is not implemented!")
-
-
-class ROC(PlotMetric):
-    """Receiver Operating Characteristic score for binary classification."""
-    name = "ROC"
-    score_needs_proba = True
-
-    def score(self, y_true, y_predicted):
-        return metrics.roc_curve(y_true, y_predicted)
-
-
-class ConfusionMatrix(PlotMetric):
-    """Confusion matrix for binary and multiclass classification problems"""
-    name = "Confusion Matrix"
-
-    def score(self, y_true, y_predicted):
-        labels = unique_labels(y_true, y_predicted)
-        conf_mat = metrics.confusion_matrix(y_true, y_predicted)
-        conf_mat = pd.DataFrame(conf_mat, columns=labels)
-        return conf_mat
 
 
 def _handle_predictions(y_true, y_pred):
