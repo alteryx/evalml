@@ -103,20 +103,8 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
-    all_pipelines
     get_pipelines
     list_model_families
-
-
-Pipeline Plot Utils
-~~~~~~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    roc_curve
-    confusion_matrix
-    normalize_confusion_matrix
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -274,6 +262,7 @@ Regression Objectives
     R2
     MAE
     MSE
+    MSLE
     MedianAE
     MaxError
     ExpVariance
@@ -342,6 +331,20 @@ Guardrails
     detect_id_columns
 
 
+.. currentmodule:: evalml.objectives
+
+Plot Metrics
+============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ROC
+    ConfusionMatrix
+
+
 .. currentmodule:: evalml.utils
 
 Utils
@@ -351,8 +354,6 @@ Utils
     :toctree: generated
     :nosignatures:
 
-    import_or_raise
     convert_to_seconds
-    get_random_state
-    get_random_seed
+    normalize_confusion_matrix
 

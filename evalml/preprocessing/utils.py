@@ -3,7 +3,7 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
 def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs):
-    """Load features and labels from file(s).
+    """Load features and labels from file.
 
     Arguments:
         path (str): Path to file or a http/ftp/s3 URL
@@ -97,6 +97,7 @@ def number_of_features(dtypes):
 
 def label_distribution(labels):
     """Get the label distributions
+
     Arguments:
         labels (pd.Series): Label values
 
