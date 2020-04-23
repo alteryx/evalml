@@ -55,6 +55,7 @@ Changelog
         * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
         * Updated API reference to include missing components and clean up pipeline docstrings :pr:`689`
         * Reorganize API ref, and clarify pipeline sub-titles :pr:`688`
+        * Documented which default objective AutoML optimizes for :pr:`699`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
