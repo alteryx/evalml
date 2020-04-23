@@ -13,9 +13,12 @@ def test_roc_curve():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     fpr, tpr, thresholds = roc_curve(y_true, y_predict_proba)
-    assert not np.isnan(fpr).any()
-    assert not np.isnan(tpr).any()
-    assert not np.isnan(thresholds).any()
+    fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
+    tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
+    thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
+    assert np.array_equal(fpr_expected, fpr)
+    assert np.array_equal(tpr_expected, tpr)
+    assert np.array_equal(thresholds_expected, thresholds)
 
 
 def test_confusion_matrix():
