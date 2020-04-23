@@ -38,7 +38,7 @@ Changelog
         * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
         * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
         * Standardize `import_or_raise` error messages :pr:`683`
-        * Update argument order of objectives to align with sklearn's :pr:`698`
+        * Updated argument order of objectives to align with sklearn's :pr:`698`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -73,7 +73,7 @@ Changelog
     * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
-    * Update argument order of objectives' `objective_function` to align with sklearn :pr:`698`
+    * Updated argument order of objectives' `objective_function` to align with sklearn :pr:`698`
 
 
 **v0.8.0 Apr. 1, 2020**
