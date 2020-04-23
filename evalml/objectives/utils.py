@@ -32,6 +32,7 @@ OPTIONS = {
     "r2": standard_metrics.R2(),
     "mae": standard_metrics.MAE(),
     "mse": standard_metrics.MSE(),
+    # "msle": standard_metrics.MSLE(), removed due to not taking in positive Y
     "median_ae": standard_metrics.MedianAE(),
     "max_error": standard_metrics.MaxError(),
     "exp_var": standard_metrics.ExpVariance()
