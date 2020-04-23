@@ -31,8 +31,8 @@ class AutoClassificationSearch(AutoBase):
         """Automated classifier pipeline search
 
         Arguments:
-            objective (Object): The objective to optimize for. 
-                Defaults to LogLossBinary for binary classification problems and 
+            objective (Object): The objective to optimize for.
+                Defaults to LogLossBinary for binary classification problems and
                 LogLossMulticlass for multiclass classification problems.
 
             multiclass (bool): If True, expecting multiclass data. Defaults to False.
