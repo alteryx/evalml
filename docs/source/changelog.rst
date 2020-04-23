@@ -10,6 +10,7 @@ Changelog
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
         * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
+        * Updated our logger to use Python's logging utils :pr:`694`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
