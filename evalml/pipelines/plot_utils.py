@@ -15,9 +15,7 @@ def roc_curve(y_true, y_pred_proba):
         y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied.
 
     Returns:
-        np.array: false positive rates
-        np.array: true positive rates
-        np.array: threshold values used to produce each pair of true/false positive rates.
+        (np.array, np.array, np.array): false positive rates, true positive rates, and threshold values used to produce each pair of true/false positive rates.
     """
     return sklearn_roc_curve(y_true, y_pred_proba)
 
@@ -47,7 +45,6 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 
     Returns:
         A normalized version of the input confusion matrix.
-
     """
     with warnings.catch_warnings(record=True) as w:
         if option == 'true':
