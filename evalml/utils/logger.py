@@ -18,10 +18,11 @@ class Logger:
             out_handler = logging.StreamHandler(sys.stdout)
             date_fmt = '%m/%d/%Y %I:%M:%S %p'
             fmt = "%(message)s"
+
             # default_fmt = "%(asctime)s %(name)s - %(levelname)s: %(message)s"
             # err_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
             # debug_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
-            out_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
+            out_handler.setFormatter(logging.Formatter('%(message)s'))
             logger.addHandler(out_handler)
             logger.setLevel('INFO')
         self.logger = logger
@@ -45,7 +46,10 @@ class Logger:
         if color:
             msg = color + msg + Style.RESET_ALL
 
-        self.logger.info(msg)
+        if new_line:
+            self.logger.info(f"{msg}\n")
+        else:
+            self.logger.info(msg)
 
     def log_title(self, title):
         self.log("*" * (len(title) + 4), color=Style.BRIGHT)

@@ -13,8 +13,12 @@ def test_logger_verbose():
 def test_logger_log(caplog):
     logger = Logger()
     logger.log('Test message')
-    out = caplog.text
-    assert out == 'Test message\n'
+    assert caplog.records[0].message == 'Test message\n'
+
+    caplog.clear()
+    logger = Logger()
+    logger.log('Test message', new_line=False)
+    assert caplog.records[0].message == 'Test message'
 
     caplog.clear()
     logger.log_title('Log title')
