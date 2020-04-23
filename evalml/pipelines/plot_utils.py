@@ -41,7 +41,7 @@ def normalize_confusion_matrix(conf_mat, option='true'):
 
     Arguments:
         conf_mat (pd.DataFrame or np.array): confusion matrix to normalize
-        option ({'true', 'pred', 'all', None}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. If option is None, returns original confusion matrix. Defaults to 'true'.
+        option ({'true', 'pred', 'all'}): Option to normalize over the rows ('true'), columns ('pred') or all ('all') values. Defaults to 'true'.
 
     Returns:
         A normalized version of the input confusion matrix.
