@@ -49,7 +49,7 @@ def test_rf_init(X_y_reg):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert RFRegressionPipeline.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert clf.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
 
 
 def test_rf_regression(X_y_categorical_regression):

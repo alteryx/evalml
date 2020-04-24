@@ -32,7 +32,7 @@ def test_catboost_init():
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert CatBoostBinaryClassificationPipeline.summary == 'CatBoost Classifier w/ Simple Imputer'
+    assert clf.summary == 'CatBoost Classifier w/ Simple Imputer'
 
 
 def test_catboost_objective_tuning(X_y):

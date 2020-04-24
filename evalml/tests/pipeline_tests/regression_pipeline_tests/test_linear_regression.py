@@ -27,7 +27,7 @@ def test_lr_init(X_y_categorical_regression):
     clf = LinearRegressionPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert LinearRegressionPipeline.summary == 'Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert clf.summary == 'Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
 def test_linear_regression(X_y_categorical_regression):

@@ -53,7 +53,7 @@ def test_rf_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert clf.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
 
 
 def test_rf_objective_tuning(X_y):
