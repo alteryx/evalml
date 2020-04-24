@@ -57,6 +57,7 @@ Changelog
         * Updated API reference to include missing components and clean up pipeline docstrings :pr:`689`
         * Reorganize API ref, and clarify pipeline sub-titles :pr:`688`
         * Add and update preprocessing utils in API reference :pr:`687`
+        * Added inheritance diagrams to API reference :pr:`695`
         * Documented which default objective AutoML optimizes for :pr:`699`
         * Create seperate install page :pr:`701`
         * Include more utils in API ref, like `import_or_raise` :pr:`704`

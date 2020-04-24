@@ -1,0 +1,11 @@
+div.graphviz {
+    overflow: auto;
+    max-width: 620px;
+    max-height: 50px;
+    text-align: center;
+}
+
+img.inheritance { 
+      max-width: none;
+      max-height: 30px;
+}  
