@@ -35,6 +35,10 @@ def test_catboost_init():
     assert clf.summary == 'CatBoost Classifier w/ Simple Imputer'
 
 
+def test_summary():
+    assert CatBoostBinaryClassificationPipeline.summary == 'CatBoost Classifier w/ Simple Imputer'
+
+
 def test_catboost_objective_tuning(X_y):
     X, y = X_y
 

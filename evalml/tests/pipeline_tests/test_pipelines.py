@@ -474,13 +474,13 @@ def test_pipeline_summary():
         component_graph = ["Simple Imputer"]
     assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Simple Imputer"
 
-    class MockPipelineWithSingleEstimator(PipelineBase):
+    class MockPipelineWithOnlyAnEstimator(PipelineBase):
         component_graph = ["Random Forest Classifier"]
-    assert MockPipelineWithSingleEstimator.summary == "Random Forest Classifier"
+    assert MockPipelineWithOnlyAnEstimator.summary == "Random Forest Classifier"
 
     class MockPipelineWithNoComponents(PipelineBase):
         component_graph = []
-    assert MockPipelineWithNoComponents.summary == ""
+    assert MockPipelineWithNoComponents.summary == "Empty Pipeline"
 
     class MockPipeline(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder", "Random Forest Classifier"]

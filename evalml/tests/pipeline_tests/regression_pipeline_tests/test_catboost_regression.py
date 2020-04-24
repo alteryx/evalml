@@ -30,6 +30,10 @@ def test_catboost_init():
     assert clf.summary == 'CatBoost Regressor w/ Simple Imputer'
 
 
+def test_summary():
+    assert CatBoostRegressionPipeline.summary == 'CatBoost Regressor w/ Simple Imputer'
+
+
 def test_catboost_regression(X_y_reg):
     from catboost import CatBoostRegressor as CBRegressor
     X, y = X_y_reg

@@ -52,6 +52,10 @@ def test_rf_init(X_y_reg):
     assert clf.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
 
 
+def test_summary():
+    assert RFRegressionPipeline.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+
+
 def test_rf_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
 

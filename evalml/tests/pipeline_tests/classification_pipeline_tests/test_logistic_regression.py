@@ -34,6 +34,10 @@ def test_lor_init(X_y):
     assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
+def test_summary():
+    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+
+
 def test_lor_objective_tuning(X_y):
     X, y = X_y
 

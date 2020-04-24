@@ -30,6 +30,10 @@ def test_lr_init(X_y_categorical_regression):
     assert clf.summary == 'Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler'
 
 
+def test_summary():
+    assert LinearRegressionPipeline.summary == 'Linear Regressor w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+
+
 def test_linear_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
