@@ -474,13 +474,13 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
 
 def test_pipeline_summary():
     class MockPipelineWithoutEstimator(PipelineBase):
-        component_graph = ['Simple Imputer', 'One Hot Encoder']
+        component_graph = ["Simple Imputer", "One Hot Encoder"]
     assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Simple Imputer + One Hot Encoder"
 
     class MockPipelineWithSingleComponent(PipelineBase):
-        component_graph = ['Simple Imputer']
+        component_graph = ["Simple Imputer"]
     assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Simple Imputer"
 
     class MockPipelineWithSingleEstimator(PipelineBase):
-        component_graph = ['XGBoost Classifier']
-    assert MockPipelineWithSingleEstimator.summary == "XGBoost Classifier"
+        component_graph = ["Random Forest Classifier"]
+    assert MockPipelineWithSingleEstimator.summary == "Random Forest Classifier"
