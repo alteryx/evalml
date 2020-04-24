@@ -19,7 +19,6 @@ Changelog
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
         * Removed zero division warning for F1/precision/recall metrics :pr:`671`
-        * Revert PR :pr:`696` due to ReadtheDocs timeout :pr:`703`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -41,6 +40,7 @@ Changelog
         * Standardize `import_or_raise` error messages :pr:`683`
         * Updated argument order of objectives to align with sklearn's :pr:`698`
         * Renamed `pipeline.feature_importance_graph` to `pipeline.graph_feature_importances` :pr:`700`
+        * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`704`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -59,6 +59,8 @@ Changelog
         * Reorganize API ref, and clarify pipeline sub-titles :pr:`688`
         * Add and update preprocessing utils in API reference :pr:`687`
         * Documented which default objective AutoML optimizes for :pr:`699`
+        * Create seperate install page :pr:`701`
+        * Include more utils in API ref, like `import_or_raise` :pr:`704`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -74,12 +76,13 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` will currently fail due to :pr:`615`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` have been removed by :pr:`615` and are replaced by ``roc_curve`` and ``confusion_matrix`` in `evamlm.pipelines.plot_utils`` in :pr:`704`
+    * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`704`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
     * Updated argument order of objectives' `objective_function` to align with sklearn :pr:`698`
     * `pipeline.feature_importance_graph` has been renamed to `pipeline.graph_feature_importances` in :pr:`700`
-
+    * Removed unsupported ``MSLE`` objective :pr:`704`
 
 
 **v0.8.0 Apr. 1, 2020**
