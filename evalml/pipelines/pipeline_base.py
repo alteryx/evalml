@@ -79,24 +79,19 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        def _generate_summary(component_graph):
-            component_graph = copy.copy(component_graph)
-            component_graph[-1] = handle_component(component_graph[-1])
-            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-            if estimator is not None:
-                summary = "{}".format(estimator.name)
-                component_graph = component_graph[:-1]
-            else:
-                summary = "Pipeline"
-            for index, component in enumerate(component_graph):
-                component = handle_component(component)
-                if index == 0:
-                    summary += " w/ {}".format(component.name)
-                else:
-                    summary += " + {}".format(component.name)
-            return summary
+        component_graph = copy.copy(cls.component_graph)
+        if len(component_graph) == 0:
+            return ""
+        summary = "Pipeline"
+        component_graph[-1] = handle_component(component_graph[-1])
 
-        return _generate_summary(cls.component_graph)
+        if isinstance(component_graph[-1], Estimator):
+            estimator = component_graph.pop()
+            summary = estimator.name
+        if len(component_graph) == 0:
+            return summary
+        component_names = [handle_component(component).name for component in component_graph]
+        return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""

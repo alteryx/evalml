@@ -465,7 +465,7 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.assert_called()
 
 
-def test_pipeline_summary(lr_pipeline):
+def test_pipeline_summary():
     class MockPipelineWithoutEstimator(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder"]
     assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Simple Imputer + One Hot Encoder"
@@ -477,6 +477,10 @@ def test_pipeline_summary(lr_pipeline):
     class MockPipelineWithSingleEstimator(PipelineBase):
         component_graph = ["Random Forest Classifier"]
     assert MockPipelineWithSingleEstimator.summary == "Random Forest Classifier"
+
+    class MockPipelineWithNoComponents(PipelineBase):
+        component_graph = []
+    assert MockPipelineWithNoComponents.summary == ""
 
     class MockPipeline(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder", "Random Forest Classifier"]
