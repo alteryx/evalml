@@ -27,6 +27,7 @@ def test_catboost_init():
     clf = CatBoostRegressionPipeline(parameters=parameters, random_state=2)
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
+    assert CatBoostRegressionPipeline.summary == 'CatBoost Regressor w/ Simple Imputer'
 
 
 def test_catboost_regression(X_y_reg):

@@ -481,7 +481,3 @@ def test_pipeline_summary(lr_pipeline):
     class MockPipeline(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder", "Random Forest Classifier"]
     assert MockPipeline.summary == "Random Forest Classifier w/ Simple Imputer + One Hot Encoder"
-
-    clf = lr_pipeline
-    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
-    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
