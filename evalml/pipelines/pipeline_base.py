@@ -85,9 +85,10 @@ class PipelineBase(ABC):
             estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
             if estimator is not None:
                 summary = "{}".format(estimator.name)
+                component_graph = component_graph[:-1]
             else:
                 summary = "Pipeline"
-            for index, component in enumerate(component_graph[:-1]):
+            for index, component in enumerate(component_graph):
                 component = handle_component(component)
                 if index == 0:
                     summary += " w/ {}".format(component.name)

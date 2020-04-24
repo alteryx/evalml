@@ -470,3 +470,17 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
         dummy_regression_pipeline.score(X, y, ['recall', 'auc'])
     mock_predict.assert_called()
+
+
+def test_pipeline_summary():
+    class MockPipelineWithoutEstimator(PipelineBase):
+        component_graph = ['Simple Imputer', 'One Hot Encoder']
+    assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Simple Imputer + One Hot Encoder"
+
+    class MockPipelineWithSingleComponent(PipelineBase):
+        component_graph = ['Simple Imputer']
+    assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Simple Imputer"
+
+    class MockPipelineWithSingleEstimator(PipelineBase):
+        component_graph = ['XGBoost Classifier']
+    assert MockPipelineWithSingleEstimator.summary == "XGBoost Classifier"
