@@ -345,7 +345,7 @@ class PipelineBase(ABC):
 
         return graph
 
-    def feature_importance_graph(self, show_all_features=False):
+    def graph_feature_importance(self, show_all_features=False):
         """Generate a bar graph of the pipeline's feature importances
 
         Arguments:
