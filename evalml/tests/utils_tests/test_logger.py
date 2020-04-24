@@ -1,5 +1,5 @@
 from evalml.utils import Logger
-import traceback
+
 
 def test_logger_verbose():
     logger = Logger()
