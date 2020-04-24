@@ -66,6 +66,11 @@ def test_xg_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
+    assert clf.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+
+
+def test_summary():
+    assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
 
 
 def test_xgboost_objective_tuning(X_y):

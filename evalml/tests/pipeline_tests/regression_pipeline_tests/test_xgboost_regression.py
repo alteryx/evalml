@@ -41,6 +41,11 @@ def test_xg_init(X_y_reg):
 
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
+    assert clf.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+
+
+def test_summary():
+    assert XGBoostRegressionPipeline.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
 
 
 def test_xgboost_regression(X_y_reg):
