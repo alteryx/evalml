@@ -3,7 +3,9 @@ from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
 from .binary_classification_objective import BinaryClassificationObjective
-from .multiclass_classification_objective import MulticlassClassificationObjective
+from .multiclass_classification_objective import (
+    MulticlassClassificationObjective
+)
 from .regression_objective import RegressionObjective
 
 from evalml.exceptions import DimensionMismatchError
