@@ -243,13 +243,6 @@ def test_name():
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
 
-def test_summary(X_y, lr_pipeline):
-    X, y = X_y
-    clf = lr_pipeline
-    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
-    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
-
-
 def test_estimator_not_last(X_y):
     X, y = X_y
 
@@ -472,7 +465,7 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.assert_called()
 
 
-def test_pipeline_summary():
+def test_pipeline_summary(lr_pipeline):
     class MockPipelineWithoutEstimator(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder"]
     assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Simple Imputer + One Hot Encoder"
@@ -484,3 +477,11 @@ def test_pipeline_summary():
     class MockPipelineWithSingleEstimator(PipelineBase):
         component_graph = ["Random Forest Classifier"]
     assert MockPipelineWithSingleEstimator.summary == "Random Forest Classifier"
+
+    class MockPipeline(PipelineBase):
+        component_graph = ["Simple Imputer", "One Hot Encoder", "Random Forest Classifier"]
+    assert MockPipeline.summary == "Random Forest Classifier w/ Simple Imputer + One Hot Encoder"
+
+    clf = lr_pipeline
+    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
