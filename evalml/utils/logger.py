@@ -77,8 +77,8 @@ class Logger(logging.Logger):
     def get_logger(self):
         return self.logger
 
-    def warn(self):
-        pass
+    def warn(self, msg):
+        self.logger.warn(msg, stack_info=True)
 
     def error(self):
         pass

@@ -1,5 +1,5 @@
 from evalml.utils import Logger
-
+import traceback
 
 def test_logger_verbose():
     logger = Logger()
@@ -13,12 +13,12 @@ def test_logger_verbose():
 def test_logger_log(caplog):
     logger = Logger()
     logger.log('Test message')
-    assert caplog.records[0].message == 'Test message\n'
+    assert caplog.messages[0] == 'Test message\n'
 
     caplog.clear()
     logger = Logger()
     logger.log('Test message', new_line=False)
-    assert caplog.records[0].message == 'Test message'
+    assert caplog.messages[0] == 'Test message'
 
     caplog.clear()
     logger.log_title('Log title')
@@ -29,3 +29,10 @@ def test_logger_log(caplog):
     logger.log_subtitle('Log subtitle')
     out = caplog.text
     assert 'Log subtitle' in out
+
+
+def test_logger_warn(caplog, capsys):
+    logger = Logger()
+    logger.warn('Test message')
+    assert 'Test message' in caplog.messages[0]
+    assert 'Stack (most recent call last):' in caplog.text
