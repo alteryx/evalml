@@ -36,5 +36,5 @@ from .standard_metrics import (
 )
 from .utils import get_objective, get_objectives
 from .binary_classification_objective import BinaryClassificationObjective
-from .multiclass_classification_objective import MultiClassificationObjective
+from .multiclass_classification_objective import MulticlassClassificationObjective
 from .regression_objective import RegressionObjective

@@ -3,7 +3,7 @@ from .objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 
 
-class MultiClassificationObjective(ObjectiveBase):
+class MulticlassClassificationObjective(ObjectiveBase):
     """
     Base class for all multi-class classification objectives.
 

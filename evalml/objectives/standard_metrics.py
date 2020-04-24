@@ -3,7 +3,7 @@ from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
 from .binary_classification_objective import BinaryClassificationObjective
-from .multiclass_classification_objective import MultiClassificationObjective
+from .multiclass_classification_objective import MulticlassClassificationObjective
 from .regression_objective import RegressionObjective
 
 from evalml.exceptions import DimensionMismatchError
@@ -23,7 +23,7 @@ class AccuracyBinary(BinaryClassificationObjective):
         return metrics.accuracy_score(y_true, y_predicted)
 
 
-class AccuracyMulticlass(MultiClassificationObjective):
+class AccuracyMulticlass(MulticlassClassificationObjective):
     """Accuracy score for multiclass classification"""
     name = "Accuracy Multiclass"
     greater_is_better = True
@@ -47,7 +47,7 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
         return metrics.balanced_accuracy_score(y_true, y_predicted)
 
 
-class BalancedAccuracyMulticlass(MultiClassificationObjective):
+class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
     """Balanced accuracy score for multiclass classification"""
     name = "Balanced Accuracy Multiclass"
     greater_is_better = True
@@ -67,7 +67,7 @@ class F1(BinaryClassificationObjective):
         return metrics.f1_score(y_true, y_predicted, zero_division=0.0)
 
 
-class F1Micro(MultiClassificationObjective):
+class F1Micro(MulticlassClassificationObjective):
     """F1 score for multiclass classification using micro averaging"""
     name = "F1 Micro"
     greater_is_better = True
@@ -77,7 +77,7 @@ class F1Micro(MultiClassificationObjective):
         return metrics.f1_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
-class F1Macro(MultiClassificationObjective):
+class F1Macro(MulticlassClassificationObjective):
     """F1 score for multiclass classification using macro averaging"""
     name = "F1 Macro"
     greater_is_better = True
@@ -87,7 +87,7 @@ class F1Macro(MultiClassificationObjective):
         return metrics.f1_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
-class F1Weighted(MultiClassificationObjective):
+class F1Weighted(MulticlassClassificationObjective):
     """F1 score for multiclass classification using weighted averaging"""
     name = "F1 Weighted"
     greater_is_better = True
@@ -107,7 +107,7 @@ class Precision(BinaryClassificationObjective):
         return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
-class PrecisionMicro(MultiClassificationObjective):
+class PrecisionMicro(MulticlassClassificationObjective):
     """Precision score for multiclass classification using micro averaging"""
     name = "Precision Micro"
     greater_is_better = True
@@ -117,7 +117,7 @@ class PrecisionMicro(MultiClassificationObjective):
         return metrics.precision_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
-class PrecisionMacro(MultiClassificationObjective):
+class PrecisionMacro(MulticlassClassificationObjective):
     """Precision score for multiclass classification using macro averaging"""
     name = "Precision Macro"
     greater_is_better = True
@@ -127,7 +127,7 @@ class PrecisionMacro(MultiClassificationObjective):
         return metrics.precision_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
-class PrecisionWeighted(MultiClassificationObjective):
+class PrecisionWeighted(MulticlassClassificationObjective):
     """Precision score for multiclass classification using weighted averaging"""
     name = "Precision Weighted"
     greater_is_better = True
@@ -147,7 +147,7 @@ class Recall(BinaryClassificationObjective):
         return metrics.recall_score(y_true, y_predicted, zero_division=0.0)
 
 
-class RecallMicro(MultiClassificationObjective):
+class RecallMicro(MulticlassClassificationObjective):
     """Recall score for multiclass classification using micro averaging"""
     name = "Recall Micro"
     greater_is_better = True
@@ -157,7 +157,7 @@ class RecallMicro(MultiClassificationObjective):
         return metrics.recall_score(y_true, y_predicted, average='micro', zero_division=0.0)
 
 
-class RecallMacro(MultiClassificationObjective):
+class RecallMacro(MulticlassClassificationObjective):
     """Recall score for multiclass classification using macro averaging"""
     name = "Recall Macro"
     greater_is_better = True
@@ -167,7 +167,7 @@ class RecallMacro(MultiClassificationObjective):
         return metrics.recall_score(y_true, y_predicted, average='macro', zero_division=0.0)
 
 
-class RecallWeighted(MultiClassificationObjective):
+class RecallWeighted(MulticlassClassificationObjective):
     """Recall score for multiclass classification using weighted averaging"""
     name = "Recall Weighted"
     greater_is_better = True
@@ -187,7 +187,7 @@ class AUC(BinaryClassificationObjective):
         return metrics.roc_auc_score(y_true, y_predicted)
 
 
-class AUCMicro(MultiClassificationObjective):
+class AUCMicro(MulticlassClassificationObjective):
     """AUC score for multiclass classification using micro averaging"""
     name = "AUC Micro"
     greater_is_better = True
@@ -198,7 +198,7 @@ class AUCMicro(MultiClassificationObjective):
         return metrics.roc_auc_score(y_true, y_predicted, average='micro')
 
 
-class AUCMacro(MultiClassificationObjective):
+class AUCMacro(MulticlassClassificationObjective):
     """AUC score for multiclass classification using macro averaging"""
     name = "AUC Macro"
     greater_is_better = True
@@ -209,7 +209,7 @@ class AUCMacro(MultiClassificationObjective):
         return metrics.roc_auc_score(y_true, y_predicted, average='macro')
 
 
-class AUCWeighted(MultiClassificationObjective):
+class AUCWeighted(MulticlassClassificationObjective):
     """AUC Score for multiclass classification using weighted averaging"""
     name = "AUC Weighted"
     greater_is_better = True
@@ -230,7 +230,7 @@ class LogLossBinary(BinaryClassificationObjective):
         return metrics.log_loss(y_true, y_predicted)
 
 
-class LogLossMulticlass(MultiClassificationObjective):
+class LogLossMulticlass(MulticlassClassificationObjective):
     """Log Loss for multiclass classification"""
     name = "Log Loss Multiclass"
     greater_is_better = False
@@ -250,7 +250,7 @@ class MCCBinary(BinaryClassificationObjective):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
-class MCCMulticlass(MultiClassificationObjective):
+class MCCMulticlass(MulticlassClassificationObjective):
     """Matthews correlation coefficient for multiclass classification"""
     name = "MCC Multiclass"
     greater_is_better = True
