@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from .auto_base import AutoBase
 
-from evalml.objectives import get_objective
+from evalml.objectives import ROC, ConfusionMatrix, get_objective
 from evalml.problem_types import ProblemTypes
 
 
@@ -31,9 +31,11 @@ class AutoClassificationSearch(AutoBase):
         """Automated classifier pipeline search
 
         Arguments:
-            objective (Object): the objective to optimize
+            objective (Object): The objective to optimize for.
+                Defaults to LogLossBinary for binary classification problems and
+                LogLossMulticlass for multiclass classification problems.
 
-            multiclass (bool): If True, expecting multiclass data. By default: False.
+            multiclass (bool): If True, expecting multiclass data. Defaults to False.
 
             max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
@@ -49,11 +51,11 @@ class AutoClassificationSearch(AutoBase):
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_model_families (list): The model families to search. By default searches over all
+            allowed_model_families (list): The model families to search. By default, searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`
                 to `multiclass` if your problem type is different.
 
-            cv: cross validation method to use. By default StratifiedKFold
+            cv: cross-validation method to use. Defaults to StratifiedKFold.
 
             tuner: the tuner class to use. Defaults to scikit-optimize tuner
 
@@ -110,3 +112,7 @@ class AutoClassificationSearch(AutoBase):
             verbose=verbose,
             optimize_thresholds=optimize_thresholds
         )
+        if self.problem_type == ProblemTypes.BINARY:
+            self.plot_metrics = [ROC(), ConfusionMatrix()]
+        else:
+            self.plot_metrics = [ConfusionMatrix()]

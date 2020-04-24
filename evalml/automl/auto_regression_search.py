@@ -29,7 +29,8 @@ class AutoRegressionSearch(AutoBase):
         """Automated regressors pipeline search
 
         Arguments:
-            objective (Object): the objective to optimize
+            objective (Object): The objective to optimize for.
+                Defaults to R2.
 
             max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
