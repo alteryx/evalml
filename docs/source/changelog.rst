@@ -60,6 +60,7 @@ Changelog
         * Documented which default objective AutoML optimizes for :pr:`699`
         * Create seperate install page :pr:`701`
         * Include more utils in API ref, like `import_or_raise` :pr:`704`
+        * Add more color to pipeline documentation :pr:`705`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
