@@ -5,7 +5,9 @@ import pytest
 from evalml.pipelines.plot_utils import (
     confusion_matrix,
     normalize_confusion_matrix,
-    roc_curve
+    roc_curve,
+    graph_roc_curve,
+    graph_confusion_matrix
 )
 
 
@@ -88,3 +90,23 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'pred')
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')
+
+
+def test_graph_roc_curve(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred_proba = y_true * rs.random(y_true.shape)
+    fig = graph_roc_curve(y_true, y_pred_proba)
+    assert isinstance(fig, type(go.Figure()))
+
+
+def test_graph_confusion_matrix(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
+    fig = graph_confusion_matrix(y_true, y_pred)
+    assert isinstance(fig, type(go.Figure()))
+
+
