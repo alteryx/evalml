@@ -4,10 +4,10 @@ import pytest
 
 from evalml.pipelines.plot_utils import (
     confusion_matrix,
-    normalize_confusion_matrix,
-    roc_curve,
+    graph_confusion_matrix,
     graph_roc_curve,
-    graph_confusion_matrix
+    normalize_confusion_matrix,
+    roc_curve
 )
 
 
@@ -35,13 +35,13 @@ def test_confusion_matrix():
     conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
-    conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1/3.0, 0, 2/3.0]])
+    conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
-    conf_mat_expected = np.array([[2/3.0, np.nan, 0], [0, np.nan, 1/3.0], [1/3.0, np.nan, 2/3.0]])
+    conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
     assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
-    conf_mat_expected = np.array([[1/3.0, 0, 0], [0, 0, 1/6.0], [1/6.0, 0, 1/3.0]])
+    conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     with pytest.raises(ValueError, match='Invalid value provided'):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
@@ -108,5 +108,3 @@ def test_graph_confusion_matrix(X_y):
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred)
     assert isinstance(fig, type(go.Figure()))
-
-
