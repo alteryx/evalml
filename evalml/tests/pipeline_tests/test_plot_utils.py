@@ -12,21 +12,37 @@ from evalml.pipelines.plot_utils import (
 def test_roc_curve():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
-    fpr, tpr, thresholds = roc_curve(y_true, y_predict_proba)
+    roc_curve_data = roc_curve(y_true, y_predict_proba)
+    fpr_rates = roc_curve_data.get('fpr_rates')
+    tpr_rates = roc_curve_data.get('tpr_rates')
+    thresholds = roc_curve_data.get('thresholds')
+    auc_score = roc_curve_data.get('auc_score')
     fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
     tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
     thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
-    assert np.array_equal(fpr_expected, fpr)
-    assert np.array_equal(tpr_expected, tpr)
+    assert np.array_equal(fpr_expected, fpr_rates)
+    assert np.array_equal(tpr_expected, tpr_rates)
     assert np.array_equal(thresholds_expected, thresholds)
+    assert auc_score == pytest.approx(0.25, 1e-5)
 
 
 def test_confusion_matrix():
     y_true = [2, 0, 2, 2, 0, 1]
     y_predicted = [0, 0, 2, 2, 0, 2]
-    score = confusion_matrix(y_true, y_predicted)
-    cm_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
-    assert np.array_equal(cm_expected, score)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
+    conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
+    conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1/3.0, 0, 2/3.0]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
+    conf_mat_expected = np.array([[2/3.0, np.nan, 0], [0, np.nan, 1/3.0], [1/3.0, np.nan, 2/3.0]])
+    assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
+    conf_mat_expected = np.array([[1/3.0, 0, 0], [0, 0, 1/6.0], [1/6.0, 0, 1/3.0]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
 
 
 def test_normalize_confusion_matrix():
@@ -62,9 +78,9 @@ def test_normalize_confusion_matrix_error():
     conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
 
     with pytest.raises(ValueError, match='Invalid value provided'):
-        normalize_confusion_matrix(conf_mat, option='invalid option')
+        normalize_confusion_matrix(conf_mat, normalize_method='invalid option')
     with pytest.raises(ValueError, match='Invalid value provided'):
-        normalize_confusion_matrix(conf_mat, option=None)
+        normalize_confusion_matrix(conf_mat, normalize_method=None)
 
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'true')
