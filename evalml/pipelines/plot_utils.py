@@ -25,12 +25,12 @@ def confusion_matrix(y_true, y_predicted):
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied.
+        y_predicted (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied.
 
     Returns:
         np.array: confusion matrix
     """
-    labels = unique_labels(y_predicted, y_true)
+    labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, columns=labels)
     return conf_mat

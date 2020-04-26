@@ -34,13 +34,13 @@ def test_accuracy_binary():
                      np.array([0, 0, 1, 1])) == pytest.approx(1.0, EPS)
 
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        obj.score(y_predicted=[], y_true=[1])
+        obj.score(y_true=[1], y_predicted=[])
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        obj.score(y_predicted=[1], y_true=[])
+        obj.score(y_true=[], y_predicted=[1])
     with pytest.raises(DimensionMismatchError):
-        obj.score(y_predicted=[0], y_true=[1, 0])
+        obj.score(y_true=[1, 0], y_predicted=[0])
     with pytest.raises(DimensionMismatchError):
-        obj.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
+        obj.score(y_true=np.array([1, 0]), y_predicted=np.array([0]))
 
 
 def test_accuracy_multi():
@@ -57,13 +57,13 @@ def test_accuracy_multi():
                      np.array([0, 0, 1, 1, 2, 2])) == pytest.approx(1 / 3.0, EPS)
 
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        obj.score(y_predicted=[], y_true=[1])
+        obj.score(y_true=[1], y_predicted=[])
     with pytest.raises(ValueError, match="Length of inputs is 0"):
-        obj.score(y_predicted=[1], y_true=[])
+        obj.score(y_true=[], y_predicted=[1])
     with pytest.raises(DimensionMismatchError):
-        obj.score(y_predicted=[0], y_true=[1, 0])
+        obj.score(y_true=[1, 0], y_predicted=[0])
     with pytest.raises(DimensionMismatchError):
-        obj.score(y_predicted=np.array([0]), y_true=np.array([1, 0]))
+        obj.score(y_true=np.array([1, 0]), y_predicted=np.array([0]))
 
 
 def test_balanced_accuracy_binary():

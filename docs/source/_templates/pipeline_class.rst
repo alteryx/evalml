@@ -2,12 +2,17 @@
 
 .. currentmodule:: {{ module }}
 
+.. inheritance-diagram:: {{ objname }}
+
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'summary', 'component_graph', 'problem_type', 'model_family', 'hyperparameters', 'custom_hyperparameters'] %}
+   {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type', 'model_family', 'hyperparameters', 'custom_hyperparameters'] %}
+
 
    {% block attributes %}
    .. Class attributes:
+
    .. autoattribute:: name
+   .. autoattribute:: custom_name
    .. autoattribute:: summary
    .. autoattribute:: component_graph
    .. autoattribute:: problem_type
