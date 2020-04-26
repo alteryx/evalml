@@ -7,7 +7,9 @@
 
    {% block attributes %}
    .. Class attributes:
+
    .. autoattribute:: name
+   .. autoattribute:: custom_name
    .. autoattribute:: summary
    .. autoattribute:: component_graph
    .. autoattribute:: problem_type
