@@ -2,8 +2,9 @@
 
 .. currentmodule:: {{ module }}
 
-.. autoclass:: {{ objname }}
+.. inheritance-diagram:: {{ objname }}
 
+.. autoclass:: {{ objname }}
    {% block methods %}
    {% if methods %}
    .. rubric:: Methods

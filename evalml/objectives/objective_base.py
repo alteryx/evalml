@@ -28,7 +28,7 @@ class ObjectiveBase(ABC):
 
     @classmethod
     @abstractmethod
-    def objective_function(cls, y_predicted, y_true, X=None):
+    def objective_function(cls, y_true, y_predicted, X=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
          Arguments:
             y_predicted (pd.Series) : predicted values of length [n_samples]
@@ -40,7 +40,7 @@ class ObjectiveBase(ABC):
         """
         raise NotImplementedError("`objective_function` must be implemented.")
 
-    def score(self, y_predicted, y_true, X=None):
+    def score(self, y_true, y_predicted, X=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:
@@ -51,4 +51,4 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
-        return self.objective_function(y_predicted, y_true, X=X)
+        return self.objective_function(y_true, y_predicted, X=X)
