@@ -193,13 +193,17 @@ jobs:
       - run: | # debugging info
           if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
             echo This is a release PR;
+          elif [[ "${CIRCLE_BRANCH}" = "dep-update" ]]; then
+            echo This is a depedency update PR;
           else
-            echo This is not a release PR;
+            echo This is a regular PR;
           fi
           echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
       - run: |
           # for release PRs: if the branch name matches a release regex, skip the check
           if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
+            exit 0;
+          elif [[ "${CIRCLE_BRANCH}" = "dep-update" ]]; then
             exit 0;
           fi
           cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
