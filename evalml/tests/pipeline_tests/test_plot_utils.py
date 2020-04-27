@@ -105,10 +105,10 @@ def test_graph_roc_curve(X_y):
     roc_curve_data = roc_curve(y_true, y_pred_proba)
     assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
     assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
-    assert fig_dict['data'][0]['name'] == 'ROC (w/ AUC {:06f})'.format(roc_curve_data['auc_score'])
+    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f})'.format(roc_curve_data['auc_score'])
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
-    assert fig_dict['data'][1]['name'] == 'Random Guess'
+    assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
 
 
 def test_graph_roc_curve_title_addition(X_y):
