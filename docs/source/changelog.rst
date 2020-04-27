@@ -43,6 +43,7 @@ Changelog
         * Renamed `pipeline.feature_importance_graph` to `pipeline.graph_feature_importances` :pr:`700`
         * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`704`
         * Renamed `MultiClassificationObjective` to `MulticlassClassificationObjective`, to align with pipeline naming scheme :pr:`715`
+        * Cleanup pipeline `score` code :pr:`711`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
