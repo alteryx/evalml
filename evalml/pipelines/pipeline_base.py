@@ -33,7 +33,6 @@ class PipelineBase(ABC):
         Returns:
             list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
         """
-        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
 
     custom_hyperparameters = None
     custom_name = None
