@@ -33,6 +33,7 @@ class PipelineBase(ABC):
         Returns:
             list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
         """
+        pass
 
     custom_hyperparameters = None
     custom_name = None
