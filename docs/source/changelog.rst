@@ -10,6 +10,7 @@ Changelog
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
         * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
+        * Added `DataCheck` and `DataChecks` classes :pr:`725`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
