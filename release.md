@@ -7,6 +7,7 @@ Before starting the release process, verify the following:
 * The [Read the Docs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed.
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on master.
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
+* Communicate to the team that `master` is frozen until release PR is merged
 
 ## 1. Create release PR to update version and changelog
 A release PR should have the version number as the title (i.e. "vX.X.X") and the changelog updates as the PR body text. The PR should be based off master.
@@ -18,6 +19,7 @@ Make the following changes in the release PR:
 * Reformat the changelog to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). This is currently done by hand and can be done faster with some clever text editor features.
 * Move changelog items from `Future Releases` into the correct version number.
 * Confirm that all release items are in the changelog under the correct header, and that no extra items are listed.
+
 
 An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
