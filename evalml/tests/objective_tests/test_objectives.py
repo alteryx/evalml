@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 def test_create_custom_objective():
     class MockEmptyObjective(ObjectiveBase):
-        def objective_function(self, y_predicted, y_true, X=None):
+        def objective_function(self, y_true, y_predicted, X=None):
             pass
 
     with pytest.raises(TypeError):

@@ -40,6 +40,7 @@ Changelog
         * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
         * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
         * Standardize `import_or_raise` error messages :pr:`683`
+        * Updated argument order of objectives to align with sklearn's :pr:`698`
         * Renamed `pipeline.feature_importance_graph` to `pipeline.graph_feature_importances` :pr:`700`
         * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`704`
         * Renamed `MultiClassificationObjective` to `MulticlassClassificationObjective`, to align with pipeline naming scheme :pr:`715`
@@ -64,6 +65,7 @@ Changelog
         * Documented which default objective AutoML optimizes for :pr:`699`
         * Create seperate install page :pr:`701`
         * Include more utils in API ref, like `import_or_raise` :pr:`704`
+        * Add more color to pipeline documentation :pr:`705`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
@@ -83,6 +85,7 @@ Changelog
     * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`704`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
+    * Updated argument order of objectives' `objective_function` to align with sklearn :pr:`698`
     * `pipeline.feature_importance_graph` has been renamed to `pipeline.graph_feature_importances` in :pr:`700`
     * Removed unsupported ``MSLE`` objective :pr:`704`
 
