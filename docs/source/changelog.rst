@@ -7,6 +7,7 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Add instructions to freeze `master` on `release.md` :pr:`726`
     * Testing Changes
 
 
