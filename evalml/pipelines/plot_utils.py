@@ -55,7 +55,7 @@ def graph_roc_curve(y_true, y_pred_proba, title_addition=None):
                             name='ROC (w/ AUC {:06f})'.format(roc_curve_data['auc_score']),
                             line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
-                            name='Random Chance',
+                            name='Random Guess',
                             line=dict(dash='dash')))
     return _go.Figure(layout=layout, data=data)
 
