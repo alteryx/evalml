@@ -123,12 +123,12 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     labels = conf_mat.columns
     reversed_labels = labels[::-1]
 
-    title = 'Confusion matrix {}{}'.format(
+    title = 'Confusion matrix{}{}'.format(
         '' if title_addition is None else (' ' + title_addition),
-        '' if normalize_method is None else (' normalized using method "' + normalize_method + '"'))
+        '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
     z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
     primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
-    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata:.3f} <br>'
+    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
     # the "<extra> tags at the end are necessary to remove unwanted trace info
     hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
     layout = _go.Layout(title={'text': title},
