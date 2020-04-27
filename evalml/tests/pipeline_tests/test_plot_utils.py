@@ -99,12 +99,73 @@ def test_graph_roc_curve(X_y):
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
+    assert len(fig_dict['data']) == 2
+    roc_curve_data = roc_curve(y_true, y_pred_proba)
+    assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
+    assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
+    assert fig_dict['data'][0]['name'] == 'ROC (w/ AUC {:06f})'.format(roc_curve_data['auc_score'])
+    assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
+    assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
+    assert fig_dict['data'][1]['name'] == 'Random Guess'
 
 
-def test_graph_confusion_matrix(X_y):
+def test_graph_roc_curve_title_addition(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred_proba = y_true * rs.random(y_true.shape)
+    fig = graph_roc_curve(y_true, y_pred_proba, title_addition='with added title text')
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic with added title text'
+
+
+def test_graph_confusion_matrix_default(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred)
     assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Confusion matrix, normalized using method "true"'
+    heatmap = fig_dict['data'][0]
+    conf_mat = confusion_matrix(y_true, y_pred, normalize_method='true')
+    conf_mat_unnormalized = confusion_matrix(y_true, y_pred, normalize_method=None)
+    assert np.array_equal(heatmap['x'], conf_mat.columns)
+    assert np.array_equal(heatmap['y'], conf_mat.columns[::-1])
+    assert np.array_equal(heatmap['z'], conf_mat)
+    assert np.array_equal(heatmap['customdata'], conf_mat_unnormalized)
+    assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Normalized Count</b>: %{z}<br><b>Raw Count</b>: %{customdata} <br><extra></extra>'
+
+
+def test_graph_confusion_matrix_norm_disabled(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
+    fig = graph_confusion_matrix(y_true, y_pred, normalize_method=None)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Confusion matrix'
+    heatmap = fig_dict['data'][0]
+    conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
+    conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method='true')
+    assert np.array_equal(heatmap['x'], conf_mat.columns)
+    assert np.array_equal(heatmap['y'], conf_mat.columns[::-1])
+    assert np.array_equal(heatmap['z'], conf_mat)
+    assert np.array_equal(heatmap['customdata'], conf_mat_normalized)
+    assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Raw Count</b>: %{z}<br><b>Normalized Count</b>: %{customdata} <br><extra></extra>'
+
+
+def test_graph_confusion_matrix_title_addition(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
+    fig = graph_confusion_matrix(y_true, y_pred, title_addition='with added title text')
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Confusion matrix with added title text, normalized using method "true"'
