@@ -4,6 +4,14 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.9.0 Apr. 27, 2020**
+    * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
         * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
