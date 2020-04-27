@@ -16,7 +16,7 @@ Please use the following pattern for the branch name: "release_vX.X.X". Doing so
 
 Make the following changes in the release PR:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
-* Reformat the changelog to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). This is currently done by hand and can be done faster with some clever text editor features.
+* Reformat the changelog to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). This is currently done by hand and can be done faster with some clever text editor features. You'll reuse this text in step 2.
 * Move changelog items from `Future Releases` into the correct version number.
 * Confirm that all release items are in the changelog under the correct header, and that no extra items are listed.
 
