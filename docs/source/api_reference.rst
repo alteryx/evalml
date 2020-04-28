@@ -326,6 +326,20 @@ Tuners
     GridSearchTuner
     RandomSearchTuner
 
+.. currentmodule:: evalml.data_checks
+
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataCheck
+    DataChecks
+    Message
+    DataCheckError
+    DataCheckWarning
+
 
 .. currentmodule:: evalml.guardrails
 
