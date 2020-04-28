@@ -7,6 +7,8 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Add instructions to freeze `master` on `release.md` :pr:`726`
+        * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`
     * Testing Changes
 
 
