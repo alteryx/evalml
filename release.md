@@ -65,9 +65,7 @@ Next, you'll need to configure a licenses file to include any emails you'd like 
 
 Create a folder called `licenses`, and create a file called `admin.json` file in that folder which contains the following:
 ```json
-{
-    "email": "admin@featurelabs.com"
-}
+{"email": "admin@featurelabs.com"}
 ```
 
 Run the following command to build a release tarball and make it pip-installable to the specified licenses:
