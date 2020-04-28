@@ -65,10 +65,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
                     y_predicted_proba = y_predicted_proba[:, 1]
-                y_predictions = y_predicted_proba
+                scores.update({objective.name: objective.score(y, y_predicted_proba, X=X)})
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X, objective)
-                y_predictions = y_predicted
-            scores.update({objective.name: objective.score(y, y_predictions, X=X)})
+                scores.update({objective.name: objective.score(y, y_predicted, X=X)})
         return scores

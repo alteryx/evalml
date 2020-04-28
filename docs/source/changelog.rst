@@ -6,6 +6,8 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
+
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`

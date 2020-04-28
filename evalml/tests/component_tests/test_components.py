@@ -140,9 +140,6 @@ def test_component_fit(X_y):
         def fit(self, X, y):
             pass
 
-        def predict(self, X):
-            raise NotImplementedError()
-
     class MockComponent(Estimator):
         name = 'Mock Estimator'
         model_family = ModelFamily.LINEAR_MODEL
