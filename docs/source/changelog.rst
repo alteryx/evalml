@@ -7,7 +7,7 @@ Changelog
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
-
+        * Remove `pass` for abstract methods for codecov :pr:`730`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`
