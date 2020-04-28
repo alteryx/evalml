@@ -61,20 +61,30 @@ Open a terminal and navigate to the top directory in the evalml repo:
 cd {your_workspace}/evalml
 ```
 
-If necessary, add a folder called "licenses" and create an `admin.json` file in that folder:
+Next, you'll need to configure a licenses file to include any emails you'd like to make the new release available to.
+
+Create a folder called `licenses`, and create a file called `admin.json` file in that folder which contains the following:
 ```json
 {
     "email": "admin@featurelabs.com"
 }
 ```
 
-Run
+Run the following command to build a release tarball and make it pip-installable to the specified licenses:
 ```shell
 flrelease upload-package --url install.featurelabs.com --license licenses/admin.json
 ```
 
-You can also run the following to release to specific users.
-* `flrelease build-package`
-* `flrelease upload-package <--url or --license> <install.featurelabs.com or licenses/user.json>`
+This will print out the license hash associated with the email in `licenses/admin.json`.
 
-More details can be found in the [release-tools repo](https://github.com/FeatureLabs/release-tools).
+The final step is to verify that the release was successful.
+Log into the S3 console and navigate to [the install.featurelabs.com bucket](https://s3.console.aws.amazon.com/s3/buckets/install.featurelabs.com/?region=us-east-1). Find and open the folder corresponding to the license hash from the `flrelease` command. The `evalml` folder should contain a release tarball with the appropriate version, i.e. `evalml-X.X.X.tar.gz`, and an `index.html` package index.
+
+Open the `index.html` file and verify it lists the new version.
+
+In a fresh virtualenv, install evalml via pip and ensure it installs successfully:
+```shell
+pip install evalml --index-url https://install.featurelabs.com/<key>
+python --version
+python -c "import evalml; print(evalml.__version__)"
+```
