@@ -9,14 +9,12 @@ class ObjectiveBase(ABC):
     @abstractmethod
     def name(cls):
         """Returns a name describing the objective."""
-        pass
 
     @property
     @classmethod
     @abstractmethod
     def greater_is_better(cls):
         """Returns a boolean determining if a greater score indicates better model performance."""
-        pass
 
     @property
     @classmethod
@@ -24,7 +22,6 @@ class ObjectiveBase(ABC):
     def score_needs_proba(cls):
         """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation.
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -38,7 +35,6 @@ class ObjectiveBase(ABC):
         Returns:
             numerical value used to calculate score
         """
-        pass
 
     def score(self, y_true, y_predicted, X=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.

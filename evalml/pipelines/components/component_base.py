@@ -17,14 +17,12 @@ class ComponentBase(ABC):
     @abstractmethod
     def name(cls):
         """Returns string name of this component"""
-        pass
 
     @property
     @classmethod
     @abstractmethod
     def model_family(cls):
         """Returns ModelFamily of this component"""
-        pass
 
     def fit(self, X, y=None):
         """Fits component to data

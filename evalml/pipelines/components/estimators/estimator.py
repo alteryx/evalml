@@ -11,7 +11,7 @@ class Estimator(ComponentBase):
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
-        pass
+        """Problem types this estimator supports"""
 
     def predict(self, X):
         """Make predictions using selected features.
