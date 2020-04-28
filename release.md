@@ -7,27 +7,26 @@ Before starting the release process, verify the following:
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on master.
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest master, and the team has reviewed the results.
-* Communicate to the team that `master` is frozen until release PR is merged
 
 ## 1. Create release PR to update version and changelog
-A release PR should have the version number as the title (i.e. "vX.X.X") and the changelog updates as the PR body text. The PR should be based off master.
+Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our changelog checkin test which requires all other PRs to add a changelog entry.
 
-Please use the following pattern for the branch name: "release_vX.X.X". Doing so will bypass our changelog checkin test which requires all other PRs to add a changelog entry.
-
-Make the following changes in the release PR:
+Create a release PR with the following changes:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
-* Reformat the changelog to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). This is currently done by hand and can be done faster with some clever text editor features. You'll reuse this text in step 2.
-* Move changelog items from `Future Releases` into the correct version number.
+* Move all entries in `docs/source/changelog.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
+* Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
+* Populate the release PR body with a copy of this release's changelog, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
 * Confirm that all release items are in the changelog under the correct header, and that no extra items are listed.
-
 
 An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
-Get the PR reviewed and approved before merging. Verify again that all tests are currently green on master, that all checkin tests are passing, that the ReadtheDocs build for the release PR branch has passed and that the resulting docs contain the expected changelog.
+Checklist before merging:
+* PR has been reviewed and approved.
+* All tests are currently green on checkin and on master.
+* The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected changelog.
+* Confirm with the team that `master` will be frozen until step 3 (github release) is complete.
 
-Confirm with the team that `master` is frozen until the github release has been published.
-
-After merging, verify ReadtheDocs "latest" is correct.
+After merging, verify again that ReadtheDocs "latest" is correct.
 
 ## 2. Create GitHub Release
 After the release pull request has been merged into the master branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that.
