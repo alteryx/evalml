@@ -54,6 +54,7 @@ Please do the following:
 ## 4. Release using Release-tools
 Now that the release has been made in the repo and in our documentation, the final step is deploying the code to make it pip-installable.
 
+#### Deploy the release package
 First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
 
 Open a terminal and navigate to the top directory in the evalml repo. Rewind your repo to the release tag "vX.X.X" for your version.
@@ -76,10 +77,11 @@ Run the following command to build a release tarball and make it pip-installable
 flrelease upload-package --url install.featurelabs.com --license licenses/admin.json
 ```
 
-This will print out the license hash associated with the email in `licenses/admin.json`.
+This will print out the license key associated with the email in `licenses/admin.json`.
 
+#### Verify the release package has been deployed
 The final step is to verify that the release was successful.
-Log into the S3 console and navigate to [the install.featurelabs.com bucket](https://s3.console.aws.amazon.com/s3/buckets/install.featurelabs.com/?region=us-east-1). Find and open the folder corresponding to the license hash from the `flrelease` command. The `evalml` folder should contain a release tarball with the appropriate version, i.e. `evalml-X.X.X.tar.gz`, and an `index.html` package index.
+Log into the S3 console and navigate to [the install.featurelabs.com bucket](https://s3.console.aws.amazon.com/s3/buckets/install.featurelabs.com/?region=us-east-1). Find and open the folder corresponding to the license key from the `flrelease` command. The `evalml` folder should contain a release tarball with the appropriate version, i.e. `evalml-X.X.X.tar.gz`, and an `index.html` package index.
 
 Open the `index.html` file and verify it lists the new version.
 
