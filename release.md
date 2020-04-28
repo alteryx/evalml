@@ -16,7 +16,7 @@ Create a release PR with the following changes:
 * Move all entries in `docs/source/changelog.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
 * Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
 * Populate the release PR body with a copy of this release's changelog, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
-* Confirm that all release items are in the changelog under the correct header, and that no extra items are listed.
+* Confirm that all release items are in the changelog under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
 
 An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
@@ -42,20 +42,21 @@ Save the release as a draft and make sure it looks correct. You could start the 
 When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version.
 
 ## 3. Update Public Documentation
-After creating the GitHub release, we need to activate the release version on ReadtheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
+Creating the GitHub release should have updated the default `stable` docs branch to point at the new version. You'll now need to activate the new release version on ReadtheDocs so its publicly visible in the list of versions.
 
 Please do the following:
+* Log in to our ReadtheDocs account and go [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/) to view the version list.
 * Find "vX.X.X" in the version list, and click "Edit" on the right.
 * Check the "Active" checkbox and set privacy level to "Public", then click "Save"
-* Verify "vX.X.X" is now visible as a branch on our ReadtheDocs page.
-* Verify "stable" has been updated to correspond with the new version.
+* Verify "vX.X.X" is now visible as a version on our ReadtheDocs page. You may have to do an "empty cache and hard reset" in your browser to see updates.
+* Verify "stable" corresponds with the new version, which should've been done in step 2.
 
 ## 4. Release using Release-tools
 Now that the release has been made in the repo and in our documentation, the final step is deploying the code to make it pip-installable.
 
 First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
 
-Make sure you're in the top directory in the evalml repo:
+Open a terminal and navigate to the top directory in the evalml repo:
 ```shell
 cd {your_workspace}/evalml
 ```
