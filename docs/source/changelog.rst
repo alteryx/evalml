@@ -8,6 +8,7 @@ Changelog
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
+        * Added __str__ for AutoSearch object :pr:`675`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`
