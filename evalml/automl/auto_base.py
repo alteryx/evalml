@@ -100,13 +100,6 @@ class AutoBase:
             self.plot = None
 
     def __str__(self):
-        def _pipeline_names():
-            all_pipelines = "\n\t"
-            for pipeline in self.tuners:
-                all_pipelines += pipeline
-                all_pipelines += '\n\t'
-            return all_pipelines[:-2]
-
         def _obj_names():
             all_objectives = "\n\t"
             for objective in self.additional_objectives:
@@ -114,7 +107,7 @@ class AutoBase:
                 all_objectives += '\n\t'
             return all_objectives[:-2]
 
-        def _allowed_model_families():
+        def _possible_pipelines():
             amf = "\n\t"
             for pipeline in self.possible_pipelines:
                 amf += pipeline.name
@@ -133,7 +126,7 @@ class AutoBase:
             f"Objective: {self.objective.name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
-            f"Allowed Model Families: {_allowed_model_families()}\n"
+            f"Possible Pipelines: {_possible_pipelines()}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
