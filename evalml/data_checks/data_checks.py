@@ -1,4 +1,6 @@
 class DataChecks:
+    """A collection of data checks."""
+
     def __init__(self, data_checks):
         """
         A collection of data checks.

@@ -326,8 +326,11 @@ Tuners
     GridSearchTuner
     RandomSearchTuner
 
+
 .. currentmodule:: evalml.data_checks
 
+Data Checks
+===========
 
 .. autosummary::
     :toctree: generated
