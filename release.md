@@ -56,9 +56,12 @@ Now that the release has been made in the repo and in our documentation, the fin
 
 First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
 
-Open a terminal and navigate to the top directory in the evalml repo:
+Open a terminal and navigate to the top directory in the evalml repo. Rewind your repo to the release tag "vX.X.X" for your version.
 ```shell
 cd {your_workspace}/evalml
+git checkout master
+git fetch
+git reset --hard vX.X.X
 ```
 
 Next, you'll need to configure a licenses file to include any emails you'd like to make the new release available to.
