@@ -2,6 +2,7 @@ from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_checks import DataChecks
 from evalml.data_checks.messsage import DataCheckError, DataCheckWarning
 
+
 def test_data_checks(X_y):
     X, y = X_y
 
