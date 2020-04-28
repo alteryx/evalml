@@ -12,6 +12,7 @@ Changelog
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`
     * Testing Changes
+        * Delete codecov yml, use codecov.io's default :pr:`732`
 
 
 **v0.9.0 Apr. 27, 2020**
