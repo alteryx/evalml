@@ -7,6 +7,7 @@ class Tuner(ABC):
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
     """
 
+    @abstractmethod
     def __init__(self, space, random_state=0):
         """Init Tuner
 
@@ -17,7 +18,7 @@ class Tuner(ABC):
         Returns:
             Tuner: self
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def add(self, parameters, score):
@@ -30,7 +31,7 @@ class Tuner(ABC):
         Returns:
             None
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def propose(self):
@@ -39,7 +40,7 @@ class Tuner(ABC):
         Returns:
             dict: proposed hyperparameters
         """
-        raise NotImplementedError
+        pass
 
     def is_search_space_exhausted(self):
         """ Optional. If possible search space for tuner is finite, this method indicates
