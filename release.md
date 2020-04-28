@@ -29,17 +29,17 @@ Checklist before merging:
 After merging, verify again that ReadtheDocs "latest" is correct.
 
 ## 2. Create GitHub Release
-After the release pull request has been merged into the master branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that.
+After the release pull request has been merged into the master branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that. Include the following when creating the release:
 * The target should be the master branch, which is the default value.
 * The tag should be the version number with a "v" prefix (e.g. "vX.X.X").
-* Release title is the same as the tag.
-* Release description should be the full changelog updates for the release, reformatted as GitHub markdown.
+* The release title is the same as the tag, "vX.X.X"
+* The release description should be the full changelog updates for the release, reformatted as GitHub markdown (from the release PR body in step 1).
 
-Save the draft and review it. You could start the draft while waiting for the release PR to be ready to merge.
+Note that by targeting `master`, there must be no new merges to `master` from the moment we merge the release PR to when we publish the new GitHub release. Otherwise, the release will point at the wrong commit on `master`!
 
-When it's ready to go, hit "Publish release." This will create a tag for the release, which tells ReadtheDocs to build and update the "stable" version.
+Save the release as a draft and make sure it looks correct. You could start the draft while waiting for the release PR to be ready to merge.
 
-Note that by targeting `master`, there must be no new merges to `master` between the release PR merge and publishing the new GitHub release. Otherwise, the release will point at the wrong commit on `master`!
+When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version.
 
 ## 3. Update Public Documentation
 After creating the GitHub release, we need to activate the release version on ReadtheDocs [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/).
