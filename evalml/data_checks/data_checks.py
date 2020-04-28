@@ -8,7 +8,7 @@ class DataChecks:
         """
         self.data_checks = data_checks
 
-    def validate(self, X, y, verbose=True):
+    def validate(self, X, y=None, verbose=True):
         """
         Inspects and validates the input data against data checks and return a list of warnings and errors if applicable.
 
