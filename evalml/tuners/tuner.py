@@ -30,7 +30,7 @@ class Tuner(ABC):
         Returns:
             None
         """
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def propose(self):
@@ -39,7 +39,7 @@ class Tuner(ABC):
         Returns:
             dict: proposed hyperparameters
         """
-        raise NotImplementedError
+        pass
 
     def is_search_space_exhausted(self):
         """ Optional. If possible search space for tuner is finite, this method indicates
