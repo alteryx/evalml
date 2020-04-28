@@ -17,4 +17,3 @@ class DataCheck(ABC):
         Returns:
             list (DataCheckError), list (DataCheckWarning): returns a list of DataCheckError and DataCheckWarning objects
         """
-        pass
