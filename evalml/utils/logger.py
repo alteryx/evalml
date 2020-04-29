@@ -73,7 +73,6 @@ class Logger(logging.Logger):
 
     def warn(self, msg, stack_info=False):
         """Logs a warning message."""
-
         self.logger.warn(msg, stack_info=stack_info)
 
     def error(self, msg, stack_info=False):
