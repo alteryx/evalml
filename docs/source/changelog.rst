@@ -11,6 +11,7 @@ Changelog
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
+        * Add objective base classes to API reference :pr:`736`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
 
