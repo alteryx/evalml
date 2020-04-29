@@ -33,7 +33,6 @@ class PipelineBase(ABC):
         Returns:
             list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
         """
-        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
 
     custom_hyperparameters = None
     custom_name = None
@@ -237,8 +236,7 @@ class PipelineBase(ABC):
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
-                y_predictions = y_predicted
-                scores.update({objective.name: objective.score(y, y_predictions, X)})
+                scores.update({objective.name: objective.score(y, y_predicted, X)})
         return scores
 
     @classproperty

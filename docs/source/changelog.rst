@@ -4,6 +4,19 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
+        * Remove `pass` for abstract methods for codecov :pr:`730`
+    * Documentation Changes
+        * Add instructions to freeze `master` on `release.md` :pr:`726`
+        * Update release instructions with more details :pr:`727` :pr:`733`
+    * Testing Changes
+        * Delete codecov yml, use codecov.io's default :pr:`732`
+
+
+**v0.9.0 Apr. 27, 2020**
+    * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
         * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
@@ -72,6 +85,7 @@ Changelog
         * Removed unneeded conda installation of xgboost in windows checkin tests :pr:`618`
         * Update graph tests to always use tmpfile dir :pr:`649`
         * Changelog checkin test workaround for release PRs: If 'future release' section is empty of PR refs, pass check :pr:`658`
+        * Add changelog checkin test exception for `dep-update` branch :pr:`723`
 
 .. warning::
 
