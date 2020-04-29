@@ -4,8 +4,6 @@ import os
 import sys
 import traceback
 
-from colorama import Style
-
 
 class UpStackLogger(logging.Logger):
     """A custom logger class used to skip a stack frame when computing filename, line number, function name and stack information."""
@@ -51,47 +49,49 @@ class Logger(logging.Logger):
     """Write log messages to stdout.
 
     Arguments:
-        verbose (bool): If False, suppress log output. Default True.
+        level (str): level of Logger
     """
 
-    def __init__(self, verbose=True):
-        self.verbose = verbose
+    def __init__(self, level='INFO'):
+        self.level = level
         logging.setLoggerClass(UpStackLogger)
         logger = logging.getLogger('evalml')
         logging.setLoggerClass(logging.Logger)
 
         if not len(logger.handlers):
             out_handler = logging.StreamHandler(sys.stdout)
-            # date_fmt = '%m/%d/%Y %I:%M:%S %p'
-            fmt = "%(module)s: %(lineno)d: %(message)s"
-
-            # default_fmt = "%(asctime)s %(name)s - %(levelname)s: %(message)s"
-            # err_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
-            # debug_fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
-            out_handler.setFormatter(logging.Formatter(fmt=fmt))
+            date_fmt = '%m/%d/%Y %I:%M:%S %p'
+            fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
+            out_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
             logger.addHandler(out_handler)
-            logger.setLevel('INFO')
-            # logger.addFilter(MyFilter())
+            logger.setLevel(level)
         self.logger = logger
 
     def get_logger(self):
+        """Gets underlying logger object."""
         return self.logger
 
-    def warn(self, msg):
-        self.logger.warn(msg, stack_info=True)
+    def warn(self, msg, stack_info=False):
+        """Logs a warning message."""
 
-    def error(self):
-        pass
+        self.logger.warn(msg, stack_info=stack_info)
 
-    def print(self):
-        pass
+    def error(self, msg, stack_info=False):
+        """Logs a error message."""
+        self.logger.error(msg, stack_info=stack_info)
 
-    def log(self, msg, color=None, new_line=True):
-        if not self.verbose:
-            return
+    def print(self, msg, log=True):
+        """Prints to console and optionally logs."""
+        print(msg)
+        if log:
+            self.logger.info(msg)
 
-        if color:
-            msg = color + msg + Style.RESET_ALL
+    def log(self, msg, new_line=True, level="INFO"):
+        """Logs message."""
+        # msg = f"{msg}\n" if new_line else msg
+        # logging_function = {"INFO": self.logger.info,
+        #                     "WARN": self.logger.warn}
+        # logging_function[level](msg)
 
         if new_line:
             self.logger.info(f"{msg}\n")
@@ -104,7 +104,7 @@ class Logger(logging.Logger):
         self.logger.info("*" * (len(title) + 4))
         self.logger.info("")
 
-    def log_subtitle(self, title, underline="=", color=None):
+    def log_subtitle(self, title, underline="="):
         self.logger.info("")
         self.logger.info("%s" % title)
         self.logger.info(underline * len(title))

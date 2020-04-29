@@ -1,13 +1,5 @@
+
 from evalml.utils import Logger
-
-
-def test_logger_verbose():
-    logger = Logger()
-    assert logger.verbose
-    logger = Logger(False)
-    assert not logger.verbose
-    logger.verbose = True
-    assert logger.verbose
 
 
 def test_logger_log(caplog):
@@ -33,6 +25,6 @@ def test_logger_log(caplog):
 
 def test_logger_warn(caplog, capsys):
     logger = Logger()
-    logger.warn('Test message')
+    logger.warn('Test message', stack_info=True)
     assert 'Test message' in caplog.messages[0]
     assert 'Stack (most recent call last):' in caplog.text
