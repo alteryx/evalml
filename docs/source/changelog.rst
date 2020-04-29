@@ -7,11 +7,12 @@ Changelog
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
-
+        * Remove `pass` for abstract methods for codecov :pr:`730`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
-        * Update release instructions to mention that the reformatted notes are used in two places :pr:`727`
+        * Update release instructions with more details :pr:`727` :pr:`733`
     * Testing Changes
+        * Delete codecov yml, use codecov.io's default :pr:`732`
 
 
 **v0.9.0 Apr. 27, 2020**

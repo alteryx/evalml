@@ -18,7 +18,6 @@ class Tuner(ABC):
         Returns:
             Tuner: self
         """
-        pass
 
     @abstractmethod
     def add(self, parameters, score):
@@ -31,7 +30,6 @@ class Tuner(ABC):
         Returns:
             None
         """
-        pass
 
     @abstractmethod
     def propose(self):
@@ -40,7 +38,6 @@ class Tuner(ABC):
         Returns:
             dict: proposed hyperparameters
         """
-        pass
 
     def is_search_space_exhausted(self):
         """ Optional. If possible search space for tuner is finite, this method indicates
