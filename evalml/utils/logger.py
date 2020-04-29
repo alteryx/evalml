@@ -79,9 +79,12 @@ class Logger(logging.Logger):
         """Logs a error message."""
         self.logger.error(msg, stack_info=stack_info)
 
-    def print(self, msg, log=True):
+    def print(self, msg, new_line=False, log=True):
         """Prints to console and optionally logs."""
-        print(msg)
+        if new_line:
+            print(msg)
+        else:
+            print(msg, end="")
         if log:
             self.logger.info(msg)
 
