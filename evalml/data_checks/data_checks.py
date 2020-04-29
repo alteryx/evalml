@@ -6,7 +6,7 @@ class DataChecks:
         A collection of data checks.
 
         Arguments:
-            data_checks (list): list of data checks
+            data_checks (list (DataCheck)): list of DataCheck objects
         """
         self.data_checks = data_checks
 

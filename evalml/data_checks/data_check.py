@@ -11,8 +11,8 @@ class DataCheck(ABC):
 
         Arguments:
             X (pd.DataFrame): the input data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target labels of length [n_samples]
-            verbose (bool): Controls verbosity of output. If True, prints to console.
+            y (pd.Series, optional): the target data of length [n_samples]
+            verbose (bool): If False, disables logging. Defaults to True.
 
         Returns:
             list (DataCheckError), list (DataCheckWarning): returns a list of DataCheckError and DataCheckWarning objects
