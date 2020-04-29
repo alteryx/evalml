@@ -50,7 +50,7 @@ def test_logger_print(caplog, capsys):
     assert "Test print" not in caplog.text
 
 
-def test_logger_warn(caplog, capsys):
+def test_logger_warn(caplog):
     logger = Logger()
     logger.warn("Test warning", stack_info=True)
     assert "Test warning" in caplog.messages[0]
@@ -62,7 +62,7 @@ def test_logger_warn(caplog, capsys):
     assert "Stack (most recent call last):" not in caplog.text
 
 
-def test_logger_error(caplog, capsys):
+def test_logger_error(caplog):
     logger = Logger()
     logger.error("Test error", stack_info=True)
     assert "Test error" in caplog.messages[0]
