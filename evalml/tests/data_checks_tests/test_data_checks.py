@@ -13,24 +13,24 @@ def test_data_checks(X_y):
     X, y = X_y
 
     class MockDataCheck(DataCheck):
-        def validate(self, X, y, verbose=True):
+        def validate(self, X, y):
             return [], []
 
     class MockDataCheckWarning(DataCheck):
-        def validate(self, X, y, verbose=True):
+        def validate(self, X, y):
             return [], [DataCheckWarning("warning one", self.name)]
 
     class MockDataCheckError(DataCheck):
-        def validate(self, X, y, verbose=True):
+        def validate(self, X, y):
             return [DataCheckError("error one", self.name)], []
 
     class MockDataCheckErrorAndWarning(DataCheck):
-        def validate(self, X, y, verbose=True):
+        def validate(self, X, y):
             return [DataCheckError("error two", self.name)], [DataCheckWarning("warning two", self.name)]
 
     data_checks_list = [MockDataCheck(), MockDataCheckWarning(), MockDataCheckError(), MockDataCheckErrorAndWarning()]
     data_checks = DataChecks(data_checks=data_checks_list)
-    errors_and_warnings = data_checks.validate(X, y, verbose=True)
+    errors_and_warnings = data_checks.validate(X, y)
     assert len(errors_and_warnings) == 4
 
 
@@ -41,7 +41,7 @@ def test_data_checks_with_parameters():
         def __init__(self, less_than):
             self.less_than = less_than
 
-        def validate(self, X, y=None, verbose=True):
+        def validate(self, X, y=None):
             warnings = []
             errors = []
             if (X < self.less_than).any().any():
@@ -52,7 +52,7 @@ def test_data_checks_with_parameters():
         def __init__(self, greater_than):
             self.greater_than = greater_than
 
-        def validate(self, X, y=None, verbose=True):
+        def validate(self, X, y=None):
             warnings = []
             errors = []
             if (X > self.greater_than).any().any():
@@ -61,5 +61,5 @@ def test_data_checks_with_parameters():
 
     data_checks_list = [MockDataCheckLessThan(less_than=0), MockDataCheckGreaterThan(greater_than=1)]
     data_checks = DataChecks(data_checks=data_checks_list)
-    errors_and_warnings = data_checks.validate(X, y=None, verbose=True)
+    errors_and_warnings = data_checks.validate(X, y=None)
     assert len(errors_and_warnings) == 2

@@ -12,7 +12,7 @@ def test_empty_data_check(X_y):
     X, y = X_y
 
     class MockDataCheck(DataCheck):
-        def validate(self, X, y=None, verbose=True):
+        def validate(self, X, y=None):
             return [], []
 
     data_check = MockDataCheck()
@@ -31,7 +31,7 @@ def test_data_check_with_parameters():
             self.less_than = less_than
             self.greater_than = greater_than
 
-        def validate(self, X, y=None, verbose=True):
+        def validate(self, X, y=None):
             warnings = []
             errors = []
             if (X < self.less_than).any().any():
