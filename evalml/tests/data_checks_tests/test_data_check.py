@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 
 from evalml.data_checks.data_check import DataCheck
-from evalml.data_checks.messsage import DataCheckError, DataCheckWarning
+from evalml.data_checks.data_check_message import (
+    DataCheckError,
+    DataCheckWarning
+)
 
 
 def test_empty_data_check(X_y):
@@ -32,9 +35,9 @@ def test_data_check_with_parameters():
             warnings = []
             errors = []
             if (X < self.less_than).any().any():
-                errors.append(DataCheckError("There are values less than {}!".format(self.less_than)))
+                errors.append(DataCheckError("There are values less than {}!".format(self.less_than), self.name))
             if (X > self.greater_than).any().any():
-                warnings.append(DataCheckWarning("There are values greater than {}!".format(self.greater_than)))
+                warnings.append(DataCheckWarning("There are values greater than {}!".format(self.greater_than), self.name))
             return errors, warnings
 
     data_check = MockDataCheckWithParams(less_than=0, greater_than=1)

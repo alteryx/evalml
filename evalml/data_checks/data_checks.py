@@ -20,13 +20,12 @@ class DataChecks:
             verbose (bool): Controls verbosity of output. If True, prints to console.
 
         Returns:
-            list (DataCheckError), list (DataCheckWarning): returns a list of DataCheckError and DataCheckWarning objects
+            dict: returns a dictionary containing DataCheckError and DataCheckWarning objects
 
         """
-        # call validate for each of the data checks and accumulate messages
-        errors, warnings = [], []
+        errors_and_warnings = []
         for data_check in self.data_checks:
             errors_new, warnings_new = data_check.validate(X, y, verbose=verbose)
-            errors += errors_new
-            warnings += warnings_new
-        return errors, warnings
+            errors_and_warnings.extend(errors_new)
+            errors_and_warnings.extend(warnings_new)
+        return errors_and_warnings
