@@ -222,7 +222,7 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     ObjectiveBase
