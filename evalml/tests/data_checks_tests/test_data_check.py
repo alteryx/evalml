@@ -13,6 +13,8 @@ def test_empty_data_check(X_y):
             return [], []
 
     data_check = MockDataCheck()
+    assert data_check.name == "MockDataCheck"
+
     errors, warnings = data_check.validate(X, y=y)
     assert len(errors) == 0
     assert len(warnings) == 0
@@ -36,6 +38,8 @@ def test_data_check_with_parameters():
             return errors, warnings
 
     data_check = MockDataCheckWithParams(less_than=0, greater_than=1)
+    assert data_check.name == "MockDataCheckWithParams"
+
     errors, warnings = data_check.validate(X, y=None)
     assert len(errors) == 1
     assert len(warnings) == 1

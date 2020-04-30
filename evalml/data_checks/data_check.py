@@ -1,8 +1,15 @@
 from abc import ABC, abstractmethod
 
+from evalml.utils import classproperty
+
 
 class DataCheck(ABC):
     """Base class for all data checks."""
+
+    @classproperty
+    def name(cls):
+        """Returns a name describing the data check."""
+        return str(cls.__name__)
 
     @abstractmethod
     def validate(self, X, y=None, verbose=True):
@@ -15,5 +22,5 @@ class DataCheck(ABC):
             verbose (bool): If False, disables logging. Defaults to True.
 
         Returns:
-            list (DataCheckError), list (DataCheckWarning): returns a list of DataCheckError and DataCheckWarning objects
+            list (DataCheckError), list (DataCheckWarning): list of DataCheckError and DataCheckWarning objects
         """
