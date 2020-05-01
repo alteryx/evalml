@@ -7,8 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationObjective(ObjectiveBase):
-    """
-    Base class for all binary classification objectives.
+    """Base class for all binary classification objectives.
 
     problem_type (ProblemTypes): type of problem this objective is. Set to ProblemTypes.BINARY.
     can_optimize_threshold (bool): Determines if threshold used by objective can be optimized or not.
