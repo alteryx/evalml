@@ -1,7 +1,7 @@
 class DataChecks:
     """A collection of data checks."""
 
-    def __init__(self, data_checks):
+    def __init__(self, data_checks=None):
         """
         A collection of data checks.
 
@@ -19,12 +19,11 @@ class DataChecks:
             y (pd.Series): the target labels of length [n_samples]
 
         Returns:
-            dict: returns a dictionary containing DataCheckError and DataCheckWarning objects
+            list (DataCheckMessage): list containing DataCheckMessage objects
 
         """
-        errors_and_warnings = []
+        errors_warnings = []
         for data_check in self.data_checks:
-            errors_new, warnings_new = data_check.validate(X, y)
-            errors_and_warnings.extend(errors_new)
-            errors_and_warnings.extend(warnings_new)
-        return errors_and_warnings
+            errors_warnings_new = data_check.validate(X, y)
+            errors_warnings.extend(errors_warnings_new)
+        return errors_warnings

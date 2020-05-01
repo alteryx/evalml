@@ -334,12 +334,19 @@ Data Checks
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: data_check_class.rst
     :nosignatures:
 
     DataCheck
     DataChecks
-    Message
+
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataCheckMessage
     DataCheckError
     DataCheckWarning
 

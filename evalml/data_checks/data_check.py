@@ -21,5 +21,5 @@ class DataCheck(ABC):
             y (pd.Series, optional): the target data of length [n_samples]
 
         Returns:
-            list (DataCheckError), list (DataCheckWarning): list of DataCheckError and DataCheckWarning objects
+            list (DataCheckMessage): list of DataCheckError and DataCheckWarning objects
         """

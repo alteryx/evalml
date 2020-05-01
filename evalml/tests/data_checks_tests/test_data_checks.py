@@ -14,24 +14,24 @@ def test_data_checks(X_y):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return [], []
+            return []
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return [], [DataCheckWarning("warning one", self.name)]
+            return [DataCheckWarning("warning one", self.name)]
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return [DataCheckError("error one", self.name)], []
+            return [DataCheckError("error one", self.name)]
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
-            return [DataCheckError("error two", self.name)], [DataCheckWarning("warning two", self.name)]
+            return [DataCheckError("error two", self.name), DataCheckWarning("warning two", self.name)]
 
     data_checks_list = [MockDataCheck(), MockDataCheckWarning(), MockDataCheckError(), MockDataCheckErrorAndWarning()]
     data_checks = DataChecks(data_checks=data_checks_list)
-    errors_and_warnings = data_checks.validate(X, y)
-    assert len(errors_and_warnings) == 4
+    errors_warnings = data_checks.validate(X, y)
+    assert len(errors_warnings) == 4
 
 
 def test_data_checks_with_parameters():
@@ -42,24 +42,22 @@ def test_data_checks_with_parameters():
             self.less_than = less_than
 
         def validate(self, X, y=None):
-            warnings = []
-            errors = []
+            errors_warnings = []
             if (X < self.less_than).any().any():
-                errors.append(DataCheckError("There are values less than {}!".format(self.less_than), self.name))
-            return errors, warnings
+                errors_warnings.append(DataCheckError("There are values less than {}!".format(self.less_than), self.name))
+            return errors_warnings
 
     class MockDataCheckGreaterThan(DataCheck):
         def __init__(self, greater_than):
             self.greater_than = greater_than
 
         def validate(self, X, y=None):
-            warnings = []
-            errors = []
+            errors_warnings = []
             if (X > self.greater_than).any().any():
-                warnings.append(DataCheckWarning("There are values greater than {}!".format(self.greater_than), self.name))
-            return errors, warnings
+                errors_warnings.append(DataCheckWarning("There are values greater than {}!".format(self.greater_than), self.name))
+            return errors_warnings
 
     data_checks_list = [MockDataCheckLessThan(less_than=0), MockDataCheckGreaterThan(greater_than=1)]
     data_checks = DataChecks(data_checks=data_checks_list)
-    errors_and_warnings = data_checks.validate(X, y=None)
-    assert len(errors_and_warnings) == 2
+    errors_warnings = data_checks.validate(X, y=None)
+    assert len(errors_warnings) == 2
