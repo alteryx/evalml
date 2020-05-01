@@ -8,7 +8,7 @@ class DataCheckMessage:
 
     def __init__(self, message, data_check_name):
         """
-        Base class for all DataCheckMessages.
+        Initalize data check message.
 
         Arguments:
             message (str): message string
@@ -18,9 +18,11 @@ class DataCheckMessage:
         self.data_check_name = data_check_name
 
     def __str__(self):
+        """String representation of data check message, eqivalent to message attribute."""
         return self.message
 
     def __eq__(self, other):
+        """Checks for equality. Two DataCheckMessage objs are considered equivalent if their message type and message are equivalent."""
         return (self.message_type == other.message_type and
                 self.message == other.message and
                 self.data_check_name == other.data_check_name)
