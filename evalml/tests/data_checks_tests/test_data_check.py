@@ -62,6 +62,10 @@ def test_data_check_with_param():
     errors_warnings = data_check.validate(X, y=None)
     assert errors_warnings == []
 
+    data_check = MockDataCheckWithParam(num=0)
+    errors_warnings = data_check.validate(X, y=None)
+    assert errors_warnings == [DataCheckError("Expected num == 10", "MockDataCheckWithParam")]
+
 
 def test_data_check_more_complex():
     X = pd.DataFrame(np.array([[1, 2, -1], [1, 2, 0]]))
