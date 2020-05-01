@@ -352,7 +352,7 @@ Data Check Messages
 ~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: data_check_message.rst
     :nosignatures:
 
     DataCheckMessage
