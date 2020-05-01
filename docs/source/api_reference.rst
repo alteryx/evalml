@@ -346,7 +346,8 @@ Data Checks
     :nosignatures:
 
     DataChecks
-
+    DataCheckError
+    DataCheckWarning
 
 Data Check Messages
 ~~~~~~~~~~~~~~~~~~~
@@ -356,8 +357,7 @@ Data Check Messages
     :nosignatures:
 
     DataCheckMessage
-    DataCheckError
-    DataCheckWarning
+
 
 
 .. currentmodule:: evalml.guardrails

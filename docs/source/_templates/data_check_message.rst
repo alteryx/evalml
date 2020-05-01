@@ -5,7 +5,7 @@
 .. inheritance-diagram:: {{ objname }}
 
 .. autoclass:: {{ objname }}
-    :special-members: __str__
+   :special-members: __str__
    {% set class_attributes = ['message_type'] %}
 
 
