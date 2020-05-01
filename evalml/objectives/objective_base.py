@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
 
-
     @property
     @classmethod
     @abstractmethod
