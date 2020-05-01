@@ -48,9 +48,9 @@ release = evalml.__version__
 # ones.
 extensions = [
     'nbsphinx',
+    'sphinx.ext.napoleon',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
     'sphinx.ext.graphviz',
