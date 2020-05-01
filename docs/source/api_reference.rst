@@ -338,7 +338,6 @@ Data Checks
     :nosignatures:
 
     DataCheck
-    DataChecks
 
 
 .. autosummary::
@@ -346,6 +345,7 @@ Data Checks
     :template: class.rst
     :nosignatures:
 
+    DataChecks
     DataCheckMessage
     DataCheckError
     DataCheckWarning

@@ -4,7 +4,7 @@ from evalml.utils import classproperty
 
 
 class DataCheck(ABC):
-    """Base class for all data checks."""
+    """Base class for all data checks. Data checks are a set of heuristics used to determine if there are problems with input data."""
 
     @classproperty
     def name(cls):
