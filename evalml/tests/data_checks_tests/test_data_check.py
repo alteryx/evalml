@@ -14,12 +14,16 @@ def test_data_check_name():
             return []
     assert MockDataCheck().name == "MockDataCheck"
     assert MockDataCheck.name == "MockDataCheck"
+    errors_warnings = MockDataCheck().validate(pd.DataFrame())
+    assert errors_warnings == []
 
     class Funky_Name1DataCheck(DataCheck):
         def validate(self, X, y=None):
             return []
     assert Funky_Name1DataCheck().name == "Funky_Name1DataCheck"
     assert Funky_Name1DataCheck.name == "Funky_Name1DataCheck"
+    errors_warnings = Funky_Name1DataCheck().validate(pd.DataFrame())
+    assert errors_warnings == []
 
 
 def test_data_check_validate_empty(X_y):
