@@ -5,8 +5,8 @@
 .. inheritance-diagram:: {{ objname }}
 
 .. autoclass:: {{ objname }}
-   :special-members: __str__
    {% set class_attributes = ['message_type'] %}
+   {% set special_methods = ['__str__', '__eq__'] %}
 
 
    {% block attributes %}
@@ -38,6 +38,10 @@
       :toctree: methods
 
    {% for item in methods %}
+      ~{{ name }}.{{ item }}
+   {%- endfor %}
+
+   {% for item in special_methods %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
    {% endif %}
