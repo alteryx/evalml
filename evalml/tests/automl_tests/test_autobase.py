@@ -104,6 +104,9 @@ def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, cap
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, X_y):
+    def _dummy_callback(param1, param2):
+        return None
+
     X, y = X_y
     search_params = {
         'objective': 'F1',
@@ -115,6 +118,8 @@ def test_automl_str_search(mock_fit, X_y):
         'cv': StratifiedKFold(5),
         'tuner': RandomSearchTuner,
         'detect_label_leakage': False,
+        'start_iteration_callback': _dummy_callback,
+        'add_result_callback': _dummy_callback,
         'additional_objectives': ['Recall', 'AUC'],
         'n_jobs': 2,
         'verbose': True,
@@ -131,8 +136,8 @@ def test_automl_str_search(mock_fit, X_y):
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
         'Detect Label Leakage': search_params['detect_label_leakage'],
-        'Start Iteration Callback': None,
-        'Add Result Callback': None,
+        'Start Iteration Callback': '_dummy_callback',
+        'Add Result Callback': '_dummy_callback',
         'Additional Objectives': search_params['additional_objectives'],
         'Random State': 'RandomState(MT19937)',
         'n_jobs': search_params['n_jobs'],
