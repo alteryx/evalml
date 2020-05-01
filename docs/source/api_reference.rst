@@ -217,6 +217,21 @@ Regressors are models which can be trained to predict a target value from input 
 Objective Functions
 ====================
 
+Objective Base Classes
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ObjectiveBase
+    BinaryClassificationObjective
+    MulticlassClassificationObjective
+    RegressionObjective
+
+
+
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
