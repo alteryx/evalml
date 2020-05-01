@@ -5,7 +5,6 @@
 .. inheritance-diagram:: {{ objname }}
 
 .. autoclass:: {{ objname }}
-   :members:
    {% block methods %}
    {% if methods %}
    .. rubric:: Methods
