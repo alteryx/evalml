@@ -158,6 +158,5 @@ def test_automl_str_search(mock_fit, X_y):
 
     automl.search(X, y, raise_errors=False)
     str_rep = str(automl)
-    # str_rep = str_rep.lower()
     assert "Search Results:" in str_rep
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
