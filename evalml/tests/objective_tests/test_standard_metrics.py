@@ -42,13 +42,13 @@ def test_input_contains_nan():
     y_pred = np.array([np.nan, 0, 0])
     y_true = np.array([1, 2, 3])
     for objective in OPTIONS.values():
-        with pytest.raises(ValueError, match="Input contains NaN"):
+        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
             objective.score(y_true, y_pred)
 
     y_true = np.array([np.nan, 0, 0])
     y_pred = np.array([1, 2, 0])
     for objective in OPTIONS.values():
-        with pytest.raises(ValueError, match="Input contains NaN"):
+        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_pred)
 
 
@@ -56,13 +56,13 @@ def test_input_contains_inf():
     y_pred = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
     for objective in OPTIONS.values():
-        with pytest.raises(ValueError, match="Input contains NaN, inf"):
+        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
             objective.score(y_true, y_pred)
 
     y_true = np.array([np.inf, 0, 0])
     y_pred = np.array([1, 0, 0])
     for objective in OPTIONS.values():
-        with pytest.raises(ValueError, match="Input contains NaN, inf"):
+        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_pred)
 
 

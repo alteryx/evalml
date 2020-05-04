@@ -58,5 +58,9 @@ class ObjectiveBase(ABC):
             raise ValueError("Length of inputs is 0")
         if len(y_predicted) != len(y_true):
             raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+        if np.any(np.isnan(y_true)) or np.any(np.isinf(y_true)):
+            raise ValueError("y_true contains NaN or infinity")
+        if np.any(np.isnan(y_predicted)) or np.any(np.isinf(y_predicted)):
+            raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and (np.any([(y_predicted < 0) | (y_predicted > 1)])):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
