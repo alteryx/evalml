@@ -118,6 +118,13 @@ def test_binary_more_than_two_unique_values():
             with pytest.raises(ValueError, match="y_predicted contains more than two unique values"):
                 objective.score(y_true, y_pred)
 
+    y_true = np.array([0, 1, 2])
+    y_pred = np.array([1, 0, 1])
+    for objective in OPTIONS.values():
+        if isinstance(objective, BinaryClassificationObjective) and not objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_true contains more than two unique values"):
+                objective.score(y_true, y_pred)
+
 
 def test_accuracy_binary():
     obj = AccuracyBinary()
