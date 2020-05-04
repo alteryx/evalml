@@ -86,6 +86,7 @@ Changelog
         * Update graph tests to always use tmpfile dir :pr:`649`
         * Changelog checkin test workaround for release PRs: If 'future release' section is empty of PR refs, pass check :pr:`658`
         * Add changelog checkin test exception for `dep-update` branch :pr:`723`
+        * Added unit tests for standard metric objectives :pr:`741`
 
 .. warning::
 
