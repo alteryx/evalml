@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 
+import numpy as np
+
+from evalml.exceptions import DimensionMismatchError
+
 
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
@@ -48,3 +52,11 @@ class ObjectiveBase(ABC):
             score
         """
         return self.objective_function(y_true, y_predicted, X=X)
+
+    def standard_checks(self, y_true, y_predicted):
+        if len(y_true) == 0 or len(y_predicted) == 0:
+            raise ValueError("Length of inputs is 0")
+        if len(y_predicted) != len(y_true):
+            raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+        if self.score_needs_proba and (np.any([(y_predicted < 0) | (y_predicted > 1)])):
+            raise ValueError("y_predicted contains probability estimates not within [0, 1]")
