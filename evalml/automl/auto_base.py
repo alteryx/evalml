@@ -100,19 +100,11 @@ class AutoBase:
             self.plot = None
 
     def __str__(self):
-        def _obj_names():
-            all_objectives = "\n\t"
-            for objective in self.additional_objectives:
-                all_objectives += objective.name
-                all_objectives += '\n\t'
-            return all_objectives[:-2]
+        _list_separator = '\n\t'
 
-        def _possible_pipelines():
-            amf = "\n\t"
-            for pipeline in self.possible_pipelines:
-                amf += pipeline.name
-                amf += '\n\t'
-            return amf[:-2]
+        def _print_list(in_attr):
+            return _list_separator + \
+                _list_separator.join(obj.name for obj in in_attr)
 
         def _get_funct_name(function):
             if callable(function):
@@ -126,7 +118,7 @@ class AutoBase:
             f"Objective: {self.objective.name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
-            f"Possible Pipelines: {_possible_pipelines()}\n"
+            f"Possible Pipelines: {_print_list(self.possible_pipelines)}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
@@ -134,7 +126,7 @@ class AutoBase:
             f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
-            f"Additional Objectives: {_obj_names()}\n"
+            f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
             f"Verbose: {self.verbose}\n"
