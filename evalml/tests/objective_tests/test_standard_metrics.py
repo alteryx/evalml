@@ -21,8 +21,53 @@ from evalml.objectives import (
     RecallWeighted
 )
 
+from evalml.objectives.utils import OPTIONS
+
 EPS = 1e-5
 
+
+'''
+Ideas for testing:
+- NaN
+- inf
+- binary gets more than 2 values
+- all 0s/all 1s
+- probabilities outside the range 0 to 1, etc.
+- lengths not equal
+
+'''
+
+
+def test_nan():
+    y_pred = np.array([np.nan, 0, 0])
+    y_true = np.array([1, 2, 3])
+    for objective in OPTIONS.values():
+        with pytest.raises(ValueError, match="Input contains NaN"):
+            objective.score(y_true, y_pred)
+
+    y_true = np.array([np.nan, 0, 0])
+    y_pred = np.array([1, 2, 0])
+    for objective in OPTIONS.values():
+        with pytest.raises(ValueError, match="Input contains NaN"):
+            objective.score(y_true, y_pred)
+
+
+
+def test_nan():
+    y_pred = np.array([np.nan, 0, 0])
+    y_true = np.array([1, 2, 3])
+    for objective in OPTIONS.values():
+        with pytest.raises(ValueError, match="Input contains NaN"):
+            objective.score(y_true, y_pred)
+
+    y_true = np.array([np.nan, 0, 0])
+    y_pred = np.array([1, 2, 0])
+    for objective in OPTIONS.values():
+        with pytest.raises(ValueError, match="Input contains NaN"):
+            objective.score(y_true, y_pred)
+
+def test_series():
+    # use series input, test that get same results as numpy
 
 def test_accuracy_binary():
     obj = AccuracyBinary()
