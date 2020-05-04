@@ -26,18 +26,6 @@ from evalml.objectives.utils import OPTIONS
 EPS = 1e-5
 
 
-'''
-- binary gets more than 2 values
-- all 0s/all 1s
-- probabilities outside the range 0 to 1, etc.
-- series
-
-Q's:
-
-do we want our own exceptions for each of these??
-'''
-
-
 def test_input_contains_nan():
     y_pred = np.array([np.nan, 0, 0])
     y_true = np.array([1, 2, 3])
