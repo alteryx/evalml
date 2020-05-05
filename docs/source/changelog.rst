@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Port over highly-null guardrail as a data check and define `BasicDataChecks` and `DisableDataChecks` classes :pr:`745`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
