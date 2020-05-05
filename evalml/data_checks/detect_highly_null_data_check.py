@@ -7,23 +7,26 @@ from .data_check_message import DataCheckWarning
 class DetectHighlyNullDataCheck(DataCheck):
 
     def __init__(self, percent_threshold=0.95):
-        """TODO
+        """Checks if there are any highly-null columns in the input.
 
         Arguments:
             percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to 0.95
+
         """
         if percent_threshold < 0 or percent_threshold > 1:
             raise ValueError("percent_threshold must be a float between 0 and 1, inclusive.")
         self.percent_threshold = percent_threshold
 
     def validate(self, X, y=None):
-        """ Checks if there are any highly-null columns in a pd.Dataframe.
+        """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            X (pd.DataFrame) : features
+            X (pd.DataFrame, pd.Series, np.array, list) : features
             y : Ignored.
 
         Returns:
+            list (DataCheckWarning): list with a DataCheckWarning if there are any highly-null columns.
+
         Example:
             >>> df = pd.DataFrame({
             ...    'lots_of_null': [None, None, None, None, 5],
