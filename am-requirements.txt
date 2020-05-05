@@ -1,7 +1,6 @@
 attrs==19.1.0
 apscheduler==3.6.1
 alembic==1.0.7
-ayx==1.0.52
 backcall==0.1.0
 certifi==2019.6.16
 Cerberus==1.3.1
