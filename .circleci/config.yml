@@ -55,7 +55,11 @@ commands:
             pip install --upgrade pip -q
             pip install -e . --no-dependencies
             pip install -r am-requirements.txt
+            pip install -r core-requirements.txt
             pip install -r test-requirements.txt
+            # "!" negates return code. exit nonzero if any of these deps are found
+            ! pip freeze | grep -E "xgboost|catboost|plotly|ipywidgets"
+            exit $?
 
 jobs:
   lint_test:
@@ -78,15 +82,15 @@ jobs:
       python_version:
         type: string
         default: "3.8"
-      assisted_modeling:
-        type: boolean
-        default: false
       miniconda_pkg_name:
         type: string
         default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
       miniconda_hash:
         type: string
         default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+      assisted_modeling:
+        type: boolean
+        default: false
     executor:
       name: windows/default
     steps:
@@ -125,6 +129,15 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               conda install python-graphviz -q -y
+      - when:
+          condition: << parameters.assisted_modeling >>
+          steps:
+            - run:
+                C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+                conda activate curr_py
+                python -m pip install --upgrade pip
+                python -m pip install .
+                python -m pip install -r am-requirements.txt
       - run:
           name: Install EvalML
           command: |
@@ -132,6 +145,7 @@ jobs:
               conda activate curr_py
               python -m pip install --upgrade pip
               python -m pip install .
+              python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
           command: |
@@ -154,9 +168,6 @@ jobs:
       core_dependencies:
         type: boolean
         default: false
-      assisted_modeling:
-        type: boolean
-        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
@@ -168,17 +179,10 @@ jobs:
           steps:
             - install_dependencies_core
       - unless:
-          condition: << parameters.core_dependencies >> 
+          condition: << parameters.core_dependencies >>
           steps:
-            - when:
-                condition: << parameters.assisted_modeling >> 
-                steps:
-                  - install_dependencies_am
-            - unless:
-                condition: << parameters.assisted_modeling >> 
-                steps:
-                  - install_dependencies
-                  - install_dependencies_test
+            - install_dependencies
+            - install_dependencies_test
       - run: |
           source test_python/bin/activate
           coverage erase
@@ -294,6 +298,10 @@ workflows:
         - win_unit_tests:
             name: "windows python 3.8 unit tests"
             python_version: "3.8"
+        - win_unit_tests:
+            name: "windows python 3.8 unit tests, assisted modeling"
+            python_version: "3.8"
+            assisted_modeling: true
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
@@ -331,8 +339,3 @@ workflows:
             python_version: "3.8"
             codecov: true
             core_dependencies: true
-        - unit_tests:
-            name: "linux python 3.8 unit tests, assisted modeling dependencies"
-            python_version: "3.8"
-            core_dependencies: false
-            assisted_modeling: true
