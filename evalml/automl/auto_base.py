@@ -96,6 +96,48 @@ class AutoBase:
             logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
+    def __str__(self):
+        _list_separator = '\n\t'
+
+        def _print_list(in_attr):
+            return _list_separator + \
+                _list_separator.join(obj.name for obj in in_attr)
+
+        def _get_funct_name(function):
+            if callable(function):
+                return function.__name__
+            else:
+                return None
+
+        search_desc = (
+            f"{self.problem_type} Search\n\n"
+            f"Parameters: \n{'='*20}\n"
+            f"Objective: {self.objective.name}\n"
+            f"Max Time: {self.max_time}\n"
+            f"Max Pipelines: {self.max_pipelines}\n"
+            f"Possible Pipelines: {_print_list(self.possible_pipelines)}\n"
+            f"Patience: {self.patience}\n"
+            f"Tolerance: {self.tolerance}\n"
+            f"Cross Validation: {self.cv}\n"
+            f"Tuner: {type(list(self.tuners.values())[0]).__name__}\n"
+            f"Detect Label Leakage: {self.detect_label_leakage}\n"
+            f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
+            f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
+            f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
+            f"Random State: {self.random_state}\n"
+            f"n_jobs: {self.n_jobs}\n"
+            f"Verbose: {self.verbose}\n"
+            f"Optimize Thresholds: {self.optimize_thresholds}\n"
+        )
+
+        try:
+            rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
+            rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
+        except KeyError:
+            rankings_desc = ""
+
+        return search_desc + rankings_desc
+
     def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
