@@ -16,25 +16,19 @@ def mock_data_check_class():
     return MockDataCheck
 
 
-@pytest.fixture
-def funky_name_mock_data_check_class():
-    class Funky_Name1DataCheck(DataCheck):
-        def validate(self, X, y=None):
-            return []
-    return Funky_Name1DataCheck
-
-
-def test_data_check_name(mock_data_check_class, funky_name_mock_data_check_class):
+def test_data_check_name(mock_data_check_class):
     assert mock_data_check_class().name == "MockDataCheck"
     assert mock_data_check_class.name == "MockDataCheck"
 
-    assert funky_name_mock_data_check_class().name == "Funky_Name1DataCheck"
-    assert funky_name_mock_data_check_class.name == "Funky_Name1DataCheck"
+    class Funky_Name1DataCheck(mock_data_check_class):
+        """Mock data check with a funky name"""
+
+    assert Funky_Name1DataCheck().name == "Funky_Name1DataCheck"
+    assert Funky_Name1DataCheck.name == "Funky_Name1DataCheck"
 
 
-def test_empty_data_check_validate(mock_data_check_class, funky_name_mock_data_check_class):
+def test_empty_data_check_validate(mock_data_check_class):
     assert mock_data_check_class().validate(pd.DataFrame()) == []
-    assert funky_name_mock_data_check_class().validate(pd.DataFrame()) == []
 
 
 def test_data_check_validate_simple(X_y):
