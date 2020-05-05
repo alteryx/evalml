@@ -45,7 +45,6 @@ pyrsistent==0.15.4
 python-dateutil==2.8.0
 python-dotenv==0.9.1
 python-editor==1.0.4
-python_telemetry_client==0.0.0.200145
 pytz==2019.1
 PyYAML==3.13
 pywin32==227; sys_platform == "win32"
