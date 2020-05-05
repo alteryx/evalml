@@ -126,7 +126,6 @@ class AutoBase:
             f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
-            f"Verbose: {self.verbose}\n"
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 

@@ -125,7 +125,6 @@ def test_automl_str_search(mock_fit, X_y):
         'add_result_callback': None,
         'additional_objectives': ['Recall', 'AUC'],
         'n_jobs': 2,
-        'verbose': True,
         'optimize_thresholds': True
     }
 
@@ -144,7 +143,6 @@ def test_automl_str_search(mock_fit, X_y):
         'Additional Objectives': search_params['additional_objectives'],
         'Random State': 'RandomState(MT19937)',
         'n_jobs': search_params['n_jobs'],
-        'Verbose': search_params['verbose'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
     automl = AutoClassificationSearch(**search_params)
