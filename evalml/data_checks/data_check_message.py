@@ -8,17 +8,17 @@ class DataCheckMessage:
 
     def __init__(self, message, data_check_name):
         """
-        Message returned by a DataCheck, tagged by name"
+        Message returned by a DataCheck, tagged by name."
 
         Arguments:
-            message (str): message string
-            data_check_name (str): name of data check
+            message (str): Message string
+            data_check_name (str): Name of data check
         """
         self.message = message
         self.data_check_name = data_check_name
 
     def __str__(self):
-        """String representation of data check message, eqivalent to self.message attribute."""
+        """String representation of data check message, equivalent to self.message attribute."""
         return self.message
 
     def __eq__(self, other):

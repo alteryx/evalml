@@ -40,15 +40,11 @@ def test_data_check_message_str(data_check_message):
 
 
 def test_data_check_message_eq(data_check_message):
-    message_str_dup = "test message"
-    data_check_name_dup = "test data check message name"
-    equal_msg = DataCheckMessage(message_str_dup, data_check_name_dup)
+    equal_msg = DataCheckMessage("test message", "test data check message name")
     assert data_check_message == equal_msg
 
-    message_str_diff = "different test message"
-    data_check_name_diff = "different test data check message name"
-    equal_msg = DataCheckMessage(message_str_diff, data_check_name_diff)
-    assert not data_check_message == equal_msg
+    equal_msg = DataCheckMessage("different test message", "different test data check message name")
+    assert data_check_message != equal_msg
 
 
 def test_data_check_warning_attributes(data_check_warning):
@@ -62,15 +58,11 @@ def test_data_check_warning_str(data_check_warning):
 
 
 def test_data_check_warning_eq(data_check_warning):
-    message_str_dup = "test warning"
-    data_check_name_dup = "test data check warning name"
-    equal_msg = DataCheckWarning(message_str_dup, data_check_name_dup)
+    equal_msg = DataCheckWarning("test warning", "test data check warning name")
     assert data_check_warning == equal_msg
 
-    message_str_diff = "different test warning"
-    data_check_name_diff = "different test data check warning name"
-    equal_msg = DataCheckWarning(message_str_diff, data_check_name_diff)
-    assert not data_check_warning == equal_msg
+    equal_msg = DataCheckWarning("different test warning", "different test data check warning name")
+    assert data_check_warning != equal_msg
 
 
 def test_data_check_error_attributes(data_check_error):
@@ -84,12 +76,14 @@ def test_data_check_error_str(data_check_error):
 
 
 def test_data_check_error_eq(data_check_error):
-    message_str_dup = "test error"
-    data_check_name_dup = "test data check error name"
-    equal_msg = DataCheckError(message_str_dup, data_check_name_dup)
+    equal_msg = DataCheckError("test error", "test data check error name")
     assert data_check_error == equal_msg
 
-    message_str_diff = "different test warning"
-    data_check_name_diff = "different test data check error name"
-    equal_msg = DataCheckError(message_str_diff, data_check_name_diff)
-    assert not data_check_error == equal_msg
+    equal_msg = DataCheckError("different test warning", "different test data check error name")
+    assert data_check_error != equal_msg
+
+
+def test_warning_error_eq():
+    error = DataCheckError("test message", "same test name")
+    warning = DataCheckWarning("test message", "same test name")
+    assert error != warning
