@@ -8,7 +8,7 @@ class DataCheckMessage:
 
     def __init__(self, message, data_check_name):
         """
-        Initalize data check message.
+        Message returned by a DataCheck, tagged by name"
 
         Arguments:
             message (str): message string

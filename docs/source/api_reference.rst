@@ -347,6 +347,8 @@ Tuners
 Data Checks
 ===========
 
+Data Check Base Classes
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: data_check_class.rst
@@ -373,6 +375,17 @@ Data Check Messages
     DataCheckMessage
     DataCheckError
     DataCheckWarning
+
+
+Data Check Message Types
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataCheckMessageType
 
 
 .. currentmodule:: evalml.guardrails

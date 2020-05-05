@@ -69,27 +69,3 @@ def test_data_check_with_param():
     data_check = MockDataCheckWithParam(num=0)
     errors_warnings = data_check.validate(X, y=None)
     assert errors_warnings == [DataCheckError("Expected num == 10", "MockDataCheckWithParam")]
-
-
-def test_data_check_more_complex():
-    X = pd.DataFrame(np.array([[1, 2, -1], [1, 2, 0]]))
-
-    class MockDataCheckComplex(DataCheck):
-        def __init__(self, less_than, greater_than):
-            self.less_than = less_than
-            self.greater_than = greater_than
-
-        def validate(self, X, y=None):
-            warnings = []
-            errors = []
-            if (X < self.less_than).any().any():
-                errors.append(DataCheckError("There are values less than {}!".format(self.less_than), self.name))
-            if (X > self.greater_than).any().any():
-                warnings.append(DataCheckWarning("There are values greater than {}!".format(self.greater_than), self.name))
-            return errors, warnings
-
-    data_check = MockDataCheckComplex(less_than=0, greater_than=1)
-    assert data_check.name == "MockDataCheckComplex"
-
-    errors_warnings = data_check.validate(X, y=None)
-    assert len(errors_warnings) == 2

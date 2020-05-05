@@ -12,7 +12,7 @@ class DataChecks:
 
     def validate(self, X, y=None):
         """
-        Inspects and validates the input data against data checks and return a list of warnings and errors if applicable.
+        Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
             X (pd.DataFrame): the input data of shape [n_samples, n_features]
@@ -22,8 +22,8 @@ class DataChecks:
             list (DataCheckMessage): list containing DataCheckMessage objects
 
         """
-        errors_warnings = []
+        messages = []
         for data_check in self.data_checks:
-            errors_warnings_new = data_check.validate(X, y)
-            errors_warnings.extend(errors_warnings_new)
-        return errors_warnings
+            messages_new = data_check.validate(X, y)
+            messages.extend(messages_new)
+        return messages
