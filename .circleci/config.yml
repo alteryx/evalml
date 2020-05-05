@@ -137,9 +137,12 @@ jobs:
                 command: |
                     C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
                     conda activate curr_py
+                    
                     python -m pip install --upgrade pip
                     python -m pip install .
                     python -m pip install -r am-requirements.txt
+                    conda install scipy==1.3.0
+
       - run:
           name: Install EvalML
           command: |
