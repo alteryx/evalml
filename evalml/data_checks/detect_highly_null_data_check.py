@@ -30,7 +30,8 @@ class DetectHighlyNullDataCheck(DataCheck):
             ...    'no_null': [1, 2, 3, 4, 5]
             ... })
             >>> null_check = DetectHighlyNullDataCheck(percent_threshold=0.8)
-            >>> null_check.validate(df)
+            >>> null_check.validate(df) == [DataCheckWarning("Columns 'lots_of_null' are more than 80.0% null", "DetectHighlyNullDataCheck")]
+            True
         """
         messages = []
         if not isinstance(X, pd.DataFrame):
