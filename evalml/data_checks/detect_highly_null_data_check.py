@@ -43,7 +43,7 @@ class DetectHighlyNullDataCheck(DataCheck):
         highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.percent_threshold}
         if len(highly_null_cols) > 0:
             col_names_str = ', '.join([f"'{name}'" for name in list(highly_null_cols.keys())])
-            warning_msg = "Columns {} are more than {}% null".format(col_names_str, self.percent_threshold * 100.)
+            warning_msg = "Columns {} are more than {}% null".format(col_names_str, self.percent_threshold * 100)
             warning = DataCheckWarning(warning_msg, self.name)
             messages.append(warning)
         return messages
