@@ -133,11 +133,13 @@ jobs:
           condition: << parameters.assisted_modeling >>
           steps:
             - run:
-                C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-                conda activate curr_py
-                python -m pip install --upgrade pip
-                python -m pip install .
-                python -m pip install -r am-requirements.txt
+                name: Install Assisted Modeling Requirements
+                command: |
+                    C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+                    conda activate curr_py
+                    python -m pip install --upgrade pip
+                    python -m pip install .
+                    python -m pip install -r am-requirements.txt
       - run:
           name: Install EvalML
           command: |
