@@ -15,6 +15,7 @@ Flask-Cors==3.0.7
 Flask-Migrate==2.5.1
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.4.0
+graphviz==0.12
 idna==2.8
 ipython-genutils==0.2.0
 ipykernel==5.1.4
