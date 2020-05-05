@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 
 from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_check_message import (
@@ -7,34 +8,33 @@ from evalml.data_checks.data_check_message import (
 )
 
 
-def test_data_check_name():
+@pytest.fixture
+def mock_data_check_class():
     class MockDataCheck(DataCheck):
         def validate(self, X, y=None):
             return []
-    assert MockDataCheck().name == "MockDataCheck"
-    assert MockDataCheck.name == "MockDataCheck"
-    errors_warnings = MockDataCheck().validate(pd.DataFrame())
-    assert errors_warnings == []
+    return MockDataCheck
 
+
+@pytest.fixture
+def funky_name_mock_data_check_class():
     class Funky_Name1DataCheck(DataCheck):
         def validate(self, X, y=None):
             return []
-    assert Funky_Name1DataCheck().name == "Funky_Name1DataCheck"
-    assert Funky_Name1DataCheck.name == "Funky_Name1DataCheck"
-    errors_warnings = Funky_Name1DataCheck().validate(pd.DataFrame())
-    assert errors_warnings == []
+    return Funky_Name1DataCheck
 
 
-def test_data_check_validate_empty(X_y):
-    X, y = X_y
+def test_data_check_name(mock_data_check_class, funky_name_mock_data_check_class):
+    assert mock_data_check_class().name == "MockDataCheck"
+    assert mock_data_check_class.name == "MockDataCheck"
 
-    class MockDataCheck(DataCheck):
-        def validate(self, X, y=None):
-            return []
+    assert funky_name_mock_data_check_class().name == "Funky_Name1DataCheck"
+    assert funky_name_mock_data_check_class.name == "Funky_Name1DataCheck"
 
-    data_check = MockDataCheck()
-    errors_warnings = data_check.validate(X, y=y)
-    assert errors_warnings == []
+
+def test_empty_data_check_validate(mock_data_check_class, funky_name_mock_data_check_class):
+    assert mock_data_check_class().validate(pd.DataFrame()) == []
+    assert funky_name_mock_data_check_class().validate(pd.DataFrame()) == []
 
 
 def test_data_check_validate_simple(X_y):
