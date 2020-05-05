@@ -7,14 +7,13 @@ import pandas as pd
 import pytest
 from skopt.space import Real
 
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 @pytest.fixture
 def test_pipeline():
-    class TestPipeline(PipelineBase):
+    class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -85,7 +84,7 @@ def test_feature_importance_plot(X_y, test_pipeline):
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
-    assert isinstance(clf.feature_importance_graph(), go.Figure)
+    assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
 def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
@@ -93,12 +92,12 @@ def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
-    figure = clf.feature_importance_graph()
+    figure = clf.graph_feature_importance()
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
     assert (np.all(data['x']))
 
-    figure = clf.feature_importance_graph(show_all_features=True)
+    figure = clf.graph_feature_importance(show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))

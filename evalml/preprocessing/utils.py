@@ -3,18 +3,18 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
 def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs):
-    """Load features and labels from file(s).
+    """Load features and labels from file.
 
-    Args:
-        path (str) : path to file or a http/ftp/s3 URL
-        index (str) : column for index
-        label (str) : column for labels
-        n_rows (int) : number of rows to return
-        drop (list) : columns to drop
-        verbose (bool) : whether to print information about features and labels
+    Arguments:
+        path (str): Path to file or a http/ftp/s3 URL
+        index (str): Column for index
+        label (str): Column for labels
+        n_rows (int): Number of rows to return
+        drop (list): List of columns to drop
+        verbose (bool): If True, prints information about features and labels
 
     Returns:
-        pd.DataFrame, pd.Series : features and labels
+        pd.DataFrame, pd.Series: features and labels
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
@@ -41,14 +41,14 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Arguments:
-        X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-        y (pd.Series) : labels of length [n_samples]
+        X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+        y (pd.Series): labels of length [n_samples]
         regression (bool): if true, do not use stratified split
-        test_size (float) : percent of train set to holdout for testing
-        random_state (int, np.random.RandomState) : seed for the random number generator
+        test_size (float): percent of train set to holdout for testing
+        random_state (int, np.random.RandomState): seed for the random number generator
 
     Returns:
-        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series : features and labels each split into train and test sets
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: features and labels each split into train and test sets
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
@@ -73,6 +73,15 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
 
 
 def number_of_features(dtypes):
+    """Get the number of features for specific dtypes
+
+    Arguments:
+
+        dtypes (pd.Series): dtypes to get the number of features for
+
+    Returns:
+        pd.Series: dtypes and the number of features for each input type
+    """
     dtype_to_vtype = {
         'bool': 'Boolean',
         'int32': 'Numeric',
@@ -87,6 +96,14 @@ def number_of_features(dtypes):
 
 
 def label_distribution(labels):
+    """Get the label distributions
+
+    Arguments:
+        labels (pd.Series): Label values
+
+    Returns:
+        pd.Series: Label values and their frequency distribution as percentages.
+    """
     distribution = labels.value_counts() / len(labels)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
 
@@ -97,6 +114,7 @@ def drop_nan_target_rows(X, y):
     Arguments:
         X (pd.DataFrame): Data to transform
         y (pd.Series): Target values
+
     Returns:
         pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """

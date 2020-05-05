@@ -1,7 +1,6 @@
 import inspect
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from evalml.utils.gen_utils import (
@@ -10,16 +9,15 @@ from evalml.utils.gen_utils import (
     convert_to_seconds,
     get_random_seed,
     get_random_state,
-    import_or_raise,
-    normalize_confusion_matrix
+    import_or_raise
 )
 
 
 def test_import_or_raise_errors():
-    with pytest.raises(ImportError, match="Failed to import _evalml"):
+    with pytest.raises(ImportError, match="Missing optional dependency '_evalml'"):
         import_or_raise("_evalml")
-    with pytest.raises(ImportError, match="error message"):
-        import_or_raise("_evalml", "error message")
+    with pytest.raises(ImportError, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
+        import_or_raise("_evalml", "Additional error message")
 
 
 def test_import_or_raise_imports():
@@ -138,48 +136,6 @@ def test_get_random_seed_int():
                             make_expected_values(vals, min_bound=5, max_bound=10))
     np.testing.assert_equal(get_random_seed_vec(min_bound=-10, max_bound=-5)(vals),
                             make_expected_values(vals, min_bound=-10, max_bound=-5))
-
-
-def test_normalize_confusion_matrix():
-    conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat)
-    assert all(conf_mat_normalized.sum(axis=1) == 1.0)
-
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
-    for col_sum in conf_mat_normalized.sum(axis=0):
-        assert col_sum == 1.0 or col_sum == 0.0
-
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
-    assert conf_mat_normalized.sum() == 1.0
-
-    # testing with pd.DataFrames
-    conf_mat_df = pd.DataFrame()
-    conf_mat_df["col_1"] = [0, 1, 2]
-    conf_mat_df["col_2"] = [0, 0, 3]
-    conf_mat_df["col_3"] = [2, 0, 0]
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df)
-    assert all(conf_mat_normalized.sum(axis=1) == 1.0)
-    assert list(conf_mat_normalized.columns) == ['col_1', 'col_2', 'col_3']
-
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'pred')
-    for col_sum in conf_mat_normalized.sum(axis=0):
-        assert col_sum == 1.0 or col_sum == 0.0
-
-    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
-    assert conf_mat_normalized.sum().sum() == 1.0
-
-
-def test_normalize_confusion_matrix_error():
-    conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-
-    with pytest.raises(ValueError, match="Sum of given axis is 0"):
-        normalize_confusion_matrix(conf_mat, 'true')
-
-    with pytest.raises(ValueError, match="Sum of given axis is 0"):
-        normalize_confusion_matrix(conf_mat, 'pred')
-
-    with pytest.raises(ValueError, match="Sum of given axis is 0"):
-        normalize_confusion_matrix(conf_mat, 'all')
 
 
 def test_class_property():

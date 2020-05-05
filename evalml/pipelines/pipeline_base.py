@@ -11,7 +11,6 @@ from .components import Estimator, handle_component
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
-from evalml.problem_types import handle_problem_types
 from evalml.utils import (
     Logger,
     classproperty,
@@ -34,29 +33,16 @@ class PipelineBase(ABC):
         Returns:
             list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
         """
-        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
-
-    @property
-    @classmethod
-    @abstractmethod
-    def supported_problem_types(cls):
-        """Returns a list of ProblemTypes that this pipeline supports
-
-        Returns:
-            list(str/ProblemType): list of ProblemType objects or strings that this pipeline supports
-        """
-        return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     custom_hyperparameters = None
     custom_name = None
+    problem_type = None
 
     def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-
-            supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -67,12 +53,11 @@ class PipelineBase(ABC):
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.input_feature_names = {}
         self.results = {}
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self._validate_problem_types(self.supported_problem_types)
+        self._validate_estimator_problem_type()
 
     @classproperty
     def name(cls):
@@ -93,34 +78,26 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        def _generate_summary(component_graph):
-            component_graph = copy.copy(component_graph)
-            component_graph[-1] = handle_component(component_graph[-1])
-            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-            if estimator is not None:
-                summary = "{}".format(estimator.name)
-            else:
-                summary = "Pipeline"
-            for index, component in enumerate(component_graph[:-1]):
-                component = handle_component(component)
-                if index == 0:
-                    summary += " w/ {}".format(component.name)
-                else:
-                    summary += " + {}".format(component.name)
+        component_graph = [handle_component(component) for component in copy.copy(cls.component_graph)]
+        if len(component_graph) == 0:
+            return "Empty Pipeline"
+        summary = "Pipeline"
+        component_graph[-1] = component_graph[-1]
+
+        if isinstance(component_graph[-1], Estimator):
+            estimator = component_graph.pop()
+            summary = estimator.name
+        if len(component_graph) == 0:
             return summary
+        component_names = [component.name for component in component_graph]
+        return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
-        return _generate_summary(cls.component_graph)
-
-    def _validate_problem_types(self, problem_types):
-        """Validates provided `problem_types` against the estimator in `self.component_graph`
-
-        Arguments:
-            problem_types (list): list of ProblemTypes
-        """
+    def _validate_estimator_problem_type(self):
+        """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
         estimator_problem_types = self.estimator.supported_problem_types
-        for problem_type in self.supported_problem_types:
-            if problem_type not in estimator_problem_types:
-                raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
+        if self.problem_type not in estimator_problem_types:
+            raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
+                             .format(self.problem_type, estimator_problem_types))
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
@@ -168,7 +145,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
+        logger.log("Problem Type: {}".format(self.problem_type))
         logger.log("Model Family: {}".format(str(self.model_family)))
 
         if self.estimator.name in self.input_feature_names:
@@ -259,10 +236,7 @@ class PipelineBase(ABC):
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
-                y_predictions = y_predicted
-
-            scores.update({objective.name: objective.score(y_predictions, y, X)})
-
+                scores.update({objective.name: objective.score(y, y_predicted, X)})
         return scores
 
     @classproperty
@@ -366,7 +340,7 @@ class PipelineBase(ABC):
 
         return graph
 
-    def feature_importance_graph(self, show_all_features=False):
+    def graph_feature_importance(self, show_all_features=False):
         """Generate a bar graph of the pipeline's feature importances
 
         Arguments:

@@ -8,9 +8,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationPipeline(ClassificationPipeline):
-
+    """Pipeline subclass for all binary classification pipelines."""
     threshold = None
-    supported_problem_types = ['binary']
+    problem_type = ProblemTypes.BINARY
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -27,7 +27,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective)
-            if objective.problem_type != ProblemTypes.BINARY:
+            if objective.problem_type != self.problem_type:
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:
@@ -65,11 +65,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
                     y_predicted_proba = y_predicted_proba[:, 1]
-                y_predictions = y_predicted_proba
+                scores.update({objective.name: objective.score(y, y_predicted_proba, X=X)})
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X, objective)
-                y_predictions = y_predicted
-            scores.update({objective.name: objective.score(y_predictions, y, X=X)})
-
+                scores.update({objective.name: objective.score(y, y_predicted, X=X)})
         return scores

@@ -92,13 +92,54 @@ class AutoBase:
             self.search_spaces[p.name] = [s[0] for s in space]
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
-        self.plot_metrics = []
         try:
             self.plot = PipelineSearchPlots(self)
 
         except ImportError:
             logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
+
+    def __str__(self):
+        _list_separator = '\n\t'
+
+        def _print_list(in_attr):
+            return _list_separator + \
+                _list_separator.join(obj.name for obj in in_attr)
+
+        def _get_funct_name(function):
+            if callable(function):
+                return function.__name__
+            else:
+                return None
+
+        search_desc = (
+            f"{self.problem_type} Search\n\n"
+            f"Parameters: \n{'='*20}\n"
+            f"Objective: {self.objective.name}\n"
+            f"Max Time: {self.max_time}\n"
+            f"Max Pipelines: {self.max_pipelines}\n"
+            f"Possible Pipelines: {_print_list(self.possible_pipelines)}\n"
+            f"Patience: {self.patience}\n"
+            f"Tolerance: {self.tolerance}\n"
+            f"Cross Validation: {self.cv}\n"
+            f"Tuner: {type(list(self.tuners.values())[0]).__name__}\n"
+            f"Detect Label Leakage: {self.detect_label_leakage}\n"
+            f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
+            f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
+            f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
+            f"Random State: {self.random_state}\n"
+            f"n_jobs: {self.n_jobs}\n"
+            f"Verbose: {self.verbose}\n"
+            f"Optimize Thresholds: {self.optimize_thresholds}\n"
+        )
+
+        try:
+            rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
+            rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
+        except KeyError:
+            rankings_desc = ""
+
+        return search_desc + rankings_desc
 
     def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
@@ -277,7 +318,6 @@ class AutoBase:
 
         start = time.time()
         cv_data = []
-        plot_data = []
 
         for train, test in self.cv.split(X, y):
             if isinstance(X, pd.DataFrame):
@@ -325,8 +365,7 @@ class AutoBase:
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=training_time,
-                         cv_data=cv_data,
-                         plot_data=plot_data)
+                         cv_data=cv_data)
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
@@ -342,7 +381,7 @@ class AutoBase:
         proposal = zip(space, values)
         return list(proposal)
 
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, plot_data):
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
@@ -368,8 +407,7 @@ class AutoBase:
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "cv_data": cv_data,
-            "plot_data": plot_data
+            "cv_data": cv_data
         }
 
         self.results['search_order'].append(pipeline_id)
@@ -416,8 +454,11 @@ class AutoBase:
 
         pipeline.describe()
         logger.log_subtitle("Training")
-        # Ideally, we want this information available on pipeline instead
-        logger.log("Training for {} problems.".format(self.problem_type))
+        logger.log("Training for {} problems.".format(pipeline.problem_type))
+
+        if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+            logger.log("Objective to optimize binary classification pipeline thresholds for: {}".format(self.objective))
+
         logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         logger.log_subtitle("Cross Validation", underline="-")
 
@@ -449,7 +490,12 @@ class AutoBase:
 
     @property
     def rankings(self):
-        """Returns the rankings of the models searched"""
+        """Returns a pandas.DataFrame with scoring results from the highest-scoring set of parameters used with each pipeline."""
+        return self.full_rankings.drop_duplicates(subset="pipeline_name", keep="first")
+
+    @property
+    def full_rankings(self):
+        """Returns a pandas.DataFrame with scoring results from all pipelines searched"""
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
