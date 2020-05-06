@@ -138,9 +138,9 @@ Transformers
 ~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
-    :template: estimator_class.rst
+    :template: transformer_class.rst
     :nosignatures:
-    
+
     OneHotEncoder
     SimpleImputer
     StandardScaler
