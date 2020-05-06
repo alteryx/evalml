@@ -1,6 +1,3 @@
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
-from skopt.space import Integer
-
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
@@ -13,12 +10,11 @@ class RandomClassifier(Estimator):
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self):
+    def __init__(self, random_state=0):
         parameters = {}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
-
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -53,7 +49,6 @@ class RandomClassifier(Estimator):
             pd.DataFrame : probability estimates
         """
         pass
-
 
     @property
     def feature_importances(self):

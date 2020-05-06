@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added "baseline" models for a given dataset :pr:`746`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`

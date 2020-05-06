@@ -1,5 +1,5 @@
-from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
-from skopt.space import Integer
+import numpy as np
+import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -13,12 +13,11 @@ class ZeroRClassifier(Estimator):
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self):
+    def __init__(self, random_state=0):
         parameters = {}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
-
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -30,8 +29,16 @@ class ZeroRClassifier(Estimator):
         Returns:
             self
         """
-        pass
+        if y is None:
+            return ValueError("Cannot fit ZeroR classifier if y is None")
 
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        self.mode = y.mode()[0]
+        self.num_unique = len(y.value_counts())
+        self.num_features = len(X)
+        return self
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -42,8 +49,11 @@ class ZeroRClassifier(Estimator):
         Returns:
             pd.Series : estimated labels
         """
-        pass
-
+        try:
+            mode = self.mode
+        except AttributeError:
+            raise RuntimeError("You must fit ZeroR classifier before calling predict!")
+        return pd.Series([mode] * len(X))
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -52,10 +62,14 @@ class ZeroRClassifier(Estimator):
             X (pd.DataFrame) : features
 
         Returns:
-            pd.DataFrame : probability estimates
+            np.array : probability estimates
         """
-        pass
-
+        try:
+            mode = self.mode
+            num_unique = self.num_unique
+        except AttributeError:
+            raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
+        return np.array([[0 if i == mode else 1.0 for i in range(num_unique)]] * len(X))
 
     @property
     def feature_importances(self):
@@ -64,7 +78,9 @@ class ZeroRClassifier(Estimator):
         Returns:
             list(float) : importance associated with each feature
 
-
-            based on %?
         """
-        pass
+        try:
+            num_features = self.num_features
+        except AttributeError:
+            raise RuntimeError("You must fit ZeroR classifier before gettong feature_importances!")
+        return [0.0] * num_features
