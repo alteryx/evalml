@@ -22,15 +22,20 @@ Demo Datasets
 Preprocessing
 =============
 
+Utilities to preprocess data before using evalml.
+ 
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
+    drop_nan_target_rows
+    label_distribution
     load_data
+    number_of_features
     split_data
 
 
-.. currentmodule:: evalml
+.. currentmodule:: evalml.automl
 
 AutoML
 ======
@@ -44,71 +49,26 @@ AutoML
     AutoRegressionSearch
 
 
-.. currentmodule:: evalml.model_family
-
-Model Family
-============
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ModelFamily
-
-
-.. currentmodule:: evalml.pipelines.components
-
-Components
-==========
-
-Transformers
-~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
-    OneHotEncoder
-    RFRegressorSelectFromModel
-    RFClassifierSelectFromModel
-    SimpleImputer
-    StandardScaler
-
-Estimators
-~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: estimator_class.rst
-    :nosignatures:
-
-    LogisticRegressionClassifier
-    RandomForestClassifier
-    XGBoostClassifier
-    LinearRegressor
-    RandomForestRegressor
-
-
 .. currentmodule:: evalml.pipelines
 
 Pipelines
 =========
 
-Pipelines
-~~~~~~~~~
+Pipeline Base Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class.rst
     :nosignatures:
 
     PipelineBase
+    ClassificationPipeline
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
+    RegressionPipeline
 
-Classification
-~~~~~~~~~~~~~~
+Classification Pipelines
+~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: pipeline_class.rst
@@ -123,9 +83,8 @@ Classification
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
 
-
-Regression
-~~~~~~~~~~
+Regression Pipelines
+~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -135,6 +94,7 @@ Regression
     RFRegressionPipeline
     CatBoostRegressionPipeline
     LinearRegressionPipeline
+    XGBoostRegressionPipeline
 
 
 Pipeline Utils
@@ -143,28 +103,137 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
+    all_pipelines
     get_pipelines
     list_model_families
 
 
-Plotting
-~~~~~~~~
+Pipeline Plot Utils
+~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    roc_curve
+    confusion_matrix
+    normalize_confusion_matrix
+
+
+.. currentmodule:: evalml.pipelines.components
+
+Components
+==========
+
+Transformers
+~~~~~~~~~~~~
+
+Encoders
+--------
+
+Encoders convert categorical or non-numerical features into numerical features.
 
 .. autosummary::
-   :toctree: generated
-   :template: accessor_callable.rst
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
 
-   PipelineBase.graph
-   PipelineBase.feature_importance_graph
+    OneHotEncoder
 
+Imputers
+--------
+
+Imputers fill in missing data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    SimpleImputer
+
+
+Scalers
+-------
+
+Scalers transform and standardize the range of data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    StandardScaler
+
+
+Feature Selectors
+-----------------
+
+Feature selectors select a subset of relevant features for the model.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
+    RFRegressorSelectFromModel
+    RFClassifierSelectFromModel
+
+
+Estimators
+~~~~~~~~~~
+
+Classifiers
+-----------
+
+Classifiers are models which can be trained to predict a class label from input data.
+
+.. autosummary::
+    :toctree: generated
+    :template: estimator_class.rst
+    :nosignatures:
+
+    CatBoostClassifier
+    RandomForestClassifier
+    LogisticRegressionClassifier
+    XGBoostClassifier
+
+Regressors
+-----------
+
+Regressors are models which can be trained to predict a target value from input data.
+
+.. autosummary::
+    :toctree: generated
+    :template: estimator_class.rst
+    :nosignatures:
+
+    CatBoostRegressor
+    LinearRegressor
+    RandomForestRegressor
+    XGBoostRegressor
 
 .. currentmodule:: evalml.objectives
 
 Objective Functions
 ====================
 
-Domain Specific
-~~~~~~~~~~~~~~~
+Objective Base Classes
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ObjectiveBase
+    BinaryClassificationObjective
+    MulticlassClassificationObjective
+    RegressionObjective
+
+
+
+Domain-Specific Objectives
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -175,8 +244,8 @@ Domain Specific
     LeadScoring
 
 
-Classification
-~~~~~~~~~~~~~~
+Classification Objectives
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -184,11 +253,13 @@ Classification
     :nosignatures:
 
     AccuracyBinary
+    AccuracyMulticlass
     AUC
     AUCMacro
     AUCMicro
     AUCWeighted
-    BalancedAccuracy
+    BalancedAccuracyBinary
+    BalancedAccuracyMulticlass
     F1
     F1Micro
     F1Macro
@@ -207,8 +278,8 @@ Classification
     RecallWeighted
 
 
-Regression
-~~~~~~~~~~
+Regression Objectives
+~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
@@ -218,26 +289,12 @@ Regression
     R2
     MAE
     MSE
-    MSLE
     MedianAE
     MaxError
     ExpVariance
 
 
-Plot Metrics
-~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ROC
-    ConfusionMatrix
-
-
 .. currentmodule:: evalml.problem_types
-
 
 Problem Types
 =============
@@ -256,6 +313,19 @@ Problem Types
     handle_problem_types
 
 
+.. currentmodule:: evalml.model_family
+
+Model Family
+============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ModelFamily
+
+
 .. currentmodule:: evalml.tuners
 
 Tuners
@@ -270,6 +340,52 @@ Tuners
     SKOptTuner
     GridSearchTuner
     RandomSearchTuner
+
+
+.. currentmodule:: evalml.data_checks
+
+Data Checks
+===========
+
+Data Check Base Classes
+~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: data_check_class.rst
+    :nosignatures:
+
+    DataCheck
+
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataChecks
+
+
+Data Check Messages
+~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: data_check_message.rst
+    :nosignatures:
+
+    DataCheckMessage
+    DataCheckError
+    DataCheckWarning
+
+
+Data Check Message Types
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataCheckMessageType
 
 
 .. currentmodule:: evalml.guardrails
@@ -300,5 +416,8 @@ Utils
     :toctree: generated
     :nosignatures:
 
+    import_or_raise
     convert_to_seconds
-    normalize_confusion_matrix
+    get_random_state
+    get_random_seed
+

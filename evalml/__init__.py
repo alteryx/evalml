@@ -19,6 +19,7 @@ import evalml.preprocessing
 import evalml.problem_types
 import evalml.utils
 import evalml.guardrails
+import evalml.data_checks
 
 from evalml.pipelines import list_model_families
 from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
@@ -28,4 +29,4 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'

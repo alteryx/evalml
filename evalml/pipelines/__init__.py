@@ -10,6 +10,7 @@ from .components import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
+    XGBoostRegressor,
     FeatureSelector,
     CategoricalEncoder,
     RFClassifierSelectFromModel,
@@ -19,6 +20,7 @@ from .components import (
 )
 
 from .pipeline_base import PipelineBase
+from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .regression_pipeline import RegressionPipeline
@@ -37,10 +39,16 @@ from .classification import (
 from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,
-    CatBoostRegressionPipeline
+    CatBoostRegressionPipeline,
+    XGBoostRegressionPipeline
 )
 from .utils import (
     all_pipelines,
     get_pipelines,
     list_model_families
+)
+from .plot_utils import (
+    roc_curve,
+    confusion_matrix,
+    normalize_confusion_matrix
 )

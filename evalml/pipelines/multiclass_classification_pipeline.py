@@ -4,10 +4,12 @@ import pandas as pd
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
+from evalml.problem_types import ProblemTypes
 
 
 class MulticlassClassificationPipeline(ClassificationPipeline):
-    supported_problem_types = ['multiclass']
+    """Pipeline subclass for all multiclass classification pipelines."""
+    problem_type = ProblemTypes.MULTICLASS
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
@@ -35,9 +37,9 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
             if objective.score_needs_proba:
                 if y_predicted_proba is None:
                     y_predicted_proba = self.predict_proba(X)
-                scores.update({objective.name: objective.score(y_predicted_proba, y, X=X)})
+                scores.update({objective.name: objective.score(y, y_predicted_proba, X=X)})
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
-                scores.update({objective.name: objective.score(y_predicted, y, X=X)})
+                scores.update({objective.name: objective.score(y, y_predicted, X=X)})
         return scores

@@ -1,4 +1,5 @@
 import copy
+import os
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -7,12 +8,15 @@ import cloudpickle
 import pandas as pd
 
 from .components import Estimator, handle_component
-from .graphs import make_feature_importance_graph, make_pipeline_graph
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
-from evalml.problem_types import handle_problem_types
-from evalml.utils import Logger, classproperty, get_random_state
+from evalml.utils import (
+    Logger,
+    classproperty,
+    get_random_state,
+    import_or_raise
+)
 
 logger = Logger()
 
@@ -29,28 +33,16 @@ class PipelineBase(ABC):
         Returns:
             list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
         """
-        return NotImplementedError("This pipeline must have `component_graph` as a class variable.")
-
-    @property
-    @classmethod
-    @abstractmethod
-    def supported_problem_types(cls):
-        """Returns a list of ProblemTypes that this pipeline supports
-
-        Returns:
-            list(str/ProblemType): list of ProblemType objects or strings that this pipeline supports
-        """
-        return NotImplementedError("This pipeline must have `supported_problem_types` as a class variable.")
 
     custom_hyperparameters = None
+    custom_name = None
+    problem_type = None
 
     def __init__(self, parameters, random_state=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
-
-            supported_problem_types (list): List of problem types for this pipeline. Accepts strings or ProbemType enum in the list.
 
         Arguments:
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -61,25 +53,24 @@ class PipelineBase(ABC):
         self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
         self.input_feature_names = {}
         self.results = {}
-        self.supported_problem_types = [handle_problem_types(problem_type) for problem_type in self.supported_problem_types]
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
-        self._validate_problem_types(self.supported_problem_types)
+        self._validate_estimator_problem_type()
 
     @classproperty
     def name(cls):
         """Returns a name describing the pipeline.
-        By default, this will take the class name and add a space between each capitalized word. If the pipeline has a _name attribute, this will be returned instead.
+        By default, this will take the class name and add a space between each capitalized word (class name should be in Pascal Case). If the pipeline has a custom_name attribute, this will be returned instead.
         """
-        try:
-            name = cls._name
-        except AttributeError:
+        if cls.custom_name:
+            name = cls.custom_name
+        else:
             rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
             name = rex.sub(' ', cls.__name__)
             if name == cls.__name__:
-                raise IllFormattedClassNameError("Pipeline Class {} needs to follow pascall case standards or `_name` must be defined.".format(cls.__name__))
+                raise IllFormattedClassNameError("Pipeline Class {} needs to follow Pascal Case standards or `custom_name` must be defined.".format(cls.__name__))
         return name
 
     @classproperty
@@ -87,34 +78,26 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        def _generate_summary(component_graph):
-            component_graph = copy.copy(component_graph)
-            component_graph[-1] = handle_component(component_graph[-1])
-            estimator = component_graph[-1] if isinstance(component_graph[-1], Estimator) else None
-            if estimator is not None:
-                summary = "{}".format(estimator.name)
-            else:
-                summary = "Pipeline"
-            for index, component in enumerate(component_graph[:-1]):
-                component = handle_component(component)
-                if index == 0:
-                    summary += " w/ {}".format(component.name)
-                else:
-                    summary += " + {}".format(component.name)
+        component_graph = [handle_component(component) for component in copy.copy(cls.component_graph)]
+        if len(component_graph) == 0:
+            return "Empty Pipeline"
+        summary = "Pipeline"
+        component_graph[-1] = component_graph[-1]
+
+        if isinstance(component_graph[-1], Estimator):
+            estimator = component_graph.pop()
+            summary = estimator.name
+        if len(component_graph) == 0:
             return summary
+        component_names = [component.name for component in component_graph]
+        return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
-        return _generate_summary(cls.component_graph)
-
-    def _validate_problem_types(self, problem_types):
-        """Validates provided `problem_types` against the estimator in `self.component_graph`
-
-        Arguments:
-            problem_types (list): list of ProblemTypes
-        """
+    def _validate_estimator_problem_type(self):
+        """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
         estimator_problem_types = self.estimator.supported_problem_types
-        for problem_type in self.supported_problem_types:
-            if problem_type not in estimator_problem_types:
-                raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}.".format(problem_type, estimator_problem_types))
+        if self.problem_type not in estimator_problem_types:
+            raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
+                             .format(self.problem_type, estimator_problem_types))
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
@@ -162,7 +145,7 @@ class PipelineBase(ABC):
             dict: dictionary of all component parameters if return_dict is True, else None
         """
         logger.log_title(self.name)
-        logger.log("Supported Problem Types: {}".format(', '.join([str(problem_type) for problem_type in self.supported_problem_types])))
+        logger.log("Problem Type: {}".format(self.problem_type))
         logger.log("Model Family: {}".format(str(self.model_family)))
 
         if self.estimator.name in self.input_feature_names:
@@ -253,22 +236,8 @@ class PipelineBase(ABC):
             else:
                 if y_predicted is None:
                     y_predicted = self.predict(X)
-                y_predictions = y_predicted
-
-            scores.update({objective.name: objective.score(y_predictions, y, X)})
-
+                scores.update({objective.name: objective.score(y, y_predicted, X)})
         return scores
-
-    def graph(self, filepath=None):
-        """Generate an image representing the pipeline graph
-
-        Arguments:
-            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
-
-        Returns:
-            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
-        """
-        return make_pipeline_graph(self.component_graph, self.name, filepath=filepath)
 
     @classproperty
     def model_family(cls):
@@ -307,7 +276,71 @@ class PipelineBase(ABC):
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
 
-    def feature_importance_graph(self, show_all_features=False):
+    def graph(self, filepath=None):
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
+
+        # Try rendering a dummy graph to see if a working backend is installed
+        try:
+            graphviz.Digraph().pipe()
+        except graphviz.backend.ExecutableNotFound:
+            raise RuntimeError(
+                "To graph entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz\n"
+            )
+
+        graph_format = None
+        path_and_name = None
+        if filepath:
+            # Explicitly cast to str in case a Path object was passed in
+            filepath = str(filepath)
+            try:
+                f = open(filepath, 'w')
+                f.close()
+            except (IOError, FileNotFoundError):
+                raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+            path_and_name, graph_format = os.path.splitext(filepath)
+            graph_format = graph_format[1:].lower()  # ignore the dot
+            supported_filetypes = graphviz.backend.FORMATS
+            if graph_format not in supported_filetypes:
+                raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
+                                  "following: {}").format(graph_format, supported_filetypes))
+
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(name=self.name, format=graph_format,
+                                 graph_attr={'splines': 'ortho'})
+        graph.attr(rankdir='LR')
+
+        # Draw components
+        for component in self.component_graph:
+            label = '%s\l' % (component.name)  # noqa: W605
+            if len(component.parameters) > 0:
+                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
+                                        else key + ' : ' + str(val)
+                                        for key, val in component.parameters.items()])  # noqa: W605
+                label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
+            graph.node(component.name, shape='record', label=label)
+
+        # Draw edges
+        for i in range(len(self.component_graph[:-1])):
+            graph.edge(self.component_graph[i].name, self.component_graph[i + 1].name)
+
+        if filepath:
+            graph.render(path_and_name, cleanup=True)
+
+        return graph
+
+    def graph_feature_importance(self, show_all_features=False):
         """Generate a bar graph of the pipeline's feature importances
 
         Arguments:
@@ -316,7 +349,38 @@ class PipelineBase(ABC):
         Returns:
             plotly.Figure, a bar graph showing features and their importances
         """
-        return make_feature_importance_graph(self.feature_importances, show_all_features=show_all_features)
+        go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+        feat_imp = self.feature_importances
+        feat_imp['importance'] = abs(feat_imp['importance'])
+
+        if not show_all_features:
+            # Remove features with zero importance
+            feat_imp = feat_imp[feat_imp['importance'] != 0]
+
+        # List is reversed to go from ascending order to descending order
+        feat_imp = feat_imp.iloc[::-1]
+
+        title = 'Feature Importances'
+        subtitle = 'May display fewer features due to feature selection'
+        data = [go.Bar(
+            x=feat_imp['importance'],
+            y=feat_imp['feature'],
+            orientation='h'
+        )]
+
+        layout = {
+            'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+            'height': 800,
+            'xaxis_title': 'Feature Importance',
+            'yaxis_title': 'Feature',
+            'yaxis': {
+                'type': 'category'
+            }
+        }
+
+        fig = go.Figure(data=data, layout=layout)
+        return fig
 
     def save(self, file_path):
         """Saves pipeline at file path

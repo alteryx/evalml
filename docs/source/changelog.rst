@@ -5,14 +5,38 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added basic correlation data checks :pr:`141`
+    * Fixes
+    * Changes
+        * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
+        * Remove `pass` for abstract methods for codecov :pr:`730`
+        * Added __str__ for AutoSearch object :pr:`675`
+    * Documentation Changes
+        * Add instructions to freeze `master` on `release.md` :pr:`726`
+        * Update release instructions with more details :pr:`727` :pr:`733`
+        * Add objective base classes to API reference :pr:`736`
+    * Testing Changes
+        * Delete codecov yml, use codecov.io's default :pr:`732`
+
+
+**v0.9.0 Apr. 27, 2020**
+    * Enhancements
         * Added accuracy as an standard objective :pr:`624`
         * Added verbose parameter to load_fraud :pr:`560`
-        * Added Balanced Accuracy metric :pr:`612`
+        * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
+        * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
+        * Added Accuracy metric for multiclass :pr:`672`
+        * Added objective name in `AutoBase.describe_pipeline` :pr:`686`
+        * Added `DataCheck` and `DataChecks`, `Message` classes and relevant subclasses :pr:`739`
     * Fixes
         * Removed direct access to `cls.component_graph` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
-        * Remove circular dependencies from `Makefile` :pr:`637` 
+        * Remove circular dependencies from `Makefile` :pr:`637`
         * Add error case for `normalize_confusion_matrix()` :pr:`640`
+        * Fixed XGBoostClassifier and XGBoostRegressor bug with feature names that contain [, ], or < :pr:`659`
+        * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
+        * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
+        * Removed zero division warning for F1/precision/recall metrics :pr:`671`
+        * Fixed `summary` for pipelines without estimators :pr:`707`
     * Changes
         * Updated default objective for binary/multiseries classification to log loss :pr:`613`
         * Created classification and regression pipeline subclasses and removed objective as an attribute of pipeline classes :pr:`405`
@@ -20,7 +44,22 @@ Changelog
         * Created binary and multiclass objective subclasses :pr:`504`
         * Updated objectives API :pr:`445`
         * Removed call to `get_plot_data` from AutoML :pr:`615`
+        * Set `raise_error` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
+        * Changed one-hot encoder to return uint8 dtypes instead of ints :pr:`653`
+        * Pipeline `_name` field changed to `custom_name` :pr:`650`
+        * Removed `graphs.py` and moved methods into `PipelineBase` :pr:`657`, :pr:`665`
+        * Remove s3fs as a dev dependency :pr:`664`
+        * Changed requirements-parser to be a core dependency :pr:`673`
+        * Replace `supported_problem_types` field on pipelines with `problem_type` attribute on base classes :pr:`678`
+        * Changed AutoML to only show best results for a given pipeline template in `rankings`, added `full_rankings` property to show all :pr:`682`
+        * Update `ModelFamily` values: don't list xgboost/catboost as classifiers now that we have regression pipelines for them :pr:`677`
+        * Changed AutoML's `describe_pipeline` to get problem type from pipeline instead :pr:`685`
+        * Standardize `import_or_raise` error messages :pr:`683`
+        * Updated argument order of objectives to align with sklearn's :pr:`698`
+        * Renamed `pipeline.feature_importance_graph` to `pipeline.graph_feature_importances` :pr:`700`
+        * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`704`
+        * Renamed `MultiClassificationObjective` to `MulticlassClassificationObjective`, to align with pipeline naming scheme :pr:`715`
     * Documentation Changes
         * Fixed some sphinx warnings :pr:`593`
         * Fixed docstring for AutoClassificationSearch with correct command :pr:`599`
@@ -28,10 +67,28 @@ Changelog
         * Clean up objectives API documentation :pr:`605`
         * Fixed function on Exploring search results page :pr:`604`
         * Update release process doc :pr:`567`
+        * AutoClassificationSearch and AutoRegressionSearch show inherited methods in API reference :pr:`651`
+        * Fixed improperly formatted code in breaking changes for changelog :pr:`655`
+        * Added configuration to treat Sphinx warnings as errors :pr:`660`
+        * Removed separate plotting section for pipelines in API reference :pr:`657`, :pr:`665`
+        * Have leads example notebook load S3 files using https, so we can delete s3fs dev dependency :pr:`664`
+        * Categorized components in API reference and added descriptions for each category :pr:`663`
+        * Fixed Sphinx warnings about BalancedAccuracy objective :pr:`669`
+        * Updated API reference to include missing components and clean up pipeline docstrings :pr:`689`
+        * Reorganize API ref, and clarify pipeline sub-titles :pr:`688`
+        * Add and update preprocessing utils in API reference :pr:`687`
+        * Added inheritance diagrams to API reference :pr:`695`
+        * Documented which default objective AutoML optimizes for :pr:`699`
+        * Create seperate install page :pr:`701`
+        * Include more utils in API ref, like `import_or_raise` :pr:`704`
+        * Add more color to pipeline documentation :pr:`705`
     * Testing Changes
         * Matched install commands of `check_latest_dependencies` test and it's GitHub action :pr:`578`
         * Added Github app to auto assign PR author as assignee :pr:`477`
         * Removed unneeded conda installation of xgboost in windows checkin tests :pr:`618`
+        * Update graph tests to always use tmpfile dir :pr:`649`
+        * Changelog checkin test workaround for release PRs: If 'future release' section is empty of PR refs, pass check :pr:`658`
+        * Add changelog checkin test exception for `dep-update` branch :pr:`723`
 
 .. warning::
 
@@ -41,7 +98,13 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ROC and ConfusionMatrix plot methods via Auto(*).plot will currently fail due to  :pr:`615`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` have been removed by :pr:`615` and are replaced by ``roc_curve`` and ``confusion_matrix`` in `evamlm.pipelines.plot_utils`` in :pr:`704`
+    * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`704`
+    * Pipelines ``_name`` field changed to ``custom_name``
+    * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
+    * Updated argument order of objectives' `objective_function` to align with sklearn :pr:`698`
+    * `pipeline.feature_importance_graph` has been renamed to `pipeline.graph_feature_importances` in :pr:`700`
+    * Removed unsupported ``MSLE`` objective :pr:`704`
 
 
 **v0.8.0 Apr. 1, 2020**
@@ -68,6 +131,7 @@ Changelog
         * Add code style and github issue guides :pr:`463` :pr:`512`
         * Updated API reference for to surface class variables for pipelines and components :pr:`537`
         * Fixed README documentation link :pr:`535`
+        * Unhid PR references in changelog :pr:`656`
     * Testing Changes
         * Added automated dependency check PR :pr:`482`, :pr:`505`
         * Updated automated dependency check comment :pr:`497`
@@ -80,13 +144,13 @@ Changelog
 
     **Breaking Changes**
 
-    * `AutoClassificationSearch` and `AutoRegressionSearch`'s `model_types` parameter has been refactored into `allowed_model_families`
-    * `ModelTypes` enum has been changed to `ModelFamily`
-    * Components and Pipelines now have a `model_family` field instead of `model_type`
-    * `get_pipelines` utility function now accepts `model_families` as an argument instead of `model_types`
-    * `PipelineBase.name` no longer returns structure of pipeline and has been replaced by `PipelineBase.summary`
-    * `PipelineBase.problem_types` and `Estimator.problem_types` has been renamed to `supported_problem_types`
-    * `pipelines/utils.save_pipeline` and `pipelines/utils.load_pipeline` moved to `PipelineBase.save` and `PipelineBase.load`
+    * ``AutoClassificationSearch`` and ``AutoRegressionSearch``'s ``model_types`` parameter has been refactored into ``allowed_model_families``
+    * ``ModelTypes`` enum has been changed to ``ModelFamily``
+    * Components and Pipelines now have a ``model_family`` field instead of ``model_type``
+    * ``get_pipelines`` utility function now accepts ``model_families`` as an argument instead of ``model_types``
+    * ``PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ``PipelineBase.summary``
+    * ``PipelineBase.problem_types`` and ``Estimator.problem_types`` has been renamed to ``supported_problem_types``
+    * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ``PipelineBase.save`` and ``PipelineBase.load``
 
 
 **v0.7.0 Mar. 9, 2020**
@@ -166,8 +230,8 @@ Changelog
     * The ``fit()`` method for ``AutoClassifier`` and ``AutoRegressor`` has been renamed to ``search()``.
     * ``AutoClassifier`` has been renamed to ``AutoClassificationSearch``
     * ``AutoRegressor`` has been renamed to ``AutoRegressionSearch``
-    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas,``search_order`` returns a list of the search order in terms of pipeline id.
-    * Pipelines now require an estimator as the last component in `component_list`. Slicing pipelines now throws an NotImplementedError to avoid returning Pipelines without an estimator.
+    * ``AutoClassificationSearch.results`` and ``AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas, ``search_order`` returns a list of the search order in terms of ``pipeline_id``.
+    * Pipelines now require an estimator as the last component in ``component_list``. Slicing pipelines now throws an ``NotImplementedError`` to avoid returning pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements

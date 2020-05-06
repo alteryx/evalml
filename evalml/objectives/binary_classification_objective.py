@@ -7,12 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationObjective(ObjectiveBase):
-    """
-    Base class for all binary classification objectives.
+    """Base class for all binary classification objectives.
 
-    problem_type (ProblemTypes): Specifies the type of problem this objective is defined for (binary classification)
+    problem_type (ProblemTypes): Type of problem this objective is. Set to ProblemTypes.BINARY.
     can_optimize_threshold (bool): Determines if threshold used by objective can be optimized or not.
     """
+
     problem_type = ProblemTypes.BINARY
 
     @property
@@ -37,8 +37,8 @@ class BinaryClassificationObjective(ObjectiveBase):
             raise RuntimeError("Trying to optimize objective that can't be optimized!")
 
         def cost(threshold):
-            predictions = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
-            cost = self.objective_function(predictions, y_true, X=X)
+            y_predicted = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+            cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
         optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})

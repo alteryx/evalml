@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import graphviz
 import numpy as np
@@ -6,14 +7,13 @@ import pandas as pd
 import pytest
 from skopt.space import Real
 
-from evalml.pipelines import PipelineBase
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 @pytest.fixture
 def test_pipeline():
-    class TestPipeline(PipelineBase):
+    class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        supported_problem_types = ['binary', 'multiclass']
 
         hyperparameters = {
             "penalty": ["l2"],
@@ -35,6 +35,14 @@ def test_pipeline():
     return TestPipeline(parameters={})
 
 
+@patch('graphviz.Digraph.pipe')
+def test_backend(mock_func, test_pipeline):
+    mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+    clf = test_pipeline
+    with pytest.raises(RuntimeError):
+        clf.graph()
+
+
 def test_returns_digraph_object(test_pipeline):
     clf = test_pipeline
     graph = clf.graph()
@@ -48,15 +56,15 @@ def test_saving_png_file(tmpdir, test_pipeline):
     assert os.path.isfile(filepath)
 
 
-def test_missing_file_extension(test_pipeline):
-    filepath = "test1"
+def test_missing_file_extension(tmpdir, test_pipeline):
+    filepath = os.path.join(str(tmpdir), 'test1')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
-def test_invalid_format(test_pipeline):
-    filepath = "test1.xzy"
+def test_invalid_format(tmpdir, test_pipeline):
+    filepath = os.path.join(str(tmpdir), 'test1.xyz')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
@@ -64,9 +72,11 @@ def test_invalid_format(test_pipeline):
 
 def test_invalid_path(tmpdir, test_pipeline):
     filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
+    assert not os.path.exists(filepath)
     pipeline = test_pipeline
-    with pytest.raises(ValueError, match="Specified parent directory does not exist"):
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
         pipeline.graph(filepath=filepath)
+    assert not os.path.exists(filepath)
 
 
 def test_feature_importance_plot(X_y, test_pipeline):
@@ -74,7 +84,7 @@ def test_feature_importance_plot(X_y, test_pipeline):
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
-    assert isinstance(clf.feature_importance_graph(), go.Figure)
+    assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
 def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
@@ -82,12 +92,12 @@ def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
-    figure = clf.feature_importance_graph()
+    figure = clf.graph_feature_importance()
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
     assert (np.all(data['x']))
 
-    figure = clf.feature_importance_graph(show_all_features=True)
+    figure = clf.graph_feature_importance(show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))

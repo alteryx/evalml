@@ -6,7 +6,9 @@ from evalml.problem_types import handle_problem_types
 
 OPTIONS = {
     "accuracy_binary": standard_metrics.AccuracyBinary(),
-    "balanced_accuracy_binary": standard_metrics.BalancedAccuracy(),
+    "accuracy_multi": standard_metrics.AccuracyMulticlass(),
+    "balanced_accuracy_binary": standard_metrics.BalancedAccuracyBinary(),
+    "balanced_accuracy_multi": standard_metrics.BalancedAccuracyMulticlass(),
     "f1": standard_metrics.F1(),
     'f1_micro': standard_metrics.F1Micro(),
     'f1_macro': standard_metrics.F1Macro(),
@@ -30,7 +32,6 @@ OPTIONS = {
     "r2": standard_metrics.R2(),
     "mae": standard_metrics.MAE(),
     "mse": standard_metrics.MSE(),
-    # "msle": standard_metrics.MSLE(), removed due to not taking in positive Y
     "median_ae": standard_metrics.MedianAE(),
     "max_error": standard_metrics.MaxError(),
     "exp_var": standard_metrics.ExpVariance()

@@ -6,6 +6,7 @@ from evalml.pipelines import PipelineBase
 
 
 class ClassificationPipeline(PipelineBase):
+    """Pipeline subclass for all classification pipelines."""
 
     def predict_proba(self, X):
         """Make probability estimates for labels.

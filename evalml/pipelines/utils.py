@@ -13,7 +13,8 @@ from .classification import (
 from .regression import (
     CatBoostRegressionPipeline,
     LinearRegressionPipeline,
-    RFRegressionPipeline
+    RFRegressionPipeline,
+    XGBoostRegressionPipeline
 )
 
 from evalml.model_family import handle_model_family
@@ -30,7 +31,8 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   XGBoostMulticlassPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
-                  CatBoostRegressionPipeline]
+                  CatBoostRegressionPipeline,
+                  XGBoostRegressionPipeline]
 
 
 def all_pipelines():
@@ -45,6 +47,7 @@ def all_pipelines():
     except ImportError:
         pipelines.remove(XGBoostBinaryPipeline)
         pipelines.remove(XGBoostMulticlassPipeline)
+        pipelines.remove(XGBoostRegressionPipeline)
     try:
         import_or_raise("catboost", error_msg="Catboost not installed.")
     except ImportError:
@@ -67,15 +70,13 @@ def get_pipelines(problem_type, model_families=None):
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
 
-    problem_pipelines = []
-
     if model_families:
         model_families = [handle_model_family(model_family) for model_family in model_families]
 
+    problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
     for p in all_pipelines():
-        problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
-        if problem_type in problem_types:
+        if problem_type == handle_problem_types(p.problem_type):
             problem_pipelines.append(p)
 
     if model_families is None:
@@ -108,8 +109,7 @@ def list_model_families(problem_type):
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
     for p in all_pipelines():
-        problem_types = [handle_problem_types(pt) for pt in p.supported_problem_types]
-        if problem_type in problem_types:
+        if problem_type == handle_problem_types(p.problem_type):
             problem_pipelines.append(p)
 
     return list(set([p.model_family for p in problem_pipelines]))
