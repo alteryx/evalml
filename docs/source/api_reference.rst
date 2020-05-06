@@ -342,6 +342,52 @@ Tuners
     RandomSearchTuner
 
 
+.. currentmodule:: evalml.data_checks
+
+Data Checks
+===========
+
+Data Check Base Classes
+~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: data_check_class.rst
+    :nosignatures:
+
+    DataCheck
+
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataChecks
+
+
+Data Check Messages
+~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: data_check_message.rst
+    :nosignatures:
+
+    DataCheckMessage
+    DataCheckError
+    DataCheckWarning
+
+
+Data Check Message Types
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    DataCheckMessageType
+
+
 .. currentmodule:: evalml.guardrails
 
 Guardrails
