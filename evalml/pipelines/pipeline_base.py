@@ -288,16 +288,7 @@ class PipelineBase(ABC):
         graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
 
         # Try rendering a dummy graph to see if a working backend is installed
-        try:
-            graphviz.Digraph().pipe()
-        except graphviz.backend.ExecutableNotFound:
-            raise RuntimeError(
-                "To graph entity sets, a graphviz backend is required.\n" +
-                "Install the backend using one of the following commands:\n" +
-                "  Mac OS: brew install graphviz\n" +
-                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz\n"
-            )
+        graphviz.Digraph().pipe()
 
         graph_format = None
         path_and_name = None
