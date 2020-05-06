@@ -115,7 +115,9 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
+              conda install graphviz -q -y
               conda install python-graphviz -q -y
+
       - when:
           condition: << parameters.assisted_modeling >>
           steps:
