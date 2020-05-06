@@ -18,6 +18,8 @@ class ZeroRRegressor(Estimator):
 
     def __init__(self, strategy="mean", random_state=0):
         """TODO"""
+        if strategy not in ["mean", "median"]:
+            raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
         parameters = {"strategy": strategy}
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -25,7 +27,7 @@ class ZeroRRegressor(Estimator):
 
     def fit(self, X, y=None):
         """Fits component to data
-
+        TODO
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training labels of length [n_samples]
@@ -39,15 +41,16 @@ class ZeroRRegressor(Estimator):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.parameters == "mean":
+        if self.parameters["strategy"] == "mean":
             self.val = y.mean()
-        elif self.parameters == "median":
+        elif self.parameters["strategy"] == "median":
             self.val = y.median()
         self.num_features = len(X)
         return self
 
     def predict(self, X):
         """Make predictions using selected features.
+        TODO
 
         Args:
             X (pd.DataFrame) : features
@@ -64,6 +67,7 @@ class ZeroRRegressor(Estimator):
     @property
     def feature_importances(self):
         """Returns feature importances.
+        TODO
 
         Returns:
             np.array (float) : importance associated with each feature
