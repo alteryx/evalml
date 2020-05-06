@@ -110,13 +110,6 @@ jobs:
               conda config --add channels conda-forge
               conda activate curr_py
               conda install make -q -y
-      - run:
-          name: Install Graphviz
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              conda install graphviz -q -y
-              conda install python-graphviz -q -y
 
       - when:
           condition: << parameters.assisted_modeling >>
@@ -130,6 +123,13 @@ jobs:
                     python -m pip install .
                     python -m pip install -r am-requirements.txt
                     conda install scipy==1.3.0
+      - run:
+          name: Install Graphviz
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              conda install graphviz -q -y
+              conda install python-graphviz -q -y
 
       - run:
           name: Install EvalML
