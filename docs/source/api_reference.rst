@@ -136,7 +136,11 @@ Component Base Classes
 
 Transformers
 ~~~~~~~~~~~~
-
+.. autosummary::
+    :toctree: generated
+    :template: estimator_class.rst
+    :nosignatures:
+    
     OneHotEncoder
     SimpleImputer
     StandardScaler
