@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ZeroRClassifier(Estimator):
-    """Classifier that predicts using the mode."""
+    """Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used."""
     name = "ZeroR Classifier"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
@@ -69,18 +69,18 @@ class ZeroRClassifier(Estimator):
             num_unique = self.num_unique
         except AttributeError:
             raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
-        return np.array([[0 if i == mode else 1.0 for i in range(num_unique)]] * len(X))
+        return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
 
     @property
     def feature_importances(self):
         """Returns feature importances.
 
         Returns:
-            list(float) : importance associated with each feature
+            np.array (float) : importance associated with each feature
 
         """
         try:
             num_features = self.num_features
         except AttributeError:
             raise RuntimeError("You must fit ZeroR classifier before gettong feature_importances!")
-        return [0.0] * num_features
+        return np.array([0.0] * num_features)
