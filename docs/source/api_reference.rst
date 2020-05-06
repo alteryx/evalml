@@ -124,14 +124,21 @@ Pipeline Plot Utils
 Components
 ==========
 
+Component Base Classes
+~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ComponentBase
+
+
 Transformers
 ~~~~~~~~~~~~
 
 Encoders
 --------
-
-Encoders convert categorical or non-numerical features into numerical features.
-
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
@@ -141,9 +148,6 @@ Encoders convert categorical or non-numerical features into numerical features.
 
 Imputers
 --------
-
-Imputers fill in missing data.
-
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
@@ -154,9 +158,6 @@ Imputers fill in missing data.
 
 Scalers
 -------
-
-Scalers transform and standardize the range of data.
-
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
@@ -167,9 +168,6 @@ Scalers transform and standardize the range of data.
 
 Feature Selectors
 -----------------
-
-Feature selectors select a subset of relevant features for the model.
-
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
@@ -184,9 +182,6 @@ Estimators
 
 Classifiers
 -----------
-
-Classifiers are models which can be trained to predict a class label from input data.
-
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
@@ -199,9 +194,6 @@ Classifiers are models which can be trained to predict a class label from input 
 
 Regressors
 -----------
-
-Regressors are models which can be trained to predict a target value from input data.
-
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
