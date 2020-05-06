@@ -8,4 +8,5 @@ from .classifiers import (LogisticRegressionClassifier,
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
-                         XGBoostRegressor)
+                         XGBoostRegressor,
+                         ZeroRRegressor)

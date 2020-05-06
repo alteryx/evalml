@@ -6,19 +6,19 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class ZeroRClassifier(Estimator):
-    """Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
+class ZeroRRegressor(Estimator):
+    """Regressor that predicts using the specified strategy. 
     
-    This is useful as a simple baseline classifier to compare with other classifiers.
+    This is useful as a simple baseline regressor to compare with other regressor.
 """
-    name = "ZeroR Classifier"
+    name = "ZeroR Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, random_state=0):
+    def __init__(self, strategy="mean", random_state=0):
         """TODO"""
-        parameters = {}
+        parameters = {"strategy": strategy}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -39,8 +39,10 @@ class ZeroRClassifier(Estimator):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self.mode = y.mode()[0]
-        self.num_unique = len(y.value_counts())
+        if self.parameters == "mean":
+            self.val = y.mean()
+        elif self.parameters == "median":
+            self.val = y.median()
         self.num_features = len(X)
         return self
 
@@ -54,26 +56,10 @@ class ZeroRClassifier(Estimator):
             pd.Series : estimated labels
         """
         try:
-            mode = self.mode
+            val = self.val
         except AttributeError:
             raise RuntimeError("You must fit ZeroR classifier before calling predict!")
-        return pd.Series([mode] * len(X))
-
-    def predict_proba(self, X):
-        """Make probability estimates for labels.
-
-        Args:
-            X (pd.DataFrame) : features
-
-        Returns:
-            np.array : probability estimates
-        """
-        try:
-            mode = self.mode
-            num_unique = self.num_unique
-        except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
-        return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
+        return pd.Series([val] * len(X))
 
     @property
     def feature_importances(self):

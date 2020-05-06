@@ -10,7 +10,8 @@ from .estimators import (
     CatBoostClassifier,
     CatBoostRegressor,
     XGBoostRegressor,
-    ZeroRClassifier
+    ZeroRClassifier,
+    ZeroRRegressor
 )
 from .transformers import (
     Transformer,
