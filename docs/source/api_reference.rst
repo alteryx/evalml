@@ -137,42 +137,9 @@ Component Base Classes
 Transformers
 ~~~~~~~~~~~~
 
-Encoders
---------
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     OneHotEncoder
-
-Imputers
---------
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     SimpleImputer
-
-
-Scalers
--------
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     StandardScaler
-
-
-Feature Selectors
------------------
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
 
