@@ -30,7 +30,7 @@ class ZeroRClassifier(Estimator):
             self
         """
         if y is None:
-            return ValueError("Cannot fit ZeroR classifier if y is None")
+            raise ValueError("Cannot fit ZeroR classifier if y is None")
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)

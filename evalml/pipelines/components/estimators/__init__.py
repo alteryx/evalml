@@ -3,7 +3,8 @@ from .estimator import Estimator
 from .classifiers import (LogisticRegressionClassifier,
                           RandomForestClassifier,
                           XGBoostClassifier,
-                          CatBoostClassifier)
+                          CatBoostClassifier,
+                          ZeroRClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
