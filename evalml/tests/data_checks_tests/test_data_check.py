@@ -92,14 +92,13 @@ def test_highly_null_data_check_warnings():
                          'all_null': [None, None, None, None, None],
                          'no_null': [1, 2, 3, 4, 5]})
     no_null_check = DetectHighlyNullDataCheck(percent_threshold=0.0)
-    assert no_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is 0.0% or more null", "DetectHighlyNullDataCheck"),
-                                            DataCheckWarning("Column 'all_null' is 0.0% or more null", "DetectHighlyNullDataCheck"),
-                                            DataCheckWarning("Column 'no_null' is 0.0% or more null", "DetectHighlyNullDataCheck")]
+    assert no_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is more than 0% null", "DetectHighlyNullDataCheck"),
+                                            DataCheckWarning("Column 'all_null' is more than 0% null", "DetectHighlyNullDataCheck")]
     some_null_check = DetectHighlyNullDataCheck(percent_threshold=0.5)
     assert some_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is 50.0% or more null", "DetectHighlyNullDataCheck"),
                                               DataCheckWarning("Column 'all_null' is 50.0% or more null", "DetectHighlyNullDataCheck")]
     all_null_check = DetectHighlyNullDataCheck(percent_threshold=1.0)
-    assert all_null_check.validate(data) == [DataCheckWarning("Column 'all_null' is 100.0% or more null", "DetectHighlyNullDataCheck")]
+    assert all_null_check.validate(data) == [DataCheckWarning("Column 'all_null' is 100% null", "DetectHighlyNullDataCheck")]
 
 
 def test_highly_null_data_check_input_formats():
