@@ -24,6 +24,9 @@ def test_autoreg_random_search_tuner_no_params(X_y):
         clf.search(X, y)
 
 
+random_state = 0
+
+
 def test_random_search_tuner_unique_values(test_space):
     tuner = RandomSearchTuner(test_space, random_state=0, with_replacement=True)
     generated_parameters = set()
@@ -42,9 +45,6 @@ def test_random_search_tuner_no_params(test_space_small):
         for i in range(10):
             params = tuner.propose()
             generated_parameters.add(tuple(params))
-
-
-random_state = 0
 
 
 def test_random_search_tuner_basic(test_space, test_space_unicode):

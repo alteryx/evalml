@@ -28,7 +28,7 @@ class AutoBase:
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
                  patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, n_jobs, optimize_thresholds=False):
+                 add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
@@ -38,6 +38,7 @@ class AutoBase:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
+        self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
@@ -126,6 +127,7 @@ class AutoBase:
             f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
+            f"Verbose: {self.verbose}\n"
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
@@ -204,10 +206,10 @@ class AutoBase:
             search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         if self.max_pipelines is None:
-            pbar = tqdm(total=self.max_time, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
+            pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
             pbar._instances.clear()
         else:
-            pbar = tqdm(range(self.max_pipelines), file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
+            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
 
         start = time.time()
@@ -365,8 +367,8 @@ class AutoBase:
 
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
-        #  To force new line between progress bar iterations
-        print('')
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
 
     def _select_pipeline(self):
         return self.random_state.choice(self.possible_pipelines)

@@ -7,6 +7,7 @@ from evalml.utils import Logger
 def test_get_logger():
     logger = Logger()
     assert isinstance(logger.get_logger(), logging.Logger)
+    assert logger.getEffectiveLevel() == "INFO"
 
 
 def test_logger_log(caplog):
