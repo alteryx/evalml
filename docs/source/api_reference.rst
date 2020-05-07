@@ -149,14 +149,55 @@ Component Base Classes
 
 Transformers
 ~~~~~~~~~~~~
+
+Encoders
+--------
+
+Encoders convert categorical or non-numerical features into numerical features.
+
 .. autosummary::
     :toctree: generated
     :template: transformer_class.rst
     :nosignatures:
 
     OneHotEncoder
+
+Imputers
+--------
+
+Imputers fill in missing data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
     SimpleImputer
+
+
+Scalers
+-------
+
+Scalers transform and standardize the range of data.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
     StandardScaler
+
+
+Feature Selectors
+-----------------
+
+Feature selectors select a subset of relevant features for the model.
+
+.. autosummary::
+    :toctree: generated
+    :template: transformer_class.rst
+    :nosignatures:
+
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
 
@@ -166,6 +207,9 @@ Estimators
 
 Classifiers
 -----------
+
+Classifiers are models which can be trained to predict a class label from input data.
+
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
@@ -178,6 +222,9 @@ Classifiers
 
 Regressors
 -----------
+
+Regressors are models which can be trained to predict a target value from input data.
+
 .. autosummary::
     :toctree: generated
     :template: estimator_class.rst
@@ -187,6 +234,7 @@ Regressors
     LinearRegressor
     RandomForestRegressor
     XGBoostRegressor
+
 
 .. currentmodule:: evalml.objectives
 
