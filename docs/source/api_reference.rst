@@ -133,7 +133,7 @@ Component Base Classes
 
     ComponentBase
     Transformer
-    Estimators
+    Estimator
 
 Transformers
 ~~~~~~~~~~~~
