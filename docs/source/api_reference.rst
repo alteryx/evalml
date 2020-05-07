@@ -124,13 +124,22 @@ Pipeline Plot Utils
 Components
 ==========
 
+Component Base Classes
+~~~~~~~~~~~~~~~~~~~~~~
+Components represent a step in a pipeline.
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ComponentBase
+    Transformer
+    Estimator
+
 Transformers
 ~~~~~~~~~~~~
-
-Encoders
---------
-
-Encoders convert categorical or non-numerical features into numerical features.
+Transformers are components that take in data as input and output transformed data.
 
 .. autosummary::
     :toctree: generated
@@ -138,43 +147,8 @@ Encoders convert categorical or non-numerical features into numerical features.
     :nosignatures:
 
     OneHotEncoder
-
-Imputers
---------
-
-Imputers fill in missing data.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     SimpleImputer
-
-
-Scalers
--------
-
-Scalers transform and standardize the range of data.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     StandardScaler
-
-
-Feature Selectors
------------------
-
-Feature selectors select a subset of relevant features for the model.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
 
@@ -185,7 +159,7 @@ Estimators
 Classifiers
 -----------
 
-Classifiers are models which can be trained to predict a class label from input data.
+Classifiers are components that output a predicted class label.
 
 .. autosummary::
     :toctree: generated
@@ -200,7 +174,7 @@ Classifiers are models which can be trained to predict a class label from input 
 Regressors
 -----------
 
-Regressors are models which can be trained to predict a target value from input data.
+Regressors are components that output a predicted target value.
 
 .. autosummary::
     :toctree: generated
@@ -211,6 +185,7 @@ Regressors are models which can be trained to predict a target value from input 
     LinearRegressor
     RandomForestRegressor
     XGBoostRegressor
+
 
 .. currentmodule:: evalml.objectives
 
