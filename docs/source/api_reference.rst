@@ -126,6 +126,8 @@ Components
 
 Component Base Classes
 ~~~~~~~~~~~~~~~~~~~~~~
+Components make up a step of a pipeline and either transforms or predicts data.
+
 .. autosummary::
     :toctree: generated
     :template: class.rst
@@ -137,11 +139,7 @@ Component Base Classes
 
 Transformers
 ~~~~~~~~~~~~
-
-Encoders
---------
-
-Encoders convert categorical or non-numerical features into numerical features.
+Transformers are components that take in data as input and output transformed data.
 
 .. autosummary::
     :toctree: generated
@@ -149,43 +147,8 @@ Encoders convert categorical or non-numerical features into numerical features.
     :nosignatures:
 
     OneHotEncoder
-
-Imputers
---------
-
-Imputers fill in missing data.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     SimpleImputer
-
-
-Scalers
--------
-
-Scalers transform and standardize the range of data.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     StandardScaler
-
-
-Feature Selectors
------------------
-
-Feature selectors select a subset of relevant features for the model.
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
 
@@ -196,7 +159,7 @@ Estimators
 Classifiers
 -----------
 
-Classifiers are models which can be trained to predict a class label from input data.
+Classifiers are components that take in data as input and output a predicted class label.
 
 .. autosummary::
     :toctree: generated
@@ -211,7 +174,7 @@ Classifiers are models which can be trained to predict a class label from input 
 Regressors
 -----------
 
-Regressors are models which can be trained to predict a target value from input data.
+Regressors are components that take in data as input and output a predicted a target value that exists in a continuous range.
 
 .. autosummary::
     :toctree: generated
