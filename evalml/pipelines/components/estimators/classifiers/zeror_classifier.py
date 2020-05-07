@@ -10,7 +10,7 @@ class ZeroRClassifier(Estimator):
     """Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
-"""
+    """
     name = "ZeroR Classifier"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
