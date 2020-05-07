@@ -1,13 +1,13 @@
 import pandas as pd
 
-from evalml.data_checks.basic_data_checks import BasicDataChecks
 from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_check_message import (
     DataCheckError,
     DataCheckWarning
 )
 from evalml.data_checks.data_checks import DataChecks
-from evalml.data_checks.empty_data_checks import EmptyDataChecks
+from evalml.data_checks.default_data_checks import DefaultDataChecks
+from evalml.data_checks.utils import EmptyDataChecks
 
 
 def test_data_checks(X_y):
@@ -45,10 +45,12 @@ def test_empty_data_checks(X_y):
     assert messages == []
 
 
-def test_basic_data_checks(X_y):
+def test_default_data_checks(X_y):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
                       'all_null': [None, None, None, None, None],
+                      'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 4, 5]})
-    data_checks = BasicDataChecks()
+    data_checks = DefaultDataChecks()
     messages = data_checks.validate(X)
-    assert messages == [DataCheckWarning("Columns 'all_null' are more than 95.0% null", "DetectHighlyNullDataCheck")]
+    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
+                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck")]
