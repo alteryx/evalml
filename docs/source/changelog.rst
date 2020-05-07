@@ -13,6 +13,7 @@ Changelog
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
         * Add objective base classes to API reference :pr:`736`
+        * Fix components API to match other modules :pr:`747`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
 
