@@ -62,8 +62,8 @@ class BinaryClassificationObjective(ObjectiveBase):
             ypred_proba = pd.Series(ypred_proba)
         return ypred_proba > threshold
 
-    def standard_checks(self, y_true, y_predicted):
-        super().standard_checks(y_true, y_predicted)
+    def validate_inputs(self, y_true, y_predicted):
+        super().validate_inputs(y_true, y_predicted)
         if len(np.unique(y_true)) > 2:
             raise ValueError("y_true contains more than two unique values")
         if len(np.unique(y_predicted)) > 2 and not self.score_needs_proba:

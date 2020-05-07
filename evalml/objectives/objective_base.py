@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from evalml.exceptions import DimensionMismatchError
+from evalml.utils import Logger
+logger = Logger()
+
 
 
 class ObjectiveBase(ABC):
@@ -53,14 +55,16 @@ class ObjectiveBase(ABC):
         """
         return self.objective_function(y_true, y_predicted, X=X)
 
-    def standard_checks(self, y_true, y_predicted):
-        if len(y_true) == 0 or len(y_predicted) == 0:
-            raise ValueError("Length of inputs is 0")
+    def validate_inputs(self, y_true, y_predicted):
         if len(y_predicted) != len(y_true):
-            raise DimensionMismatchError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
-        if np.any(np.isnan(y_true)) or np.any(np.isinf(y_true)):
-            raise ValueError("y_true contains NaN or infinity")
+            raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+        if len(y_true) == 0:
+            raise ValueError("Length of inputs is 0")
+        if np.any(np.isnan(y_true)):
+            raise ValueError("y_true contains NaN")
+        if np.any(np.isinf(y_predicted)):
+            logger.log("WARNING: y_true contains infinity values")
         if np.any(np.isnan(y_predicted)) or np.any(np.isinf(y_predicted)):
-            raise ValueError("y_predicted contains NaN or infinity")
-        if self.score_needs_proba and (np.any([(y_predicted < 0) | (y_predicted > 1)])):
+            logger.log("WARNING: y_predicted contains NaN or infinity")
+        if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
