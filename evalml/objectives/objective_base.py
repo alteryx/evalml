@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from evalml.utils import Logger
-logger = Logger()
 
+logger = Logger()
 
 
 class ObjectiveBase(ABC):
