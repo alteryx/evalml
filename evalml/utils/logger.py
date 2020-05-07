@@ -34,10 +34,10 @@ class UpStackLogger(logging.Logger):
             sinfo = None
             if stack_info:
                 sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
+                sio.write("Stack (most recent call last):\n")
                 traceback.print_stack(f, file=sio)
                 sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
+                if sinfo[-1] == "\n":
                     sinfo = sinfo[:-1]
                 sio.close()
             rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
@@ -49,22 +49,23 @@ class Logger(logging.Logger):
     """Write log messages to stdout.
 
     Arguments:
-        level (str): level of Logger
+        level (str): level of Logger. Valid options are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL". Defaults to "INFO".
     """
 
-    def __init__(self, level='INFO'):
-        self.level = level
+    def __init__(self, level="INFO"):
         logging.setLoggerClass(UpStackLogger)
-        logger = logging.getLogger('evalml')
+        logger = logging.getLogger("evalml")
         logging.setLoggerClass(logging.Logger)
 
         if not len(logger.handlers):
             out_handler = logging.StreamHandler(sys.stdout)
-            date_fmt = '%m/%d/%Y %I:%M:%S %p'
+            date_fmt = "%m/%d/%Y %I:%M:%S %p"
             fmt = "%(asctime)s %(name)s - %(levelname)s - %(module)s: %(lineno)d: %(message)s"
             out_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
             logger.addHandler(out_handler)
-            logger.setLevel(level)
+
+        self.level = level
+        logger.setLevel(level)
         self.logger = logger
 
     def get_logger(self):
@@ -79,6 +80,10 @@ class Logger(logging.Logger):
         """Logs a error message."""
         self.logger.error(msg, stack_info=stack_info)
 
+    def critical(self, msg, stack_info=False):
+        """Logs a critical message."""
+        self.logger.critical(msg, stack_info=stack_info)
+
     def print(self, msg, new_line=False, log=True):
         """Prints to console and optionally logs."""
         if new_line:
@@ -88,17 +93,14 @@ class Logger(logging.Logger):
         if log:
             self.logger.info(msg)
 
-    def log(self, msg, new_line=True, level="INFO"):
+    def log(self, msg, print_stdout=False, new_line=True, level="INFO"):
         """Logs message."""
-        # msg = f"{msg}\n" if new_line else msg
-        # logging_function = {"INFO": self.logger.info,
-        #                     "WARN": self.logger.warn}
-        # logging_function[level](msg)
-
         if new_line:
             self.logger.info(f"{msg}\n")
         else:
             self.logger.info(msg)
+        if print_stdout:
+            self.print(msg, new_line=new_line, log=False)
 
     def log_title(self, title):
         self.logger.info("*" * (len(title) + 4))
