@@ -37,12 +37,12 @@ def detect_label_leakage(X, y, threshold=.95):
     return corrs
 
 
-def detect_highly_null(X, percent_threshold=.95):
+def detect_highly_null(X, pct_null_threshold=.95):
     """ Checks if there are any highly-null columns in a dataframe.
 
     Args:
         X (pd.DataFrame) : features
-        percent_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
+        pct_null_threshold(float): Require that percentage of null values to be considered "highly-null", defaults to .95
 
     Returns:
         A dictionary of features with column name or index and their percentage of null values
@@ -52,14 +52,14 @@ def detect_highly_null(X, percent_threshold=.95):
         ...    'lots_of_null': [None, None, None, None, 5],
         ...    'no_null': [1, 2, 3, 4, 5]
         ... })
-        >>> detect_highly_null(df, percent_threshold=0.8)
+        >>> detect_highly_null(df, pct_null_threshold=0.8)
         {'lots_of_null': 0.8}
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
     percent_null = (X.isnull().mean()).to_dict()
-    highly_null_cols = {key: value for key, value in percent_null.items() if value >= percent_threshold}
+    highly_null_cols = {key: value for key, value in percent_null.items() if value >= pct_null_threshold}
     return highly_null_cols
 
 
