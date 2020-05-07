@@ -7,8 +7,8 @@ from evalml.problem_types import ProblemTypes
 
 
 class ZeroRRegressor(Estimator):
-    """Regressor that predicts using the specified strategy. 
-    
+    """Regressor that predicts using the specified strategy.
+
     This is useful as a simple baseline regressor to compare with other regressor.
 """
     name = "ZeroR Regressor"
