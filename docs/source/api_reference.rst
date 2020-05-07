@@ -132,20 +132,8 @@ Component Base Classes
     :nosignatures:
 
     ComponentBase
-
-.. autosummary::
-    :toctree: generated
-    :template: transformer_class.rst
-    :nosignatures:
-
     Transformer
-
-.. autosummary::
-    :toctree: generated
-    :template: estimator_class.rst
-    :nosignatures:
-
-    Estimator
+    Estimators
 
 Transformers
 ~~~~~~~~~~~~
