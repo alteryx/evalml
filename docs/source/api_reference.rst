@@ -126,7 +126,7 @@ Components
 
 Component Base Classes
 ~~~~~~~~~~~~~~~~~~~~~~
-Components make up a step of a pipeline and either transforms or predicts data.
+Components represent a step in a pipeline.
 
 .. autosummary::
     :toctree: generated
@@ -159,7 +159,7 @@ Estimators
 Classifiers
 -----------
 
-Classifiers are components that take in data as input and output a predicted class label.
+Classifiers are components that output a predicted class label.
 
 .. autosummary::
     :toctree: generated
@@ -174,7 +174,7 @@ Classifiers are components that take in data as input and output a predicted cla
 Regressors
 -----------
 
-Regressors are components that take in data as input and output a predicted a target value that exists in a continuous range.
+Regressors are components that output a predicted target value.
 
 .. autosummary::
     :toctree: generated
