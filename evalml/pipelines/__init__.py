@@ -51,6 +51,6 @@ from .graph_utils import (
     roc_curve,
     graph_roc_curve,
     confusion_matrix,
-    normalize_confusion_matrix
+    normalize_confusion_matrix,
     graph_confusion_matrix,
 )
