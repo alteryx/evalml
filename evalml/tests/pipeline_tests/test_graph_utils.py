@@ -131,11 +131,16 @@ def test_graph_confusion_matrix_default(X_y):
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Confusion matrix, normalized using method "true"'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Predicted Label'
+    assert np.all(fig_dict['layout']['xaxis']['tickvals'] == np.array([0, 1]))
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'True Label'
+    assert np.all(fig_dict['layout']['yaxis']['tickvals'] == np.array([0, 1]))
+    assert fig_dict['layout']['yaxis']['autorange'] == 'reversed'
     heatmap = fig_dict['data'][0]
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method='true')
     conf_mat_unnormalized = confusion_matrix(y_true, y_pred, normalize_method=None)
     assert np.array_equal(heatmap['x'], conf_mat.columns)
-    assert np.array_equal(heatmap['y'], conf_mat.columns[::-1])
+    assert np.array_equal(heatmap['y'], conf_mat.columns)
     assert np.array_equal(heatmap['z'], conf_mat)
     assert np.array_equal(heatmap['customdata'], conf_mat_unnormalized)
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Normalized Count</b>: %{z}<br><b>Raw Count</b>: %{customdata} <br><extra></extra>'
@@ -150,11 +155,16 @@ def test_graph_confusion_matrix_norm_disabled(X_y):
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Confusion matrix'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Predicted Label'
+    assert np.all(fig_dict['layout']['xaxis']['tickvals'] == np.array([0, 1]))
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'True Label'
+    assert np.all(fig_dict['layout']['yaxis']['tickvals'] == np.array([0, 1]))
+    assert fig_dict['layout']['yaxis']['autorange'] == 'reversed'
     heatmap = fig_dict['data'][0]
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method='true')
     assert np.array_equal(heatmap['x'], conf_mat.columns)
-    assert np.array_equal(heatmap['y'], conf_mat.columns[::-1])
+    assert np.array_equal(heatmap['y'], conf_mat.columns)
     assert np.array_equal(heatmap['z'], conf_mat)
     assert np.array_equal(heatmap['customdata'], conf_mat_normalized)
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Raw Count</b>: %{z}<br><b>Normalized Count</b>: %{customdata} <br><extra></extra>'
