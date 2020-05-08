@@ -98,7 +98,7 @@ def test_highly_null_data_check_warnings():
     assert some_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is 50.0% or more null", "DetectHighlyNullDataCheck"),
                                               DataCheckWarning("Column 'all_null' is 50.0% or more null", "DetectHighlyNullDataCheck")]
     all_null_check = DetectHighlyNullDataCheck(pct_null_threshold=1.0)
-    assert all_null_check.validate(data) == [DataCheckWarning("Column 'all_null' is 100% null", "DetectHighlyNullDataCheck")]
+    assert all_null_check.validate(data) == [DataCheckWarning("Column 'all_null' is 100.0% or more null", "DetectHighlyNullDataCheck")]
 
 
 def test_highly_null_data_check_input_formats():
