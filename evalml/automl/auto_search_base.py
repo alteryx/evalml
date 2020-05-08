@@ -21,7 +21,7 @@ from evalml.utils import Logger, convert_to_seconds, get_random_state
 logger = Logger()
 
 
-class AutoBase:
+class AutoSearchBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
