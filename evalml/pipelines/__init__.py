@@ -47,7 +47,7 @@ from .utils import (
     get_pipelines,
     list_model_families
 )
-from .plot_utils import (
+from .graph_utils import (
     roc_curve,
     confusion_matrix,
     normalize_confusion_matrix

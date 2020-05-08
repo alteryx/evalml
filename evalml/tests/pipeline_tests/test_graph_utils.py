@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines.plot_utils import (
+from evalml.pipelines.graph_utils import (
     confusion_matrix,
     graph_confusion_matrix,
     graph_roc_curve,

@@ -58,7 +58,7 @@ Changelog
         * Standardize `import_or_raise` error messages :pr:`683`
         * Updated argument order of objectives to align with sklearn's :pr:`698`
         * Renamed `pipeline.feature_importance_graph` to `pipeline.graph_feature_importances` :pr:`700`
-        * Moved ROC and confusion matrix methods to `evalml.pipelines.plot_utils` :pr:`704`
+        * Moved ROC and confusion matrix methods to `evalml.pipelines.graph_utils` :pr:`704`
         * Renamed `MultiClassificationObjective` to `MulticlassClassificationObjective`, to align with pipeline naming scheme :pr:`715`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
     * Documentation Changes
@@ -99,8 +99,8 @@ Changelog
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` have been removed by :pr:`615` and are replaced by util methods in `evamlm.pipelines.plot_utils`` :pr:`704` :pr:`720`
-    * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`704`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ``Auto(*).plot`` have been removed by :pr:`615` and are replaced by util methods in `evamlm.pipelines.graph_utils`` :pr:`704` :pr:`720`
+    * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.graph_utils`` :pr:`704`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
     * Updated argument order of objectives' `objective_function` to align with sklearn :pr:`698`
