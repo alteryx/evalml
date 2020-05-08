@@ -25,7 +25,7 @@ from evalml.objectives.utils import OPTIONS
 EPS = 1e-5
 
 
-def test_input_contains_nan(capsys):
+def test_input_contains_nan():
     y_predicted = np.array([np.nan, 0, 0])
     y_true = np.array([1, 2, 1])
     for objective in OPTIONS.values():
@@ -39,7 +39,7 @@ def test_input_contains_nan(capsys):
             objective.score(y_true, y_predicted)
 
 
-def test_input_contains_inf(capsys):
+def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
     for objective in OPTIONS.values():

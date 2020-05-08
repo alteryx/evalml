@@ -53,6 +53,7 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
+        self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
 
     def validate_inputs(self, y_true, y_predicted):
