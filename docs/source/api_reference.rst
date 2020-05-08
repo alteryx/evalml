@@ -108,15 +108,17 @@ Pipeline Utils
     list_model_families
 
 
-Pipeline Plot Utils
-~~~~~~~~~~~~~~~~~~~
+Pipeline Graph Utils
+~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
     roc_curve
+    graph_roc_curve
     confusion_matrix
     normalize_confusion_matrix
+    graph_confusion_matrix
 
 
 .. currentmodule:: evalml.pipelines.components
