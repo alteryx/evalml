@@ -109,7 +109,7 @@ Pipeline Utils
 
 
 Pipeline Graph Utils
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
