@@ -10,7 +10,7 @@ class DetectHighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            pct_null_threshold(float): If the percentage of values in an input feature exceeds this amount,
+            pct_null_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
                 that feature will be considered highly-null. Defaults to 0.95.
 
         """
