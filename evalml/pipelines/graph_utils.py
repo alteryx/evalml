@@ -16,7 +16,7 @@ def roc_curve(y_true, y_pred_proba):
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied.
+        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
 
     Returns:
         dict: Dictionary containing metrics used to generate an ROC plot, with the following keys:
@@ -38,7 +38,7 @@ def graph_roc_curve(y_true, y_pred_proba, title_addition=None):
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied.
+        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
