@@ -18,6 +18,8 @@ def test_import_or_raise_errors():
         import_or_raise("_evalml")
     with pytest.raises(ImportError, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
         import_or_raise("_evalml", "Additional error message")
+    with pytest.raises(Exception, match="An exception occured while trying to import `0`: 'int' object has no attribute 'startswith'"):
+        import_or_raise(0)
 
 
 def test_import_or_raise_imports():

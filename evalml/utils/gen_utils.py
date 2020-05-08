@@ -20,6 +20,9 @@ def import_or_raise(library, error_msg=None):
             error_msg = ""
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
         raise ImportError(msg)
+    except Exception as ex:
+        msg = (f"An exception occured while trying to import `{library}`: {str(ex)}")
+        raise Exception(msg)
 
 
 def convert_to_seconds(input_str):
