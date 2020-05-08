@@ -121,7 +121,6 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
     labels = conf_mat.columns
-    reversed_labels = labels[::-1]
 
     title = 'Confusion matrix{}{}'.format(
         '' if title_addition is None else (' ' + title_addition),
@@ -133,9 +132,12 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': reversed_labels})
-    return _go.Figure(data=_go.Heatmap(x=labels, y=reversed_labels, z=z_data,
-                                       customdata=custom_data,
-                                       hovertemplate=hover_template,
-                                       colorscale='Blues'),
-                      layout=layout)
+                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
+    fig = _go.Figure(data=_go.Heatmap(x=labels, y=labels, z=z_data,
+                                      customdata=custom_data,
+                                      hovertemplate=hover_template,
+                                      colorscale='Blues'),
+                     layout=layout)
+    # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
+    fig.update_yaxes(autorange="reversed")
+    return fig
