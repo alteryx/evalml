@@ -1,7 +1,7 @@
 # from evalml.pipelines import get_pipelines_by_model_type
 from sklearn.model_selection import StratifiedKFold
 
-from .auto_base import AutoSearchBase
+from .auto_search_base import AutoSearchBase
 
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes

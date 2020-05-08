@@ -1,6 +1,6 @@
 from sklearn.model_selection import KFold
 
-from .auto_base import AutoSearchBase
+from .auto_search_base import AutoSearchBase
 
 from evalml.problem_types import ProblemTypes
 
