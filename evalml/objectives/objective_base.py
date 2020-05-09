@@ -2,10 +2,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from evalml.utils import Logger
-
-logger = Logger()
-
 
 class ObjectiveBase(ABC):
     """Base class for all objectives."""

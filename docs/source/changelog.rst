@@ -19,6 +19,7 @@ Changelog
         * Fix components API to match other modules :pr:`747`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
+        * Added unit tests for fraud cost, lead scoring, and standard metric objectives, :pr:`741`
 
 .. warning::
 
@@ -99,7 +100,6 @@ Changelog
         * Update graph tests to always use tmpfile dir :pr:`649`
         * Changelog checkin test workaround for release PRs: If 'future release' section is empty of PR refs, pass check :pr:`658`
         * Add changelog checkin test exception for `dep-update` branch :pr:`723`
-        * Added unit tests for standard metric objectives :pr:`741`
 
 .. warning::
 
