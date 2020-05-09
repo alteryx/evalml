@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import Logger, get_random_state
+from evalml.utils import get_logger, get_random_state
 
-logger = Logger()
+logger = get_logger(__file__)
 
 
 class ComponentBase(ABC):

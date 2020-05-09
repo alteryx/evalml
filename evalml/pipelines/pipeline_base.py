@@ -12,13 +12,13 @@ from .components import Estimator, handle_component
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.objectives import get_objective
 from evalml.utils import (
-    Logger,
     classproperty,
+    get_logger,
     get_random_state,
     import_or_raise
 )
 
-logger = Logger()
+logger = get_logger(__file__)
 
 
 class PipelineBase(ABC):

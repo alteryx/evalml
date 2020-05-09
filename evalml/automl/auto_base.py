@@ -18,10 +18,10 @@ from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_logger, get_random_state
 
-logger = get_logger(__file__)
+logger = get_logger()
 
 
-class AutoSearchBase:
+class AutoBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
@@ -44,8 +44,6 @@ class AutoSearchBase:
         self.objective = get_objective(objective)
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
-
-        logger.verbose = verbose
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]

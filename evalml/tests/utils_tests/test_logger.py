@@ -1,17 +1,8 @@
-from evalml.utils import Logger
-
-
-def test_logger_verbose():
-    logger = Logger()
-    assert logger.verbose
-    logger = Logger(False)
-    assert not logger.verbose
-    logger.verbose = True
-    assert logger.verbose
+from evalml.utils import get_logger
 
 
 def test_logger_log(capsys):
-    logger = Logger()
+    logger = get_logger(__file__)
     logger.log('Test message')
     out, err = capsys.readouterr()
     assert out == 'Test message\n'

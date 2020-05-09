@@ -1,35 +1,22 @@
-from colorama import Style
+import logging
+import sys
 
 
-class Logger:
-    """Write log messages to stdout.
+def get_logger(name):
+    logger = logging.getLogger(name)
+    if not len(logger.handlers):
+        date_fmt = "%m/%d/%Y %I:%M:%S %p"
+        # format='%(asctime)s,%(msecs)d %(levelname)-8s [name=%(name)s] [%(filename)s:%(lineno)d] %(message)s'
+        fmt = "%(asctime)s %(name)s - %(levelname)s - [name=%(name)s]: %(message)s"
 
-    Arguments:
-        verbose (bool): If False, suppress log output. Default True.
-    """
+        log_handler = logging.handlers.RotatingFileHandler(filename="debug.log")
+        log_handler.setLevel(logging.DEBUG)
+        log_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
 
-    def __init__(self, verbose=True):
-        self.verbose = verbose
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.INFO)
+        stdout_handler.setFormatter(logging.Formatter('%(message)s'))
 
-    def log(self, msg, color=None, new_line=True):
-        if not self.verbose:
-            return
-
-        if color:
-            msg = color + msg + Style.RESET_ALL
-
-        if new_line:
-            print(msg)
-        else:
-            print(msg, end="")
-
-    def log_title(self, title):
-        self.log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self.log("* %s *" % title, color=Style.BRIGHT)
-        self.log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self.log("")
-
-    def log_subtitle(self, title, underline="=", color=None):
-        self.log("")
-        self.log("%s" % title, color=color)
-        self.log(underline * len(title), color=color)
+        logger.addHandler(stdout_handler)
+        logger.addHandler(log_handler)
+        logger.setLevel(logging.INFO)

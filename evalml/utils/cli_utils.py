@@ -10,9 +10,9 @@ import requirements
 from psutil._common import bytes2human
 
 import evalml
-from evalml.utils import Logger
+from evalml.utils import get_logger
 
-logger = Logger()
+logger = get_logger(__file__)
 
 
 def get_core_requirements():
