@@ -57,7 +57,7 @@ class ComponentBase(ABC):
             logger.log_subtitle(title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
-            logger.log(parameter_str)
+            logger.info(parameter_str)
         if return_dict:
             component_dict = {"name": self.name}
             component_dict.update({"parameters": self.parameters})

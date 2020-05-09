@@ -23,3 +23,16 @@ def get_logger(name):
         logger.setLevel(logging.INFO)
 
     return logger
+
+
+def log_title(logger, title):
+    logger.info("*" * (len(title) + 4))
+    logger.info("* %s *" % title)
+    logger.info("*" * (len(title) + 4))
+    logger.info("")
+
+
+def log_subtitle(logger, title, underline="="):
+    logger.info("")
+    logger.info("%s" % title)
+    logger.info(underline * len(title))

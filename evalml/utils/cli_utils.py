@@ -30,8 +30,8 @@ def print_info():
     Returns:
         None
     """
-    logger.log("EvalML version: %s" % evalml.__version__)
-    logger.log("EvalML installation directory: %s" % get_evalml_root())
+    logger.info("EvalML version: %s" % evalml.__version__)
+    logger.info("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
     print_deps(get_core_requirements())
 
@@ -42,11 +42,11 @@ def print_sys_info():
     Returns:
         None
     """
-    logger.log("\nSYSTEM INFO")
-    logger.log("-----------")
+    logger.info("\nSYSTEM INFO")
+    logger.info("-----------")
     sys_info = get_sys_info()
     for title, stat in sys_info:
-        logger.log("{title}: {stat}".format(title=title, stat=stat))
+        logger.info("{title}: {stat}".format(title=title, stat=stat))
 
 
 def print_deps(dependencies):
@@ -58,8 +58,8 @@ def print_deps(dependencies):
     Returns:
         None
     """
-    logger.log("\nINSTALLED VERSIONS")
-    logger.log("------------------")
+    logger.info("\nINSTALLED VERSIONS")
+    logger.info("------------------")
     installed_packages = get_installed_packages()
 
     packages_to_log = []
@@ -68,7 +68,7 @@ def print_deps(dependencies):
         if x in installed_packages:
             packages_to_log.append((x, installed_packages[x]))
     for package, version in packages_to_log:
-        logger.log("{package}: {version}".format(package=package, version=version))
+        logger.info("{package}: {version}".format(package=package, version=version))
 
 
 # Modified from here
