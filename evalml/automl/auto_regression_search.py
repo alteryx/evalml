@@ -18,12 +18,12 @@ class AutoRegressionSearch(AutoSearchBase):
                  tolerance=None,
                  allowed_model_families=None,
                  cv=None,
-                 tuner=None,
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
+                 tuner_class=None,
                  verbose=True):
         """Automated regressors pipeline search
 
@@ -50,7 +50,7 @@ class AutoRegressionSearch(AutoSearchBase):
 
             cv: cross validation method to use. By default StratifiedKFold
 
-            tuner: the tuner class to use. Defaults to scikit-optimize tuner
+            tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 
             start_iteration_callback (callable): function called before each pipeline training iteration.
                 Passed two parameters: pipeline_class, parameters.
@@ -78,19 +78,20 @@ class AutoRegressionSearch(AutoSearchBase):
             cv = KFold(n_splits=3, random_state=random_state)
 
         super().__init__(
-            tuner=tuner,
+            problem_type=problem_type,
             objective=objective,
-            cv=cv,
             max_pipelines=max_pipelines,
             max_time=max_time,
             patience=patience,
             tolerance=tolerance,
+            cv=cv,
             allowed_model_families=allowed_model_families,
-            problem_type=problem_type,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
             random_state=random_state,
             n_jobs=n_jobs,
+            tuner_class=tuner_class,
             verbose=verbose
         )
+        self.problem_type = problem_type

@@ -1,5 +1,3 @@
-import copy
-import inspect
 import time
 from collections import OrderedDict
 from sys import stdout
@@ -11,16 +9,15 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
-    get_pipelines
+    ModeBaselineMulticlassPipeline
 )
-from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
@@ -30,38 +27,48 @@ logger = get_logger(__file__)
 
 
 class AutoSearchBase:
+    _MAX_NAME_LEN = 40
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
-    def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, start_iteration_callback,
-                 add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
-        if tuner is None:
-            tuner = SKOptTuner
+    def __init__(self,
+                 problem_type=None,
+                 objective=None,
+                 max_pipelines=None,
+                 max_time=None,
+                 patience=None,
+                 tolerance=None,
+                 cv=None,
+                 allowed_model_families=None,
+                 start_iteration_callback=None,
+                 add_result_callback=None,
+                 additional_objectives=None,
+                 random_state=0,
+                 n_jobs=-1,
+                 tuner_class=None,
+                 verbose=True,
+                 optimize_thresholds=False,
+                 multiclass=None):
         self.problem_type = problem_type
-        self.max_pipelines = max_pipelines
+        self.tuner_class = tuner_class or SKOptTuner
         self.allowed_model_families = allowed_model_families
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
-        self.possible_pipelines = get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.objective = get_objective(objective)
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
-
-        if additional_objectives is not None:
-            additional_objectives = [get_objective(o) for o in additional_objectives]
-        else:
+        if additional_objectives is None:
             additional_objectives = get_objectives(self.problem_type)
-
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
-
+        else:
+            additional_objectives = [get_objective(o) for o in additional_objectives]
         self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
@@ -71,6 +78,11 @@ class AutoSearchBase:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
+        self.max_pipelines = max_pipelines
+        if self.max_pipelines is None and self.max_time is None:
+            self.max_pipelines = 5
+            logger.info("Using default limit of max_pipelines=5.\n")
+
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
 
@@ -78,28 +90,20 @@ class AutoSearchBase:
             raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(tolerance))
 
         self.patience = patience
-        self.tolerance = tolerance if tolerance else 0.0
+        self.tolerance = tolerance or 0.0
         self.results = {
             'pipeline_results': {},
             'search_order': []
         }
         self.trained_pipelines = {}
         self.random_state = get_random_state(random_state)
-
         self.n_jobs = n_jobs
-        self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
 
-        self.tuners = {}
-        for p in self.possible_pipelines:
-            self.tuners[p.name] = tuner(p.hyperparameters, random_state=self.random_state)
-        self._MAX_NAME_LEN = 40
-        self._next_pipeline_class = None
+        self.plot = None
         try:
             self.plot = PipelineSearchPlots(self)
-
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
-            self.plot = None
 
         self._data_check_results = None
 
@@ -124,11 +128,10 @@ class AutoSearchBase:
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
-            f"Possible Pipelines: \n{_print_list(self.possible_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
-            f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
+            f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
@@ -169,7 +172,7 @@ class AutoSearchBase:
             self
         """
         # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot is True:
+        if show_iteration_plot:
             try:
                 get_ipython
             except NameError:
@@ -202,24 +205,25 @@ class AutoSearchBase:
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
+        automl_algorithm = IterativeAlgorithm(
+            objective=self.objective,
+            max_pipelines=self.max_pipelines,
+            allowed_model_families=self.allowed_model_families,
+            tuner_class=self.tuner_class,
+            random_state=self.random_state,
+            n_jobs=self.n_jobs,
+            number_features=X.shape[1]
+        )
+
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
+        logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
 
-        if self.objective.greater_is_better:
-            logger.info("Greater score is better.\n")
-        else:
-            logger.info("Lower score is better.\n")
-
-        # Set default max_pipeline if none specified
-        if self.max_pipelines is None and self.max_time is None:
-            self.max_pipelines = 5
-            logger.info("No search limit is set. Set using max_time or max_pipelines.\n")
-
-        if self.max_pipelines:
+        if self.max_pipelines is not None:
             logger.info("Searching up to %s pipelines. " % self.max_pipelines)
-        if self.max_time:
+        if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-            logger.info("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
+        logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in automl_algorithm.allowed_model_families]))
 
         search_iteration_plot = None
         if self.plot:
@@ -227,16 +231,41 @@ class AutoSearchBase:
 
         if self.max_pipelines is None:
             pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
-            pbar._instances.clear()
         else:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
-            pbar._instances.clear()
+        pbar._instances.clear()
 
         start = time.time()
         self._add_baseline_pipelines(X, y, pbar, raise_errors=raise_errors)
 
-        while self._check_stopping_condition(start):
-            self._do_iteration(X, y, pbar, raise_errors=raise_errors)
+        current_batch_pipelines = automl_algorithm.next_batch()
+        while self._check_stopping_condition(start) and automl_algorithm.can_continue():
+            if len(current_batch_pipelines) == 0:
+                current_batch_pipelines = automl_algorithm.next_batch()
+            pipeline = current_batch_pipelines.pop(0)
+            parameters = pipeline.parameters
+            pbar.update(1)
+            if self.start_iteration_callback:
+                self.start_iteration_callback(pipeline.__class__, parameters)
+            desc = "▹ {}: ".format(pipeline.name)
+            if len(desc) > self._MAX_NAME_LEN:
+                desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+            desc = desc.ljust(self._MAX_NAME_LEN)
+            pbar.set_description_str(desc=desc, refresh=True)
+
+            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+            automl_algorithm.add_result(evaluation_results['cv_score_mean'], pipeline)
+            self._add_result(trained_pipeline=pipeline,
+                             parameters=parameters,
+                             training_time=evaluation_results['training_time'],
+                             cv_data=evaluation_results['cv_data'],
+                             cv_scores=evaluation_results['cv_scores'])
+
+            desc = "✔" + desc[1:]
+            pbar.set_description_str(desc=desc, refresh=True)
+            if self.verbose:  # To force new line between progress bar iterations
+                print('')
+
             if search_iteration_plot:
                 search_iteration_plot.update()
 
@@ -246,11 +275,6 @@ class AutoSearchBase:
         pbar.close()
 
     def _check_stopping_condition(self, start):
-        # get new pipeline and check tuner
-        self._next_pipeline_class = self._select_pipeline()
-        if self.tuners[self._next_pipeline_class.name].is_search_space_exhausted():
-            return False
-
         should_continue = True
         num_pipelines = len(self.results['pipeline_results'])
         if num_pipelines == 0:
@@ -292,59 +316,6 @@ class AutoSearchBase:
         for obj in self.additional_objectives:
             if obj.problem_type != ProblemTypes.MULTICLASS:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
-
-    def _transform_parameters(self, pipeline_class, parameters, number_features):
-        new_parameters = copy.copy(parameters)
-        component_graph = [handle_component(c) for c in pipeline_class.component_graph]
-        for component in component_graph:
-            component_class = component.__class__
-            # Inspects each component and adds the following parameters when needed
-            if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
-                new_parameters[component.name]['n_jobs'] = self.n_jobs
-            if 'number_features' in inspect.signature(component_class.__init__).parameters:
-                new_parameters[component.name]['number_features'] = number_features
-        return new_parameters
-
-    def _do_iteration(self, X, y, pbar, raise_errors=True):
-        pbar.update(1)
-
-        # propose the next best parameters for this piepline
-        parameters = self._propose_parameters(self._next_pipeline_class)
-
-        # fit and score the pipeline
-        pipeline = self._next_pipeline_class(parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1]))
-
-        if self.start_iteration_callback:
-            self.start_iteration_callback(self._next_pipeline_class, parameters)
-
-        desc = "▹ {}: ".format(self._next_pipeline_class.name)
-        if len(desc) > self._MAX_NAME_LEN:
-            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-        desc = desc.ljust(self._MAX_NAME_LEN)
-        pbar.set_description_str(desc=desc, refresh=True)
-
-        evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
-
-        scores = pd.Series([fold["score"] for fold in evaluation_results['cv_data']])
-        score = scores.mean()
-
-        if self.objective.greater_is_better:
-            score_to_minimize = -score
-        else:
-            score_to_minimize = score
-
-        self.tuners[pipeline.name].add(parameters, score_to_minimize)
-
-        # save the result and continue
-        self._add_result(trained_pipeline=pipeline,
-                         parameters=parameters,
-                         training_time=evaluation_results['training_time'],
-                         cv_data=evaluation_results['cv_data'])
-
-        desc = "✔" + desc[1:]
-        pbar.set_description_str(desc=desc, refresh=True)
-        if self.verbose:  # To force new line between progress bar iterations
-            print('')
 
     def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
@@ -424,21 +395,14 @@ class AutoSearchBase:
             cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
         training_time = time.time() - start
-        return {'cv_data': cv_data, 'training_time': training_time}
+        cv_scores = pd.Series([fold['score'] for fold in cv_data])
+        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_scores.mean()}
 
-    def _select_pipeline(self):
-        return self.random_state.choice(self.possible_pipelines)
-
-    def _propose_parameters(self, pipeline_class):
-        return self.tuners[pipeline_class.name].propose()
-
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
-        scores = pd.Series([fold["score"] for fold in cv_data])
-        score = scores.mean()
-
+    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
+        cv_score = cv_scores.mean()
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
-        high_variance_cv = (scores.std() / scores.mean()) > .2
+        high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
 
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
@@ -450,7 +414,7 @@ class AutoSearchBase:
             "pipeline_class": type(trained_pipeline),
             "pipeline_summary": pipeline_summary,
             "parameters": parameters,
-            "score": score,
+            "score": cv_score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data

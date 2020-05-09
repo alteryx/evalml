@@ -45,7 +45,7 @@ def test_pipeline_limits(caplog, X_y):
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
     out = caplog.text
-    assert "No search limit is set. Set using max_time or max_pipelines." in out
+    assert "Using default limit of max_pipelines=5." in out
 
 
 def test_search_order(X_y):
@@ -106,7 +106,6 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl.search(X, y)
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
-
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -117,7 +116,6 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl.search(X, y, raise_errors=False)
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
-
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -128,15 +126,15 @@ def test_pipeline_score_raises(mock_score, X_y):
 def test_rankings(X_y, X_y_reg):
     X, y = X_y
     model_families = ['random_forest']
-    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=3)
     automl.search(X, y)
-    assert len(automl.full_rankings) == 2
+    assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
     X, y = X_y_reg
-    automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=3)
     automl.search(X, y)
-    assert len(automl.full_rankings) == 2
+    assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
 
@@ -154,7 +152,7 @@ def test_automl_str_search(mock_fit, X_y):
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
         'cv': StratifiedKFold(5),
-        'tuner': RandomSearchTuner,
+        'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
         'additional_objectives': ['Precision', 'AUC'],
@@ -166,7 +164,6 @@ def test_automl_str_search(mock_fit, X_y):
         'Objective': search_params['objective'],
         'Max Time': search_params['max_time'],
         'Max Pipelines': search_params['max_pipelines'],
-        'Possible Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
@@ -265,9 +262,6 @@ def test_automl_str_no_param_search():
         'Objective': 'Log Loss Binary',
         'Max Time': 'None',
         'Max Pipelines': 'None',
-        'Possible Pipelines': [
-            'Logistic Regression Binary Pipeline',
-            'Random Forest Binary Classification Pipeline'],
         'Patience': 'None',
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
@@ -294,7 +288,6 @@ def test_automl_str_no_param_search():
         if isinstance(value, list):
             value = "\n".join(["\t{}".format(item) for item in value])
             assert value in str_rep
-    assert "Possible Pipelines" in str_rep
     assert "Search Results" not in str_rep
 
 

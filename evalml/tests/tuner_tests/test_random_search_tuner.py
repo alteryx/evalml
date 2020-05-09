@@ -16,13 +16,13 @@ def test_random_search_tuner_inheritance():
 
 def test_random_search_tuner_automl(X_y):
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner_class=RandomSearchTuner)
     clf.search(X, y)
 
 
 def test_random_search_tuner_automl_no_params(X_y, capsys):
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=RandomSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner_class=RandomSearchTuner)
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
@@ -32,7 +32,7 @@ def test_random_search_tuner_automl_no_params(X_y, capsys):
 def test_random_search_tuner_exhausted_space(mock_is_search_space_exhausted, X_y):
     mock_is_search_space_exhausted.side_effects = lambda: False
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner_class=RandomSearchTuner)
     clf.search(X, y)
     assert len(clf.results['pipeline_results']) == 1   # baseline pipeline
 

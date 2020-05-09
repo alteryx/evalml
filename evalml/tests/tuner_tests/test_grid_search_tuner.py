@@ -11,13 +11,13 @@ def test_grid_search_tuner_inheritance():
 
 def test_grid_search_tuner_automl(X_y):
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=GridSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner_class=GridSearchTuner)
     clf.search(X, y)
 
 
 def test_grid_search_tuner_automl_no_params(X_y, capsys):
     X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=GridSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner_class=GridSearchTuner)
     error_text = "Grid search has exhausted all possible parameters"
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
