@@ -95,14 +95,14 @@ def test_rankings(X_y, X_y_reg):
 
 
 @patch('evalml.pipelines.PipelineBase.fit')
-@patch('evalml.utils.logger.Logger.log')
 @patch('evalml.guardrails.detect_label_leakage')
-def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
+def test_detect_label_leakage(mock_detect_label_leakage, mock_fit, capsys, caplog, X_y):
     X, y = X_y
     mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}
     automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
     automl.search(X, y, raise_errors=False)
-    mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
+    out = caplog.text
+    assert "WARNING: Possible label leakage: var 1, var 2" in out
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
