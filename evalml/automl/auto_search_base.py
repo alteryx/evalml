@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
+from evalml.data_checks import DefaultDataChecks
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
@@ -26,7 +27,7 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, data_checks, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
@@ -81,6 +82,10 @@ class AutoSearchBase:
 
         self.n_jobs = n_jobs
         self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
+
+        if data_checks is None:
+            data_checks = DefaultDataChecks()
+        self.data_checks = data_checks
 
         self.tuners = {}
         self.search_spaces = {}
@@ -174,6 +179,11 @@ class AutoSearchBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
+
+        data_check_messages = self.data_checks.validate(X, y)
+        if len(data_check_messages) > 0:
+            for data_check_message in data_check_messages:
+                logger.log(data_check_message.message)
 
         logger.log_title("Beginning pipeline search")
         logger.log("Optimizing for %s. " % self.objective.name, new_line=False)

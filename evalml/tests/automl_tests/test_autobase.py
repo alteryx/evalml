@@ -147,3 +147,10 @@ def test_automl_str_search(mock_fit, X_y):
     str_rep = str(automl)
     assert "Search Results:" in str_rep
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_data_checks(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y)

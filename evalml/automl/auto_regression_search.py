@@ -17,6 +17,7 @@ class AutoRegressionSearch(AutoSearchBase):
                  patience=None,
                  tolerance=None,
                  allowed_model_families=None,
+                 data_checks=None,
                  cv=None,
                  tuner=None,
                  start_iteration_callback=None,
@@ -41,6 +42,8 @@ class AutoRegressionSearch(AutoSearchBase):
 
             allowed_model_families (list): The model families to search. By default searches over all
                 model families. Run evalml.list_model_families("regression") to see options.
+
+            data_checks (DataChecks, None): A set of data checks to run before fit-time. If None, uses DefaultDataChecks. Defaults to None.
 
             patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.
@@ -86,6 +89,7 @@ class AutoRegressionSearch(AutoSearchBase):
             patience=patience,
             tolerance=tolerance,
             allowed_model_families=allowed_model_families,
+            data_checks=data_checks,
             problem_type=problem_type,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
