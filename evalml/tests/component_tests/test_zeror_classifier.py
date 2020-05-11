@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.pipelines.components import ZeroRClassifier
+from evalml.utils import get_random_state
 
 
 def test_zeror_invalid_strategy():
@@ -27,12 +28,12 @@ def test_zeror_y_is_None(X_y):
         ZeroRClassifier().fit(X, y=None)
 
 
-def test_zeror_binary(X_y):
+def test_zeror_binary_mode(X_y):
     X, y = X_y
     values, counts = np.unique(y, return_counts=True)
     mode = values[counts.argmax()]
 
-    clf = ZeroRClassifier()
+    clf = ZeroRClassifier(strategy="mode")
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([mode] * len(X)))
     predicted_proba = clf.predict_proba(X)
@@ -41,7 +42,19 @@ def test_zeror_binary(X_y):
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
 
 
-def test_zeror_multiclass(X_y_multi):
+def test_zeror_binary_random(X_y):
+    X, y = X_y
+    values = np.unique(y)
+    clf = ZeroRClassifier(strategy="random", random_state=0)
+    clf.fit(X, y)
+    np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X)))
+    predicted_proba = clf.predict_proba(X)
+    assert predicted_proba.shape == (len(X), 2)
+    np.testing.assert_allclose(predicted_proba, np.array([[0.5 for i in range(len(values))]] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+
+
+def test_zeror_multiclass_mode(X_y_multi):
     X, y = X_y_multi
     values, counts = np.unique(y, return_counts=True)
     mode = values[counts.argmax()]
@@ -52,6 +65,18 @@ def test_zeror_multiclass(X_y_multi):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1.0 if i == mode else 0.0 for i in range(len(values))]] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+
+
+def test_zeror_multiclass_random(X_y_multi):
+    X, y = X_y_multi
+    values = np.unique(y)
+    clf = ZeroRClassifier(strategy="random", random_state=0)
+    clf.fit(X, y)
+    np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X)))
+    predicted_proba = clf.predict_proba(X)
+    assert predicted_proba.shape == (len(X), 3)
+    np.testing.assert_allclose(predicted_proba, np.array([[1. / 3 for i in range(len(values))]] * len(X)))
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
 
 

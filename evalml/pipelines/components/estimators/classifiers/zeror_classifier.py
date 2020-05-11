@@ -42,7 +42,7 @@ class ZeroRClassifier(Estimator):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self.unique_vals = y.unique()
+        self.unique_vals = np.unique(y)
         self.num_unique = len(self.unique_vals)
         self.num_features = len(X)
 
@@ -68,7 +68,7 @@ class ZeroRClassifier(Estimator):
         else:
             try:
                 unique_vals = self.unique_vals
-                return np.random.choice(unique_vals, self.num_features)
+                return self.random_state.choice(unique_vals, self.num_features)
             except AttributeError:
                 raise RuntimeError("You must fit ZeroR classifier before calling predict!")
 
@@ -83,7 +83,7 @@ class ZeroRClassifier(Estimator):
         """
         if self.parameters["strategy"] == "mode":
             try:
-                mode = self.val
+                mode = self.mode
                 num_unique = self.num_unique
             except AttributeError:
                 raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
