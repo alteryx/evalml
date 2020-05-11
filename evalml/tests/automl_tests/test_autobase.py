@@ -91,17 +91,6 @@ def test_rankings(X_y, X_y_reg):
     assert len(automl.rankings) == 1
 
 
-@patch('evalml.pipelines.PipelineBase.fit')
-@patch('evalml.utils.logger.Logger.log')
-@patch('evalml.guardrails.detect_label_leakage')
-def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
-    X, y = X_y
-    mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}
-    automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
-    automl.search(X, y, raise_errors=False)
-    mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
-
-
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, X_y):
     def _dummy_callback(param1, param2):
@@ -117,7 +106,6 @@ def test_automl_str_search(mock_fit, X_y):
         'allowed_model_families': ['random_forest', 'linear_model'],
         'cv': StratifiedKFold(5),
         'tuner': RandomSearchTuner,
-        'detect_label_leakage': False,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
         'additional_objectives': ['Recall', 'AUC'],
@@ -135,7 +123,6 @@ def test_automl_str_search(mock_fit, X_y):
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
-        'Detect Label Leakage': search_params['detect_label_leakage'],
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],

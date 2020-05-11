@@ -27,14 +27,13 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.allowed_model_families = allowed_model_families
-        self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
@@ -123,7 +122,6 @@ class AutoSearchBase:
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
             f"Tuner: {type(list(self.tuners.values())[0]).__name__}\n"
-            f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
@@ -196,12 +194,6 @@ class AutoSearchBase:
         if self.max_time:
             logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
             logger.log("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
-
-        if self.detect_label_leakage:
-            leaked = guardrails.detect_label_leakage(X, y)
-            if len(leaked) > 0:
-                leaked = [str(k) for k in leaked.keys()]
-                logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         search_iteration_plot = None
         if self.plot:

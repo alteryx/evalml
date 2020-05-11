@@ -20,7 +20,6 @@ class AutoClassificationSearch(AutoSearchBase):
                  allowed_model_families=None,
                  cv=None,
                  tuner=None,
-                 detect_label_leakage=True,
                  start_iteration_callback=None,
                  add_result_callback=None,
                  additional_objectives=None,
@@ -58,9 +57,6 @@ class AutoClassificationSearch(AutoSearchBase):
             cv: cross-validation method to use. Defaults to StratifiedKFold.
 
             tuner: the tuner class to use. Defaults to scikit-optimize tuner
-
-            detect_label_leakage (bool): If True, check input features for label leakage and
-                warn if found. Defaults to true.
 
             start_iteration_callback (callable): function called before each pipeline training iteration.
                 Passed two parameters: pipeline_class, parameters.
@@ -103,7 +99,6 @@ class AutoClassificationSearch(AutoSearchBase):
             tolerance=tolerance,
             allowed_model_families=allowed_model_families,
             problem_type=problem_type,
-            detect_label_leakage=detect_label_leakage,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
             additional_objectives=additional_objectives,
