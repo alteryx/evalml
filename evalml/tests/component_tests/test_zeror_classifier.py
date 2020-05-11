@@ -13,7 +13,15 @@ def test_zeror_invalid_strategy():
 
 def test_zeror_access_without_fit(X_y):
     X, _ = X_y
-    clf = ZeroRClassifier()
+    clf = ZeroRClassifier(strategy="mode")
+    with pytest.raises(RuntimeError):
+        clf.predict(X)
+    with pytest.raises(RuntimeError):
+        clf.predict_proba(X)
+    with pytest.raises(RuntimeError):
+        clf.feature_importances
+
+    clf = ZeroRClassifier(strategy="random")
     with pytest.raises(RuntimeError):
         clf.predict(X)
     with pytest.raises(RuntimeError):

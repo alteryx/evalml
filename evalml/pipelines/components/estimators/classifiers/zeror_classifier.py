@@ -59,18 +59,15 @@ class ZeroRClassifier(Estimator):
         Returns:
             pd.Series : estimated labels
         """
-        if self.parameters["strategy"] == "mode":
-            try:
+        try:
+            if self.parameters["strategy"] == "mode":
                 mode = self.mode
-            except AttributeError:
-                raise RuntimeError("You must fit ZeroR classifier before calling predict!")
-            return pd.Series([mode] * len(X))
-        else:
-            try:
+                return pd.Series([mode] * len(X))
+            else:
                 unique_vals = self.unique_vals
                 return self.random_state.choice(unique_vals, self.num_features)
-            except AttributeError:
-                raise RuntimeError("You must fit ZeroR classifier before calling predict!")
+        except AttributeError:
+            raise RuntimeError("You must fit ZeroR classifier before calling predict!")
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -81,19 +78,16 @@ class ZeroRClassifier(Estimator):
         Returns:
             np.array : probability estimates
         """
-        if self.parameters["strategy"] == "mode":
-            try:
+        try:
+            if self.parameters["strategy"] == "mode":
                 mode = self.mode
                 num_unique = self.num_unique
-            except AttributeError:
-                raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
-            return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
-        else:
-            try:
+                return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
+            else:
                 num_unique = self.num_unique
-            except AttributeError:
-                raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
-            return np.array([[1.0 / self.num_unique for i in range(num_unique)]] * len(X))
+                return np.array([[1.0 / self.num_unique for i in range(num_unique)]] * len(X))
+        except AttributeError:
+            raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
 
     @property
     def feature_importances(self):
@@ -105,6 +99,6 @@ class ZeroRClassifier(Estimator):
         """
         try:
             num_features = self.num_features
+            return np.array([0.0] * num_features)
         except AttributeError:
             raise RuntimeError("You must fit ZeroR classifier before gettong feature_importances!")
-        return np.array([0.0] * num_features)
