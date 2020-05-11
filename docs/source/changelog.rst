@@ -12,6 +12,7 @@ Changelog
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
+        * Update AutoBase with `data_checks` parameter, remove previous `detect_label_leakage` parameter :pr:`765`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -26,7 +27,7 @@ Changelog
     **Breaking Changes**
 
     * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`
-
+    * The `detect_label_leakage` parameter for AutoML classes has been removed and replaced by a `data_checks` parameter :pr:`765`
 
 
 **v0.9.0 Apr. 27, 2020**
