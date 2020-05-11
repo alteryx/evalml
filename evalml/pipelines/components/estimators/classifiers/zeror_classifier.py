@@ -7,7 +7,8 @@ from evalml.problem_types import ProblemTypes
 
 
 class ZeroRClassifier(Estimator):
-    """Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
+    """TODO
+    Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
     """
@@ -16,9 +17,11 @@ class ZeroRClassifier(Estimator):
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, random_state=0):
+    def __init__(self, strategy="mode", random_state=0):
         """TODO"""
-        parameters = {}
+        if strategy not in ["mode", "random"]:
+            raise ValueError("'strategy' parameter must equal either 'mode' or 'random'")
+        parameters = {"strategy": strategy}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -39,9 +42,12 @@ class ZeroRClassifier(Estimator):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self.mode = y.mode()[0]
-        self.num_unique = len(y.value_counts())
+        self.unique_vals = y.unique()
+        self.num_unique = len(self.unique_vals)
         self.num_features = len(X)
+
+        if self.parameters["strategy"] == "mode":
+            self.mode = y.mode()[0]
         return self
 
     def predict(self, X):
@@ -53,11 +59,18 @@ class ZeroRClassifier(Estimator):
         Returns:
             pd.Series : estimated labels
         """
-        try:
-            mode = self.mode
-        except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict!")
-        return pd.Series([mode] * len(X))
+        if self.parameters["strategy"] == "mode":
+            try:
+                mode = self.mode
+            except AttributeError:
+                raise RuntimeError("You must fit ZeroR classifier before calling predict!")
+            return pd.Series([mode] * len(X))
+        else:
+            try:
+                unique_vals = self.unique_vals
+                return np.random.choice(unique_vals, self.num_features)
+            except AttributeError:
+                raise RuntimeError("You must fit ZeroR classifier before calling predict!")
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -68,12 +81,19 @@ class ZeroRClassifier(Estimator):
         Returns:
             np.array : probability estimates
         """
-        try:
-            mode = self.mode
-            num_unique = self.num_unique
-        except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
-        return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
+        if self.parameters["strategy"] == "mode":
+            try:
+                mode = self.val
+                num_unique = self.num_unique
+            except AttributeError:
+                raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
+            return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
+        else:
+            try:
+                num_unique = self.num_unique
+            except AttributeError:
+                raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
+            return np.array([[1.0 / self.num_unique for i in range(num_unique)]] * len(X))
 
     @property
     def feature_importances(self):

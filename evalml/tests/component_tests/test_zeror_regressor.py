@@ -4,6 +4,11 @@ import pytest
 from evalml.pipelines.components import ZeroRRegressor
 
 
+def test_zeror_invalid_strategy():
+    with pytest.raises(ValueError):
+        ZeroRRegressor(strategy="unfortunately invalid strategy")
+
+
 def test_zeror_access_without_fit(X_y_reg):
     X, _ = X_y_reg
     clf = ZeroRRegressor()
@@ -11,11 +16,6 @@ def test_zeror_access_without_fit(X_y_reg):
         clf.predict(X)
     with pytest.raises(RuntimeError):
         clf.feature_importances
-
-
-def test_zeror_invalid_strategy():
-    with pytest.raises(ValueError):
-        ZeroRRegressor(strategy="unfortunately invalid strategy")
 
 
 def test_zeror_y_is_None(X_y_reg):

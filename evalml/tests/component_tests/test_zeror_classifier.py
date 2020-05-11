@@ -5,6 +5,11 @@ import pytest
 from evalml.pipelines.components import ZeroRClassifier
 
 
+def test_zeror_invalid_strategy():
+    with pytest.raises(ValueError):
+        ZeroRClassifier(strategy="unfortunately invalid strategy")
+
+
 def test_zeror_access_without_fit(X_y):
     X, _ = X_y
     clf = ZeroRClassifier()
