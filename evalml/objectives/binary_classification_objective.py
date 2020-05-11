@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from scipy.optimize import minimize_scalar
 
@@ -60,3 +61,10 @@ class BinaryClassificationObjective(ObjectiveBase):
         if not isinstance(ypred_proba, pd.Series):
             ypred_proba = pd.Series(ypred_proba)
         return ypred_proba > threshold
+
+    def validate_inputs(self, y_true, y_predicted):
+        super().validate_inputs(y_true, y_predicted)
+        if len(np.unique(y_true)) > 2:
+            raise ValueError("y_true contains more than two unique values")
+        if len(np.unique(y_predicted)) > 2 and not self.score_needs_proba:
+            raise ValueError("y_predicted contains more than two unique values")

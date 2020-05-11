@@ -19,6 +19,7 @@ Changelog
         * Fix components API to match other modules :pr:`747`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
+        * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
 
 .. warning::
 
