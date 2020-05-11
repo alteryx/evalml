@@ -20,7 +20,7 @@ class CatBoostClassifier(Estimator):
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
         "eta": Real(0, 1),
-        "max_depth": Integer(1, 16),
+        "max_depth": Integer(4, 10),
     }
     model_family = ModelFamily.CATBOOST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]

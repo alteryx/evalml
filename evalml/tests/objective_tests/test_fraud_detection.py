@@ -36,6 +36,66 @@ def test_fraud_objective_function_amount_col(X_y):
         objective.objective_function(y_true, y_predicted, X)
 
 
+def test_input_contains_nan(X_y):
+    fraud_cost = FraudCost(amount_col="value")
+    y_predicted = np.array([np.nan, 0, 0])
+    y_true = np.array([1, 2, 1])
+    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+        fraud_cost.score(y_true, y_predicted)
+
+    y_true = np.array([np.nan, 0, 0])
+    y_predicted = np.array([1, 2, 0])
+    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+        fraud_cost.score(y_true, y_predicted)
+
+
+def test_input_contains_inf(capsys):
+    fraud_cost = FraudCost(amount_col="value")
+    y_predicted = np.array([np.inf, 0, 0])
+    y_true = np.array([1, 0, 0])
+    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+        fraud_cost.score(y_true, y_predicted)
+
+    y_true = np.array([np.inf, 0, 0])
+    y_predicted = np.array([1, 0, 0])
+    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+        fraud_cost.score(y_true, y_predicted)
+
+
+def test_different_input_lengths():
+    fraud_cost = FraudCost(amount_col="value")
+    y_predicted = np.array([0, 0])
+    y_true = np.array([1])
+    with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+        fraud_cost.score(y_true, y_predicted)
+
+    y_true = np.array([0, 0])
+    y_predicted = np.array([1, 2, 0])
+    with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+        fraud_cost.score(y_true, y_predicted)
+
+
+def test_zero_input_lengths():
+    fraud_cost = FraudCost(amount_col="value")
+    y_predicted = np.array([])
+    y_true = np.array([])
+    with pytest.raises(ValueError, match="Length of inputs is 0"):
+        fraud_cost.score(y_true, y_predicted)
+
+
+def test_binary_more_than_two_unique_values():
+    fraud_cost = FraudCost(amount_col="value")
+    y_predicted = np.array([0, 1, 2])
+    y_true = np.array([1, 0, 1])
+    with pytest.raises(ValueError, match="y_predicted contains more than two unique values"):
+        fraud_cost.score(y_true, y_predicted)
+
+    y_true = np.array([0, 1, 2])
+    y_predicted = np.array([1, 0, 1])
+    with pytest.raises(ValueError, match="y_true contains more than two unique values"):
+        fraud_cost.score(y_true, y_predicted)
+
+
 def test_fraud_objective_score(X_y):
     X, y = X_y
     fraud_cost = FraudCost(amount_col="value")
