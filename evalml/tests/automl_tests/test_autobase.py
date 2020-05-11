@@ -150,7 +150,8 @@ def test_automl_str_search(mock_fit, X_y):
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_data_checks(X_y):
+def test_automl_data_checks(mock_fit, X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y)
+    mock_fit.assert_called()
