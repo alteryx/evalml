@@ -294,6 +294,9 @@ workflows:
             name: "windows python 3.6 unit tests, assisted modeling"
             python_version: "3.6"
             assisted_modeling: true
+            filters:
+                branches:
+                    only: master
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
