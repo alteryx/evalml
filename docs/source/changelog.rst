@@ -5,11 +5,15 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added "baseline" models for a given dataset :pr:`746`
+        * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
         * Added __str__ for AutoSearch object :pr:`675`
+        * Add util methods to graph ROC and confusion matrix :pr:`720`
+        * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
+        * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -17,6 +21,14 @@ Changelog
         * Fix components API to match other modules :pr:`747`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
+        * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
+
+.. warning::
+
+    **Breaking Changes**
+
+    * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`
+
 
 
 **v0.9.0 Apr. 27, 2020**

@@ -21,7 +21,7 @@ from evalml.utils import Logger, convert_to_seconds, get_random_state
 logger = Logger()
 
 
-class AutoBase:
+class AutoSearchBase:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
@@ -216,7 +216,7 @@ class AutoBase:
 
         start = time.time()
         while self._check_stopping_condition(start):
-            self._do_iteration(X, y, pbar, raise_errors)
+            self._do_iteration(X, y, pbar, raise_errors=raise_errors)
             if search_iteration_plot:
                 search_iteration_plot.update()
         desc = "✔ Optimization finished"
@@ -298,7 +298,7 @@ class AutoBase:
             new_parameters[component.name] = component_parameters
         return new_parameters
 
-    def _do_iteration(self, X, y, pbar, raise_errors):
+    def _do_iteration(self, X, y, pbar, raise_errors=True):
         pbar.update(1)
 
         # propose the next best parameters for this piepline
@@ -316,6 +316,20 @@ class AutoBase:
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
 
+        evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+
+        # save the result and continue
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=evaluation_results['training_time'],
+                         cv_data=evaluation_results['cv_data'])
+
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
+
+    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
         cv_data = []
 
@@ -335,7 +349,7 @@ class AutoBase:
                 y_threshold_tuning = None
 
                 if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=pipeline.estimator.random_state)
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 pipeline.fit(X_train, y_train)
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     pipeline.threshold = 0.5
@@ -360,17 +374,7 @@ class AutoBase:
             cv_data.append({"all_objective_scores": ordered_scores, "score": score})
 
         training_time = time.time() - start
-
-        # save the result and continue
-        self._add_result(trained_pipeline=pipeline,
-                         parameters=parameters,
-                         training_time=training_time,
-                         cv_data=cv_data)
-
-        desc = "✔" + desc[1:]
-        pbar.set_description_str(desc=desc, refresh=True)
-        if self.verbose:  # To force new line between progress bar iterations
-            print('')
+        return {'cv_data': cv_data, 'training_time': training_time}
 
     def _select_pipeline(self):
         return self.random_state.choice(self.possible_pipelines)
