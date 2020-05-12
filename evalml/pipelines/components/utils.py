@@ -5,6 +5,8 @@ import sys
 
 from .component_base import ComponentBase
 from .estimators import (
+    BaselineClassifier,
+    BaselineRegressor,
     CatBoostClassifier,
     CatBoostRegressor,
     Estimator,
@@ -13,9 +15,7 @@ from .estimators import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    XGBoostRegressor,
-    BaselineClassifier,
-    BaselineRegressor
+    XGBoostRegressor
 )
 from .transformers import (
     CategoricalEncoder,
