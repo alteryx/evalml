@@ -153,6 +153,6 @@ def test_automl_str_search(mock_fit, X_y):
 def test_automl_data_checks(mock_check_stopping_condition, X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
-    mock_fit.return_value = False
+    mock_check_stopping_condition.return_value = False
     automl.search(X, y, data_checks=None)
     mock_check_stopping_condition.assert_called()
