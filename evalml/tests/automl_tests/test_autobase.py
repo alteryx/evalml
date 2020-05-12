@@ -1,10 +1,12 @@
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
+from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
@@ -150,9 +152,20 @@ def test_automl_str_search(mock_fit, X_y):
 
 
 @patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
-def test_automl_data_checks(mock_check_stopping_condition, X_y):
+def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
     mock_check_stopping_condition.return_value = False
-    automl.search(X, y, data_checks=None)
+    automl.search(X, y, data_checks=EmptyDataChecks())
     mock_check_stopping_condition.assert_called()
+
+
+def test_automl_default_data_checks():
+    X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+                      'all_null': [None, None, None, None, None],
+                      'also_all_null': [None, None, None, None, None],
+                      'no_null': [1, 2, 3, 4, 5]})
+    y = pd.Series([0, 0, 0, 0, 0])
+    automl = AutoClassificationSearch(max_pipelines=1)
+    with pytest.raises(ValueError, match="Data checks raised"):
+        automl.search(X, y, data_checks=None)

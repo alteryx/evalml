@@ -177,15 +177,15 @@ class AutoSearchBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
+
         if data_checks is None:
             data_checks = DefaultDataChecks()
-        self.data_checks = data_checks
 
-        data_check_messages = self.data_checks.validate(X, y)
+        data_check_messages = data_checks.validate(X, y)
         if len(data_check_messages) > 0:
             for data_check_message in data_check_messages:
                 logger.log(data_check_message.message)
-            raise ValueError("ERROR")
+            raise ValueError("Data checks raised some warnings and/or errors. Please address these and run search again or pass in data_checks=EmptyDataChecks() to search() to disable data checking.")
 
         logger.log_title("Beginning pipeline search")
         logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
