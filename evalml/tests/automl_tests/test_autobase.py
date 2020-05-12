@@ -149,9 +149,10 @@ def test_automl_str_search(mock_fit, X_y):
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_data_checks(mock_fit, X_y):
+@patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
+def test_automl_data_checks(mock_check_stopping_condition, X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
-    automl.search(X, y)
-    mock_fit.assert_called()
+    mock_fit.return_value = False
+    automl.search(X, y, data_checks=None)
+    mock_check_stopping_condition.assert_called()

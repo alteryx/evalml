@@ -27,7 +27,7 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, data_checks, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
@@ -82,10 +82,6 @@ class AutoSearchBase:
 
         self.n_jobs = n_jobs
         self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
-
-        if data_checks is None:
-            data_checks = DefaultDataChecks()
-        self.data_checks = data_checks
 
         self.tuners = {}
         self.search_spaces = {}
@@ -143,7 +139,7 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -158,6 +154,8 @@ class AutoSearchBase:
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+            data_checks (DataChecks, None): A set of data checks to run before fit-time. If None, uses DefaultDataChecks. Defaults to None.
 
         Returns:
 
@@ -179,11 +177,15 @@ class AutoSearchBase:
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
+        if data_checks is None:
+            data_checks = DefaultDataChecks()
+        self.data_checks = data_checks
 
         data_check_messages = self.data_checks.validate(X, y)
         if len(data_check_messages) > 0:
             for data_check_message in data_check_messages:
                 logger.log(data_check_message.message)
+            raise ValueError("ERROR")
 
         logger.log_title("Beginning pipeline search")
         logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
