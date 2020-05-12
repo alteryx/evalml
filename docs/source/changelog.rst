@@ -21,6 +21,8 @@ Changelog
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
+        * Add in CI test for Assisted Modeling version dependencies :pr:`674`
+
 
 .. warning::
 
@@ -101,7 +103,6 @@ Changelog
         * Update graph tests to always use tmpfile dir :pr:`649`
         * Changelog checkin test workaround for release PRs: If 'future release' section is empty of PR refs, pass check :pr:`658`
         * Add changelog checkin test exception for `dep-update` branch :pr:`723`
-        * Add in CI test for Assisted Modeling depedency versions :pr:`674`
 
 
 .. warning::
