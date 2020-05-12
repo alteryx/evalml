@@ -23,7 +23,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_components_core_dependencies_mock():
-    assert len(all_components()) == 9
+    assert len(all_components()) == 11
 
 
 def test_handle_component_names():
