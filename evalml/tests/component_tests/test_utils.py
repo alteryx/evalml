@@ -8,9 +8,9 @@ from evalml.pipelines.components import all_components, handle_component
 
 def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_components()) == 9
+        assert len(all_components()) == 11
     else:
-        assert len(all_components()) == 13
+        assert len(all_components()) == 15
 
 
 def make_mock_import_module(libs_to_blacklist):
