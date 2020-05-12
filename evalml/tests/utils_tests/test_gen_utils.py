@@ -1,25 +1,31 @@
+import importlib
 import inspect
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
-from evalml.utils.gen_utils import (
-    SEED_BOUNDS,
-    classproperty,
-    convert_to_seconds,
-    get_random_seed,
-    get_random_state,
-    import_or_raise
-)
+from evalml.utils.gen_utils import (SEED_BOUNDS, classproperty,
+                                    convert_to_seconds, get_random_seed,
+                                    get_random_state, import_or_raise)
 
 
-def test_import_or_raise_errors():
+@patch('importlib.import_module')
+def test_import_or_raise_errors(dummy_importlib):
+    def _mock_import_function(library_str):
+        if library_str == "_evalml":
+            raise ImportError("Mock ImportError executed!")
+        if library_str == "attr_error_lib":
+            raise Exception("Mock Exception executed!")
+
+    dummy_importlib.side_effect = _mock_import_function
+
     with pytest.raises(ImportError, match="Missing optional dependency '_evalml'"):
         import_or_raise("_evalml")
     with pytest.raises(ImportError, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
         import_or_raise("_evalml", "Additional error message")
-    with pytest.raises(Exception, match="An exception occured while trying to import `0`: 'int' object has no attribute 'startswith'"):
-        import_or_raise(0)
+    with pytest.raises(Exception, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
+        import_or_raise("attr_error_lib")
 
 
 def test_import_or_raise_imports():

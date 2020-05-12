@@ -21,7 +21,7 @@ def import_or_raise(library, error_msg=None):
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
         raise ImportError(msg)
     except Exception as ex:
-        msg = (f"An exception occured while trying to import `{library}`: {str(ex)}")
+        msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
         raise Exception(msg)
 
 
