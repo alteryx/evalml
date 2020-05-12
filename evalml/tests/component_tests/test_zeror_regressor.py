@@ -30,7 +30,7 @@ def test_zeror_mean(X_y_reg):
     clf = ZeroRRegressor()
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([mean] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
 def test_zeror_median(X_y_reg):
@@ -39,4 +39,4 @@ def test_zeror_median(X_y_reg):
     clf = ZeroRRegressor(strategy="median")
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([median] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))

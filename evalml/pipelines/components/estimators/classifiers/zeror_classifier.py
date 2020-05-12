@@ -44,7 +44,8 @@ class ZeroRClassifier(Estimator):
 
         self.unique_vals = np.unique(y)
         self.num_unique = len(self.unique_vals)
-        self.num_features = len(X)
+        self.num_rows = X.shape[0]
+        self.num_features = X.shape[1]
 
         if self.parameters["strategy"] == "mode":
             self.mode = y.mode()[0]
@@ -65,7 +66,7 @@ class ZeroRClassifier(Estimator):
                 return pd.Series([mode] * len(X))
             else:
                 unique_vals = self.unique_vals
-                return self.random_state.choice(unique_vals, self.num_features)
+                return self.random_state.choice(unique_vals, self.num_rows)
         except AttributeError:
             raise RuntimeError("You must fit ZeroR classifier before calling predict!")
 

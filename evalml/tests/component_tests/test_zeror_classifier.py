@@ -47,7 +47,7 @@ def test_zeror_binary_mode(X_y):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     np.testing.assert_allclose(predicted_proba, np.array([[1.0 if i == mode else 0.0 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
 def test_zeror_binary_random(X_y):
@@ -59,7 +59,7 @@ def test_zeror_binary_random(X_y):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     np.testing.assert_allclose(predicted_proba, np.array([[0.5 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
 def test_zeror_multiclass_mode(X_y_multi):
@@ -73,7 +73,7 @@ def test_zeror_multiclass_mode(X_y_multi):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1.0 if i == mode else 0.0 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
 def test_zeror_multiclass_random(X_y_multi):
@@ -85,7 +85,7 @@ def test_zeror_multiclass_random(X_y_multi):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1. / 3 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
 def test_zeror_no_mode():
@@ -97,4 +97,4 @@ def test_zeror_no_mode():
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1.0 if i == 0 else 0.0 for i in range(3)]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))

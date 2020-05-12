@@ -36,7 +36,7 @@ class ZeroRRegressor(Estimator):
             self
         """
         if y is None:
-            raise ValueError("Cannot fit ZeroR classifier if y is None")
+            raise ValueError("Cannot fit ZeroR regressor if y is None")
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
@@ -45,7 +45,7 @@ class ZeroRRegressor(Estimator):
             self.val = y.mean()
         elif self.parameters["strategy"] == "median":
             self.val = y.median()
-        self.num_features = len(X)
+        self.num_features = X.shape[1]
         return self
 
     def predict(self, X):
@@ -61,7 +61,7 @@ class ZeroRRegressor(Estimator):
         try:
             val = self.val
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict!")
+            raise RuntimeError("You must fit ZeroR regressor before calling predict!")
         return pd.Series([val] * len(X))
 
     @property
@@ -75,6 +75,6 @@ class ZeroRRegressor(Estimator):
         """
         try:
             num_features = self.num_features
+            return np.array([0.0] * num_features)
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before gettong feature_importances!")
-        return np.array([0.0] * num_features)
+            raise RuntimeError("You must fit ZeroR regressor before accessing feature_importances!")

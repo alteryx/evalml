@@ -13,7 +13,9 @@ from .estimators import (
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    XGBoostRegressor
+    XGBoostRegressor,
+    ZeroRClassifier,
+    ZeroRRegressor
 )
 from .transformers import (
     CategoricalEncoder,

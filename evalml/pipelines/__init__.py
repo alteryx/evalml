@@ -33,14 +33,17 @@ from .classification import (
     RFBinaryClassificationPipeline,
     RFMulticlassClassificationPipeline,
     XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline
+    XGBoostMulticlassPipeline,
+    ZeroRBinaryPipeline,
+    ZeroRMulticlassPipeline
 )
 
 from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
-    XGBoostRegressionPipeline
+    XGBoostRegressionPipeline,
+    ZeroRRegressionPipeline
 )
 from .utils import (
     all_pipelines,
