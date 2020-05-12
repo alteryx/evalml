@@ -4,9 +4,9 @@ from .classifiers import (LogisticRegressionClassifier,
                           RandomForestClassifier,
                           XGBoostClassifier,
                           CatBoostClassifier,
-                          ZeroRClassifier)
+                          BaselineClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
                          XGBoostRegressor,
-                         ZeroRRegressor)
+                         BaselineRegressor)

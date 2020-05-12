@@ -6,13 +6,13 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class ZeroRClassifier(Estimator):
+class BaselineClassifier(Estimator):
     """TODO
     Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
     """
-    name = "ZeroR Classifier"
+    name = "Baseline Classifier"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -37,7 +37,7 @@ class ZeroRClassifier(Estimator):
             self
         """
         if y is None:
-            raise ValueError("Cannot fit ZeroR classifier if y is None")
+            raise ValueError("Cannot fit Baseline classifier if y is None")
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
@@ -68,7 +68,7 @@ class ZeroRClassifier(Estimator):
                 unique_vals = self.unique_vals
                 return self.random_state.choice(unique_vals, self.num_rows)
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict!")
+            raise RuntimeError("You must fit Baseline classifier before calling predict!")
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -88,7 +88,7 @@ class ZeroRClassifier(Estimator):
                 num_unique = self.num_unique
                 return np.array([[1.0 / self.num_unique for i in range(num_unique)]] * len(X))
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before calling predict_proba!")
+            raise RuntimeError("You must fit Baseline classifier before calling predict_proba!")
 
     @property
     def feature_importances(self):
@@ -102,4 +102,4 @@ class ZeroRClassifier(Estimator):
             num_features = self.num_features
             return np.array([0.0] * num_features)
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR classifier before gettong feature_importances!")
+            raise RuntimeError("You must fit Baseline classifier before gettong feature_importances!")

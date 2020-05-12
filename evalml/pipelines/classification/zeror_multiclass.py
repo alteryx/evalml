@@ -1,7 +1,7 @@
 from evalml.pipelines import MulticlassClassificationPipeline
 
 
-class ZeroRMulticlassPipeline(MulticlassClassificationPipeline):
-    """"ZeroR Pipeline for multiclass classification"""
-    custom_name = "ZeroR Multiclass Classification Pipeline"
-    component_graph = ["ZeroR Classifier"]
+class BaselineMulticlassPipeline(MulticlassClassificationPipeline):
+    """"Baseline Pipeline for multiclass classification"""
+    custom_name = "Baseline Multiclass Classification Pipeline"
+    component_graph = ["Baseline Classifier"]

@@ -6,12 +6,12 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class ZeroRRegressor(Estimator):
+class BaselineRegressor(Estimator):
     """Regressor that predicts using the specified strategy.
 
     This is useful as a simple baseline regressor to compare with other regressor.
 """
-    name = "ZeroR Regressor"
+    name = "Baseline Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.REGRESSION]
@@ -36,7 +36,7 @@ class ZeroRRegressor(Estimator):
             self
         """
         if y is None:
-            raise ValueError("Cannot fit ZeroR regressor if y is None")
+            raise ValueError("Cannot fit Baseline regressor if y is None")
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
@@ -61,7 +61,7 @@ class ZeroRRegressor(Estimator):
         try:
             val = self.val
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR regressor before calling predict!")
+            raise RuntimeError("You must fit Baseline regressor before calling predict!")
         return pd.Series([val] * len(X))
 
     @property
@@ -77,4 +77,4 @@ class ZeroRRegressor(Estimator):
             num_features = self.num_features
             return np.array([0.0] * num_features)
         except AttributeError:
-            raise RuntimeError("You must fit ZeroR regressor before accessing feature_importances!")
+            raise RuntimeError("You must fit Baseline regressor before accessing feature_importances!")

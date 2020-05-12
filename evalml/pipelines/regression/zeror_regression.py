@@ -1,7 +1,7 @@
 from evalml.pipelines import RegressionPipeline
 
 
-class ZeroRRegressionPipeline(RegressionPipeline):
-    """ZeroR Pipeline for regression problems"""
-    _name = "ZeroR Regression Pipeline"
-    component_graph = ["ZeroR Regressor"]
+class BaselineRegressionPipeline(RegressionPipeline):
+    """Baseline Pipeline for regression problems"""
+    _name = "Baseline Regression Pipeline"
+    component_graph = ["Baseline Regressor"]

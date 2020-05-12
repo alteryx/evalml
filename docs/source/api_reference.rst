@@ -82,8 +82,8 @@ Classification Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
-    ZeroRBinaryPipeline
-    ZeroRMulticlassPipeline
+    BaselineBinaryPipeline
+    BaselineMulticlassPipeline
 
 Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~
@@ -97,7 +97,7 @@ Regression Pipelines
     CatBoostRegressionPipeline
     LinearRegressionPipeline
     XGBoostRegressionPipeline
-    ZeroRRegressionPipeline
+    BaselineRegressionPipeline
 
 
 Pipeline Utils
@@ -175,7 +175,7 @@ Classifiers are components that output a predicted class label.
     RandomForestClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
-    ZeroRClassifier
+    BaselineClassifier
 
 Regressors
 -----------
@@ -191,7 +191,7 @@ Regressors are components that output a predicted target value.
     LinearRegressor
     RandomForestRegressor
     XGBoostRegressor
-    ZeroRRegressor
+    BaselineRegressor
 
 
 .. currentmodule:: evalml.objectives
