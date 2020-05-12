@@ -9,15 +9,21 @@ from evalml.problem_types import ProblemTypes
 class BaselineRegressor(Estimator):
     """Regressor that predicts using the specified strategy.
 
-    This is useful as a simple baseline regressor to compare with other regressor.
-"""
+    This is useful as a simple baseline regressor to compare with other regressors.
+    """
     name = "Baseline Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.NONE
     supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, strategy="mean", random_state=0):
-        """TODO"""
+        """Baseline regressor that uses a simple strategy to make predictions.
+
+        Arguments:
+            strategy (str): method used to predict. Valid options are "mean", "median". Defaults to "mean".
+            random_state (int, np.random.RandomState): seed for the random number generator
+
+        """
         if strategy not in ["mean", "median"]:
             raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
         parameters = {"strategy": strategy}
@@ -26,15 +32,6 @@ class BaselineRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits component to data
-        TODO
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
-
-        Returns:
-            self
-        """
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
 
@@ -49,15 +46,6 @@ class BaselineRegressor(Estimator):
         return self
 
     def predict(self, X):
-        """Make predictions using selected features.
-        TODO
-
-        Args:
-            X (pd.DataFrame) : features
-
-        Returns:
-            pd.Series : estimated labels
-        """
         try:
             val = self.val
         except AttributeError:
@@ -66,11 +54,10 @@ class BaselineRegressor(Estimator):
 
     @property
     def feature_importances(self):
-        """Returns feature importances.
-        TODO
+        """Returns feature importances. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.array (float) : importance associated with each feature
+            np.array (float) : an array of zeroes
 
         """
         try:

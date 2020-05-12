@@ -7,8 +7,8 @@ from evalml.problem_types import ProblemTypes
 
 
 class BaselineClassifier(Estimator):
-    """TODO
-    Classifier that predicts using the mode. In the case where there is no single mode, the lowest value is used.
+    """
+    Classifier that predicts using the specified strategy.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
     """
@@ -18,7 +18,13 @@ class BaselineClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, strategy="mode", random_state=0):
-        """TODO"""
+        """Baseline classifier that uses a simple strategy to make predictions.
+
+        Arguments:
+            strategy (str): method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
+            random_state (int, np.random.RandomState): seed for the random number generator
+
+        """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
         parameters = {"strategy": strategy}
@@ -27,15 +33,6 @@ class BaselineClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits component to data
-
-        Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
-
-        Returns:
-            self
-        """
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
 
@@ -54,14 +51,6 @@ class BaselineClassifier(Estimator):
         return self
 
     def predict(self, X):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame) : features
-
-        Returns:
-            pd.Series : estimated labels
-        """
         strategy = self.parameters["strategy"]
         try:
             if strategy == "mode":
@@ -77,14 +66,6 @@ class BaselineClassifier(Estimator):
             raise RuntimeError("You must fit Baseline classifier before calling predict!")
 
     def predict_proba(self, X):
-        """Make probability estimates for labels.
-
-        Args:
-            X (pd.DataFrame) : features
-
-        Returns:
-            np.array : probability estimates
-        """
         strategy = self.parameters["strategy"]
         try:
             if strategy == "mode":
@@ -102,10 +83,10 @@ class BaselineClassifier(Estimator):
 
     @property
     def feature_importances(self):
-        """Returns feature importances.
+        """Returns feature importances. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.array (float) : importance associated with each feature
+            np.array (float) : an array of zeroes
 
         """
         try:

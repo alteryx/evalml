@@ -105,7 +105,6 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
     np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X), p=percent_freq))
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
-    print (percent_freq)
     np.testing.assert_allclose(predicted_proba, np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
