@@ -1,13 +1,17 @@
-import importlib
 import inspect
 from unittest.mock import patch
 
 import numpy as np
 import pytest
 
-from evalml.utils.gen_utils import (SEED_BOUNDS, classproperty,
-                                    convert_to_seconds, get_random_seed,
-                                    get_random_state, import_or_raise)
+from evalml.utils.gen_utils import (
+    SEED_BOUNDS,
+    classproperty,
+    convert_to_seconds,
+    get_random_seed,
+    get_random_state,
+    import_or_raise
+)
 
 
 @patch('importlib.import_module')
