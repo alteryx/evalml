@@ -13,15 +13,7 @@ def test_baseline_invalid_strategy():
 
 def test_baseline_access_without_fit(X_y):
     X, _ = X_y
-    clf = BaselineClassifier(strategy="mode")
-    with pytest.raises(RuntimeError):
-        clf.predict(X)
-    with pytest.raises(RuntimeError):
-        clf.predict_proba(X)
-    with pytest.raises(RuntimeError):
-        clf.feature_importances
-
-    clf = BaselineClassifier(strategy="random")
+    clf = BaselineClassifier()
     with pytest.raises(RuntimeError):
         clf.predict(X)
     with pytest.raises(RuntimeError):
@@ -62,6 +54,20 @@ def test_baseline_binary_random(X_y):
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 
+def test_baseline_binary_random_weighted(X_y):
+    X, y = X_y
+    values, counts = np.unique(y, return_counts=True)
+    percent_freq = counts.astype(float) / len(y)
+    assert percent_freq.sum() == 1.0
+    clf = BaselineClassifier(strategy="random_weighted", random_state=0)
+    clf.fit(X, y)
+    np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X), p=percent_freq))
+    predicted_proba = clf.predict_proba(X)
+    assert predicted_proba.shape == (len(X), 2)
+    np.testing.assert_allclose(predicted_proba, np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
+
+
 def test_baseline_multiclass_mode(X_y_multi):
     X, y = X_y_multi
     values, counts = np.unique(y, return_counts=True)
@@ -85,6 +91,22 @@ def test_baseline_multiclass_random(X_y_multi):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1. / 3 for i in range(len(values))]] * len(X)))
+    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
+
+
+def test_baseline_multiclass_random_weighted(X_y_multi):
+    X, y = X_y_multi
+    values, counts = np.unique(y, return_counts=True)
+    percent_freq = counts.astype(float) / len(y)
+    assert percent_freq.sum() == 1.0
+
+    clf = BaselineClassifier(strategy="random_weighted", random_state=0)
+    clf.fit(X, y)
+    np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X), p=percent_freq))
+    predicted_proba = clf.predict_proba(X)
+    assert predicted_proba.shape == (len(X), 3)
+    print (percent_freq)
+    np.testing.assert_allclose(predicted_proba, np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
 
 

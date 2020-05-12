@@ -19,8 +19,8 @@ class BaselineClassifier(Estimator):
 
     def __init__(self, strategy="mode", random_state=0):
         """TODO"""
-        if strategy not in ["mode", "random"]:
-            raise ValueError("'strategy' parameter must equal either 'mode' or 'random'")
+        if strategy not in ["mode", "random", "random_weighted"]:
+            raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
         parameters = {"strategy": strategy}
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -42,7 +42,9 @@ class BaselineClassifier(Estimator):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self.unique_vals = np.unique(y)
+        vals, counts = np.unique(y, return_counts=True)
+        self.unique_vals = vals
+        self.percentage_freq = counts.astype(float) / len(y)
         self.num_unique = len(self.unique_vals)
         self.num_rows = X.shape[0]
         self.num_features = X.shape[1]
@@ -60,13 +62,17 @@ class BaselineClassifier(Estimator):
         Returns:
             pd.Series : estimated labels
         """
+        strategy = self.parameters["strategy"]
         try:
-            if self.parameters["strategy"] == "mode":
+            if strategy == "mode":
                 mode = self.mode
                 return pd.Series([mode] * len(X))
-            else:
+            elif strategy == "random":
                 unique_vals = self.unique_vals
                 return self.random_state.choice(unique_vals, self.num_rows)
+            else:
+                unique_vals = self.unique_vals
+                return self.random_state.choice(unique_vals, self.num_rows, p=self.percentage_freq)
         except AttributeError:
             raise RuntimeError("You must fit Baseline classifier before calling predict!")
 
@@ -79,14 +85,18 @@ class BaselineClassifier(Estimator):
         Returns:
             np.array : probability estimates
         """
+        strategy = self.parameters["strategy"]
         try:
-            if self.parameters["strategy"] == "mode":
+            if strategy == "mode":
                 mode = self.mode
                 num_unique = self.num_unique
                 return np.array([[1.0 if i == mode else 0.0 for i in range(num_unique)]] * len(X))
-            else:
+            elif strategy == "random":
                 num_unique = self.num_unique
                 return np.array([[1.0 / self.num_unique for i in range(num_unique)]] * len(X))
+            else:
+                num_unique = self.num_unique
+                return np.array([[self.percentage_freq[i] for i in range(num_unique)]] * len(X))
         except AttributeError:
             raise RuntimeError("You must fit Baseline classifier before calling predict_proba!")
 
