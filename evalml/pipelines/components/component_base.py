@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import get_logger, get_random_state
+from evalml.utils import get_logger, get_random_state, log_subtitle, log_title
 
 logger = get_logger(__file__)
 
@@ -54,7 +54,7 @@ class ComponentBase(ABC):
         """
         if print_name:
             title = self.name
-            logger.log_subtitle(title)
+            log_subtitle(logger, title)
         for parameter in self.parameters:
             parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
             logger.info(parameter_str)

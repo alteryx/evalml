@@ -46,8 +46,6 @@ class AutoSearchBase:
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
 
-        logger.verbose = verbose
-
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         else:
@@ -97,7 +95,7 @@ class AutoSearchBase:
             self.plot = PipelineSearchPlots(self)
 
         except ImportError:
-            logger.info("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            logger.warning("WARNING: Unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
     def __str__(self):
@@ -202,7 +200,7 @@ class AutoSearchBase:
             leaked = guardrails.detect_label_leakage(X, y)
             if len(leaked) > 0:
                 leaked = [str(k) for k in leaked.keys()]
-                logger.info("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+                logger.warning("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         search_iteration_plot = None
         if self.plot:
@@ -464,8 +462,8 @@ class AutoSearchBase:
         log_subtitle(logger, "Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
-            logger.info("Warning! High variance within cross validation scores. " +
-                        "Model may not perform as estimated on unseen data.")
+            logger.warning("WARNING: High variance within cross validation scores. " +
+                           "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
