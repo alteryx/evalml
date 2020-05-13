@@ -20,8 +20,8 @@ class Tuner(ABC):
         Returns:
             Tuner: self
         """
-        if not inspect.isclass(pipeline_class) and issubclass(pipeline_class, PipelineBase):
-            raise Exception()
+        if not inspect.isclass(pipeline_class) or not issubclass(pipeline_class, PipelineBase):
+            raise TypeError('Argument "pipeline_class" must be a class which subclasses PipelineBase')
         self._pipeline_class = pipeline_class
         self._component_names = set()
         self._parameter_names_map = dict()

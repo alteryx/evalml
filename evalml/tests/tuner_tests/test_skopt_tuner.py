@@ -2,70 +2,84 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pytest
+from skopt.space import Integer, Real
 
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.components import Estimator
+from evalml.problem_types import ProblemTypes
 from evalml.tuners.skopt_tuner import SKOptTuner
 from evalml.tuners.tuner import Tuner
-
-
-def assert_params_almost_equal(a, b, decimal=7):
-    """Given two sets of numeric/str parameter lists, assert numerics are approx equal and strs are equal"""
-    def separate_numeric_and_str(values):
-        def is_numeric(val):
-            return isinstance(val, (int, float))
-
-        def extract(vals, invert):
-            return [el for el in vals if (invert ^ is_numeric(el))]
-
-        return extract(values, False), extract(values, True)
-    a_num, a_str = separate_numeric_and_str(a)
-    b_num, b_str = separate_numeric_and_str(a)
-    assert a_str == b_str
-    np.testing.assert_almost_equal(a_num, b_num, decimal=decimal,
-                                   err_msg="Numeric parameter values are not approximately equal")
-
 
 random_state = 0
 
 
-def test_tuner_base(test_space):
-    with pytest.raises(TypeError):
-        Tuner(test_space)
+def test_tuner_base(dummy_binary_pipeline):
+    with pytest.raises(TypeError, match="'MockBinaryClassificationPipeline' object is not callable"):
+        Tuner(dummy_binary_pipeline({}))
+    with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
+        Tuner(dummy_binary_pipeline)
 
 
-def test_skopt_tuner_basic(test_space, test_space_unicode):
-    tuner = SKOptTuner(test_space, random_state=random_state)
+def dummy_estimator_class(_hyperparameter_ranges):
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = _hyperparameter_ranges or {}
+
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
+    return MockEstimator
+
+
+def dummy_binary_pipeline_class(dummy_estimator):
+    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        estimator = dummy_estimator
+        component_graph = [dummy_estimator()]
+    return MockBinaryClassificationPipeline
+
+
+def test_skopt_tuner_init(dummy_binary_pipeline):
+    with pytest.raises(TypeError, match='Argument "pipeline_class" must be a class which subclasses PipelineBase'):
+        SKOptTuner(dummy_binary_pipeline)
+
+    class X:
+        pass
+
+    with pytest.raises(TypeError, match='Argument "pipeline_class" must be a class which subclasses PipelineBase'):
+        SKOptTuner(X)
+    SKOptTuner(dummy_binary_pipeline_class(dummy_estimator_class({})))
+
+
+def test_skopt_tuner_basic():
+    estimator_hyperparameter_ranges = {
+        'parameter a': Integer(0, 10),
+        'parameter b': Real(0, 10),
+        'parameter c': (0, 10),
+        'parameter d': (0, 10.0),
+        'parameter e': ['option a', 'option b', 'option c'],
+        'parameter f': ['option a 💩', 'option b 💩', 'option c 💩'],
+        'parameter g': ['option a', 'option b', 100, np.inf]
+    }
+    MockEstimator = dummy_estimator_class(estimator_hyperparameter_ranges)
+    MockPipeline = dummy_binary_pipeline_class(MockEstimator)
+
+    tuner = SKOptTuner(MockPipeline, random_state=random_state)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c', np.inf])
+    assert proposed_params == {
+        'Mock Classifier': {
+            'parameter a': 5,
+            'parameter b': 8.442657485810175,
+            'parameter c': 3,
+            'parameter d': 8.472517387841256,
+            'parameter e': 'option b',
+            'parameter f': 'option b 💩',
+            'parameter g': 'option b'
+        }
+    }
     tuner.add(proposed_params, 0.5)
-
-    tuner = SKOptTuner(test_space_unicode, random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩', np.inf])
-    tuner.add(proposed_params, 0.5)
-
-
-def test_skopt_tuner_space_types():
-    tuner = SKOptTuner([(0, 10)], random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
-    tuner.add(proposed_params, 0.5)
-
-    tuner = SKOptTuner([(0, 10.0)], random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
-    tuner.add(proposed_params, 0.5)
-
-
-def test_skopt_tuner_invalid_space():
-    with pytest.raises(TypeError):
-        SKOptTuner(False)
-    with pytest.raises(ValueError):
-        SKOptTuner([(0)])
-    with pytest.raises(ValueError):
-        SKOptTuner(((0, 1)))
-    with pytest.raises(ValueError):
-        SKOptTuner([(0, 0)])
 
 
 def test_skopt_tuner_invalid_parameters_score(test_space):
