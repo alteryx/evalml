@@ -122,17 +122,7 @@ jobs:
                     python -m pip install --upgrade pip
                     python -m pip install .
                     python -m pip install -r evalml\tests\am-requirements.txt
-      - unless:
-          condition: << parameters.assisted_modeling >>
-          steps:
-            - run:
-                name: Install EvalML
-                command: |
-                    C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-                    conda activate curr_py
-                    python -m pip install --upgrade pip
-                    python -m pip install .
-                    python -m pip install -r test-requirements.txt
+                    pip freeze > am_pip.txt
 
       - run:
           name: Install Graphviz
@@ -141,7 +131,15 @@ jobs:
               conda activate curr_py
               conda install python-graphviz -q -y
 
-
+      - run:
+          name: Install EvalML
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate curr_py
+              python -m pip install --upgrade pip
+              python -m pip install .
+              python -m pip install -r test-requirements.txt
+              pip freeze > evalml_pip.txt
       - run:
           name: Run Unit Tests
           command: |
