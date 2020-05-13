@@ -13,6 +13,7 @@ Changelog
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Updated our logger to use Python's logging utils :pr:`763`
+        * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -20,6 +21,7 @@ Changelog
         * Fix components API to match other modules :pr:`747`
     * Testing Changes
         * Delete codecov yml, use codecov.io's default :pr:`732`
+        * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
 
 .. warning::
 
