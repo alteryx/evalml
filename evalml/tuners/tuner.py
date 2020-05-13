@@ -30,7 +30,7 @@ class Tuner(ABC):
         hyperparameter_ranges = pipeline_class.hyperparameters
         for component_name, component_ranges in hyperparameter_ranges.items():
             self._component_names.add(component_name)
-            for parameter_name, parameter_range in component_ranges:
+            for parameter_name, parameter_range in component_ranges.items():
                 flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)
@@ -47,7 +47,8 @@ class Tuner(ABC):
     def _convert_to_pipeline_parameters(self, flat_parameters):
         """Convert from a flat list of values to a dict of pipeline parameters"""
         pipeline_parameters = {component_name: dict() for component_name in self._component_names}
-        for flat_parameter_name, parameter_value in flat_parameters:
+        for i, parameter_value in enumerate(flat_parameters):
+            flat_parameter_name = self._search_space_names[i]
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
             pipeline_parameters[component_name][parameter_name] = parameter_value
         return pipeline_parameters
