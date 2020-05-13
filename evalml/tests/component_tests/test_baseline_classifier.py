@@ -2,8 +2,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineClassifier
 from evalml.utils import get_random_state
+
+
+def test_baseline_init():
+    baseline = BaselineClassifier()
+    assert baseline.parameters["strategy"] == "mode"
+    assert baseline.model_family == ModelFamily.BASELINE
 
 
 def test_baseline_invalid_strategy():

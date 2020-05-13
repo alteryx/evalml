@@ -7,14 +7,13 @@ from evalml.problem_types import ProblemTypes
 
 
 class BaselineClassifier(Estimator):
-    """
-    Classifier that predicts using the specified strategy.
+    """Classifier that predicts using the specified strategy.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
     """
     name = "Baseline Classifier"
     hyperparameter_ranges = {}
-    model_family = ModelFamily.NONE
+    model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, strategy="mode", random_state=0):
@@ -93,4 +92,4 @@ class BaselineClassifier(Estimator):
             num_features = self.num_features
             return np.array([0.0] * num_features)
         except AttributeError:
-            raise RuntimeError("You must fit Baseline classifier before gettong feature_importances!")
+            raise RuntimeError("You must fit Baseline classifier before getting feature_importances!")

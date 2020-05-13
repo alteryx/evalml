@@ -1,7 +1,14 @@
 import numpy as np
 import pytest
 
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineRegressor
+
+
+def test_baseline_init():
+    baseline = BaselineRegressor()
+    assert baseline.parameters["strategy"] == "mean"
+    assert baseline.model_family == ModelFamily.BASELINE
 
 
 def test_baseline_invalid_strategy():

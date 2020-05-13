@@ -13,7 +13,7 @@ class BaselineRegressor(Estimator):
     """
     name = "Baseline Regressor"
     hyperparameter_ranges = {}
-    model_family = ModelFamily.NONE
+    model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, strategy="mean", random_state=0):
