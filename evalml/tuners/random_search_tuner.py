@@ -17,18 +17,19 @@ class RandomSearchTuner(Tuner):
         (5, 'A')
     """
 
-    def __init__(self, space, random_state=0, with_replacement=False, replacement_max_attempts=10):
+    def __init__(self, pipeline_class, random_state=0, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
 
         Arguments:
-            space: A list of all dimensions available to tune
+            pipeline_class (PipelineBase subclass): the pipeline class to tune
             random_state: Unused in this class
             with_replacement: If false, only unique hyperparameters will be shown
             replacement_max_attempts: The maximum number of tries to get a unique
                 set of random parameters. Only used if tuner is initalized with
                 with_replacement=True
         """
-        self._space = Space(space)
+        super().__init__(pipeline_class, random_state=random_state)
+        self._space = Space(self._search_space_ranges)
         self._random_state = get_random_state(random_state)
         self._with_replacement = with_replacement
         self._replacement_max_attempts = replacement_max_attempts
@@ -36,13 +37,13 @@ class RandomSearchTuner(Tuner):
         self._used_parameters.add(())
         self.curr_params = None
 
-    def add(self, parameters, score):
+    def add(self, pipeline_parameters, score):
         """Not applicable to random search tuner as generated parameters are
         not dependent on scores of previous parameters.
 
         Arguments:
-            parameters: Hyperparameters used
-            score: Associated score
+            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
+            score (float): the score obtained by evaluating the pipeline with the provided parameters
         """
         pass
 
@@ -56,7 +57,7 @@ class RandomSearchTuner(Tuner):
         generate a unique set of parameters after ``replacement_max_attempts`` tries, then ``NoParamsException`` is raised.
 
         Returns:
-            A list of unique parameters
+            dict: proposed pipeline parameters
         """
         if self._with_replacement:
             return self._get_sample()
@@ -64,7 +65,7 @@ class RandomSearchTuner(Tuner):
             self.is_search_space_exhausted()
         params = self.curr_params
         self.curr_params = None
-        return params
+        return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
         """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in

@@ -272,9 +272,13 @@ def test_multi_format_creation(X_y):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
 
         hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
+            'Simple Imputer': {
+                "impute_strategy": ["mean", "median", "most_frequent"]
+            },
+            'Logistic Regression Classifier': {
+                "penalty": ["l2"],
+                "C": Real(.01, 10)
+            }
         }
 
     parameters = {
@@ -305,9 +309,13 @@ def test_multiple_feature_selectors(X_y):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
+            'Simple Imputer': {
+                "impute_strategy": ["mean", "median", "most_frequent"]
+            },
+            'Logistic Regression Classifier': {
+                "penalty": ["l2"],
+                "C": Real(.01, 10)
+            }
         }
 
     clf = TestPipeline(parameters={})
@@ -419,9 +427,13 @@ def test_hyperparameters():
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
 
     hyperparameters = {
-        "impute_strategy": ['mean', 'median', 'most_frequent'],
-        "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 32),
+        'Simple Imputer': {
+            "impute_strategy": ['mean', 'median', 'most_frequent'],
+        },
+        'Random Forest Classifier': {
+            "n_estimators": Integer(10, 1000),
+            "max_depth": Integer(1, 32)
+        }
     }
 
     assert MockPipeline.hyperparameters == hyperparameters
@@ -433,15 +445,23 @@ def test_hyperparameters_override():
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
 
         custom_hyperparameters = {
-            "impute_strategy": ['median'],
-            "n_estimators": [1, 100, 200],
-            "max_depth": [5]
+            'Simple Imputer': {
+                "impute_strategy": ['median']
+            },
+            'Random Forest Classifier': {
+                "n_estimators": [1, 100, 200],
+                "max_depth": [5]
+            }
         }
 
     hyperparameters = {
-        "impute_strategy": ['median'],
-        "n_estimators": [1, 100, 200],
-        "max_depth": [5]
+        'Simple Imputer': {
+            "impute_strategy": ['median']
+        },
+        'Random Forest Classifier': {
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        }
     }
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters

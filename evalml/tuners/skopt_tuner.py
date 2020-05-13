@@ -7,24 +7,25 @@ from .tuner import Tuner
 class SKOptTuner(Tuner):
     """Bayesian Optimizer"""
 
-    def __init__(self, space, random_state=0):
+    def __init__(self, pipeline_class, random_state=0):
         """ Init SkOptTuner
 
         Arguments:
-            space (dict): search space for hyperparameters
+            pipeline_class (PipelineBase subclass): the pipeline class to tune
             random_state (int, np.random.RandomState): The random state
 
         Returns:
             SKoptTuner: self
         """
-        self.opt = Optimizer(space, "ET", acq_optimizer="sampling", random_state=random_state)
+        super().__init__(pipeline_class, random_state=random_state)
+        self.opt = Optimizer(self._search_space_ranges, "ET", acq_optimizer="sampling", random_state=random_state)
 
-    def add(self, parameters, score):
+    def add(self, pipeline_parameters, score):
         """ Add score to sample
 
         Arguments:
-            parameters (dict): hyperparameters
-            score (float): associated score
+            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
+            score (float): the score obtained by evaluating the pipeline with the provided parameters
 
         Returns:
             None
@@ -32,12 +33,14 @@ class SKOptTuner(Tuner):
         # skip adding nan scores
         if pd.isnull(score):
             return
-        self.opt.tell(list(parameters), score)
+        flat_parameter_values = self._convert_to_flat_parameters(pipeline_parameters)
+        self.opt.tell(flat_parameter_values, score)
 
     def propose(self):
-        """ Returns hyperparameters based off search space and samples
+        """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
 
         Returns:
-            dict: proposed hyperparameters
+            dict: proposed pipeline parameters
         """
-        return self.opt.ask()
+        flat_parameters = self.opt.ask()
+        return self._convert_to_pipeline_parameters(flat_parameters)
