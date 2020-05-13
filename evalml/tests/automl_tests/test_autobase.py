@@ -160,3 +160,9 @@ def test_automl_str_search(mock_fit, X_y):
     str_rep = str(automl)
     assert "Search Results:" in str_rep
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
+
+
+def test_autobase_baseline(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
+    automl.search(X, y, raise_errors=False)

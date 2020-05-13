@@ -12,7 +12,12 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines
+from evalml.pipelines import (
+    BaselineBinaryPipeline,
+    BaselineMulticlassPipeline,
+    BaselineRegressionPipeline,
+    get_pipelines
+)
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
@@ -215,10 +220,14 @@ class AutoSearchBase:
             pbar._instances.clear()
 
         start = time.time()
+
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors=raise_errors)
             if search_iteration_plot:
                 search_iteration_plot.update()
+
+        self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
+
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -304,7 +313,7 @@ class AutoSearchBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(self._next_pipeline_class)
 
-        # fit an score the pipeline
+        # fit and score the pipeline
         pipeline = self._next_pipeline_class(parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1]))
 
         if self.start_iteration_callback:
@@ -318,6 +327,15 @@ class AutoSearchBase:
 
         evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
 
+        scores = pd.Series([fold["score"] for fold in evaluation_results['cv_data']])
+        score = scores.mean()
+
+        if self.objective.greater_is_better:
+            score_to_minimize = -score
+        else:
+            score_to_minimize = score
+        self.tuners[pipeline.name].add([p[1] for p in parameters], score_to_minimize)
+
         # save the result and continue
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
@@ -328,6 +346,28 @@ class AutoSearchBase:
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
             print('')
+
+    def _calculate_baseline(self, X, y, pbar, raise_errors=True):
+        if self.problem_type == ProblemTypes.BINARY:
+            strategy_dict = {"strategy": "random_weighted"}
+            parameters = {"Baseline Classifier": strategy_dict}
+            b = BaselineBinaryPipeline(parameters)
+            possible_baseline = [b]
+        elif self.problem_type == ProblemTypes.MULTICLASS:
+            strategy_dict = {"strategy": "random_weighted"}
+            parameters = {"Baseline Classifier": strategy_dict}
+            possible_baseline = [BaselineMulticlassPipeline(parameters)]
+        elif self.problem_type == ProblemTypes.REGRESSION:
+            strategy_dict = {"strategy": "mean"}
+            parameters = {"Baseline Regressor": strategy_dict}
+            possible_baseline = [BaselineRegressionPipeline(parameters)]
+
+        for pipeline in possible_baseline:
+            baseline_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+            self._add_result(trained_pipeline=pipeline,
+                             parameters=strategy_dict,
+                             training_time=baseline_results['training_time'],
+                             cv_data=baseline_results['cv_data'])
 
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
@@ -389,12 +429,6 @@ class AutoSearchBase:
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
-        if self.objective.greater_is_better:
-            score_to_minimize = -score
-        else:
-            score_to_minimize = score
-
-        self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2

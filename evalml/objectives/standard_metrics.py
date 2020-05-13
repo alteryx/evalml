@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
@@ -239,7 +241,10 @@ class MCCBinary(BinaryClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.matthews_corrcoef(y_true, y_predicted)
+        with warnings.catch_warnings():
+            # catches run time warning when dividing by 0.0
+            warnings.simplefilter('ignore', RuntimeWarning)
+            return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
 class MCCMulticlass(MulticlassClassificationObjective):
@@ -249,7 +254,10 @@ class MCCMulticlass(MulticlassClassificationObjective):
     score_needs_proba = False
 
     def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.matthews_corrcoef(y_true, y_predicted)
+        with warnings.catch_warnings():
+            # catches run time warning when dividing by 0.0
+            warnings.simplefilter('ignore', RuntimeWarning)
+            return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
 class R2(RegressionObjective):
