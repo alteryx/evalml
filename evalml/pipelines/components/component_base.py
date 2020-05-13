@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import get_logger, get_random_state, log_subtitle, log_title
+from evalml.utils import get_logger, get_random_state, log_subtitle
 
 logger = get_logger(__file__)
 
