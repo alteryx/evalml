@@ -31,6 +31,8 @@ class Tuner(ABC):
         for component_name, component_ranges in hyperparameter_ranges.items():
             self._component_names.add(component_name)
             for parameter_name, parameter_range in component_ranges.items():
+                if parameter_range is None:
+                    raise ValueError('Invalid dimension None.')
                 flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)
@@ -41,6 +43,8 @@ class Tuner(ABC):
         flat_parameter_values = []
         for flat_parameter_name in self._search_space_names:
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
+            if component_name not in pipeline_parameters or parameter_name not in pipeline_parameters[component_name]:
+                raise TypeError('Pipeline parameters missing required field "{}" for component "{}"'.format(parameter_name, component_name))
             flat_parameter_values.append(pipeline_parameters[component_name][parameter_name])
         return flat_parameter_values
 

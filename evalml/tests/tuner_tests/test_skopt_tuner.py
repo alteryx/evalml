@@ -14,13 +14,6 @@ from evalml.tuners.tuner import Tuner
 random_state = 0
 
 
-def test_tuner_base(dummy_binary_pipeline):
-    with pytest.raises(TypeError, match="'MockBinaryClassificationPipeline' object is not callable"):
-        Tuner(dummy_binary_pipeline({}))
-    with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
-        Tuner(dummy_binary_pipeline)
-
-
 def dummy_estimator_class(_hyperparameter_ranges):
     class MockEstimator(Estimator):
         name = "Mock Classifier"
@@ -33,23 +26,36 @@ def dummy_estimator_class(_hyperparameter_ranges):
     return MockEstimator
 
 
-def dummy_binary_pipeline_class(dummy_estimator):
+def dummy_binary_pipeline_class(_estimator_hyperparameter_ranges):
+    MockEstimator = dummy_estimator_class(_estimator_hyperparameter_ranges)
+
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        estimator = dummy_estimator
-        component_graph = [dummy_estimator()]
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
     return MockBinaryClassificationPipeline
 
 
-def test_skopt_tuner_init(dummy_binary_pipeline):
+def test_tuner_init():
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({})
+    with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
+        Tuner(MockBinaryClassificationPipeline({}))
+    with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
+        Tuner(MockBinaryClassificationPipeline)
+
+
+def test_skopt_tuner_init():
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({})
+
     with pytest.raises(TypeError, match='Argument "pipeline_class" must be a class which subclasses PipelineBase'):
-        SKOptTuner(dummy_binary_pipeline)
+        SKOptTuner(MockBinaryClassificationPipeline({}))
 
     class X:
         pass
 
     with pytest.raises(TypeError, match='Argument "pipeline_class" must be a class which subclasses PipelineBase'):
         SKOptTuner(X)
-    SKOptTuner(dummy_binary_pipeline_class(dummy_estimator_class({})))
+    SKOptTuner(MockBinaryClassificationPipeline)
 
 
 def test_skopt_tuner_basic():
@@ -62,8 +68,7 @@ def test_skopt_tuner_basic():
         'parameter f': ['option a 💩', 'option b 💩', 'option c 💩'],
         'parameter g': ['option a', 'option b', 100, np.inf]
     }
-    MockEstimator = dummy_estimator_class(estimator_hyperparameter_ranges)
-    MockPipeline = dummy_binary_pipeline_class(MockEstimator)
+    MockPipeline = dummy_binary_pipeline_class(estimator_hyperparameter_ranges)
 
     tuner = SKOptTuner(MockPipeline, random_state=random_state)
     assert isinstance(tuner, Tuner)
@@ -82,31 +87,86 @@ def test_skopt_tuner_basic():
     tuner.add(proposed_params, 0.5)
 
 
-def test_skopt_tuner_invalid_parameters_score(test_space):
-    tuner = SKOptTuner(test_space)
+def test_skopt_tuner_invalid_ranges():
+    tuner = SKOptTuner(dummy_binary_pipeline_class({
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }), random_state=random_state)
+
+    with pytest.raises(ValueError, match="Invalid dimension \[\]. Read the documentation for supported types."):
+        tuner = SKOptTuner(dummy_binary_pipeline_class({
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': []
+        }), random_state=random_state)
+    with pytest.raises(ValueError, match="Invalid dimension None."):
+        tuner = SKOptTuner(dummy_binary_pipeline_class({
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': None
+        }), random_state=random_state)
+    with pytest.raises(ValueError, match="Dimension has to be a list or tuple."):
+        tuner = SKOptTuner(dummy_binary_pipeline_class({
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': 'Value'
+        }), random_state=random_state)
+
+
+def test_skopt_tuner_invalid_parameters_score():
+    estimator_hyperparameter_ranges = {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }
+    MockPipeline = dummy_binary_pipeline_class(estimator_hyperparameter_ranges)
+
+    tuner = SKOptTuner(MockPipeline, random_state=random_state)
     with pytest.raises(TypeError):
-        tuner.add(0, 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, 2, 3], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, '2', '3'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([-1, 1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, -1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, 'option_a', 3, 4], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([np.nan, 1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([np.inf, 1, 'option_a', 'option_a'], 0.5)
+        tuner.add({}, 0.5)
     with pytest.raises(TypeError):
-        tuner.add([None, 1, 'option_a', 'option_a'], 0.5)
-    tuner.add((0, 1, 'option_a', 'option_b'), 0.5)
-    tuner.add([0, 1, 'option_a', 100], np.nan)
-    tuner.add([0, 1, 'option_a', np.inf], np.inf)
-    tuner.add([0, 1, 'option_a', 'option_a'], None)
+        tuner.add({'Mock Classifier': {}}, 0.5)
+    with pytest.raises(TypeError):
+        tuner.add({'Mock Classifier': {'param a': 0}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 0}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': -1, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 11.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 'option d'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': np.nan, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': np.inf, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(TypeError):
+        tuner.add({'Mock Classifier': {'param a': None, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.nan)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.inf)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, None)
     tuner.propose()
+    print(random_state)
+
+
+def test_skopt_tuner_propose():
+    estimator_hyperparameter_ranges = {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }
+    MockPipeline = dummy_binary_pipeline_class(estimator_hyperparameter_ranges)
+
+    tuner = SKOptTuner(MockPipeline, random_state=random_state)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
+    parameters = tuner.propose()
+    assert parameters == {
+        'Mock Classifier': {
+            'param a': 5,
+            'param b': 8.442657485810175,
+            'param c': 'option c'
+        }
+    }
     print(random_state)
