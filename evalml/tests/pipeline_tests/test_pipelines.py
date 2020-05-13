@@ -472,8 +472,8 @@ def test_hyperparameters_none(dummy_estimator):
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [dummy_estimator()]
 
-    assert MockPipelineNone.hyperparameters == {}
-    assert MockPipelineNone(parameters={}).hyperparameters == {}
+    assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
+    assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
