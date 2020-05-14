@@ -69,21 +69,31 @@ def X_y_categorical_classification():
 
 
 @pytest.fixture
-def test_space():
-    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c'], ['option_a', 'option_b', 100, np.inf]]
+def dummy_component_hyperparameters():
+    return {
+        'column a': Integer(0, 10),
+        'column b': Real(0, 10),
+        'column c': ['option a', 'option b', 'option c'],
+        'column d': ['option a', 'option b', 100, np.inf]
+    }
 
 
 @pytest.fixture
-def test_space_unicode():
-    return [Integer(0, 10), Real(0, 10), ['option_a 💩', 'option_b 💩', 'option_c 💩'], ['option_a', 'option_b', 100, np.inf]]
+def dummy_component_hyperparameters_unicode():
+    return {
+        'column a': Integer(0, 10),
+        'column b': Real(0, 10),
+        'column c': ['option a 💩', 'option b 💩', 'option c 💩'],
+        'column d': ['option a', 'option b', 100, np.inf]
+    }
 
 
 @pytest.fixture
-def test_space_small():
-    list_of_space = list()
-    list_of_space.append(['most_frequent', 'median', 'mean'])
-    list_of_space.append(['a', 'b', 'c'])
-    return list_of_space
+def dummy_component_hyperparameters_small():
+    return {
+        'column a': ['most_frequent', 'median', 'mean'],
+        'column b': ['a', 'b', 'c']
+    }
 
 
 @pytest.fixture
