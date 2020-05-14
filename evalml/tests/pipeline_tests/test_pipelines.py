@@ -468,9 +468,11 @@ def test_hyperparameters_override():
     assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
-def test_hyperparameters_none(dummy_estimator):
+def test_hyperparameters_none(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class()
+
     class MockPipelineNone(BinaryClassificationPipeline):
-        component_graph = [dummy_estimator()]
+        component_graph = [MockEstimator()]
 
     assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}

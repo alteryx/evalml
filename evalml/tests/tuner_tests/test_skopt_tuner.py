@@ -14,29 +14,7 @@ from evalml.tuners.tuner import Tuner
 random_state = 0
 
 
-def dummy_estimator_class(_hyperparameter_ranges):
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-        hyperparameter_ranges = _hyperparameter_ranges or {}
-
-        def __init__(self, random_state=0):
-            super().__init__(parameters={}, component_obj=None, random_state=random_state)
-    return MockEstimator
-
-
-def dummy_binary_pipeline_class(_estimator_hyperparameter_ranges):
-    MockEstimator = dummy_estimator_class(_estimator_hyperparameter_ranges)
-
-    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        estimator = MockEstimator
-        component_graph = [MockEstimator()]
-
-    return MockBinaryClassificationPipeline
-
-
-def test_tuner_init():
+def test_tuner_init(dummy_binary_pipeline_class):
     MockBinaryClassificationPipeline = dummy_binary_pipeline_class({})
     with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
         Tuner(MockBinaryClassificationPipeline({}))
@@ -44,7 +22,7 @@ def test_tuner_init():
         Tuner(MockBinaryClassificationPipeline)
 
 
-def test_skopt_tuner_init():
+def test_skopt_tuner_init(dummy_binary_pipeline_class):
     MockBinaryClassificationPipeline = dummy_binary_pipeline_class({})
 
     with pytest.raises(TypeError, match='Argument "pipeline_class" must be a class which subclasses PipelineBase'):
@@ -58,7 +36,7 @@ def test_skopt_tuner_init():
     SKOptTuner(MockBinaryClassificationPipeline)
 
 
-def test_skopt_tuner_basic():
+def test_skopt_tuner_basic(dummy_binary_pipeline_class):
     estimator_hyperparameter_ranges = {
         'parameter a': Integer(0, 10),
         'parameter b': Real(0, 10),
@@ -87,7 +65,7 @@ def test_skopt_tuner_basic():
     tuner.add(proposed_params, 0.5)
 
 
-def test_skopt_tuner_invalid_ranges():
+def test_skopt_tuner_invalid_ranges(dummy_binary_pipeline_class):
     tuner = SKOptTuner(dummy_binary_pipeline_class({
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
@@ -114,7 +92,7 @@ def test_skopt_tuner_invalid_ranges():
         }), random_state=random_state)
 
 
-def test_skopt_tuner_invalid_parameters_score():
+def test_skopt_tuner_invalid_parameters_score(dummy_binary_pipeline_class):
     estimator_hyperparameter_ranges = {
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
@@ -151,7 +129,7 @@ def test_skopt_tuner_invalid_parameters_score():
     print(random_state)
 
 
-def test_skopt_tuner_propose():
+def test_skopt_tuner_propose(dummy_binary_pipeline_class):
     estimator_hyperparameter_ranges = {
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
