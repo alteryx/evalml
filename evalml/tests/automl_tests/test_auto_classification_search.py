@@ -89,7 +89,8 @@ def test_max_pipelines(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert len(automl.full_rankings) == max_pipelines
+    assert sum(automl.full_rankings['pipeline_name'] == 'Baseline Classification Pipeline') == 1
+    assert sum(automl.full_rankings['pipeline_name'] != 'Baseline Classification Pipeline') == max_pipelines
 
 
 def test_specify_objective(X_y):
@@ -213,7 +214,7 @@ def test_callback(X_y):
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
-    assert counts["add_result_callback"] == max_pipelines
+    assert counts["add_result_callback"] == max_pipelines + 1
 
 
 def test_additional_objectives(X_y):

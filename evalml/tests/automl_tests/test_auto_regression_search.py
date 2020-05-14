@@ -84,7 +84,7 @@ def test_callback(X_y):
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
-    assert counts["add_result_callback"] == max_pipelines
+    assert counts["add_result_callback"] == max_pipelines + 1
 
 
 def test_early_stopping(capsys):
