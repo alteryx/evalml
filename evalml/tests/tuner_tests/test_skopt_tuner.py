@@ -4,10 +4,6 @@ import numpy as np
 import pytest
 from skopt.space import Integer, Real
 
-from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline
-from evalml.pipelines.components import Estimator
-from evalml.problem_types import ProblemTypes
 from evalml.tuners.skopt_tuner import SKOptTuner
 from evalml.tuners.tuner import Tuner
 
@@ -66,26 +62,26 @@ def test_skopt_tuner_basic(dummy_binary_pipeline_class):
 
 
 def test_skopt_tuner_invalid_ranges(dummy_binary_pipeline_class):
-    tuner = SKOptTuner(dummy_binary_pipeline_class({
+    SKOptTuner(dummy_binary_pipeline_class({
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': ['option a', 'option b', 'option c']
     }), random_state=random_state)
 
-    with pytest.raises(ValueError, match="Invalid dimension \[\]. Read the documentation for supported types."):
-        tuner = SKOptTuner(dummy_binary_pipeline_class({
+    with pytest.raises(ValueError, match="Invalid dimension \\[\\]. Read the documentation for supported types."):
+        SKOptTuner(dummy_binary_pipeline_class({
             'param a': Integer(0, 10),
             'param b': Real(0, 10),
             'param c': []
         }), random_state=random_state)
     with pytest.raises(ValueError, match="Invalid dimension None."):
-        tuner = SKOptTuner(dummy_binary_pipeline_class({
+        SKOptTuner(dummy_binary_pipeline_class({
             'param a': Integer(0, 10),
             'param b': Real(0, 10),
             'param c': None
         }), random_state=random_state)
     with pytest.raises(ValueError, match="Dimension has to be a list or tuple."):
-        tuner = SKOptTuner(dummy_binary_pipeline_class({
+        SKOptTuner(dummy_binary_pipeline_class({
             'param a': Integer(0, 10),
             'param b': Real(0, 10),
             'param c': 'Value'
