@@ -16,6 +16,8 @@ from evalml.pipelines import (
     BaselineBinaryPipeline,
     BaselineMulticlassPipeline,
     BaselineRegressionPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline,
     get_pipelines
 )
 from evalml.pipelines.components import handle_component
@@ -351,12 +353,11 @@ class AutoSearchBase:
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             parameters = {"Baseline Classifier": strategy_dict}
-            b = BaselineBinaryPipeline(parameters)
-            possible_baseline = [b]
+            possible_baseline = [ModeBaselineBinaryPipeline(parameters)]
         elif self.problem_type == ProblemTypes.MULTICLASS:
             strategy_dict = {"strategy": "random_weighted"}
             parameters = {"Baseline Classifier": strategy_dict}
-            possible_baseline = [BaselineMulticlassPipeline(parameters)]
+            possible_baseline = [ModeBaselineMulticlassPipeline(parameters)]
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
             parameters = {"Baseline Regressor": strategy_dict}

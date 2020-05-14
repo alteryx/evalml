@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added "baseline" models for a given dataset :pr:`746`
+        * Added baseline models for classification and regression :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
     * Fixes
     * Changes

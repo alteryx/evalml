@@ -35,7 +35,9 @@ from .classification import (
     XGBoostBinaryPipeline,
     XGBoostMulticlassPipeline,
     BaselineBinaryPipeline,
-    BaselineMulticlassPipeline
+    BaselineMulticlassPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline
 )
 
 from .regression import (
