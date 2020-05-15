@@ -5,17 +5,17 @@ from evalml.tuners import GridSearchTuner, NoParamsException
 from evalml.tuners.tuner import Tuner
 
 
-def test_autoreg_grid_search_tuner(X_y):
+def test_grid_search_tuner_inheritance():
+    assert issubclass(GridSearchTuner, Tuner)
+
+
+def test_grid_search_tuner_automl(X_y):
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=GridSearchTuner)
     clf.search(X, y)
 
 
-def test_grid_search_tuner_inheritance():
-    assert issubclass(GridSearchTuner, Tuner)
-
-
-def test_autoreg_grid_search_tuner_no_params(X_y, capsys):
+def test_grid_search_tuner_automl_no_params(X_y, capsys):
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=GridSearchTuner)
     error_text = "Grid search has exhausted all possible parameters"
