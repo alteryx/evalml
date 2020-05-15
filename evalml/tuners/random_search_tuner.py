@@ -2,13 +2,13 @@ from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
 from evalml.utils import get_random_state
-from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
 
 
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
+        >>> from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
         >>> tuner = RandomSearchTuner(LogisticRegressionBinaryPipeline, random_state=42)
         >>> proposal = tuner.propose()
         >>> assert sorted(proposal.keys()) == ['Logistic Regression Classifier', 'One Hot Encoder', 'Simple Imputer', 'Standard Scaler']

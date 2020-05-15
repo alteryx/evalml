@@ -4,13 +4,13 @@ from skopt.space import Integer, Real
 
 from .tuner import Tuner
 from .tuner_exceptions import NoParamsException
-from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
 
 
 class GridSearchTuner(Tuner):
     """Grid Search Optimizer
 
     Example:
+        >>> from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
         >>> tuner = GridSearchTuner(LogisticRegressionBinaryPipeline, n_points=5)
         >>> proposal = tuner.propose()
         >>> assert sorted(proposal.keys()) == ['Logistic Regression Classifier', 'One Hot Encoder', 'Simple Imputer', 'Standard Scaler']
