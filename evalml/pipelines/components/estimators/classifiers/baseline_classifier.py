@@ -42,7 +42,6 @@ class BaselineClassifier(Estimator):
         self.unique_vals = vals
         self.percentage_freq = counts.astype(float) / len(y)
         self.num_unique = len(self.unique_vals)
-        self.num_rows = X.shape[0]
         self.num_features = X.shape[1]
 
         if self.parameters["strategy"] == "mode":
@@ -57,10 +56,10 @@ class BaselineClassifier(Estimator):
                 return pd.Series([mode] * len(X))
             elif strategy == "random":
                 unique_vals = self.unique_vals
-                return self.random_state.choice(unique_vals, self.num_rows)
+                return self.random_state.choice(unique_vals, len(X))
             else:
                 unique_vals = self.unique_vals
-                return self.random_state.choice(unique_vals, self.num_rows, p=self.percentage_freq)
+                return self.random_state.choice(unique_vals, len(X), p=self.percentage_freq)
         except AttributeError:
             raise RuntimeError("You must fit Baseline classifier before calling predict!")
 
