@@ -59,6 +59,16 @@ def test_random_search_tuner_no_params(dummy_component_hyperparameters_small, du
             tuner.propose()
 
 
+def test_random_search_tuner_with_replacement(dummy_component_hyperparameters, dummy_binary_pipeline_class):
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(dummy_component_hyperparameters)
+    tuner = RandomSearchTuner(MockBinaryClassificationPipeline, random_state=random_state, with_replacement=True)
+    for i in range(10):
+        proposal = tuner.propose()
+        assert isinstance(proposal, dict)
+        assert proposal.keys() == {'Mock Classifier'}
+        assert proposal['Mock Classifier'].keys() == {'column a', 'column b', 'column c', 'column d'}
+
+
 def test_random_search_tuner_basic(dummy_component_hyperparameters,
                                    dummy_component_hyperparameters_unicode,
                                    dummy_binary_pipeline_class):

@@ -62,7 +62,7 @@ class RandomSearchTuner(Tuner):
             dict: proposed pipeline parameters
         """
         if self._with_replacement:
-            return self._get_sample()
+            return self._convert_to_pipeline_parameters(self._get_sample())
         elif not self.curr_params:
             self.is_search_space_exhausted()
         params = self.curr_params
