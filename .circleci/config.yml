@@ -123,7 +123,7 @@ jobs:
                     python -m pip install .
                     python -m pip install -r evalml\tests\am-requirements.txt
                     python -m pip install -r test-requirements.txt
-
+                    pip freeze > am-pip-freeze.txt
       - unless:
           condition: << parameters.assisted_modeling >>
           steps:
