@@ -2,19 +2,21 @@ from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
 from evalml.utils import get_random_state
+from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
 
 
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
-        >>> tuner = RandomSearchTuner([(1,10), ['A', 'B']], random_state=0)
-        >>> print(tuner.propose())
-        (6, 'B')
-        >>> print(tuner.propose())
-        (4, 'B')
-        >>> print(tuner.propose())
-        (5, 'A')
+        >>> tuner = RandomSearchTuner(LogisticRegressionBinaryPipeline, random_state=42)
+        >>> proposal = tuner.propose()
+        >>> assert sorted(proposal.keys()) == ['Logistic Regression Classifier', 'One Hot Encoder', 'Simple Imputer', 'Standard Scaler']
+        >>> assert proposal['One Hot Encoder'] == {}
+        >>> assert proposal['Simple Imputer'] == {'impute_strategy': 'median'}
+        >>> assert proposal['Standard Scaler'] == {}
+        >>> assert proposal['Logistic Regression Classifier']['penalty'] == 'l2'
+        >>> assert abs(proposal['Logistic Regression Classifier']['C'] - 7.322619478695938) < 1e-5
     """
 
     def __init__(self, pipeline_class, random_state=0, with_replacement=False, replacement_max_attempts=10):
