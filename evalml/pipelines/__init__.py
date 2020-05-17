@@ -45,7 +45,8 @@ from .regression import (
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
     XGBoostRegressionPipeline,
-    BaselineRegressionPipeline
+    BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline
 )
 from .utils import (
     all_pipelines,

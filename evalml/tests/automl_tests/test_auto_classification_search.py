@@ -373,8 +373,8 @@ def test_plot_iterations_max_pipelines(X_y):
     assert isinstance(plot, go.Figure)
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
-    assert len(x) == 3
-    assert len(y) == 3
+    assert len(x) == 4  # max_pipelines + 1 baseline
+    assert len(y) == 4  # max_pipelines + 1 baseline
 
 
 def test_plot_iterations_max_time(X_y):
