@@ -14,6 +14,7 @@ Changelog
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Expanded `import_or_raise` to catch all exceptions :pr:`759`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
