@@ -89,8 +89,8 @@ def test_max_pipelines(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert sum(automl.full_rankings['pipeline_name'] == 'Baseline Classification Pipeline') == 1
-    assert sum(automl.full_rankings['pipeline_name'] != 'Baseline Classification Pipeline') == max_pipelines
+    assert sum(automl.full_rankings['pipeline_name'] == 'Mode Baseline Classification Pipeline') == 1
+    assert sum(automl.full_rankings['pipeline_name'] != 'Mode Baseline Classification Pipeline') == max_pipelines
 
 
 def test_specify_objective(X_y):
@@ -438,4 +438,4 @@ def test_max_time(X_y):
     clf = AutoClassificationSearch(max_time=1e-16)
     clf.search(X, y)
     # search will always run at least one pipeline
-    assert len(clf.results['pipeline_results']) == 1
+    assert len(clf.results['pipeline_results']) >= 1

@@ -87,4 +87,6 @@ def test_random_search_tuner_exhausted_space(mock_is_search_space_exhausted, X_y
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
     clf.search(X, y)
-    assert len(clf.results['pipeline_results']) == 0
+
+    pipeline_dicts = list(automl.results['pipeline_results'].values())
+    assert len([pipeline for pipeline in pipeline_dicts if pipeline['pipeline_name'] == 'Mode Baseline Multiclass Classification Pipeline']) == 0
