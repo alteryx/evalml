@@ -429,8 +429,8 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     y = pd.Series(plot_data['y'])
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
-    assert len(x) == 3
-    assert len(y) == 3
+    assert len(x) == 4  # max_pipelines + 1 baseline
+    assert len(y) == 4  # max_pipelines + 1 baseline
 
 
 def test_max_time(X_y):

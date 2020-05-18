@@ -14,6 +14,7 @@ from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     get_pipelines
@@ -359,7 +360,7 @@ class AutoSearchBase:
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
             parameters = {"Baseline Regressor": strategy_dict}
-            possible_baseline = [BaselineRegressionPipeline(parameters)]
+            possible_baseline = [MeanBaselineRegressionPipeline(parameters)]
 
         for pipeline in possible_baseline:
             baseline_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)

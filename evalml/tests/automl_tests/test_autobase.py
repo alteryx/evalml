@@ -66,7 +66,8 @@ def test_pipeline_fit_raises(mock_fit, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
     pipeline_dicts = list(automl.results['pipeline_results'].values())
-    assert len([pipeline for pipeline in pipeline_dicts if pipeline['pipeline_name'] == 'Mode Baseline Multiclass Classification Pipeline']) == 1
+    assert len([pipeline for pipeline in pipeline_dicts if pipeline['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline']) == 1
+    assert len([pipeline for pipeline in pipeline_dicts if pipeline['pipeline_name'] != 'Mode Baseline Binary Classification Pipeline']) == 1
 
     cv_scores_all = automl.results['pipeline_results'][0].get('cv_data', {})
     for cv_scores in cv_scores_all:
