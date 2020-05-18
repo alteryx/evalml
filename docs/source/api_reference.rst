@@ -84,6 +84,10 @@ Classification Pipelines
     XGBoostMulticlassPipeline
     BaselineBinaryPipeline
     BaselineMulticlassPipeline
+    ModeBaselineBinaryPipeline
+    ModeBaselineMulticlassPipeline
+    MeanBaselineRegressionPipeline
+
 
 Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~

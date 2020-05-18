@@ -351,22 +351,21 @@ class AutoSearchBase:
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             parameters = {"Baseline Classifier": strategy_dict}
-            possible_baseline = [ModeBaselineBinaryPipeline(parameters)]
+            baseline = ModeBaselineBinaryPipeline(parameters)
         elif self.problem_type == ProblemTypes.MULTICLASS:
             strategy_dict = {"strategy": "random_weighted"}
             parameters = {"Baseline Classifier": strategy_dict}
-            possible_baseline = [ModeBaselineMulticlassPipeline(parameters)]
+            baseline = ModeBaselineMulticlassPipeline(parameters)
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
             parameters = {"Baseline Regressor": strategy_dict}
-            possible_baseline = [MeanBaselineRegressionPipeline(parameters)]
+            baseline = MeanBaselineRegressionPipeline(parameters)
 
-        for pipeline in possible_baseline:
-            baseline_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
-            self._add_result(trained_pipeline=pipeline,
-                             parameters=strategy_dict,
-                             training_time=baseline_results['training_time'],
-                             cv_data=baseline_results['cv_data'])
+        baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
+        self._add_result(trained_pipeline=baseline,
+                         parameters=strategy_dict,
+                         training_time=baseline_results['training_time'],
+                         cv_data=baseline_results['cv_data'])
 
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
