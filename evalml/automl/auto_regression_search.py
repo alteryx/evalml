@@ -17,7 +17,6 @@ class AutoRegressionSearch(AutoSearchBase):
                  patience=None,
                  tolerance=None,
                  allowed_model_families=None,
-                 data_checks=None,
                  cv=None,
                  tuner=None,
                  start_iteration_callback=None,

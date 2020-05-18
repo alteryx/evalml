@@ -169,3 +169,4 @@ def test_automl_default_data_checks():
     automl = AutoClassificationSearch(max_pipelines=1)
     with pytest.raises(ValueError, match="Data checks raised"):
         automl.search(X, y, data_checks=None)
+    assert len(automl.latest_data_check_results) > 0

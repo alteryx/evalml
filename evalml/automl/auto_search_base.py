@@ -189,7 +189,7 @@ class AutoSearchBase:
 
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
-            msg = "Data checks raised some warnings and/or errors. Please address these and run search again or pass in data_checks=EmptyDataChecks() to search() to disable data checking."
+            msg = "Data checks raised some warnings and/or errors. Please see `self._latest_data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking."
             self._latest_data_check_results = data_check_results
             raise ValueError(msg)
 
