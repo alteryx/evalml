@@ -101,7 +101,7 @@ class AutoSearchBase:
         self._latest_data_check_results = None
 
     @property
-    def _latest_data_check_results(self):
+    def latest_data_check_results(self):
         return self._latest_data_check_results
 
     def __str__(self):
