@@ -98,6 +98,12 @@ class AutoSearchBase:
             logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
+        self._latest_data_check_results = None
+
+    @property
+    def _latest_data_check_results(self):
+        return self._latest_data_check_results
+
     def __str__(self):
         _list_separator = '\n\t'
 
@@ -181,11 +187,11 @@ class AutoSearchBase:
         if data_checks is None:
             data_checks = DefaultDataChecks()
 
-        data_check_messages = data_checks.validate(X, y)
-        if len(data_check_messages) > 0:
-            for data_check_message in data_check_messages:
-                logger.log(data_check_message.message)
-            raise ValueError("Data checks raised some warnings and/or errors. Please address these and run search again or pass in data_checks=EmptyDataChecks() to search() to disable data checking.")
+        data_check_results = data_checks.validate(X, y)
+        if len(data_check_results) > 0:
+            msg = "Data checks raised some warnings and/or errors. Please address these and run search again or pass in data_checks=EmptyDataChecks() to search() to disable data checking."
+            self._latest_data_check_results = data_check_results
+            raise ValueError(msg)
 
         logger.log_title("Beginning pipeline search")
         logger.log("Optimizing for %s. " % self.objective.name, new_line=False)

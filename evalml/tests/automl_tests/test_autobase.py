@@ -6,7 +6,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
-from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
+from evalml.data_checks import EmptyDataChecks
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
