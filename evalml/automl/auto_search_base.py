@@ -13,7 +13,6 @@ from .pipeline_search_plots import PipelineSearchPlots
 from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
-    BaselineRegressionPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
