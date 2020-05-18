@@ -7,7 +7,6 @@ def get_logger(name):
     logger = logging.getLogger(name)
     if not len(logger.handlers):
         date_fmt = "%m/%d/%Y %I:%M:%S %p"
-        # format='%(asctime)s,%(msecs)d %(levelname)-8s [name=%(name)s] [%(filename)s:%(lineno)d] %(message)s'
         fmt = "%(asctime)s %(name)s - %(levelname)s - [name=%(name)s]: %(message)s"
 
         log_handler = RotatingFileHandler(filename="debug.log")
