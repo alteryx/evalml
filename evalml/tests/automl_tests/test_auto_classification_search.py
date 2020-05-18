@@ -89,8 +89,8 @@ def test_max_pipelines(X_y):
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
 
-    assert sum(automl.full_rankings['pipeline_name'] == 'Mode Baseline Classification Pipeline') == 1
-    assert sum(automl.full_rankings['pipeline_name'] != 'Mode Baseline Classification Pipeline') == max_pipelines
+    assert sum(automl.full_rankings['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline') == 1
+    assert sum(automl.full_rankings['pipeline_name'] != 'Mode Baseline Binary Classification Pipeline') == max_pipelines
 
 
 def test_specify_objective(X_y):

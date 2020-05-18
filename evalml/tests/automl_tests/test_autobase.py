@@ -84,10 +84,10 @@ def test_rankings(X_y, X_y_reg):
     automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
 
-    assert sum(automl.full_rankings["pipeline_name"] == "Mode Baseline Classification Pipeline") == 1
-    assert sum(automl.full_rankings["pipeline_name"] != "Mode Baseline Classification Pipeline") == 2
-    assert sum(automl.rankings["pipeline_name"] == "Mode Baseline Classification Pipeline") == 1
-    assert sum(automl.rankings["pipeline_name"] != "Mode Baseline Classification Pipeline") == 1
+    assert sum(automl.full_rankings["pipeline_name"] == "Mode Baseline Binary Classification Pipeline") == 1
+    assert sum(automl.full_rankings["pipeline_name"] != "Mode Baseline Binary Classification Pipeline") == 2
+    assert sum(automl.rankings["pipeline_name"] == "Mode Baseline Binary Classification Pipeline") == 1
+    assert sum(automl.rankings["pipeline_name"] != "Mode Baseline Binary Classification Pipeline") == 1
 
     X, y = X_y_reg
     automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
