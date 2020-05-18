@@ -1,4 +1,4 @@
-catboost==0.23
+catboost==0.23.1
 cloudpickle==1.4.1
 numpy==1.18.4
 pandas==1.0.3
