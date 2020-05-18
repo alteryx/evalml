@@ -14,6 +14,7 @@ Changelog
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Expanded `import_or_raise` to catch all exceptions :pr:`759`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
