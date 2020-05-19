@@ -1,7 +1,7 @@
 import copy
 import inspect
 import time
-from collections import Iterable, OrderedDict
+from collections import OrderedDict
 from sys import stdout
 
 import numpy as np
@@ -15,7 +15,7 @@ from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import Logger, convert_to_seconds, get_random_state
 
@@ -98,14 +98,9 @@ class AutoSearchBase:
             self.plot = None
 
     def __str__(self):
-        _list_separator = '\n\t'
-
-        def _print_list(in_attr):
-            if isinstance(in_attr, Iterable):
-                return _list_separator + \
-                    _list_separator.join(obj.name if hasattr(obj, "name") else str(obj) for obj in in_attr)
-            else:
-                return str(in_attr)
+        def _print_list(obj_list):
+            lines = ['\t{}'.format(o.name) for o in obj_list]
+            return '\n'.join(lines)
 
         def _get_funct_name(function):
             if callable(function):
@@ -113,33 +108,21 @@ class AutoSearchBase:
             else:
                 return None
 
-        def _get_name(obj):
-            if hasattr(obj, 'name'):
-                return obj.name
-            else:
-                return str(obj)
-
-        def _get_tuner(tuners):
-            if isinstance(tuners, dict):
-                return type(list(tuners.values())[0]).__name__
-            else:
-                return str(tuners)
-
         search_desc = (
-            f"{_get_name(self.problem_type)} Search\n\n"
+            f"{handle_problem_types(self.problem_type).name} Search\n\n"
             f"Parameters: \n{'='*20}\n"
-            f"Objective: {_get_name(self.objective)}\n"
+            f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
-            f"Possible Pipelines: {_print_list(self.possible_pipelines)}\n"
+            f"Possible Pipelines: \n{_print_list(self.possible_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
-            f"Tuner: {_get_tuner(self.tuners)}\n"
+            f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
             f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
-            f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
+            f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
             f"Verbose: {self.verbose}\n"
@@ -149,7 +132,7 @@ class AutoSearchBase:
         try:
             rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
-        except Exception:
+        except KeyError:
             rankings_desc = ""
 
         return search_desc + rankings_desc

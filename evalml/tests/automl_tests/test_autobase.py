@@ -169,58 +169,47 @@ def test_automl_str_search(mock_fit, X_y):
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_str_none_param_search(mock_fit, X_y):
-    X, y = X_y
-    search_params = {
-        'max_time': None,
-        'max_pipelines': None,
-        'patience': None,
-        'tuner': None,
-        'detect_label_leakage': None,
-        'start_iteration_callback': None,
-        'add_result_callback': None,
-        'n_jobs': None,
-        'verbose': None,
-        'optimize_thresholds': None
+def test_automl_str_no_param_search():
+    automl = AutoClassificationSearch()
+
+    param_str_reps = {
+        'Objective': 'Log Loss Binary',
+        'Max Time': 'None',
+        'Max Pipelines': 'None',
+        'Possible Pipelines': [
+            'Cat Boost Binary Classification Pipeline',
+            'Logistic Regression Binary Pipeline',
+            'Random Forest Binary Classification Pipeline',
+            'XGBoost Binary Classification Pipeline'],
+        'Patience': 'None',
+        'Tolerance': '0.0',
+        'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
+        'Tuner': 'SKOptTuner',
+        'Detect Label Leakage': 'True',
+        'Additional Objectives': [
+            'Accuracy Binary',
+            'Balanced Accuracy Binary',
+            'F1',
+            'Precision',
+            'Recall',
+            'AUC',
+            'MCC Binary'],
+        'Start Iteration Callback': 'None',
+        'Add Result Callback': 'None',
+        'Random State': 'RandomState(MT19937)',
+        'n_jobs': '-1',
+        'Verbose': 'True',
+        'Optimize Thresholds': 'False'
     }
-
-    automl = AutoClassificationSearch(**search_params)
-
-    param_list = [
-        'Objective',
-        'Max Time',
-        'Max Pipelines',
-        'Possible Pipelines',
-        'Patience',
-        'Tolerance',
-        'Cross Validation',
-        'Tuner',
-        'Detect Label Leakage',
-        'Start Iteration Callback',
-        'Add Result Callback',
-        'Additional Objectives',
-        'Random State',
-        'n_jobs',
-        'Verbose',
-        'Optimize Thresholds'
-    ]
-
-    automl.possible_pipelines = [None, None, None]
-    automl.additional_objectives = None
-    automl.random_state = None
-    automl.tolerance = None
-    automl.cv = None
-    automl.objective = None
-    automl.problem_type = None
-    automl.tuners = None
 
     str_rep = str(automl)
 
-    for param in param_list:
-        if param == 'Possible Pipelines':
-            for i in range(0, 3):
-                assert f"\t{None}" in str_rep
+    for param, value in param_str_reps.items():
+        if isinstance(value, list):
+            assert f"{param}" in str_rep
+            for item in value:
+                assert f"\t{str(item)}" in str_rep
         else:
-            assert f"{param}: None" in str_rep
+            assert f"{param}: {str(value)}" in str_rep
+
     assert "Search Results" not in str_rep
