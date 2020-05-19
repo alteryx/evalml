@@ -124,6 +124,10 @@ jobs:
                     python -m pip install -r evalml\tests\am-requirements.txt
                     python -m pip install -r test-requirements.txt
                     pip freeze > am-pip-freeze.txt
+                    echo "test" > test
+            - store_artifacts:
+                path: C:/evalml/test-reports
+
       - unless:
           condition: << parameters.assisted_modeling >>
           steps:
