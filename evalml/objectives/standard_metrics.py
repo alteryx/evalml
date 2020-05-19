@@ -252,6 +252,16 @@ class MCCMulticlass(MulticlassClassificationObjective):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
+class RMSE(RegressionObjective):
+    """Root mean squared error for regression"""
+    name = "RMSE"
+    greater_is_better = False
+    score_needs_proba = False
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return metrics.mean_squared_error(y_true, y_predicted, squared=False)
+
+
 class R2(RegressionObjective):
     """Coefficient of determination for regression"""
     name = "R2"

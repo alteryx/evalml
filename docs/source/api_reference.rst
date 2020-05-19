@@ -245,6 +245,7 @@ Classification Objectives
     LogLossMulticlass
     MCCBinary
     MCCMulticlass
+    MSLE
     Precision
     PrecisionMicro
     PrecisionMacro
@@ -253,6 +254,7 @@ Classification Objectives
     RecallMicro
     RecallMacro
     RecallWeighted
+
 
 
 Regression Objectives
