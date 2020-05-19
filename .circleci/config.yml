@@ -123,12 +123,11 @@ jobs:
                     python -m pip install .
                     python -m pip install -r evalml\tests\am-requirements.txt
                     python -m pip install -r test-requirements.txt
-                    mkdir C:\evalml\tmp\am_requirements
-                    pip freeze > C:\evalml\tmp\am_requirements\am-pip-freeze.txt
-                    echo "test" > C:\evalml\tmp\am_requirements\test
+                    mkdir C:\evalml\am_requirements
+                    pip freeze > C:\evalml\am_requirements\am-pip-freeze.txt
 
             - store_artifacts:
-                path: C:\evalml\tmp\am_requirements
+                path: C:\evalml\am_requirements
                 when: always
 
       - unless:
