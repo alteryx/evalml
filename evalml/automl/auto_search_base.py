@@ -228,7 +228,6 @@ class AutoSearchBase:
             if search_iteration_plot:
                 search_iteration_plot.update()
 
-
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -241,7 +240,7 @@ class AutoSearchBase:
             return False
 
         should_continue = True
-        num_pipelines = len(self.results['pipeline_results']) - 1 # subtract 1 for baseline
+        num_pipelines = len(self.results['pipeline_results']) - 1  # subtract 1 for baseline
         if num_pipelines == 0:
             return True
 
