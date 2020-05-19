@@ -219,6 +219,8 @@ class AutoSearchBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
 
+        self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
+
         start = time.time()
 
         while self._check_stopping_condition(start):
@@ -226,7 +228,6 @@ class AutoSearchBase:
             if search_iteration_plot:
                 search_iteration_plot.update()
 
-        self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
 
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
@@ -240,7 +241,7 @@ class AutoSearchBase:
             return False
 
         should_continue = True
-        num_pipelines = len(self.results['pipeline_results'])
+        num_pipelines = len(self.results['pipeline_results']) - 1 # subtract 1 for baseline
         if num_pipelines == 0:
             return True
 
