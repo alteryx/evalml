@@ -127,6 +127,7 @@ jobs:
                     echo "test" > test
             - store_artifacts:
                 path: C:/evalml/test-reports
+                when: always
 
       - unless:
           condition: << parameters.assisted_modeling >>
