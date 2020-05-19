@@ -111,7 +111,7 @@ def test_binary_auto(X_y):
 
 def test_multi_error(X_y_multi):
     X, y = X_y_multi
-    error_automls = [AutoClassificationSearch(objective='recall'), AutoClassificationSearch(objective='recall_micro', additional_objectives=['recall'], multiclass=True)]
+    error_automls = [AutoClassificationSearch(objective='precision'), AutoClassificationSearch(objective='precision_micro', additional_objectives=['precision'], multiclass=True)]
     error_msg = 'not compatible with a multiclass problem.'
     for automl in error_automls:
         with pytest.raises(ValueError, match=error_msg):
@@ -120,7 +120,7 @@ def test_multi_error(X_y_multi):
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    automl = AutoClassificationSearch(objective="recall_micro", multiclass=True, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="f1_micro", multiclass=True, max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
@@ -146,10 +146,10 @@ def test_multi_objective(X_y_multi):
     automl = AutoClassificationSearch(objective="log_loss_multi")
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='recall_micro')
+    automl = AutoClassificationSearch(objective='auc_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='recall')
+    automl = AutoClassificationSearch(objective='auc')
     assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoClassificationSearch(multiclass=True)
@@ -161,7 +161,7 @@ def test_multi_objective(X_y_multi):
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    automl = AutoClassificationSearch(objective="recall", max_pipelines=5, multiclass=False)
+    automl = AutoClassificationSearch(objective="precision", max_pipelines=5, multiclass=False)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
@@ -237,7 +237,7 @@ def test_additional_objectives(X_y):
 def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, capsys):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
+    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
@@ -259,7 +259,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
+    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
