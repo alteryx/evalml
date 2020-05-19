@@ -7,6 +7,7 @@ from sklearn.model_selection import StratifiedKFold
 from evalml import AutoClassificationSearch, AutoRegressionSearch
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
+from evalml.utils import import_or_raise
 
 
 def test_pipeline_limits(capsys, X_y):
@@ -177,10 +178,8 @@ def test_automl_str_no_param_search():
         'Max Time': 'None',
         'Max Pipelines': 'None',
         'Possible Pipelines': [
-            'Cat Boost Binary Classification Pipeline',
             'Logistic Regression Binary Pipeline',
-            'Random Forest Binary Classification Pipeline',
-            'XGBoost Binary Classification Pipeline'],
+            'Random Forest Binary Classification Pipeline'],
         'Patience': 'None',
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
@@ -201,6 +200,13 @@ def test_automl_str_no_param_search():
         'Verbose': 'True',
         'Optimize Thresholds': 'False'
     }
+
+    for module, pipeline_name in [('catboost', 'Cat Boost Binary Classification Pipeline'), ('xgboost', 'XGBoost Binary Classification Pipeline')]:
+        try:
+            import_or_raise(module)
+            param_str_reps['Possible Pipelines'].append(pipeline_name)
+        except ImportError:
+            continue
 
     str_rep = str(automl)
 
