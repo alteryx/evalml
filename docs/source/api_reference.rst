@@ -249,10 +249,6 @@ Classification Objectives
     PrecisionMicro
     PrecisionMacro
     PrecisionWeighted
-    Recall
-    RecallMicro
-    RecallMacro
-    RecallWeighted
 
 
 Regression Objectives

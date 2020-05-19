@@ -8,7 +8,7 @@ from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision, AUC
+from evalml.objectives import AUC, FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     LogisticRegressionBinaryPipeline,
