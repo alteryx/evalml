@@ -123,10 +123,12 @@ jobs:
                     python -m pip install .
                     python -m pip install -r evalml\tests\am-requirements.txt
                     python -m pip install -r test-requirements.txt
-                    pip freeze > am-pip-freeze.txt
-                    echo "test" > test
+                    mkdir C:\evalml\tmp\am_requirements
+                    pip freeze > C:\evalml\tmp\am_requirements\am-pip-freeze.txt
+                    echo "test" > C:\evalml\tmp\am_requirements\test
+
             - store_artifacts:
-                path: C:/evalml/test-reports
+                path: C:\evalml\tmp\am_requirements
                 when: always
 
       - unless:
@@ -157,6 +159,7 @@ jobs:
           path: C:/evalml/test-reports
       - store_artifacts:
           path: C:/evalml/test-reports
+
   unit_tests:
     resource_class: xlarge
     parameters:
