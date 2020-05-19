@@ -13,6 +13,7 @@ Changelog
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Expanded `import_or_raise` to catch all exceptions :pr:`759`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -22,6 +23,7 @@ Changelog
         * Delete codecov yml, use codecov.io's default :pr:`732`
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Add in CI test for Assisted Modeling version dependencies :pr:`674`
+        * Update codecov client :pr:`782`
 
 
 .. warning::
