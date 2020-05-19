@@ -28,6 +28,7 @@ Changelog
     **Breaking Changes**
 
     * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`
+    * Removed Recall from optimization options
 
 
 
