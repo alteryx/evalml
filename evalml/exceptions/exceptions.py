@@ -11,3 +11,7 @@ class ObjectiveNotFoundError(Exception):
 class IllFormattedClassNameError(Exception):
     """Exception to raise when a class name does not comply with EvalML standards"""
     pass
+
+class NegativeTargetNotAcceptedError(Exception):
+    """Exception to raise when an objective does not accept negative target values"""
+    pass
