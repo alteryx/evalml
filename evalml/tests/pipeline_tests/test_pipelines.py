@@ -8,7 +8,7 @@ from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision, Recall
+from evalml.objectives import FraudCost, Precision, AUC
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     LogisticRegressionBinaryPipeline,
@@ -343,9 +343,9 @@ def test_score_with_list_of_multiple_objectives(X_y):
 
     clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
-    recall_name = Recall.name
+    auc_name = AUC.name
     precision_name = Precision.name
-    objective_names = [recall_name, precision_name]
+    objective_names = [auc_name, precision_name]
     scores = clf.score(X, y, objective_names)
     assert len(scores.values()) == 2
     assert all(name in scores.keys() for name in objective_names)
@@ -461,7 +461,7 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     X, y = X_y
     mock_predict.return_value = np.array([1] * 100)
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
-        dummy_regression_pipeline.score(X, y, ['recall', 'auc'])
+        dummy_regression_pipeline.score(X, y, ['precision', 'auc'])
     mock_predict.assert_called()
 
 
