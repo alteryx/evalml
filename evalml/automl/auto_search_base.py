@@ -323,7 +323,7 @@ class AutoSearchBase:
         else:
             score_to_minimize = score
 
-        self.tuners[trained_pipeline.name].add(parameters, score_to_minimize)
+        self.tuners[pipeline.name].add(parameters, score_to_minimize)
 
         # save the result and continue
         self._add_result(trained_pipeline=pipeline,
