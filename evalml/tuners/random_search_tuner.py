@@ -19,18 +19,18 @@ class RandomSearchTuner(Tuner):
         >>> assert abs(proposal['Logistic Regression Classifier']['C'] - 7.322619478695938) < 1e-5
     """
 
-    def __init__(self, pipeline_class, random_state=0, with_replacement=False, replacement_max_attempts=10):
+    def __init__(self, pipeline_hyperparameter_ranges, random_state=0, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
 
         Arguments:
-            pipeline_class (PipelineBase subclass): the pipeline class to tune
+            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             random_state: Unused in this class
             with_replacement: If false, only unique hyperparameters will be shown
             replacement_max_attempts: The maximum number of tries to get a unique
                 set of random parameters. Only used if tuner is initalized with
                 with_replacement=True
         """
-        super().__init__(pipeline_class, random_state=random_state)
+        super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         self._space = Space(self._search_space_ranges)
         self._random_state = get_random_state(random_state)
         self._with_replacement = with_replacement

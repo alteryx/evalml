@@ -20,16 +20,16 @@ class GridSearchTuner(Tuner):
         >>> assert proposal['Logistic Regression Classifier'] == {'penalty': 'l2', 'C': 0.01}
     """
 
-    def __init__(self, pipeline_class, n_points=10, random_state=0):
+    def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_state=0):
         """ Generate all of the possible points to search for in the grid
 
         Arguments:
-            pipeline_class (PipelineBase subclass): the pipeline class to tune
+            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             n_points: The number of points to sample from along each dimension
                 defined in the ``space`` argument
             random_state: Unused in this class
         """
-        super().__init__(pipeline_class, random_state=random_state)
+        super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         raw_dimensions = list()
         for dimension in self._search_space_ranges:
             # Categorical dimension

@@ -1,8 +1,6 @@
 import inspect
 from abc import ABC, abstractmethod
 
-from evalml.pipelines import PipelineBase
-
 
 class Tuner(ABC):
     """Defines API for Tuners
@@ -10,26 +8,19 @@ class Tuner(ABC):
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
     """
 
-    def __init__(self, pipeline_class, random_state=0):
-        """Init Tuner
+    def __init__(self, pipeline_hyperparameter_ranges, random_state=0):
+        """Base Tuner class
 
         Arguments:
-            pipeline_class (PipelineBase subclass): the pipeline class to tune
+            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             random_state (int, np.random.RandomState): The random state
-
-        Returns:
-            Tuner: self
         """
-        if not inspect.isclass(pipeline_class) or not issubclass(pipeline_class, PipelineBase):
-            raise TypeError('Argument "pipeline_class" must be a class which subclasses PipelineBase')
-        self._pipeline_class = pipeline_class
-        self._component_names = set()
+        self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
+        self._component_names = pipeline_hyperparameter_ranges.keys()
         self._parameter_names_map = dict()
         self._search_space_names = []
         self._search_space_ranges = []
-        hyperparameter_ranges = pipeline_class.hyperparameters
-        for component_name, component_ranges in hyperparameter_ranges.items():
-            self._component_names.add(component_name)
+        for component_name, component_ranges in pipeline_hyperparameter_ranges.items():
             for parameter_name, parameter_range in component_ranges.items():
                 if parameter_range is None:
                     raise ValueError('Invalid dimension None.')

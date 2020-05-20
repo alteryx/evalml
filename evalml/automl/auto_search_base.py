@@ -87,7 +87,7 @@ class AutoSearchBase:
 
         self.tuners = {}
         for p in self.possible_pipelines:
-            self.tuners[p.name] = tuner(p, random_state=self.random_state)
+            self.tuners[p.name] = tuner(p.hyperparameters, random_state=self.random_state)
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
         try:
