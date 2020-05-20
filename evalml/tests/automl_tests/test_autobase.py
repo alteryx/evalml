@@ -193,7 +193,6 @@ def test_automl_str_no_param_search():
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
-        'Detect Label Leakage': 'True',
         'Additional Objectives': [
             'Accuracy Binary',
             'Balanced Accuracy Binary',
