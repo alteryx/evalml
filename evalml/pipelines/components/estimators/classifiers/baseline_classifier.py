@@ -43,8 +43,8 @@ class BaselineClassifier(Estimator):
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        if not isinstance(X, pd.Dataframe):
-            X = pd.Dataframe(X)
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         vals, counts = np.unique(y, return_counts=True)
         self._unique_vals = vals
