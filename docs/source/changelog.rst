@@ -25,6 +25,7 @@ Changelog
         * Delete codecov yml, use codecov.io's default :pr:`732`
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Update codecov client :pr:`782`
+        * Updated AutoBase __str__ test to include no parameters case :pr:`783`
 
 .. warning::
 
