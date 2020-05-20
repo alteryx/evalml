@@ -350,17 +350,13 @@ class AutoSearchBase:
     def _calculate_baseline(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
-            parameters = {"Baseline Classifier": strategy_dict}
-            baseline = ModeBaselineBinaryPipeline(parameters)
+            baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             strategy_dict = {"strategy": "random_weighted"}
-            parameters = {"Baseline Classifier": strategy_dict}
-            baseline = ModeBaselineMulticlassPipeline(parameters)
+            baseline = ModeBaselineMulticlassPipeline(parameters={"Baseline Classifier": strategy_dict})
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
-            parameters = {"Baseline Regressor": strategy_dict}
-            baseline = MeanBaselineRegressionPipeline(parameters)
-
+            baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
         baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,

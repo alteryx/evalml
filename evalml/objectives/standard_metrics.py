@@ -242,7 +242,7 @@ class MCCBinary(BinaryClassificationObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         with warnings.catch_warnings():
-            # catches run time warning when dividing by 0.0
+            # catches runtime warning when dividing by 0.0
             warnings.simplefilter('ignore', RuntimeWarning)
             return metrics.matthews_corrcoef(y_true, y_predicted)
 
@@ -255,7 +255,7 @@ class MCCMulticlass(MulticlassClassificationObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         with warnings.catch_warnings():
-            # catches run time warning when dividing by 0.0
+            # catches runtime warning when dividing by 0.0
             warnings.simplefilter('ignore', RuntimeWarning)
             return metrics.matthews_corrcoef(y_true, y_predicted)
 

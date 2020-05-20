@@ -27,6 +27,8 @@ class BaselineRegressor(Estimator):
         if strategy not in ["mean", "median"]:
             raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
         parameters = {"strategy": strategy}
+        self._prediction_value = None
+        self._num_features = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -39,18 +41,16 @@ class BaselineRegressor(Estimator):
             y = pd.Series(y)
 
         if self.parameters["strategy"] == "mean":
-            self.val = y.mean()
+            self._prediction_value = y.mean()
         elif self.parameters["strategy"] == "median":
-            self.val = y.median()
-        self.num_features = X.shape[1]
+            self._prediction_value = y.median()
+        self._num_features = X.shape[1]
         return self
 
     def predict(self, X):
-        try:
-            val = self.val
-        except AttributeError:
+        if self._prediction_value is None:
             raise RuntimeError("You must fit Baseline regressor before calling predict!")
-        return pd.Series([val] * len(X))
+        return pd.Series([self._prediction_value] * len(X))
 
     @property
     def feature_importances(self):
@@ -60,8 +60,6 @@ class BaselineRegressor(Estimator):
             np.array (float) : an array of zeroes
 
         """
-        try:
-            num_features = self.num_features
-            return np.array([0.0] * num_features)
-        except AttributeError:
+        if self._num_features is None:
             raise RuntimeError("You must fit Baseline regressor before accessing feature_importances!")
+        return np.zeros(self._num_features)
