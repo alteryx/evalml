@@ -43,6 +43,8 @@ def test_init(X_y):
 
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
+    with pytest.raises(RuntimeError, match="Pipeline not found"):
+        automl.get_pipeline(1000)
 
     automl.describe_pipeline(0)
 
