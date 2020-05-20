@@ -1,4 +1,3 @@
-import inspect
 from abc import ABC, abstractmethod
 
 
@@ -16,14 +15,19 @@ class Tuner(ABC):
             random_state (int, np.random.RandomState): The random state
         """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
-        self._component_names = pipeline_hyperparameter_ranges.keys()
         self._parameter_names_map = dict()
         self._search_space_names = []
         self._search_space_ranges = []
+        if not isinstance(pipeline_hyperparameter_ranges, dict):
+            raise ValueError('pipeline_hyperparameter_ranges must be a dict but is of type {}'.format(type(pipeline_hyperparameter_ranges)))
+        self._component_names = pipeline_hyperparameter_ranges.keys()
         for component_name, component_ranges in pipeline_hyperparameter_ranges.items():
+            if not isinstance(component_ranges, dict):
+                raise ValueError('pipeline_hyperparameter_ranges has invalid entry for {}: {}'.format(component_name, component_ranges))
             for parameter_name, parameter_range in component_ranges.items():
                 if parameter_range is None:
-                    raise ValueError('Invalid dimension None.')
+                    raise ValueError('pipeline_hyperparameter_ranges has invalid dimensions for ' +
+                                     '{} parameter {}: None.'.format(component_name, parameter_name))
                 flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)

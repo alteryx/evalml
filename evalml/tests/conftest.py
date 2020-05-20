@@ -69,65 +69,53 @@ def X_y_categorical_classification():
 
 
 @pytest.fixture
-def dummy_component_hyperparameters():
-    return {
+def dummy_pipeline_hyperparameters():
+    return {'Mock Classifier': {
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': ['option a', 'option b', 'option c'],
         'param d': ['option a', 'option b', 100, np.inf]
-    }
+    }}
 
 
 @pytest.fixture
-def dummy_component_hyperparameters_unicode():
-    return {
+def dummy_pipeline_hyperparameters_unicode():
+    return {'Mock Classifier': {
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': ['option a 💩', 'option b 💩', 'option c 💩'],
         'param d': ['option a', 'option b', 100, np.inf]
-    }
+    }}
 
 
 @pytest.fixture
-def dummy_component_hyperparameters_small():
-    return {
+def dummy_pipeline_hyperparameters_small():
+    return {'Mock Classifier': {
         'param a': ['most_frequent', 'median', 'mean'],
         'param b': ['a', 'b', 'c']
-    }
+    }}
 
 
 @pytest.fixture
 def dummy_classifier_estimator_class():
-    def _make_class(_hyperparameter_ranges=None):
-        class MockEstimator(Estimator):
-            name = "Mock Classifier"
-            model_family = ModelFamily.NONE
-            supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-            hyperparameter_ranges = _hyperparameter_ranges or {}
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {}
 
-            def __init__(self, random_state=0):
-                super().__init__(parameters={}, component_obj=None, random_state=random_state)
-        return MockEstimator
-    return _make_class
+    return MockEstimator
 
 
 @pytest.fixture
-def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
-    def _make_class(_estimator_hyperparameter_ranges=None):
-        MockEstimator = dummy_classifier_estimator_class(_hyperparameter_ranges=_estimator_hyperparameter_ranges)
+def dummy_binary_pipeline(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
 
-        class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator()]
+    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
 
-        return MockBinaryClassificationPipeline
-    return _make_class
-
-
-@pytest.fixture
-def dummy_binary_pipeline(dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(_estimator_hyperparameter_ranges=None)
-    return MockBinaryClassificationPipeline(parameters={})
+    return MockBinaryClassificationPipeline
 
 
 @pytest.fixture

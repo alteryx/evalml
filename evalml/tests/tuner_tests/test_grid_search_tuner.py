@@ -23,33 +23,29 @@ def test_grid_search_tuner_automl_no_params(X_y, capsys):
         clf.search(X, y)
 
 
-def test_grid_search_tuner_unique_values(dummy_component_hyperparameters, dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(dummy_component_hyperparameters)
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+def test_grid_search_tuner_unique_values(dummy_pipeline_hyperparameters):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters)
     generated_parameters = []
     for i in range(10):
         params = tuner.propose()
         generated_parameters.append(params)
     assert len(generated_parameters) == 10
     for i in range(10):
-        assert generated_parameters[i].keys() == {'Mock Classifier'}
-        assert generated_parameters[i]['Mock Classifier'].keys() == dummy_component_hyperparameters.keys()
+        assert generated_parameters[i].keys() == dummy_pipeline_hyperparameters.keys()
+        assert generated_parameters[i]['Mock Classifier'].keys() == dummy_pipeline_hyperparameters['Mock Classifier'].keys()
 
 
-def test_grid_search_tuner_no_params(dummy_component_hyperparameters_small, dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(dummy_component_hyperparameters_small)
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+def test_grid_search_tuner_no_params(dummy_pipeline_hyperparameters_small):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters_small)
     error_text = "Grid search has exhausted all possible parameters."
     with pytest.raises(NoParamsException, match=error_text):
         for i in range(10):
             tuner.propose()
 
 
-def test_grid_search_tuner_basic(dummy_component_hyperparameters,
-                                 dummy_component_hyperparameters_unicode,
-                                 dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(dummy_component_hyperparameters)
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+def test_grid_search_tuner_basic(dummy_pipeline_hyperparameters,
+                                 dummy_pipeline_hyperparameters_unicode):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters)
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
@@ -61,8 +57,7 @@ def test_grid_search_tuner_basic(dummy_component_hyperparameters,
     }
     tuner.add(proposed_params, 0.5)
 
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class(dummy_component_hyperparameters_unicode)
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters_unicode)
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
@@ -75,24 +70,22 @@ def test_grid_search_tuner_basic(dummy_component_hyperparameters,
     tuner.add(proposed_params, 0.5)
 
 
-def test_grid_search_tuner_space_types(dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10)})
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+def test_grid_search_tuner_space_types():
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': (0, 10)}})
     proposed_params = tuner.propose()
     assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10.0)})
-    tuner = GridSearchTuner(MockBinaryClassificationPipeline)
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': (0, 10.0)}})
     proposed_params = tuner.propose()
     assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
 
-def test_grid_search_tuner_invalid_space(dummy_binary_pipeline_class):
+def test_grid_search_tuner_invalid_space():
     type_error_text = 'Invalid dimension type in tuner'
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'param a': False}))
+        GridSearchTuner({'Mock Classifier': {'param a': False}})
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'param a': (0)}))
+        GridSearchTuner({'Mock Classifier': {'param a': (0)}})
     with pytest.raises(ValueError, match=bound_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'param a': (1, 0)}))
+        GridSearchTuner({'Mock Classifier': {'param a': (1, 0)}})
