@@ -71,28 +71,28 @@ def X_y_categorical_classification():
 @pytest.fixture
 def dummy_component_hyperparameters():
     return {
-        'column a': Integer(0, 10),
-        'column b': Real(0, 10),
-        'column c': ['option a', 'option b', 'option c'],
-        'column d': ['option a', 'option b', 100, np.inf]
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c'],
+        'param d': ['option a', 'option b', 100, np.inf]
     }
 
 
 @pytest.fixture
 def dummy_component_hyperparameters_unicode():
     return {
-        'column a': Integer(0, 10),
-        'column b': Real(0, 10),
-        'column c': ['option a 💩', 'option b 💩', 'option c 💩'],
-        'column d': ['option a', 'option b', 100, np.inf]
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a 💩', 'option b 💩', 'option c 💩'],
+        'param d': ['option a', 'option b', 100, np.inf]
     }
 
 
 @pytest.fixture
 def dummy_component_hyperparameters_small():
     return {
-        'column a': ['most_frequent', 'median', 'mean'],
-        'column b': ['a', 'b', 'c']
+        'param a': ['most_frequent', 'median', 'mean'],
+        'param b': ['a', 'b', 'c']
     }
 
 

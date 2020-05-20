@@ -66,7 +66,7 @@ def test_random_search_tuner_with_replacement(dummy_component_hyperparameters, d
         proposal = tuner.propose()
         assert isinstance(proposal, dict)
         assert proposal.keys() == {'Mock Classifier'}
-        assert proposal['Mock Classifier'].keys() == {'column a', 'column b', 'column c', 'column d'}
+        assert proposal['Mock Classifier'].keys() == {'param a', 'param b', 'param c', 'param d'}
 
 
 def test_random_search_tuner_basic(dummy_component_hyperparameters,
@@ -77,10 +77,10 @@ def test_random_search_tuner_basic(dummy_component_hyperparameters,
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
-            'column a': 5,
-            'column b': 8.442657485810175,
-            'column c': 'option c',
-            'column d': np.inf
+            'param a': 5,
+            'param b': 8.442657485810175,
+            'param c': 'option c',
+            'param d': np.inf
         }
     }
     tuner.add(proposed_params, 0.5)
@@ -90,35 +90,35 @@ def test_random_search_tuner_basic(dummy_component_hyperparameters,
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
-            'column a': 5,
-            'column b': 8.442657485810175,
-            'column c': 'option c 💩',
-            'column d': np.inf
+            'param a': 5,
+            'param b': 8.442657485810175,
+            'param c': 'option c 💩',
+            'param d': np.inf
         }
     }
     tuner.add(proposed_params, 0.5)
 
 
 def test_random_search_tuner_space_types(dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'column a': (0, 10)})
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10)})
     tuner = RandomSearchTuner(MockBinaryClassificationPipeline, random_state=random_state)
     proposed_params = tuner.propose()
-    assert proposed_params == {'Mock Classifier': {'column a': 5}}
+    assert proposed_params == {'Mock Classifier': {'param a': 5}}
 
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'column a': (0, 10.0)})
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10.0)})
     tuner = RandomSearchTuner(MockBinaryClassificationPipeline, random_state=random_state)
     proposed_params = tuner.propose()
-    assert proposed_params == {'Mock Classifier': {'column a': 5.488135039273248}}
+    assert proposed_params == {'Mock Classifier': {'param a': 5.488135039273248}}
 
 
 def test_random_search_tuner_invalid_space(dummy_binary_pipeline_class):
     value_error_text = 'Dimension has to be a list or tuple'
     bound_error_text = "has to be less than the upper bound"
     with pytest.raises(ValueError, match=value_error_text):
-        RandomSearchTuner(dummy_binary_pipeline_class({'column a': False}), random_state=random_state)
+        RandomSearchTuner(dummy_binary_pipeline_class({'param a': False}), random_state=random_state)
     with pytest.raises(ValueError, match=value_error_text):
-        RandomSearchTuner(dummy_binary_pipeline_class({'column a': (0)}), random_state=random_state)
+        RandomSearchTuner(dummy_binary_pipeline_class({'param a': (0)}), random_state=random_state)
     with pytest.raises(ValueError, match=bound_error_text):
-        RandomSearchTuner(dummy_binary_pipeline_class({'column a': (1, 0)}), random_state=random_state)
+        RandomSearchTuner(dummy_binary_pipeline_class({'param a': (1, 0)}), random_state=random_state)
     with pytest.raises(ValueError, match=bound_error_text):
-        RandomSearchTuner(dummy_binary_pipeline_class({'column a': (0, 0)}), random_state=random_state)
+        RandomSearchTuner(dummy_binary_pipeline_class({'param a': (0, 0)}), random_state=random_state)

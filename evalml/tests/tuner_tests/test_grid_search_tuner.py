@@ -53,10 +53,10 @@ def test_grid_search_tuner_basic(dummy_component_hyperparameters,
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
-            'column a': 0,
-            'column b': 0.0,
-            'column c': 'option a',
-            'column d': 'option a'
+            'param a': 0,
+            'param b': 0.0,
+            'param c': 'option a',
+            'param d': 'option a'
         }
     }
     tuner.add(proposed_params, 0.5)
@@ -66,33 +66,33 @@ def test_grid_search_tuner_basic(dummy_component_hyperparameters,
     proposed_params = tuner.propose()
     assert proposed_params == {
         'Mock Classifier': {
-            'column a': 0,
-            'column b': 0.0,
-            'column c': 'option a 💩',
-            'column d': 'option a'
+            'param a': 0,
+            'param b': 0.0,
+            'param c': 'option a 💩',
+            'param d': 'option a'
         }
     }
     tuner.add(proposed_params, 0.5)
 
 
 def test_grid_search_tuner_space_types(dummy_binary_pipeline_class):
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'column a': (0, 10)})
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10)})
     tuner = GridSearchTuner(MockBinaryClassificationPipeline)
     proposed_params = tuner.propose()
-    assert proposed_params == {'Mock Classifier': {'column a': 0}}
+    assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
-    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'column a': (0, 10.0)})
+    MockBinaryClassificationPipeline = dummy_binary_pipeline_class({'param a': (0, 10.0)})
     tuner = GridSearchTuner(MockBinaryClassificationPipeline)
     proposed_params = tuner.propose()
-    assert proposed_params == {'Mock Classifier': {'column a': 0}}
+    assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
 
 def test_grid_search_tuner_invalid_space(dummy_binary_pipeline_class):
     type_error_text = 'Invalid dimension type in tuner'
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'column a': False}))
+        GridSearchTuner(dummy_binary_pipeline_class({'param a': False}))
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'column a': (0)}))
+        GridSearchTuner(dummy_binary_pipeline_class({'param a': (0)}))
     with pytest.raises(ValueError, match=bound_error_text):
-        GridSearchTuner(dummy_binary_pipeline_class({'column a': (1, 0)}))
+        GridSearchTuner(dummy_binary_pipeline_class({'param a': (1, 0)}))
