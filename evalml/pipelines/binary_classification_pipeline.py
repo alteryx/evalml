@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import pandas as pd
 
 from evalml.objectives import get_objective
@@ -37,37 +35,3 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
-
-    def score(self, X, y, objectives):
-        """Evaluate model performance on objectives
-
-        Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            y (pd.Series) : true labels of length [n_samples]
-            objectives (list): list of objectives to score
-
-        Returns:
-            dict: ordered dictionary of objective scores
-        """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        objectives = [get_objective(o) for o in objectives]
-        y_predicted = None
-        y_predicted_proba = None
-
-        scores = OrderedDict()
-        for objective in objectives:
-            if objective.score_needs_proba:
-                if y_predicted_proba is None:
-                    y_predicted_proba = self.predict_proba(X)
-                    y_predicted_proba = y_predicted_proba[:, 1]
-                scores.update({objective.name: objective.score(y, y_predicted_proba, X=X)})
-            else:
-                if y_predicted is None:
-                    y_predicted = self.predict(X, objective)
-                scores.update({objective.name: objective.score(y, y_predicted, X=X)})
-        return scores

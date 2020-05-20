@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 import cloudpickle
+import numpy as np
 import pandas as pd
 
 from .components import Estimator, handle_component
@@ -223,21 +224,27 @@ class PipelineBase(ABC):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
         objectives = [get_objective(o) for o in objectives]
-        y_predicted = None
         scores = OrderedDict()
+
+        y_predicted = self.predict(X)
         for objective in objectives:
             if objective.score_needs_proba:
                 raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
-            else:
-                if y_predicted is None:
-                    y_predicted = self.predict(X)
-                scores.update({objective.name: objective.score(y, y_predicted, X)})
+            score = self._score(X, y, y_predicted, objective)
+            scores.update({objective.name: score})
         return scores
+
+    def _score(self, X, y, predictions, objective):
+        score = np.nan
+        try:
+            score = objective.score(y, predictions, X)
+        except Exception as e:
+            logger.log('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
+        return score
 
     @classproperty
     def model_family(cls):
