@@ -8,6 +8,8 @@ from .estimators import (
     CatBoostClassifier,
     CatBoostRegressor,
     Estimator,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
