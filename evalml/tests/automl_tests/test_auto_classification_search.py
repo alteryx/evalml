@@ -8,11 +8,13 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
     Precision,
     PrecisionMicro,
+    Recall,
     get_objective,
     get_objectives
 )
@@ -98,6 +100,22 @@ def test_specify_objective(X_y):
     automl.search(X, y)
     assert isinstance(automl.objective, Precision)
     assert automl.best_pipeline.threshold is not None
+
+def test_recall_error(X_y):
+    X, y = X_y
+    error_msg = 'Could not find the specified objective.'
+    with pytest.raises(ObjectiveNotFoundError, match=error_msg):
+        error_automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
+
+def test_recall_object(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective=Recall(), max_pipelines=1)
+    automl.search(X, y)
+    assert isinstance(automl.objective, Recall)
+    assert automl.best_pipeline.threshold is not None
+
+    y_pred = automl.best_pipeline.predict(X)
+    assert len(np.unique(y_pred)) == 2
 
 
 def test_binary_auto(X_y):
