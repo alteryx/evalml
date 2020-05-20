@@ -46,8 +46,7 @@ class Tuner(ABC):
     def _convert_to_pipeline_parameters(self, flat_parameters):
         """Convert from a flat list of values to a dict of pipeline parameters"""
         pipeline_parameters = {component_name: dict() for component_name in self._component_names}
-        for i, parameter_value in enumerate(flat_parameters):
-            flat_parameter_name = self._search_space_names[i]
+        for flat_parameter_name, parameter_value in zip(self._search_space_names, flat_parameters):
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
             pipeline_parameters[component_name][parameter_name] = parameter_value
         return pipeline_parameters
