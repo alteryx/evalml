@@ -7,7 +7,6 @@ from sklearn.model_selection import StratifiedKFold
 from evalml import AutoClassificationSearch, AutoRegressionSearch
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
-from evalml.utils import import_or_raise
 
 
 def test_pipeline_limits(capsys, X_y):
