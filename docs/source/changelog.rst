@@ -14,7 +14,7 @@ Changelog
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
-        * Removed `Recall` from optimization options :pr:`784`
+        * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -29,7 +29,7 @@ Changelog
     **Breaking Changes**
 
     * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`
-    * Removed `Recall` from optimization options :pr:`784`
+    * `Recall` disallowed as an objective for AutoML :pr:`784`
 
 
 
