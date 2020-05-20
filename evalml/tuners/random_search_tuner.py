@@ -8,15 +8,10 @@ class RandomSearchTuner(Tuner):
     """Random Search Optimizer
 
     Example:
-        >>> from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
-        >>> tuner = RandomSearchTuner(LogisticRegressionBinaryPipeline, random_state=42)
+        >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_state=42)
         >>> proposal = tuner.propose()
-        >>> assert sorted(proposal.keys()) == ['Logistic Regression Classifier', 'One Hot Encoder', 'Simple Imputer', 'Standard Scaler']
-        >>> assert proposal['One Hot Encoder'] == {}
-        >>> assert proposal['Simple Imputer'] == {'impute_strategy': 'median'}
-        >>> assert proposal['Standard Scaler'] == {}
-        >>> assert proposal['Logistic Regression Classifier']['penalty'] == 'l2'
-        >>> assert abs(proposal['Logistic Regression Classifier']['C'] - 7.322619478695938) < 1e-5
+        >>> assert proposal.keys() == {'My Component'}
+        >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, random_state=0, with_replacement=False, replacement_max_attempts=10):

@@ -469,7 +469,7 @@ def test_hyperparameters_override():
 
 
 def test_hyperparameters_none(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class()
+    MockEstimator = dummy_classifier_estimator_class
 
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator()]

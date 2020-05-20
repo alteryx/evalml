@@ -104,11 +104,13 @@ def dummy_classifier_estimator_class():
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {}
 
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
     return MockEstimator
 
 
 @pytest.fixture
-def dummy_binary_pipeline(dummy_classifier_estimator_class):
+def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):

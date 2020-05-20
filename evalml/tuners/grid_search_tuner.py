@@ -10,14 +10,10 @@ class GridSearchTuner(Tuner):
     """Grid Search Optimizer
 
     Example:
-        >>> from evalml.pipelines.classification import LogisticRegressionBinaryPipeline
-        >>> tuner = GridSearchTuner(LogisticRegressionBinaryPipeline, n_points=5)
+        >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
         >>> proposal = tuner.propose()
-        >>> assert sorted(proposal.keys()) == ['Logistic Regression Classifier', 'One Hot Encoder', 'Simple Imputer', 'Standard Scaler']
-        >>> assert proposal['One Hot Encoder'] == {}
-        >>> assert proposal['Simple Imputer'] == {'impute_strategy': 'mean'}
-        >>> assert proposal['Standard Scaler'] == {}
-        >>> assert proposal['Logistic Regression Classifier'] == {'penalty': 'l2', 'C': 0.01}
+        >>> assert proposal.keys() == {'My Component'}
+        >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_state=0):
