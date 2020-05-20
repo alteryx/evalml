@@ -101,11 +101,13 @@ def test_specify_objective(X_y):
     assert isinstance(automl.objective, Precision)
     assert automl.best_pipeline.threshold is not None
 
+
 def test_recall_error(X_y):
     X, y = X_y
     error_msg = 'Could not find the specified objective.'
     with pytest.raises(ObjectiveNotFoundError, match=error_msg):
-        error_automl = AutoClassificationSearch(objective='recall', max_pipelines=1)
+        AutoClassificationSearch(objective='recall', max_pipelines=1)
+
 
 def test_recall_object(X_y):
     X, y = X_y
