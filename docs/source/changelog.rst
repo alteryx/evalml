@@ -5,7 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
-        * Update `Tuner`s to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
@@ -30,7 +30,7 @@ Changelog
     **Breaking Changes**
 
     * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
-    * ``Tuner`` classes require a pipeline class as an init arg instead of a space definition :pr:`779`
+    * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
 
