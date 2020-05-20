@@ -7,3 +7,5 @@ from .catboost_binary import CatBoostBinaryClassificationPipeline
 from .catboost_multiclass import CatBoostMulticlassClassificationPipeline
 from .random_forest_binary import RFBinaryClassificationPipeline
 from .random_forest_multiclass import RFMulticlassClassificationPipeline
+from .extra_trees_binary import ETBinaryClassificationPipeline
+from .extra_trees_multiclass import ETMulticlassClassificationPipeline
