@@ -253,7 +253,6 @@ Classification Objectives
     RecallMicro
     RecallMacro
     RecallWeighted
-    RMSE
 
 
 
@@ -268,9 +267,12 @@ Regression Objectives
     R2
     MAE
     MSE
+    MSLE
     MedianAE
     MaxError
     ExpVariance
+    RMSE
+    RMSLE
 
 
 .. currentmodule:: evalml.problem_types

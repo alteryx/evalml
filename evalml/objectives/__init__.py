@@ -1,40 +1,45 @@
 # flake8:noqa
+from .binary_classification_objective import BinaryClassificationObjective
 from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
+from .multiclass_classification_objective import (
+    MulticlassClassificationObjective
+)
 from .objective_base import ObjectiveBase
+from .regression_objective import RegressionObjective
 from .standard_metrics import (
+    AUC,
+    F1,
+    MAE,
+    MSE,
+    MSLE,
+    RMSLE,
+    RMSE,
+    R2,
     AccuracyBinary,
     AccuracyMulticlass,
-    BalancedAccuracyBinary,
-    BalancedAccuracyMulticlass,
-    AUC,
     AUCMacro,
     AUCMicro,
     AUCWeighted,
+    BalancedAccuracyBinary,
+    BalancedAccuracyMulticlass,
     ExpVariance,
-    F1,
     F1Macro,
     F1Micro,
     F1Weighted,
     LogLossBinary,
     LogLossMulticlass,
+    MaxError,
     MCCBinary,
     MCCMulticlass,
-    MaxError,
-    MAE,
     MedianAE,
-    MSE,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
     PrecisionWeighted,
-    R2,
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted,
+    RecallWeighted
 )
 from .utils import get_objective, get_objectives
-from .binary_classification_objective import BinaryClassificationObjective
-from .multiclass_classification_objective import MulticlassClassificationObjective
-from .regression_objective import RegressionObjective
