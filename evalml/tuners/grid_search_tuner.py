@@ -10,26 +10,24 @@ class GridSearchTuner(Tuner):
     """Grid Search Optimizer
 
     Example:
-        >>> tuner = GridSearchTuner([(1,10), ['A', 'B']], n_points=5)
-        >>> print(tuner.propose())
-        (1.0, 'A')
-        >>> print(tuner.propose())
-        (1.0, 'B')
-        >>> print(tuner.propose())
-        (3.25, 'A')
+        >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
+        >>> proposal = tuner.propose()
+        >>> assert proposal.keys() == {'My Component'}
+        >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
     """
 
-    def __init__(self, space, n_points=10, random_state=0):
+    def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_state=0):
         """ Generate all of the possible points to search for in the grid
 
         Arguments:
-            space: A list of all dimensions available to tune
+            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             n_points: The number of points to sample from along each dimension
                 defined in the ``space`` argument
             random_state: Unused in this class
         """
+        super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         raw_dimensions = list()
-        for dimension in space:
+        for dimension in self._search_space_ranges:
             # Categorical dimension
             if isinstance(dimension, list):
                 range_values = dimension
@@ -56,29 +54,29 @@ class GridSearchTuner(Tuner):
         self._grid_points = itertools.product(*raw_dimensions)
         self.curr_params = None
 
-    def add(self, parameters, score):
+    def add(self, pipeline_parameters, score):
         """Not applicable to grid search tuner as generated parameters are
         not dependent on scores of previous parameters.
 
         Arguments:
-            parameters: Hyperparameters used
-            score: Associated score
+            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
+            score (float): the score obtained by evaluating the pipeline with the provided parameters
         """
         pass
 
     def propose(self):
-        """ Returns hyperparameters from _grid_points iterations
+        """Returns parameters from _grid_points iterations
 
         If all possible combinations of parameters have been scored, then ``NoParamsException`` is raised.
 
         Returns:
-            dict: proposed hyperparameters
+            dict: proposed pipeline parameters
         """
         if not self.curr_params:
             self.is_search_space_exhausted()
         params = self.curr_params
         self.curr_params = None
-        return params
+        return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
         """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
