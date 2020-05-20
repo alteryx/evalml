@@ -12,6 +12,7 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
+from evalml.model_family import ModelFamily
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
@@ -236,7 +237,8 @@ class AutoSearchBase:
             return False
 
         should_continue = True
-        num_pipelines = len(self.results['pipeline_results']) - 1  # subtract 1 for baseline
+        num_pipelines = len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, self.results['pipeline_results'].values())))
+
         if num_pipelines == 0:
             return True
 
@@ -418,6 +420,7 @@ class AutoSearchBase:
         self.results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
+            "pipeline_class": type(trained_pipeline),
             "pipeline_summary": pipeline_summary,
             "parameters": parameters,
             "score": score,
