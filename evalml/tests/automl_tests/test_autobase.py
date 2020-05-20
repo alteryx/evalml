@@ -201,21 +201,12 @@ def test_automl_str_no_param_search():
         'Optimize Thresholds': 'False'
     }
 
-    for module, pipeline_name in [('catboost', 'Cat Boost Binary Classification Pipeline'), ('xgboost', 'XGBoost Binary Classification Pipeline')]:
-        try:
-            import_or_raise(module)
-            param_str_reps['Possible Pipelines'].append(pipeline_name)
-        except ImportError:
-            continue
-
     str_rep = str(automl)
 
     for param, value in param_str_reps.items():
+        assert f"{param}" in str_rep
         if isinstance(value, list):
-            assert f"{param}" in str_rep
-            for item in value:
-                assert f"\t{str(item)}" in str_rep
-        else:
-            assert f"{param}: {str(value)}" in str_rep
-
+            value = "\n".join(["\t{}".format(item) for item in value])
+            assert value in str_rep
+    assert "Possible Pipelines" in str_rep
     assert "Search Results" not in str_rep
