@@ -12,5 +12,7 @@ class CatBoostRegressionPipeline(RegressionPipeline):
     """
     component_graph = ['Simple Imputer', 'CatBoost Regressor']
     custom_hyperparameters = {
-        "impute_strategy": ["most_frequent"],
+        'Simple Imputer': {
+            "impute_strategy": ["most_frequent"],
+        }
     }

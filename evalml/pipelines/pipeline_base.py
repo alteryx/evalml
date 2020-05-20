@@ -247,15 +247,15 @@ class PipelineBase(ABC):
 
     @classproperty
     def hyperparameters(cls):
-        "Returns hyperparameter ranges as a flat dictionary from all components "
+        "Returns hyperparameter ranges from all components as a dictionary"
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         for component in component_graph:
             component = handle_component(component)
-            hyperparameter_ranges.update(component.hyperparameter_ranges)
-
-        if cls.custom_hyperparameters:
-            hyperparameter_ranges.update(cls.custom_hyperparameters)
+            component_hyperparameters = copy.copy(component.hyperparameter_ranges)
+            if cls.custom_hyperparameters and component.name in cls.custom_hyperparameters:
+                component_hyperparameters.update(cls.custom_hyperparameters.get(component.name, {}))
+            hyperparameter_ranges[component.name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property
