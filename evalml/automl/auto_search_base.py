@@ -235,7 +235,7 @@ class AutoSearchBase:
         if self.max_time and elapsed >= self.max_time:
             return False
         elif self.max_pipelines and num_pipelines >= self.max_pipelines:
-                return False
+            return False
 
         # check for early stopping
         if self.patience is None:
