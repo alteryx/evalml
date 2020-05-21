@@ -2,7 +2,6 @@ import copy
 import os
 import re
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 
 import cloudpickle
 import numpy as np
@@ -11,7 +10,6 @@ import pandas as pd
 from .components import Estimator, handle_component
 
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.objectives import get_objective
 from evalml.utils import (
     Logger,
     classproperty,
@@ -195,6 +193,7 @@ class PipelineBase(ABC):
         self._fit(X, y)
         return self
 
+    @abstractmethod
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
@@ -205,12 +204,8 @@ class PipelineBase(ABC):
         Returns:
             pd.Series : estimated labels
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
-        X_t = self._transform(X)
-        return self.estimator.predict(X_t)
-
+    @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
@@ -222,21 +217,6 @@ class PipelineBase(ABC):
         Returns:
             dict: ordered dictionary of objective scores
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        objectives = [get_objective(o) for o in objectives]
-        scores = OrderedDict()
-
-        y_predicted = self.predict(X)
-        for objective in objectives:
-            if objective.score_needs_proba:
-                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
-            score = self._score(X, y, y_predicted, objective)
-            scores.update({objective.name: score})
-        return scores
 
     @staticmethod
     def _score(X, y, predictions, objective):
