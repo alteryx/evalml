@@ -5,10 +5,59 @@ import pytest
 from evalml.pipelines.graph_utils import (
     confusion_matrix,
     graph_confusion_matrix,
+    graph_precision_recall_curve,
     graph_roc_curve,
     normalize_confusion_matrix,
+    precision_recall_curve,
     roc_curve
 )
+
+
+def test_precision_recall_curve():
+    y_true = np.array([0, 0, 1, 1])
+    y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
+
+    precision = precision_recall_curve_data.get('precision')
+    recall = precision_recall_curve_data.get('recall')
+    thresholds = precision_recall_curve_data.get('thresholds')
+
+    precision_expected = np.array([0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.35, 0.4, 0.8])
+
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_graph_precision_recall_curve(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred_proba = y_true * rs.random(y_true.shape)
+    fig = graph_precision_recall_curve(y_true, y_pred_proba)
+    assert isinstance(fig, type(go.Figure()))
+
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Precision-Recall'
+    assert len(fig_dict['data']) == 1
+
+    precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
+    assert np.array_equal(fig_dict['data'][0]['x'], precision_recall_curve_data['recall'])
+    assert np.array_equal(fig_dict['data'][0]['y'], precision_recall_curve_data['precision'])
+    assert fig_dict['data'][0]['name'] == 'Precision-Recall'
+
+
+def test_graph_precision_recall_curve_title_addition(X_y):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y
+    rs = np.random.RandomState(42)
+    y_pred_proba = y_true * rs.random(y_true.shape)
+    fig = graph_precision_recall_curve(y_true, y_pred_proba, title_addition='with added title text')
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
 def test_roc_curve():
