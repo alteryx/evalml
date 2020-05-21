@@ -3,6 +3,10 @@ import pytest
 
 from evalml.objectives import (
     F1,
+    MSE,
+    MSLE,
+    RMSE,
+    RMSLE,
     AccuracyBinary,
     AccuracyMulticlass,
     BalancedAccuracyBinary,
@@ -11,8 +15,6 @@ from evalml.objectives import (
     F1Macro,
     F1Micro,
     F1Weighted,
-    MSE,
-    MSLE,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -20,9 +22,7 @@ from evalml.objectives import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted,
-    RMSE,
-    RMSLE
+    RecallWeighted
 )
 from evalml.objectives.utils import OPTIONS
 
