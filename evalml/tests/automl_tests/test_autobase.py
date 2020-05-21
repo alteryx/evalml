@@ -11,28 +11,31 @@ from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
 
-def test_pipeline_limits(capsys, X_y):
+def test_pipeline_limits(caplog, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 1 pipelines. " in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=5)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 
@@ -144,7 +147,6 @@ def test_automl_str_search(mock_fit, X_y):
         'add_result_callback': None,
         'additional_objectives': ['Precision', 'AUC'],
         'n_jobs': 2,
-        'verbose': True,
         'optimize_thresholds': True
     }
 
@@ -162,7 +164,6 @@ def test_automl_str_search(mock_fit, X_y):
         'Additional Objectives': search_params['additional_objectives'],
         'Random State': 'RandomState(MT19937)',
         'n_jobs': search_params['n_jobs'],
-        'Verbose': search_params['verbose'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
 
@@ -191,7 +192,7 @@ def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     mock_check_stopping_condition.return_value = False
     automl.search(X, y, data_checks=EmptyDataChecks())
     mock_check_stopping_condition.assert_called()
-    assert automl.latest_data_check_results is None
+    assert automl.data_check_results is None
 
 
 def test_automl_default_data_checks():
@@ -203,7 +204,7 @@ def test_automl_default_data_checks():
     automl = AutoClassificationSearch(max_pipelines=1)
     with pytest.raises(ValueError, match="Data checks raised"):
         automl.search(X, y, data_checks=None)
-    assert len(automl.latest_data_check_results) > 0
+    assert len(automl.data_check_results) > 0
 
 
 def test_automl_str_no_param_search():
