@@ -5,6 +5,8 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
+from evalml.exceptions import ObjectiveNotFoundError
+from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
@@ -209,3 +211,12 @@ def test_automl_str_no_param_search():
             assert value in str_rep
     assert "Possible Pipelines" in str_rep
     assert "Search Results" not in str_rep
+
+
+def test_log_metrics_only_passed_directly():
+    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
+        AutoRegressionSearch(additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
+
+    ar = AutoRegressionSearch(additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
+    assert ar.additional_objectives[0].name == 'Root Mean Squared Log Error'
+    assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
