@@ -6,3 +6,4 @@ from .data_check_message_type import DataCheckMessageType
 from .detect_highly_null_data_check import DetectHighlyNullDataCheck
 from .default_data_checks import DefaultDataChecks
 from .utils import EmptyDataChecks
+from .detect_label_leakage_data_check import DetectLabelLeakageDataCheck
