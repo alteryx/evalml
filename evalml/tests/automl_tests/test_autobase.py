@@ -134,7 +134,7 @@ def test_detect_label_leakage(mock_detect_label_leakage, mock_fit, capsys, caplo
     automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
     automl.search(X, y, raise_errors=False)
     out = caplog.text
-    assert "WARNING: Possible label leakage: var 1, var 2" in out
+    assert "Possible label leakage: var 1, var 2" in out
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')

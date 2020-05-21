@@ -7,9 +7,8 @@ def get_logger(name):
     logger = logging.getLogger(name)
     if not len(logger.handlers):
         date_fmt = "%m/%d/%Y %I:%M:%S %p"
-        fmt = "%(asctime)s %(name)s - %(levelname)s - [name=%(name)s]: %(message)s"
-
-        log_handler = RotatingFileHandler(filename="debug.log")
+        fmt = "%(asctime)s - %(levelname)s - %(filename)s: %(message)s"
+        log_handler = RotatingFileHandler(filename="evalml_debug.log")
         log_handler.setLevel(logging.DEBUG)
         log_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
 

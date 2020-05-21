@@ -234,7 +234,7 @@ class PipelineBase(ABC):
         try:
             score = objective.score(y, predictions, X)
         except Exception as e:
-            logger.log('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
+            logger.error('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
         return score
 
     @classproperty
