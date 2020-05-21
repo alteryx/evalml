@@ -189,7 +189,6 @@ def test_automl_str_no_param_search():
             'Balanced Accuracy Binary',
             'F1',
             'Precision',
-            'Recall',
             'AUC',
             'MCC Binary'],
         'Start Iteration Callback': 'None',
