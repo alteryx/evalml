@@ -11,6 +11,8 @@ from evalml.objectives import (
     F1Macro,
     F1Micro,
     F1Weighted,
+    MSE,
+    MSLE,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -18,7 +20,9 @@ from evalml.objectives import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted
+    RecallWeighted,
+    RMSE,
+    RMSLE
 )
 from evalml.objectives.utils import OPTIONS
 
@@ -89,6 +93,14 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
+
+
+def test_negative_with_log():
+    y_predicted = np.array([-1, 10, 30])
+    y_true = np.array([-1, 0, 1])
+    for objective in [MSLE(), RMSLE()]:
+        with pytest.raises(ValueError, match="Mean Squared Logarithmic Error cannot be used when targets contain negative values."):
+            objective.score(y_true, y_predicted)
 
 
 def test_binary_more_than_two_unique_values():
@@ -332,3 +344,47 @@ def test_recall_weighted_multi():
 
     assert obj.score(np.array([0, 0]),
                      np.array([1, 2])) == pytest.approx(0.0, EPS)
+
+
+def test_log_linear_model():
+    obj = MSLE()
+    root_obj = RMSLE()
+
+    s1p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s1a = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    s2p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2a = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+    s3p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s3a = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+
+    assert obj.score(s1p, s1a) == pytest.approx(0.5624673249102612)
+    assert obj.score(s2p, s2a) == pytest.approx(0)
+    assert obj.score(s3p, s3a) == pytest.approx(0.617267976207983)
+
+    assert root_obj.score(s1p, s1a) == pytest.approx(np.sqrt(0.5624673249102612))
+    assert root_obj.score(s2p, s2a) == pytest.approx(0)
+    assert root_obj.score(s3p, s3a) == pytest.approx(np.sqrt(0.617267976207983))
+
+
+def test_mse_linear_model():
+    obj = MSE()
+    root_obj = RMSE()
+
+    s1p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s1a = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    s2p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2a = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+    s3p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s3a = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+
+    assert obj.score(s1p, s1a) == pytest.approx(5. / 3.)
+    assert obj.score(s2p, s2a) == pytest.approx(0)
+    assert obj.score(s3p, s3a) == pytest.approx(2.)
+
+    assert root_obj.score(s1p, s1a) == pytest.approx(np.sqrt(5. / 3.))
+    assert root_obj.score(s2p, s2a) == pytest.approx(0)
+    assert root_obj.score(s3p, s3a) == pytest.approx(np.sqrt(2.))

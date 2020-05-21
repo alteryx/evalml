@@ -269,7 +269,7 @@ class RMSLE(RegressionObjective):
     score_needs_proba = False
 
     def objective_function(self, y_true, y_predicted, X=None):
-        return np.sqrt(metrics.mean_squared_error(y_true, y_predicted))
+        return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
 
 
 class MSLE(RegressionObjective):
