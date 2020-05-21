@@ -14,6 +14,7 @@ Changelog
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Port over all guardrails to use the new DataCheck API :pr:`789`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
@@ -34,6 +35,7 @@ Changelog
     * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+    * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
 
 
 **v0.9.0 Apr. 27, 2020**

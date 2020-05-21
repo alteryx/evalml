@@ -4,6 +4,8 @@ from sklearn.ensemble import IsolationForest
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
+from evalml.utils import get_random_state
+
 
 class DetectOutliersDataCheck(DataCheck):
 
@@ -14,7 +16,7 @@ class DetectOutliersDataCheck(DataCheck):
         Arguments:
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
-        self.random_state = random_state
+        self.random_state = get_random_state(random_state)
 
     def validate(self, X, y=None):
         """Checks if there are any outliers in a dataframe by using first Isolation Forest to obtain the anomaly score
@@ -45,7 +47,7 @@ class DetectOutliersDataCheck(DataCheck):
         X = X.select_dtypes(include=numerics)
 
         if len(X.columns) == 0:
-            return {}
+            return []
 
         def get_IQR(df, k=2.0):
             q1 = df.quantile(0.25)

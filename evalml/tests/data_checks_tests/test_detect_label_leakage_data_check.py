@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -28,42 +27,54 @@ def test_label_leakage_data_check_init():
 
 
 def test_label_leakage_data_check_warnings():
-    data = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
-                         'all_null': [None, None, None, None, None],
-                         'no_null': [1, 2, 3, 4, 5]})
-    no_null_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.0)
-    assert no_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is more than 0% null", "DetectLabelLeakageDataCheck"),
-                                            DataCheckWarning("Column 'all_null' is more than 0% null", "DetectLabelLeakageDataCheck")]
-    some_null_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.5)
-    assert some_null_check.validate(data) == [DataCheckWarning("Column 'lots_of_null' is 50.0% or more null", "DetectLabelLeakageDataCheck"),
-                                              DataCheckWarning("Column 'all_null' is 50.0% or more null", "DetectLabelLeakageDataCheck")]
-    all_null_check = DetectLabelLeakageDataCheck(pct_corr_threshold=1.0)
-    assert all_null_check.validate(data) == [DataCheckWarning("Column 'all_null' is 100.0% or more null", "DetectLabelLeakageDataCheck")]
+    y = pd.Series([1, 0, 1, 1])
+    X = pd.DataFrame()
+    X["a"] = y * 3
+    X["b"] = y - 1
+    X["c"] = y / 10
+    X["d"] = ~y
+    X["e"] = [0, 0, 0, 0]
+
+    y = y.astype(bool)
+    label_leakage_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.5)
+    assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'a' is 50.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                                                  DataCheckWarning("Column 'b' is 50.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                                                  DataCheckWarning("Column 'c' is 50.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                                                  DataCheckWarning("Column 'd' is 50.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
 
 
 def test_label_leakage_data_check_input_formats():
+    y = pd.Series([1, 0, 1, 1])
+    y = y.astype(bool)
+    X = pd.DataFrame()
+    X["a"] = y * 3
+    X["b"] = y - 1
+    X["c"] = y / 10
+    X["d"] = ~y
+    X["e"] = [0, 0, 0, 0]
+
     label_leakage_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.8)
 
-    # test empty pd.DataFrame
-    messages = label_leakage_check.validate(pd.DataFrame())
+    # test empty pd.DataFrame, empty pd.Series
+    messages = label_leakage_check.validate(pd.DataFrame(), pd.Series())
     assert messages == []
 
-    #  test list
-    messages = label_leakage_check.validate([None, None, None, None, 5])
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more null", "DetectLabelLeakageDataCheck")]
+    expected_messages = [DataCheckWarning("Column 'a' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                         DataCheckWarning("Column 'b' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                         DataCheckWarning("Column 'c' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                         DataCheckWarning("Column 'd' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
 
-    #  test pd.Series
-    messages = label_leakage_check.validate(pd.Series([None, None, None, None, 5]))
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more null", "DetectLabelLeakageDataCheck")]
+    #  test y as list
+    messages = label_leakage_check.validate(X, [1, 0, 1, 1])
+    assert messages == expected_messages
 
-    #  test 2D list
-    messages = label_leakage_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]])
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more null", "DetectLabelLeakageDataCheck"),
-                        DataCheckWarning("Column '1' is 80.0% or more null", "DetectLabelLeakageDataCheck"),
-                        DataCheckWarning("Column '2' is 80.0% or more null", "DetectLabelLeakageDataCheck")]
+    #  test y as pd.Series
+    messages = label_leakage_check.validate(X, pd.Series([1, 0, 1, 1]))
+    assert messages == expected_messages
 
-    # test np.array
-    messages = label_leakage_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]]))
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more null", "DetectLabelLeakageDataCheck"),
-                        DataCheckWarning("Column '1' is 80.0% or more null", "DetectLabelLeakageDataCheck"),
-                        DataCheckWarning("Column '2' is 80.0% or more null", "DetectLabelLeakageDataCheck")]
+    # test X as np.array
+    messages = label_leakage_check.validate(X.to_numpy(), y)
+    assert messages == [DataCheckWarning("Column '0' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                        DataCheckWarning("Column '1' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                        DataCheckWarning("Column '2' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck"),
+                        DataCheckWarning("Column '3' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
