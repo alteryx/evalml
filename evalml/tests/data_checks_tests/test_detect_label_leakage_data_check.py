@@ -45,13 +45,13 @@ def test_label_leakage_data_check_warnings():
 
 def test_label_leakage_data_check_input_formats():
     y = pd.Series([1, 0, 1, 1])
-    y = y.astype(bool)
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = ~y
     X["e"] = [0, 0, 0, 0]
+    y = y.astype(bool)
 
     label_leakage_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.8)
 

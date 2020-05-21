@@ -39,7 +39,7 @@ class DetectLabelLeakageDataCheck(DataCheck):
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> label_leakage_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert label_leakage_check.validate(df) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
+            >>> assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -51,7 +51,6 @@ class DetectLabelLeakageDataCheck(DataCheck):
 
         if len(X.columns) == 0:
             return []
-
         corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
 
         highly_corr_cols = {key: value for key, value in corrs.items() if value >= self.pct_corr_threshold}
