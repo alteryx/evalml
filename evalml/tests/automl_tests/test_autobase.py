@@ -9,28 +9,31 @@ from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
 
-def test_pipeline_limits(capsys, X_y):
+def test_pipeline_limits(caplog, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 1 pipelines. " in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=5)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 
@@ -124,14 +127,14 @@ def test_rankings(X_y, X_y_reg):
 
 
 @patch('evalml.pipelines.PipelineBase.fit')
-@patch('evalml.utils.logger.Logger.log')
 @patch('evalml.guardrails.detect_label_leakage')
-def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
+def test_detect_label_leakage(mock_detect_label_leakage, mock_fit, capsys, caplog, X_y):
     X, y = X_y
     mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}
     automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
     automl.search(X, y, raise_errors=False)
-    mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
+    out = caplog.text
+    assert "Possible label leakage: var 1, var 2" in out
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -154,7 +157,6 @@ def test_automl_str_search(mock_fit, X_y):
         'add_result_callback': None,
         'additional_objectives': ['Precision', 'AUC'],
         'n_jobs': 2,
-        'verbose': True,
         'optimize_thresholds': True
     }
 
@@ -173,7 +175,6 @@ def test_automl_str_search(mock_fit, X_y):
         'Additional Objectives': search_params['additional_objectives'],
         'Random State': 'RandomState(MT19937)',
         'n_jobs': search_params['n_jobs'],
-        'Verbose': search_params['verbose'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
 
