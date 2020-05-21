@@ -2,97 +2,138 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pytest
+from skopt.space import Integer, Real
 
 from evalml.tuners.skopt_tuner import SKOptTuner
 from evalml.tuners.tuner import Tuner
 
-
-def assert_params_almost_equal(a, b, decimal=7):
-    """Given two sets of numeric/str parameter lists, assert numerics are approx equal and strs are equal"""
-    def separate_numeric_and_str(values):
-        def is_numeric(val):
-            return isinstance(val, (int, float))
-
-        def extract(vals, invert):
-            return [el for el in vals if (invert ^ is_numeric(el))]
-
-        return extract(values, False), extract(values, True)
-    a_num, a_str = separate_numeric_and_str(a)
-    b_num, b_str = separate_numeric_and_str(a)
-    assert a_str == b_str
-    np.testing.assert_almost_equal(a_num, b_num, decimal=decimal,
-                                   err_msg="Numeric parameter values are not approximately equal")
-
-
 random_state = 0
 
 
-def test_tuner_base(test_space):
-    with pytest.raises(TypeError):
-        Tuner(test_space)
+def test_tuner_init():
+    with pytest.raises(TypeError, match="Can't instantiate abstract class Tuner with abstract methods add, propose"):
+        Tuner({})
 
 
-def test_skopt_tuner_basic(test_space, test_space_unicode):
-    tuner = SKOptTuner(test_space, random_state=random_state)
+def test_skopt_tuner_init():
+    with pytest.raises(ValueError, match='pipeline_hyperparameter_ranges must be a dict but is of type <class \'set\'>'):
+        SKOptTuner({'My Component'})
+    with pytest.raises(ValueError, match='pipeline_hyperparameter_ranges has invalid entry for My Component: True'):
+        SKOptTuner({'My Component': True})
+    with pytest.raises(ValueError, match='pipeline_hyperparameter_ranges has invalid entry for My Component'):
+        SKOptTuner({'My Component': 0})
+    with pytest.raises(ValueError, match='pipeline_hyperparameter_ranges has invalid entry for My Component'):
+        SKOptTuner({'My Component': None})
+    with pytest.raises(ValueError, match='pipeline_hyperparameter_ranges has invalid dimensions for My Component parameter param a: None'):
+        SKOptTuner({'My Component': {'param a': None}})
+    SKOptTuner({})
+    SKOptTuner({'My Component': {}})
+
+
+def test_skopt_tuner_basic():
+    pipeline_hyperparameter_ranges = {'Mock Classifier': {
+        'parameter a': Integer(0, 10),
+        'parameter b': Real(0, 10),
+        'parameter c': (0, 10),
+        'parameter d': (0, 10.0),
+        'parameter e': ['option a', 'option b', 'option c'],
+        'parameter f': ['option a 💩', 'option b 💩', 'option c 💩'],
+        'parameter g': ['option a', 'option b', 100, np.inf]
+    }}
+
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_state)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c', np.inf])
-    tuner.add(proposed_params, 0.5)
-
-    tuner = SKOptTuner(test_space_unicode, random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩', np.inf])
-    tuner.add(proposed_params, 0.5)
-
-
-def test_skopt_tuner_space_types():
-    tuner = SKOptTuner([(0, 10)], random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
-    tuner.add(proposed_params, 0.5)
-
-    tuner = SKOptTuner([(0, 10.0)], random_state=random_state)
-    proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
+    assert proposed_params == {
+        'Mock Classifier': {
+            'parameter a': 5,
+            'parameter b': 8.442657485810175,
+            'parameter c': 3,
+            'parameter d': 8.472517387841256,
+            'parameter e': 'option b',
+            'parameter f': 'option b 💩',
+            'parameter g': 'option b'
+        }
+    }
     tuner.add(proposed_params, 0.5)
 
 
-def test_skopt_tuner_invalid_space():
+def test_skopt_tuner_invalid_ranges():
+    SKOptTuner({'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }}, random_state=random_state)
+
+    with pytest.raises(ValueError, match="Invalid dimension \\[\\]. Read the documentation for supported types."):
+        SKOptTuner({'Mock Classifier': {
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': []
+        }}, random_state=random_state)
+    with pytest.raises(ValueError, match="pipeline_hyperparameter_ranges has invalid dimensions for Mock Classifier parameter param c"):
+        SKOptTuner({'Mock Classifier': {
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': None
+        }}, random_state=random_state)
+    with pytest.raises(ValueError, match="Dimension has to be a list or tuple."):
+        SKOptTuner({'Mock Classifier': {
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': 'Value'
+        }}, random_state=random_state)
+
+
+def test_skopt_tuner_invalid_parameters_score():
+    pipeline_hyperparameter_ranges = {'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }}
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_state)
     with pytest.raises(TypeError):
-        SKOptTuner(False)
-    with pytest.raises(ValueError):
-        SKOptTuner([(0)])
-    with pytest.raises(ValueError):
-        SKOptTuner(((0, 1)))
-    with pytest.raises(ValueError):
-        SKOptTuner([(0, 0)])
-
-
-def test_skopt_tuner_invalid_parameters_score(test_space):
-    tuner = SKOptTuner(test_space)
+        tuner.add({}, 0.5)
     with pytest.raises(TypeError):
-        tuner.add(0, 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, 2, 3], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, '2', '3'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([-1, 1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, -1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([0, 1, 'option_a', 3, 4], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([np.nan, 1, 'option_a', 'option_a'], 0.5)
-    with pytest.raises(ValueError):
-        tuner.add([np.inf, 1, 'option_a', 'option_a'], 0.5)
+        tuner.add({'Mock Classifier': {}}, 0.5)
     with pytest.raises(TypeError):
-        tuner.add([None, 1, 'option_a', 'option_a'], 0.5)
-    tuner.add((0, 1, 'option_a', 'option_b'), 0.5)
-    tuner.add([0, 1, 'option_a', 100], np.nan)
-    tuner.add([0, 1, 'option_a', np.inf], np.inf)
-    tuner.add([0, 1, 'option_a', 'option_a'], None)
+        tuner.add({'Mock Classifier': {'param a': 0}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 0}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': -1, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 11.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 'option d'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': np.nan, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(ValueError, match="is not within the bounds of the space"):
+        tuner.add({'Mock Classifier': {'param a': np.inf, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with pytest.raises(TypeError):
+        tuner.add({'Mock Classifier': {'param a': None, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.nan)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.inf)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, None)
     tuner.propose()
+    print(random_state)
+
+
+def test_skopt_tuner_propose():
+    pipeline_hyperparameter_ranges = {'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c']
+    }}
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_state)
+    tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
+    parameters = tuner.propose()
+    assert parameters == {
+        'Mock Classifier': {
+            'param a': 5,
+            'param b': 8.442657485810175,
+            'param c': 'option c'
+        }
+    }
     print(random_state)

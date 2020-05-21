@@ -1,3 +1,4 @@
+import copy
 import inspect
 import time
 from collections import OrderedDict
@@ -14,7 +15,7 @@ from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
 from evalml.utils.logger import get_logger, log_subtitle, log_title
@@ -84,11 +85,8 @@ class AutoSearchBase:
         self.possible_model_families = list(set([p.model_family for p in self.possible_pipelines]))
 
         self.tuners = {}
-        self.search_spaces = {}
         for p in self.possible_pipelines:
-            space = list(p.hyperparameters.items())
-            self.tuners[p.name] = tuner([s[1] for s in space], random_state=self.random_state)
-            self.search_spaces[p.name] = [s[0] for s in space]
+            self.tuners[p.name] = tuner(p.hyperparameters, random_state=self.random_state)
         self._MAX_NAME_LEN = 40
         self._next_pipeline_class = None
         try:
@@ -99,11 +97,9 @@ class AutoSearchBase:
             self.plot = None
 
     def __str__(self):
-        _list_separator = '\n\t'
-
-        def _print_list(in_attr):
-            return _list_separator + \
-                _list_separator.join(obj.name for obj in in_attr)
+        def _print_list(obj_list):
+            lines = ['\t{}'.format(o.name) for o in obj_list]
+            return '\n'.join(lines)
 
         def _get_funct_name(function):
             if callable(function):
@@ -112,20 +108,20 @@ class AutoSearchBase:
                 return None
 
         search_desc = (
-            f"{self.problem_type} Search\n\n"
+            f"{handle_problem_types(self.problem_type).name} Search\n\n"
             f"Parameters: \n{'='*20}\n"
-            f"Objective: {self.objective.name}\n"
+            f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
-            f"Possible Pipelines: {_print_list(self.possible_pipelines)}\n"
+            f"Possible Pipelines: \n{_print_list(self.possible_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
-            f"Tuner: {type(list(self.tuners.values())[0]).__name__}\n"
+            f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
             f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
-            f"Additional Objectives: {_print_list(self.additional_objectives)}\n"
+            f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
             f"Verbose: {self.verbose}\n"
@@ -276,25 +272,15 @@ class AutoSearchBase:
                 raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
 
     def _transform_parameters(self, pipeline_class, parameters, number_features):
-        new_parameters = {}
+        new_parameters = copy.copy(parameters)
         component_graph = [handle_component(c) for c in pipeline_class.component_graph]
         for component in component_graph:
-            component_parameters = {}
             component_class = component.__class__
-
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['n_jobs'] = self.n_jobs
+                new_parameters[component.name]['n_jobs'] = self.n_jobs
             if 'number_features' in inspect.signature(component_class.__init__).parameters:
-                component_parameters['number_features'] = number_features
-
-            # Inspects each component and checks the parameters list for the right parameters
-            # Sk_opt tuner returns a list of (name, value) tuples so must be accessed as follows
-            for parameter in parameters:
-                if parameter[0] in inspect.signature(component_class.__init__).parameters:
-                    component_parameters[parameter[0]] = parameter[1]
-
-            new_parameters[component.name] = component_parameters
+                new_parameters[component.name]['number_features'] = number_features
         return new_parameters
 
     def _do_iteration(self, X, y, pbar, raise_errors=True):
@@ -379,10 +365,7 @@ class AutoSearchBase:
         return self.random_state.choice(self.possible_pipelines)
 
     def _propose_parameters(self, pipeline_class):
-        values = self.tuners[pipeline_class.name].propose()
-        space = self.search_spaces[pipeline_class.name]
-        proposal = zip(space, values)
-        return list(proposal)
+        return self.tuners[pipeline_class.name].propose()
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data):
         scores = pd.Series([fold["score"] for fold in cv_data])
@@ -393,7 +376,7 @@ class AutoSearchBase:
         else:
             score_to_minimize = score
 
-        self.tuners[trained_pipeline.name].add([p[1] for p in parameters], score_to_minimize)
+        self.tuners[trained_pipeline.name].add(parameters, score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
@@ -406,7 +389,7 @@ class AutoSearchBase:
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
             "pipeline_summary": pipeline_summary,
-            "parameters": dict(parameters),
+            "parameters": parameters,
             "score": score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,

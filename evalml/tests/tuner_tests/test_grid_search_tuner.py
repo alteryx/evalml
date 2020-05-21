@@ -1,20 +1,21 @@
 import pytest
 
 from evalml import AutoRegressionSearch
-from evalml.tests.tuner_tests.tuner_test_utils import (
-    assert_params_almost_equal
-)
 from evalml.tuners import GridSearchTuner, NoParamsException
 from evalml.tuners.tuner import Tuner
 
 
-def test_autoreg_grid_search_tuner(X_y):
+def test_grid_search_tuner_inheritance():
+    assert issubclass(GridSearchTuner, Tuner)
+
+
+def test_grid_search_tuner_automl(X_y):
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=GridSearchTuner)
     clf.search(X, y)
 
 
-def test_autoreg_grid_search_tuner_no_params(X_y):
+def test_grid_search_tuner_automl_no_params(X_y, capsys):
     X, y = X_y
     clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=GridSearchTuner)
     error_text = "Grid search has exhausted all possible parameters"
@@ -22,58 +23,69 @@ def test_autoreg_grid_search_tuner_no_params(X_y):
         clf.search(X, y)
 
 
-def test_grid_search_tuner_unique_values(test_space):
-    tuner = GridSearchTuner(test_space)
-    generated_parameters = set()
+def test_grid_search_tuner_unique_values(dummy_pipeline_hyperparameters):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters)
+    generated_parameters = []
     for i in range(10):
         params = tuner.propose()
-        generated_parameters.add(tuple(params))
+        generated_parameters.append(params)
     assert len(generated_parameters) == 10
-    assert len(list(generated_parameters)[0]) == 4
+    for i in range(10):
+        assert generated_parameters[i].keys() == dummy_pipeline_hyperparameters.keys()
+        assert generated_parameters[i]['Mock Classifier'].keys() == dummy_pipeline_hyperparameters['Mock Classifier'].keys()
 
 
-def test_grid_search_tuner_no_params(test_space_small):
-    tuner = GridSearchTuner(test_space_small)
-    generated_parameters = set()
+def test_grid_search_tuner_no_params(dummy_pipeline_hyperparameters_small):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters_small)
     error_text = "Grid search has exhausted all possible parameters."
     with pytest.raises(NoParamsException, match=error_text):
         for i in range(10):
-            params = tuner.propose()
-            generated_parameters.add(tuple(params))
+            tuner.propose()
 
 
-def test_grid_search_tuner_basic(test_space, test_space_unicode):
-    tuner = GridSearchTuner(test_space)
-    assert isinstance(tuner, Tuner)
+def test_grid_search_tuner_basic(dummy_pipeline_hyperparameters,
+                                 dummy_pipeline_hyperparameters_unicode):
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c'])
+    assert proposed_params == {
+        'Mock Classifier': {
+            'param a': 0,
+            'param b': 0.0,
+            'param c': 'option a',
+            'param d': 'option a'
+        }
+    }
     tuner.add(proposed_params, 0.5)
 
-    tuner = GridSearchTuner(test_space_unicode)
+    tuner = GridSearchTuner(dummy_pipeline_hyperparameters_unicode)
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5, 8.442657485810175, 'option_c 💩'])
+    assert proposed_params == {
+        'Mock Classifier': {
+            'param a': 0,
+            'param b': 0.0,
+            'param c': 'option a 💩',
+            'param d': 'option a'
+        }
+    }
     tuner.add(proposed_params, 0.5)
 
 
 def test_grid_search_tuner_space_types():
-    tuner = GridSearchTuner([(0, 10)])
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': (0, 10)}})
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
+    assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
-    tuner = GridSearchTuner([(0, 10.0)])
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': (0, 10.0)}})
     proposed_params = tuner.propose()
-    assert_params_almost_equal(proposed_params, [5.928446182250184])
+    assert proposed_params == {'Mock Classifier': {'param a': 0}}
 
 
 def test_grid_search_tuner_invalid_space():
-    iterable_error = '\'bool\' object is not iterable'
     type_error_text = 'Invalid dimension type in tuner'
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
-    with pytest.raises(TypeError, match=iterable_error):
-        GridSearchTuner(False)
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner([(0)])
+        GridSearchTuner({'Mock Classifier': {'param a': False}})
     with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner(((0, 1)))
+        GridSearchTuner({'Mock Classifier': {'param a': (0)}})
     with pytest.raises(ValueError, match=bound_error_text):
-        GridSearchTuner([(1, 0)])
+        GridSearchTuner({'Mock Classifier': {'param a': (1, 0)}})

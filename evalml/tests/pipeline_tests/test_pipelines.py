@@ -8,11 +8,13 @@ from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision, Recall
+from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     LogisticRegressionBinaryPipeline,
-    PipelineBase
+    MulticlassClassificationPipeline,
+    PipelineBase,
+    RegressionPipeline
 )
 from evalml.pipelines.components import (
     LogisticRegressionClassifier,
@@ -272,9 +274,13 @@ def test_multi_format_creation(X_y):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
 
         hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
+            'Simple Imputer': {
+                "impute_strategy": ["mean", "median", "most_frequent"]
+            },
+            'Logistic Regression Classifier': {
+                "penalty": ["l2"],
+                "C": Real(.01, 10)
+            }
         }
 
     parameters = {
@@ -305,9 +311,13 @@ def test_multiple_feature_selectors(X_y):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
+            'Simple Imputer': {
+                "impute_strategy": ["mean", "median", "most_frequent"]
+            },
+            'Logistic Regression Classifier': {
+                "penalty": ["l2"],
+                "C": Real(.01, 10)
+            }
         }
 
     clf = TestPipeline(parameters={})
@@ -329,27 +339,148 @@ def test_problem_types():
         TestPipeline(parameters={})
 
 
-def test_score_with_list_of_multiple_objectives(X_y):
-    X, y = X_y
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 1.0,
-        }
-    }
+def make_mock_regression_pipeline():
+    class MockRegressionPipeline(RegressionPipeline):
+        component_graph = ['Random Forest Regressor']
 
-    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    return MockRegressionPipeline({})
+
+
+def make_mock_binary_pipeline():
+    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        component_graph = ['Random Forest Classifier']
+
+    return MockBinaryClassificationPipeline({})
+
+
+def make_mock_multiclass_pipeline():
+    class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Random Forest Classifier']
+
+    return MockMulticlassClassificationPipeline({})
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.predict')
+def test_score_regression_single(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_regression_pipeline()
     clf.fit(X, y)
-    recall_name = Recall.name
-    precision_name = Precision.name
-    objective_names = [recall_name, precision_name]
+    objective_names = ['r2']
     scores = clf.score(X, y, objective_names)
-    assert len(scores.values()) == 2
-    assert all(name in scores.keys() for name in objective_names)
-    assert not any(np.isnan(val) for val in scores.values())
+    mock_predict.assert_called()
+    assert scores == {'R2': 1.0}
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict')
+def test_score_binary_single(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_binary_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1': 1.0}
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
+def test_score_multiclass_single(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_multiclass_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1_micro']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1 Micro': 1.0}
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.predict')
+def test_score_regression_list(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_regression_pipeline()
+    clf.fit(X, y)
+    objective_names = ['r2', 'mse']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'R2': 1.0, 'MSE': 0.0}
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict')
+def test_score_binary_list(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_binary_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1', 'precision']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1': 1.0, 'Precision': 1.0}
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
+def test_score_multi_list(mock_predict, mock_fit, X_y):
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_multiclass_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1_micro', 'precision_micro']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1 Micro': 1.0, 'Precision Micro': 1.0}
+
+
+@patch('evalml.objectives.R2.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.predict')
+def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+    mock_objective_score.side_effect = Exception('finna kabooom 💣')
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_regression_pipeline()
+    clf.fit(X, y)
+    objective_names = ['r2', 'mse']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'R2': np.nan, 'MSE': 0.0}
+
+
+@patch('evalml.objectives.F1.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict')
+def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+    mock_objective_score.side_effect = Exception('finna kabooom 💣')
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_binary_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1', 'precision']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1': np.nan, 'Precision': 1.0}
+
+
+@patch('evalml.objectives.F1Micro.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
+def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+    mock_objective_score.side_effect = Exception('finna kabooom 💣')
+    X, y = X_y
+    mock_predict.return_value = y
+    clf = make_mock_multiclass_pipeline()
+    clf.fit(X, y)
+    objective_names = ['f1_micro', 'precision_micro']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1 Micro': np.nan, 'Precision Micro': 1.0}
 
 
 def test_no_default_parameters():
@@ -419,9 +550,13 @@ def test_hyperparameters():
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
 
     hyperparameters = {
-        "impute_strategy": ['mean', 'median', 'most_frequent'],
-        "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 32),
+        'Simple Imputer': {
+            "impute_strategy": ['mean', 'median', 'most_frequent'],
+        },
+        'Random Forest Classifier': {
+            "n_estimators": Integer(10, 1000),
+            "max_depth": Integer(1, 32)
+        }
     }
 
     assert MockPipeline.hyperparameters == hyperparameters
@@ -433,27 +568,37 @@ def test_hyperparameters_override():
         component_graph = ['Simple Imputer', 'Random Forest Classifier']
 
         custom_hyperparameters = {
-            "impute_strategy": ['median'],
-            "n_estimators": [1, 100, 200],
-            "max_depth": [5]
+            'Simple Imputer': {
+                "impute_strategy": ['median']
+            },
+            'Random Forest Classifier': {
+                "n_estimators": [1, 100, 200],
+                "max_depth": [5]
+            }
         }
 
     hyperparameters = {
-        "impute_strategy": ['median'],
-        "n_estimators": [1, 100, 200],
-        "max_depth": [5]
+        'Simple Imputer': {
+            "impute_strategy": ['median']
+        },
+        'Random Forest Classifier': {
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        }
     }
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters
     assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
-def test_hyperparameters_none(dummy_estimator):
-    class MockPipelineNone(BinaryClassificationPipeline):
-        component_graph = [dummy_estimator()]
+def test_hyperparameters_none(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
 
-    assert MockPipelineNone.hyperparameters == {}
-    assert MockPipelineNone(parameters={}).hyperparameters == {}
+    class MockPipelineNone(BinaryClassificationPipeline):
+        component_graph = [MockEstimator()]
+
+    assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
+    assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -461,7 +606,7 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     X, y = X_y
     mock_predict.return_value = np.array([1] * 100)
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
-        dummy_regression_pipeline.score(X, y, ['recall', 'auc'])
+        dummy_regression_pipeline.score(X, y, ['precision', 'auc'])
     mock_predict.assert_called()
 
 

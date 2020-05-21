@@ -47,11 +47,17 @@ def test_search_order(X_y):
 
 def test_transform_parameters():
     automl = AutoClassificationSearch(max_pipelines=1, random_state=100, n_jobs=6)
-    parameters = [('penalty', 'l2'), ('C', 8.444214828324364), ('impute_strategy', 'most_frequent')]
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 8.444214828324364
+        }
+    }
     parameters_dict = {
         'Simple Imputer': {'impute_strategy': 'most_frequent'},
-        'One Hot Encoder': {},
-        'Standard Scaler': {},
         'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
     }
     assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
@@ -77,6 +83,32 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert score > 0
             else:
                 assert np.isnan(score)
+
+
+@patch('evalml.objectives.AUC.score')
+def test_pipeline_score_raises(mock_score, X_y):
+    msg = 'all your model are belong to us'
+    mock_score.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    scores = cv_scores_all[0]['all_objective_scores']
+    auc_score = scores.pop('AUC')
+    assert np.isnan(auc_score)
+    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    scores = cv_scores_all[0]['all_objective_scores']
+    auc_score = scores.pop('AUC')
+    assert np.isnan(auc_score)
+    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
 
 def test_rankings(X_y, X_y_reg):
@@ -123,7 +155,7 @@ def test_automl_str_search(mock_fit, X_y):
         'detect_label_leakage': False,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
-        'additional_objectives': ['Recall', 'AUC'],
+        'additional_objectives': ['Precision', 'AUC'],
         'n_jobs': 2,
         'optimize_thresholds': True
     }
@@ -145,6 +177,7 @@ def test_automl_str_search(mock_fit, X_y):
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
+
     automl = AutoClassificationSearch(**search_params)
     str_rep = str(automl)
 
@@ -161,3 +194,44 @@ def test_automl_str_search(mock_fit, X_y):
     str_rep = str(automl)
     assert "Search Results:" in str_rep
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
+
+
+def test_automl_str_no_param_search():
+    automl = AutoClassificationSearch()
+
+    param_str_reps = {
+        'Objective': 'Log Loss Binary',
+        'Max Time': 'None',
+        'Max Pipelines': 'None',
+        'Possible Pipelines': [
+            'Logistic Regression Binary Pipeline',
+            'Random Forest Binary Classification Pipeline'],
+        'Patience': 'None',
+        'Tolerance': '0.0',
+        'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
+        'Tuner': 'SKOptTuner',
+        'Detect Label Leakage': 'True',
+        'Additional Objectives': [
+            'Accuracy Binary',
+            'Balanced Accuracy Binary',
+            'F1',
+            'Precision',
+            'AUC',
+            'MCC Binary'],
+        'Start Iteration Callback': 'None',
+        'Add Result Callback': 'None',
+        'Random State': 'RandomState(MT19937)',
+        'n_jobs': '-1',
+        'Verbose': 'True',
+        'Optimize Thresholds': 'False'
+    }
+
+    str_rep = str(automl)
+
+    for param, value in param_str_reps.items():
+        assert f"{param}" in str_rep
+        if isinstance(value, list):
+            value = "\n".join(["\t{}".format(item) for item in value])
+            assert value in str_rep
+    assert "Possible Pipelines" in str_rep
+    assert "Search Results" not in str_rep

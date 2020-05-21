@@ -2,15 +2,14 @@ import copy
 import os
 import re
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 
 import cloudpickle
+import numpy as np
 import pandas as pd
 
 from .components import Estimator, handle_component
 
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.objectives import get_objective
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -212,6 +211,7 @@ class PipelineBase(ABC):
         X_t = self._transform(X)
         return self.estimator.predict(X_t)
 
+    @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
@@ -223,23 +223,19 @@ class PipelineBase(ABC):
         Returns:
             dict: ordered dictionary of objective scores
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+    @staticmethod
+    def _score(X, y, predictions, objective):
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
-        objectives = [get_objective(o) for o in objectives]
-        y_predicted = None
-        scores = OrderedDict()
-        for objective in objectives:
-            if objective.score_needs_proba:
-                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
-            else:
-                if y_predicted is None:
-                    y_predicted = self.predict(X)
-                scores.update({objective.name: objective.score(y, y_predicted, X)})
-        return scores
+        Will return `np.nan` if the objective errors.
+        """
+        score = np.nan
+        try:
+            score = objective.score(y, predictions, X)
+        except Exception as e:
+            logger.log('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
+        return score
 
     @classproperty
     def model_family(cls):
@@ -249,15 +245,15 @@ class PipelineBase(ABC):
 
     @classproperty
     def hyperparameters(cls):
-        "Returns hyperparameter ranges as a flat dictionary from all components "
+        "Returns hyperparameter ranges from all components as a dictionary"
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         for component in component_graph:
             component = handle_component(component)
-            hyperparameter_ranges.update(component.hyperparameter_ranges)
-
-        if cls.custom_hyperparameters:
-            hyperparameter_ranges.update(cls.custom_hyperparameters)
+            component_hyperparameters = copy.copy(component.hyperparameter_ranges)
+            if cls.custom_hyperparameters and component.name in cls.custom_hyperparameters:
+                component_hyperparameters.update(cls.custom_hyperparameters.get(component.name, {}))
+            hyperparameter_ranges[component.name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property

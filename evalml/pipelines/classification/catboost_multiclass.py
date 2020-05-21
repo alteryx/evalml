@@ -11,5 +11,7 @@ class CatBoostMulticlassClassificationPipeline(MulticlassClassificationPipeline)
     """
     component_graph = ['Simple Imputer', 'CatBoost Classifier']
     custom_hyperparameters = {
-        "impute_strategy": ["most_frequent"],
+        'Simple Imputer': {
+            "impute_strategy": ["most_frequent"],
+        }
     }

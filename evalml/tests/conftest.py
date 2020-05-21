@@ -69,25 +69,35 @@ def X_y_categorical_classification():
 
 
 @pytest.fixture
-def test_space():
-    return [Integer(0, 10), Real(0, 10), ['option_a', 'option_b', 'option_c'], ['option_a', 'option_b', 100, np.inf]]
+def dummy_pipeline_hyperparameters():
+    return {'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a', 'option b', 'option c'],
+        'param d': ['option a', 'option b', 100, np.inf]
+    }}
 
 
 @pytest.fixture
-def test_space_unicode():
-    return [Integer(0, 10), Real(0, 10), ['option_a 💩', 'option_b 💩', 'option_c 💩'], ['option_a', 'option_b', 100, np.inf]]
+def dummy_pipeline_hyperparameters_unicode():
+    return {'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': ['option a 💩', 'option b 💩', 'option c 💩'],
+        'param d': ['option a', 'option b', 100, np.inf]
+    }}
 
 
 @pytest.fixture
-def test_space_small():
-    list_of_space = list()
-    list_of_space.append(['most_frequent', 'median', 'mean'])
-    list_of_space.append(['a', 'b', 'c'])
-    return list_of_space
+def dummy_pipeline_hyperparameters_small():
+    return {'Mock Classifier': {
+        'param a': ['most_frequent', 'median', 'mean'],
+        'param b': ['a', 'b', 'c']
+    }}
 
 
 @pytest.fixture
-def dummy_estimator():
+def dummy_classifier_estimator_class():
     class MockEstimator(Estimator):
         name = "Mock Classifier"
         model_family = ModelFamily.NONE
@@ -100,11 +110,14 @@ def dummy_estimator():
 
 
 @pytest.fixture
-def dummy_binary_pipeline(dummy_estimator):
+def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        estimator = dummy_estimator()
-        component_graph = [estimator]
-    return MockBinaryClassificationPipeline(parameters={})
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
+    return MockBinaryClassificationPipeline
 
 
 @pytest.fixture
