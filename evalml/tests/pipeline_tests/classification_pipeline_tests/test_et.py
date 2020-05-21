@@ -2,8 +2,7 @@ import category_encoders as ce
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.ensemble import (ExtraTreesClassifier,
-                              RandomForestClassifier as SKRandomForestClassifier)
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -109,7 +108,7 @@ def test_et_multi(X_y_multi):
                                      n_estimators=10,
                                      max_depth=3,
                                      n_jobs=-1)
-    rf_estimator = SKRandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
+    rf_estimator = RandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
                                         max_features=max(1, int(1 * len(X[0]))),
                                         threshold=-np.inf)
