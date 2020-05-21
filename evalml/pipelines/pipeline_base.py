@@ -193,7 +193,6 @@ class PipelineBase(ABC):
         self._fit(X, y)
         return self
 
-    @abstractmethod
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
@@ -204,6 +203,11 @@ class PipelineBase(ABC):
         Returns:
             pd.Series : estimated labels
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        X_t = self._transform(X)
+        return self.estimator.predict(X_t)
 
     @abstractmethod
     def score(self, X, y, objectives):

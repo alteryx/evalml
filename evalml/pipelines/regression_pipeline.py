@@ -11,22 +11,6 @@ class RegressionPipeline(PipelineBase):
     """Pipeline subclass for all regression pipelines."""
     problem_type = ProblemTypes.REGRESSION
 
-    def predict(self, X, objective=None):
-        """Make predictions using selected features.
-
-        Args:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to make predictions
-
-        Returns:
-            pd.Series : estimated labels
-        """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        X_t = self._transform(X)
-        return self.estimator.predict(X_t)
-
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
