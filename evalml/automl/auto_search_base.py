@@ -234,11 +234,7 @@ class AutoSearchBase:
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_pipelines:
-            if num_pipelines >= self.max_pipelines:
-                return False
-            elif self.max_time and elapsed >= self.max_time:
-                logger.info("\n\nMax time elapsed. Stopping search early.")
+        elif self.max_pipelines and num_pipelines >= self.max_pipelines:
                 return False
 
         # check for early stopping
