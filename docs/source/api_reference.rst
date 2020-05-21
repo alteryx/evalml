@@ -324,14 +324,18 @@ Tuners
 Data Checks
 ===========
 
-Data Check Base Classes
-~~~~~~~~~~~~~~~~~~~~~~~
+Data Check Classes
+~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: data_check_class.rst
     :nosignatures:
 
     DataCheck
+    DetectHighlyNullDataCheck
+    DetectIDColumnsDataCheck
+    DetectLabelLeakageDataCheck
+    DetectOutliersDataCheck
 
 
 .. autosummary::
@@ -340,6 +344,7 @@ Data Check Base Classes
     :nosignatures:
 
     DataChecks
+    DefaultDataChecks
 
 
 Data Check Messages
@@ -363,21 +368,6 @@ Data Check Message Types
     :nosignatures:
 
     DataCheckMessageType
-
-
-.. currentmodule:: evalml.guardrails
-
-Guardrails
-=============
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    detect_highly_null
-    detect_label_leakage
-    detect_outliers
-    detect_id_columns
 
 
 .. currentmodule:: evalml.utils

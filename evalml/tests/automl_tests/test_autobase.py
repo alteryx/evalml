@@ -99,7 +99,6 @@ def test_rankings(X_y, X_y_reg):
 
 @patch('evalml.pipelines.PipelineBase.fit')
 @patch('evalml.utils.logger.Logger.log')
-@patch('evalml.guardrails.detect_label_leakage')
 def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
     X, y = X_y
     mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}

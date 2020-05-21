@@ -11,7 +11,6 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
-from evalml import guardrails
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
@@ -192,12 +191,6 @@ class AutoSearchBase:
         if self.max_time:
             logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
             logger.log("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
-
-        if self.detect_label_leakage:
-            leaked = guardrails.detect_label_leakage(X, y)
-            if len(leaked) > 0:
-                leaked = [str(k) for k in leaked.keys()]
-                logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
 
         search_iteration_plot = None
         if self.plot:
