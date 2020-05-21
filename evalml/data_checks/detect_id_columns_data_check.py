@@ -7,11 +7,7 @@ from .data_check_message import DataCheckWarning
 class DetectIDColumnsDataCheck(DataCheck):
 
     def __init__(self, id_threshold=1.0):
-        """Check if any of the features are ID columns. Currently performs these simple checks:
-
-            - column name is "id"
-            - column name ends in "_id"
-            - column contains all unique values (and is not float / boolean)
+        """Check if any of the features are likely to be ID columns.
 
         Arguments:
             id_threshold (float): the probability threshold to be considered an ID column. Defaults to 1.0.
@@ -21,7 +17,7 @@ class DetectIDColumnsDataCheck(DataCheck):
         self.id_threshold = id_threshold
 
     def validate(self, X, y=None):
-        """Check if any of the features are ID columns. Currently performs these simple checks:
+        """Check if any of the features are likely to be ID columns. Currently performs these simple checks:
 
             - column name is "id"
             - column name ends in "_id"

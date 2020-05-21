@@ -69,7 +69,7 @@ def test_label_leakage_data_check_input_formats():
     assert messages == expected_messages
 
     #  test y as pd.Series
-    messages = label_leakage_check.validate(X, pd.Series([1, 0, 1, 1]))
+    messages = label_leakage_check.validate(X, y)
     assert messages == expected_messages
 
     # test X as np.array
