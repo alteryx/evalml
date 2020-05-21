@@ -34,11 +34,11 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   RFMulticlassClassificationPipeline,
                   XGBoostBinaryPipeline,
                   XGBoostMulticlassPipeline,
-                  CatBoostRegressionPipeline,
-                  ETRegressionPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
-                  XGBoostRegressionPipeline]
+                  CatBoostRegressionPipeline,
+                  XGBoostRegressionPipeline,
+                  ETRegressionPipeline]
 
 
 def all_pipelines():
