@@ -4,9 +4,9 @@ import pytest
 from evalml.objectives import (
     F1,
     MSE,
-    MSLE,
-    RMSE,
-    RMSLE,
+    MeanSquaredLogError,
+    RootMeanSquaredError,
+    RootMeanSquaredLogError,
     AccuracyBinary,
     AccuracyMulticlass,
     BalancedAccuracyBinary,
@@ -347,44 +347,48 @@ def test_recall_weighted_multi():
 
 
 def test_log_linear_model():
-    obj = MSLE()
-    root_obj = RMSLE()
+    obj = MeanSquaredLogError()
+    root_obj = RootMeanSquaredLogError()
 
-    s1p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s1a = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    s1_predicted = np.power(np.e,np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]))
+    s1_actual = np.power(np.e,np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]))
 
-    s2p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s2a = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2_predicted = np.power(np.e,np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]))
+    s2_actual = np.power(np.e,np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]))
 
-    s3p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s3a = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+    s3_predicted = np.power(np.e,np.array([0, 0, 0, 1, 1, 1, 2, 2, 2]))
+    s3_actual = np.power(np.e,np.array([2, 2, 2, 0, 0, 0, 1, 1, 1]))
 
-    assert obj.score(s1p, s1a) == pytest.approx(0.5624673249102612)
-    assert obj.score(s2p, s2a) == pytest.approx(0)
-    assert obj.score(s3p, s3a) == pytest.approx(0.617267976207983)
+    print(obj.score(s1_predicted, s1_actual))
+    print(obj.score(s2_predicted, s2_actual))
+    print(obj.score(s3_predicted, s3_actual))
 
-    assert root_obj.score(s1p, s1a) == pytest.approx(np.sqrt(0.5624673249102612))
-    assert root_obj.score(s2p, s2a) == pytest.approx(0)
-    assert root_obj.score(s3p, s3a) == pytest.approx(np.sqrt(0.617267976207983))
+    assert obj.score(s1_predicted, s1_actual) == pytest.approx(0.8134231572002353)
+    assert obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert obj.score(s3_predicted, s3_actual) == pytest.approx(1.0341074525463292)
+
+    assert root_obj.score(s1_predicted, s1_actual) == pytest.approx(np.sqrt(0.8134231572002353))
+    assert root_obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert root_obj.score(s3_predicted, s3_actual) == pytest.approx(np.sqrt(1.0341074525463292))
 
 
 def test_mse_linear_model():
     obj = MSE()
-    root_obj = RMSE()
+    root_obj = RootMeanSquaredError()
 
-    s1p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s1a = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    s1_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s1_actual = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-    s2p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s2a = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2_actual = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
 
-    s3p = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-    s3a = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+    s3_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s3_actual = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
 
-    assert obj.score(s1p, s1a) == pytest.approx(5. / 3.)
-    assert obj.score(s2p, s2a) == pytest.approx(0)
-    assert obj.score(s3p, s3a) == pytest.approx(2.)
+    assert obj.score(s1_predicted, s1_actual) == pytest.approx(5. / 3.)
+    assert obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert obj.score(s3_predicted, s3_actual) == pytest.approx(2.)
 
-    assert root_obj.score(s1p, s1a) == pytest.approx(np.sqrt(5. / 3.))
-    assert root_obj.score(s2p, s2a) == pytest.approx(0)
-    assert root_obj.score(s3p, s3a) == pytest.approx(np.sqrt(2.))
+    assert root_obj.score(s1_predicted, s1_actual) == pytest.approx(np.sqrt(5. / 3.))
+    assert root_obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert root_obj.score(s3_predicted, s3_actual) == pytest.approx(np.sqrt(2.))

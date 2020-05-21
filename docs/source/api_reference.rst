@@ -267,12 +267,12 @@ Regression Objectives
     R2
     MAE
     MSE
-    MSLE
+    MeanSquaredLogError
     MedianAE
     MaxError
     ExpVariance
-    RMSE
-    RMSLE
+    RootMeanSquaredError
+    RootMeanSquaredLogError
 
 
 .. currentmodule:: evalml.problem_types

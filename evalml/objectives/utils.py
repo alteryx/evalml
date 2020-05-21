@@ -29,7 +29,7 @@ OPTIONS = {
     "log_loss_multi": standard_metrics.LogLossMulticlass(),
     "mcc_binary": standard_metrics.MCCBinary(),
     "mcc_multi": standard_metrics.MCCMulticlass(),
-    "rmse": standard_metrics.RMSE(),
+    "rmse": standard_metrics.RootMeanSquaredError(),
     "r2": standard_metrics.R2(),
     "mae": standard_metrics.MAE(),
     "mse": standard_metrics.MSE(),

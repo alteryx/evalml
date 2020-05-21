@@ -252,9 +252,9 @@ class MCCMulticlass(MulticlassClassificationObjective):
         return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
-class RMSE(RegressionObjective):
+class RootMeanSquaredError(RegressionObjective):
     """Root mean squared error for regression"""
-    name = "RMSE"
+    name = "Root Mean Squared Error"
     greater_is_better = False
     score_needs_proba = False
 
@@ -262,9 +262,10 @@ class RMSE(RegressionObjective):
         return metrics.mean_squared_error(y_true, y_predicted, squared=False)
 
 
-class RMSLE(RegressionObjective):
-    """Root mean squared log error for regression. Only valid for nonnegative inputs"""
-    name = "RMSLE"
+class RootMeanSquaredLogError(RegressionObjective):
+    """Root mean squared log error for regression. Only valid for nonnegative inputs.
+    Otherwise, will throw a ValueError"""
+    name = "Root Mean Squared Log Error"
     greater_is_better = False
     score_needs_proba = False
 
@@ -272,9 +273,10 @@ class RMSLE(RegressionObjective):
         return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
 
 
-class MSLE(RegressionObjective):
-    """Mean squared log error for regression. Only valid for nonnegative inputs"""
-    name = "MSLE"
+class MeanSquaredLogError(RegressionObjective):
+    """Mean squared log error for regression. Only valid for nonnegative inputs.
+    Otherwise, will throw a ValueError"""
+    name = "Mean Squared Log Error"
     greater_is_better = False
     score_needs_proba = False
 
