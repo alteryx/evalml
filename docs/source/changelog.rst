@@ -16,6 +16,7 @@ Changelog
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
+        * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -31,10 +32,11 @@ Changelog
 
     **Breaking Changes**
 
-    * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
+    * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`    
     * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+    * `Recall` disallowed as an objective for AutoML :pr:`784`
 
 
 **v0.9.0 Apr. 27, 2020**
