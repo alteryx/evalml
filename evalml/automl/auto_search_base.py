@@ -185,9 +185,8 @@ class AutoSearchBase:
 
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
-            msg = "Data checks raised some warnings and/or errors. Please see `self._latest_data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking."
             self._latest_data_check_results = data_check_results
-            raise ValueError(msg)
+            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.latest_data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
         logger.log_title("Beginning pipeline search")
         logger.log("Optimizing for %s. " % self.objective.name, new_line=False)

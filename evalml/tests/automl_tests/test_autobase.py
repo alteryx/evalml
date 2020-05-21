@@ -165,6 +165,7 @@ def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     mock_check_stopping_condition.return_value = False
     automl.search(X, y, data_checks=EmptyDataChecks())
     mock_check_stopping_condition.assert_called()
+    assert automl.latest_data_check_results is None
 
 
 def test_automl_default_data_checks():
