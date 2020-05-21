@@ -238,7 +238,12 @@ class PipelineBase(ABC):
             scores.update({objective.name: score})
         return scores
 
-    def _score(self, X, y, predictions, objective):
+    @staticmethod
+    def _score(X, y, predictions, objective):
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
+
+        Will return `np.nan` if the objective errors.
+        """
         score = np.nan
         try:
             score = objective.score(y, predictions, X)
