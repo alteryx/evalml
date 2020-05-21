@@ -126,7 +126,7 @@ def test_automl_str_search(mock_fit, X_y):
         'detect_label_leakage': False,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
-        'additional_objectives': ['Recall', 'AUC'],
+        'additional_objectives': ['Precision', 'AUC'],
         'n_jobs': 2,
         'verbose': True,
         'optimize_thresholds': True
@@ -189,7 +189,6 @@ def test_automl_str_no_param_search():
             'Balanced Accuracy Binary',
             'F1',
             'Precision',
-            'Recall',
             'AUC',
             'MCC Binary'],
         'Start Iteration Callback': 'None',
