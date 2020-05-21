@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * Added new Pipeline option `ExtraTrees` :pr:`790`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
@@ -24,6 +25,7 @@ Changelog
         * Delete codecov yml, use codecov.io's default :pr:`732`
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Update codecov client :pr:`782`
+        * Added unit tests for `ExtraTrees` pipeline :pr:`790`
 
 .. warning::
 
