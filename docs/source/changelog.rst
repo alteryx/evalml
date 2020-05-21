@@ -5,6 +5,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
+        * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
@@ -24,14 +25,17 @@ Changelog
         * Delete codecov yml, use codecov.io's default :pr:`732`
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Update codecov client :pr:`782`
+        * Updated AutoBase __str__ test to include no parameters case :pr:`783`
 
 .. warning::
 
     **Breaking Changes**
 
-    * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`
+    * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`    
+    * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
+    * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+    * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
     * `Recall` disallowed as an objective for AutoML :pr:`784`
-
 
 
 **v0.9.0 Apr. 27, 2020**
