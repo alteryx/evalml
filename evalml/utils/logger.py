@@ -1,35 +1,36 @@
-from colorama import Style
+import logging
+import sys
+from logging.handlers import RotatingFileHandler
 
 
-class Logger:
-    """Write log messages to stdout.
+def get_logger(name):
+    logger = logging.getLogger(name)
+    if not len(logger.handlers):
+        date_fmt = "%m/%d/%Y %I:%M:%S %p"
+        fmt = "%(asctime)s - %(levelname)s - %(filename)s: %(message)s"
+        log_handler = RotatingFileHandler(filename="evalml_debug.log")
+        log_handler.setLevel(logging.DEBUG)
+        log_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
 
-    Arguments:
-        verbose (bool): If False, suppress log output. Default True.
-    """
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.INFO)
+        stdout_handler.setFormatter(logging.Formatter('%(message)s'))
 
-    def __init__(self, verbose=True):
-        self.verbose = verbose
+        logger.addHandler(stdout_handler)
+        logger.addHandler(log_handler)
+        logger.setLevel(logging.INFO)
 
-    def log(self, msg, color=None, new_line=True):
-        if not self.verbose:
-            return
+    return logger
 
-        if color:
-            msg = color + msg + Style.RESET_ALL
 
-        if new_line:
-            print(msg)
-        else:
-            print(msg, end="")
+def log_title(logger, title):
+    logger.info("*" * (len(title) + 4))
+    logger.info("* %s *" % title)
+    logger.info("*" * (len(title) + 4))
+    logger.info("")
 
-    def log_title(self, title):
-        self.log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self.log("* %s *" % title, color=Style.BRIGHT)
-        self.log("*" * (len(title) + 4), color=Style.BRIGHT)
-        self.log("")
 
-    def log_subtitle(self, title, underline="=", color=None):
-        self.log("")
-        self.log("%s" % title, color=color)
-        self.log(underline * len(title), color=color)
+def log_subtitle(logger, title, underline="="):
+    logger.info("")
+    logger.info("%s" % title)
+    logger.info(underline * len(title))

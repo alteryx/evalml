@@ -8,11 +8,13 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoClassificationSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
     Precision,
     PrecisionMicro,
+    Recall,
     get_objective,
     get_objectives
 )
@@ -103,6 +105,19 @@ def test_specify_objective(X_y):
     assert automl.best_pipeline.threshold is not None
 
 
+def test_recall_error(X_y):
+    X, y = X_y
+    error_msg = 'Could not find the specified objective.'
+    with pytest.raises(ObjectiveNotFoundError, match=error_msg):
+        AutoClassificationSearch(objective='recall', max_pipelines=1)
+
+
+def test_recall_object(X_y):
+    X, y = X_y
+    automl = AutoClassificationSearch(objective=Recall(), max_pipelines=1)
+    automl.search(X, y)
+
+
 def test_binary_auto(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
@@ -114,7 +129,7 @@ def test_binary_auto(X_y):
 
 def test_multi_error(X_y_multi):
     X, y = X_y_multi
-    error_automls = [AutoClassificationSearch(objective='recall'), AutoClassificationSearch(objective='recall_micro', additional_objectives=['recall'], multiclass=True)]
+    error_automls = [AutoClassificationSearch(objective='precision'), AutoClassificationSearch(objective='precision_micro', additional_objectives=['precision'], multiclass=True)]
     error_msg = 'not compatible with a multiclass problem.'
     for automl in error_automls:
         with pytest.raises(ValueError, match=error_msg):
@@ -123,7 +138,7 @@ def test_multi_error(X_y_multi):
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    automl = AutoClassificationSearch(objective="recall_micro", multiclass=True, max_pipelines=5)
+    automl = AutoClassificationSearch(objective="f1_micro", multiclass=True, max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
@@ -149,10 +164,10 @@ def test_multi_objective(X_y_multi):
     automl = AutoClassificationSearch(objective="log_loss_multi")
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='recall_micro')
+    automl = AutoClassificationSearch(objective='auc_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='recall')
+    automl = AutoClassificationSearch(objective='auc')
     assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoClassificationSearch(multiclass=True)
@@ -164,7 +179,7 @@ def test_multi_objective(X_y_multi):
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    automl = AutoClassificationSearch(objective="recall", max_pipelines=5, multiclass=False)
+    automl = AutoClassificationSearch(objective="precision", max_pipelines=5, multiclass=False)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
@@ -237,10 +252,10 @@ def test_additional_objectives(X_y):
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, capsys):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, caplog):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=True)
+    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
@@ -250,9 +265,8 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
     assert automl.best_pipeline.threshold == 0.8
 
     automl.describe_pipeline(0)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Objective to optimize binary classification pipeline thresholds for" in out
-    assert err == ""
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
@@ -262,7 +276,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='recall', max_pipelines=1, optimize_thresholds=False)
+    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
@@ -284,20 +298,19 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     assert automl.best_pipeline.threshold == 0.5
 
 
-def test_describe_pipeline_objective_ordered(X_y, capsys):
+def test_describe_pipeline_objective_ordered(X_y, caplog):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
     automl.search(X, y)
 
     automl.describe_pipeline(0)
-    out, err = capsys.readouterr()
+    out = caplog.text
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
     objectives_names = [obj.name for obj in objectives]
     expected_objective_order = " ".join(objectives_names)
 
-    assert err == ''
     assert expected_objective_order in out_stripped
 
 
@@ -326,7 +339,7 @@ def test_max_time_units():
         AutoClassificationSearch(objective='F1', max_time=(30, 'minutes'))
 
 
-def test_early_stopping(capsys):
+def test_early_stopping(caplog):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
@@ -346,7 +359,7 @@ def test_early_stopping(capsys):
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
-    out, _ = capsys.readouterr()
+    out = caplog.text
     assert "2 iterations without improvement. Stopping search early." in out
 
 

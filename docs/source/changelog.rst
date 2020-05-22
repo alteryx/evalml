@@ -8,14 +8,18 @@ Changelog
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
+        * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
+        * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
+        * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
+        * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -31,10 +35,11 @@ Changelog
 
     **Breaking Changes**
 
-    * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
+    * Moved ROC and confusion matrix methods from `evalml.pipeline.plot_utils` to `evalml.pipeline.graph_utils` :pr:`720`    
     * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+    * `Recall` disallowed as an objective for AutoML :pr:`784`
 
 
 **v0.9.0 Apr. 27, 2020**
