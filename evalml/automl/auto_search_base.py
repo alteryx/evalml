@@ -12,6 +12,7 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.data_checks import DefaultDataChecks
+from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
@@ -156,7 +157,7 @@ class AutoSearchBase:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
-            data_checks (DataChecks, None): A set of data checks to run before fit-time. If None, uses DefaultDataChecks. Defaults to None.
+            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
         Returns:
 
@@ -185,7 +186,13 @@ class AutoSearchBase:
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
             self._data_check_results = data_check_results
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+            for message in self._data_check_results:
+                if message.message_type == DataCheckMessageType.WARNING:
+                    logger.warning(message)
+                elif message.message_type == DataCheckMessageType.ERROR:
+                    logger.error(message)
+            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
