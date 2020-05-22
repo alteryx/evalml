@@ -610,6 +610,12 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.assert_called()
 
 
+def test_score_auc(X_y, lr_pipeline):
+    X, y = X_y
+    lr_pipeline.fit(X, y)
+    lr_pipeline.score(X, y, ['auc'])
+
+
 def test_pipeline_summary():
     class MockPipelineWithoutEstimator(PipelineBase):
         component_graph = ["Simple Imputer", "One Hot Encoder"]

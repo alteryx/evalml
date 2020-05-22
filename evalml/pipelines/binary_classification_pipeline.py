@@ -36,3 +36,13 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+
+    @staticmethod
+    def _score(X, y, predictions, objective):
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
+
+        Will return `np.nan` if the objective errors.
+        """
+        if predictions.ndim > 1:
+            predictions = predictions[:, 1]
+        return ClassificationPipeline._score(X, y, predictions, objective)
