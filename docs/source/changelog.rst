@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
     * Fixes
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
