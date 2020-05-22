@@ -191,26 +191,27 @@ def test_automl_str_search(mock_fit, X_y):
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
 
 
-def test_automl_data_check_results_is_none():
+def test_automl_data_check_results_is_none_before_search():
     automl = AutoClassificationSearch(max_pipelines=1)
     assert automl.data_check_results is None
 
 
-@patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
-def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_empty_data_checks(mock_fit, mock_score, X_y):
     X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
     automl = AutoClassificationSearch(max_pipelines=1)
-    mock_check_stopping_condition.return_value = False
     automl.search(X, y, data_checks=EmptyDataChecks())
-    mock_check_stopping_condition.assert_called()
     assert automl.data_check_results is None
+    mock_fit.assert_called()
+    mock_score.assert_called()
 
 
 @patch('evalml.data_checks.DefaultDataChecks.validate')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline._transform')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_default_data_checks(mock_fit, mock_transform, mock_score, mock_validate, X_y, caplog):
+def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y, caplog):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_validate.return_value = [DataCheckWarning("default data check warning", "DefaultDataChecks")]
@@ -219,22 +220,9 @@ def test_automl_default_data_checks(mock_fit, mock_transform, mock_score, mock_v
     out = caplog.text
     assert "default data check warning" in out
     assert len(automl.data_check_results) > 0
-
-
-# @patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
-# def test_automl_default_data_checks(mock_check_stopping_condition, caplog):
-#     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
-#                       'all_null': [None, None, None, None, None],
-#                       'also_all_null': [None, None, None, None, None],
-#                       'no_null': [1, 2, 3, 4, 5]})
-#     y = pd.Series([0, 0, 0, 0, 0])
-#     automl = AutoClassificationSearch(max_pipelines=1)
-#     mock_check_stopping_condition.return_value = False
-#     automl.search(X, y)
-#     out = caplog.text
-#     assert "Column 'all_null' is 95.0% or more null" in out
-#     assert "Column 'also_all_null' is 95.0% or more null" in out
-#     assert len(automl.data_check_results) > 0
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    mock_validate.assert_called()
 
 
 def test_automl_data_checks_raises_error(caplog):
