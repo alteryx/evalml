@@ -7,6 +7,7 @@ Changelog
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
+        * CatBoost and XGBoost classifiers and regressors can no longer have a learning rate of 0 :pr:`795`
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
