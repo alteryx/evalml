@@ -251,7 +251,7 @@ def test_additional_objectives(X_y):
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, capsys):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, caplog):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
     automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=True)
@@ -264,9 +264,8 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
     assert automl.best_pipeline.threshold == 0.8
 
     automl.describe_pipeline(0)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Objective to optimize binary classification pipeline thresholds for" in out
-    assert err == ""
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
@@ -298,20 +297,19 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     assert automl.best_pipeline.threshold == 0.5
 
 
-def test_describe_pipeline_objective_ordered(X_y, capsys):
+def test_describe_pipeline_objective_ordered(X_y, caplog):
     X, y = X_y
     automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
     automl.search(X, y)
 
     automl.describe_pipeline(0)
-    out, err = capsys.readouterr()
+    out = caplog.text
     out_stripped = " ".join(out.split())
 
     objectives = [get_objective(obj) for obj in automl.additional_objectives]
     objectives_names = [obj.name for obj in objectives]
     expected_objective_order = " ".join(objectives_names)
 
-    assert err == ''
     assert expected_objective_order in out_stripped
 
 
@@ -340,7 +338,7 @@ def test_max_time_units():
         AutoClassificationSearch(objective='F1', max_time=(30, 'minutes'))
 
 
-def test_early_stopping(capsys):
+def test_early_stopping(caplog):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
@@ -360,7 +358,7 @@ def test_early_stopping(capsys):
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
-    out, _ = capsys.readouterr()
+    out = caplog.text
     assert "2 iterations without improvement. Stopping search early." in out
 
 

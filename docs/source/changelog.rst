@@ -7,12 +7,14 @@ Changelog
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
+        * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
+        * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
