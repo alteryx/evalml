@@ -2,23 +2,24 @@ import copy
 import os
 import re
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 
 import cloudpickle
+import numpy as np
 import pandas as pd
 
 from .components import Estimator, handle_component
 
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.objectives import get_objective
 from evalml.utils import (
-    Logger,
     classproperty,
+    get_logger,
     get_random_state,
-    import_or_raise
+    import_or_raise,
+    log_subtitle,
+    log_title
 )
 
-logger = Logger()
+logger = get_logger(__file__)
 
 
 class PipelineBase(ABC):
@@ -144,18 +145,18 @@ class PipelineBase(ABC):
         Returns:
             dict: dictionary of all component parameters if return_dict is True, else None
         """
-        logger.log_title(self.name)
-        logger.log("Problem Type: {}".format(self.problem_type))
-        logger.log("Model Family: {}".format(str(self.model_family)))
+        log_title(logger, self.name)
+        logger.info("Problem Type: {}".format(self.problem_type))
+        logger.info("Model Family: {}".format(str(self.model_family)))
 
         if self.estimator.name in self.input_feature_names:
-            logger.log("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+            logger.info("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
 
         # Summary of steps
-        logger.log_subtitle("Pipeline Steps")
+        log_subtitle(logger, "Pipeline Steps")
         for number, component in enumerate(self.component_graph, 1):
             component_string = str(number) + ". " + component.name
-            logger.log(component_string)
+            logger.info(component_string)
             component.describe(print_name=False)
 
     def _transform(self, X):
@@ -210,6 +211,7 @@ class PipelineBase(ABC):
         X_t = self._transform(X)
         return self.estimator.predict(X_t)
 
+    @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
@@ -221,23 +223,19 @@ class PipelineBase(ABC):
         Returns:
             dict: ordered dictionary of objective scores
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+    @staticmethod
+    def _score(X, y, predictions, objective):
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
-        objectives = [get_objective(o) for o in objectives]
-        y_predicted = None
-        scores = OrderedDict()
-        for objective in objectives:
-            if objective.score_needs_proba:
-                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
-            else:
-                if y_predicted is None:
-                    y_predicted = self.predict(X)
-                scores.update({objective.name: objective.score(y, y_predicted, X)})
-        return scores
+        Will return `np.nan` if the objective errors.
+        """
+        score = np.nan
+        try:
+            score = objective.score(y, predictions, X)
+        except Exception as e:
+            logger.error('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
+        return score
 
     @classproperty
     def model_family(cls):
