@@ -46,7 +46,7 @@ def test_graph_precision_recall_curve(X_y):
     precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
     assert np.array_equal(fig_dict['data'][0]['x'], precision_recall_curve_data['recall'])
     assert np.array_equal(fig_dict['data'][0]['y'], precision_recall_curve_data['precision'])
-    assert fig_dict['data'][0]['name'] == 'Precision-Recall'
+    assert fig_dict['data'][0]['name'] == 'Precision-Recall (AUC {:06f})'.format(precision_recall_curve_data['auc_score'])
 
 
 def test_graph_precision_recall_curve_title_addition(X_y):

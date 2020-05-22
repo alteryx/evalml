@@ -27,7 +27,7 @@ def precision_recall_curve(y_true, y_pred_proba):
                   * `auc_score`: The area under the ROC curve.
     """
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
-    auc_score = sklearn_auc(precision, recall)
+    auc_score = sklearn_auc(recall, precision)
     return {'precision': precision,
             'recall': recall,
             'thresholds': thresholds,
@@ -53,7 +53,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
                         yaxis={'title': 'Precision', 'range': [-0.05, 1.05]})
     data = []
     data.append(_go.Scatter(x=precision_recall_curve_data['recall'], y=precision_recall_curve_data['precision'],
-                            name='Precision-Recall (AUC {:06f})'.format(roc_curve_data['auc_score']),
+                            name='Precision-Recall (AUC {:06f})'.format(precision_recall_curve_data['auc_score']),
                             line=dict(width=3)))
     return _go.Figure(layout=layout, data=data)
 
