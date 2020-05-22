@@ -27,12 +27,6 @@ def test_outliers_data_check_warnings():
     X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
 
     outliers_check = DetectOutliersDataCheck()
-    validation = outliers_check.validate(X)
-    messages = [message.message for message in outliers_check.validate(X)]
-    assert messages == ["Row '3' is likely to have outlier data",
-                        "Row '25' is likely to have outlier data",
-                        "Row '55' is likely to have outlier data",
-                        "Row '72' is likely to have outlier data"]
     assert outliers_check.validate(X) == [DataCheckWarning("Row '3' is likely to have outlier data", "DetectOutliersDataCheck"),
                                           DataCheckWarning("Row '25' is likely to have outlier data", "DetectOutliersDataCheck"),
                                           DataCheckWarning("Row '55' is likely to have outlier data", "DetectOutliersDataCheck"),
@@ -57,12 +51,6 @@ def test_outliers_data_check_input_formats():
     X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
 
     outliers_check = DetectOutliersDataCheck()
-    validation = outliers_check.validate(X.to_numpy())
-    messages = [message.message for message in outliers_check.validate(X.to_numpy())]
-    assert messages == ["Row '3' is likely to have outlier data",
-                        "Row '25' is likely to have outlier data",
-                        "Row '55' is likely to have outlier data",
-                        "Row '72' is likely to have outlier data"]
     assert outliers_check.validate(X.to_numpy()) == [DataCheckWarning("Row '3' is likely to have outlier data", "DetectOutliersDataCheck"),
                                                      DataCheckWarning("Row '25' is likely to have outlier data", "DetectOutliersDataCheck"),
                                                      DataCheckWarning("Row '55' is likely to have outlier data", "DetectOutliersDataCheck"),
