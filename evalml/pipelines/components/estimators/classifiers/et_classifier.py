@@ -26,7 +26,3 @@ class ExtraTreesClassifier(Estimator):
         super().__init__(parameters=parameters,
                          component_obj=et_classifier,
                          random_state=random_state)
-
-    @property
-    def feature_importances(self):
-        return self._component_obj.feature_importances_
