@@ -7,7 +7,5 @@ from .catboost_binary import CatBoostBinaryClassificationPipeline
 from .catboost_multiclass import CatBoostMulticlassClassificationPipeline
 from .random_forest_binary import RFBinaryClassificationPipeline
 from .random_forest_multiclass import RFMulticlassClassificationPipeline
-from .baseline_binary import BaselineBinaryPipeline
-from .baseline_multiclass import BaselineMulticlassPipeline
-from .mode_baseline_binary import ModeBaselineBinaryPipeline
-from .mode_baseline_multiclass import ModeBaselineMulticlassPipeline
+from .baseline_binary import BaselineBinaryPipeline, ModeBaselineBinaryPipeline
+from .baseline_multiclass import BaselineMulticlassPipeline, ModeBaselineMulticlassPipeline
