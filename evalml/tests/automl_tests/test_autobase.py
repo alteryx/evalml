@@ -5,6 +5,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
+from evalml.model_family import ModelFamily
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
@@ -95,7 +96,8 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y)
     pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 1
+    assert(len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, pipeline_results.values()))) == 1)
+
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -105,7 +107,8 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
     pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 1
+    assert(len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, pipeline_results.values()))) == 1)
+
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
