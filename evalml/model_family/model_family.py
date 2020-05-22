@@ -7,6 +7,7 @@ class ModelFamily(Enum):
     XGBOOST = 'xgboost'
     LINEAR_MODEL = 'linear_model'
     CATBOOST = 'catboost'
+    ELASTIC_NET = 'elastic_net'
     NONE = 'none'
 
     def __str__(self):
@@ -14,5 +15,6 @@ class ModelFamily(Enum):
                              ModelFamily.XGBOOST.name: "XGBoost",
                              ModelFamily.LINEAR_MODEL.name: "Linear",
                              ModelFamily.CATBOOST.name: "CatBoost",
+                             ModelFamily.ELASTIC_NET.name: 'Elastic Net',
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
