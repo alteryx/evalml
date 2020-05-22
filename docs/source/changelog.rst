@@ -14,6 +14,7 @@ Changelog
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
+        * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Port over all guardrails to use the new DataCheck API :pr:`789`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`

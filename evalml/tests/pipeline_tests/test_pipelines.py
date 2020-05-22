@@ -191,11 +191,11 @@ def test_indexing(X_y, lr_pipeline):
         clf[:1]
 
 
-def test_describe(X_y, capsys, lr_pipeline):
+def test_describe(X_y, caplog, lr_pipeline):
     X, y = X_y
     lrp = lr_pipeline
     lrp.describe()
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Type: Binary Classification" in out
     assert "Model Family: Linear" in out
