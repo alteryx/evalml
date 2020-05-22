@@ -19,8 +19,8 @@ def test_outliers_data_check_init():
 def test_outliers_data_check_warnings():
     data = np.random.randn(100, 100)
     X = pd.DataFrame(data=data)
-    X.iloc[3, :] = pd.Series(np.random.randn(100) * 10)
-    X.iloc[25, :] = pd.Series(np.random.randn(100) * 20)
+    X.iloc[3, :] = pd.Series(np.random.randn(100) * 100)
+    X.iloc[25, :] = pd.Series(np.random.randn(100) * 200)
     X.iloc[55, :] = pd.Series(np.random.randn(100) * 100)
     X.iloc[72, :] = pd.Series(np.random.randn(100) * 100)
 
