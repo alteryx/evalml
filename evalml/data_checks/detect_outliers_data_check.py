@@ -57,7 +57,7 @@ class DetectOutliersDataCheck(DataCheck):
             upper_bound = q3 + (k * iqr)
             return (lower_bound, upper_bound)
 
-        clf = IsolationForest(random_state=self.random_state, behaviour="new", contamination=0.1)
+        clf = IsolationForest(random_state=self.random_state, contamination=0.1)
         clf.fit(X)
         scores = pd.Series(clf.decision_function(X))
         lower_bound, upper_bound = get_IQR(scores, k=2)
