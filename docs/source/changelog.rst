@@ -14,11 +14,8 @@ Changelog
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
         * Refactor `AutoBase` to `AutoSearchBase` :pr:`758`
-<<<<<<< HEAD
         * Update AutoBase with `data_checks` parameter, remove previous `detect_label_leakage` parameter :pr:`765`
-=======
         * Updated our logger to use Python's logging utils :pr:`763`
->>>>>>> origin
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
