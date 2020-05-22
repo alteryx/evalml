@@ -6,7 +6,13 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
-from evalml.data_checks import EmptyDataChecks
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataChecks,
+    DataCheckWarning,
+    EmptyDataChecks
+)
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
@@ -185,6 +191,11 @@ def test_automl_str_search(mock_fit, X_y):
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
 
 
+def test_automl_data_check_results_is_none():
+    automl = AutoClassificationSearch(max_pipelines=1)
+    assert automl.data_check_results is None
+
+
 @patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
 def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     X, y = X_y
@@ -195,16 +206,65 @@ def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     assert automl.data_check_results is None
 
 
-def test_automl_default_data_checks():
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline._transform')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_default_data_checks(mock_fit, mock_transform, mock_score, caplog):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 4, 5]})
     y = pd.Series([0, 0, 0, 0, 0])
+    mock_score.return_value = {'Log Loss Binary': 1.0}
     automl = AutoClassificationSearch(max_pipelines=1)
-    with pytest.raises(ValueError, match="Data checks raised"):
-        automl.search(X, y, data_checks=None)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Column 'all_null' is 95.0% or more null" in out
+    assert "Column 'also_all_null' is 95.0% or more null" in out
     assert len(automl.data_check_results) > 0
+
+
+# @patch('evalml.automl.auto_search_base.AutoSearchBase._check_stopping_condition')
+# def test_automl_default_data_checks(mock_check_stopping_condition, caplog):
+#     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+#                       'all_null': [None, None, None, None, None],
+#                       'also_all_null': [None, None, None, None, None],
+#                       'no_null': [1, 2, 3, 4, 5]})
+#     y = pd.Series([0, 0, 0, 0, 0])
+#     automl = AutoClassificationSearch(max_pipelines=1)
+#     mock_check_stopping_condition.return_value = False
+#     automl.search(X, y)
+#     out = caplog.text
+#     assert "Column 'all_null' is 95.0% or more null" in out
+#     assert "Column 'also_all_null' is 95.0% or more null" in out
+#     assert len(automl.data_check_results) > 0
+
+
+def test_automl_data_checks_raises_error(caplog):
+    X = pd.DataFrame()
+    y = pd.Series()
+
+    class MockDataCheckErrorAndWarning(DataCheck):
+        def validate(self, X, y):
+            return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+
+    data_checks = DataChecks(data_checks=[MockDataCheckErrorAndWarning()])
+    automl = AutoClassificationSearch(max_pipelines=1)
+
+    with pytest.raises(ValueError, match="Data checks raised"):
+        automl.search(X, y, data_checks=data_checks)
+    out = caplog.text
+    assert "error one" in out
+    assert "warning one" in out
+    assert len(automl.data_check_results) > 0
+
+
+def test_automl_not_data_check_object():
+    X = pd.DataFrame()
+    y = pd.Series()
+    automl = AutoClassificationSearch(max_pipelines=1)
+    with pytest.raises(ValueError, match="data_checks parameter must be a DataChecks object!"):
+        automl.search(X, y, data_checks=1)
 
 
 def test_automl_str_no_param_search():

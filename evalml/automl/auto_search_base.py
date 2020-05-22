@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
-from evalml.data_checks import DefaultDataChecks
+from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
@@ -182,6 +182,9 @@ class AutoSearchBase:
 
         if data_checks is None:
             data_checks = DefaultDataChecks()
+
+        if not isinstance(data_checks, DataChecks):
+            raise ValueError("data_checks parameter must be a DataChecks object!")
 
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
