@@ -17,7 +17,7 @@ def test_outliers_data_check_init():
 
 
 def test_outliers_data_check_warnings():
-    data = np.random.randn(100, 100)
+    data = np.random.rand(100, 100)
     X = pd.DataFrame(data=data)
     X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
     X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
@@ -44,7 +44,7 @@ def test_outliers_data_check_input_formats():
     assert messages == []
 
     # test np.array
-    data = np.random.randn(100, 100)
+    data = np.random.rand(100, 100)
     X = pd.DataFrame(data=data)
     X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
     X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
