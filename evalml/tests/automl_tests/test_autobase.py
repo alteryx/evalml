@@ -206,21 +206,18 @@ def test_automl_empty_data_checks(mock_check_stopping_condition, X_y):
     assert automl.data_check_results is None
 
 
+@patch('evalml.data_checks.DefaultDataChecks.validate')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline._transform')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_default_data_checks(mock_fit, mock_transform, mock_score, caplog):
-    X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
-                      'all_null': [None, None, None, None, None],
-                      'also_all_null': [None, None, None, None, None],
-                      'no_null': [1, 2, 3, 4, 5]})
-    y = pd.Series([0, 0, 0, 0, 0])
+def test_automl_default_data_checks(mock_fit, mock_transform, mock_score, mock_validate, X_y, caplog):
+    X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
+    mock_validate.return_value = [DataCheckWarning("default data check warning", "DefaultDataChecks")]
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
-    assert "Column 'all_null' is 95.0% or more null" in out
-    assert "Column 'also_all_null' is 95.0% or more null" in out
+    assert "default data check warning" in out
     assert len(automl.data_check_results) > 0
 
 
