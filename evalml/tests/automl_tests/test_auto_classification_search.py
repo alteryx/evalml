@@ -458,4 +458,4 @@ def test_max_time(X_y):
     clf = AutoClassificationSearch(max_time=1e-16)
     clf.search(X, y)
     # search will always run at least one pipeline
-    assert len(clf.results['pipeline_results']) >= 1
+    assert(len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, clf.results['pipeline_results'].values()))) == 1)
