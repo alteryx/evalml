@@ -20,7 +20,7 @@ def test_outliers_data_check_warnings():
     data = np.random.randn(100, 100)
     X = pd.DataFrame(data=data)
     X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[25, :] = pd.Series(np.random.randn(100) * 2000)
+    X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
     X.iloc[55, :] = pd.Series(np.random.randn(100) * 1000)
     X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
 
@@ -46,10 +46,10 @@ def test_outliers_data_check_input_formats():
     # test np.array
     data = np.random.randn(100, 100)
     X = pd.DataFrame(data=data)
-    X.iloc[3, :] = pd.Series(np.random.randn(100) * 10)
-    X.iloc[25, :] = pd.Series(np.random.randn(100) * 20)
-    X.iloc[55, :] = pd.Series(np.random.randn(100) * 100)
-    X.iloc[72, :] = pd.Series(np.random.randn(100) * 100)
+    X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
+    X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
+    X.iloc[55, :] = pd.Series(np.random.randn(100) * 1000)
+    X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
 
     outliers_check = DetectOutliersDataCheck()
     messages = [message.message for message in outliers_check.validate(X.to_numpy())]
