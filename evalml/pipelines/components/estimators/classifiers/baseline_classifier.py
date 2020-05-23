@@ -28,7 +28,7 @@ class BaselineClassifier(Estimator):
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
         parameters = {"strategy": strategy}
-        self._unique_vals = None
+        self._classes = None
         self._percentage_freq = None
         self._num_features = None
         self._num_unique = None
@@ -47,9 +47,9 @@ class BaselineClassifier(Estimator):
             X = pd.DataFrame(X)
 
         vals, counts = np.unique(y, return_counts=True)
-        self._unique_vals = vals
+        self._classes = list(vals)
         self._percentage_freq = counts.astype(float) / len(y)
-        self._num_unique = len(self._unique_vals)
+        self._num_unique = len(self._classes)
         self._num_features = X.shape[1]
 
         if self.parameters["strategy"] == "mode":
@@ -63,28 +63,32 @@ class BaselineClassifier(Estimator):
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
             return pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            if self._unique_vals is None:
+            if self._classes is None:
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
-            return self.random_state.choice(self._unique_vals, len(X))
+            return self.random_state.choice(self._classes, len(X))
         else:
-            if self._unique_vals is None:
+            if self._classes is None:
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
-            return self.random_state.choice(self._unique_vals, len(X), p=self._percentage_freq)
+            return self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
 
     def predict_proba(self, X):
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             if self._mode is None or self._num_unique is None:
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
-            return np.array([[1.0 if i == self._mode else 0.0 for i in range(self._num_unique)]] * len(X))
+            mode_index = self._classes.index(self._mode)
+            proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
+            return pd.DataFrame(proba_arr, columns=self._classes)
         elif strategy == "random":
-            if self._unique_vals is None:
+            if self._classes is None:
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
-            return np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
+            proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
+            return pd.DataFrame(proba_arr, columns=self._classes)
         else:
-            if self._unique_vals is None or self._percentage_freq is None:
+            if self._classes is None or self._percentage_freq is None:
                 raise RuntimeError("You must fit Baseline classifier before calling predict!")
-            return np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
+            proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
+            return pd.DataFrame(proba_arr, columns=self._classes)
 
     @property
     def feature_importances(self):
