@@ -86,7 +86,6 @@ Classification Pipelines
     BaselineMulticlassPipeline
     ModeBaselineBinaryPipeline
     ModeBaselineMulticlassPipeline
-    MeanBaselineRegressionPipeline
 
 
 Regression Pipelines
@@ -102,6 +101,7 @@ Regression Pipelines
     LinearRegressionPipeline
     XGBoostRegressionPipeline
     BaselineRegressionPipeline
+    MeanBaselineRegressionPipeline
 
 
 Pipeline Utils
