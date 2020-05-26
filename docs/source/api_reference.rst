@@ -255,6 +255,7 @@ Classification Objectives
     RecallWeighted
 
 
+
 Regression Objectives
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -266,9 +267,12 @@ Regression Objectives
     R2
     MAE
     MSE
+    MeanSquaredLogError
     MedianAE
     MaxError
     ExpVariance
+    RootMeanSquaredError
+    RootMeanSquaredLogError
 
 
 .. currentmodule:: evalml.problem_types

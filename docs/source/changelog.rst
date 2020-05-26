@@ -19,6 +19,7 @@ Changelog
         * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
+        * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
