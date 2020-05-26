@@ -16,7 +16,9 @@ from .components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     CatBoostClassifier,
-    CatBoostRegressor
+    CatBoostRegressor,
+    ElasticNetClassifier,
+    ElasticNetRegressor
 )
 
 from .pipeline_base import PipelineBase
@@ -28,6 +30,8 @@ from .regression_pipeline import RegressionPipeline
 from .classification import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline,
+    ElasticNetBinaryClassificationPipeline,
+    ElasticNetMulticlassClassificationPipeline,
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline,
     RFBinaryClassificationPipeline,
@@ -40,6 +44,7 @@ from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
+    ElasticNetRegressionPipeline,
     XGBoostRegressionPipeline
 )
 from .utils import (

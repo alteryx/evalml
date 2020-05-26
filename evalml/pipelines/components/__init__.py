@@ -9,7 +9,9 @@ from .estimators import (
     XGBoostClassifier,
     CatBoostClassifier,
     CatBoostRegressor,
-    XGBoostRegressor
+    XGBoostRegressor,
+    ElasticNetClassifier,
+    ElasticNetRegressor,
 )
 from .transformers import (
     Transformer,
