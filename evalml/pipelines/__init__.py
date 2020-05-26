@@ -30,8 +30,8 @@ from .regression_pipeline import RegressionPipeline
 from .classification import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline,
-    ElasticNetBinaryClassificationPipeline,
-    ElasticNetMulticlassClassificationPipeline,
+    ENBinaryPipeline,
+    ENMulticlassPipeline,
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline,
     RFBinaryClassificationPipeline,
@@ -44,7 +44,7 @@ from .regression import (
     LinearRegressionPipeline,
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
-    ElasticNetRegressionPipeline,
+    ENRegressionPipeline,
     XGBoostRegressionPipeline
 )
 from .utils import (

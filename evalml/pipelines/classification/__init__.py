@@ -7,5 +7,5 @@ from .catboost_binary import CatBoostBinaryClassificationPipeline
 from .catboost_multiclass import CatBoostMulticlassClassificationPipeline
 from .random_forest_binary import RFBinaryClassificationPipeline
 from .random_forest_multiclass import RFMulticlassClassificationPipeline
-from .elasticnet_binary import ENRegressionPipeline
-from .elasticnet_multiclass import ENBinaryPipeline
+from .elasticnet_binary import ENBinaryPipeline
+from .elasticnet_multiclass import ENMulticlassPipeline
