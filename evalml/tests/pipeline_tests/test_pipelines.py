@@ -38,8 +38,6 @@ def test_list_model_families(has_minimal_dependencies):
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
-        expected_model_families_binary.add(ModelFamily.ELASTIC_NET)
-        expected_model_families_regression.add(ModelFamily.ELASTIC_NET)
         expected_model_families_regression.add(ModelFamily.CATBOOST)
         expected_model_families_regression.add(ModelFamily.XGBOOST)
     assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
@@ -50,7 +48,7 @@ def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_pipelines()) == 6
     else:
-        assert len(all_pipelines()) == 15
+        assert len(all_pipelines()) == 12
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -63,7 +61,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_pipelines_core_dependencies_mock():
-    assert len(all_pipelines()) == 9
+    assert len(all_pipelines()) == 6
 
 
 def test_get_pipelines(has_minimal_dependencies):
@@ -73,10 +71,10 @@ def test_get_pipelines(has_minimal_dependencies):
         assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
         assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 5
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
         assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 5
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 5
+        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
+        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
@@ -86,10 +84,10 @@ def test_get_pipelines(has_minimal_dependencies):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_get_pipelines_core_dependencies_mock():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 3
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 3
+    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
+    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
     with pytest.raises(KeyError):

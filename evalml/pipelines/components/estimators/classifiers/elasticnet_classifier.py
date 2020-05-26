@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 from skopt.space import Real
 
@@ -16,7 +17,7 @@ class ElasticNetClassifier(Estimator):
     model_family = ModelFamily.ELASTIC_NET
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, alpha=1.0, l1_ratio=1.0, n_jobs=-1, random_state=0, max_iter=1000):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, random_state=0, max_iter=1000):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio}
         en_classifier = SKElasticNetClassifier(loss="log",
@@ -32,4 +33,10 @@ class ElasticNetClassifier(Estimator):
 
     @property
     def feature_importances(self):
-        return self._component_obj.coef_
+        coef_ = self._component_obj.coef_
+        # binary classification case
+        if len(coef_) <= 2:
+            return coef_[0]
+        else:
+            # mutliclass classification case
+            return np.linalg.norm(coef_, axis=0, ord=2)

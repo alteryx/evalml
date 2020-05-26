@@ -16,8 +16,8 @@ class ElasticNetRegressor(Estimator):
     model_family = ModelFamily.ELASTIC_NET
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, alpha=1.0, l1_ratio=1.0, random_state=0, normalize=False,
-                 max_iter=1000):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, random_state=0, normalize=False,
+                 max_iter=1000, n_jobs=-1):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio}
         en_regressor = SKElasticNet(alpha=alpha,
