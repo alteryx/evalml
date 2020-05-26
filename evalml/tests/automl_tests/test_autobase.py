@@ -219,7 +219,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y, ca
     automl.search(X, y)
     out = caplog.text
     assert "default data check warning" in out
-    assert len(automl.data_check_results) > 0
+    assert automl.data_check_results == mock_validate.return_value
     mock_fit.assert_called()
     mock_score.assert_called()
     mock_validate.assert_called()
@@ -241,7 +241,7 @@ def test_automl_data_checks_raises_error(caplog):
     out = caplog.text
     assert "error one" in out
     assert "warning one" in out
-    assert len(automl.data_check_results) > 0
+    assert automl.data_check_results == data_checks.validate(X, y)
 
 
 def test_automl_not_data_check_object():
