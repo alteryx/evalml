@@ -31,7 +31,7 @@ def test_et_init(X_y):
         },
         'Extra Trees Classifier': {
             "n_estimators": 20,
-            "max_depth": 5,
+            "max_features": "auto",
         }
     }
     clf = ETBinaryClassificationPipeline(parameters=parameters, random_state=2)
@@ -46,7 +46,7 @@ def test_et_init(X_y):
             'threshold': -np.inf
         },
         'Extra Trees Classifier': {
-            'max_depth': 5,
+            'max_features': "auto",
             'n_estimators': 20
         }
     }
@@ -63,6 +63,13 @@ def test_summary():
 def test_et_objective_tuning(X_y):
     X, y = X_y
 
+    # The classifier predicts accurately with perfect confidence given the original data,
+    # so some is removed for the setting threshold test to have significance
+    X[0]=np.zeros(len(X[0]))
+    X[1]=np.zeros(len(X[1]))
+    X[2]=np.zeros(len(X[0]))
+    X[3]=np.zeros(len(X[1]))
+
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
@@ -75,7 +82,7 @@ def test_et_objective_tuning(X_y):
         },
         'Extra Trees Classifier': {
             "n_estimators": 20,
-            "max_depth": 5,
+            "max_features": "log2"
         }
     }
     clf = ETBinaryClassificationPipeline(parameters=parameters)
@@ -106,7 +113,8 @@ def test_et_multi(X_y_multi):
     enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
     estimator = ExtraTreesClassifier(random_state=0,
                                      n_estimators=10,
-                                     max_depth=3,
+                                     max_features="auto",
+                                     max_depth=None,
                                      n_jobs=-1)
     rf_estimator = RandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
     feature_selection = SelectFromModel(estimator=rf_estimator,
@@ -131,7 +139,7 @@ def test_et_multi(X_y_multi):
         },
         'Extra Trees Classifier': {
             "n_estimators": 10,
-            "max_depth": 3
+            "max_features": "auto"
         }
     }
     clf = ETMulticlassClassificationPipeline(parameters=parameters)
@@ -168,7 +176,7 @@ def test_et_input_feature_names(X_y):
         },
         'Extra Trees Classifier': {
             "n_estimators": 20,
-            "max_depth": 5,
+            "max_features": "auto",
         }
     }
 

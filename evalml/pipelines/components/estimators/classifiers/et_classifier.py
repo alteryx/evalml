@@ -11,16 +11,26 @@ class ExtraTreesClassifier(Estimator):
     name = "Extra Trees Classifier"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
-        "max_depth": Integer(1, 32),
+        "max_features": ["auto", "sqrt", "log2"]
     }
     model_family = ModelFamily.EXTRA_TREES
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=10, max_depth=None, n_jobs=-1, random_state=0):
+    def __init__(self, 
+                 n_estimators=100,
+                 max_features="auto",
+                 max_depth=None,
+                 min_samples_split=2,
+                 min_weight_fraction_leaf=0.0,
+                 n_jobs=-1,
+                 random_state=0):
         parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
+                      "max_features": max_features}
         et_classifier = SKExtraTreesClassifier(n_estimators=n_estimators,
+                                               max_features=max_features,
                                                max_depth=max_depth,
+                                               min_samples_split=min_samples_split,
+                                               min_weight_fraction_leaf=min_weight_fraction_leaf,
                                                n_jobs=n_jobs,
                                                random_state=random_state)
         super().__init__(parameters=parameters,
