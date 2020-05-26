@@ -13,6 +13,8 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml import guardrails
 from evalml.model_family import ModelFamily
+from evalml.data_checks import DataChecks, DefaultDataChecks
+from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
@@ -35,14 +37,13 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.allowed_model_families = allowed_model_families
-        self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
@@ -102,6 +103,12 @@ class AutoSearchBase:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
+        self._data_check_results = None
+
+    @property
+    def data_check_results(self):
+        return self._data_check_results
+
     def __str__(self):
         def _print_list(obj_list):
             lines = ['\t{}'.format(o.name) for o in obj_list]
@@ -124,7 +131,6 @@ class AutoSearchBase:
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
             f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
-            f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
@@ -142,7 +148,7 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -157,6 +163,8 @@ class AutoSearchBase:
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
         Returns:
 
@@ -179,6 +187,23 @@ class AutoSearchBase:
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
 
+        if data_checks is None:
+            data_checks = DefaultDataChecks()
+
+        if not isinstance(data_checks, DataChecks):
+            raise ValueError("data_checks parameter must be a DataChecks object!")
+
+        data_check_results = data_checks.validate(X, y)
+        if len(data_check_results) > 0:
+            self._data_check_results = data_check_results
+            for message in self._data_check_results:
+                if message.message_type == DataCheckMessageType.WARNING:
+                    logger.warning(message)
+                elif message.message_type == DataCheckMessageType.ERROR:
+                    logger.error(message)
+            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
 
@@ -197,12 +222,6 @@ class AutoSearchBase:
         if self.max_time:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
             logger.info("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
-
-        if self.detect_label_leakage:
-            leaked = guardrails.detect_label_leakage(X, y)
-            if len(leaked) > 0:
-                leaked = [str(k) for k in leaked.keys()]
-                logger.warning("Possible label leakage: %s" % ", ".join(leaked))
 
         search_iteration_plot = None
         if self.plot:
