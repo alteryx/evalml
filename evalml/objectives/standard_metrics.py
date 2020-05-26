@@ -260,6 +260,38 @@ class MCCMulticlass(MulticlassClassificationObjective):
             return metrics.matthews_corrcoef(y_true, y_predicted)
 
 
+class RootMeanSquaredError(RegressionObjective):
+    """Root mean squared error for regression"""
+    name = "Root Mean Squared Error"
+    greater_is_better = False
+    score_needs_proba = False
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return metrics.mean_squared_error(y_true, y_predicted, squared=False)
+
+
+class RootMeanSquaredLogError(RegressionObjective):
+    """Root mean squared log error for regression. Only valid for nonnegative inputs.
+    Otherwise, will throw a ValueError"""
+    name = "Root Mean Squared Log Error"
+    greater_is_better = False
+    score_needs_proba = False
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
+
+
+class MeanSquaredLogError(RegressionObjective):
+    """Mean squared log error for regression. Only valid for nonnegative inputs.
+    Otherwise, will throw a ValueError"""
+    name = "Mean Squared Log Error"
+    greater_is_better = False
+    score_needs_proba = False
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return metrics.mean_squared_log_error(y_true, y_predicted)
+
+
 class R2(RegressionObjective):
     """Coefficient of determination for regression"""
     name = "R2"
