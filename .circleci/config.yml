@@ -182,7 +182,7 @@ jobs:
           steps:
             - run: |
                 source test_python/bin/activate
-                codecov
+                codecov --required
 
   changelog_updated:
     working_directory: ~/evalml
