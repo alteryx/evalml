@@ -5,6 +5,8 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
+from evalml.exceptions import ObjectiveNotFoundError
+from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import PipelineBase, get_pipelines
 from evalml.problem_types import ProblemTypes
 
@@ -155,3 +157,12 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
+
+
+def test_log_metrics_only_passed_directly():
+    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
+        AutoRegressionSearch(additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
+
+    ar = AutoRegressionSearch(additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
+    assert ar.additional_objectives[0].name == 'Root Mean Squared Log Error'
+    assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
