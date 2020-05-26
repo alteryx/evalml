@@ -16,7 +16,7 @@ class ExtraTreesClassifier(Estimator):
     model_family = ModelFamily.EXTRA_TREES
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, 
+    def __init__(self,
                  n_estimators=100,
                  max_features="auto",
                  max_depth=None,

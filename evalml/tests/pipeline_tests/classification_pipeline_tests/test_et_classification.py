@@ -65,10 +65,10 @@ def test_et_objective_tuning(X_y):
 
     # The classifier predicts accurately with perfect confidence given the original data,
     # so some is removed for the setting threshold test to have significance
-    X[0]=np.zeros(len(X[0]))
-    X[1]=np.zeros(len(X[1]))
-    X[2]=np.zeros(len(X[0]))
-    X[3]=np.zeros(len(X[1]))
+    X[0] = np.zeros(len(X[0]))
+    X[1] = np.zeros(len(X[1]))
+    X[2] = np.zeros(len(X[0]))
+    X[3] = np.zeros(len(X[1]))
 
     parameters = {
         'Simple Imputer': {

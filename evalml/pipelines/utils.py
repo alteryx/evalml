@@ -3,8 +3,6 @@ import copy
 from .classification import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline,
-    ETBinaryClassificationPipeline,
-    ETMulticlassClassificationPipeline,
     LogisticRegressionBinaryPipeline,
     LogisticRegressionMulticlassPipeline,
     RFBinaryClassificationPipeline,
@@ -14,7 +12,6 @@ from .classification import (
 )
 from .regression import (
     CatBoostRegressionPipeline,
-    ETRegressionPipeline,
     LinearRegressionPipeline,
     RFRegressionPipeline,
     XGBoostRegressionPipeline
@@ -26,8 +23,6 @@ from evalml.utils import import_or_raise
 
 _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   CatBoostMulticlassClassificationPipeline,
-                  ETBinaryClassificationPipeline,
-                  ETMulticlassClassificationPipeline,
                   LogisticRegressionBinaryPipeline,
                   LogisticRegressionMulticlassPipeline,
                   RFBinaryClassificationPipeline,
@@ -37,8 +32,7 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
                   CatBoostRegressionPipeline,
-                  XGBoostRegressionPipeline,
-                  ETRegressionPipeline]
+                  XGBoostRegressionPipeline]
 
 
 def all_pipelines():
