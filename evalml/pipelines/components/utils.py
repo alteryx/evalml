@@ -7,15 +7,15 @@ from .component_base import ComponentBase
 from .estimators import (
     CatBoostClassifier,
     CatBoostRegressor,
+    ElasticNetClassifier,
+    ElasticNetRegressor,
     Estimator,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
     XGBoostClassifier,
-    XGBoostRegressor,
-    ElasticNetClassifier,
-    ElasticNetRegressor,
+    XGBoostRegressor
 )
 from .transformers import (
     CategoricalEncoder,

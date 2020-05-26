@@ -10,15 +10,15 @@ class ElasticNetRegressor(Estimator):
     """Elastic Net Regressor"""
     name = "Elastic Net Regressor"
     hyperparameter_ranges = {
-        "alpha": Real(0,1),
+        "alpha": Real(0, 1),
         "l1_ratio": Real(0, 1),
     }
     model_family = ModelFamily.ELASTIC_NET
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, alpha=1.0, l1_ratio=1.0, random_state=0, normalize=False, 
-                max_iter=1000):
-        parameters = {'alpha':alpha,
+    def __init__(self, alpha=1.0, l1_ratio=1.0, random_state=0, normalize=False,
+                 max_iter=1000):
+        parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio}
         en_regressor = SKElasticNet(alpha=alpha,
                                     l1_ratio=l1_ratio,
