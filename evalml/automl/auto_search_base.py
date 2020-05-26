@@ -232,6 +232,7 @@ class AutoSearchBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
 
+
         self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
 
         start = time.time()
@@ -356,14 +357,25 @@ class AutoSearchBase:
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
+
         if self.start_iteration_callback:
             self.start_iteration_callback(baseline, baseline.parameters)
+
+        desc = "▹ {}: ".format(baseline.name)
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
 
         baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,
                          training_time=baseline_results['training_time'],
                          cv_data=baseline_results['cv_data'])
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
 
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
