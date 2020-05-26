@@ -96,10 +96,7 @@ def test_max_pipelines(X_y):
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
-
-    assert sum(automl.full_rankings['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline') == 1
-    assert sum(automl.full_rankings['pipeline_name'] != 'Mode Baseline Binary Classification Pipeline') == max_pipelines
-
+    assert len(automl.full_rankings) == max_pipelines
 
 def test_specify_objective(X_y):
     X, y = X_y
@@ -235,7 +232,7 @@ def test_callback(X_y):
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
-    assert counts["add_result_callback"] == max_pipelines + 1
+    assert counts["add_result_callback"] == max_pipelines
 
 
 def test_additional_objectives(X_y):
@@ -393,8 +390,8 @@ def test_plot_iterations_max_pipelines(X_y):
     assert isinstance(plot, go.Figure)
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
-    assert len(x) == 4  # max_pipelines + 1 baseline
-    assert len(y) == 4  # max_pipelines + 1 baseline
+    assert len(x) == 3
+    assert len(y) == 3
 
 
 def test_plot_iterations_max_time(X_y):
@@ -449,8 +446,8 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     y = pd.Series(plot_data['y'])
     assert x.is_monotonic_increasing
     assert y.is_monotonic_increasing
-    assert len(x) == 4  # max_pipelines + 1 baseline
-    assert len(y) == 4  # max_pipelines + 1 baseline
+    assert len(x) == 3
+    assert len(y) == 3
 
 
 def test_max_time(X_y):

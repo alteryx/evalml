@@ -237,7 +237,6 @@ class AutoSearchBase:
         self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
 
         start = time.time()
-
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors=raise_errors)
             if search_iteration_plot:
@@ -255,8 +254,7 @@ class AutoSearchBase:
             return False
 
         should_continue = True
-        num_pipelines = len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, self.results['pipeline_results'].values())))
-
+        num_pipelines = len(self.results['pipeline_results'])
         if num_pipelines == 0:
             return True
 

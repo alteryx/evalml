@@ -84,8 +84,7 @@ def test_pipeline_fit_raises(mock_fit, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
     pipeline_dicts = list(automl.results["pipeline_results"].values())
-    assert len([pipeline for pipeline in pipeline_dicts if pipeline["pipeline_name"] == "Mode Baseline Binary Classification Pipeline"]) == 1
-    assert len([pipeline for pipeline in pipeline_dicts if pipeline["pipeline_name"] != "Mode Baseline Binary Classification Pipeline"]) == 1
+    assert len(pipeline_results) == 1
 
     cv_scores_all = automl.results['pipeline_results'][0].get('cv_data', {})
     for cv_scores in cv_scores_all:
@@ -104,7 +103,7 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y)
     pipeline_results = automl.results.get('pipeline_results', {})
-    assert(len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, pipeline_results.values()))) == 1)
+    assert len(pipeline_results) == 1
 
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
@@ -115,7 +114,7 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
     pipeline_results = automl.results.get('pipeline_results', {})
-    assert(len(list(filter(lambda result: result['pipeline_class'].model_family != ModelFamily.BASELINE, pipeline_results.values()))) == 1)
+    assert len(pipeline_results) == 1
 
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
@@ -129,22 +128,15 @@ def test_rankings(X_y, X_y_reg):
     model_families = ['random_forest']
     automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
-
-    assert sum(automl.full_rankings["pipeline_name"] == "Mode Baseline Binary Classification Pipeline") == 1
-    assert sum(automl.full_rankings["pipeline_name"] != "Mode Baseline Binary Classification Pipeline") == 2
-    assert sum(automl.rankings["pipeline_name"] == "Mode Baseline Binary Classification Pipeline") == 1
-    assert sum(automl.rankings["pipeline_name"] != "Mode Baseline Binary Classification Pipeline") == 1
+    assert len(automl.full_rankings.rankings) == 2
+    assert len(automl.rankings) == 2
 
     X, y = X_y_reg
     automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
-
-    assert sum(automl.full_rankings["pipeline_name"] == "Mean Baseline Regression Pipeline") == 1
-    assert sum(automl.full_rankings["pipeline_name"] != "Mean Baseline Regression Pipeline") == 2
-    assert sum(automl.rankings["pipeline_name"] == "Mean Baseline Regression Pipeline") == 1
-    assert sum(automl.rankings["pipeline_name"] != "Mean Baseline Regression Pipeline") == 1
-
-
+    assert len(automl.full_rankings.rankings) == 2
+    assert len(automl.rankings) == 2
+ 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, X_y):
     def _dummy_callback(param1, param2):
