@@ -49,7 +49,7 @@ def test_search_order(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=3)
     automl.search(X, y)
-    correct_order = [0, 1, 2, 3]
+    correct_order = [0, 1, 2]
     assert automl.results['search_order'] == correct_order
 
 
