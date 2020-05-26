@@ -6,7 +6,6 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
-from evalml.model_family import ModelFamily
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -83,10 +82,10 @@ def test_pipeline_fit_raises(mock_fit, X_y):
 
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
-    pipeline_dicts = list(automl.results["pipeline_results"].values())
+    pipeline_results = automl.results['pipeline_results']
     assert len(pipeline_results) == 1
 
-    cv_scores_all = automl.results['pipeline_results'][0].get('cv_data', {})
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
     for cv_scores in cv_scores_all:
         for name, score in cv_scores['all_objective_scores'].items():
             if name in ['# Training', '# Testing']:
@@ -136,7 +135,8 @@ def test_rankings(X_y, X_y_reg):
     automl.search(X, y)
     assert len(automl.full_rankings.rankings) == 2
     assert len(automl.rankings) == 2
- 
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, X_y):
     def _dummy_callback(param1, param2):

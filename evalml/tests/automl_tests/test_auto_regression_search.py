@@ -5,13 +5,13 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
+from evalml.exceptions import ObjectiveNotFoundError
+from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
     LinearRegressionPipeline,
     PipelineBase,
     get_pipelines
 )
-from evalml.exceptions import ObjectiveNotFoundError
-from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.problem_types import ProblemTypes
 
 

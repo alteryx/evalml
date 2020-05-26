@@ -11,8 +11,6 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
-from evalml import guardrails
-from evalml.model_family import ModelFamily
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives

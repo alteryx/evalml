@@ -98,6 +98,7 @@ def test_max_pipelines(X_y):
     automl.search(X, y)
     assert len(automl.full_rankings) == max_pipelines
 
+
 def test_specify_objective(X_y):
     X, y = X_y
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
