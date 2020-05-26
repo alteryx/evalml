@@ -356,6 +356,9 @@ class AutoSearchBase:
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
+        if self.start_iteration_callback:
+            self.start_iteration_callback(baseline, baseline.parameters)
+
         baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,

@@ -127,13 +127,13 @@ def test_rankings(X_y, X_y_reg):
     model_families = ['random_forest']
     automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
-    assert len(automl.full_rankings.rankings) == 2
+    assert len(automl.full_rankings) == 2
     assert len(automl.rankings) == 2
 
     X, y = X_y_reg
     automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
-    assert len(automl.full_rankings.rankings) == 2
+    assert len(automl.full_rankings) == 2
     assert len(automl.rankings) == 2
 
 
