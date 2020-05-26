@@ -76,8 +76,8 @@ Classification Pipelines
 
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
-    ElasticNetBinaryClassificationPipeline
-    ElasticNetMulticlassClassificationPipeline
+    ElasticNetBinaryPipeline
+    ElasticNetMulticlassPipeline
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
