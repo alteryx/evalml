@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
-from sklearn.metrics import precision_recall_curve as sklearn_precision_recall_curve
+from sklearn.metrics import \
+    precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
