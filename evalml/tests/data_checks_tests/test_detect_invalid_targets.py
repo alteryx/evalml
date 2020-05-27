@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.data_checks import DataCheckError
-from evalml.data_checks.detect_invalid_targets_data_check import (
+from evalml.data_checks.invalid_targets_data_check import (
     InvalidTargetsDataCheck
 )
 

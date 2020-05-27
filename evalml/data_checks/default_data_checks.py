@@ -1,6 +1,6 @@
 from .data_checks import DataChecks
 from .detect_highly_null_data_check import DetectHighlyNullDataCheck
-from .detect_invalid_targets_data_check import InvalidTargetsDataCheck
+from .invalid_targets_data_check import InvalidTargetsDataCheck
 
 
 class DefaultDataChecks(DataChecks):
