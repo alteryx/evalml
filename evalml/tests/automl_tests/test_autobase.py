@@ -1,36 +1,47 @@
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataChecks,
+    DataCheckWarning,
+    EmptyDataChecks
+)
 from evalml.pipelines import LogisticRegressionBinaryPipeline
 from evalml.tuners import RandomSearchTuner
 
 
-def test_pipeline_limits(capsys, X_y):
+def test_pipeline_limits(caplog, X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 1 pipelines. " in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=5)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
-    out, err = capsys.readouterr()
+    out = caplog.text
     assert "No search limit is set. Set using max_time or max_pipelines." in out
 
 
@@ -82,6 +93,32 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert np.isnan(score)
 
 
+@patch('evalml.objectives.AUC.score')
+def test_pipeline_score_raises(mock_score, X_y):
+    msg = 'all your model are belong to us'
+    mock_score.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    scores = cv_scores_all[0]['all_objective_scores']
+    auc_score = scores.pop('AUC')
+    assert np.isnan(auc_score)
+    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    scores = cv_scores_all[0]['all_objective_scores']
+    auc_score = scores.pop('AUC')
+    assert np.isnan(auc_score)
+    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+
+
 def test_rankings(X_y, X_y_reg):
     X, y = X_y
     model_families = ['random_forest']
@@ -95,17 +132,6 @@ def test_rankings(X_y, X_y_reg):
     automl.search(X, y)
     assert len(automl.full_rankings) == 2
     assert len(automl.rankings) == 1
-
-
-@patch('evalml.pipelines.PipelineBase.fit')
-@patch('evalml.utils.logger.Logger.log')
-@patch('evalml.guardrails.detect_label_leakage')
-def test_detect_label_leakage(mock_detect_label_leakage, mock_log, mock_fit, capsys, X_y):
-    X, y = X_y
-    mock_detect_label_leakage.return_value = {'var 1': 0.1234, 'var 2': 0.5678}
-    automl = AutoClassificationSearch(max_pipelines=1, random_state=0)
-    automl.search(X, y, raise_errors=False)
-    mock_log.assert_called_with("WARNING: Possible label leakage: var 1, var 2")
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -123,12 +149,10 @@ def test_automl_str_search(mock_fit, X_y):
         'allowed_model_families': ['random_forest', 'linear_model'],
         'cv': StratifiedKFold(5),
         'tuner': RandomSearchTuner,
-        'detect_label_leakage': False,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
         'additional_objectives': ['Precision', 'AUC'],
         'n_jobs': 2,
-        'verbose': True,
         'optimize_thresholds': True
     }
 
@@ -141,13 +165,11 @@ def test_automl_str_search(mock_fit, X_y):
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
-        'Detect Label Leakage': search_params['detect_label_leakage'],
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
         'Random State': 'RandomState(MT19937)',
         'n_jobs': search_params['n_jobs'],
-        'Verbose': search_params['verbose'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
 
@@ -169,6 +191,67 @@ def test_automl_str_search(mock_fit, X_y):
     assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
 
 
+def test_automl_data_check_results_is_none_before_search():
+    automl = AutoClassificationSearch(max_pipelines=1)
+    assert automl.data_check_results is None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_empty_data_checks(mock_fit, mock_score, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, data_checks=EmptyDataChecks())
+    assert automl.data_check_results is None
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+
+@patch('evalml.data_checks.DefaultDataChecks.validate')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y, caplog):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    mock_validate.return_value = [DataCheckWarning("default data check warning", "DefaultDataChecks")]
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y)
+    out = caplog.text
+    assert "default data check warning" in out
+    assert automl.data_check_results == mock_validate.return_value
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    mock_validate.assert_called()
+
+
+def test_automl_data_checks_raises_error(caplog):
+    X = pd.DataFrame()
+    y = pd.Series()
+
+    class MockDataCheckErrorAndWarning(DataCheck):
+        def validate(self, X, y):
+            return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+
+    data_checks = DataChecks(data_checks=[MockDataCheckErrorAndWarning()])
+    automl = AutoClassificationSearch(max_pipelines=1)
+
+    with pytest.raises(ValueError, match="Data checks raised"):
+        automl.search(X, y, data_checks=data_checks)
+    out = caplog.text
+    assert "error one" in out
+    assert "warning one" in out
+    assert automl.data_check_results == data_checks.validate(X, y)
+
+
+def test_automl_not_data_check_object():
+    X = pd.DataFrame()
+    y = pd.Series()
+    automl = AutoClassificationSearch(max_pipelines=1)
+    with pytest.raises(ValueError, match="data_checks parameter must be a DataChecks object!"):
+        automl.search(X, y, data_checks=1)
+
+
 def test_automl_str_no_param_search():
     automl = AutoClassificationSearch()
 
@@ -183,7 +266,6 @@ def test_automl_str_no_param_search():
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
-        'Detect Label Leakage': 'True',
         'Additional Objectives': [
             'Accuracy Binary',
             'Balanced Accuracy Binary',

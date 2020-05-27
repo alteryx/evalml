@@ -11,15 +11,17 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
-from evalml import guardrails
+from evalml.data_checks import DataChecks, DefaultDataChecks
+from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import get_pipelines
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import Logger, convert_to_seconds, get_random_state
+from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils.logger import get_logger, log_subtitle, log_title
 
-logger = Logger()
+logger = get_logger(__file__)
 
 
 class AutoSearchBase:
@@ -28,14 +30,13 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.allowed_model_families = allowed_model_families
-        self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
@@ -45,8 +46,6 @@ class AutoSearchBase:
         self.objective = get_objective(objective)
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
-
-        logger.verbose = verbose
 
         if additional_objectives is not None:
             additional_objectives = [get_objective(o) for o in additional_objectives]
@@ -94,8 +93,14 @@ class AutoSearchBase:
             self.plot = PipelineSearchPlots(self)
 
         except ImportError:
-            logger.log("Warning: unable to import plotly; skipping pipeline search plotting\n")
+            logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
+
+        self._data_check_results = None
+
+    @property
+    def data_check_results(self):
+        return self._data_check_results
 
     def __str__(self):
         def _print_list(obj_list):
@@ -119,7 +124,6 @@ class AutoSearchBase:
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
             f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
-            f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
@@ -137,7 +141,7 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -152,6 +156,8 @@ class AutoSearchBase:
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
         Returns:
 
@@ -174,30 +180,41 @@ class AutoSearchBase:
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
 
-        logger.log_title("Beginning pipeline search")
-        logger.log("Optimizing for %s. " % self.objective.name, new_line=False)
+        if data_checks is None:
+            data_checks = DefaultDataChecks()
+
+        if not isinstance(data_checks, DataChecks):
+            raise ValueError("data_checks parameter must be a DataChecks object!")
+
+        data_check_results = data_checks.validate(X, y)
+        if len(data_check_results) > 0:
+            self._data_check_results = data_check_results
+            for message in self._data_check_results:
+                if message.message_type == DataCheckMessageType.WARNING:
+                    logger.warning(message)
+                elif message.message_type == DataCheckMessageType.ERROR:
+                    logger.error(message)
+            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+
+        log_title(logger, "Beginning pipeline search")
+        logger.info("Optimizing for %s. " % self.objective.name)
 
         if self.objective.greater_is_better:
-            logger.log("Greater score is better.\n")
+            logger.info("Greater score is better.\n")
         else:
-            logger.log("Lower score is better.\n")
+            logger.info("Lower score is better.\n")
 
         # Set default max_pipeline if none specified
         if self.max_pipelines is None and self.max_time is None:
             self.max_pipelines = 5
-            logger.log("No search limit is set. Set using max_time or max_pipelines.\n")
+            logger.info("No search limit is set. Set using max_time or max_pipelines.\n")
 
         if self.max_pipelines:
-            logger.log("Searching up to %s pipelines. " % self.max_pipelines)
+            logger.info("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time:
-            logger.log("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-            logger.log("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
-
-        if self.detect_label_leakage:
-            leaked = guardrails.detect_label_leakage(X, y)
-            if len(leaked) > 0:
-                leaked = [str(k) for k in leaked.keys()]
-                logger.log("WARNING: Possible label leakage: %s" % ", ".join(leaked))
+            logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+            logger.info("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
 
         search_iteration_plot = None
         if self.plot:
@@ -235,12 +252,8 @@ class AutoSearchBase:
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_pipelines:
-            if num_pipelines >= self.max_pipelines:
-                return False
-            elif self.max_time and elapsed >= self.max_time:
-                logger.log("\n\nMax time elapsed. Stopping search early.")
-                return False
+        elif self.max_pipelines and num_pipelines >= self.max_pipelines:
+            return False
 
         # check for early stopping
         if self.patience is None:
@@ -259,7 +272,7 @@ class AutoSearchBase:
             else:
                 num_without_improvement += 1
             if num_without_improvement >= self.patience:
-                logger.log("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
+                logger.info("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
                 return False
         return should_continue
 
@@ -440,18 +453,18 @@ class AutoSearchBase:
         pipeline_results = self.results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
-        logger.log_subtitle("Training")
-        logger.log("Training for {} problems.".format(pipeline.problem_type))
+        log_subtitle(logger, "Training")
+        logger.info("Training for {} problems.".format(pipeline.problem_type))
 
         if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
-            logger.log("Objective to optimize binary classification pipeline thresholds for: {}".format(self.objective))
+            logger.info("Objective to optimize binary classification pipeline thresholds for: {}".format(self.objective))
 
-        logger.log("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
-        logger.log_subtitle("Cross Validation", underline="-")
+        logger.info("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
+        log_subtitle(logger, "Cross Validation", underline="-")
 
         if pipeline_results["high_variance_cv"]:
-            logger.log("Warning! High variance within cross validation scores. " +
-                       "Model may not perform as estimated on unseen data.")
+            logger.warning("High variance within cross validation scores. " +
+                           "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
@@ -470,7 +483,7 @@ class AutoSearchBase:
         all_objective_scores = all_objective_scores.fillna("-")
 
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
-            logger.log(all_objective_scores)
+            logger.info(all_objective_scores)
 
         if return_dict:
             return pipeline_results

@@ -244,3 +244,11 @@ def test_regressor_call_predict_proba(test_classes):
     component = MockEstimator({}, None, 0)
     with pytest.raises(MethodPropertyNotFoundError):
         component.predict_proba(X)
+
+
+def test_component_describe(test_classes, caplog):
+    MockComponent, _, _ = test_classes
+    component = MockComponent({}, None, 0)
+    component.describe(print_name=True)
+    out = caplog.text
+    assert "Mock Component" in out
