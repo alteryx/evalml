@@ -15,6 +15,7 @@ class DetectInvalidTargetsDataCheck(DataCheck):
 
         Returns:
             list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.
+
                 - abc
                 - def
 
