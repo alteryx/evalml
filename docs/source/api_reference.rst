@@ -336,7 +336,7 @@ Data Check Base Classes
     :nosignatures:
 
     DataCheck
-
+    DetectInvalidTargetsDataCheck
 
 .. autosummary::
     :toctree: generated
