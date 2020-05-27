@@ -56,37 +56,31 @@ class BaselineClassifier(Estimator):
             self._mode = y.mode()[0]
         return self
 
+    def _check_fitted(self):
+        if self._mode is None and self._classes is None:
+            raise RuntimeError("You must fit Baseline classifier before calling predict!")
+
     def predict(self, X):
+        self._check_fitted()
         strategy = self.parameters["strategy"]
         if strategy == "mode":
-            if self._mode is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             return pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            if self._classes is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             return self.random_state.choice(self._classes, len(X))
         else:
-            if self._classes is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             return self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
 
     def predict_proba(self, X):
+        self._check_fitted()
         strategy = self.parameters["strategy"]
         if strategy == "mode":
-            if self._mode is None or self._num_unique is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             mode_index = self._classes.index(self._mode)
             proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
             return pd.DataFrame(proba_arr, columns=self._classes)
         elif strategy == "random":
-            if self._classes is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
             return pd.DataFrame(proba_arr, columns=self._classes)
         else:
-            if self._classes is None or self._percentage_freq is None:
-                raise RuntimeError("You must fit Baseline classifier before calling predict!")
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
             return pd.DataFrame(proba_arr, columns=self._classes)
 

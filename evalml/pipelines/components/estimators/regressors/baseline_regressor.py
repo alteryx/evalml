@@ -47,9 +47,12 @@ class BaselineRegressor(Estimator):
         self._num_features = X.shape[1]
         return self
 
-    def predict(self, X):
+    def _check_fitted(self):
         if self._prediction_value is None:
-            raise RuntimeError("You must fit Baseline regressor before calling predict!")
+            raise RuntimeError("You must fit Baseline classifier before calling predict!")
+
+    def predict(self, X):
+        self._check_fitted()
         return pd.Series([self._prediction_value] * len(X))
 
     @property
