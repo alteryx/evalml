@@ -22,6 +22,10 @@ def test_highly_null_data_check_input_formats():
     invalid_targets_check = DetectInvalidTargetsDataCheck()
     X = pd.DataFrame()
 
+    # test None
+    messages = invalid_targets_check.validate(X, y=None)
+    assert messages == []
+
     # test empty pd.Series
     messages = invalid_targets_check.validate(X, pd.Series())
     assert messages == []

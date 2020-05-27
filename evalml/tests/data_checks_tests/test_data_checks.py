@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from evalml.data_checks.data_check import DataCheck
@@ -50,7 +51,13 @@ def test_default_data_checks(X_y):
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 4, 5]})
+    y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks()
     messages = data_checks.validate(X)
     assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
                         DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck")]
+
+    messages = data_checks.validate(X, y)
+    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
+                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
+                        DataCheckError("Row '2' contains a null value", "DetectInvalidTargetsDataCheck")]
