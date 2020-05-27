@@ -33,6 +33,7 @@ Changelog
         * Update codecov client :pr:`782`
         * Updated AutoBase __str__ test to include no parameters case :pr:`783`
         * If codecov fails to upload, fail build :pr:`810`
+        * Updated Python version of dependency action :pr:`816`
 
 .. warning::
 
