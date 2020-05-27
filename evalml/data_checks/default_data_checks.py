@@ -1,5 +1,5 @@
 from .data_checks import DataChecks
-from .detect_highly_null_data_check import HighlyNullDataCheck
+from highly_null_data_check import HighlyNullDataCheck
 
 
 class DefaultDataChecks(DataChecks):

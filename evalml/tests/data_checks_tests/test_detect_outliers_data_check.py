@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checks.detect_outliers_data_check import (
+from evalml.data_checksoutliers_data_check import (
     OutliersDataCheck
 )
 from evalml.utils import get_random_state

@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checks.detect_highly_null_data_check import (
+from evalml.data_checkshighly_null_data_check import (
     HighlyNullDataCheck
 )
 
