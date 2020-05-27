@@ -7,7 +7,7 @@ from .data_check_message import DataCheckWarning
 from evalml.utils import get_random_state
 
 
-class DetectOutliersDataCheck(DataCheck):
+class OutliersDataCheck(DataCheck):
 
     def __init__(self, random_state=0):
         """Checks if there are any outliers in a DataFrame by using first Isolation Forest to obtain the anomaly score
@@ -35,8 +35,8 @@ class DetectOutliersDataCheck(DataCheck):
             ...     'y': [6, 7, 8, 990, 10],
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
-            >>> outliers_check = DetectOutliersDataCheck()
-            >>> assert outliers_check.validate(df) == [DataCheckWarning("Row '3' is likely to have outlier data", "DetectOutliersDataCheck")]
+            >>> outliers_check = OutliersDataCheck()
+            >>> assert outliers_check.validate(df) == [DataCheckWarning("Row '3' is likely to have outlier data", "OutliersDataCheck")]
         """
 
         if not isinstance(X, pd.DataFrame):

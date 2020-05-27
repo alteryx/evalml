@@ -4,7 +4,7 @@ from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
 
-class DetectIDColumnsDataCheck(DataCheck):
+class IDColumnsDataCheck(DataCheck):
 
     def __init__(self, id_threshold=1.0):
         """Check if any of the features are likely to be ID columns.
@@ -36,8 +36,8 @@ class DetectIDColumnsDataCheck(DataCheck):
             ...     'x': [10, 42, 31, 51, 61],
             ...     'y': [42, 54, 12, 64, 12]
             ... })
-            >>> id_col_check = DetectIDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "DetectIDColumnsDataCheck")]
+            >>> id_col_check = IDColumnsDataCheck()
+            >>> assert id_col_check.validate(df) == [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
         """
 
         if not isinstance(X, pd.DataFrame):

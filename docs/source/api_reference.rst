@@ -345,10 +345,10 @@ Data Check Classes
     :nosignatures:
 
     DataCheck
-    DetectHighlyNullDataCheck
-    DetectIDColumnsDataCheck
-    DetectLabelLeakageDataCheck
-    DetectOutliersDataCheck
+    HighlyNullDataCheck
+    IDColumnsDataCheck
+    LabelLeakageDataCheck
+    OutliersDataCheck
 
 
 .. autosummary::

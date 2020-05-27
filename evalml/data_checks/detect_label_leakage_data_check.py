@@ -4,7 +4,7 @@ from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
 
-class DetectLabelLeakageDataCheck(DataCheck):
+class LabelLeakageDataCheck(DataCheck):
 
     def __init__(self, pct_corr_threshold=0.95):
         """Check if any of the features are highly correlated with the target.
@@ -38,8 +38,8 @@ class DetectLabelLeakageDataCheck(DataCheck):
             ...    'y': [12, 5, 13, 74, 24],
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
-            >>> label_leakage_check = DetectLabelLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "DetectLabelLeakageDataCheck")]
+            >>> label_leakage_check = LabelLeakageDataCheck(pct_corr_threshold=0.8)
+            >>> assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "LabelLeakageDataCheck")]
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

@@ -52,5 +52,5 @@ def test_default_data_checks(X_y):
                       'no_null': [1, 2, 3, 4, 5]})
     data_checks = DefaultDataChecks()
     messages = data_checks.validate(X)
-    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
-                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck")]
+    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck")]

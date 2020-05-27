@@ -1,5 +1,5 @@
 from .data_checks import DataChecks
-from .detect_highly_null_data_check import DetectHighlyNullDataCheck
+from .detect_highly_null_data_check import HighlyNullDataCheck
 
 
 class DefaultDataChecks(DataChecks):
@@ -10,4 +10,4 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             data_checks (list (DataCheck)): Ignored.
         """
-        self.data_checks = [DetectHighlyNullDataCheck()]
+        self.data_checks = [HighlyNullDataCheck()]
