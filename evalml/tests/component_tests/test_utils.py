@@ -10,7 +10,7 @@ def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_components()) == 11
     else:
-        assert len(all_components()) == 15
+        assert len(all_components()) == 17
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -23,7 +23,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_components_core_dependencies_mock():
-    assert len(all_components()) == 11
+    assert len(all_components()) == 13
 
 
 def test_handle_component_names():

@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import category_encoders as ce
 import numpy as np
 import pandas as pd
