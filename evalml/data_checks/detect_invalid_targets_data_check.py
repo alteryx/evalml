@@ -14,7 +14,9 @@ class DetectInvalidTargetsDataCheck(DataCheck):
             y : Target labels to check for invalid data.
 
         Returns:
-            list (DataCheckError): list with DataCheckErrors if any invalid data is found in .
+            list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.
+                - abc
+                - def
 
         Example:
             >>> X = pd.DataFrame({})
