@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
 from evalml.objectives import (
     F1,
@@ -12,6 +13,8 @@ from evalml.objectives import (
     F1Macro,
     F1Micro,
     F1Weighted,
+    MCCBinary,
+    MCCMulticlass,
     MeanSquaredLogError,
     Precision,
     PrecisionMacro,
@@ -388,3 +391,15 @@ def test_mse_linear_model():
     assert root_obj.score(s1_predicted, s1_actual) == pytest.approx(np.sqrt(5. / 3.))
     assert root_obj.score(s2_predicted, s2_actual) == pytest.approx(0)
     assert root_obj.score(s3_predicted, s3_actual) == pytest.approx(np.sqrt(2.))
+
+
+def test_mcc_catches_warnings():
+    y_true = [1, 0, 1, 1]
+    y_predicted = [0, 0, 0, 0]
+    with pytest.warns(RuntimeWarning) as record:
+        sk_matthews_corrcoef(y_true, y_predicted)
+        assert "invalid value" in str(record[-1].message)
+    with pytest.warns(None) as record:
+        MCCBinary().objective_function(y_true, y_predicted)
+        MCCMulticlass().objective_function(y_true, y_predicted)
+        assert len(record) == 0

@@ -233,7 +233,7 @@ class AutoSearchBase:
             pbar._instances.clear()
 
         start = time.time()
-        self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
+        self._add_baseline_pipelines(X, y, pbar, raise_errors=raise_errors)
 
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors=raise_errors)
@@ -346,7 +346,7 @@ class AutoSearchBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def _calculate_baseline(self, X, y, pbar, raise_errors=True):
+    def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
