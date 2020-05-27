@@ -10,6 +10,7 @@ Changelog
     * Fixes
         * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
+        * CatBoost and XGBoost classifiers and regressors can no longer have a learning rate of 0 :pr:`795`
     * Changes
         * Cleanup pipeline `score` code, and cleanup codecov :pr:`711`
         * Remove `pass` for abstract methods for codecov :pr:`730`
