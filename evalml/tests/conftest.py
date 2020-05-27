@@ -7,7 +7,7 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
+from evalml.pipelines import ENBinaryPipeline, ENMulticlassPipeline, BinaryClassificationPipeline, RegressionPipeline
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -119,6 +119,26 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
 
     return MockBinaryClassificationPipeline
 
+@pytest.fixture
+def dummy_en_multi_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockENMultiClassificationPipeline(ENMulticlassPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
+    return MockENMultiClassificationPipeline
+
+
+@pytest.fixture
+def dummy_en_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockENBinaryClassificationPipeline(ENBinaryPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
+    return MockENBinaryClassificationPipeline
 
 @pytest.fixture
 def dummy_regression_pipeline():

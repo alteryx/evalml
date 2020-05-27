@@ -59,44 +59,6 @@ def test_summary():
     assert ENBinaryPipeline.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
 
 
-def test_en_objective_tuning(X_y):
-    X, y = X_y
-
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
-        'Elastic Net Classifier': {
-            "alpha": 0.5,
-            "l1_ratio": 0.5,
-        }
-    }
-    clf = ENBinaryPipeline(parameters=parameters)
-    clf.fit(X, y)
-    y_pred = clf.predict(X)
-
-    objective = PrecisionMicro()
-    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
-        y_pred_with_objective = clf.predict(X, objective)
-
-    # testing objective parameter passed in does not change results
-    objective = Precision()
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-    # testing objective parameter passed and set threshold does change results
-    with pytest.raises(AssertionError):
-        clf.threshold = 0.01
-        y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-
 def test_en_multi(X_y_multi):
     X, y = X_y_multi
 
@@ -153,29 +115,57 @@ def test_en_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
-def test_en_input_feature_names(X_y):
+@patch('evalml.pipelines.PipelineBase._transform')
+def test_en_binary_predict_pipeline_objective_mismatch(mock_transform, X_y, dummy_en_binary_pipeline_class):
     X, y = X_y
-    # create a list of column names
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X.columns),
-            "n_estimators": 20
-        },
-        'Elastic Net Classifier': {
-            "alpha": 0.5,
-            "l1_ratio": 0.5,
-        }
-    }
+    binary_pipeline = dummy_en_binary_pipeline_class(parameters={})
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        binary_pipeline.predict(X, "precision_micro")
+    mock_transform.assert_called()
 
-    clf = ENBinaryPipeline(parameters=parameters)
-    clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
-    for col_name in clf.feature_importances["feature"]:
-        assert "col_" in col_name
+@patch('evalml.objectives.BinaryClassificationObjective.decision_function')
+@patch('evalml.pipelines.components.Estimator.predict_proba')
+@patch('evalml.pipelines.components.Estimator.predict')
+@patch('evalml.pipelines.PipelineBase._transform')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_en_binary_classification_pipeline_predict(mock_fit, mock_transform, mock_predict, 
+                                                mock_predict_proba, mock_obj_decision, X_y, 
+                                                dummy_en_multi_pipeline_class, dummy_en_binary_pipeline_class):
+    X, y = X_y
+    en_pipeline = dummy_en_binary_pipeline_class(parameters={})
+    # test no objective passed and no custom threshold uses underlying estimator's predict method
+    en_pipeline.predict(X)
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
+
+    # test objective passed but no custom threshold uses underlying estimator's predict method
+    en_pipeline.predict(X, 'precision')
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
+
+    # test custom threshold set but no objective passed
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X)
+    mock_predict.assert_not_called()
+    mock_predict_proba.assert_called()
+    mock_obj_decision.assert_not_called()
+
+    # test custom threshold set but no objective passed
+    mock_predict.reset_mock()
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X)
+    mock_predict.assert_not_called()
+    mock_predict_proba.assert_called()
+    mock_obj_decision.assert_not_called()
+
+    # test custom threshold set and objective passed
+    mock_predict.reset_mock()
+    mock_predict_proba.reset_mock()
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X, 'precision')
+    mock_predict.assert_not_called()
+    mock_predict_proba.assert_called()
+    mock_obj_decision.assert_called()

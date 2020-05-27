@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 gimport numpy as np
 from sklearn.linear_model import ElasticNet as SKElasticNetRegressor
 
