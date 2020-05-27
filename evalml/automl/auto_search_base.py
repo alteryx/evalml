@@ -232,9 +232,9 @@ class AutoSearchBase:
             pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
             pbar._instances.clear()
 
+        start = time.time()
         self._calculate_baseline(X, y, pbar, raise_errors=raise_errors)
 
-        start = time.time()
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors=raise_errors)
             if search_iteration_plot:
