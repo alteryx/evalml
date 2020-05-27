@@ -82,7 +82,7 @@ def test_pipeline_fit_raises(mock_fit, X_y):
 
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
-    pipeline_results = automl.results['pipeline_results']
+    pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
 
     cv_scores_all = pipeline_results[0].get('cv_data', {})

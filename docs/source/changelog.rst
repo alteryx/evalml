@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
-        * Added baseline models for classification and regression :pr:`746`
+        * Added baseline models for classification and regression, add functionality to calculate baseline models before searching in AutoML :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
