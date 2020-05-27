@@ -18,7 +18,11 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import (
+    LogisticRegressionBinaryPipeline,
+    PipelineBase,
+    get_pipelines
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -92,7 +96,6 @@ def test_max_pipelines(X_y):
     max_pipelines = 5
     automl = AutoClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
-
     assert len(automl.full_rankings) == max_pipelines
 
 
@@ -355,6 +358,7 @@ def test_early_stopping(caplog):
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
+        mock_results['pipeline_results'][id]['pipeline_class'] = LogisticRegressionBinaryPipeline
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())

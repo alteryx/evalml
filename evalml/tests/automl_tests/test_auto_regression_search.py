@@ -7,7 +7,11 @@ from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.pipelines import (
+    LinearRegressionPipeline,
+    PipelineBase,
+    get_pipelines
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -105,6 +109,7 @@ def test_early_stopping(caplog):
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
+        mock_results['pipeline_results'][id]['pipeline_class'] = LinearRegressionPipeline
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())

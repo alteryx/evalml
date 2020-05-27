@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Releases**
     * Enhancements
+        * Added baseline models for classification and regression, add functionality to calculate baseline models before searching in AutoML :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * Fixes
@@ -34,6 +35,7 @@ Changelog
         * Update codecov client :pr:`782`
         * Updated AutoBase __str__ test to include no parameters case :pr:`783`
         * If codecov fails to upload, fail build :pr:`810`
+        * Updated Python version of dependency action :pr:`816`
 
 .. warning::
 

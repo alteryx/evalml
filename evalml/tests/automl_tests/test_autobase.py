@@ -84,6 +84,7 @@ def test_pipeline_fit_raises(mock_fit, X_y):
     automl.search(X, y, raise_errors=False)
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
+
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     for cv_scores in cv_scores_all:
         for name, score in cv_scores['all_objective_scores'].items():
@@ -102,6 +103,7 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl.search(X, y)
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
+
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -112,6 +114,7 @@ def test_pipeline_score_raises(mock_score, X_y):
     automl.search(X, y, raise_errors=False)
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
+
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -125,13 +128,13 @@ def test_rankings(X_y, X_y_reg):
     automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
     assert len(automl.full_rankings) == 2
-    assert len(automl.rankings) == 1
+    assert len(automl.rankings) == 2
 
     X, y = X_y_reg
     automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
     automl.search(X, y)
     assert len(automl.full_rankings) == 2
-    assert len(automl.rankings) == 1
+    assert len(automl.rankings) == 2
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
