@@ -16,7 +16,7 @@ class CatBoostRegressor(Estimator):
     name = "CatBoost Regressor"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
-        "eta": Real(0, 1),
+        "eta": Real(0.000001, 1),
         "max_depth": Integer(1, 16),
     }
     model_family = ModelFamily.CATBOOST
