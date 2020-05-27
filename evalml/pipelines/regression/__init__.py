@@ -4,3 +4,4 @@ from .random_forest import RFRegressionPipeline
 from .catboost import CatBoostRegressionPipeline
 from .xgboost_regression import XGBoostRegressionPipeline
 from .elasticnet_regression import ENRegressionPipeline
+from .baseline_regression import BaselineRegressionPipeline, MeanBaselineRegressionPipeline

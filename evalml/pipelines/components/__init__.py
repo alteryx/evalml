@@ -12,6 +12,8 @@ from .estimators import (
     XGBoostRegressor,
     ElasticNetClassifier,
     ElasticNetRegressor,
+    BaselineClassifier,
+    BaselineRegressor
 )
 from .transformers import (
     Transformer,

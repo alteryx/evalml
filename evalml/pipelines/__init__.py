@@ -37,7 +37,11 @@ from .classification import (
     RFBinaryClassificationPipeline,
     RFMulticlassClassificationPipeline,
     XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline
+    XGBoostMulticlassPipeline,
+    BaselineBinaryPipeline,
+    BaselineMulticlassPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline
 )
 
 from .regression import (
@@ -45,7 +49,9 @@ from .regression import (
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
     ENRegressionPipeline,
-    XGBoostRegressionPipeline
+    XGBoostRegressionPipeline,
+    BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline
 )
 from .utils import (
     all_pipelines,
