@@ -4,7 +4,7 @@ from .data_check import DataCheck
 from .data_check_message import DataCheckError
 
 
-class DetectInvalidTargetsDataCheck(DataCheck):
+class InvalidTargetsDataCheck(DataCheck):
 
     def validate(self, X, y):
         """Checks if the target labels contain invalid data.
@@ -22,8 +22,8 @@ class DetectInvalidTargetsDataCheck(DataCheck):
         Example:
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None])
-            >>> target_check = DetectInvalidTargetsDataCheck()
-            >>> assert target_check.validate(X, y) == [DataCheckError("Row '2' contains a null value", "DetectInvalidTargetsDataCheck")]
+            >>> target_check = InvalidTargetsDataCheck()
+            >>> assert target_check.validate(X, y) == [DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]
         """
         if not isinstance(y, pd.Series):
             y = pd.Series(y)

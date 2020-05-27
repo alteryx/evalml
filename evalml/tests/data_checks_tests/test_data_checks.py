@@ -60,4 +60,4 @@ def test_default_data_checks(X_y):
     messages = data_checks.validate(X, y)
     assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
                         DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
-                        DataCheckError("Row '2' contains a null value", "DetectInvalidTargetsDataCheck")]
+                        DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]
