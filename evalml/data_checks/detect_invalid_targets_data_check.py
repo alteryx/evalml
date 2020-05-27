@@ -21,7 +21,7 @@ class DetectInvalidTargetsDataCheck(DataCheck):
 
         Example:
             >>> X = pd.DataFrame({})
-            >>> y = pd.Series([0, 1, np.nan])
+            >>> y = pd.Series([0, 1, None])
             >>> target_check = DetectInvalidTargetsDataCheck()
             >>> assert target_check.validate(X, y) == [DataCheckError("Row '2' contains a null value", "DetectInvalidTargetsDataCheck")]
         """
