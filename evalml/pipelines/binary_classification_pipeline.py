@@ -32,7 +32,24 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self.estimator.predict(X_t)
         ypred_proba = self.predict_proba(X)
-        ypred_proba = ypred_proba[:, 1]
+
+        if isinstance(ypred_proba, pd.DataFrame):
+            ypred_proba = ypred_proba.iloc[:, 1]
+        else:
+            ypred_proba = ypred_proba[:, 1]
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+
+    @staticmethod
+    def _score(X, y, predictions, objective):
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
+
+        Will return `np.nan` if the objective errors.
+        """
+        if predictions.ndim > 1:
+            if isinstance(predictions, pd.DataFrame):
+                predictions = predictions.iloc[:, 1]
+            else:
+                predictions = predictions[:, 1]
+        return ClassificationPipeline._score(X, y, predictions, objective)

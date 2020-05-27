@@ -5,12 +5,12 @@ from evalml.model_family import ModelFamily, handle_model_family
 
 @pytest.fixture
 def correct_model_families():
-    correct_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.NONE]
+    correct_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.BASELINE, ModelFamily.NONE]
     yield correct_model_families
 
 
 def test_handle_string(correct_model_families):
-    model_families = ['linear_model', 'random_forest', 'xgboost', 'catboost', 'none']
+    model_families = ['linear_model', 'random_forest', 'xgboost', 'catboost', 'baseline', 'none']
     for model_family in zip(model_families, correct_model_families):
         assert handle_model_family(model_family[0]) == model_family[1]
 

@@ -11,9 +11,15 @@ from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
-from evalml import guardrails
+from evalml.data_checks import DataChecks, DefaultDataChecks
+from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
-from evalml.pipelines import get_pipelines
+from evalml.pipelines import (
+    MeanBaselineRegressionPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline,
+    get_pipelines
+)
 from evalml.pipelines.components import handle_component
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
@@ -29,14 +35,13 @@ class AutoSearchBase:
     plot = PipelineSearchPlots
 
     def __init__(self, problem_type, tuner, cv, objective, max_pipelines, max_time,
-                 patience, tolerance, allowed_model_families, detect_label_leakage, start_iteration_callback,
+                 patience, tolerance, allowed_model_families, start_iteration_callback,
                  add_result_callback, additional_objectives, random_state, n_jobs, verbose, optimize_thresholds=False):
         if tuner is None:
             tuner = SKOptTuner
         self.problem_type = problem_type
         self.max_pipelines = max_pipelines
         self.allowed_model_families = allowed_model_families
-        self.detect_label_leakage = detect_label_leakage
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
@@ -96,6 +101,12 @@ class AutoSearchBase:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
             self.plot = None
 
+        self._data_check_results = None
+
+    @property
+    def data_check_results(self):
+        return self._data_check_results
+
     def __str__(self):
         def _print_list(obj_list):
             lines = ['\t{}'.format(o.name) for o in obj_list]
@@ -118,7 +129,6 @@ class AutoSearchBase:
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
             f"Tuner: {type(list(self.tuners.values())[0]).__name__ if len(self.tuners) else ''}\n"
-            f"Detect Label Leakage: {self.detect_label_leakage}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
@@ -136,7 +146,7 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -151,6 +161,8 @@ class AutoSearchBase:
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
         Returns:
 
@@ -173,6 +185,23 @@ class AutoSearchBase:
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
 
+        if data_checks is None:
+            data_checks = DefaultDataChecks()
+
+        if not isinstance(data_checks, DataChecks):
+            raise ValueError("data_checks parameter must be a DataChecks object!")
+
+        data_check_results = data_checks.validate(X, y)
+        if len(data_check_results) > 0:
+            self._data_check_results = data_check_results
+            for message in self._data_check_results:
+                if message.message_type == DataCheckMessageType.WARNING:
+                    logger.warning(message)
+                elif message.message_type == DataCheckMessageType.ERROR:
+                    logger.error(message)
+            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
 
@@ -192,12 +221,6 @@ class AutoSearchBase:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
             logger.info("Possible model families: %s\n" % ", ".join([model.value for model in self.possible_model_families]))
 
-        if self.detect_label_leakage:
-            leaked = guardrails.detect_label_leakage(X, y)
-            if len(leaked) > 0:
-                leaked = [str(k) for k in leaked.keys()]
-                logger.warning("Possible label leakage: %s" % ", ".join(leaked))
-
         search_iteration_plot = None
         if self.plot:
             search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
@@ -210,10 +233,13 @@ class AutoSearchBase:
             pbar._instances.clear()
 
         start = time.time()
+        self._add_baseline_pipelines(X, y, pbar, raise_errors=raise_errors)
+
         while self._check_stopping_condition(start):
             self._do_iteration(X, y, pbar, raise_errors=raise_errors)
             if search_iteration_plot:
                 search_iteration_plot.update()
+
         desc = "✔ Optimization finished"
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
@@ -285,7 +311,7 @@ class AutoSearchBase:
         # propose the next best parameters for this piepline
         parameters = self._propose_parameters(self._next_pipeline_class)
 
-        # fit an score the pipeline
+        # fit and score the pipeline
         pipeline = self._next_pipeline_class(parameters=self._transform_parameters(self._next_pipeline_class, parameters, X.shape[1]))
 
         if self.start_iteration_callback:
@@ -299,12 +325,52 @@ class AutoSearchBase:
 
         evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
 
+        scores = pd.Series([fold["score"] for fold in evaluation_results['cv_data']])
+        score = scores.mean()
+
+        if self.objective.greater_is_better:
+            score_to_minimize = -score
+        else:
+            score_to_minimize = score
+
+        self.tuners[pipeline.name].add(parameters, score_to_minimize)
+
         # save the result and continue
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=evaluation_results['training_time'],
                          cv_data=evaluation_results['cv_data'])
 
+        desc = "✔" + desc[1:]
+        pbar.set_description_str(desc=desc, refresh=True)
+        if self.verbose:  # To force new line between progress bar iterations
+            print('')
+
+    def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
+        if self.problem_type == ProblemTypes.BINARY:
+            strategy_dict = {"strategy": "random_weighted"}
+            baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
+        elif self.problem_type == ProblemTypes.MULTICLASS:
+            strategy_dict = {"strategy": "random_weighted"}
+            baseline = ModeBaselineMulticlassPipeline(parameters={"Baseline Classifier": strategy_dict})
+        elif self.problem_type == ProblemTypes.REGRESSION:
+            strategy_dict = {"strategy": "mean"}
+            baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
+
+        if self.start_iteration_callback:
+            self.start_iteration_callback(baseline, baseline.parameters)
+
+        desc = "▹ {}: ".format(baseline.name)
+        if len(desc) > self._MAX_NAME_LEN:
+            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(self._MAX_NAME_LEN)
+        pbar.set_description_str(desc=desc, refresh=True)
+
+        baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
+        self._add_result(trained_pipeline=baseline,
+                         parameters=strategy_dict,
+                         training_time=baseline_results['training_time'],
+                         cv_data=baseline_results['cv_data'])
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
@@ -336,7 +402,10 @@ class AutoSearchBase:
                     pipeline.threshold = 0.5
                     if self.optimize_thresholds and self.objective.can_optimize_threshold:
                         y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                        y_predict_proba = y_predict_proba[:, 1]
+                        if isinstance(y_predict_proba, pd.DataFrame):
+                            y_predict_proba = y_predict_proba.iloc[:, 1]
+                        else:
+                            y_predict_proba = y_predict_proba[:, 1]
                         pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
@@ -367,12 +436,6 @@ class AutoSearchBase:
         scores = pd.Series([fold["score"] for fold in cv_data])
         score = scores.mean()
 
-        if self.objective.greater_is_better:
-            score_to_minimize = -score
-        else:
-            score_to_minimize = score
-
-        self.tuners[trained_pipeline.name].add(parameters, score_to_minimize)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         high_variance_cv = (scores.std() / scores.mean()) > .2
@@ -384,6 +447,7 @@ class AutoSearchBase:
         self.results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
+            "pipeline_class": type(trained_pipeline),
             "pipeline_summary": pipeline_summary,
             "parameters": parameters,
             "score": score,

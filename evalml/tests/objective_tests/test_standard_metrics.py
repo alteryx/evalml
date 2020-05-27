@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
+from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
 from evalml.objectives import (
     F1,
+    MSE,
     AccuracyBinary,
     AccuracyMulticlass,
     BalancedAccuracyBinary,
@@ -11,6 +13,9 @@ from evalml.objectives import (
     F1Macro,
     F1Micro,
     F1Weighted,
+    MCCBinary,
+    MCCMulticlass,
+    MeanSquaredLogError,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -18,7 +23,9 @@ from evalml.objectives import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted
+    RecallWeighted,
+    RootMeanSquaredError,
+    RootMeanSquaredLogError
 )
 from evalml.objectives.utils import OPTIONS
 
@@ -89,6 +96,14 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
+
+
+def test_negative_with_log():
+    y_predicted = np.array([-1, 10, 30])
+    y_true = np.array([-1, 0, 1])
+    for objective in [MeanSquaredLogError(), RootMeanSquaredLogError()]:
+        with pytest.raises(ValueError, match="Mean Squared Logarithmic Error cannot be used when targets contain negative values."):
+            objective.score(y_true, y_predicted)
 
 
 def test_binary_more_than_two_unique_values():
@@ -332,3 +347,59 @@ def test_recall_weighted_multi():
 
     assert obj.score(np.array([0, 0]),
                      np.array([1, 2])) == pytest.approx(0.0, EPS)
+
+
+def test_log_linear_model():
+    obj = MeanSquaredLogError()
+    root_obj = RootMeanSquaredLogError()
+
+    s1_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s1_actual = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    s2_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2_actual = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+    s3_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s3_actual = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+
+    assert obj.score(s1_predicted, s1_actual) == pytest.approx(0.562467324910)
+    assert obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert obj.score(s3_predicted, s3_actual) == pytest.approx(0.617267976207983)
+
+    assert root_obj.score(s1_predicted, s1_actual) == pytest.approx(np.sqrt(0.562467324910))
+    assert root_obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert root_obj.score(s3_predicted, s3_actual) == pytest.approx(np.sqrt(0.617267976207983))
+
+
+def test_mse_linear_model():
+    obj = MSE()
+    root_obj = RootMeanSquaredError()
+
+    s1_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s1_actual = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    s2_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s2_actual = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+
+    s3_predicted = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
+    s3_actual = np.array([2, 2, 2, 0, 0, 0, 1, 1, 1])
+
+    assert obj.score(s1_predicted, s1_actual) == pytest.approx(5. / 3.)
+    assert obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert obj.score(s3_predicted, s3_actual) == pytest.approx(2.)
+
+    assert root_obj.score(s1_predicted, s1_actual) == pytest.approx(np.sqrt(5. / 3.))
+    assert root_obj.score(s2_predicted, s2_actual) == pytest.approx(0)
+    assert root_obj.score(s3_predicted, s3_actual) == pytest.approx(np.sqrt(2.))
+
+
+def test_mcc_catches_warnings():
+    y_true = [1, 0, 1, 1]
+    y_predicted = [0, 0, 0, 0]
+    with pytest.warns(RuntimeWarning) as record:
+        sk_matthews_corrcoef(y_true, y_predicted)
+        assert "invalid value" in str(record[-1].message)
+    with pytest.warns(None) as record:
+        MCCBinary().objective_function(y_true, y_predicted)
+        MCCMulticlass().objective_function(y_true, y_predicted)
+        assert len(record) == 0

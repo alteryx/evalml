@@ -5,7 +5,13 @@ import pytest
 
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
-from evalml.pipelines import PipelineBase, get_pipelines
+from evalml.exceptions import ObjectiveNotFoundError
+from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
+from evalml.pipelines import (
+    LinearRegressionPipeline,
+    PipelineBase,
+    get_pipelines
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -103,6 +109,7 @@ def test_early_stopping(caplog):
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
+        mock_results['pipeline_results'][id]['pipeline_class'] = LinearRegressionPipeline
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
@@ -155,3 +162,12 @@ def test_plot_iterations_max_time(X_y):
     assert y.is_monotonic_increasing
     assert len(x) > 0
     assert len(y) > 0
+
+
+def test_log_metrics_only_passed_directly():
+    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
+        AutoRegressionSearch(additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
+
+    ar = AutoRegressionSearch(additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
+    assert ar.additional_objectives[0].name == 'Root Mean Squared Log Error'
+    assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
