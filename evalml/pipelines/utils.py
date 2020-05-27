@@ -29,9 +29,9 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   RFMulticlassClassificationPipeline,
                   XGBoostBinaryPipeline,
                   XGBoostMulticlassPipeline,
+                  CatBoostRegressionPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
-                  CatBoostRegressionPipeline,
                   XGBoostRegressionPipeline]
 
 
