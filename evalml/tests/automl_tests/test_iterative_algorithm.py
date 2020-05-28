@@ -8,7 +8,8 @@ from evalml.automl.automl_algorithm import (
     IterativeAlgorithm
 )
 from evalml.objectives import F1, LogLossBinary
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.problem_types import ProblemTypes
 
 
 def test_iterative_algorithm_init_iterative():
@@ -20,6 +21,7 @@ def test_iterative_algorithm_init():
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.can_continue()
+    assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY)
 
 
 @pytest.fixture
