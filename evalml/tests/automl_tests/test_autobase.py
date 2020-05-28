@@ -102,7 +102,6 @@ def test_pipeline_score_raises(mock_score, X_y, caplog):
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0].get('cv_data', {})
-    scores = cv_scores_all[0]['all_objective_scores']
     assert np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
 
@@ -340,3 +339,21 @@ def test_automl_tuner_exception(mock_is_search_space_exhausted, X_y):
     clf = AutoRegressionSearch(objective="R2", tuner_class=RandomSearchTuner)
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
+
+
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.can_continue')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_algorithm(mock_fit, mock_score, mock_algo_can_continue, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    mock_algo_can_continue.return_value = False
+    automl = AutoClassificationSearch(max_pipelines=5)
+    automl.search(X, y)
+    assert automl.data_check_results is None
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert mock_algo_can_continue.call_count == 1
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    assert pipeline_results[0].get('score') == 1.0

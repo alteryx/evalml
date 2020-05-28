@@ -49,3 +49,4 @@ def test_automl_algorithm_dummy():
     assert algo.pipeline_number == 3
     assert algo.batch_number == 3
     assert not algo.can_continue()
+    assert algo.next_batch() is None

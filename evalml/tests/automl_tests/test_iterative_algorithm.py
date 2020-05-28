@@ -134,3 +134,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 3 * algo.samples_per_batch
     assert algo.batch_number == 4
     assert not algo.can_continue()
+
+    with pytest.raises(StopIteration, match='No more batches available'):
+        algo.next_batch()
