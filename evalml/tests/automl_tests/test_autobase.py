@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,10 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
-from evalml.pipelines import LogisticRegressionBinaryPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    LogisticRegressionBinaryPipeline
+)
 from evalml.tuners import RandomSearchTuner
 
 
@@ -293,3 +296,29 @@ def test_automl_str_no_param_search():
             assert value in str_rep
     assert "Possible Pipelines" in str_rep
     assert "Search Results" not in str_rep
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.automl.auto_search_base.get_pipelines')
+def test_automl_feature_selection(mock_get_pipelines, mock_score, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    class MockFeatureSelectionPipeline(BinaryClassificationPipeline):
+        component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+
+        def fit(self, X, y):
+            """Mock fit, noop"""
+
+    allowed_pipelines = [MockFeatureSelectionPipeline]
+    mock_get_pipelines.return_value = allowed_pipelines
+    start_iteration_callback = MagicMock()
+    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback)
+    assert automl.possible_pipelines == allowed_pipelines
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    proposed_parameters = start_iteration_callback.call_args[0][1]
+    assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
+    assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
+    assert proposed_parameters['RF Classifier Select From Model']['n_jobs'] == -1
