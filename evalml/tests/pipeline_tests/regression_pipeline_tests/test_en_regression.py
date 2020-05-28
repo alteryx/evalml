@@ -1,14 +1,7 @@
 from unittest.mock import patch
 
-import category_encoders as ce
 import numpy as np
-import pandas as pd
-from sklearn.feature_selection import SelectFromModel
-from sklearn.impute import SimpleImputer
-from sklearn.linear_model import ElasticNet
-from sklearn.pipeline import Pipeline
 
-from evalml.objectives import R2
 from evalml.pipelines import ENRegressionPipeline
 
 
@@ -58,77 +51,40 @@ def test_summary():
     assert ENRegressionPipeline.summary == 'Elastic Net Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
 
 
-def test_en_regression(X_y_categorical_regression):
-    X, y = X_y_categorical_regression
+@patch('evalml.pipelines.components.Estimator.predict')
+@patch('evalml.pipelines.PipelineBase._transform')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_en_regression_pipeline_predict(mock_fit, mock_transform, mock_predict,
+                                        X_y, dummy_en_regression_pipeline_class):
+    X, y = X_y
+    en_pipeline = dummy_en_regression_pipeline_class(parameters={})
+    # test no objective passed and no custom threshold uses underlying estimator's predict method
+    en_pipeline.predict(X)
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
 
-    imputer = SimpleImputer(strategy='most_frequent')
-    enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = ElasticNet(alpha=0.5,
-                           l1_ratio=0.5,
-                           random_state=0,
-                           normalize=False,
-                           max_iter=1000
-                           )
-    feature_selection = SelectFromModel(estimator=estimator,
-                                        max_features=max(1, int(1 * X.shape[1])),
-                                        threshold=-np.inf)
-    sk_pipeline = Pipeline([("encoder", enc),
-                            ("imputer", imputer),
-                            ("feature_selection", feature_selection),
-                            ("estimator", estimator)])
-    sk_pipeline.fit(X, y)
-    sk_score = sk_pipeline.score(X, y)
+    # test objective passed but no custom threshold uses underlying estimator's predict method
+    en_pipeline.predict(X, 'precision')
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
 
-    objective = R2()
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
-        },
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 10,
-            "max_depth": 3,
-        },
-        'Elastic Net Regressor': {
-            "alpha": 0.5,
-            "l1_ratio": 0.5,
-        }
-    }
-    clf = ENRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    clf_scores = clf.score(X, y, [objective])
-    y_pred = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
-    np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
+    # test custom threshold set but no objective passed
+    mock_predict.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X)
+    mock_predict.assert_called()
 
-    # testing objective parameter passed in does not change results
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    # test custom threshold set but no objective passed
+    mock_predict.reset_mock()
+    mock_predict.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X)
+    mock_predict.assert_called()
 
-
-def test_rfr_input_feature_names(X_y_reg):
-    X, y = X_y_reg
-    # create a list of column names
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 20
-        },
-        'Elastic Net Regressor': {
-            "alpha": 0.5,
-            "l1_ratio": 0.5,
-        }
-    }
-    clf = ENRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
-    for col_name in clf.feature_importances["feature"]:
-        assert "col_" in col_name
+    # test custom threshold set and objective passed
+    mock_predict.reset_mock()
+    mock_predict.reset_mock()
+    mock_predict.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    en_pipeline.threshold = 0.6
+    en_pipeline.predict(X, 'precision')
+    mock_predict.assert_called()

@@ -7,7 +7,13 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import ENBinaryPipeline, ENMulticlassPipeline, BinaryClassificationPipeline, RegressionPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    ENBinaryPipeline,
+    ENMulticlassPipeline,
+    ENRegressionPipeline,
+    RegressionPipeline
+)
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -119,6 +125,7 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
 
     return MockBinaryClassificationPipeline
 
+
 @pytest.fixture
 def dummy_en_multi_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
@@ -140,8 +147,9 @@ def dummy_en_binary_pipeline_class(dummy_classifier_estimator_class):
 
     return MockENBinaryClassificationPipeline
 
+
 @pytest.fixture
-def dummy_regression_pipeline():
+def dummy_regressor_estimator_class():
     class MockRegressor(Estimator):
         name = "Mock Regressor"
         model_family = ModelFamily.NONE
@@ -150,6 +158,24 @@ def dummy_regression_pipeline():
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
 
+    return MockRegressor
+
+
+@pytest.fixture
+def dummy_regression_pipeline(dummy_regressor_estimator_class):
+    MockRegressor = dummy_regressor_estimator_class
+
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor()]
     return MockRegressionPipeline(parameters={})
+
+
+@pytest.fixture
+def dummy_en_regression_pipeline_class(dummy_regressor_estimator_class):
+    MockRegressor = dummy_regressor_estimator_class
+
+    class MockENRegressionPipeline(ENRegressionPipeline):
+        estimator = MockRegressor
+        component_graph = [MockRegressor()]
+
+    return MockENRegressionPipeline

@@ -1,4 +1,4 @@
-gimport numpy as np
+import numpy as np
 from sklearn.linear_model import ElasticNet as SKElasticNetRegressor
 
 from evalml.model_family import ModelFamily
