@@ -104,5 +104,4 @@ def test_xgr_input_feature_names(X_y_categorical_regression):
     }
     clf = XGBoostRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
