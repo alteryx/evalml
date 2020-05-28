@@ -24,16 +24,10 @@ def test_init(X_y):
     X, y = X_y
 
     automl = AutoRegressionSearch(objective="R2", max_pipelines=3, n_jobs=4)
-
-    assert automl.n_jobs == 4
-
-    # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
-
     automl.search(X, y)
 
+    assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
-
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
 

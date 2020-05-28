@@ -1,4 +1,5 @@
 import time
+import warnings
 from collections import OrderedDict
 from sys import stdout
 
@@ -405,7 +406,9 @@ class AutoSearchBase:
         cv_score = cv_scores.mean()
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
-        high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
 
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
@@ -491,7 +494,7 @@ class AutoSearchBase:
             std = all_objective_scores[c].std(axis=0)
             all_objective_scores.loc["mean", c] = mean
             all_objective_scores.loc["std", c] = std
-            all_objective_scores.loc["coef of var", c] = std / mean
+            all_objective_scores.loc["coef of var", c] = std / mean if abs(mean) > 0 else np.inf
 
         all_objective_scores = all_objective_scores.fillna("-")
 
