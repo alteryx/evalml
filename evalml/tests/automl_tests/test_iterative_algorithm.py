@@ -95,12 +95,12 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     for score, pipeline in zip(scores, pipelines):
         algo.add_result(score, pipeline)
 
-    # subsequent batches contain samples_per_batch copies of one pipeline, moving from best to worst from the first batch
+    # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     next_batch = algo.next_batch()
-    assert len(next_batch) == algo.samples_per_batch
+    assert len(next_batch) == algo.pipelines_per_batch
     cls = dummy_binary_pipeline_classes[0]
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + algo.samples_per_batch
+    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + algo.pipelines_per_batch
     assert algo.batch_number == 2
     scores = -np.arange(0, len(next_batch))
     pipelines = [cls({}) for pipeline in next_batch]
@@ -108,10 +108,10 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
         algo.add_result(score, pipeline)
 
     next_batch = algo.next_batch()
-    assert len(next_batch) == algo.samples_per_batch
+    assert len(next_batch) == algo.pipelines_per_batch
     cls = dummy_binary_pipeline_classes[1]
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 2 * algo.samples_per_batch
+    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 2 * algo.pipelines_per_batch
     assert algo.batch_number == 3
     scores = -np.arange(0, len(next_batch))
     pipelines = [cls({}) for pipeline in next_batch]
@@ -119,10 +119,10 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
         algo.add_result(score, pipeline)
 
     next_batch = algo.next_batch()
-    assert len(next_batch) == algo.samples_per_batch
+    assert len(next_batch) == algo.pipelines_per_batch
     cls = dummy_binary_pipeline_classes[2]
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 3 * algo.samples_per_batch
+    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 3 * algo.pipelines_per_batch
     assert algo.batch_number == 4
 
     with pytest.raises(StopIteration, match='No more batches available'):

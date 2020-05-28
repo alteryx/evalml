@@ -48,17 +48,28 @@ class AutoMLAlgorithm(ABC):
 
     @abstractmethod
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate"""
+        """Get the next batch of pipelines to evaluate
+
+        Returns:
+            list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+        """
 
     def add_result(self, score, pipeline):
-        """Register results from evaluating a pipeline"""
+        """Register results from evaluating a pipeline
+
+        Arguments:
+            score (float): The score obtained by this pipeline on the primary objective.
+            pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
+        """
         score_to_minimize = -score if self.objective.greater_is_better else score
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property
     def pipeline_number(self):
+        """Returns the number of pipelines which have been recommended so far."""
         return self._pipeline_number
 
     @property
     def batch_number(self):
+        """Returns the number of batches which have been recommended so far."""
         return self._batch_number
