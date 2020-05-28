@@ -35,6 +35,7 @@ def test_get_objective():
 
 
 def test_get_objectives_types():
+
     assert len(get_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_objectives(ProblemTypes.BINARY)) == 7
-    assert len(get_objectives(ProblemTypes.REGRESSION)) == 6
+    assert len(get_objectives(ProblemTypes.REGRESSION)) == 7
