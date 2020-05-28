@@ -124,6 +124,8 @@ Pipeline Graph Utils
     :toctree: generated
     :nosignatures:
 
+    precision_recall_curve
+    graph_precision_recall_curve
     roc_curve
     graph_roc_curve
     confusion_matrix

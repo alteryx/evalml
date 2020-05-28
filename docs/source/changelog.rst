@@ -8,6 +8,7 @@ Changelog
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
         * Add Elastic Net as a pipeline option :pr:`812`
+        * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
     * Fixes
         * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
@@ -36,6 +37,7 @@ Changelog
         * Updated AutoBase __str__ test to include no parameters case :pr:`783`
         * If codecov fails to upload, fail build :pr:`810`
         * Updated Python version of dependency action :pr:`816`
+        * Update the dependency update bot to use a suffix when creating branches :pr:`817`
 
 .. warning::
 
