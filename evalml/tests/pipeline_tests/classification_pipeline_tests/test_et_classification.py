@@ -1,17 +1,28 @@
-import category_encoders as ce
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
-from sklearn.feature_selection import SelectFromModel
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
 
 from evalml.objectives import Precision, PrecisionMicro
 from evalml.pipelines import (
     ETBinaryClassificationPipeline,
     ETMulticlassClassificationPipeline
 )
+
+
+def make_mock_et_binary_pipeline():
+    class MockETBinaryPipeline(ETBinaryClassificationPipeline):
+        component_graph = ['Extra Trees Classifier']
+
+    return MockETBinaryPipeline({})
+
+
+def make_mock_et_multiclass_pipeline():
+    class MockETMulticlassPipeline(ETMulticlassClassificationPipeline):
+        component_graph = ['Extra Trees Classifier']
+
+    return MockETMulticlassPipeline({})
 
 
 def test_et_init(X_y):
@@ -105,59 +116,36 @@ def test_et_objective_tuning(X_y):
         np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
 
 
-def test_et_multi(X_y_multi):
+@patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.predict')
+def test_et_binary_score(mock_predict, mock_fit, X_y):
+    X, y = X_y
+
+    mock_predict.return_value = y
+    clf = make_mock_et_binary_pipeline()
+    clf.fit(X, y)
+
+    objective_names = ['F1']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+
+    assert scores == {'F1': 1.0}
+
+
+@patch('evalml.pipelines.classification.ETMulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.classification.ETMulticlassClassificationPipeline.predict')
+def test_et_multiclass_score(mock_predict, mock_fit, X_y_multi):
     X, y = X_y_multi
 
-    # create sklearn pipeline
-    imputer = SimpleImputer(strategy='mean')
-    enc = ce.OneHotEncoder(use_cat_names=True, return_df=True)
-    estimator = ExtraTreesClassifier(random_state=0,
-                                     n_estimators=10,
-                                     max_features="auto",
-                                     max_depth=None,
-                                     n_jobs=-1)
-    rf_estimator = RandomForestClassifier(random_state=0, n_estimators=10, max_depth=3)
-    feature_selection = SelectFromModel(estimator=rf_estimator,
-                                        max_features=max(1, int(1 * len(X[0]))),
-                                        threshold=-np.inf)
-    sk_pipeline = Pipeline([("encoder", enc),
-                            ("imputer", imputer),
-                            ("feature_selection", feature_selection),
-                            ("estimator", estimator)])
-    sk_pipeline.fit(X, y)
-    sk_score = sk_pipeline.score(X, y)
-
-    objective = PrecisionMicro()
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 10
-        },
-        'Extra Trees Classifier': {
-            "n_estimators": 10,
-            "max_features": "auto"
-        }
-    }
-    clf = ETMulticlassClassificationPipeline(parameters=parameters)
+    mock_predict.return_value = y
+    clf = make_mock_et_multiclass_pipeline()
     clf.fit(X, y)
-    clf_scores = clf.score(X, y, [objective])
-    y_pred = clf.predict(X)
 
-    assert((y_pred == sk_pipeline.predict(X)).all())
-    assert (sk_score == clf_scores[objective.name])
-    assert len(np.unique(y_pred)) == 3
-    assert len(clf.feature_importances) == len(X[0])
-    assert not clf.feature_importances.isnull().all().all()
+    objective_names = ['f1_micro']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
 
-    # testing objective parameter passed in does not change results
-    clf = ETMulticlassClassificationPipeline(parameters=parameters)
-    clf.fit(X, y)
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    assert scores == {'F1 Micro': 1.0}
 
 
 def test_et_input_feature_names(X_y):

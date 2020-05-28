@@ -1,14 +1,8 @@
 from unittest.mock import patch
 
-import category_encoders as ce
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
-from sklearn.feature_selection import SelectFromModel
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
 
-from evalml.objectives import R2
 from evalml.pipelines import ETRegressionPipeline
 
 
@@ -69,7 +63,7 @@ def test_summary():
 @patch('evalml.pipelines.regression.ETRegressionPipeline.predict')
 def test_et_score(mock_predict, mock_fit, X_y):
     X, y = X_y
-    
+
     mock_predict.return_value = y
     clf = make_mock_et_regression_pipeline()
     clf.fit(X, y)
@@ -81,7 +75,7 @@ def test_et_score(mock_predict, mock_fit, X_y):
     assert scores == {'R2': 1.0}
 
 
-def test_etr_input_feature_names(X_y_reg):
+def test_et_input_feature_names(X_y_reg):
     X, y = X_y_reg
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
