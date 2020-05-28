@@ -5,6 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class LabelLeakageDataCheck(DataCheck):
+    """Check if any of the features are highly correlated with the target."""
 
     def __init__(self, pct_corr_threshold=0.95):
         """Check if any of the features are highly correlated with the target.

@@ -5,6 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class HighlyNullDataCheck(DataCheck):
+    """Checks if there are any highly-null columns in the input."""
 
     def __init__(self, pct_null_threshold=0.95):
         """Checks if there are any highly-null columns in the input.

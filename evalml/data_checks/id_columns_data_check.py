@@ -5,6 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class IDColumnsDataCheck(DataCheck):
+    """Check if any of the features are likely to be ID columns."""
 
     def __init__(self, id_threshold=1.0):
         """Check if any of the features are likely to be ID columns.

@@ -8,10 +8,11 @@ from evalml.utils import get_random_state
 
 
 class OutliersDataCheck(DataCheck):
+    """Checks if there are any outliers in input data by using an Isolation Forest to obtain the anomaly score
+        of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers."""
 
     def __init__(self, random_state=0):
-        """Checks if there are any outliers in a DataFrame by using first Isolation Forest to obtain the anomaly score
-        of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
+        """Checks if there are any outliers in the input data.
 
         Arguments:
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
@@ -19,7 +20,7 @@ class OutliersDataCheck(DataCheck):
         self.random_state = get_random_state(random_state)
 
     def validate(self, X, y=None):
-        """Checks if there are any outliers in a dataframe by using first Isolation Forest to obtain the anomaly score
+        """Checks if there are any outliers in a dataframe by using an Isolation Forest to obtain the anomaly score
         of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
 
         Arguments:
