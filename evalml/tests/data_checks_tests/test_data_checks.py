@@ -46,11 +46,16 @@ def test_empty_data_checks(X_y):
 
 
 def test_default_data_checks(X_y):
-    X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+    X = pd.DataFrame({'lots_of_null': [None, None, None, None, "hi"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
-                      'no_null': [1, 2, 3, 4, 5]})
+                      'no_null': [1, 2, 2, 4, 4],
+                      'id': [0, 1, 2, 3, 4],
+                      'has_label_leakage': [100, 200, 100, 200, 100]})
+    y = pd.Series([1, 2, 1, 2, 1])
     data_checks = DefaultDataChecks()
-    messages = data_checks.validate(X)
+    messages = data_checks.validate(X, y)
     assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck")]
+                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                        DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                        DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
