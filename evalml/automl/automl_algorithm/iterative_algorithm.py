@@ -59,14 +59,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             raise StopIteration('No more batches available.')
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [self._init_pipeline(cls, {}) for cls in self.allowed_pipelines]
+            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
+                          for pipeline_class in self.allowed_pipelines]
         else:
             _, pipeline_class = self._pop_best_in_batch()
             if pipeline_class is None:
                 raise AutoMLAlgorithmException('Some results are needed before the next automl batch can be computed.')
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
-                next_batch.append(self._init_pipeline(pipeline_class, proposed_parameters))
+                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -94,11 +95,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if score < self._first_batch_results[best_idx][0]:
                 best_idx = idx
         return self._first_batch_results.pop(best_idx)
-
-    def _init_pipeline(self, pipeline_class, parameters):
-        """Given a pipeline class and a parameters dict, return a pipeline instance ready for training."""
-        parameters = self._transform_parameters(pipeline_class, parameters)
-        return pipeline_class(parameters=parameters)
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
