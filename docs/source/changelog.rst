@@ -25,6 +25,7 @@ Changelog
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
+        * Removed feature selection from pipelines :pr:`819`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
