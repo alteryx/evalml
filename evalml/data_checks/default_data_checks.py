@@ -1,9 +1,11 @@
 from .data_checks import DataChecks
 from .highly_null_data_check import HighlyNullDataCheck
+from .id_columns_data_check import IDColumnsDataCheck
+from .label_leakage_data_check import LabelLeakageDataCheck
 
 
 class DefaultDataChecks(DataChecks):
-    """A collection of basic data checks that is used by AutoML by default."""
+    """A collection of basic data checks that is used by AutoML by default. Includes HighlyNullDataCheck, IDColumnsDataCheck, and LabelLeakageDataCheck."""
 
     def __init__(self, data_checks=None):
         """
@@ -12,4 +14,4 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             data_checks (list (DataCheck)): Ignored.
         """
-        self.data_checks = [HighlyNullDataCheck()]
+        self.data_checks = [HighlyNullDataCheck(), IDColumnsDataCheck(), LabelLeakageDataCheck()]
