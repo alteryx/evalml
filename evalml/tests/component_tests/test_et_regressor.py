@@ -4,7 +4,7 @@ from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators.regressors import ExtraTreesRegressor
+from evalml.pipelines import ExtraTreesRegressor
 from evalml.problem_types import ProblemTypes
 
 

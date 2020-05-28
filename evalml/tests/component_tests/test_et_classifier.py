@@ -4,7 +4,7 @@ from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators.classifiers import ExtraTreesClassifier
+from evalml.pipelines import ExtraTreesClassifier
 from evalml.problem_types import ProblemTypes
 
 
