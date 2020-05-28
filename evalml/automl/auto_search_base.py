@@ -385,6 +385,7 @@ class AutoSearchBase:
                 scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
             except Exception as e:
+                logger.error("Exception during automl search: {}".format(str(e)))
                 if raise_errors:
                     raise e
                 if pbar:

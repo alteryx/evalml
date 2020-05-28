@@ -54,16 +54,21 @@ def test_search_order(X_y):
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipeline_fit_raises(mock_fit, X_y):
+def test_pipeline_fit_raises(mock_fit, X_y, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
     with pytest.raises(Exception, match=msg):
-        automl.search(X, y)
+        automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Exception during automl search' in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
 
@@ -76,13 +81,40 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert np.isnan(score)
 
 
-@patch('evalml.objectives.AUC.score')
-def test_pipeline_score_raises(mock_score, X_y):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_pipeline_score_raises(mock_score, X_y, caplog):
     msg = 'all your model are belong to us'
     mock_score.side_effect = Exception(msg)
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
-    automl.search(X, y)
+    with pytest.raises(Exception, match=msg):
+        automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Exception during automl search' in out
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 0
+
+    caplog.clear()
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Exception during automl search' in out
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    scores = cv_scores_all[0]['all_objective_scores']
+    assert np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+
+
+@patch('evalml.objectives.AUC.score')
+def test_objective_score_raises(mock_score, X_y, caplog):
+    msg = 'all your model are belong to us'
+    mock_score.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0].get('cv_data', {})
@@ -91,8 +123,11 @@ def test_pipeline_score_raises(mock_score, X_y):
     assert np.isnan(auc_score)
     assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
+    caplog.clear()
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0].get('cv_data', {})

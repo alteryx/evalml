@@ -187,25 +187,11 @@ def test_categorical_classification(X_y_categorical_classification):
 def test_random_state(X_y):
     X, y = X_y
 
-    fc = FraudCost(retry_percentage=.5,
-                   interchange_fee=.02,
-                   fraud_payout_percentage=.75,
-                   amount_col=10)
-
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl.search(X, y)
 
     automl_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl_1.search(X, y)
-    assert automl.rankings.equals(automl_1.rankings)
-
-    # test an objective that requires fitting
-    automl = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl.search(X, y)
-
-    automl_1 = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl_1.search(X, y)
-
     assert automl.rankings.equals(automl_1.rankings)
 
 
