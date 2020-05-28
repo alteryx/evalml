@@ -245,6 +245,7 @@ class AutoSearchBase:
                 try:
                     current_batch_pipelines = automl_algorithm.next_batch()
                 except StopIteration:
+                    logger.info('AutoML Algorithm out of recommendations, ending')
                     break
             pipeline = current_batch_pipelines.pop(0)
             parameters = pipeline.parameters
