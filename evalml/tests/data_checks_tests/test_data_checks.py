@@ -46,7 +46,7 @@ def test_empty_data_checks(X_y):
 
 
 def test_default_data_checks(X_y):
-    X = pd.DataFrame({'lots_of_null': [None, None, None, None, "hi"],
+    X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 2, 4, 4],
