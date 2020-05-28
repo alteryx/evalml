@@ -150,7 +150,7 @@ def test_plot_iterations_max_time(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoRegressionSearch(max_time=10)
+    automl = AutoRegressionSearch(max_time=10, random_state=1)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
