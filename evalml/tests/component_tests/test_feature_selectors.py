@@ -1,28 +1,25 @@
-import numpy as np
-import pytest
-
 from evalml.pipelines.components import (
     ComponentBase,
-    RFClassifierSelectFromModel, 
+    RFClassifierSelectFromModel,
     RFRegressorSelectFromModel
 )
 
 
 def make_rf_feature_selectors():
     rf_classifier = RFClassifierSelectFromModel(
-        number_features=5, 
-        n_estimators=10, 
+        number_features=5,
+        n_estimators=10,
         max_depth=7,
         percent_features=0.5,
         threshold=0,
-        )
+    )
     rf_regressor = RFRegressorSelectFromModel(
-        number_features=5, 
-        n_estimators=10, 
+        number_features=5,
+        n_estimators=10,
         max_depth=7,
         percent_features=0.5,
         threshold=0,
-        )
+    )
     return rf_classifier, rf_regressor
 
 
