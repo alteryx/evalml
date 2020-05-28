@@ -1,8 +1,6 @@
 import category_encoders as ce
 import numpy as np
 from pytest import importorskip
-from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
-from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
@@ -57,7 +55,6 @@ def test_xgboost_regression(X_y_reg):
                                  max_depth=3,
                                  min_child_weight=1,
                                  n_estimators=10)
-    rf_estimator = SKRandomForestRegressor(random_state=get_random_state(random_seed), n_estimators=10, max_depth=3)
     sk_pipeline = Pipeline([("encoder", enc),
                             ("imputer", imputer),
                             ("estimator", estimator)])
