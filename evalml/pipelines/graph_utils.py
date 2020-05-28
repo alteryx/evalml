@@ -22,7 +22,7 @@ def precision_recall_curve(y_true, y_pred_proba):
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
-        
+
                   * `precision`: Precision values.
                   * `recall`: Recall values.
                   * `thresholds`: Threshold values used to produce the precision and recall.
