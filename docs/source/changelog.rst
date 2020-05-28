@@ -52,7 +52,8 @@ Changelog
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
     * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
-    * `Recall` disallowed as an objective for AutoML :pr:`784`
+    * ``Recall`` disallowed as an objective for AutoML :pr:`784`
+    * ``AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
 
 
 **v0.9.0 Apr. 27, 2020**
