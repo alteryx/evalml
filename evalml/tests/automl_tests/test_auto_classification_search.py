@@ -83,8 +83,9 @@ def test_init_model_families(mock_algo_init, X_y):
     with pytest.raises(Exception, match='mock algo init'):
         automl.search(X, y)
     assert mock_algo_init.call_count == 1
-    assert mock_algo_init.call_args.kwargs['max_pipelines'] == 1
-    assert mock_algo_init.call_args.kwargs['allowed_model_families'] == model_families
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 1
+    assert kwargs['allowed_model_families'] == model_families
 
 
 def test_max_pipelines(X_y):
