@@ -341,19 +341,19 @@ def test_automl_tuner_exception(mock_is_search_space_exhausted, X_y):
         clf.search(X, y)
 
 
-@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.can_continue')
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_algorithm(mock_fit, mock_score, mock_algo_can_continue, X_y):
+def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
-    mock_algo_can_continue.return_value = False
+    mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     automl = AutoClassificationSearch(max_pipelines=5)
     automl.search(X, y)
     assert automl.data_check_results is None
     mock_fit.assert_called()
     mock_score.assert_called()
-    assert mock_algo_can_continue.call_count == 1
+    assert mock_algo_next_batch.call_count == 1
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     assert pipeline_results[0].get('score') == 1.0

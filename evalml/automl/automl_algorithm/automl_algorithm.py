@@ -23,7 +23,7 @@ class AutoMLAlgorithm(ABC):
                  random_state=0):
         """This class represents an automated machine learning (AutoML) algorithm. It encapsulates the decision-making logic behind an automl search, by both deciding which pipelines to evaluate next and by deciding what set of parameters to configure the pipeline with.
 
-        To use this interface, you must define a next_batch method which returns the next group of pipelines to evaluate on the training data. That method may access state and results recorded from the previous batches, although that information is not tracked in a general way in this base class. You must also define a can_continue method which tells the caller whether the automl algorithm has more pipelines to recommend for evaluation. Finally, overriding add_result is a convenient way to record pipeline evaluation info if necessary.
+        To use this interface, you must define a next_batch method which returns the next group of pipelines to evaluate on the training data. That method may access state and results recorded from the previous batches, although that information is not tracked in a general way in this base class. Overriding add_result is a convenient way to record pipeline evaluation info if necessary.
 
         Arguments:
             objective (ObjectiveBase): An objective which defines the problem type and whether larger or smaller scores are more optimal
@@ -53,10 +53,6 @@ class AutoMLAlgorithm(ABC):
     @property
     def batch_number(self):
         return self._batch_number
-
-    @abstractmethod
-    def can_continue(self):
-        """Are there more pipelines to evaluate?"""
 
     @abstractmethod
     def next_batch(self):

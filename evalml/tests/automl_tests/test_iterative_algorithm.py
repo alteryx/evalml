@@ -21,7 +21,6 @@ def test_iterative_algorithm_init():
     algo = IterativeAlgorithm(F1)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.can_continue()
     assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY)
 
 
@@ -30,7 +29,6 @@ def test_iterative_algorithm_model_families():
     algo = IterativeAlgorithm(F1, allowed_model_families=model_families)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.can_continue()
     assert algo.allowed_model_families == model_families
     assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families)
     with pytest.raises(TypeError, match='model_families parameter is not a list.'):
@@ -65,19 +63,16 @@ def test_iterative_algorithm_empty(mock_get_pipelines, dummy_binary_pipeline_cla
     mock_get_pipelines.assert_called_once()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.can_continue()
 
     next_batch = algo.next_batch()
     assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert algo.can_continue()
 
     with pytest.raises(AutoMLAlgorithmException, match='Some results are needed before the next automl batch can be computed.'):
         algo.next_batch()
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert algo.can_continue()
 
 
 @patch('evalml.automl.automl_algorithm.automl_algorithm.get_pipelines')
@@ -87,7 +82,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     mock_get_pipelines.assert_called_once()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.can_continue()
 
     # initial batch contains one of each pipeline
     next_batch = algo.next_batch()
@@ -95,7 +89,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert algo.can_continue()
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     pipelines = [cls({}) for cls in dummy_binary_pipeline_classes]
@@ -109,7 +102,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + algo.samples_per_batch
     assert algo.batch_number == 2
-    assert algo.can_continue()
     scores = -np.arange(0, len(next_batch))
     pipelines = [cls({}) for pipeline in next_batch]
     for score, pipeline in zip(scores, pipelines):
@@ -121,7 +113,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 2 * algo.samples_per_batch
     assert algo.batch_number == 3
-    assert algo.can_continue()
     scores = -np.arange(0, len(next_batch))
     pipelines = [cls({}) for pipeline in next_batch]
     for score, pipeline in zip(scores, pipelines):
@@ -133,7 +124,6 @@ def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_c
     assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 3 * algo.samples_per_batch
     assert algo.batch_number == 4
-    assert not algo.can_continue()
 
     with pytest.raises(StopIteration, match='No more batches available'):
         algo.next_batch()

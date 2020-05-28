@@ -242,9 +242,10 @@ class AutoSearchBase:
         current_batch_pipelines = []
         while self._check_stopping_condition(start):
             if len(current_batch_pipelines) == 0:
-                if not automl_algorithm.can_continue():
+                try:
+                    current_batch_pipelines = automl_algorithm.next_batch()
+                except StopIteration:
                     break
-                current_batch_pipelines = automl_algorithm.next_batch()
             pipeline = current_batch_pipelines.pop(0)
             parameters = pipeline.parameters
             pbar.update(1)

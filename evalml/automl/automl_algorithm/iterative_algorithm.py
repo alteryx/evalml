@@ -31,13 +31,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.number_features = number_features
         self._first_batch_results = []
 
-    def can_continue(self):
+    def _can_continue(self):
+        """Are there more pipelines to evaluate?"""
         max_pipeline_check = self._pipeline_number < (self.max_pipelines or np.inf)
         return max_pipeline_check and self._batch_number <= len(self.allowed_pipelines)
 
     def next_batch(self):
-        if not self.can_continue():
-            raise StopIteration('No more batches available')
+        if not self._can_continue():
+            raise StopIteration('No more batches available.')
         next_batch = []
         if self._batch_number == 0:
             next_batch = [self._init_pipeline(cls) for cls in self.allowed_pipelines]
