@@ -14,7 +14,7 @@ from evalml.data_checks import (
     EmptyDataChecks
 )
 from evalml.pipelines import BinaryClassificationPipeline
-from evalml.tuners import RandomSearchTuner
+from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
 def test_pipeline_limits(caplog, X_y):
@@ -295,3 +295,13 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
     assert proposed_parameters['RF Classifier Select From Model']['n_jobs'] == -1
+
+
+@patch('evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted')
+def test_automl_tuner_exception(mock_is_search_space_exhausted, X_y):
+    error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
+    mock_is_search_space_exhausted.side_effect = NoParamsException(error_text)
+    X, y = X_y
+    clf = AutoRegressionSearch(objective="R2", tuner_class=RandomSearchTuner)
+    with pytest.raises(NoParamsException, match=error_text):
+        clf.search(X, y)
