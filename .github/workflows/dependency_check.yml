@@ -25,5 +25,6 @@ jobs:
           body: "This is an auto-generated PR with dependency updates.
                  Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
           branch: dep-update
+          branch-suffix: short-commit-hash
           base: master
           reviewers: angela97lin, dsherry, jeremyliweishih
