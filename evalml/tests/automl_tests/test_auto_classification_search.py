@@ -18,11 +18,7 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import (
-    LogisticRegressionBinaryPipeline,
-    PipelineBase,
-    get_pipelines
-)
+from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
 from evalml.problem_types import ProblemTypes
 
 
@@ -78,12 +74,17 @@ def test_cv(X_y):
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
 
-def test_init_select_model_families():
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_init_model_families(mock_algo_init, X_y):
+    mock_algo_init.side_effect = Exception('mock algo init')
+    X, y = X_y
     model_families = [ModelFamily.RANDOM_FOREST]
-    automl = AutoClassificationSearch(allowed_model_families=model_families)
-
-    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
-    assert model_families == automl.possible_model_families
+    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=1)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 1
+    assert mock_algo_init.call_args.kwargs['max_pipelines'] == 1
+    assert mock_algo_init.call_args.kwargs['allowed_model_families'] == model_families
 
 
 def test_max_pipelines(X_y):
@@ -309,11 +310,6 @@ def test_describe_pipeline_objective_ordered(X_y, caplog):
     expected_objective_order = " ".join(objectives_names)
 
     assert expected_objective_order in out_stripped
-
-
-def test_model_families_as_list():
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        AutoClassificationSearch(objective='AUC', allowed_model_families='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():

@@ -7,6 +7,7 @@ from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
     IterativeAlgorithm
 )
+from evalml.model_family import ModelFamily
 from evalml.objectives import F1, LogLossBinary
 from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -22,6 +23,18 @@ def test_iterative_algorithm_init():
     assert algo.batch_number == 0
     assert algo.can_continue()
     assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY)
+
+
+def test_iterative_algorithm_model_families():
+    model_families = [ModelFamily.RANDOM_FOREST]
+    algo = IterativeAlgorithm(F1, allowed_model_families=model_families)
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert algo.can_continue()
+    assert algo.allowed_model_families == model_families
+    assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families)
+    with pytest.raises(TypeError, match='model_families parameter is not a list.'):
+        IterativeAlgorithm(F1, allowed_model_families='family')
 
 
 @pytest.fixture
