@@ -46,14 +46,6 @@ class AutoMLAlgorithm(ABC):
         self._pipeline_number = 0
         self._batch_number = 0
 
-    @property
-    def pipeline_number(self):
-        return self._pipeline_number
-
-    @property
-    def batch_number(self):
-        return self._batch_number
-
     @abstractmethod
     def next_batch(self):
         """Get the next batch of pipelines to evaluate"""
@@ -62,3 +54,11 @@ class AutoMLAlgorithm(ABC):
         """Register results from evaluating a pipeline"""
         score_to_minimize = -score if self.objective.greater_is_better else score
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
+
+    @property
+    def pipeline_number(self):
+        return self._pipeline_number
+
+    @property
+    def batch_number(self):
+        return self._batch_number
