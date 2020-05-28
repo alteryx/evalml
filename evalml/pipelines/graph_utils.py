@@ -21,7 +21,8 @@ def precision_recall_curve(y_true, y_pred_proba):
         y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
 
     Returns:
-        dict: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
+        list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
+        
                   * `precision`: Precision values.
                   * `recall`: Recall values.
                   * `thresholds`: Threshold values used to produce the precision and recall.
