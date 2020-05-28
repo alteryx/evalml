@@ -9,6 +9,7 @@ Changelog
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
         * Added new Pipeline option `ExtraTrees` :pr:`790`
         * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
+        * Added `AutoMLAlgorithm` class and `IterativeAlgorithm` impl, separated from `AutoSearchBase` :pr:`793`
     * Fixes
         * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
