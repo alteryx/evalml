@@ -299,8 +299,9 @@ def test_automl_str_no_param_search():
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.automl.auto_search_base.get_pipelines')
-def test_automl_feature_selection(mock_get_pipelines, mock_score, X_y):
+def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
