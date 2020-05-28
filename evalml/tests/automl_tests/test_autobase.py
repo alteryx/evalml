@@ -13,10 +13,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    LogisticRegressionBinaryPipeline
-)
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.tuners import RandomSearchTuner
 
 
@@ -54,24 +51,6 @@ def test_search_order(X_y):
     automl.search(X, y)
     correct_order = [0, 1, 2]
     assert automl.results['search_order'] == correct_order
-
-
-def test_transform_parameters():
-    automl = AutoClassificationSearch(max_pipelines=1, random_state=100, n_jobs=6)
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 8.444214828324364
-        }
-    }
-    parameters_dict = {
-        'Simple Imputer': {'impute_strategy': 'most_frequent'},
-        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
-    }
-    assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')

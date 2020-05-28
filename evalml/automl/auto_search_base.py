@@ -238,9 +238,11 @@ class AutoSearchBase:
         start = time.time()
         self._add_baseline_pipelines(X, y, pbar, raise_errors=raise_errors)
 
-        current_batch_pipelines = automl_algorithm.next_batch()
-        while self._check_stopping_condition(start) and automl_algorithm.can_continue():
+        current_batch_pipelines = []
+        while self._check_stopping_condition(start):
             if len(current_batch_pipelines) == 0:
+                if not automl_algorithm.can_continue():
+                    break
                 current_batch_pipelines = automl_algorithm.next_batch()
             pipeline = current_batch_pipelines.pop(0)
             parameters = pipeline.parameters
@@ -341,7 +343,8 @@ class AutoSearchBase:
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,
                          training_time=baseline_results['training_time'],
-                         cv_data=baseline_results['cv_data'])
+                         cv_data=baseline_results['cv_data'],
+                         cv_scores=baseline_results['cv_scores'])
         desc = "✔" + desc[1:]
         pbar.set_description_str(desc=desc, refresh=True)
         if self.verbose:  # To force new line between progress bar iterations
