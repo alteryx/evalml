@@ -59,12 +59,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             raise StopIteration('No more batches available.')
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [self._init_pipeline(cls) for cls in self.allowed_pipelines]
+            next_batch = [self._init_pipeline(cls, {}) for cls in self.allowed_pipelines]
         else:
             _, pipeline_class = self._pop_best_in_batch()
             if pipeline_class is None:
                 raise AutoMLAlgorithmException('Some results are needed before the next automl batch can be computed.')
-            next_batch = [self._init_pipeline(pipeline_class) for i in range(self.pipelines_per_batch)]
+            for i in range(self.pipelines_per_batch):
+                proposed_parameters = self._tuners[pipeline_class.name].propose()
+                next_batch.append(self._init_pipeline(pipeline_class, proposed_parameters))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -93,10 +95,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 best_idx = idx
         return self._first_batch_results.pop(best_idx)
 
-    def _init_pipeline(self, pipeline_class):
-        """Given a pipeline class, get proposed parameters from the tuner and return a pipeline instance ready for training."""
-        proposed_parameters = self._tuners[pipeline_class.name].propose()
-        parameters = self._transform_parameters(pipeline_class, proposed_parameters)
+    def _init_pipeline(self, pipeline_class, parameters):
+        """Given a pipeline class and a parameters dict, return a pipeline instance ready for training."""
+        parameters = self._transform_parameters(pipeline_class, parameters)
         return pipeline_class(parameters=parameters)
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
@@ -104,7 +105,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         component_graph = [handle_component(c) for c in pipeline_class.component_graph]
         for component in component_graph:
-            component_parameters = proposed_parameters[component.name]
+            component_parameters = proposed_parameters.get(component.name, {})
             init_params = inspect.signature(component.__class__.__init__).parameters
 
             # Inspects each component and adds the following parameters when needed
