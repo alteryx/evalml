@@ -11,7 +11,7 @@ class XGBoostRegressor(Estimator):
     """XGBoost Regressor"""
     name = "XGBoost Regressor"
     hyperparameter_ranges = {
-        "eta": Real(0, 1),
+        "eta": Real(0.000001, 1),
         "max_depth": Integer(1, 20),
         "min_child_weight": Real(1, 10),
         "n_estimators": Integer(1, 1000),

@@ -8,6 +8,7 @@ class ModelFamily(Enum):
     LINEAR_MODEL = 'linear_model'
     CATBOOST = 'catboost'
     EXTRA_TREES = 'extra_trees'
+    BASELINE = 'baseline'
     NONE = 'none'
 
     def __str__(self):
@@ -16,5 +17,6 @@ class ModelFamily(Enum):
                              ModelFamily.LINEAR_MODEL.name: "Linear",
                              ModelFamily.CATBOOST.name: "CatBoost",
                              ModelFamily.EXTRA_TREES.name: "Extra Trees",
+                             ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]

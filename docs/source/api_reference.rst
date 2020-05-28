@@ -84,6 +84,11 @@ Classification Pipelines
     RFMulticlassClassificationPipeline
     XGBoostBinaryPipeline
     XGBoostMulticlassPipeline
+    BaselineBinaryPipeline
+    BaselineMulticlassPipeline
+    ModeBaselineBinaryPipeline
+    ModeBaselineMulticlassPipeline
+
 
 Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~
@@ -98,6 +103,8 @@ Regression Pipelines
     ETRegressionPipeline
     LinearRegressionPipeline
     XGBoostRegressionPipeline
+    BaselineRegressionPipeline
+    MeanBaselineRegressionPipeline
 
 
 Pipeline Utils
@@ -117,6 +124,8 @@ Pipeline Graph Utils
     :toctree: generated
     :nosignatures:
 
+    precision_recall_curve
+    graph_precision_recall_curve
     roc_curve
     graph_roc_curve
     confusion_matrix
@@ -176,6 +185,7 @@ Classifiers are components that output a predicted class label.
     RandomForestClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
+    BaselineClassifier
 
 Regressors
 -----------
@@ -192,6 +202,7 @@ Regressors are components that output a predicted target value.
     ExtraTreesRegressor
     RandomForestRegressor
     XGBoostRegressor
+    BaselineRegressor
 
 
 .. currentmodule:: evalml.objectives
@@ -260,6 +271,7 @@ Classification Objectives
     RecallWeighted
 
 
+
 Regression Objectives
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -271,9 +283,12 @@ Regression Objectives
     R2
     MAE
     MSE
+    MeanSquaredLogError
     MedianAE
     MaxError
     ExpVariance
+    RootMeanSquaredError
+    RootMeanSquaredLogError
 
 
 .. currentmodule:: evalml.problem_types

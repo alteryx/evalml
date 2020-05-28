@@ -37,7 +37,11 @@ from .classification import (
     RFBinaryClassificationPipeline,
     RFMulticlassClassificationPipeline,
     XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline
+    XGBoostMulticlassPipeline,
+    BaselineBinaryPipeline,
+    BaselineMulticlassPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline
 )
 
 from .regression import (
@@ -45,7 +49,9 @@ from .regression import (
     RFRegressionPipeline,
     CatBoostRegressionPipeline,
     XGBoostRegressionPipeline,
-    ETRegressionPipeline
+    ETRegressionPipeline,
+    BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline
 )
 from .utils import (
     all_pipelines,
@@ -53,6 +59,8 @@ from .utils import (
     list_model_families
 )
 from .graph_utils import (
+    precision_recall_curve,
+    graph_precision_recall_curve,
     roc_curve,
     graph_roc_curve,
     confusion_matrix,

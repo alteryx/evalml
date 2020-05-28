@@ -19,7 +19,7 @@ class CatBoostClassifier(Estimator):
     name = "CatBoost Classifier"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
-        "eta": Real(0, 1),
+        "eta": Real(0.000001, 1),
         "max_depth": Integer(4, 10),
     }
     model_family = ModelFamily.CATBOOST

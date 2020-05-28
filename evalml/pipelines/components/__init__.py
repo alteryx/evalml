@@ -11,7 +11,9 @@ from .estimators import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     CatBoostRegressor,
-    XGBoostRegressor
+    XGBoostRegressor,
+    BaselineClassifier,
+    BaselineRegressor
 )
 from .transformers import (
     Transformer,
