@@ -3,9 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checksid_columns_data_check import (
-    IDColumnsDataCheck
-)
+from evalml.data_checks.id_columns_data_check import IDColumnsDataCheck
 
 
 def test_id_cols_data_check_init():
@@ -27,7 +25,7 @@ def test_id_cols_data_check_init():
         IDColumnsDataCheck(id_threshold=1.1)
 
 
-def test_detect_id_columns_warning():
+def test_id_columns_warning():
     X_dict = {'col_1_id': [0, 1, 2, 3],
               'col_2': [2, 3, 4, 5],
               'col_3_id': [1, 1, 2, 3],
@@ -50,7 +48,7 @@ def test_detect_id_columns_warning():
                                          DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
 
 
-def test_detect_id_columns_strings():
+def test_id_columns_strings():
     X_dict = {'col_1_id': ["a", "b", "c", "d"],
               'col_2': ["w", "x", "y", "z"],
               'col_3_id': ["a", "a", "b", "d"],

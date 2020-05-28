@@ -2,9 +2,7 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checkslabel_leakage_data_check import (
-    LabelLeakageDataCheck
-)
+from evalml.data_checks.label_leakage_data_check import LabelLeakageDataCheck
 
 
 def test_label_leakage_data_check_init():
