@@ -19,12 +19,6 @@ def test_rf_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'Random Forest Regressor': {
             "n_estimators": 20,
             "max_depth": 5,
@@ -37,10 +31,6 @@ def test_rf_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
         'Random Forest Regressor': {
             'max_depth': 5,
             'n_estimators': 20
@@ -49,11 +39,11 @@ def test_rf_init(X_y_reg):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert clf.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert RFRegressionPipeline.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert RFRegressionPipeline.summary == 'Random Forest Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_rf_regression(X_y_categorical_regression):
@@ -65,12 +55,8 @@ def test_rf_regression(X_y_categorical_regression):
                                       n_estimators=10,
                                       max_depth=3,
                                       n_jobs=-1)
-    feature_selection = SelectFromModel(estimator=estimator,
-                                        max_features=max(1, int(1 * X.shape[1])),
-                                        threshold=-np.inf)
     sk_pipeline = Pipeline([("encoder", enc),
                             ("imputer", imputer),
-                            ("feature_selection", feature_selection),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
@@ -79,12 +65,6 @@ def test_rf_regression(X_y_categorical_regression):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
-        },
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 10,
-            "max_depth": 3,
         },
         'Random Forest Regressor': {
             "n_estimators": 10,
@@ -111,11 +91,6 @@ def test_rfr_input_feature_names(X_y_reg):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 20
         },
         'Random Forest Regressor': {
             "n_estimators": 20,
