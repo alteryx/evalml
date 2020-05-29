@@ -35,7 +35,6 @@ def test_id_columns_warning():
               }
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-
     assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                          DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                          DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
@@ -43,7 +42,6 @@ def test_id_columns_warning():
 
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
-
     assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                          DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
 
@@ -57,9 +55,7 @@ def test_id_columns_strings():
               'col_6': [0.1, 0.2, 0.3, 0.4]
               }
     X = pd.DataFrame.from_dict(X_dict)
-
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-
     assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                          DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                          DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
@@ -74,23 +70,18 @@ def test_id_cols_data_check_input_formats():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.8)
 
     # test empty pd.DataFrame
-    messages = id_cols_check.validate(pd.DataFrame())
-    assert messages == []
+    assert id_cols_check.validate(pd.DataFrame()) == []
 
     #  test list
-    messages = id_cols_check.validate([1, 2, 3, 4, 5])
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate([1, 2, 3, 4, 5]) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
 
     #  test pd.Series
-    messages = id_cols_check.validate(pd.Series([1, 2, 3, 4, 5]))
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
 
     #  test 2D list
-    messages = id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                        DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                                                                DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
 
     # test np.array
-    messages = id_cols_check.validate(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                        DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                                                                          DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]

@@ -39,8 +39,7 @@ def test_data_check_validate_simple(X_y):
             return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
 
     data_check = MockDataCheck()
-    errors_warnings = data_check.validate(X, y=y)
-    assert errors_warnings == [DataCheckError("error one", "MockDataCheck"), DataCheckWarning("warning one", "MockDataCheck")]
+    assert data_check.validate(X, y=y) == [DataCheckError("error one", "MockDataCheck"), DataCheckWarning("warning one", "MockDataCheck")]
 
 
 def test_data_check_with_param():
@@ -56,9 +55,7 @@ def test_data_check_with_param():
             return []
 
     data_check = MockDataCheckWithParam(num=10)
-    errors_warnings = data_check.validate(X, y=None)
-    assert errors_warnings == []
+    assert data_check.validate(X, y=None) == []
 
     data_check = MockDataCheckWithParam(num=0)
-    errors_warnings = data_check.validate(X, y=None)
-    assert errors_warnings == [DataCheckError("Expected num == 10", "MockDataCheckWithParam")]
+    assert data_check.validate(X, y=None) == [DataCheckError("Expected num == 10", "MockDataCheckWithParam")]

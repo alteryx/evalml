@@ -31,18 +31,16 @@ def test_data_checks(X_y):
 
     data_checks_list = [MockDataCheck(), MockDataCheckWarning(), MockDataCheckError(), MockDataCheckErrorAndWarning()]
     data_checks = DataChecks(data_checks=data_checks_list)
-    messages = data_checks.validate(X, y)
-    assert messages == [DataCheckWarning("warning one", "MockDataCheckWarning"),
-                        DataCheckError("error one", "MockDataCheckError"),
-                        DataCheckError("error two", "MockDataCheckErrorAndWarning"),
-                        DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
+    assert data_checks.validate(X, y) == [DataCheckWarning("warning one", "MockDataCheckWarning"),
+                                          DataCheckError("error one", "MockDataCheckError"),
+                                          DataCheckError("error two", "MockDataCheckErrorAndWarning"),
+                                          DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
 
 
 def test_empty_data_checks(X_y):
     X, y = X_y
     data_checks = EmptyDataChecks()
-    messages = data_checks.validate(X, y)
-    assert messages == []
+    assert data_checks.validate(X, y) == []
 
 
 def test_default_data_checks(X_y):
@@ -54,8 +52,7 @@ def test_default_data_checks(X_y):
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([1, 2, 1, 2, 1])
     data_checks = DefaultDataChecks()
-    messages = data_checks.validate(X, y)
-    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                        DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                        DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
+    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                          DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]

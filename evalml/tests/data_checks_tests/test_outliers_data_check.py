@@ -35,8 +35,7 @@ def test_outliers_data_check_input_formats():
     outliers_check = OutliersDataCheck()
 
     # test empty pd.DataFrame
-    messages = outliers_check.validate(pd.DataFrame())
-    assert messages == []
+    assert outliers_check.validate(pd.DataFrame()) == []
 
     # test np.array
     a = np.arange(10) * 0.01

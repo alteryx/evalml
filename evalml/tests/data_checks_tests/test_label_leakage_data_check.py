@@ -32,8 +32,8 @@ def test_label_leakage_data_check_warnings():
     X["c"] = y / 10
     X["d"] = ~y
     X["e"] = [0, 0, 0, 0]
-
     y = y.astype(bool)
+
     label_leakage_check = LabelLeakageDataCheck(pct_corr_threshold=0.5)
     assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'a' is 50.0% or more correlated with the target", "LabelLeakageDataCheck"),
                                                   DataCheckWarning("Column 'b' is 50.0% or more correlated with the target", "LabelLeakageDataCheck"),
@@ -42,6 +42,11 @@ def test_label_leakage_data_check_warnings():
 
 
 def test_label_leakage_data_check_input_formats():
+    label_leakage_check = LabelLeakageDataCheck(pct_corr_threshold=0.8)
+
+    # test empty pd.DataFrame, empty pd.Series
+    assert label_leakage_check.validate(pd.DataFrame(), pd.Series()) == []
+
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["a"] = y * 3
@@ -51,28 +56,16 @@ def test_label_leakage_data_check_input_formats():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    label_leakage_check = LabelLeakageDataCheck(pct_corr_threshold=0.8)
-
-    # test empty pd.DataFrame, empty pd.Series
-    messages = label_leakage_check.validate(pd.DataFrame(), pd.Series())
-    assert messages == []
-
     expected_messages = [DataCheckWarning("Column 'a' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
                          DataCheckWarning("Column 'b' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
                          DataCheckWarning("Column 'c' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
                          DataCheckWarning("Column 'd' is 80.0% or more correlated with the target", "LabelLeakageDataCheck")]
 
     #  test y as list
-    messages = label_leakage_check.validate(X, [1, 0, 1, 1])
-    assert messages == expected_messages
-
-    #  test y as pd.Series
-    messages = label_leakage_check.validate(X, y)
-    assert messages == expected_messages
+    assert label_leakage_check.validate(X, y.values) == expected_messages
 
     # test X as np.array
-    messages = label_leakage_check.validate(X.to_numpy(), y)
-    assert messages == [DataCheckWarning("Column '0' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                        DataCheckWarning("Column '1' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                        DataCheckWarning("Column '2' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                        DataCheckWarning("Column '3' is 80.0% or more correlated with the target", "LabelLeakageDataCheck")]
+    assert label_leakage_check.validate(X.to_numpy(), y) == [DataCheckWarning("Column '0' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
+                                                             DataCheckWarning("Column '1' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
+                                                             DataCheckWarning("Column '2' is 80.0% or more correlated with the target", "LabelLeakageDataCheck"),
+                                                             DataCheckWarning("Column '3' is 80.0% or more correlated with the target", "LabelLeakageDataCheck")]
