@@ -20,16 +20,13 @@ def test_iterative_algorithm_init():
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
-    assert algo.allowed_model_families == []
 
 
-def test_iterative_algorithm_allowed_inputs():
+def test_iterative_algorithm_allowed_pipelines():
     allowed_pipelines = [LogisticRegressionBinaryPipeline]
-    allowed_model_families = [ModelFamily.RANDOM_FOREST]
-    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines, allowed_model_families=allowed_model_families)
+    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_model_families == allowed_model_families
     assert algo.allowed_pipelines == allowed_pipelines
 
 
@@ -61,7 +58,6 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
-    assert algo.allowed_model_families == []
 
     next_batch = algo.next_batch()
     assert [p.__class__ for p in next_batch] == []
@@ -75,11 +71,10 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
 
 
 def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, allowed_model_families=[ModelFamily.NONE])
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == dummy_binary_pipeline_classes
-    assert algo.allowed_model_families == [ModelFamily.NONE]
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()

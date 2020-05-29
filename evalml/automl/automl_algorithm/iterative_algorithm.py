@@ -12,7 +12,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def __init__(self,
                  allowed_pipelines=None,
-                 allowed_model_families=None,
                  max_pipelines=None,
                  tuner_class=None,
                  random_state=0,
@@ -23,7 +22,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         Arguments:
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-            allowed_model_families (list(str, ModelFamily)): The model families enabled in the search. The default value of None indicates all model families are allowed.
             max_pipelines (int): The maximum number of pipelines to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
@@ -32,7 +30,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             number_features (int): The number of columns in the input features.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
-                         allowed_model_families=allowed_model_families,
                          max_pipelines=max_pipelines,
                          tuner_class=tuner_class,
                          random_state=random_state)

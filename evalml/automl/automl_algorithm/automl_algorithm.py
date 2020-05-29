@@ -14,7 +14,6 @@ class AutoMLAlgorithm(ABC):
 
     def __init__(self,
                  allowed_pipelines=None,
-                 allowed_model_families=None,
                  max_pipelines=None,
                  tuner_class=None,
                  random_state=0):
@@ -24,14 +23,12 @@ class AutoMLAlgorithm(ABC):
 
         Arguments:
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-            allowed_model_families (list(str, ModelFamily)): The model families enabled in the search. The default value of None indicates all model families are allowed.
             max_pipelines (int): The maximum number of pipelines to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
         self.allowed_pipelines = allowed_pipelines or []
-        self.allowed_model_families = allowed_model_families or []
         self.max_pipelines = max_pipelines
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
