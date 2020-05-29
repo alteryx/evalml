@@ -179,6 +179,7 @@ def test_automl_str_search(mock_fit, X_y):
         'Objective': search_params['objective'],
         'Max Time': search_params['max_time'],
         'Max Pipelines': search_params['max_pipelines'],
+        'Allowed Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
@@ -277,6 +278,9 @@ def test_automl_str_no_param_search():
         'Objective': 'Log Loss Binary',
         'Max Time': 'None',
         'Max Pipelines': 'None',
+        'Allowed Pipelines': [
+            'Logistic Regression Binary Pipeline',
+            'Random Forest Binary Classification Pipeline'],
         'Patience': 'None',
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
