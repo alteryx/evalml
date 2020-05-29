@@ -1,8 +1,6 @@
 import category_encoders as ce
 import numpy as np
 from pytest import importorskip
-from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
-from sklearn.feature_selection import SelectFromModel
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
@@ -25,10 +23,6 @@ def test_xg_init(X_y_reg):
         'One Hot Encoder': {
             'top_n': 10
         },
-        'RF Regressor Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf,
-        },
         'XGBoost Regressor': {
             'eta': 0.2,
             'max_depth': 5,
@@ -41,11 +35,11 @@ def test_xg_init(X_y_reg):
 
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
-    assert clf.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert clf.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert XGBoostRegressionPipeline.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert XGBoostRegressionPipeline.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_xgboost_regression(X_y_reg):
@@ -61,25 +55,14 @@ def test_xgboost_regression(X_y_reg):
                                  max_depth=3,
                                  min_child_weight=1,
                                  n_estimators=10)
-    rf_estimator = SKRandomForestRegressor(random_state=get_random_state(random_seed), n_estimators=10, max_depth=3)
-    feature_selection = SelectFromModel(estimator=rf_estimator,
-                                        max_features=max(1, int(1 * len(X[0]))),
-                                        threshold=-np.inf)
     sk_pipeline = Pipeline([("encoder", enc),
                             ("imputer", imputer),
-                            ("feature_selection", feature_selection),
                             ("estimator", estimator)])
     sk_pipeline.fit(X, y)
     sk_score = sk_pipeline.score(X, y)
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
-        },
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 3,
         },
         'XGBoost Regressor': {
             "n_estimators": 10,
@@ -109,12 +92,6 @@ def test_xgr_input_feature_names(X_y_categorical_regression):
         'Simple Imputer': {
             'impute_strategy': 'median'
         },
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'XGBoost Regressor': {
             "n_estimators": 20,
             "eta": 0.2,
@@ -124,5 +101,4 @@ def test_xgr_input_feature_names(X_y_categorical_regression):
     }
     clf = XGBoostRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
