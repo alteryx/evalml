@@ -11,7 +11,7 @@ EvalML is an AutoML library to build optimized machine learning pipelines for do
 
 * **Domain-specific** - Includes repository of domain-specific objective functions and interface to define your own
 * **End-to-end** - Constructs and optimizes pipelines that include imputation, feature selection, and a variety of modeling techniques
-* **Guardrails** - Carefully cross-validates to prevent overfitting and warns you if training and testing results diverge
+* **Data Checks** - Carefully cross-validates to prevent overfitting and warns you if training and testing results diverge
 
 ## Install
 ```shell

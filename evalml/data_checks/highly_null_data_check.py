@@ -4,7 +4,8 @@ from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
 
-class DetectHighlyNullDataCheck(DataCheck):
+class HighlyNullDataCheck(DataCheck):
+    """Checks if there are any highly-null columns in the input."""
 
     def __init__(self, pct_null_threshold=0.95):
         """Checks if there are any highly-null columns in the input.
@@ -33,8 +34,8 @@ class DetectHighlyNullDataCheck(DataCheck):
             ...    'lots_of_null': [None, None, None, None, 5],
             ...    'no_null': [1, 2, 3, 4, 5]
             ... })
-            >>> null_check = DetectHighlyNullDataCheck(pct_null_threshold=0.8)
-            >>> assert null_check.validate(df) == [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "DetectHighlyNullDataCheck")]
+            >>> null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
+            >>> assert null_check.validate(df) == [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
