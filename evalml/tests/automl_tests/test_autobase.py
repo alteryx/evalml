@@ -331,11 +331,14 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
 
 
 @patch('evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted')
-def test_automl_tuner_exception(mock_is_search_space_exhausted, X_y):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_tuner_exception(mock_fit, mock_score, mock_is_search_space_exhausted, X_y):
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    X, y = X_y
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     mock_is_search_space_exhausted.side_effect = NoParamsException(error_text)
-    X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", tuner_class=RandomSearchTuner)
+    clf = AutoRegressionSearch(objective="R2", tuner_class=RandomSearchTuner, max_pipelines=10)
     with pytest.raises(NoParamsException, match=error_text):
         clf.search(X, y)
 
