@@ -87,7 +87,7 @@ def test_feature_importances(X_y):
     clf = ElasticNetClassifier()
     clf.fit(X, y)
 
-    np.testing.assert_almost_equal(sk_clf.coef_[0], clf.feature_importances, decimal=5)
+    np.testing.assert_almost_equal(sk_clf.coef_.flatten(), clf.feature_importances, decimal=5)
 
 
 def test_feature_importances_multi(X_y_multi):

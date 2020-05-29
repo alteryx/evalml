@@ -36,7 +36,7 @@ class ElasticNetClassifier(Estimator):
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
-            return coef_[0]
+            return coef_.flatten()
         else:
             # mutliclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
