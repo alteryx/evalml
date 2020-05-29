@@ -215,7 +215,6 @@ class AutoSearchBase:
         automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
-            allowed_model_families=self.allowed_model_families,
             tuner_class=self.tuner_class,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
