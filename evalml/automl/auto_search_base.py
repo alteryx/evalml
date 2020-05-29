@@ -249,6 +249,8 @@ class AutoSearchBase:
                     break
             pipeline = current_batch_pipelines.pop(0)
             parameters = pipeline.parameters
+            logger.debug('Evaluating pipeline {}'.format(pipeline.name))
+            logger.debug('Pipeline parameters: {}'.format(parameters))
             pbar.update(1)
             if self.start_iteration_callback:
                 self.start_iteration_callback(pipeline.__class__, parameters)
@@ -259,7 +261,9 @@ class AutoSearchBase:
             pbar.set_description_str(desc=desc, refresh=True)
 
             evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+            logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
             automl_algorithm.add_result(evaluation_results['cv_score_mean'], pipeline)
+            logger.debug('Adding results complete')
             self._add_result(trained_pipeline=pipeline,
                              parameters=parameters,
                              training_time=evaluation_results['training_time'],
