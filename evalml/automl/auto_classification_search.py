@@ -58,7 +58,7 @@ class AutoClassificationSearch(AutoSearchBase):
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`
                 to `multiclass` if your problem type is different. Note that if allowed_pipelines was provided, this parameter
-                be ignored.
+                will be ignored.
 
             cv: cross-validation method to use. Defaults to StratifiedKFold.
 

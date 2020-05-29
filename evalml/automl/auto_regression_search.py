@@ -44,8 +44,7 @@ class AutoRegressionSearch(AutoSearchBase):
                 The default of None indicates all pipelines for this problem type are allowed.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
-                to `multiclass` if your problem type is different.
+                model families. Run evalml.list_model_families("regression") to see options.
 
             patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.
