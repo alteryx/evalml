@@ -24,7 +24,7 @@ class XGBoostRegressor(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, n_estimators=100, random_state=0):
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"eta": eta,
                       "max_depth": max_depth,

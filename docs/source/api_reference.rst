@@ -23,7 +23,7 @@ Preprocessing
 =============
 
 Utilities to preprocess data before using evalml.
- 
+
 .. autosummary::
     :toctree: generated
     :nosignatures:
@@ -40,6 +40,8 @@ Utilities to preprocess data before using evalml.
 AutoML
 ======
 
+AutoML Search Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class_with_properties.rst
@@ -47,6 +49,20 @@ AutoML
 
     AutoClassificationSearch
     AutoRegressionSearch
+    AutoSearchBase
+
+
+.. currentmodule:: evalml.automl.automl_algorithm
+
+AutoML Algorithm Classes
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: class_with_properties.rst
+    :nosignatures:
+
+    AutoMLAlgorithm
+    IterativeAlgorithm
 
 
 .. currentmodule:: evalml.pipelines
