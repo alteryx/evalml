@@ -85,10 +85,6 @@ def test_et_objective_tuning(X_y):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    objective = PrecisionMicro()
-    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
-        y_pred_with_objective = clf.predict(X, objective)
-
     # testing objective parameter passed in does not change results
     objective = Precision()
     y_pred_with_objective = clf.predict(X, objective)
@@ -99,6 +95,26 @@ def test_et_objective_tuning(X_y):
         clf.threshold = 0.01
         y_pred_with_objective = clf.predict(X, objective)
         np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+
+
+def test_et_objective_type(X_y):
+    X, y = X_y
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Extra Trees Classifier': {
+            "n_estimators": 20,
+            "max_features": "log2"
+        }
+    }
+    clf = ETBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+
+    objective = PrecisionMicro()
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        clf.predict(X, objective)
 
 
 @patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.fit')
