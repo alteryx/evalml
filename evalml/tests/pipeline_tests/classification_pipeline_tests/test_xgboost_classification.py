@@ -26,7 +26,8 @@ def test_xg_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {
-            'top_n': 10
+            'top_n': 10,
+            'categories': 'auto'
         },
         'XGBoost Classifier': {
             "n_estimators": 20,
@@ -44,7 +45,8 @@ def test_xg_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {
-            'top_n': 10
+            'top_n': 10,
+            'categories': 'auto'
         },
         'XGBoost Classifier': {
             'eta': 0.2,

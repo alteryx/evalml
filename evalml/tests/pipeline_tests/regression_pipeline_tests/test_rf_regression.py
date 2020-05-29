@@ -29,7 +29,10 @@ def test_rf_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto'
+        },
         'Random Forest Regressor': {
             'max_depth': 5,
             'n_estimators': 20

@@ -215,7 +215,10 @@ def test_parameters(X_y, lr_pipeline):
             'impute_strategy': 'median',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto'
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0

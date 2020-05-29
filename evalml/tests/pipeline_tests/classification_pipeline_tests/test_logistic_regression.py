@@ -22,7 +22,10 @@ def test_lor_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto'
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,
