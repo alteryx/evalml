@@ -55,7 +55,6 @@ class AutoSearchBase:
                  multiclass=None):
         self.problem_type = problem_type
         self.tuner_class = tuner_class or SKOptTuner
-        self.allowed_model_families = allowed_model_families
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.cv = cv
@@ -111,7 +110,7 @@ class AutoSearchBase:
         self._data_check_results = None
 
         self.allowed_pipelines = allowed_pipelines or get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
-        self.allowed_model_families = list(set([p.model_family for p in self.allowed_pipelines]))
+        self.allowed_model_families = allowed_model_families or list(set([p.model_family for p in self.allowed_pipelines]))
 
     @property
     def data_check_results(self):
@@ -229,7 +228,7 @@ class AutoSearchBase:
             logger.info("Searching up to %s pipelines. " % self.max_pipelines)
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in automl_algorithm.allowed_model_families]))
+        logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
 
         search_iteration_plot = None
         if self.plot:

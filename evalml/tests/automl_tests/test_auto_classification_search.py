@@ -21,7 +21,8 @@ from evalml.objectives import (
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     ModeBaselineBinaryPipeline,
-    PipelineBase
+    PipelineBase,
+    get_pipelines
 )
 from evalml.problem_types import ProblemTypes
 
@@ -76,20 +77,6 @@ def test_cv(X_y):
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
-
-
-@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
-def test_init_model_families(mock_algo_init, X_y):
-    mock_algo_init.side_effect = Exception('mock algo init')
-    X, y = X_y
-    model_families = [ModelFamily.RANDOM_FOREST]
-    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=1)
-    with pytest.raises(Exception, match='mock algo init'):
-        automl.search(X, y)
-    assert mock_algo_init.call_count == 1
-    _, kwargs = mock_algo_init.call_args
-    assert kwargs['max_pipelines'] == 1
-    assert kwargs['allowed_model_families'] == model_families
 
 
 def test_max_pipelines(X_y):
@@ -441,9 +428,31 @@ def test_max_time(X_y):
     assert len(clf.results['pipeline_results']) == 1
 
 
+def test_automl_allowed_pipelines_init(dummy_binary_pipeline_class):
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
+    expected_pipelines = [dummy_binary_pipeline_class]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = [dummy_binary_pipeline_class]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
@@ -456,3 +465,27 @@ def test_automl_allowed_pipelines(mock_fit, mock_score, dummy_binary_pipeline_cl
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
+
+
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipeline_class, X_y):
+    mock_algo_init.side_effect = Exception('mock algo init')
+    X, y = X_y
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    automl = AutoClassificationSearch(allowed_pipelines=allowed_pipelines, max_pipelines=10)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 1
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 10
+    assert kwargs['allowed_pipelines'] == allowed_pipelines
+
+    allowed_model_families = [ModelFamily.RANDOM_FOREST]
+    automl = AutoClassificationSearch(allowed_model_families=allowed_model_families, max_pipelines=1)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 2
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 1
+    assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)

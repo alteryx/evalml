@@ -52,11 +52,13 @@ class AutoClassificationSearch(AutoSearchBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
-                The default of None indicates all pipelines for this problem type are allowed.
+                The default of None indicates all pipelines for this problem type are allowed, optionally filtered
+                by allowed_model_families.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`
-                to `multiclass` if your problem type is different.
+                to `multiclass` if your problem type is different. Note that if allowed_pipelines was provided, this parameter
+                be ignored.
 
             cv: cross-validation method to use. Defaults to StratifiedKFold.
 
