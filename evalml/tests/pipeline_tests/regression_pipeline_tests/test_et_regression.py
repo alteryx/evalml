@@ -22,15 +22,10 @@ def test_et_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'Extra Trees Regressor': {
             "n_estimators": 20,
             "max_features": "auto",
+            "max_depth": 6
         }
     }
     clf = ETRegressionPipeline(parameters=parameters, random_state=2)
@@ -40,23 +35,20 @@ def test_et_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
         'Extra Trees Regressor': {
             'max_features': "auto",
-            'n_estimators': 20
+            'n_estimators': 20,
+            'max_depth': 6,
         }
     }
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Extra Trees Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert clf.summary == 'Extra Trees Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert ETRegressionPipeline.summary == 'Extra Trees Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert ETRegressionPipeline.summary == 'Extra Trees Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 @patch('evalml.pipelines.regression.ETRegressionPipeline.fit')
@@ -83,11 +75,6 @@ def test_et_input_feature_names(X_y_reg):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 20
         },
         'Extra Trees Regressor': {
             "n_estimators": 20,

@@ -34,12 +34,6 @@ def test_et_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'Extra Trees Classifier': {
             "n_estimators": 20,
             "max_features": "auto",
@@ -52,11 +46,8 @@ def test_et_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Classifier Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
         'Extra Trees Classifier': {
+            'max_depth': 6,
             'max_features': "auto",
             'n_estimators': 20
         }
@@ -64,11 +55,11 @@ def test_et_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert clf.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert ETBinaryClassificationPipeline.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert ETBinaryClassificationPipeline.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 def test_et_objective_tuning(X_y):
@@ -84,12 +75,6 @@ def test_et_objective_tuning(X_y):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
         },
         'Extra Trees Classifier': {
             "n_estimators": 20,
@@ -156,11 +141,6 @@ def test_et_input_feature_names(X_y):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X.columns),
-            "n_estimators": 20
         },
         'Extra Trees Classifier': {
             "n_estimators": 20,
