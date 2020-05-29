@@ -555,7 +555,7 @@ def test_hyperparameters():
         },
         'Random Forest Classifier': {
             "n_estimators": Integer(10, 1000),
-            "max_depth": Integer(1, 32)
+            "max_depth": Integer(1, 10)
         }
     }
 
