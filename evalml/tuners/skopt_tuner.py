@@ -2,6 +2,10 @@ import pandas as pd
 from skopt import Optimizer
 
 from .tuner import Tuner
+from .tuner_exceptions import ParameterError
+from evalml.utils.logger import get_logger
+
+logger = get_logger(__file__)
 
 
 class SKOptTuner(Tuner):
@@ -31,7 +35,17 @@ class SKOptTuner(Tuner):
         if pd.isnull(score):
             return
         flat_parameter_values = self._convert_to_flat_parameters(pipeline_parameters)
-        self.opt.tell(flat_parameter_values, score)
+        try:
+            self.opt.tell(flat_parameter_values, score)
+        except Exception as e:
+            logger.debug('SKOpt tuner received error during add. Score: {}\nParameters: {}\nFlat parameter values: {}\nError: {}'
+                         .format(pipeline_parameters, score, flat_parameter_values, e))
+            if str(e) == "'<=' not supported between instances of 'int' and 'NoneType'":
+                msg = "Invalid parameters specified to SKOptTuner.add: parameters {} error {}" \
+                    .format(pipeline_parameters, str(e))
+                logger.error(msg)
+                raise ParameterError(msg)
+            raise(e)
 
     def propose(self):
         """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
