@@ -1,4 +1,5 @@
 import time
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -6,9 +7,11 @@ import pytest
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.exceptions import ObjectiveNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
     LinearRegressionPipeline,
+    MeanBaselineRegressionPipeline,
     PipelineBase,
     get_pipelines
 )
@@ -24,16 +27,10 @@ def test_init(X_y):
     X, y = X_y
 
     automl = AutoRegressionSearch(objective="R2", max_pipelines=3, n_jobs=4)
-
-    assert automl.n_jobs == 4
-
-    # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.REGRESSION) == automl.possible_pipelines
-
     automl.search(X, y)
 
+    assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
-
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
 
@@ -171,3 +168,47 @@ def test_log_metrics_only_passed_directly():
     ar = AutoRegressionSearch(additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
     assert ar.additional_objectives[0].name == 'Root Mean Squared Log Error'
     assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
+
+
+def test_automl_allowed_pipelines_init(dummy_regression_pipeline):
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION)
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=None)
+    expected_pipelines = [dummy_regression_pipeline.__class__]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = [dummy_regression_pipeline.__class__]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_pipeline, X_y):
+    X, y = X_y
+    mock_score.return_value = {'R2': 1.0}
+
+    allowed_pipelines = [dummy_regression_pipeline.__class__]
+    start_iteration_callback = MagicMock()
+    automl = AutoRegressionSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
+                                  allowed_pipelines=allowed_pipelines)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == dummy_regression_pipeline.__class__

@@ -1,9 +1,6 @@
-from unittest.mock import patch
-
 import numpy as np
 import pytest
 
-from evalml import AutoRegressionSearch
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.tuners.tuner import Tuner
 
@@ -12,29 +9,6 @@ random_state = 0
 
 def test_random_search_tuner_inheritance():
     assert issubclass(RandomSearchTuner, Tuner)
-
-
-def test_random_search_tuner_automl(X_y):
-    X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
-    clf.search(X, y)
-
-
-def test_random_search_tuner_automl_no_params(X_y, capsys):
-    X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=20, allowed_model_families=['linear_model'], tuner=RandomSearchTuner)
-    error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
-    with pytest.raises(NoParamsException, match=error_text):
-        clf.search(X, y)
-
-
-@patch('evalml.tuners.RandomSearchTuner.is_search_space_exhausted')
-def test_random_search_tuner_exhausted_space(mock_is_search_space_exhausted, X_y):
-    mock_is_search_space_exhausted.side_effects = lambda: False
-    X, y = X_y
-    clf = AutoRegressionSearch(objective="R2", max_pipelines=5, tuner=RandomSearchTuner)
-    clf.search(X, y)
-    assert len(clf.results['pipeline_results']) == 1   # baseline pipeline
 
 
 def test_random_search_tuner_unique_values(dummy_pipeline_hyperparameters):
