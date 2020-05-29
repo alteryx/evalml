@@ -5,7 +5,6 @@ from logging.handlers import RotatingFileHandler
 
 def get_logger(name):
     logger = logging.getLogger(name)
-    logging.captureWarnings(True)
     if not len(logger.handlers):
         date_fmt = "%m/%d/%Y %I:%M:%S %p"
         fmt = "%(asctime)s - %(levelname)s - %(filename)s: %(message)s"
