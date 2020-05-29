@@ -9,6 +9,8 @@ from .estimators import (
     BaselineRegressor,
     CatBoostClassifier,
     CatBoostRegressor,
+    ElasticNetClassifier,
+    ElasticNetRegressor,
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,

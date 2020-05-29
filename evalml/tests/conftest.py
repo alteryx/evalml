@@ -121,7 +121,7 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def dummy_regression_pipeline():
+def dummy_regressor_estimator_class():
     class MockRegressor(Estimator):
         name = "Mock Regressor"
         model_family = ModelFamily.NONE
@@ -130,6 +130,13 @@ def dummy_regression_pipeline():
 
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
+
+    return MockRegressor
+
+
+@pytest.fixture
+def dummy_regression_pipeline(dummy_regressor_estimator_class):
+    MockRegressor = dummy_regressor_estimator_class
 
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor()]
