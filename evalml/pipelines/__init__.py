@@ -18,7 +18,7 @@ from .components import (
     CatBoostClassifier,
     CatBoostRegressor,
     ElasticNetClassifier,
-    ElasticNetRegressor
+    ElasticNetRegressor,
     ExtraTreesClassifier,
     ExtraTreesRegressor
 )

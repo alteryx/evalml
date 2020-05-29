@@ -6,6 +6,28 @@ import pytest
 from evalml.pipelines import ENBinaryPipeline, ENMulticlassPipeline
 
 
+@pytest.fixture
+def dummy_en_multi_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockENMultiClassificationPipeline(ENMulticlassPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
+    return MockENMultiClassificationPipeline
+
+
+@pytest.fixture
+def dummy_en_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockENBinaryClassificationPipeline(ENBinaryPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
+    return MockENBinaryClassificationPipeline
+
+
 def test_en_init(X_y):
     X, y = X_y
 

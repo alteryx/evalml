@@ -12,6 +12,17 @@ def test_model_family():
     assert ElasticNetRegressor.model_family == ModelFamily.LINEAR_MODEL
 
 
+def test_en_parameters():
+
+    clf = ElasticNetRegressor(alpha=0.75, l1_ratio=0.5, random_state=2)
+    expected_parameters = {
+        "alpha": 0.75,
+        "l1_ratio": 0.5
+    }
+
+    assert clf.parameters == expected_parameters
+
+
 def test_problem_types():
     assert ProblemTypes.REGRESSION in ElasticNetRegressor.supported_problem_types
     assert len(ElasticNetRegressor.supported_problem_types) == 1
