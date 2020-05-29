@@ -32,6 +32,11 @@ def test_skopt_tuner_init():
     SKOptTuner({'My Component': {}})
 
 
+def test_skopt_tuner_is_search_space_exhausted():
+    tuner = SKOptTuner({})
+    assert not tuner.is_search_space_exhausted()
+
+
 def test_skopt_tuner_basic():
     pipeline_hyperparameter_ranges = {'Mock Classifier': {
         'parameter a': Integer(0, 10),
