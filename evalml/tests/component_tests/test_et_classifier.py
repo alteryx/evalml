@@ -18,10 +18,22 @@ def test_problem_types():
     assert len(ExtraTreesClassifier.supported_problem_types) == 2
 
 
+def test_et_parameters():
+
+    clf = ExtraTreesClassifier(n_estimators=20, max_features="auto", max_depth=5, random_state=2)
+    expected_parameters = {
+        "n_estimators": 20,
+        "max_features": "auto",
+        "max_depth": 5
+    }
+
+    assert clf.parameters == expected_parameters
+
+
 def test_fit_predict_binary(X_y):
     X, y = X_y
 
-    sk_clf = SKExtraTreesClassifier()
+    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -38,7 +50,7 @@ def test_fit_predict_binary(X_y):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKExtraTreesClassifier()
+    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -60,7 +72,7 @@ def test_feature_importances(X_y):
     with pytest.raises(MethodPropertyNotFoundError):
         feature_importances = clf.feature_importances
 
-    sk_clf = SKExtraTreesClassifier(random_state=0)
+    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importances = sk_clf.feature_importances_
 

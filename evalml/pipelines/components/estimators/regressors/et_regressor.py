@@ -11,7 +11,8 @@ class ExtraTreesRegressor(Estimator):
     name = "Extra Trees Regressor"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
-        "max_features": ["auto", "sqrt", "log2"]
+        "max_features": ["auto", "sqrt", "log2"],
+        "max_depth": Integer(4, 10)
     }
     model_family = ModelFamily.EXTRA_TREES
     supported_problem_types = [ProblemTypes.REGRESSION]
@@ -19,13 +20,14 @@ class ExtraTreesRegressor(Estimator):
     def __init__(self,
                  n_estimators=100,
                  max_features="auto",
-                 max_depth=None,
+                 max_depth=6,
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
                  n_jobs=-1,
                  random_state=0):
         parameters = {"n_estimators": n_estimators,
-                      "max_features": max_features}
+                      "max_features": max_features,
+                      "max_depth": max_depth}
         et_regressor = SKExtraTreesRegressor(random_state=random_state,
                                              n_estimators=n_estimators,
                                              max_features=max_features,

@@ -17,10 +17,22 @@ def test_problem_types():
     assert len(ExtraTreesRegressor.supported_problem_types) == 1
 
 
+def test_et_parameters():
+
+    clf = ExtraTreesRegressor(n_estimators=20, max_features="auto", max_depth=5, random_state=2)
+    expected_parameters = {
+        "n_estimators": 20,
+        "max_features": "auto",
+        "max_depth": 5
+    }
+
+    assert clf.parameters == expected_parameters
+
+
 def test_fit_predict(X_y):
     X, y = X_y
 
-    sk_clf = SKExtraTreesRegressor()
+    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
 
@@ -39,7 +51,7 @@ def test_feature_importances(X_y):
     with pytest.raises(MethodPropertyNotFoundError):
         feature_importances = clf.feature_importances
 
-    sk_clf = SKExtraTreesRegressor(random_state=0)
+    sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importances = sk_clf.feature_importances_
 
