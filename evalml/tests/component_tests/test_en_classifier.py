@@ -9,7 +9,7 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_model_family():
-    assert ElasticNetClassifier.model_family == ModelFamily.ELASTIC_NET
+    assert ElasticNetClassifier.model_family == ModelFamily.LINEAR_MODEL
 
 
 def test_problem_types():

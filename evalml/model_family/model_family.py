@@ -7,7 +7,6 @@ class ModelFamily(Enum):
     XGBOOST = 'xgboost'
     LINEAR_MODEL = 'linear_model'
     CATBOOST = 'catboost'
-    ELASTIC_NET = 'linear_model'
     BASELINE = 'baseline'
     NONE = 'none'
 
@@ -16,7 +15,6 @@ class ModelFamily(Enum):
                              ModelFamily.XGBOOST.name: "XGBoost",
                              ModelFamily.LINEAR_MODEL.name: "Linear",
                              ModelFamily.CATBOOST.name: "CatBoost",
-                             ModelFamily.ELASTIC_NET.name: 'Linear',
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
