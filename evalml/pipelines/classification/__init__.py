@@ -9,5 +9,7 @@ from .random_forest_binary import RFBinaryClassificationPipeline
 from .random_forest_multiclass import RFMulticlassClassificationPipeline
 from .elasticnet_binary import ENBinaryPipeline
 from .elasticnet_multiclass import ENMulticlassPipeline
+from .extra_trees_binary import ETBinaryClassificationPipeline
+from .extra_trees_multiclass import ETMulticlassClassificationPipeline
 from .baseline_binary import BaselineBinaryPipeline, ModeBaselineBinaryPipeline
 from .baseline_multiclass import BaselineMulticlassPipeline, ModeBaselineMulticlassPipeline

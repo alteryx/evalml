@@ -8,6 +8,8 @@ from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -70,11 +72,15 @@ def test_describe_component():
     lr_classifier = LogisticRegressionClassifier()
     en_classifier = ElasticNetClassifier()
     en_regressor = ElasticNetRegressor()
+    et_classifier = ExtraTreesClassifier(n_estimators=10, max_features="auto")
+    et_regressor = ExtraTreesRegressor(n_estimators=10, max_features="auto")
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
     assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
+    assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10}}
+    assert et_regressor.describe(return_dict=True) == {'name': 'Extra Trees Regressor', 'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10}}
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}

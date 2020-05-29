@@ -78,6 +78,8 @@ Classification Pipelines
     CatBoostMulticlassClassificationPipeline
     ENBinaryPipeline
     ENMulticlassPipeline
+    ETBinaryClassificationPipeline
+    ETMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
@@ -101,6 +103,7 @@ Regression Pipelines
     RFRegressionPipeline
     CatBoostRegressionPipeline
     ENRegressionPipeline
+    ETRegressionPipeline
     LinearRegressionPipeline
     XGBoostRegressionPipeline
     BaselineRegressionPipeline
@@ -182,6 +185,7 @@ Classifiers are components that output a predicted class label.
 
     CatBoostClassifier
     ElasticNetClassifier
+    ExtraTreesClassifier
     RandomForestClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
@@ -200,6 +204,7 @@ Regressors are components that output a predicted target value.
     CatBoostRegressor
     ElasticNetRegressor
     LinearRegressor
+    ExtraTreesRegressor
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor

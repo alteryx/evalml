@@ -12,6 +12,8 @@ from .estimators import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
