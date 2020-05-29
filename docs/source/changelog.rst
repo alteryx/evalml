@@ -21,6 +21,7 @@ Changelog
         * Updated AutoBase with `data_checks` parameter, removed previous `detect_label_leakage` parameter, and added functionality to run data checks before search in AutoML :pr:`765`
         * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Port over all guardrails to use the new DataCheck API :pr:`789`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
@@ -47,6 +48,7 @@ Changelog
     * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+    * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
     * `Recall` disallowed as an objective for AutoML :pr:`784`
 
 
