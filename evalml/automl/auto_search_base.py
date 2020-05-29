@@ -30,6 +30,7 @@ logger = get_logger(__file__)
 
 
 class AutoSearchBase:
+    """Base class for AutoML searches."""
     _MAX_NAME_LEN = 40
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
