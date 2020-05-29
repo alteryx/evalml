@@ -1,7 +1,5 @@
 import inspect
 
-import numpy as np
-
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.pipelines.components import handle_component
@@ -38,18 +36,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.number_features = number_features
         self._first_batch_results = []
 
-    def _can_continue(self):
-        """Are there more pipelines to evaluate?"""
-        max_pipeline_check = self._pipeline_number < (self.max_pipelines or np.inf)
-        return max_pipeline_check and self._batch_number <= len(self.allowed_pipelines)
-
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if not self._can_continue():
+        if self._batch_number > len(self.allowed_pipelines):
             raise StopIteration('No more batches available.')
         next_batch = []
         if self._batch_number == 0:
