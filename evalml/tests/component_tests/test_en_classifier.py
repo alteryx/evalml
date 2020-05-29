@@ -88,3 +88,22 @@ def test_feature_importances(X_y):
     clf.fit(X, y)
 
     np.testing.assert_almost_equal(sk_clf.coef_[0], clf.feature_importances, decimal=5)
+
+
+def test_feature_importances_multi(X_y_multi):
+    X, y = X_y_multi
+
+    sk_clf = SKElasticNetClassifier(loss="log",
+                                    penalty="elasticnet",
+                                    alpha=0.5,
+                                    l1_ratio=0.5,
+                                    n_jobs=-1,
+                                    random_state=0)
+    sk_clf.fit(X, y)
+
+    clf = ElasticNetClassifier()
+    clf.fit(X, y)
+
+    sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
+
+    np.testing.assert_almost_equal(sk_features, clf.feature_importances, decimal=5)
