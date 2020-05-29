@@ -78,6 +78,8 @@ def test_get_pipelines(has_minimal_dependencies):
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
+    with pytest.raises(TypeError, match="model_families parameter is not a list."):
+        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
