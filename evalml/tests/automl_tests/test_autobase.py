@@ -13,11 +13,10 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    LogisticRegressionBinaryPipeline
-)
-from evalml.tuners import RandomSearchTuner
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.problem_types import ProblemTypes
+from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
 def test_pipeline_limits(caplog, X_y):
@@ -45,7 +44,7 @@ def test_pipeline_limits(caplog, X_y):
     automl = AutoClassificationSearch(multiclass=False)
     automl.search(X, y)
     out = caplog.text
-    assert "No search limit is set. Set using max_time or max_pipelines." in out
+    assert "Using default limit of max_pipelines=5." in out
 
 
 def test_search_order(X_y):
@@ -56,35 +55,22 @@ def test_search_order(X_y):
     assert automl.results['search_order'] == correct_order
 
 
-def test_transform_parameters():
-    automl = AutoClassificationSearch(max_pipelines=1, random_state=100, n_jobs=6)
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 8.444214828324364
-        }
-    }
-    parameters_dict = {
-        'Simple Imputer': {'impute_strategy': 'most_frequent'},
-        'Logistic Regression Classifier': {'penalty': 'l2', 'C': 8.444214828324364, 'n_jobs': 6}
-    }
-    assert automl._transform_parameters(LogisticRegressionBinaryPipeline, parameters, 0) == parameters_dict
-
-
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipeline_fit_raises(mock_fit, X_y):
+def test_pipeline_fit_raises(mock_fit, X_y, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
     with pytest.raises(Exception, match=msg):
-        automl.search(X, y)
+        automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Exception during automl search' in out
 
+    caplog.clear()
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
 
@@ -97,27 +83,54 @@ def test_pipeline_fit_raises(mock_fit, X_y):
                 assert np.isnan(score)
 
 
-@patch('evalml.objectives.AUC.score')
-def test_pipeline_score_raises(mock_score, X_y):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_pipeline_score_raises(mock_score, X_y, caplog):
     msg = 'all your model are belong to us'
     mock_score.side_effect = Exception(msg)
     X, y = X_y
     automl = AutoClassificationSearch(max_pipelines=1)
-    automl.search(X, y)
+    with pytest.raises(Exception, match=msg):
+        automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Exception during automl search' in out
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 0
+
+    caplog.clear()
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
+    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    assert np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
+
+@patch('evalml.objectives.AUC.score')
+def test_objective_score_raises(mock_score, X_y, caplog):
+    msg = 'all your model are belong to us'
+    mock_score.side_effect = Exception(msg)
+    X, y = X_y
+    automl = AutoClassificationSearch(max_pipelines=1)
+    automl.search(X, y, raise_errors=True)
+    out = caplog.text
+    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
     assert np.isnan(auc_score)
     assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
+    caplog.clear()
     automl = AutoClassificationSearch(max_pipelines=1)
     automl.search(X, y, raise_errors=False)
+    out = caplog.text
+    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
-
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
@@ -128,15 +141,15 @@ def test_pipeline_score_raises(mock_score, X_y):
 def test_rankings(X_y, X_y_reg):
     X, y = X_y
     model_families = ['random_forest']
-    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl = AutoClassificationSearch(allowed_model_families=model_families, max_pipelines=3)
     automl.search(X, y)
-    assert len(automl.full_rankings) == 2
+    assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
     X, y = X_y_reg
-    automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=2)
+    automl = AutoRegressionSearch(allowed_model_families=model_families, max_pipelines=3)
     automl.search(X, y)
-    assert len(automl.full_rankings) == 2
+    assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
 
@@ -154,7 +167,7 @@ def test_automl_str_search(mock_fit, X_y):
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
         'cv': StratifiedKFold(5),
-        'tuner': RandomSearchTuner,
+        'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
         'additional_objectives': ['Precision', 'AUC'],
@@ -166,7 +179,7 @@ def test_automl_str_search(mock_fit, X_y):
         'Objective': search_params['objective'],
         'Max Time': search_params['max_time'],
         'Max Pipelines': search_params['max_pipelines'],
-        'Possible Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
+        'Allowed Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
@@ -265,7 +278,7 @@ def test_automl_str_no_param_search():
         'Objective': 'Log Loss Binary',
         'Max Time': 'None',
         'Max Pipelines': 'None',
-        'Possible Pipelines': [
+        'Allowed Pipelines': [
             'Logistic Regression Binary Pipeline',
             'Random Forest Binary Classification Pipeline'],
         'Patience': 'None',
@@ -294,7 +307,6 @@ def test_automl_str_no_param_search():
         if isinstance(value, list):
             value = "\n".join(["\t{}".format(item) for item in value])
             assert value in str_rep
-    assert "Possible Pipelines" in str_rep
     assert "Search Results" not in str_rep
 
 
@@ -315,11 +327,64 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
     mock_get_pipelines.return_value = allowed_pipelines
     start_iteration_callback = MagicMock()
     automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback)
-    assert automl.possible_pipelines == allowed_pipelines
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args[0][1]
+    proposed_parameters = start_iteration_callback.call_args_list[1][0][1]
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
-    assert proposed_parameters['RF Classifier Select From Model']['n_jobs'] == -1
+
+
+@patch('evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_tuner_exception(mock_fit, mock_score, mock_is_search_space_exhausted, X_y):
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    X, y = X_y
+    error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
+    mock_is_search_space_exhausted.side_effect = NoParamsException(error_text)
+    clf = AutoRegressionSearch(objective="R2", tuner_class=RandomSearchTuner, max_pipelines=10)
+    with pytest.raises(NoParamsException, match=error_text):
+        clf.search(X, y)
+
+
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
+    automl = AutoClassificationSearch(max_pipelines=5)
+    automl.search(X, y)
+    assert automl.data_check_results is None
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert mock_algo_next_batch.call_count == 1
+    pipeline_results = automl.results.get('pipeline_results', {})
+    assert len(pipeline_results) == 1
+    assert pipeline_results[0].get('score') == 1.0
+
+
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipeline_class, X_y):
+    mock_algo_init.side_effect = Exception('mock algo init')
+    X, y = X_y
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    automl = AutoClassificationSearch(allowed_pipelines=allowed_pipelines, max_pipelines=10)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 1
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 10
+    assert kwargs['allowed_pipelines'] == allowed_pipelines
+
+    allowed_model_families = [ModelFamily.RANDOM_FOREST]
+    automl = AutoClassificationSearch(allowed_model_families=allowed_model_families, max_pipelines=1)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 2
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 1
+    assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
