@@ -2,7 +2,16 @@
 
 Changelog
 ---------
+
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.10.0 May 29, 2020**
     * Enhancements
         * Added baseline models for classification and regression, add functionality to calculate baseline models before searching in AutoML :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
@@ -49,15 +58,15 @@ Changelog
 .. warning::
 
     **Breaking Changes**
-    * The ``detect_label_leakage`` parameter for AutoML classes has been removed and replaced by a ``data_checks`` parameter :pr:`765`
-    * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
-    * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
-    * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
-    * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
-    * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
-    * ``Recall`` disallowed as an objective for AutoML :pr:`784`
-    * ``AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
-    * ``AutoSearchBase`` parameter ``possible_pipelines`` and ``possible_model_families`` have been renamed to ``allowed_pipelines`` and ``allowed_model_families`` :pr:`793`
+        * The ``detect_label_leakage`` parameter for AutoML classes has been removed and replaced by a ``data_checks`` parameter :pr:`765`
+        * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
+        * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
+        * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+        * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
+        * `Recall` disallowed as an objective for AutoML :pr:`784`
+        * ``AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
+        * ``AutoSearchBase`` parameter ``possible_pipelines`` and ``possible_model_families`` have been renamed to ``allowed_pipelines`` and ``allowed_model_families`` :pr:`793`
 
 
 **v0.9.0 Apr. 27, 2020**

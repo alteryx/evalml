@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='evalml',
-    version='0.9.0',
+    version='0.10.0',
     author='Feature Labs, Inc.',
     author_email='support@featurelabs.com',
     url='http://www.featurelabs.com/',
