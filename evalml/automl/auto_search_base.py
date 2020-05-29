@@ -113,6 +113,8 @@ class AutoSearchBase:
         self.allowed_pipelines = allowed_pipelines or get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
         self.allowed_model_families = [handle_model_family(f) for f in (allowed_model_families or [])] or list(set([p.model_family for p in self.allowed_pipelines]))
 
+        self._automl_algorithm = None
+
     @property
     def data_check_results(self):
         return self._data_check_results
@@ -212,7 +214,7 @@ class AutoSearchBase:
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
-        automl_algorithm = IterativeAlgorithm(
+        self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
@@ -248,7 +250,7 @@ class AutoSearchBase:
         while self._check_stopping_condition(start):
             if len(current_batch_pipelines) == 0:
                 try:
-                    current_batch_pipelines = automl_algorithm.next_batch()
+                    current_batch_pipelines = self._automl_algorithm.next_batch()
                 except StopIteration:
                     logger.info('AutoML Algorithm out of recommendations, ending')
                     break
@@ -269,7 +271,7 @@ class AutoSearchBase:
             logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
             score = evaluation_results['cv_score_mean']
             score_to_minimize = -score if self.objective.greater_is_better else score
-            automl_algorithm.add_result(score_to_minimize, pipeline)
+            self._automl_algorithm.add_result(score_to_minimize, pipeline)
             logger.debug('Adding results complete')
             self._add_result(trained_pipeline=pipeline,
                              parameters=parameters,
