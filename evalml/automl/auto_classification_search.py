@@ -52,8 +52,8 @@ class AutoClassificationSearch(AutoSearchBase):
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
-                The default of None indicates all pipelines for this problem type are allowed, optionally filtered
-                by allowed_model_families.
+                The default of None indicates all pipelines for this problem type are allowed. Setting this field will cause
+                allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`

@@ -41,7 +41,8 @@ class AutoRegressionSearch(AutoSearchBase):
                 For strings, time can be specified as seconds, minutes, or hours.
 
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
-                The default of None indicates all pipelines for this problem type are allowed.
+                The default of None indicates all pipelines for this problem type are allowed. Setting this field will cause
+                allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.list_model_families("regression") to see options.
