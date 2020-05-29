@@ -306,7 +306,7 @@ def test_automl_str_no_param_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.automl_algorithm.automl_algorithm.get_pipelines')
+@patch('evalml.automl.auto_search_base.get_pipelines')
 def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
@@ -324,8 +324,7 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args[0][1]
-    print(start_iteration_callback.call_args[0])
+    proposed_parameters = start_iteration_callback.call_args_list[1][0][1]
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
 

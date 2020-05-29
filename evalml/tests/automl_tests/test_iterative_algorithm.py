@@ -1,11 +1,12 @@
 import numpy as np
 import pytest
 
-from evalml.automl.automl_algorithm import (
-    IterativeAlgorithm
-)
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, get_pipelines, LogisticRegressionBinaryPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    LogisticRegressionBinaryPipeline
+)
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 

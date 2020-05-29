@@ -346,7 +346,7 @@ class AutoSearchBase:
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
 
         if self.start_iteration_callback:
-            self.start_iteration_callback(baseline, baseline.parameters)
+            self.start_iteration_callback(baseline.__class__, baseline.parameters)
 
         desc = "▹ {}: ".format(baseline.name)
         if len(desc) > self._MAX_NAME_LEN:

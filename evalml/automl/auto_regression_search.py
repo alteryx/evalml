@@ -16,6 +16,7 @@ class AutoRegressionSearch(AutoSearchBase):
                  max_time=None,
                  patience=None,
                  tolerance=None,
+                 allowed_pipelines=None,
                  allowed_model_families=None,
                  cv=None,
                  start_iteration_callback=None,
@@ -39,8 +40,12 @@ class AutoRegressionSearch(AutoSearchBase):
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
 
-            allowed_model_families (list): The model families to search. By default searches over all
-                model families. Run evalml.list_model_families("regression") to see options.
+            allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
+                The default of None indicates all pipelines for this problem type are allowed.
+
+            allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
+                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
+                to `multiclass` if your problem type is different.
 
             patience (int): Number of iterations without improvement to stop search early. Must be positive.
                 If None, early stopping is disabled. Defaults to None.
@@ -85,6 +90,7 @@ class AutoRegressionSearch(AutoSearchBase):
             patience=patience,
             tolerance=tolerance,
             cv=cv,
+            allowed_pipelines=allowed_pipelines,
             allowed_model_families=allowed_model_families,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
@@ -94,4 +100,3 @@ class AutoRegressionSearch(AutoSearchBase):
             tuner_class=tuner_class,
             verbose=verbose
         )
-        self.problem_type = problem_type

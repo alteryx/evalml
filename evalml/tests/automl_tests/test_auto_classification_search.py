@@ -1,5 +1,5 @@
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,11 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import LogisticRegressionBinaryPipeline, PipelineBase
+from evalml.pipelines import (
+    LogisticRegressionBinaryPipeline,
+    ModeBaselineBinaryPipeline,
+    PipelineBase
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -435,3 +439,20 @@ def test_max_time(X_y):
     clf.search(X, y)
     # search will always run at least one pipeline
     assert len(clf.results['pipeline_results']) == 1
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    start_iteration_callback = MagicMock()
+    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
+                                      allowed_pipelines=allowed_pipelines)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class

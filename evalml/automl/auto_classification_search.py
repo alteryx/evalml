@@ -17,6 +17,7 @@ class AutoClassificationSearch(AutoSearchBase):
                  patience=None,
                  tolerance=None,
                  cv=None,
+                 allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
                  add_result_callback=None,
@@ -50,7 +51,10 @@ class AutoClassificationSearch(AutoSearchBase):
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_model_families (list): The model families to search. By default, searches over all
+            allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
+                The default of None indicates all pipelines for this problem type are allowed.
+
+            allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.list_model_families("binary") to see options. Change `binary`
                 to `multiclass` if your problem type is different.
 
@@ -97,6 +101,7 @@ class AutoClassificationSearch(AutoSearchBase):
             patience=patience,
             tolerance=tolerance,
             cv=cv,
+            allowed_pipelines=allowed_pipelines,
             allowed_model_families=allowed_model_families,
             start_iteration_callback=start_iteration_callback,
             add_result_callback=add_result_callback,
