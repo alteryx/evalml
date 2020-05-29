@@ -42,16 +42,18 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._batch_number > len(self.allowed_pipelines):
-            raise StopIteration('No more batches available.')
+        if self._batch_number == 1:
+            if len(self._first_batch_results) == 0:
+                raise AutoMLAlgorithmException('No results were reported from the first batch')
+            self._first_batch_results = sorted(self._first_batch_results)
+
         next_batch = []
         if self._batch_number == 0:
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
         else:
-            _, pipeline_class = self._pop_best_in_batch()
-            if pipeline_class is None:
-                raise AutoMLAlgorithmException('Some results are needed before the next automl batch can be computed.')
+            idx = (self._batch_number - 1) % len(self._first_batch_results)
+            pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
@@ -67,19 +69,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
         super().add_result(score_to_minimize, pipeline)
-        if self.batch_number <= 1:
+        if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
-
-    def _pop_best_in_batch(self):
-        """Pop the item remaining in the results from the first batch with the best primary objective score."""
-        if len(self._first_batch_results) == 0:
-            return None, None
-        # argmax by score
-        best_idx = 0
-        for idx, (score, _) in enumerate(self._first_batch_results):
-            if score < self._first_batch_results[best_idx][0]:
-                best_idx = idx
-        return self._first_batch_results.pop(best_idx)
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""

@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.automl_algorithm import (
+    AutoMLAlgorithmException,
+    IterativeAlgorithm
+)
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -49,8 +52,13 @@ def dummy_binary_pipeline_classes():
         estimator = MockEstimator
         component_graph = [MockEstimator()]
 
+    class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator()]
+
     return [MockBinaryClassificationPipeline1,
-            MockBinaryClassificationPipeline2]
+            MockBinaryClassificationPipeline2,
+            MockBinaryClassificationPipeline3]
 
 
 def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
@@ -64,8 +72,8 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == 0
     assert algo.batch_number == 1
 
-    with pytest.raises(StopIteration):
-        assert algo.next_batch() == []
+    with pytest.raises(AutoMLAlgorithmException, match='No results were reported from the first batch'):
+        algo.next_batch()
     assert algo.batch_number == 1
     assert algo.pipeline_number == 0
 
@@ -89,25 +97,19 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
         algo.add_result(score, pipeline)
 
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
-    next_batch = algo.next_batch()
-    assert len(next_batch) == algo.pipelines_per_batch
-    cls = dummy_binary_pipeline_classes[0]
-    assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + algo.pipelines_per_batch
-    assert algo.batch_number == 2
-    print([p.parameters for p in next_batch])
-    assert any([p.parameters != (p.__class__)({}).parameters for p in next_batch])
-    scores = -np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
-
-    next_batch = algo.next_batch()
-    assert len(next_batch) == algo.pipelines_per_batch
-    cls = dummy_binary_pipeline_classes[1]
-    assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + 2 * algo.pipelines_per_batch
-    assert algo.batch_number == 3
-    assert any([p.parameters != (p.__class__)({}).parameters for p in next_batch])
-
-    with pytest.raises(StopIteration, match='No more batches available'):
-        algo.next_batch()
+    last_batch_number = algo.batch_number
+    all_parameters = []
+    while algo.batch_number < 10:
+        next_batch = algo.next_batch()
+        assert len(next_batch) == algo.pipelines_per_batch
+        cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % len(dummy_binary_pipeline_classes)]
+        assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
+        assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + (algo.batch_number - 1) * algo.pipelines_per_batch
+        assert algo.batch_number == last_batch_number + 1
+        last_batch_number = algo.batch_number
+        print([p.parameters for p in next_batch])
+        all_parameters.extend([p.parameters for p in next_batch])
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline)
+    assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])

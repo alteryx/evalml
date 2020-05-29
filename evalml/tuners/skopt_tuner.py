@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from skopt import Optimizer
 
@@ -54,5 +56,7 @@ class SKOptTuner(Tuner):
         Returns:
             dict: proposed pipeline parameters
         """
-        flat_parameters = self.opt.ask()
-        return self._convert_to_pipeline_parameters(flat_parameters)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            flat_parameters = self.opt.ask()
+            return self._convert_to_pipeline_parameters(flat_parameters)
