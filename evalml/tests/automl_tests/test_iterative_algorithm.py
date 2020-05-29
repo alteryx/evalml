@@ -1,39 +1,35 @@
-from unittest.mock import patch
-
 import numpy as np
 import pytest
 
 from evalml.automl.automl_algorithm import (
-    AutoMLAlgorithmException,
     IterativeAlgorithm
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import F1, LogLossBinary
-from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.pipelines import BinaryClassificationPipeline, get_pipelines, LogisticRegressionBinaryPipeline
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 
 
 def test_iterative_algorithm_init_iterative():
-    IterativeAlgorithm(F1)
+    IterativeAlgorithm()
 
 
 def test_iterative_algorithm_init():
-    algo = IterativeAlgorithm(F1)
+    algo = IterativeAlgorithm()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY)
+    assert algo.allowed_pipelines == []
+    assert algo.allowed_model_families == []
 
 
-def test_iterative_algorithm_model_families():
-    model_families = [ModelFamily.RANDOM_FOREST]
-    algo = IterativeAlgorithm(F1, allowed_model_families=model_families)
+def test_iterative_algorithm_allowed_inputs():
+    allowed_pipelines = [LogisticRegressionBinaryPipeline]
+    allowed_model_families = [ModelFamily.RANDOM_FOREST]
+    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines, allowed_model_families=allowed_model_families)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_model_families == model_families
-    assert algo.allowed_pipelines == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families)
-    with pytest.raises(TypeError, match='model_families parameter is not a list.'):
-        IterativeAlgorithm(F1, allowed_model_families='family')
+    assert algo.allowed_model_families == allowed_model_families
+    assert algo.allowed_pipelines == allowed_pipelines
 
 
 @pytest.fixture
@@ -59,32 +55,30 @@ def dummy_binary_pipeline_classes():
             MockBinaryClassificationPipeline2]
 
 
-@patch('evalml.automl.automl_algorithm.automl_algorithm.get_pipelines')
-def test_iterative_algorithm_empty(mock_get_pipelines, dummy_binary_pipeline_classes):
-    mock_get_pipelines.return_value = dummy_binary_pipeline_classes
-    algo = IterativeAlgorithm(LogLossBinary)
-    mock_get_pipelines.assert_called_once()
+def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
+    algo = IterativeAlgorithm()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
+    assert algo.allowed_pipelines == []
+    assert algo.allowed_model_families == []
 
     next_batch = algo.next_batch()
-    assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
+    assert [p.__class__ for p in next_batch] == []
+    assert algo.pipeline_number == 0
     assert algo.batch_number == 1
 
-    with pytest.raises(AutoMLAlgorithmException, match='Some results are needed before the next automl batch can be computed.'):
-        algo.next_batch()
-    assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
+    with pytest.raises(StopIteration):
+        assert algo.next_batch() == []
     assert algo.batch_number == 1
+    assert algo.pipeline_number == 0
 
 
-@patch('evalml.automl.automl_algorithm.automl_algorithm.get_pipelines')
-def test_iterative_algorithm_results(mock_get_pipelines, dummy_binary_pipeline_classes):
-    mock_get_pipelines.return_value = dummy_binary_pipeline_classes
-    algo = IterativeAlgorithm(LogLossBinary)
-    mock_get_pipelines.assert_called_once()
+def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, allowed_model_families=[ModelFamily.NONE])
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
+    assert algo.allowed_pipelines == dummy_binary_pipeline_classes
+    assert algo.allowed_model_families == [ModelFamily.NONE]
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()

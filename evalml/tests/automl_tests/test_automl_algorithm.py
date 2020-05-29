@@ -1,19 +1,16 @@
 import pytest
 
 from evalml.automl.automl_algorithm import AutoMLAlgorithm
-from evalml.objectives import F1
 
 
 def test_automl_algorithm_init_base():
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Can't instantiate abstract class AutoMLAlgorithm with abstract methods next_batch"):
         AutoMLAlgorithm()
-    with pytest.raises(TypeError):
-        AutoMLAlgorithm(F1)
 
 
 class DummyAlgorithm(AutoMLAlgorithm):
-    def __init__(self, objective, dummy_pipelines=None):
-        super().__init__(objective)
+    def __init__(self, dummy_pipelines=None):
+        super().__init__()
         self._dummy_pipelines = dummy_pipelines or []
 
     def next_batch(self):
@@ -25,11 +22,11 @@ class DummyAlgorithm(AutoMLAlgorithm):
 
 
 def test_automl_algorithm_dummy():
-    algo = DummyAlgorithm(F1)
+    algo = DummyAlgorithm()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
 
-    algo = DummyAlgorithm(F1, dummy_pipelines=['pipeline 3', 'pipeline 2', 'pipeline 1'])
+    algo = DummyAlgorithm(dummy_pipelines=['pipeline 3', 'pipeline 2', 'pipeline 1'])
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.next_batch() == 'pipeline 1'

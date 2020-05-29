@@ -11,10 +11,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
 
     def __init__(self,
-                 objective,
-                 max_pipelines=None,
-                 allowed_model_families=None,
                  allowed_pipelines=None,
+                 allowed_model_families=None,
+                 max_pipelines=None,
                  tuner_class=None,
                  random_state=0,
                  pipelines_per_batch=5,
@@ -23,20 +22,18 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
-            objective (ObjectiveBase): An objective which defines the problem type and whether larger or smaller scores are more optimal
-            max_pipelines (int): The maximum number of pipelines to be evaluated.
-            allowed_model_families (list(str, ModelFamily)): The model families enabled in the search. The default value of None indicates all model families are allowed.
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
+            allowed_model_families (list(str, ModelFamily)): The model families enabled in the search. The default value of None indicates all model families are allowed.
+            max_pipelines (int): The maximum number of pipelines to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
             pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
         """
-        super().__init__(objective=objective,
-                         max_pipelines=max_pipelines,
+        super().__init__(allowed_pipelines=allowed_pipelines,
                          allowed_model_families=allowed_model_families,
-                         allowed_pipelines=allowed_pipelines,
+                         max_pipelines=max_pipelines,
                          tuner_class=tuner_class,
                          random_state=random_state)
         self.pipelines_per_batch = pipelines_per_batch
@@ -72,17 +69,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
-    def add_result(self, score, pipeline):
+    def add_result(self, score_to_minimize, pipeline):
         """Register results from evaluating a pipeline
 
         Arguments:
-            score (float): The score obtained by this pipeline on the primary objective.
+            score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
-        super().add_result(score, pipeline)
+        super().add_result(score_to_minimize, pipeline)
         if self.batch_number <= 1:
-            # use score_to_minimize so we can use one comparator in _get_best_in_batch
-            score_to_minimize = -score if self.objective.greater_is_better else score
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
     def _pop_best_in_batch(self):

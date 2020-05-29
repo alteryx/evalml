@@ -17,7 +17,8 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline
+    ModeBaselineMulticlassPipeline,
+    get_pipelines
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
@@ -41,6 +42,7 @@ class AutoSearchBase:
                  patience=None,
                  tolerance=None,
                  cv=None,
+                 allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
                  add_result_callback=None,
@@ -108,6 +110,9 @@ class AutoSearchBase:
 
         self._data_check_results = None
 
+        self.allowed_pipelines = allowed_pipelines or get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
+        self.allowed_model_families = list(set([p.model_family for p in self.allowed_pipelines]))
+
     @property
     def data_check_results(self):
         return self._data_check_results
@@ -129,6 +134,7 @@ class AutoSearchBase:
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Pipelines: {self.max_pipelines}\n"
+            f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Cross Validation: {self.cv}\n"
@@ -207,8 +213,8 @@ class AutoSearchBase:
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
         automl_algorithm = IterativeAlgorithm(
-            objective=self.objective,
             max_pipelines=self.max_pipelines,
+            allowed_pipelines=self.allowed_pipelines,
             allowed_model_families=self.allowed_model_families,
             tuner_class=self.tuner_class,
             random_state=self.random_state,
@@ -262,7 +268,9 @@ class AutoSearchBase:
 
             evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
             logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
-            automl_algorithm.add_result(evaluation_results['cv_score_mean'], pipeline)
+            score = evaluation_results['cv_score_mean']
+            score_to_minimize = -score if self.objective.greater_is_better else score
+            automl_algorithm.add_result(score_to_minimize, pipeline)
             logger.debug('Adding results complete')
             self._add_result(trained_pipeline=pipeline,
                              parameters=parameters,
