@@ -62,41 +62,6 @@ def test_summary():
     assert ETBinaryClassificationPipeline.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer'
 
 
-def test_et_objective_tuning(X_y):
-    X, y = X_y
-
-    # The classifier predicts accurately with perfect confidence given the original data,
-    # so some is removed for the setting threshold test to have significance
-    X[0] = np.zeros(len(X[0]))
-    X[1] = np.zeros(len(X[1]))
-    X[2] = np.zeros(len(X[0]))
-    X[3] = np.zeros(len(X[1]))
-
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'Extra Trees Classifier': {
-            "n_estimators": 20,
-            "max_features": "log2"
-        }
-    }
-    clf = ETBinaryClassificationPipeline(parameters=parameters)
-    clf.fit(X, y)
-    y_pred = clf.predict(X)
-
-    # testing objective parameter passed in does not change results
-    objective = Precision()
-    y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-    # testing objective parameter passed and set threshold does change results
-    with pytest.raises(AssertionError):
-        clf.threshold = 0.01
-        y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
-
-
 def test_et_objective_type(X_y):
     X, y = X_y
 
