@@ -3,6 +3,7 @@ from skopt import Optimizer
 
 from .tuner import Tuner
 from .tuner_exceptions import ParameterError
+
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)

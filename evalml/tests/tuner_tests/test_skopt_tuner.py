@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 from skopt.space import Integer, Real
-from unittest.mock import patch
 
+from evalml.tuners import ParameterError, Tuner
 from evalml.tuners.skopt_tuner import SKOptTuner
-from evalml.tuners import Tuner, ParameterError
 
 random_state = 0
 
