@@ -1,5 +1,5 @@
 import time
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -20,6 +20,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
+    ModeBaselineBinaryPipeline,
     PipelineBase,
     get_pipelines
 )
@@ -30,14 +31,9 @@ def test_init(X_y):
     X, y = X_y
 
     automl = AutoClassificationSearch(multiclass=False, max_pipelines=1, n_jobs=4)
-
-    assert automl.n_jobs == 4
-
-    # check loads all pipelines
-    assert get_pipelines(problem_type=ProblemTypes.BINARY) == automl.possible_pipelines
-
     automl.search(X, y)
 
+    assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
@@ -81,14 +77,6 @@ def test_cv(X_y):
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
-
-
-def test_init_select_model_families():
-    model_families = [ModelFamily.RANDOM_FOREST]
-    automl = AutoClassificationSearch(allowed_model_families=model_families)
-
-    assert get_pipelines(problem_type=ProblemTypes.BINARY, model_families=model_families) == automl.possible_pipelines
-    assert model_families == automl.possible_model_families
 
 
 def test_max_pipelines(X_y):
@@ -190,25 +178,11 @@ def test_categorical_classification(X_y_categorical_classification):
 def test_random_state(X_y):
     X, y = X_y
 
-    fc = FraudCost(retry_percentage=.5,
-                   interchange_fee=.02,
-                   fraud_payout_percentage=.75,
-                   amount_col=10)
-
     automl = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl.search(X, y)
 
     automl_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl_1.search(X, y)
-    assert automl.rankings.equals(automl_1.rankings)
-
-    # test an objective that requires fitting
-    automl = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl.search(X, y)
-
-    automl_1 = AutoClassificationSearch(objective=fc, max_pipelines=5, random_state=30)
-    automl_1.search(X, y)
-
     assert automl.rankings.equals(automl_1.rankings)
 
 
@@ -314,11 +288,6 @@ def test_describe_pipeline_objective_ordered(X_y, caplog):
     expected_objective_order = " ".join(objectives_names)
 
     assert expected_objective_order in out_stripped
-
-
-def test_model_families_as_list():
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        AutoClassificationSearch(objective='AUC', allowed_model_families='linear_model', max_pipelines=2)
 
 
 def test_max_time_units():
@@ -457,3 +426,47 @@ def test_max_time(X_y):
     clf.search(X, y)
     # search will always run at least one pipeline
     assert len(clf.results['pipeline_results']) == 1
+
+
+def test_automl_allowed_pipelines_init(dummy_binary_pipeline_class):
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
+    expected_pipelines = [dummy_binary_pipeline_class]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = [dummy_binary_pipeline_class]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    start_iteration_callback = MagicMock()
+    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
+                                      allowed_pipelines=allowed_pipelines)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class

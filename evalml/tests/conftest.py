@@ -126,6 +126,7 @@ def dummy_regression_pipeline():
         name = "Mock Regressor"
         model_family = ModelFamily.NONE
         supported_problem_types = [ProblemTypes.REGRESSION]
+        hyperparameter_ranges = {}
 
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
