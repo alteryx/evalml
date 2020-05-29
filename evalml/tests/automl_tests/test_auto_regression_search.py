@@ -7,12 +7,15 @@ import pytest
 from evalml import AutoRegressionSearch
 from evalml.demos import load_diabetes
 from evalml.exceptions import ObjectiveNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
     LinearRegressionPipeline,
     MeanBaselineRegressionPipeline,
-    PipelineBase
+    PipelineBase,
+    get_pipelines
 )
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture
@@ -167,9 +170,36 @@ def test_log_metrics_only_passed_directly():
     assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
 
 
+def test_automl_allowed_pipelines_init(dummy_regression_pipeline):
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION)
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=None)
+    expected_pipelines = [dummy_regression_pipeline.__class__]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
+    expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = [dummy_regression_pipeline.__class__]
+    assert automl.allowed_pipelines == expected_pipelines
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+
+
 @patch('evalml.pipelines.RegressionPipeline.score')
 @patch('evalml.pipelines.RegressionPipeline.fit')
-def test_automl_allowed_pipelines(mock_fit, mock_score, dummy_regression_pipeline, X_y):
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_pipeline, X_y):
     X, y = X_y
     mock_score.return_value = {'R2': 1.0}
 

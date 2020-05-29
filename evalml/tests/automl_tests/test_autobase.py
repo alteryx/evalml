@@ -13,7 +13,9 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
@@ -358,3 +360,27 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y):
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     assert pipeline_results[0].get('score') == 1.0
+
+
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipeline_class, X_y):
+    mock_algo_init.side_effect = Exception('mock algo init')
+    X, y = X_y
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    automl = AutoClassificationSearch(allowed_pipelines=allowed_pipelines, max_pipelines=10)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 1
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 10
+    assert kwargs['allowed_pipelines'] == allowed_pipelines
+
+    allowed_model_families = [ModelFamily.RANDOM_FOREST]
+    automl = AutoClassificationSearch(allowed_model_families=allowed_model_families, max_pipelines=1)
+    with pytest.raises(Exception, match='mock algo init'):
+        automl.search(X, y)
+    assert mock_algo_init.call_count == 2
+    _, kwargs = mock_algo_init.call_args
+    assert kwargs['max_pipelines'] == 1
+    assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)

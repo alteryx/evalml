@@ -13,6 +13,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
+from evalml.model_family import handle_model_family
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
@@ -110,7 +111,7 @@ class AutoSearchBase:
         self._data_check_results = None
 
         self.allowed_pipelines = allowed_pipelines or get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
-        self.allowed_model_families = allowed_model_families or list(set([p.model_family for p in self.allowed_pipelines]))
+        self.allowed_model_families = [handle_model_family(f) for f in (allowed_model_families or [])] or list(set([p.model_family for p in self.allowed_pipelines]))
 
     @property
     def data_check_results(self):
