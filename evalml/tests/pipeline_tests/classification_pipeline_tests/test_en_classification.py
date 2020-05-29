@@ -15,12 +15,6 @@ def test_en_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'Elastic Net Classifier': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
@@ -33,10 +27,6 @@ def test_en_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Classifier Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
         'Elastic Net Classifier': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
@@ -45,12 +35,12 @@ def test_en_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert clf.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert ENBinaryPipeline.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
-    assert ENMulticlassPipeline.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert ENBinaryPipeline.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer'
+    assert ENMulticlassPipeline.summary == 'Elastic Net Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 @patch('evalml.pipelines.PipelineBase._transform')

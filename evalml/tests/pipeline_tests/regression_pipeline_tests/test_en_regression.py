@@ -14,12 +14,6 @@ def test_en_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'Elastic Net Regressor': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
@@ -32,10 +26,6 @@ def test_en_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {'top_n': 10},
-        'RF Regressor Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf
-        },
         'Elastic Net Regressor': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
@@ -44,11 +34,11 @@ def test_en_init(X_y_reg):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Elastic Net Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert clf.summary == 'Elastic Net Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert ENRegressionPipeline.summary == 'Elastic Net Regressor w/ One Hot Encoder + Simple Imputer + RF Regressor Select From Model'
+    assert ENRegressionPipeline.summary == 'Elastic Net Regressor w/ One Hot Encoder + Simple Imputer'
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
