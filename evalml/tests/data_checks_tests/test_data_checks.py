@@ -32,32 +32,29 @@ def test_data_checks(X_y):
 
     data_checks_list = [MockDataCheck(), MockDataCheckWarning(), MockDataCheckError(), MockDataCheckErrorAndWarning()]
     data_checks = DataChecks(data_checks=data_checks_list)
-    messages = data_checks.validate(X, y)
-    assert messages == [DataCheckWarning("warning one", "MockDataCheckWarning"),
-                        DataCheckError("error one", "MockDataCheckError"),
-                        DataCheckError("error two", "MockDataCheckErrorAndWarning"),
-                        DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
+    assert data_checks.validate(X, y) == [DataCheckWarning("warning one", "MockDataCheckWarning"),
+                                          DataCheckError("error one", "MockDataCheckError"),
+                                          DataCheckError("error two", "MockDataCheckErrorAndWarning"),
+                                          DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
 
 
 def test_empty_data_checks(X_y):
     X, y = X_y
     data_checks = EmptyDataChecks()
-    messages = data_checks.validate(X, y)
-    assert messages == []
+    assert data_checks.validate(X, y) == []
 
 
 def test_default_data_checks(X_y):
-    X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+    X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
-                      'no_null': [1, 2, 3, 4, 5]})
+                      'no_null': [1, 2, 3, 4, 5],
+                      'id': [0, 1, 2, 3, 4],
+                      'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks()
-    messages = data_checks.validate(X)
-    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
-                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck")]
-
-    messages = data_checks.validate(X, y)
-    assert messages == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
-                        DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "DetectHighlyNullDataCheck"),
-                        DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]
+    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                          DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck"),
+                                          DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]

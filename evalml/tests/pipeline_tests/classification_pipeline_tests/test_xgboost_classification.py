@@ -28,12 +28,6 @@ def test_xg_init(X_y):
         'One Hot Encoder': {
             'top_n': 10
         },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X[0]),
-            "n_estimators": 20,
-            "max_depth": 5
-        },
         'XGBoost Classifier': {
             "n_estimators": 20,
             "eta": 0.2,
@@ -52,10 +46,6 @@ def test_xg_init(X_y):
         'One Hot Encoder': {
             'top_n': 10
         },
-        'RF Classifier Select From Model': {
-            'percent_features': 1.0,
-            'threshold': -np.inf,
-        },
         'XGBoost Classifier': {
             'eta': 0.2,
             'max_depth': 5,
@@ -66,11 +56,11 @@ def test_xg_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
-    assert clf.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert clf.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 def test_summary():
-    assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer + RF Classifier Select From Model'
+    assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer'
 
 
 def test_xgboost_objective_tuning(X_y):

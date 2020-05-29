@@ -4,10 +4,60 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from sklearn.metrics import \
+    precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
 from evalml.utils import import_or_raise
+
+
+def precision_recall_curve(y_true, y_pred_proba):
+    """
+    Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
+
+    Arguments:
+        y_true (pd.Series or np.array): true binary labels.
+        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+
+    Returns:
+        list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
+
+                  * `precision`: Precision values.
+                  * `recall`: Recall values.
+                  * `thresholds`: Threshold values used to produce the precision and recall.
+                  * `auc_score`: The area under the ROC curve.
+    """
+    precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
+    auc_score = sklearn_auc(recall, precision)
+    return {'precision': precision,
+            'recall': recall,
+            'thresholds': thresholds,
+            'auc_score': auc_score}
+
+
+def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
+    """Generate and display a precision-recall plot.
+
+    Arguments:
+        y_true (pd.Series or np.array): true binary labels.
+        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        title_addition (str or None): if not None, append to plot title. Default None.
+
+    Returns:
+        plotly.Figure representing the precision-recall plot generated
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
+    title = 'Precision-Recall{}'.format('' if title_addition is None else (' ' + title_addition))
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Recall', 'range': [-0.05, 1.05]},
+                        yaxis={'title': 'Precision', 'range': [-0.05, 1.05]})
+    data = []
+    data.append(_go.Scatter(x=precision_recall_curve_data['recall'], y=precision_recall_curve_data['precision'],
+                            name='Precision-Recall (AUC {:06f})'.format(precision_recall_curve_data['auc_score']),
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
 
 
 def roc_curve(y_true, y_pred_proba):

@@ -76,6 +76,8 @@ Classification Pipelines
 
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
+    ETBinaryClassificationPipeline
+    ETMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
@@ -98,6 +100,7 @@ Regression Pipelines
 
     RFRegressionPipeline
     CatBoostRegressionPipeline
+    ETRegressionPipeline
     LinearRegressionPipeline
     XGBoostRegressionPipeline
     BaselineRegressionPipeline
@@ -121,6 +124,8 @@ Pipeline Graph Utils
     :toctree: generated
     :nosignatures:
 
+    precision_recall_curve
+    graph_precision_recall_curve
     roc_curve
     graph_roc_curve
     confusion_matrix
@@ -176,6 +181,7 @@ Classifiers are components that output a predicted class label.
     :nosignatures:
 
     CatBoostClassifier
+    ExtraTreesClassifier
     RandomForestClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
@@ -193,6 +199,7 @@ Regressors are components that output a predicted target value.
 
     CatBoostRegressor
     LinearRegressor
+    ExtraTreesRegressor
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
@@ -337,8 +344,8 @@ Tuners
 Data Checks
 ===========
 
-Data Check Base Classes
-~~~~~~~~~~~~~~~~~~~~~~~
+Data Check Classes
+~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: data_check_class.rst
@@ -346,6 +353,11 @@ Data Check Base Classes
 
     DataCheck
     InvalidTargetsDataCheck
+    HighlyNullDataCheck
+    IDColumnsDataCheck
+    LabelLeakageDataCheck
+    OutliersDataCheck
+
 
 .. autosummary::
     :toctree: generated
@@ -353,6 +365,7 @@ Data Check Base Classes
     :nosignatures:
 
     DataChecks
+    DefaultDataChecks
 
 
 Data Check Messages
@@ -376,21 +389,6 @@ Data Check Message Types
     :nosignatures:
 
     DataCheckMessageType
-
-
-.. currentmodule:: evalml.guardrails
-
-Guardrails
-=============
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    detect_highly_null
-    detect_label_leakage
-    detect_outliers
-    detect_id_columns
 
 
 .. currentmodule:: evalml.utils

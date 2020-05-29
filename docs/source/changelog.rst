@@ -8,6 +8,8 @@ Changelog
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
         * Added data check to check for problematic target labels :pr:`814`
+        * Added new Pipeline option `ExtraTrees` :pr:`790`
+        * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
     * Fixes
         * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
@@ -21,9 +23,11 @@ Changelog
         * Updated AutoBase with `data_checks` parameter, removed previous `detect_label_leakage` parameter, and added functionality to run data checks before search in AutoML :pr:`765`
         * Updated our logger to use Python's logging utils :pr:`763`
         * Refactor most of `AutoSearchBase._do_iteration` impl into `AutoSearchBase._evaluate` :pr:`762`
+        * Port over all guardrails to use the new DataCheck API :pr:`789`
         * Expanded `import_or_raise` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
+        * Removed feature selection from pipelines :pr:`819`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -34,8 +38,10 @@ Changelog
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Update codecov client :pr:`782`
         * Updated AutoBase __str__ test to include no parameters case :pr:`783`
+        * Added unit tests for `ExtraTrees` pipeline :pr:`790`
         * If codecov fails to upload, fail build :pr:`810`
         * Updated Python version of dependency action :pr:`816`
+        * Update the dependency update bot to use a suffix when creating branches :pr:`817`
 
 .. warning::
 
@@ -45,6 +51,7 @@ Changelog
     * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
     * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
     * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+    * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
     * `Recall` disallowed as an objective for AutoML :pr:`784`
 
 
