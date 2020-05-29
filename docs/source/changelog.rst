@@ -16,6 +16,7 @@ Changelog
         * Added baseline models for classification and regression, add functionality to calculate baseline models before searching in AutoML :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * Add Elastic Net as a pipeline option :pr:`812`
         * Added new Pipeline option `ExtraTrees` :pr:`790`
         * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
         * Update the default automl algorithm to search in batches, starting with default parameters for each pipeline and iterating from there :pr:`793`

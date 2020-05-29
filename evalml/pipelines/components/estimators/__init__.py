@@ -4,11 +4,13 @@ from .classifiers import (LogisticRegressionClassifier,
                           RandomForestClassifier,
                           XGBoostClassifier,
                           CatBoostClassifier,
+                          ElasticNetClassifier,
                           ExtraTreesClassifier,
                           BaselineClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
                          XGBoostRegressor,
+                         ElasticNetRegressor,
                          ExtraTreesRegressor,
                          BaselineRegressor)

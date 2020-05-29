@@ -12,6 +12,8 @@ from .estimators import (
     ExtraTreesRegressor,
     CatBoostRegressor,
     XGBoostRegressor,
+    ElasticNetClassifier,
+    ElasticNetRegressor,
     BaselineClassifier,
     BaselineRegressor
 )
