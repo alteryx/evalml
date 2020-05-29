@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 from skopt.space import Integer, Real
 
+from evalml.tuners import ParameterError, Tuner
 from evalml.tuners.skopt_tuner import SKOptTuner
-from evalml.tuners.tuner import Tuner
 
 random_state = 0
 
@@ -28,6 +30,11 @@ def test_skopt_tuner_init():
         SKOptTuner({'My Component': {'param a': None}})
     SKOptTuner({})
     SKOptTuner({'My Component': {}})
+
+
+def test_skopt_tuner_is_search_space_exhausted():
+    tuner = SKOptTuner({})
+    assert not tuner.is_search_space_exhausted()
 
 
 def test_skopt_tuner_basic():
@@ -92,11 +99,11 @@ def test_skopt_tuner_invalid_parameters_score():
         'param c': ['option a', 'option b', 'option c']
     }}
     tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_state)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match='Pipeline parameters missing required field "param a" for component "Mock Classifier"'):
         tuner.add({}, 0.5)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match='Pipeline parameters missing required field "param a" for component "Mock Classifier"'):
         tuner.add({'Mock Classifier': {}}, 0.5)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match='Pipeline parameters missing required field "param b" for component "Mock Classifier"'):
         tuner.add({'Mock Classifier': {'param a': 0}}, 0.5)
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 0}}, 0.5)
@@ -110,8 +117,13 @@ def test_skopt_tuner_invalid_parameters_score():
         tuner.add({'Mock Classifier': {'param a': np.nan, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
     with pytest.raises(ValueError, match="is not within the bounds of the space"):
         tuner.add({'Mock Classifier': {'param a': np.inf, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
-    with pytest.raises(TypeError):
+    with pytest.raises(ParameterError, match="Invalid parameters specified to SKOptTuner.add"):
         tuner.add({'Mock Classifier': {'param a': None, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
+    with patch('evalml.tuners.skopt_tuner.Optimizer.tell') as mock_optimizer_tell:
+        msg = 'Mysterious internal error'
+        mock_optimizer_tell.side_effect = Exception(msg)
+        with pytest.raises(Exception, match=msg):
+            tuner.add({'Mock Classifier': {'param a': 0, 'param b': 0.0, 'param c': 'option a'}}, 0.5)
     tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
     tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.nan)
     tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, np.inf)

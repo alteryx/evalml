@@ -12,7 +12,7 @@ class XGBoostClassifier(Estimator):
     name = "XGBoost Classifier"
     hyperparameter_ranges = {
         "eta": Real(0.000001, 1),
-        "max_depth": Integer(1, 20),
+        "max_depth": Integer(1, 10),
         "min_child_weight": Real(1, 10),
         "n_estimators": Integer(1, 1000),
     }
@@ -24,7 +24,7 @@ class XGBoostClassifier(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=3, min_child_weight=1, n_estimators=100, random_state=0):
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"eta": eta,
                       "max_depth": max_depth,
