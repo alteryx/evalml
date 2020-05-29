@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.objectives import Precision, PrecisionMicro
+from evalml.objectives import PrecisionMicro
 from evalml.pipelines import (
     ETBinaryClassificationPipeline,
     ETMulticlassClassificationPipeline
