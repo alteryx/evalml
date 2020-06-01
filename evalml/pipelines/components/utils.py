@@ -28,6 +28,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
+    PerColumnImputer,
     StandardScaler,
     Transformer
 )
