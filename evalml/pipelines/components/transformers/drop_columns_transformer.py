@@ -30,10 +30,9 @@ class DropColumnTransformer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            # not dataframe: no names! try indices?
-            return X
         cols = self.parameters["columns"]
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         if not set(cols).issubset(X.columns):
             raise ValueError("Columns to drop do not exist in input data")
         return X.drop(columns=cols, axis=1)
