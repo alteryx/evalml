@@ -25,10 +25,10 @@ from .transformers import (
     CategoricalEncoder,
     FeatureSelector,
     OneHotEncoder,
+    PerColumnImputer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
-    PerColumnImputer,
     StandardScaler,
     Transformer
 )
