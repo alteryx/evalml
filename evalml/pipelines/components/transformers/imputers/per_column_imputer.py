@@ -21,10 +21,9 @@ class PerColumnImputer(Transformer):
         """
         parameters = {"impute_strategies": impute_strategies,
                       "fill_value": fill_value}
-        if impute_strategies:
-            imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies}
-        else:
-            raise ValueError("Please provide impute strategies in a dictionary as `column:strategy`")
+
+        imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies} if impute_strategies else None
+
 
         super().__init__(parameters=parameters,
                          component_obj=imputers,
