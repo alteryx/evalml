@@ -24,7 +24,6 @@ class PerColumnImputer(Transformer):
 
         imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies} if impute_strategies else None
 
-
         super().__init__(parameters=parameters,
                          component_obj=imputers,
                          random_state=random_state)
