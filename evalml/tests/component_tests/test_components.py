@@ -16,6 +16,7 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    PerColumnImputer,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -61,10 +62,12 @@ def test_describe(test_classes):
 def test_describe_component():
     enc = OneHotEncoder()
     imputer = SimpleImputer("mean")
+    column_imputer = PerColumnImputer({"a":"mean"})
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10}}
     assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
+    assert column_imputer.describe(return_dict=True) == {'name': 'Per Column Imputer', 'parameters': {'impute_strategies': {"a":"mean"}, 'fill_value': None}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
     assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf, 'number_features': 5}}
 
