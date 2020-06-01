@@ -16,9 +16,6 @@ class InvalidTargetsDataCheck(DataCheck):
         Returns:
             list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.
 
-                - abc
-                - def
-
         Example:
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None])

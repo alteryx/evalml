@@ -18,7 +18,7 @@ def test_invalid_target_data_check_error():
                                                                                         DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]
 
 
-def test_highly_null_data_check_input_formats():
+def test_invalid_target_data_input_formats():
     invalid_targets_check = InvalidTargetsDataCheck()
     X = pd.DataFrame()
 
