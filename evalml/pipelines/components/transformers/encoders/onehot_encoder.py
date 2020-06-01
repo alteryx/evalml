@@ -12,10 +12,11 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, top_n=10, categories="auto", drop=None, handle_unknown="error", random_state=0):
+    def __init__(self, top_n=10, categories="auto", drop=None, handle_unknown="ignore", random_state=0):
         """Initalizes self."""
         parameters = {"top_n": top_n,
                       "categories": categories}
+        self.encoder = None
         self.drop = drop
         self.handle_unknown = handle_unknown
         super().__init__(parameters=parameters,
@@ -37,7 +38,7 @@ class OneHotEncoder(CategoricalEncoder):
         X_t = X
         cols_to_encode = self._get_cat_cols(X_t)
         self.col_unique_values = {}
-        categories = [[]]*len(X_t.columns)
+        categories = []
 
         # Find the top_n most common categories in each column
         for idx, col in enumerate(X_t.columns):
@@ -49,18 +50,22 @@ class OneHotEncoder(CategoricalEncoder):
                     value_counts = value_counts.sample(frac=1, random_state=self.random_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
+                unique_values = np.sort(unique_values)
                 self.col_unique_values[col] = unique_values
-                categories[idx] = unique_values
+                categories.append(unique_values)
+
+        if len(cols_to_encode) == 0:
+            categories = 'auto'
 
         # Create an encoder to pass off the rest of the computation to
         encoder = SKOneHotEncoder(categories=categories,
                                   drop=self.drop,
                                   handle_unknown=self.handle_unknown)
-        self._component_obj = encoder
-        encoder = encoder.fit(X_t)
-        return self
+        # self._component_obj = encoder
+        print('COL UNIQUE VALS', self.col_unique_values)
+        self.encoder = encoder.fit(X_t[cols_to_encode])
+        return encoder
 
-    # TODO: this should be replaceable by just calling self.component_obj.transform as in other files?
     def transform(self, X, y=None):
         """One-hot encode the input DataFrame.
 
@@ -77,15 +82,13 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X_t = pd.DataFrame()
+        if len(col_values) == 0:
+            X_t = pd.DataFrame()
+        else:
+            cols_to_encode = self._get_cat_cols(X)
+            X_t = pd.DataFrame(self.encoder.transform(X[cols_to_encode]).toarray())
         for col in X.columns:
-            if col in col_values:
-                unique = col_values[col]
-                for label in unique:
-                    new_name = str(col) + "_" + str(label)
-                    add = (X[col] == label).astype("uint8")
-                    add = add.rename(new_name)
-                    X_t = pd.concat([X_t, add], axis=1)
-            else:
+            if col not in col_values:
                 X_t = pd.concat([X_t, X[col]], axis=1)
+        print(self.encoder.get_feature_names())
         return X_t
