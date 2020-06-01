@@ -179,12 +179,12 @@ Transformers are components that take in data as input and output transformed da
     :template: transformer_class.rst
     :nosignatures:
 
+    DropColumnTransformer
     OneHotEncoder
     SimpleImputer
     StandardScaler
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
-
 
 Estimators
 ~~~~~~~~~~
