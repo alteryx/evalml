@@ -7,13 +7,13 @@ from evalml.pipelines.components.transformers import Transformer
 class PerColumnImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy per column"""
     name = 'Per Column Imputer'
-    hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
+    hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies={}, fill_value=None, random_state=0):
+    def __init__(self, impute_strategies=None, fill_value=None, random_state=0):
         """Initializes an transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
-            impute_strategies (dict): Impute strategies to use per column.
+            impute_strategies (dict): Column and impute strategy pairings.
                 Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types.
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
@@ -21,7 +21,10 @@ class PerColumnImputer(Transformer):
         """
         parameters = {"impute_strategies": impute_strategies,
                       "fill_value": fill_value}
-        imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies}
+        if impute_strategies:
+            imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies}
+        else:
+            raise ValueError("Please provide impute strategies in a dictionary as `column:strategy`")
 
         super().__init__(parameters=parameters,
                          component_obj=imputers,

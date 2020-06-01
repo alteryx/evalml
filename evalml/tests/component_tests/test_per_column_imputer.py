@@ -6,6 +6,11 @@ from pandas.testing import assert_frame_equal
 from evalml.pipelines.components import PerColumnImputer
 
 
+def test_init():
+    with pytest.raises(ValueError):
+        PerColumnImputer(impute_strategies={})
+
+
 def test_all_strategies():
     X = pd.DataFrame([[2, 4, 6, "a"],
                       [4, 6, 8, "a"],
