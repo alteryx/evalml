@@ -4,4 +4,4 @@ from .encoders import OneHotEncoder, CategoricalEncoder
 from .feature_selection import FeatureSelector, RFClassifierSelectFromModel, RFRegressorSelectFromModel
 from .imputers import SimpleImputer
 from .scalers import StandardScaler
-from .drop_columns_transformer import DropColumnTransformer
+from .drop_columns_transformer import DropColumnsTransformer

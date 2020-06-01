@@ -3,23 +3,25 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 
 
-class DropColumnTransformer(Transformer):
+class DropColumnsTransformer(Transformer):
     """Transformer to specified columns in input data."""
-    name = "Drop Column Transformer"
+    name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, columns):
+    def __init__(self, columns=None, random_state=0):
         """Initalizes an transformer that drops specified columns in input data.
         Arguments:
             columns (list(string)): List of column names, used to determine which columns to drop.
         """
+        if columns is None:
+            columns = []
         parameters = {"columns": columns}
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=0)
+                         random_state=random_state)
 
     def fit(self, X, y=None):
-        pass
+        return self
 
     def transform(self, X, y=None):
         """Transforms data X by dropping columns

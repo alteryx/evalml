@@ -26,7 +26,7 @@ from .transformers import (
     StandardScaler,
     FeatureSelector,
     CategoricalEncoder,
-    DropColumnTransformer
+    DropColumnsTransformer
     )
 
 from .utils import all_components, handle_component

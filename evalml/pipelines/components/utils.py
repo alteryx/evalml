@@ -22,6 +22,7 @@ from .estimators import (
     XGBoostRegressor
 )
 from .transformers import (
+    DropColumnsTransformer,
     CategoricalEncoder,
     FeatureSelector,
     OneHotEncoder,
