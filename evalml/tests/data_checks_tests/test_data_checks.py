@@ -44,7 +44,7 @@ def test_empty_data_checks(X_y):
     assert data_checks.validate(X, y) == []
 
 
-def test_default_data_checks(X_y):
+def test_default_data_checks_classification(X_y):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -59,6 +59,22 @@ def test_default_data_checks(X_y):
                                           DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck"),
                                           DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
 
+    # multiclass
+    y = pd.Series([0, 1, np.nan, 2, 0])
+    data_checks = DefaultDataChecks()
+    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
+
+
+def test_default_data_checks_regression(X_y):
+    X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
+                      'all_null': [None, None, None, None, None],
+                      'also_all_null': [None, None, None, None, None],
+                      'no_null': [1, 2, 3, 4, 5],
+                      'id': [0, 1, 2, 3, 4],
+                      'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     data_checks = DefaultDataChecks()
     assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
