@@ -27,6 +27,39 @@ def test_null_values_in_dataframe():
     assert (col_names == expected_col_names)
 
 
+def test_no_top_n():
+    # test all categories in all columns are encoded when top_n is None
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
+    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
+    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
+    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+
+    encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
+
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
+    for val in X["col_1"]:
+        expected_col_names.add("col_1_" + val)
+    for val in X["col_2"]:
+        expected_col_names.add("col_2_" + val)
+    col_names = set(X_t.columns)
+
+    assert X_t.shape == (7, 16)
+    assert (col_names == expected_col_names)
+
+    # Make sure unknown values cause an error
+    X_new = pd.DataFrame()
+    X_new["col_1"] = ["a", "b", "c", "x"]
+    X_new["col_2"] = ["a", "c", "d", "b"]
+    X_new["col_3"] = ["a", "a", "a", "a"]
+    X_new["col_4"] = [2, 0, 1, 3]
+
+    with pytest.raises(ValueError):
+        encoder.transform(X_new)
+
 def test_less_than_top_n_unique_values():
     # test that columns with less than n unique values encodes properly
     X = pd.DataFrame()

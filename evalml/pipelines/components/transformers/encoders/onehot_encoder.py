@@ -44,7 +44,7 @@ class OneHotEncoder(CategoricalEncoder):
         for col in X_t.columns:
             if col in cols_to_encode:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                if len(value_counts) <= top_n:
+                if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
                     value_counts = value_counts.sample(frac=1, random_state=self.random_state)
@@ -62,7 +62,6 @@ class OneHotEncoder(CategoricalEncoder):
                                   drop=self.drop,
                                   handle_unknown=self.handle_unknown)
         # self._component_obj = encoder
-        print('\nCOL UNIQUE VALS', self.col_unique_values)
         self.encoder = encoder.fit(X_t[cols_to_encode])
         return encoder
 
