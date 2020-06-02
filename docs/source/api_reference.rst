@@ -373,7 +373,7 @@ Data Check Classes
     :nosignatures:
 
     DataCheck
-    InvalidTargetsDataCheck
+    InvalidTargetDataCheck
     HighlyNullDataCheck
     IDColumnsDataCheck
     LabelLeakageDataCheck

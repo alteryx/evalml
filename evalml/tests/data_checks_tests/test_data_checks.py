@@ -57,4 +57,11 @@ def test_default_data_checks(X_y):
                                           DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                           DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                                          DataCheckError("Row '2' contains a null value", "InvalidTargetsDataCheck")]
+                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
+
+    y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
+    data_checks = DefaultDataChecks()
+    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]

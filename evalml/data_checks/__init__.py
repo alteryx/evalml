@@ -5,7 +5,7 @@ from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckErr
 from .data_check_message_type import DataCheckMessageType
 from .default_data_checks import DefaultDataChecks
 from .utils import EmptyDataChecks
-from .invalid_targets_data_check import InvalidTargetsDataCheck
+from .invalid_targets_data_check import InvalidTargetDataCheck
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck

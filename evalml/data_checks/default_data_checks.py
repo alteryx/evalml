@@ -1,7 +1,7 @@
 from .data_checks import DataChecks
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
-from .invalid_targets_data_check import InvalidTargetsDataCheck
+from .invalid_targets_data_check import InvalidTargetDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 
 
@@ -15,4 +15,4 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             data_checks (list (DataCheck)): Ignored.
         """
-        self.data_checks = [HighlyNullDataCheck(), IDColumnsDataCheck(), LabelLeakageDataCheck(), InvalidTargetsDataCheck()]
+        self.data_checks = [HighlyNullDataCheck(), IDColumnsDataCheck(), LabelLeakageDataCheck(), InvalidTargetDataCheck()]
