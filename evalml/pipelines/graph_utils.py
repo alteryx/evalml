@@ -92,7 +92,7 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
             'auc_score': auc_scores}
 
 
-def graph_roc_curve(y_true, y_pred_proba, n_classes=1, title_addition=None):
+def graph_roc_curve(y_true, y_pred_proba, n_classes=1, labels=None, title_addition=None):
     """Generate and display a Receiver Operating Characteristic (ROC) plot.
 
     Arguments:
@@ -113,7 +113,7 @@ def graph_roc_curve(y_true, y_pred_proba, n_classes=1, title_addition=None):
     data = []
     for i in range(n_classes):
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
-                                name='ROC (AUC {:06f})'.format(roc_curve_data['auc_score'][i]),
+                                name='ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'][i], i+1 if labels is None else labels[i]),
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',

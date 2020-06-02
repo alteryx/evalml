@@ -60,14 +60,14 @@ def test_graph_precision_recall_curve_title_addition(X_y):
     assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
-def test_roc_curve():
+def test_roc_curve_binary():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     roc_curve_data = roc_curve(y_true, y_predict_proba)
-    fpr_rates = roc_curve_data.get('fpr_rates')
-    tpr_rates = roc_curve_data.get('tpr_rates')
-    thresholds = roc_curve_data.get('thresholds')
-    auc_score = roc_curve_data.get('auc_score')
+    fpr_rates = roc_curve_data.get('fpr_rates')[0]
+    tpr_rates = roc_curve_data.get('tpr_rates')[0]
+    thresholds = roc_curve_data.get('thresholds')[0]
+    auc_score = roc_curve_data.get('auc_score')[0]
     fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
     tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
     thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
@@ -141,7 +141,7 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'all')
 
 
-def test_graph_roc_curve(X_y):
+def test_graph_roc_curve_binary(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
     rs = np.random.RandomState(42)
@@ -152,9 +152,9 @@ def test_graph_roc_curve(X_y):
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     assert len(fig_dict['data']) == 2
     roc_curve_data = roc_curve(y_true, y_pred_proba)
-    assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
-    assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
-    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f})'.format(roc_curve_data['auc_score'])
+    assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'][0])
+    assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'][0])
+    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f}) of Class 1'.format(roc_curve_data['auc_score'][0])
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
