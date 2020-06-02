@@ -41,7 +41,7 @@ class OneHotEncoder(CategoricalEncoder):
         categories = []
 
         # Find the top_n most common categories in each column
-        for idx, col in enumerate(X_t.columns):
+        for col in X_t.columns:
             if col in cols_to_encode:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if len(value_counts) <= top_n:
@@ -62,7 +62,7 @@ class OneHotEncoder(CategoricalEncoder):
                                   drop=self.drop,
                                   handle_unknown=self.handle_unknown)
         # self._component_obj = encoder
-        print('COL UNIQUE VALS', self.col_unique_values)
+        print('\nCOL UNIQUE VALS', self.col_unique_values)
         self.encoder = encoder.fit(X_t[cols_to_encode])
         return encoder
 
@@ -82,13 +82,17 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        if len(col_values) == 0:
-            X_t = pd.DataFrame()
-        else:
-            cols_to_encode = self._get_cat_cols(X)
-            X_t = pd.DataFrame(self.encoder.transform(X[cols_to_encode]).toarray())
+        X_t = pd.DataFrame()
+        # Add the non-categorical columns, untouched
         for col in X.columns:
             if col not in col_values:
                 X_t = pd.concat([X_t, X[col]], axis=1)
-        print(self.encoder.get_feature_names())
+
+        # Call sklearn's transform on the categorical columns
+        if len(col_values) != 0:
+            cat_cols = self._get_cat_cols(X)
+            X_cat = pd.DataFrame(self.encoder.transform(X[cat_cols]).toarray())
+            X_cat.columns = self.encoder.get_feature_names(input_features=cat_cols)
+            X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
+
         return X_t
