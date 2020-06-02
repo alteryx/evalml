@@ -60,6 +60,7 @@ def test_no_top_n():
     with pytest.raises(ValueError):
         encoder.transform(X_new)
 
+
 def test_less_than_top_n_unique_values():
     # test that columns with less than n unique values encodes properly
     X = pd.DataFrame()

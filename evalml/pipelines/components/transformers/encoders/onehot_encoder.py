@@ -35,10 +35,12 @@ class OneHotEncoder(CategoricalEncoder):
         top_n = self.parameters['top_n']
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X_t = X.replace(np.nan, "nan")
+        X_t = X
         cols_to_encode = self._get_cat_cols(X_t)
         self.col_unique_values = {}
         categories = []
+
+        X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
 
         # Find the top_n most common categories in each column
         for col in X_t.columns:
@@ -80,7 +82,8 @@ class OneHotEncoder(CategoricalEncoder):
             raise RuntimeError("You must fit one hot encoder before calling transform!")
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X = X.replace(np.nan, "nan")
+        cat_cols = self._get_cat_cols(X)
+        X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
@@ -90,7 +93,6 @@ class OneHotEncoder(CategoricalEncoder):
 
         # Call sklearn's transform on the categorical columns
         if len(col_values) != 0:
-            cat_cols = self._get_cat_cols(X)
             X_cat = pd.DataFrame(self.encoder.transform(X[cat_cols]).toarray())
             X_cat.columns = self.encoder.get_feature_names(input_features=cat_cols)
             X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
