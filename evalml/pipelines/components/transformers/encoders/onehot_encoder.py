@@ -35,7 +35,7 @@ class OneHotEncoder(CategoricalEncoder):
         top_n = self.parameters['top_n']
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X_t = X
+        X_t = X.replace(np.nan, "nan")
         cols_to_encode = self._get_cat_cols(X_t)
         self.col_unique_values = {}
         categories = []
@@ -80,6 +80,7 @@ class OneHotEncoder(CategoricalEncoder):
             raise RuntimeError("You must fit one hot encoder before calling transform!")
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
+        X = X.replace(np.nan, "nan")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
