@@ -6,6 +6,7 @@ from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
+from sklearn.metrics import roc_auc_score as sklearn_roc_auc
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
@@ -60,35 +61,44 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     return _go.Figure(layout=layout, data=data)
 
 
-def roc_curve(y_true, y_pred_proba):
+def roc_curve(y_true, y_pred_proba, n_classes=1):
     """
     Given labels and binary classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        n_classes (int): number of classes (default 1, which indicates binary classification). 
+
 
     Returns:
-        dict: Dictionary containing metrics used to generate an ROC plot, with the following keys:
+        dict: Dictionary containing metrics used to generate an ROC plot, with the following keys, each of which contains a dictionary for each classification class:
                   * `fpr_rates`: False positive rates.
                   * `tpr_rates`: True positive rates.
                   * `thresholds`: Threshold values used to produce each pair of true/false positive rates.
-                  * `auc_score`: The area under the ROC curve.
+                  * `auc_scores`: The area under the ROC curve. (One vs Rest)
     """
-    fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_true, y_pred_proba)
-    auc_score = sklearn_auc(fpr_rates, tpr_rates)
+    fpr_rates = dict()
+    thresholds = dict()
+    tpr_rates = dict()
+    auc_scores = dict()
+    for i in range(n_classes):
+        fpr_rates[i], tpr_rates[i], thresholds[i] = sklearn_roc_curve(y_true, y_pred_proba)
+        auc_scores[i] = sklearn_auc(fpr_rates[i], tpr_rates[i])
+
     return {'fpr_rates': fpr_rates,
             'tpr_rates': tpr_rates,
             'thresholds': thresholds,
-            'auc_score': auc_score}
+            'auc_score': auc_scores}
 
 
-def graph_roc_curve(y_true, y_pred_proba, title_addition=None):
+def graph_roc_curve(y_true, y_pred_proba, n_classes=1, title_addition=None):
     """Generate and display a Receiver Operating Characteristic (ROC) plot.
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
         y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        n_classes (int): number of classes (default 1, which indicates binary classification). 
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
@@ -101,9 +111,10 @@ def graph_roc_curve(y_true, y_pred_proba, title_addition=None):
                         xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
     data = []
-    data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                            name='ROC (AUC {:06f})'.format(roc_curve_data['auc_score']),
-                            line=dict(width=3)))
+    for i in range(n_classes):
+        data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
+                                name='ROC (AUC {:06f})'.format(roc_curve_data['auc_score'][i]),
+                                line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',
                             line=dict(dash='dash')))
