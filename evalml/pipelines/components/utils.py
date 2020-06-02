@@ -22,8 +22,8 @@ from .estimators import (
     XGBoostRegressor
 )
 from .transformers import (
-    DropColumnsTransformer,
     CategoricalEncoder,
+    DropColumnsTransformer,
     FeatureSelector,
     OneHotEncoder,
     RFClassifierSelectFromModel,

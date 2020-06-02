@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added transformer to drop specific columns :pr:`827`
     * Fixes
     * Changes
     * Documentation Changes

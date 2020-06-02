@@ -1,9 +1,9 @@
 import os
 from importlib import import_module
 from unittest.mock import patch
-import pandas as pd
 
 import numpy as np
+import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
@@ -644,21 +644,21 @@ def test_pipeline_summary():
 def test_drop_columns_transformer_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
         component_graph = ['Drop Columns Transformer', 'Simple Imputer', 'Logistic Regression Classifier']
-    
+
     parameters = {
-            'Drop Columns Transformer': {
-                'columns': ["column to drop"]
-            },
-            'Simple Imputer': {
-                'impute_strategy': 'median'
-            },
-            'Logistic Regression Classifier': {
-                'penalty': 'l2',
-                'C': 3.0,
-            }
+        'Drop Columns Transformer': {
+            'columns': ["column to drop"]
+        },
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 3.0,
         }
+    }
     pipeline_with_drop_col = PipelineWithDropCol(parameters=parameters)
-    X = pd.DataFrame({"column to drop": [1,0,1,3], "other col":[1, 2, 4, 1]})
-    y = pd.Series([1,0,1,0])
+    X = pd.DataFrame({"column to drop": [1, 0, 1, 3], "other col": [1, 2, 4, 1]})
+    y = pd.Series([1, 0, 1, 0])
     pipeline_with_drop_col.fit(X, y)
     pipeline_with_drop_col.score(X, y, ['auc'])
