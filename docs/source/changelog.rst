@@ -2,12 +2,25 @@
 
 Changelog
 ---------
+
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.10.0 May 29, 2020**
     * Enhancements
         * Added baseline models for classification and regression, add functionality to calculate baseline models before searching in AutoML :pr:`746`
         * Port over highly-null guardrail as a data check and define `DefaultDataChecks` and `DisableDataChecks` classes :pr:`745`
         * Update `Tuner` classes to work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * Add Elastic Net as a pipeline option :pr:`812`
+        * Added new Pipeline option `ExtraTrees` :pr:`790`
         * Added precicion-recall curve metrics and plot for binary classification problems in `evalml.pipeline.graph_utils` :pr:`794`
+        * Update the default automl algorithm to search in batches, starting with default parameters for each pipeline and iterating from there :pr:`793`
+        * Added `AutoMLAlgorithm` class and `IterativeAlgorithm` impl, separated from `AutoSearchBase` :pr:`793`
     * Fixes
         * Update pipeline `score` to return `nan` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
@@ -26,6 +39,7 @@ Changelog
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
         * Don't allow `Recall` to be used as an objective for AutoML :pr:`784`
         * Removed feature selection from pipelines :pr:`819`
+        * Update default estimator parameters to make automl search faster and more accurate :pr:`793`
     * Documentation Changes
         * Add instructions to freeze `master` on `release.md` :pr:`726`
         * Update release instructions with more details :pr:`727` :pr:`733`
@@ -36,6 +50,7 @@ Changelog
         * Added unit tests for fraud cost, lead scoring, and standard metric objectives :pr:`741`
         * Update codecov client :pr:`782`
         * Updated AutoBase __str__ test to include no parameters case :pr:`783`
+        * Added unit tests for `ExtraTrees` pipeline :pr:`790`
         * If codecov fails to upload, fail build :pr:`810`
         * Updated Python version of dependency action :pr:`816`
         * Update the dependency update bot to use a suffix when creating branches :pr:`817`
@@ -43,13 +58,15 @@ Changelog
 .. warning::
 
     **Breaking Changes**
-    * The ``detect_label_leakage`` parameter for AutoML classes has been removed and replaced by a ``data_checks`` parameter :pr:`765`
-    * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
-    * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
-    * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
-    * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
-    * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
-    * `Recall` disallowed as an objective for AutoML :pr:`784`
+        * The ``detect_label_leakage`` parameter for AutoML classes has been removed and replaced by a ``data_checks`` parameter :pr:`765`
+        * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
+        * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
+        * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+        * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
+        * `Recall` disallowed as an objective for AutoML :pr:`784`
+        * ``AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
+        * ``AutoSearchBase`` parameter ``possible_pipelines`` and ``possible_model_families`` have been renamed to ``allowed_pipelines`` and ``allowed_model_families`` :pr:`793`
 
 
 **v0.9.0 Apr. 27, 2020**

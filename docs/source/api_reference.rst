@@ -23,7 +23,7 @@ Preprocessing
 =============
 
 Utilities to preprocess data before using evalml.
- 
+
 .. autosummary::
     :toctree: generated
     :nosignatures:
@@ -40,6 +40,8 @@ Utilities to preprocess data before using evalml.
 AutoML
 ======
 
+AutoML Search Classes
+~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class_with_properties.rst
@@ -47,6 +49,20 @@ AutoML
 
     AutoClassificationSearch
     AutoRegressionSearch
+    AutoSearchBase
+
+
+.. currentmodule:: evalml.automl.automl_algorithm
+
+AutoML Algorithm Classes
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :template: class_with_properties.rst
+    :nosignatures:
+
+    AutoMLAlgorithm
+    IterativeAlgorithm
 
 
 .. currentmodule:: evalml.pipelines
@@ -76,6 +92,10 @@ Classification Pipelines
 
     CatBoostBinaryClassificationPipeline
     CatBoostMulticlassClassificationPipeline
+    ENBinaryPipeline
+    ENMulticlassPipeline
+    ETBinaryClassificationPipeline
+    ETMulticlassClassificationPipeline
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
     RFBinaryClassificationPipeline
@@ -98,6 +118,8 @@ Regression Pipelines
 
     RFRegressionPipeline
     CatBoostRegressionPipeline
+    ENRegressionPipeline
+    ETRegressionPipeline
     LinearRegressionPipeline
     XGBoostRegressionPipeline
     BaselineRegressionPipeline
@@ -178,6 +200,8 @@ Classifiers are components that output a predicted class label.
     :nosignatures:
 
     CatBoostClassifier
+    ElasticNetClassifier
+    ExtraTreesClassifier
     RandomForestClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
@@ -194,7 +218,9 @@ Regressors are components that output a predicted target value.
     :nosignatures:
 
     CatBoostRegressor
+    ElasticNetRegressor
     LinearRegressor
+    ExtraTreesRegressor
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
