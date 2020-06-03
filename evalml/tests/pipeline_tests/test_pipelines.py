@@ -641,7 +641,7 @@ def test_pipeline_summary():
     assert MockPipeline.summary == "Random Forest Classifier w/ Simple Imputer + One Hot Encoder"
 
 
-def test_drop_columns_transformer_in_pipeline():
+def test_drop_columns_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
         component_graph = ['Drop Columns Transformer', 'Simple Imputer', 'Logistic Regression Classifier']
 
@@ -662,3 +662,4 @@ def test_drop_columns_transformer_in_pipeline():
     y = pd.Series([1, 0, 1, 0])
     pipeline_with_drop_col.fit(X, y)
     pipeline_with_drop_col.score(X, y, ['auc'])
+    assert list(pipeline_with_drop_col.feature_importances["feature"]) == ['other col']

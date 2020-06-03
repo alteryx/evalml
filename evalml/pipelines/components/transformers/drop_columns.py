@@ -3,7 +3,7 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 
 
-class DropColumnsTransformer(Transformer):
+class DropColumns(Transformer):
     """Transformer to specified columns in input data."""
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
@@ -21,14 +21,20 @@ class DropColumnsTransformer(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        cols = self.parameters["columns"]
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not set(cols).issubset(X.columns):
+            raise ValueError("Columns {} do not exist in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by dropping columns
+        """Transforms data X by dropping columns.
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
+            y (pd.Series, optional): Targets
+
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -36,8 +42,5 @@ class DropColumnsTransformer(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not set(cols).issubset(X.columns):
-            raise ValueError("Columns to drop do not exist in input data")
+            raise ValueError("Column(s) {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
         return X.drop(columns=cols, axis=1)
-
-    def fit_transform(self, X, y=None):
-        return self.transform(X, y)
