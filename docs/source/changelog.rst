@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
     * Fixes
     * Changes
     * Documentation Changes

@@ -79,9 +79,8 @@ class OneHotEncoder(CategoricalEncoder):
         encoder = SKOneHotEncoder(categories=categories,
                                   drop=self.drop,
                                   handle_unknown=self.handle_unknown)
-        # self._component_obj = encoder
         self.encoder = encoder.fit(X_t[cols_to_encode])
-        return encoder
+        return self
 
     def transform(self, X, y=None):
         """One-hot encode the input DataFrame.

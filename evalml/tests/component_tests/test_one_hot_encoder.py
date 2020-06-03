@@ -88,8 +88,6 @@ def test_handling_flags():
         encoder.transform(X)
 
 
-
-
 def test_no_top_n():
     # test all categories in all columns are encoded when top_n is None
     X = pd.DataFrame()
@@ -99,7 +97,6 @@ def test_no_top_n():
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]
 
     encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
-
     encoder.fit(X)
     X_t = encoder.transform(X)
 
