@@ -17,23 +17,86 @@ def test_null_values_in_dataframe():
     X["col_1"] = ["a", "b", "c", "d", np.nan]
     X["col_2"] = ["a", "b", "a", "c", "b"]
     X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [2, 0, 1, 0, 0]
+    X["col_4"] = [2, 0, 1, np.nan, 0]
+
+    # Test NaN will be counted as a category if within the top_n
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
+
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_nan",
                               "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
+    assert X_t.shape == (5, 10)
+
+    # Test NaN will not be counted as a category if not in the top_n
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "a", "c", "c", np.nan]
+    X["col_2"] = ["a", "b", "a", "c", "b"]
+    X["col_3"] = ["a", "a", "a", "a", "a"]
+    X["col_4"] = [2, 0, 1, np.nan, 0]
+
+    encoder = OneHotEncoder(top_n=2)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    expected_col_names = set(["col_1_a", "col_1_c", "col_2_a", "col_2_b", "col_3_a", "col_4"])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert X_t.shape == (5, 6)
 
 
-def test_no_top_n():
-    # test all categories in all columns are encoded when top_n is None
+def test_handling_flags():
+    # Ensure invalid variables fail
+    with pytest.raises(ValueError):
+        encoder = OneHotEncoder(handle_missing="peanut butter")
+    with pytest.raises(ValueError):
+        encoder = OneHotEncoder(handle_unknown="bananas")
+    
     X = pd.DataFrame()
     X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
     X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
     X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
     X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+
+    # Test handle_unknown='error'
+    encoder = OneHotEncoder(handle_unknown='error')
+    encoder.fit(X)
+    assert isinstance(encoder.transform(X), pd.DataFrame)
+
+    X_new = X.replace(0, 'x')
+    with pytest.raises(ValueError):
+        encoder.transform(X_new)
+
+    # Test handle_missing='error'
+    encoder = OneHotEncoder(handle_missing='error')
+
+    X = pd.DataFrame()
+    X["col_1"] = [np.nan, "b", "c", "d", "e", "f", "g"]
+    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
+    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
+    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+
+    with pytest.raises(ValueError):
+        encoder.fit(X)
+
+    X.at[0, 'col_1'] = 'b'
+    encoder.fit(X)
+    X.at[0, 'col_1'] = np.nan
+    with pytest.raises(ValueError):
+        encoder.transform(X)
+
+
+
+
+def test_no_top_n():
+    # test all categories in all columns are encoded when top_n is None
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"]
+    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"]
+    X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]
 
     encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
 
@@ -47,7 +110,7 @@ def test_no_top_n():
         expected_col_names.add("col_2_" + val)
     col_names = set(X_t.columns)
 
-    assert X_t.shape == (7, 16)
+    assert (X_t.shape == (11, 20))
     assert (col_names == expected_col_names)
 
     # Make sure unknown values cause an error

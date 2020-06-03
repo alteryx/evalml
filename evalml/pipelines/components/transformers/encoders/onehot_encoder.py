@@ -12,13 +12,28 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, top_n=10, categories="auto", drop=None, handle_unknown="ignore", random_state=0):
+    def __init__(self, 
+                 top_n=10, 
+                 categories="auto", 
+                 drop=None, 
+                 handle_unknown="ignore", 
+                 handle_missing="ignore", 
+                 random_state=0):
         """Initalizes self."""
         parameters = {"top_n": top_n,
                       "categories": categories}
+        
+        # Check correct inputs
+        correct_options = ["ignore", "error"]
+        if handle_unknown not in correct_options:
+            raise ValueError("{} not a valid option for handle_unknown, options are {}".format(handle_unknown, correct_options))
+        if handle_missing not in correct_options:
+            raise ValueError("{} not a valid option for handle_missing, options are {}".format(handle_missing, correct_options))
+        
         self.encoder = None
         self.drop = drop
         self.handle_unknown = handle_unknown
+        self.handle_missing = handle_missing
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -40,7 +55,8 @@ class OneHotEncoder(CategoricalEncoder):
         self.col_unique_values = {}
         categories = []
 
-        X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
+        if self.handle_missing == "ignore":
+            X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
 
         # Find the top_n most common categories in each column
         for col in X_t.columns:
@@ -83,7 +99,9 @@ class OneHotEncoder(CategoricalEncoder):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         cat_cols = self._get_cat_cols(X)
-        X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
+
+        if self.handle_missing == "ignore":
+            X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
