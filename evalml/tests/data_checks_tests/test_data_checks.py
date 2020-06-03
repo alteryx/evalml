@@ -57,7 +57,7 @@ def test_default_data_checks_classification(X_y):
                                           DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
                                           DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
+                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
 
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
@@ -65,7 +65,7 @@ def test_default_data_checks_classification(X_y):
     assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
+                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
 
 
 def test_default_data_checks_regression(X_y):
@@ -80,4 +80,4 @@ def test_default_data_checks_regression(X_y):
     assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
                                           DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                          DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
+                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
