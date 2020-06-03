@@ -22,8 +22,9 @@ class DropColumns(Transformer):
         cols = self.parameters["columns"] or []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        if not set(cols).issubset(X.columns):
-            raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
+        missing_cols = set(cols) - set(X.columns)
+        if len(missing_cols) > 0:
+            raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in missing_cols)))
         return self
 
     def transform(self, X, y=None):
@@ -39,6 +40,7 @@ class DropColumns(Transformer):
         cols = self.parameters["columns"] or []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        if not set(cols).issubset(X.columns):
-            raise ValueError("Column(s) {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
+        missing_cols = set(cols) - set(X.columns)
+        if len(missing_cols) > 0:
+            raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in missing_cols)))
         return X.drop(columns=cols, axis=1)
