@@ -30,8 +30,8 @@ def test_invalid_target_data_input_formats():
 
     #  test list
     messages = invalid_targets_check.validate(X, [None, None, None, 0])
-    assert messages == [DataCheckError("3 row(s) (75%) of target values are null", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck")]
 
     # test np.array
     messages = invalid_targets_check.validate(X, np.array([None, None, None, 0]))
-    assert messages == [DataCheckError("3 row(s) (75%) of target values are null", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck")]
