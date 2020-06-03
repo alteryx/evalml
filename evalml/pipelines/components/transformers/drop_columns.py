@@ -23,7 +23,7 @@ class DropColumns(Transformer):
         missing_cols = set(cols) - set(X.columns)
         if len(missing_cols) > 0:
             raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in missing_cols)))
-    
+
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
