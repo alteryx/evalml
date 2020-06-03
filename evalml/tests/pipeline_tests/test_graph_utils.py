@@ -201,16 +201,15 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_multi
     y_true = label_binarize(y_true, classes=[0, 1, 2])
-    n_classes = y_true.shape[1]
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
-    fig = graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes)
+    fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     assert len(fig_dict['data']) == 4
-    roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes=n_classes)
-    for i in range(n_classes):
+    roc_curve_data = roc_curve(y_true, y_pred_proba)
+    for i in range(3):
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][i])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][i])
         assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'][0], i + 1)
@@ -219,14 +218,14 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
 
     with pytest.raises(ValueError, match='Number of labels does not match number of classes'):
-        graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes, labels=['one', 'two'])
+        graph_roc_curve(y_true, y_pred_proba, labels=['one', 'two'])
 
     labels = ['one', 'two', 'three']
-    fig = graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes, labels=labels)
+    fig = graph_roc_curve(y_true, y_pred_proba, labels=labels)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
-    for i in range(n_classes):
+    for i in range(3):
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][i])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][i])
         assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {lab}'.format(roc_curve_data['auc_score'][0], lab=labels[i])
