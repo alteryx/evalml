@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_auc_score as sklearn_roc_auc
+from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
@@ -63,7 +64,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba, n_classes=1):
     """
-    Given labels and binary classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
+    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
@@ -82,9 +83,13 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
     thresholds = dict()
     tpr_rates = dict()
     auc_scores = dict()
-    for i in range(n_classes):
-        fpr_rates[i], tpr_rates[i], thresholds[i] = sklearn_roc_curve(y_true, y_pred_proba)
-        auc_scores[i] = sklearn_auc(fpr_rates[i], tpr_rates[i])
+    if n_classes == 1:
+        fpr_rates[0], tpr_rates[0], thresholds[0] = sklearn_roc_curve(y_true, y_pred_proba)
+        auc_scores[0] = sklearn_auc(fpr_rates[0], tpr_rates[0])
+    else:
+        for i in range(n_classes):
+            fpr_rates[i], tpr_rates[i], thresholds[i] = sklearn_roc_curve(y_true[:, i], y_pred_proba[:, i])
+            auc_scores[i] = sklearn_roc_auc(y_true[:, i], y_pred_proba[:, i])
 
     return {'fpr_rates': fpr_rates,
             'tpr_rates': tpr_rates,
@@ -105,7 +110,7 @@ def graph_roc_curve(y_true, y_pred_proba, n_classes=1, labels=None, title_additi
         plotly.Figure representing the ROC plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    roc_curve_data = roc_curve(y_true, y_pred_proba)
+    roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes)
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},

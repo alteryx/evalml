@@ -76,6 +76,41 @@ def test_roc_curve_binary():
     assert np.array_equal(thresholds_expected, thresholds)
     assert auc_score == pytest.approx(0.25, 1e-5)
 
+def test_roc_curve_multiclass():
+    y_true = np.array([[0, 0, 1],
+                       [0, 1, 0],
+                       [1, 0, 0],
+                       [0, 0, 1],
+                       [1, 0, 0],
+                       [0, 0, 1],
+                       [1, 0, 0]])
+    y_predict_proba = np.array([[0, 0.1, 0.9],
+                                [0.2,  0.7, 0.1],
+                                [0.6, 0.2, 0.2],
+                                [0.1, 0.1,  0.8],
+                                [0.9, 0.05, 0.05],
+                                [0.1, 0.05,  0.85],
+                                [0.9, 0.05, 0.05]])
+    roc_curve_data = roc_curve(y_true, y_predict_proba, n_classes=3)
+    fpr_rates = roc_curve_data.get('fpr_rates')
+    tpr_rates = roc_curve_data.get('tpr_rates')
+    thresholds = roc_curve_data.get('thresholds')
+    auc_score = roc_curve_data.get('auc_score')
+    fpr_expected = {0: np.array([0., 0., 0., 0.25, 0.75, 1.]), 
+                    1: np.array([0., 0., 0.16666667, 0.5, 1.]), 
+                    2: np.array([0., 0., 0., 0.5, 1.])}
+    tpr_expected = {0: np.array([0., 0.66666667, 1., 1., 1., 1.]), 
+                    1: np.array([0., 1., 1., 1., 1.]),
+                     2: np.array([0., 0.33333333, 1., 1., 1.])}
+    thresholds_expected = {0: np.array([1.9, 0.9, 0.6, 0.2, 0.1, 0.]), 
+                           1: np.array([1.7 , 0.7 , 0.2 , 0.1 , 0.05]), 
+                           2: np.array([1.9 , 0.9 , 0.8 , 0.1 , 0.05])}
+    for i in range(3):
+        assert np.allclose(fpr_expected[i], fpr_rates[i])
+        assert np.allclose(tpr_expected[i], tpr_rates[i])
+        assert np.allclose(thresholds_expected[i], thresholds[i])
+    assert auc_score == pytest.approx({0: 1., 1: 1., 2: 1.}, 1e-5)
+
 
 def test_confusion_matrix():
     y_true = [2, 0, 2, 2, 0, 1]
