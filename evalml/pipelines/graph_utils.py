@@ -6,7 +6,6 @@ from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
-from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
 
@@ -68,7 +67,7 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
         y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        n_classes (int): number of classes (default 1, which indicates binary classification). 
+        n_classes (int): number of classes (default 1, which indicates binary classification).
 
 
     Returns:
@@ -121,7 +120,7 @@ def graph_roc_curve(y_true, y_pred_proba, n_classes=1, labels=None, title_additi
     data = []
     for i in range(n_classes):
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
-                                name='ROC (AUC {:06f}) of Class {label}'.format(roc_curve_data['auc_score'][i], label=i+1 if labels is None else labels[i]),
+                                name='ROC (AUC {:06f}) of Class {label}'.format(roc_curve_data['auc_score'][i], label=i + 1 if labels is None else labels[i]),
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',

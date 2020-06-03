@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added multiclass support for ROC curve graphing :pr:`832`
     * Fixes
     * Changes
     * Documentation Changes
