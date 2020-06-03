@@ -13,19 +13,17 @@ class DropColumns(Transformer):
         Arguments:
             columns (list(string)): List of column names, used to determine which columns to drop.
         """
-        if columns is None:
-            columns = []
         parameters = {"columns": columns}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        cols = self.parameters["columns"]
+        cols = self.parameters["columns"] or []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not set(cols).issubset(X.columns):
-            raise ValueError("Columns {} do not exist in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
+            raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in list(set(cols) - set(X.columns)))))
         return self
 
     def transform(self, X, y=None):
@@ -38,7 +36,7 @@ class DropColumns(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        cols = self.parameters["columns"]
+        cols = self.parameters["columns"] or []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not set(cols).issubset(X.columns):
