@@ -12,8 +12,8 @@ def test_invalid_target_data_check_error():
     invalid_targets_check = InvalidTargetDataCheck()
 
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == []
-    assert invalid_targets_check.validate(X, y=pd.Series([1, 2, np.nan])) == [DataCheckError("Row(s) 2 contains a null value", "InvalidTargetDataCheck")]
-    assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == [DataCheckError("Row(s) 0, 1, 2 contains a null value", "InvalidTargetDataCheck")]
+    assert invalid_targets_check.validate(X, y=pd.Series([1, 2, np.nan, np.nan])) == [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")]
+    assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == [DataCheckError("3 row(s) (100.0%) of target values are null", "InvalidTargetDataCheck")]
 
 
 def test_invalid_target_data_input_formats():
@@ -30,8 +30,8 @@ def test_invalid_target_data_input_formats():
 
     #  test list
     messages = invalid_targets_check.validate(X, [None, None, None, 0])
-    assert messages == [DataCheckError("Row(s) 0, 1, 2 contains a null value", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75%) of target values are null", "InvalidTargetDataCheck")]
 
     # test np.array
     messages = invalid_targets_check.validate(X, np.array([None, None, None, 0]))
-    assert messages == [DataCheckError("Row(s) 0, 1, 2 contains a null value", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75%) of target values are null", "InvalidTargetDataCheck")]
