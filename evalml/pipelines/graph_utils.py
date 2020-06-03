@@ -99,13 +99,13 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
             'auc_score': auc_scores}
 
 
-def graph_roc_curve(y_true, y_pred_proba, labels=None, title_addition=None):
+def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
     """Generate and display a Receiver Operating Characteristic (ROC) plot.
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
         y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        labels (list or None): if not None, custom lables for classes. Default None.
+        custom_class_labels (list or None): if not None, custom lables for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
@@ -117,9 +117,9 @@ def graph_roc_curve(y_true, y_pred_proba, labels=None, title_addition=None):
         n_classes = y_true.shape[1]
     else:
         n_classes = 1
-    if labels:
-        if len(labels) != n_classes:
-            raise ValueError('Number of labels does not match number of classes')
+    if custom_class_names:
+        if len(custom_class_names) != n_classes:
+            raise ValueError('Number of custom class names does not match number of classes')
     roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes)
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
@@ -128,7 +128,9 @@ def graph_roc_curve(y_true, y_pred_proba, labels=None, title_addition=None):
     data = []
     for i in range(n_classes):
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
-                                name='ROC (AUC {:06f}) of Class {label}'.format(roc_curve_data['auc_score'][i], label=i + 1 if labels is None else labels[i]),
+                                name='ROC (AUC {:06f}) of Class {name}'
+                                .format(roc_curve_data['auc_score'][i],
+                                        name=i + 1 if custom_class_names is None else custom_class_names[i]),
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',
