@@ -11,6 +11,7 @@ from evalml.pipelines.graph_utils import (
     precision_recall_curve,
     roc_curve
 )
+from sklearn.preprocessing import label_binarize
 
 
 def test_precision_recall_curve():
@@ -193,6 +194,28 @@ def test_graph_roc_curve_binary(X_y):
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
+
+
+def test_graph_roc_curve_multiclass(X_y_multi):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y_multi
+    y_true = label_binarize(y_true, classes=[0, 1, 2])
+    n_classes = y_true.shape[1]  
+    rs = np.random.RandomState(42)
+    y_pred_proba = y_true * rs.random(y_true.shape)
+    fig = graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
+    assert len(fig_dict['data']) == 4
+    roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes=n_classes)
+    for i in range(n_classes):
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][0])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][0])
+        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'][0], i+1)
+    assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
+    assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
+    assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
 
 
 def test_graph_roc_curve_title_addition(X_y):

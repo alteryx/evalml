@@ -6,7 +6,6 @@ from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
-from sklearn.metrics import roc_auc_score as sklearn_roc_auc
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.utils.multiclass import unique_labels
@@ -89,7 +88,7 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
     else:
         for i in range(n_classes):
             fpr_rates[i], tpr_rates[i], thresholds[i] = sklearn_roc_curve(y_true[:, i], y_pred_proba[:, i])
-            auc_scores[i] = sklearn_roc_auc(y_true[:, i], y_pred_proba[:, i])
+            auc_scores[i] = sklearn_auc(fpr_rates[i], tpr_rates[i])
 
     return {'fpr_rates': fpr_rates,
             'tpr_rates': tpr_rates,
