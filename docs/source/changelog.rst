@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added preprocessing component to drop features whose percentage of NaN values exceeds a specified threshold. :pr:`834`
     * Fixes
     * Changes
     * Documentation Changes
