@@ -53,7 +53,7 @@ def test_handling_flags():
         encoder = OneHotEncoder(handle_missing="peanut butter")
     with pytest.raises(ValueError):
         encoder = OneHotEncoder(handle_unknown="bananas")
-    
+
     X = pd.DataFrame()
     X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
     X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]

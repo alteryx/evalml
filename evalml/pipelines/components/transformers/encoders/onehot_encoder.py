@@ -12,24 +12,24 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, 
-                 top_n=10, 
-                 categories="auto", 
-                 drop=None, 
-                 handle_unknown="ignore", 
-                 handle_missing="ignore", 
+    def __init__(self,
+                 top_n=10,
+                 categories="auto",
+                 drop=None,
+                 handle_unknown="ignore",
+                 handle_missing="ignore",
                  random_state=0):
         """Initalizes self."""
         parameters = {"top_n": top_n,
                       "categories": categories}
-        
+
         # Check correct inputs
         correct_options = ["ignore", "error"]
         if handle_unknown not in correct_options:
             raise ValueError("{} not a valid option for handle_unknown, options are {}".format(handle_unknown, correct_options))
         if handle_missing not in correct_options:
             raise ValueError("{} not a valid option for handle_missing, options are {}".format(handle_missing, correct_options))
-        
+
         self.encoder = None
         self.drop = drop
         self.handle_unknown = handle_unknown
