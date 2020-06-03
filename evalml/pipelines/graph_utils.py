@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
@@ -60,14 +61,13 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     return _go.Figure(layout=layout, data=data)
 
 
-def roc_curve(y_true, y_pred_proba, n_classes=1):
+def roc_curve(y_true, y_pred_proba):
     """
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
 
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
         y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        n_classes (int): number of classes (default 1, which indicates binary classification).
 
 
     Returns:
@@ -77,26 +77,12 @@ def roc_curve(y_true, y_pred_proba, n_classes=1):
                   * `thresholds`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_scores`: The area under the ROC curve. (One vs Rest)
     """
-    fpr_rates = dict()
-    thresholds = dict()
-    tpr_rates = dict()
-    auc_scores = dict()
-    if len(y_true.shape) > 1:
-        n_classes = y_true.shape[1]
-    else:
-        n_classes = 1
-    if n_classes == 1:
-        fpr_rates[0], tpr_rates[0], thresholds[0] = sklearn_roc_curve(y_true, y_pred_proba)
-        auc_scores[0] = sklearn_auc(fpr_rates[0], tpr_rates[0])
-    else:
-        for i in range(n_classes):
-            fpr_rates[i], tpr_rates[i], thresholds[i] = sklearn_roc_curve(y_true[:, i], y_pred_proba[:, i])
-            auc_scores[i] = sklearn_auc(fpr_rates[i], tpr_rates[i])
-
+    fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_true, y_pred_proba)
+    auc_score = sklearn_auc(fpr_rates, tpr_rates)
     return {'fpr_rates': fpr_rates,
             'tpr_rates': tpr_rates,
             'thresholds': thresholds,
-            'auc_score': auc_scores}
+            'auc_score': auc_score}
 
 
 def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
@@ -113,23 +99,28 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-    if len(y_true.shape) > 1:
-        n_classes = y_true.shape[1]
-    else:
+    y_true = preprocessing.OneHotEncoder(y_true).categories
+    if len(y_true.shape) == 1:
         n_classes = 1
+        y_true = np.reshape(y_true, (-1, 1))
+        y_pred_proba = np.reshape(y_pred_proba, (-1, 1))
+    else:
+        n_classes = y_true.shape[1]
     if custom_class_names:
         if len(custom_class_names) != n_classes:
             raise ValueError('Number of custom class names does not match number of classes')
-    roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes)
+
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
+
     data = []
     for i in range(n_classes):
-        data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
+        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
                                 name='ROC (AUC {:06f}) of Class {name}'
-                                .format(roc_curve_data['auc_score'][i],
+                                .format(roc_curve_data['auc_score'],
                                         name=i + 1 if custom_class_names is None else custom_class_names[i]),
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],

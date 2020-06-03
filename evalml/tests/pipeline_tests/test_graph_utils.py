@@ -65,10 +65,10 @@ def test_roc_curve_binary():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     roc_curve_data = roc_curve(y_true, y_predict_proba)
-    fpr_rates = roc_curve_data.get('fpr_rates')[0]
-    tpr_rates = roc_curve_data.get('tpr_rates')[0]
-    thresholds = roc_curve_data.get('thresholds')[0]
-    auc_score = roc_curve_data.get('auc_score')[0]
+    fpr_rates = roc_curve_data.get('fpr_rates')
+    tpr_rates = roc_curve_data.get('tpr_rates')
+    thresholds = roc_curve_data.get('thresholds')
+    auc_score = roc_curve_data.get('auc_score')
     fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
     tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
     thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
@@ -76,42 +76,6 @@ def test_roc_curve_binary():
     assert np.array_equal(tpr_expected, tpr_rates)
     assert np.array_equal(thresholds_expected, thresholds)
     assert auc_score == pytest.approx(0.25, 1e-5)
-
-
-def test_roc_curve_multiclass():
-    y_true = np.array([[0, 0, 1],
-                       [0, 1, 0],
-                       [1, 0, 0],
-                       [0, 0, 1],
-                       [1, 0, 0],
-                       [0, 0, 1],
-                       [1, 0, 0]])
-    y_predict_proba = np.array([[0, 0.1, 0.9],
-                                [0.2, 0.7, 0.1],
-                                [0.6, 0.2, 0.2],
-                                [0.1, 0.1, 0.8],
-                                [0.9, 0.05, 0.05],
-                                [0.1, 0.05, 0.85],
-                                [0.9, 0.05, 0.05]])
-    roc_curve_data = roc_curve(y_true, y_predict_proba, n_classes=3)
-    fpr_rates = roc_curve_data.get('fpr_rates')
-    tpr_rates = roc_curve_data.get('tpr_rates')
-    thresholds = roc_curve_data.get('thresholds')
-    auc_score = roc_curve_data.get('auc_score')
-    fpr_expected = {0: np.array([0., 0., 0., 0.25, 0.75, 1.]),
-                    1: np.array([0., 0., 0.16666667, 0.5, 1.]),
-                    2: np.array([0., 0., 0., 0.5, 1.])}
-    tpr_expected = {0: np.array([0., 0.66666667, 1., 1., 1., 1.]),
-                    1: np.array([0., 1., 1., 1., 1.]),
-                    2: np.array([0., 0.33333333, 1., 1., 1.])}
-    thresholds_expected = {0: np.array([1.9, 0.9, 0.6, 0.2, 0.1, 0.]),
-                           1: np.array([1.7, 0.7, 0.2, 0.1, 0.05]),
-                           2: np.array([1.9, 0.9, 0.8, 0.1, 0.05])}
-    for i in range(3):
-        assert np.allclose(fpr_expected[i], fpr_rates[i])
-        assert np.allclose(tpr_expected[i], tpr_rates[i])
-        assert np.allclose(thresholds_expected[i], thresholds[i])
-    assert auc_score == pytest.approx({0: 1., 1: 1., 2: 1.}, 1e-5)
 
 
 def test_confusion_matrix():
@@ -189,9 +153,9 @@ def test_graph_roc_curve_binary(X_y):
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     assert len(fig_dict['data']) == 2
     roc_curve_data = roc_curve(y_true, y_pred_proba)
-    assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'][0])
-    assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'][0])
-    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f}) of Class 1'.format(roc_curve_data['auc_score'][0])
+    assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
+    assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
+    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f}) of Class 1'.format(roc_curve_data['auc_score'])
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
@@ -208,11 +172,11 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     assert len(fig_dict['data']) == 4
-    roc_curve_data = roc_curve(y_true, y_pred_proba)
     for i in range(3):
-        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][i])
-        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][i])
-        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'][0], i + 1)
+        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
+        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'], i + 1)
     assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
@@ -226,9 +190,10 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     for i in range(3):
-        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][i])
-        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][i])
-        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {name}'.format(roc_curve_data['auc_score'][0], name=custom_class_names[i])
+        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
+        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {name}'.format(roc_curve_data['auc_score'], name=custom_class_names[i])
     assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
