@@ -217,6 +217,22 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
 
+    with pytest.raises(ValueError, match='Number of labels does not match number of classes'):
+        graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes, labels=['one', 'two'])
+
+    labels=['one', 'two', 'three']
+    fig = graph_roc_curve(y_true, y_pred_proba, n_classes=n_classes, labels=labels)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
+    for i in range(n_classes):
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'][i])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'][i])
+        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {lab}'.format(roc_curve_data['auc_score'][0], lab=labels[i])
+    assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
+    assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
+    assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
+
 
 def test_graph_roc_curve_title_addition(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')

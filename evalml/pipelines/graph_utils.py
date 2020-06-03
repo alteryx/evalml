@@ -102,13 +102,17 @@ def graph_roc_curve(y_true, y_pred_proba, n_classes=1, labels=None, title_additi
     Arguments:
         y_true (pd.Series or np.array): true binary labels.
         y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        n_classes (int): number of classes (default 1, which indicates binary classification). 
+        n_classes (int): number of classes (default 1, which indicates binary classification).
+        labels (list or None): if not None, custom lables for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
         plotly.Figure representing the ROC plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if labels:
+        if len(labels) != n_classes:
+            raise ValueError('Number of labels does not match number of classes')
     roc_curve_data = roc_curve(y_true, y_pred_proba, n_classes)
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
@@ -117,7 +121,7 @@ def graph_roc_curve(y_true, y_pred_proba, n_classes=1, labels=None, title_additi
     data = []
     for i in range(n_classes):
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'][i], y=roc_curve_data['tpr_rates'][i],
-                                name='ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'][i], i+1 if labels is None else labels[i]),
+                                name='ROC (AUC {:06f}) of Class {label}'.format(roc_curve_data['auc_score'][i], label=i+1 if labels is None else labels[i]),
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',
