@@ -9,7 +9,7 @@ class PerColumnImputer(Transformer):
     name = 'Per Column Imputer'
     hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies=None, fill_value=None, random_state=0):
+    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", fill_value=None, random_state=0):
         """Initializes an transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
@@ -19,13 +19,14 @@ class PerColumnImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
+        impute_strategies = impute_strategies or dict()
         parameters = {"impute_strategies": impute_strategies,
                       "fill_value": fill_value}
 
-        imputers = {column: SkImputer(strategy=impute_strategies[column], fill_value=fill_value) for column in impute_strategies} if impute_strategies else None
+        self.imputers = {column: SkImputer(strategy=impute_strategies.get(column, default_impute_strategy), fill_value=fill_value) for column in impute_strategies}
 
         super().__init__(parameters=parameters,
-                         component_obj=imputers,
+                         component_obj=None,
                          random_state=random_state)
 
     def fit(self, X, y=None):
@@ -38,8 +39,8 @@ class PerColumnImputer(Transformer):
             self
         """
 
-        for column, imputer in self._component_obj.items():
-            X[column] = imputer.fit(X[[column]])
+        for column, imputer in self.imputers.items():
+            imputer.fit(X[[column]])
 
         return self
 
@@ -53,7 +54,7 @@ class PerColumnImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_t = X
-        for column, imputer in self._component_obj.items():
+        for column, imputer in self.imputers.items():
             X_t[column] = imputer.transform(X[[column]])
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
                 # skLearn's SimpleImputer loses track of column type, so we need to restore
@@ -70,7 +71,7 @@ class PerColumnImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_t = X
-        for column, imputer in self._component_obj.items():
+        for column, imputer in self.imputers.items():
             X_t[column] = imputer.fit_transform(X[[column]], y)
             if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
                 # skLearn's SimpleImputer loses track of column type, so we need to restore

@@ -28,11 +28,14 @@ def test_all_strategies():
     }
 
     transformer = PerColumnImputer(impute_strategies=strategies, fill_value=100)
-
     X_t = transformer.fit_transform(X)
+
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 
+    transformer = PerColumnImputer(impute_strategies=strategies, fill_value=100)
+    transformer.fit(X)
     X_t = transformer.transform(X)
+
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 
 
