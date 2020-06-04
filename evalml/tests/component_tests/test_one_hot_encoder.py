@@ -121,6 +121,29 @@ def test_no_top_n():
         encoder.transform(X_new)
 
 
+def test_categories():
+    X = pd.DataFrame()
+    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
+    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
+    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
+    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+
+    categories = [["a", "b", "c", "d"],
+                  ["a", "b", "c"],
+                  ["a", "b"]]
+
+    encoder = OneHotEncoder(top_n=None, categories=categories, random_state=2)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    col_names = set(X_t.columns)
+    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d",
+                              "col_2_a", "col_2_b", "col_2_c", "col_3_a",
+                              "col_3_b", "col_4"])
+    assert (X_t.shape == (7, 10))
+    assert (col_names == expected_col_names)
+
+
 def test_less_than_top_n_unique_values():
     # test that columns with less than n unique values encodes properly
     X = pd.DataFrame()

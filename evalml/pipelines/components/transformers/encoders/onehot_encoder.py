@@ -71,26 +71,38 @@ class OneHotEncoder(CategoricalEncoder):
         X_t = X
         cols_to_encode = self._get_cat_cols(X_t)
         self.col_unique_values = {}
-        categories = []
 
-        if self.handle_missing == "ignore":
-            X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
-
-        # Find the top_n most common categories in each column
-        for col in X_t[cols_to_encode]:
-            value_counts = X_t[col].value_counts(dropna=False).to_frame()
-            if top_n is None or len(value_counts) <= top_n:
+        # Use the categories parameter
+        if isinstance(self.parameters['categories'], list):
+            if top_n is not None:
+                raise ValueError("Cannot use categories and top_n arguments simultaneously")
+            categories = self.parameters['categories']
+            for col in X_t[cols_to_encode]:
+                value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 unique_values = value_counts.index.tolist()
-            else:
-                value_counts = value_counts.sample(frac=1, random_state=self.random_state)
-                value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
-                unique_values = value_counts.head(top_n).index.tolist()
-            unique_values = np.sort(unique_values)
-            self.col_unique_values[col] = unique_values
-            categories.append(unique_values)
+                self.col_unique_values[col] = np.sort(unique_values)
 
-        if len(cols_to_encode) == 0:
-            categories = 'auto'
+        # Use the top_n parameter
+        else:
+            categories = []
+            if self.handle_missing == "ignore":
+                X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
+
+            # Find the top_n most common categories in each column
+            for col in X_t[cols_to_encode]:
+                value_counts = X_t[col].value_counts(dropna=False).to_frame()
+                if top_n is None or len(value_counts) <= top_n:
+                    unique_values = value_counts.index.tolist()
+                else:
+                    value_counts = value_counts.sample(frac=1, random_state=self.random_state)
+                    value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
+                    unique_values = value_counts.head(top_n).index.tolist()
+                unique_values = np.sort(unique_values)
+                self.col_unique_values[col] = unique_values
+                categories.append(unique_values)
+
+            if len(cols_to_encode) == 0:
+                categories = 'auto'
 
         # Create an encoder to pass off the rest of the computation to
         encoder = SKOneHotEncoder(categories=categories,
