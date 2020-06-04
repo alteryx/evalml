@@ -1,3 +1,4 @@
+from sklearn.base import clone as sk_clone
 from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
@@ -33,3 +34,11 @@ class ElasticNetRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.coef_
+
+    def clone(self):
+        cloned_obj = ElasticNetRegressor(alpha=self.parameters['alpha'],
+                                         l1_ratio=self.parameters['l1_ratio'],
+                                         random_state=self.random_state)
+        cloned_regressor = sk_clone(self._component_obj)
+        cloned_obj.en_regressor = cloned_regressor
+        return cloned_obj

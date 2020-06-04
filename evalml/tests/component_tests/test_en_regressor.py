@@ -1,6 +1,8 @@
 import numpy as np
+import pytest
 from sklearn.linear_model import ElasticNet as SKElasticNetRegressor
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.regressors import (
     ElasticNetRegressor
@@ -60,3 +62,19 @@ def test_feature_importances(X_y):
     clf.fit(X, y)
 
     np.testing.assert_almost_equal(sk_clf.coef_, clf.feature_importances, decimal=5)
+
+
+def test_clone(X_y):
+    X, y = X_y
+    clf = ElasticNetRegressor()
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+    assert isinstance(predicted, type(np.array([])))
+
+    clf_clone = clf.clone()
+    with pytest.raises(MethodPropertyNotFoundError):
+        clf_clone.predict(X)
+
+    clf_clone.fit(X, y)
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted, predicted_clone)

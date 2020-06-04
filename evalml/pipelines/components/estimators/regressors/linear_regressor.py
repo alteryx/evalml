@@ -1,3 +1,4 @@
+from sklearn.base import clone as sk_clone
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
 from evalml.model_family import ModelFamily
@@ -30,3 +31,11 @@ class LinearRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.coef_
+
+    def clone(self):
+        cloned_obj = LinearRegressor(fit_intercept=self.parameters['fit_intercept'],
+                                     normalize=self.parameters['normalize'],
+                                     random_state=self.random_state)
+        cloned_regressor = sk_clone(self._component_obj)
+        cloned_obj.linear_regressor = cloned_regressor
+        return cloned_obj

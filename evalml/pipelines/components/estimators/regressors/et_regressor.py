@@ -1,3 +1,4 @@
+from sklearn.base import clone as sk_clone
 from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
 from skopt.space import Integer
 
@@ -38,3 +39,12 @@ class ExtraTreesRegressor(Estimator):
         super().__init__(parameters=parameters,
                          component_obj=et_regressor,
                          random_state=random_state)
+
+    def clone(self):
+        cloned_obj = ExtraTreesRegressor(n_estimators=self.parameters['n_estimators'],
+                                         max_features=self.parameters['max_features'],
+                                         max_depth=self.parameters['max_depth'],
+                                         random_state=self.random_state)
+        cloned_regressor = sk_clone(self._component_obj)
+        cloned_obj.et_regrerssor = cloned_regressor
+        return cloned_obj
