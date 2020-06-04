@@ -6,6 +6,8 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added multiclass support for ROC curve graphing :pr:`832`
+        * Added data check to check for problematic target labels :pr:`814`
+        * Added transformer to drop specific columns :pr:`827`
     * Fixes
     * Changes
     * Documentation Changes
