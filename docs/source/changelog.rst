@@ -11,6 +11,7 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+      * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
 
 
 **v0.10.0 May 29, 2020**
