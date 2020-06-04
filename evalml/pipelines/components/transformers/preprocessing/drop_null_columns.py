@@ -30,7 +30,7 @@ class DropNullColumns(Transformer):
         if pct_null_threshold == 0.0:
             null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
         else:
-            null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
+            null_cols = {key: value for key, value in percent_null.items() if value >= pct_null_threshold}
         self.cols_to_drop = null_cols.keys()
         return self
 
