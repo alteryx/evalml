@@ -16,10 +16,14 @@ class PerColumnImputer(Transformer):
                 Dict values can be either a singular string strategy or a tuple with a strategy and fill value.
 
                 Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
-                and "most_frequent", "constant" for object data types.
+                and "most_frequent", "constant" for object data types. Defaults to "most_frequent" for all columns.
 
                 When impute_strategy == "constant", fill_value is used to replace missing data.
                 Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+            
+            default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
+                Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
+                and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
         """
         self.imputers = None
         self.default_impute_strategy = default_impute_strategy
