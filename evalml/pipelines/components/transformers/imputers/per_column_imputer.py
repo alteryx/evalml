@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -27,7 +26,6 @@ class PerColumnImputer(Transformer):
 
         self.impute_strategies = impute_strategies or dict()
         parameters = {"impute_strategies": impute_strategies}
-        
 
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -39,7 +37,7 @@ class PerColumnImputer(Transformer):
             strategy = self.impute_strategies.get(column, self.default_impute_strategy)
             print(strategy)
             if isinstance(strategy, tuple):
-                imputers[column] = SkImputer(strategy=strategy[0], fill_value = strategy[1])
+                imputers[column] = SkImputer(strategy=strategy[0], fill_value=strategy[1])
             else:
                 imputers[column] = SkImputer(strategy=strategy)
             print(imputers[column])
@@ -86,4 +84,3 @@ class PerColumnImputer(Transformer):
 
         self.fit(X, y)
         return self.transform(X, y)
-

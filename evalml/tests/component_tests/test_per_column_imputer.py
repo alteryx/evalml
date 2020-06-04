@@ -81,7 +81,6 @@ def test_col_with_non_numeric():
     X_t = transformer.transform(X)
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 
-
     # constant with all strings
     strategies = {'d': ('constant', 100)}
     transformer = PerColumnImputer(impute_strategies=strategies)
