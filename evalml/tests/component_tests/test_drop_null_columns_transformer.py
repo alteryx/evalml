@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -73,3 +74,18 @@ def test_drop_null_transformer_fit_transform():
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
                       'some_null': [None, 0, 3, 4, 5]})
     assert drop_null_transformer.fit_transform(X).empty
+
+
+def test_drop_null_transformer_np_array():
+    drop_null_transformer = DropNullColumns(pct_null_threshold=0.5)
+    X = np.array([[np.nan, 0, 2, 0],
+                  [np.nan, 1, np.nan, 0],
+                  [np.nan, 2, np.nan, 0],
+                  [np.nan, 1, 1, 0]])
+    assert drop_null_transformer.fit_transform(X).equals(pd.DataFrame(np.delete(X, [0, 2], axis=1), columns=[1,3]))
+
+    # check that X is untouched
+    np.testing.assert_allclose(X, np.array([[np.nan, 0, 2, 0],
+                                                   [np.nan, 1, np.nan, 0],
+                                                   [np.nan, 2, np.nan, 0],
+                                                   [np.nan, 1, 1, 0]]))
