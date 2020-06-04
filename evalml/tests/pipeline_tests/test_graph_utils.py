@@ -164,16 +164,16 @@ def test_graph_roc_curve_binary(X_y):
 def test_graph_roc_curve_multiclass(X_y_multi):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_multi
-    y_true = label_binarize(y_true, classes=[0, 1, 2])
     rs = np.random.RandomState(42)
-    y_pred_proba = y_true * rs.random(y_true.shape)
+    y_tr = label_binarize(y_true, classes=[0, 1, 2])
+    y_pred_proba = y_tr * rs.random(y_tr.shape)
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     assert len(fig_dict['data']) == 4
     for i in range(3):
-        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
         assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'], i + 1)
@@ -190,7 +190,7 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
     for i in range(3):
-        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
         assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {name}'.format(roc_curve_data['auc_score'], name=custom_class_names[i])

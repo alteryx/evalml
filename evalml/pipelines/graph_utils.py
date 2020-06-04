@@ -99,13 +99,13 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-    y_true = preprocessing.OneHotEncoder(y_true).categories
-    if len(y_true.shape) == 1:
-        n_classes = 1
-        y_true = np.reshape(y_true, (-1, 1))
+    lb = preprocessing.LabelBinarizer()
+    lb.fit(np.unique(y_true))
+    y_true = lb.transform(y_true)
+    n_classes = y_true.shape[1]
+    if n_classes == 1:
         y_pred_proba = np.reshape(y_pred_proba, (-1, 1))
-    else:
-        n_classes = y_true.shape[1]
+
     if custom_class_names:
         if len(custom_class_names) != n_classes:
             raise ValueError('Number of custom class names does not match number of classes')
