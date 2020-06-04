@@ -8,9 +8,9 @@ from evalml.pipelines.components import all_components, handle_component
 
 def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_components()) == 15
+        assert len(all_components()) == 16
     else:
-        assert len(all_components()) == 19
+        assert len(all_components()) == 20
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -23,7 +23,7 @@ def make_mock_import_module(libs_to_blacklist):
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_components_core_dependencies_mock():
-    assert len(all_components()) == 15
+    assert len(all_components()) == 16
 
 
 def test_handle_component_names():
