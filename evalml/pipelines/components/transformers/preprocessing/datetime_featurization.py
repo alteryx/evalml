@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.pipelines.components.transformers import Transformer
 
 
@@ -14,13 +16,22 @@ class DateTimeFeaturization(Transformer):
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
+
+        valid_features = ["year", "month", "day_of_week", "hour"]
+        invalid_features = [feature for feature in features_to_extract if feature not in valid_features]
+        if len(invalid_features) > 0:
+            raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
         parameters = {"features_to_extract": features_to_extract}
+        self._date_time_cols = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        pass
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        self._date_time_cols = X.select_dtypes(include=['datetime64'])
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
@@ -31,4 +42,7 @@ class DateTimeFeaturization(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        pass
+        if self._date_time_cols is None:
+            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)

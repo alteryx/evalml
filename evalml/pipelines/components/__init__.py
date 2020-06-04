@@ -15,7 +15,7 @@ from .estimators import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     BaselineClassifier,
-    BaselineRegressor
+    BaselineRegressor,
 )
 from .transformers import (
     Transformer,
@@ -26,7 +26,8 @@ from .transformers import (
     StandardScaler,
     FeatureSelector,
     CategoricalEncoder,
-    DropColumns
+    DropColumns,
+    DateTimeFeaturization
     )
 
 from .utils import all_components, handle_component
