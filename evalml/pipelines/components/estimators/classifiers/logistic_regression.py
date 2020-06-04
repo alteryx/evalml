@@ -48,5 +48,5 @@ class LogisticRegressionClassifier(Estimator):
                                                   C=self.parameters['C'],
                                                   random_state=self.random_state)
         cloned_classifier = sk_clone(self._component_obj)
-        cloned_obj.en_classifier = cloned_classifier
+        cloned_obj._component_obj = cloned_classifier
         return cloned_obj

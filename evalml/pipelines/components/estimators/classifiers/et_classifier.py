@@ -46,5 +46,5 @@ class ExtraTreesClassifier(Estimator):
                                           max_depth=self.parameters['max_depth'],
                                           random_state=self.random_state)
         cloned_classifier = sk_clone(self._component_obj)
-        cloned_obj.et_classifier = cloned_classifier
+        cloned_obj._component_obj = cloned_classifier
         return cloned_obj

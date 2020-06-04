@@ -37,5 +37,5 @@ class LinearRegressor(Estimator):
                                      normalize=self.parameters['normalize'],
                                      random_state=self.random_state)
         cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj.linear_regressor = cloned_regressor
+        cloned_obj._component_obj = cloned_regressor
         return cloned_obj

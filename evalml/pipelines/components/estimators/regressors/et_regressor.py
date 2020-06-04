@@ -46,5 +46,5 @@ class ExtraTreesRegressor(Estimator):
                                          max_depth=self.parameters['max_depth'],
                                          random_state=self.random_state)
         cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj.et_regrerssor = cloned_regressor
+        cloned_obj._component_obj = cloned_regressor
         return cloned_obj

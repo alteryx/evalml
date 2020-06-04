@@ -95,3 +95,6 @@ class BaselineClassifier(Estimator):
         if self._num_unique is None:
             raise RuntimeError("You must fit Baseline classifier before getting feature_importances!")
         return np.zeros(self._num_features)
+
+    def clone(self):
+        return BaselineClassifier(strategy=self.parameters['strategy'], random_state=self.random_state)

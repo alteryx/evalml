@@ -66,3 +66,6 @@ class BaselineRegressor(Estimator):
         if self._num_features is None:
             raise RuntimeError("You must fit Baseline regressor before accessing feature_importances!")
         return np.zeros(self._num_features)
+
+    def clone(self):
+        return BaselineRegressor(strategy=self.parameters['strategy'], random_state=self.random_state)

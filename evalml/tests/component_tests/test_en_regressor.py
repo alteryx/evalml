@@ -66,7 +66,7 @@ def test_feature_importances(X_y):
 
 def test_clone(X_y):
     X, y = X_y
-    clf = ElasticNetRegressor()
+    clf = ElasticNetRegressor(normalize=True)
     clf.fit(X, y)
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
@@ -74,6 +74,8 @@ def test_clone(X_y):
     clf_clone = clf.clone()
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
+
+    assert clf_clone._component_obj.normalize is True
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)

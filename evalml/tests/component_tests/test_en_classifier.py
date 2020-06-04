@@ -113,7 +113,7 @@ def test_feature_importances_multi(X_y_multi):
 
 def test_clone(X_y):
     X, y = X_y
-    clf = ElasticNetClassifier()
+    clf = ElasticNetClassifier(max_iter=500)
     clf.fit(X, y)
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
@@ -121,6 +121,7 @@ def test_clone(X_y):
     clf_clone = clf.clone()
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
+    assert clf_clone._component_obj.max_iter == 500
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)

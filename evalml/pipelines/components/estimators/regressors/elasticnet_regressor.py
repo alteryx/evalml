@@ -40,5 +40,5 @@ class ElasticNetRegressor(Estimator):
                                          l1_ratio=self.parameters['l1_ratio'],
                                          random_state=self.random_state)
         cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj.en_regressor = cloned_regressor
+        cloned_obj._component_obj = cloned_regressor
         return cloned_obj

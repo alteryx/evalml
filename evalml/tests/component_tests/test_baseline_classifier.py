@@ -124,3 +124,18 @@ def test_baseline_no_mode():
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1.0 if i == 0 else 0.0 for i in range(3)]] * len(X)))
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
+
+
+def test_clone(X_y):
+    X, y = X_y
+    clf = BaselineClassifier()
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+
+    clf_clone = clf.clone()
+    with pytest.raises(RuntimeError):
+        clf_clone.predict(X)
+
+    clf_clone.fit(X, y)
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())
