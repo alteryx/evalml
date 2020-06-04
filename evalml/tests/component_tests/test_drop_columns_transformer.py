@@ -48,15 +48,12 @@ def test_drop_column_transformer_transform():
 
 def test_drop_column_transformer_fit_transform():
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
-    drop_transformer = DropColumns(columns=[])
-    assert drop_transformer.fit_transform(X).equals(X)
+    assert DropColumns(columns=[]).fit_transform(X).equals(X)
 
-    drop_transformer = DropColumns(columns=["one"])
-    assert drop_transformer.fit_transform(X).equals(X.drop(["one"], axis=1))
-    assert drop_transformer.fit_transform(X).equals(drop_transformer.fit(X).transform(X))
+    assert DropColumns(columns=["one"]).fit_transform(X).equals(X.drop(["one"], axis=1))
+    assert DropColumns(columns=["one"]).fit_transform(X).equals(DropColumns(columns=["one"]).fit(X).transform(X))
 
-    drop_transformer = DropColumns(columns=list(X.columns))
-    assert drop_transformer.fit_transform(X).empty
+    assert DropColumns(columns=list(X.columns)).fit_transform(X).empty
 
 
 def test_drop_column_transformer_input_invalid_col_name():
