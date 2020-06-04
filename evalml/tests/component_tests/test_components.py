@@ -70,7 +70,6 @@ def test_describe_component():
                                                                                         'handle_unknown': 'ignore',
                                                                                         'handle_missing': 'ignore'}}
     drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
-    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10}}
     assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
     assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf, 'number_features': 5}}
