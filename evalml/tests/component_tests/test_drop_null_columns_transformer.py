@@ -82,10 +82,10 @@ def test_drop_null_transformer_np_array():
                   [np.nan, 1, np.nan, 0],
                   [np.nan, 2, np.nan, 0],
                   [np.nan, 1, 1, 0]])
-    assert drop_null_transformer.fit_transform(X).equals(pd.DataFrame(np.delete(X, [0, 2], axis=1), columns=[1,3]))
+    assert drop_null_transformer.fit_transform(X).equals(pd.DataFrame(np.delete(X, [0, 2], axis=1), columns=[1, 3]))
 
     # check that X is untouched
     np.testing.assert_allclose(X, np.array([[np.nan, 0, 2, 0],
-                                                   [np.nan, 1, np.nan, 0],
-                                                   [np.nan, 2, np.nan, 0],
-                                                   [np.nan, 1, 1, 0]]))
+                                            [np.nan, 1, np.nan, 0],
+                                            [np.nan, 2, np.nan, 0],
+                                            [np.nan, 1, 1, 0]]))
