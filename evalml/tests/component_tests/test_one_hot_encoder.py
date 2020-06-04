@@ -132,6 +132,7 @@ def test_categories():
                   ["a", "b", "c"],
                   ["a", "b"]]
 
+    # test categories value works
     encoder = OneHotEncoder(top_n=None, categories=categories, random_state=2)
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -142,6 +143,11 @@ def test_categories():
                               "col_3_b", "col_4"])
     assert (X_t.shape == (7, 10))
     assert (col_names == expected_col_names)
+
+    # test categories with top_n errors
+    encoder = OneHotEncoder(top_n=10, categories=categories, random_state=2)
+    with pytest.raises(ValueError):
+        encoder.fit(X)
 
 
 def test_less_than_top_n_unique_values():
