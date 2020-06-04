@@ -184,6 +184,13 @@ def test_graph_roc_curve_multiclass(X_y_multi):
     with pytest.raises(ValueError, match='Number of custom class names does not match number of classes'):
         graph_roc_curve(y_true, y_pred_proba, custom_class_names=['one', 'two'])
 
+
+def test_custom_class_names_roc_curve_multiclass(X_y_multi):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y_true = X_y_multi
+    rs = np.random.RandomState(42)
+    y_tr = label_binarize(y_true, classes=[0, 1, 2])
+    y_pred_proba = y_tr * rs.random(y_tr.shape)
     custom_class_names = ['one', 'two', 'three']
     fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
     assert isinstance(fig, type(go.Figure()))

@@ -66,8 +66,8 @@ def roc_curve(y_true, y_pred_proba):
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.array): true labels.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied.
 
 
     Returns:
@@ -89,9 +89,9 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """Generate and display a Receiver Operating Characteristic (ROC) plot.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        custom_class_labels (list or None): if not None, custom lables for classes. Default None.
+        y_true (pd.Series or np.array): true labels.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label in the binary case.
+        custom_class_labels (list or None): if not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
