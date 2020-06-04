@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.base import clone as sk_clone
 from sklearn.linear_model import LogisticRegression as LogisticRegression
 from skopt.space import Real
 
@@ -41,3 +42,11 @@ class LogisticRegressionClassifier(Estimator):
         else:
             # mutliclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
+
+    def clone(self):
+        cloned_obj = LogisticRegressionClassifier(penalty=self.parameters['penalty'],
+                                                  C=self.parameters['C'],
+                                                  random_state=self.random_state)
+        cloned_classifier = sk_clone(self._component_obj)
+        cloned_obj.en_classifier = cloned_classifier
+        return cloned_obj

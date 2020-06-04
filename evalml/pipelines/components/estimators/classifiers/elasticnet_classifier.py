@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.base import clone as sk_clone
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 from skopt.space import Real
 
@@ -40,3 +41,11 @@ class ElasticNetClassifier(Estimator):
         else:
             # mutliclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
+
+    def clone(self):
+        cloned_obj = ElasticNetClassifier(alpha=self.parameters['alpha'],
+                                          l1_ratio=self.parameters['l1_ratio'],
+                                          random_state=self.random_state)
+        cloned_classifier = sk_clone(self._component_obj)
+        cloned_obj.en_classifier = cloned_classifier
+        return cloned_obj

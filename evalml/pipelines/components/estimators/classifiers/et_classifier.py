@@ -1,3 +1,4 @@
+from sklearn.base import clone as sk_clone
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 from skopt.space import Integer
 
@@ -38,3 +39,12 @@ class ExtraTreesClassifier(Estimator):
         super().__init__(parameters=parameters,
                          component_obj=et_classifier,
                          random_state=random_state)
+
+    def clone(self):
+        cloned_obj = ExtraTreesClassifier(n_estimators=self.parameters['n_estimators'],
+                                          max_features=self.parameters['max_features'],
+                                          max_depth=self.parameters['max_depth'],
+                                          random_state=self.random_state)
+        cloned_classifier = sk_clone(self._component_obj)
+        cloned_obj.et_classifier = cloned_classifier
+        return cloned_obj

@@ -80,3 +80,19 @@ def test_feature_importances(X_y):
     feature_importances = clf.feature_importances
 
     np.testing.assert_almost_equal(sk_feature_importances, feature_importances, decimal=5)
+
+
+def test_clone(X_y):
+    X, y = X_y
+    clf = ExtraTreesClassifier()
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+    assert isinstance(predicted, type(np.array([])))
+
+    clf_clone = clf.clone()
+    with pytest.raises(MethodPropertyNotFoundError):
+        clf_clone.predict(X)
+
+    clf_clone.fit(X, y)
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted, predicted_clone)
