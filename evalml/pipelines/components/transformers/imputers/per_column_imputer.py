@@ -20,7 +20,7 @@ class PerColumnImputer(Transformer):
 
                 When impute_strategy == "constant", fill_value is used to replace missing data.
                 Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
-            
+
             default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
                 Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
