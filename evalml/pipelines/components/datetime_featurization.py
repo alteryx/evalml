@@ -8,7 +8,7 @@ class DateTimeFeaturization(Transformer):
 
     def __init__(self, features_to_extract=None, random_state=0):
         """Extracts features from DateTime columns
-        
+
         Arguments:
             features_to_extract (list)
         """
