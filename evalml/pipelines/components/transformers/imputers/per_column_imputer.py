@@ -9,25 +9,41 @@ class PerColumnImputer(Transformer):
     name = 'Per Column Imputer'
     hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", fill_value=None, random_state=0):
-        """Initializes an transformer that imputes missing data according to the specified imputation strategy per column."
+    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", random_state=0):
+        """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
-            impute_strategies (dict): Column and impute strategy pairings.
-                Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
-                and "most_frequent", "constant" for object data types.
-            fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
-               Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
-        """
-        impute_strategies = impute_strategies or dict()
-        parameters = {"impute_strategies": impute_strategies,
-                      "fill_value": fill_value}
+            impute_strategies (dict): Column and either impute_strategy or (impute_strategy, fill_value) pairings.
+                Dict values can be either a singular string strategy or a tuple with a strategy and fill value.
 
-        self.imputers = {column: SkImputer(strategy=impute_strategies.get(column, default_impute_strategy), fill_value=fill_value) for column in impute_strategies}
+                Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
+                and "most_frequent", "constant" for object data types.
+
+                When impute_strategy == "constant", fill_value is used to replace missing data.
+                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+        """
+        self.imputers = None
+        self.default_impute_strategy = default_impute_strategy
+
+        self.impute_strategies = impute_strategies or dict()
+        parameters = {"impute_strategies": impute_strategies}
+        
 
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
+
+    def _init_imputers(self, X):
+        imputers = dict()
+        for column in X.columns:
+            strategy = self.impute_strategies.get(column, self.default_impute_strategy)
+            print(strategy)
+            if isinstance(strategy, tuple):
+                imputers[column] = SkImputer(strategy=strategy[0], fill_value = strategy[1])
+            else:
+                imputers[column] = SkImputer(strategy=strategy)
+            print(imputers[column])
+        return imputers
 
     def fit(self, X, y=None):
         """Fits imputers on data X
@@ -38,7 +54,7 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
-
+        self.imputers = self._init_imputers(X)
         for column, imputer in self.imputers.items():
             imputer.fit(X[[column]])
 
@@ -53,12 +69,9 @@ class PerColumnImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_t = X
+        X_t = X.copy()
         for column, imputer in self.imputers.items():
-            X_t[column] = imputer.transform(X[[column]])
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                # skLearn's SimpleImputer loses track of column type, so we need to restore
-                X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
+            X_t[column] = imputer.transform(X[[column]]).astype(X.dtypes[column])
         return X_t
 
     def fit_transform(self, X, y=None):
@@ -70,10 +83,7 @@ class PerColumnImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_t = X
-        for column, imputer in self.imputers.items():
-            X_t[column] = imputer.fit_transform(X[[column]], y)
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                # skLearn's SimpleImputer loses track of column type, so we need to restore
-                X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
-        return X_t
+
+        self.fit(X, y)
+        return self.transform(X, y)
+

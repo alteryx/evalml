@@ -5,7 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
-        Added PerColumnImputer that allows imputation strategies per column :pr:`824`
+        * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
     * Fixes
     * Changes
     * Documentation Changes
