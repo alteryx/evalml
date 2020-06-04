@@ -20,8 +20,9 @@ def test_drop_column_transformer_empty_X():
     X = pd.DataFrame()
     drop_transformer = DropColumns(columns=[])
     assert drop_transformer.transform(X).equals(X)
+
+    drop_transformer = DropColumns(columns=[])
     assert drop_transformer.fit_transform(X).equals(X)
-    assert drop_transformer.transform(X).equals(X)
 
     drop_transformer = DropColumns(columns=["not in data"])
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
@@ -33,13 +34,13 @@ def test_drop_column_transformer_empty_X():
 def test_drop_column_transformer_transform():
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
     drop_transformer = DropColumns(columns=None)
-    assert drop_transformer.transform(X).equals(X)
+    assert X.equals(pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]}))
 
     drop_transformer = DropColumns(columns=[])
     assert drop_transformer.transform(X).equals(X)
 
     drop_transformer = DropColumns(columns=["one"])
-    assert drop_transformer.transform(X).equals(X.loc[:, X.columns != "one"])
+    assert drop_transformer.transform(X).equals(X.drop(["one"], axis=1))
 
     drop_transformer = DropColumns(columns=list(X.columns))
     assert drop_transformer.transform(X).empty
@@ -51,7 +52,7 @@ def test_drop_column_transformer_fit_transform():
     assert drop_transformer.fit_transform(X).equals(X)
 
     drop_transformer = DropColumns(columns=["one"])
-    assert drop_transformer.fit_transform(X).equals(X.loc[:, X.columns != "one"])
+    assert drop_transformer.fit_transform(X).equals(X.drop(["one"], axis=1))
     assert drop_transformer.fit_transform(X).equals(drop_transformer.fit(X).transform(X))
 
     drop_transformer = DropColumns(columns=list(X.columns))
@@ -65,6 +66,8 @@ def test_drop_column_transformer_input_invalid_col_name():
         drop_transformer.fit(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
         drop_transformer.transform(X)
+    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+        drop_transformer.fit_transform(X)
 
     X = np.arange(12).reshape(3, 4)
     drop_transformer = DropColumns(columns=[5])
@@ -72,6 +75,8 @@ def test_drop_column_transformer_input_invalid_col_name():
         drop_transformer.fit(X)
     with pytest.raises(ValueError, match="'5' not found in input data"):
         drop_transformer.transform(X)
+    with pytest.raises(ValueError, match="'5' not found in input data"):
+        drop_transformer.fit_transform(X)
 
 
 def test_drop_column_transformer_numpy():
