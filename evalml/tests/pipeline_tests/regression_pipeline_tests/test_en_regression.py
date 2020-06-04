@@ -46,7 +46,12 @@ def test_en_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10, 'categories': 'auto'},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'},
         'Elastic Net Regressor': {
             "alpha": 0.5,
             "l1_ratio": 0.5,

@@ -20,8 +20,10 @@ def test_lr_init(X_y_categorical_regression):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto'
-        },
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'},
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,

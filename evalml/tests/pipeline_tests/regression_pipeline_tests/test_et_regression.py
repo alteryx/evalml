@@ -34,7 +34,12 @@ def test_et_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10, 'categories': 'auto'},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'},
         'Extra Trees Regressor': {
             'max_features': "auto",
             'n_estimators': 20,

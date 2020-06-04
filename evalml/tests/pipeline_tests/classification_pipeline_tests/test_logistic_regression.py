@@ -24,8 +24,10 @@ def test_lor_init(X_y):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto'
-        },
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,

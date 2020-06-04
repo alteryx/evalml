@@ -19,9 +19,27 @@ class OneHotEncoder(CategoricalEncoder):
                  handle_unknown="ignore",
                  handle_missing="ignore",
                  random_state=0):
-        """Initalizes self."""
+        """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
+
+        Arguments:
+            top_n (int): Number of categories per column to maintain. If None, all categories will be encoded.
+                Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
+            categories (list): A list of categories that will be considered for each column, or `"auto"` if `top_n`
+                is not None. Defaults to `auto`.
+            drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
+                a list specifying which method to use for each feature. Defaults to None.
+            handle_unknown (string): Option to "ignore" or "error" for unknown categories for a feature encountered
+                during `fit` or `transform`. If `top_n` is used to limit the number of categories, this must be
+                "ignore". Defaults to "ignore".
+            handle_missing (string): Option to "ignore" or "error" for missing (NaN) values encountered during
+                `fit` or `transform`. If this is set to "ignore" and NaN values are within the `n` most frequent,
+                "nan" values will be encoded as their own column. Defaults to "ignore".
+        """
         parameters = {"top_n": top_n,
-                      "categories": categories}
+                      "categories": categories,
+                      "drop": drop,
+                      "handle_unknown": handle_unknown,
+                      "handle_missing": handle_missing}
 
         # Check correct inputs
         correct_options = ["ignore", "error"]
@@ -59,18 +77,17 @@ class OneHotEncoder(CategoricalEncoder):
             X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
 
         # Find the top_n most common categories in each column
-        for col in X_t.columns:
-            if col in cols_to_encode:
-                value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                if top_n is None or len(value_counts) <= top_n:
-                    unique_values = value_counts.index.tolist()
-                else:
-                    value_counts = value_counts.sample(frac=1, random_state=self.random_state)
-                    value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
-                    unique_values = value_counts.head(top_n).index.tolist()
-                unique_values = np.sort(unique_values)
-                self.col_unique_values[col] = unique_values
-                categories.append(unique_values)
+        for col in X_t[cols_to_encode]:
+            value_counts = X_t[col].value_counts(dropna=False).to_frame()
+            if top_n is None or len(value_counts) <= top_n:
+                unique_values = value_counts.index.tolist()
+            else:
+                value_counts = value_counts.sample(frac=1, random_state=self.random_state)
+                value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
+                unique_values = value_counts.head(top_n).index.tolist()
+            unique_values = np.sort(unique_values)
+            self.col_unique_values[col] = unique_values
+            categories.append(unique_values)
 
         if len(cols_to_encode) == 0:
             categories = 'auto'

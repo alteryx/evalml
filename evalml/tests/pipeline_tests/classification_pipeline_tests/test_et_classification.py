@@ -45,7 +45,12 @@ def test_et_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10, 'categories': 'auto'},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'},
         'Extra Trees Classifier': {
             'max_depth': 6,
             'max_features': "auto",

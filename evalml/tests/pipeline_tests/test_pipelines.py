@@ -219,7 +219,10 @@ def test_parameters(X_y, lr_pipeline):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto'
+            'categories': 'auto',
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'ignore'
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
