@@ -171,7 +171,6 @@ def test_graph_roc_curve_binary(X_y):
 
 
 def test_graph_roc_curve_edge():
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
         fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)

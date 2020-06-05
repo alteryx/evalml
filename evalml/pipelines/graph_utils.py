@@ -112,7 +112,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     n_classes = y_one_hot_true.shape[1]
 
     if custom_class_names and len(custom_class_names) != n_classes:
-            raise ValueError('Number of custom class names does not match number of classes')
+        raise ValueError('Number of custom class names does not match number of classes')
 
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
