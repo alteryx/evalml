@@ -3,10 +3,31 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 
 
+def _extract_year(col):
+    col_name = f"{col.name}_Year"
+    return col.apply(lambda datetime_val: datetime_val.strftime('%H')).reset_index(drop=True).rename(col_name)
+
+
+def _extract_month(col):
+    col_name = f"{col.name}_Month"
+    return col.apply(lambda datetime_val: datetime_val.strftime("%B")).reset_index(drop=True).rename(col_name)
+
+
+def _extract_day_of_week(col):
+    col_name = f"{col.name}_DayOfWeek"
+    return col.dt.hour.rename(col_name)
+
+
+def _extract_hour(col):
+    col_name = f"{col.name}_Hour"
+    return col.dt.year.rename(col_name)
+
+
 class DateTimeFeaturization(Transformer):
     """"""
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
+    mappings = {"year": _extract_year, "month": _extract_month, "day_of_week": _extract_day_of_week, "hour": _extract_hour}
 
     def __init__(self, features_to_extract=None, random_state=0):
         """Extracts features from DateTime columns
@@ -22,13 +43,8 @@ class DateTimeFeaturization(Transformer):
         if len(invalid_features) > 0:
             raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
         parameters = {"features_to_extract": features_to_extract}
-
-        X = pd.DataFrame(pd.date_range('2015-02-24', periods=5, freq='T'))[0]
-
         self._date_time_cols = None
-        self.functions = [self.mappings[key] for key in features_to_extract]
-        for f in self.functions:
-            print (f(X))
+        self.featurization_functions = {key: self.mappings[key] for key in features_to_extract}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -36,27 +52,8 @@ class DateTimeFeaturization(Transformer):
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         self._date_time_cols = X.select_dtypes(include=['datetime64'])
         return self
-
-    def _extract_year(col):
-        col_name = f"{col.name}_Year"
-        return col.apply(lambda datetime_val: datetime_val.strftime('%H')).reset_index(drop=True).rename(col_name)
-
-    def _extract_month(col):
-        col_name = f"{col.name}_Month"
-        return col.apply(lambda datetime_val: datetime_val.strftime("%B")).reset_index(drop=True).rename(col_name)
-
-    def _extract_day_of_week(col):
-        col_name = f"{col.name}_DayOfWeek"
-        return col.dt.hour.rename(col_name)
-
-    def _extract_hour(col):
-        col_name = f"{col.name}_Hour"
-        return col.dt.year.rename(col_name)
-
-    mappings = {"year": _extract_year, "month": _extract_month, "day_of_week": _extract_day_of_week, "hour": _extract_hour}
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
@@ -69,21 +66,11 @@ class DateTimeFeaturization(Transformer):
         """
         if self._date_time_cols is None:
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-
-def _extract_year(col):
-    return col.to_series().apply(lambda datetime_val: datetime_val.strftime('%H')).reset_index(drop=True)
-
-
-def _extract_month(col):
-    return col.to_series().apply(lambda datetime_val: datetime_val.strftime("%B")).reset_index(drop=True)
-
-
-def _extract_day_of_week(col):
-    return col.hour
-
-
-def _extract_hour(col):
-    return col.year
+        X_t = X
+        if not isinstance(X_t, pd.DataFrame):
+            X_t = pd.DataFrame(X_t)
+        for col_name, col in self._date_time_cols.iteritems():
+            for feature, feature_function in self.featurization_functions.items():
+                col_name = f"{col_name}_{feature}"
+                X_t[col_name] = feature_function(col)
+        return X_t.drop(self._date_time_cols, axis=1)

@@ -21,7 +21,7 @@ def test_datetime_featurization_init():
 
 def test_datetime_featurization_transform():
     datetime_transformer = DateTimeFeaturization()
-    X = pd.date_range('2015-02-24', periods=5, freq='T')
-
-
+    X = pd.DataFrame(pd.date_range('2015-02-24', periods=5, freq='T'))
+    datetime_transformer.fit(X)
+    # print (datetime_transformer.transform(X))
 # test: col doesn't have name originally
