@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.base import clone as sk_clone
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
@@ -33,3 +34,12 @@ class RFClassifierSelectFromModel(FeatureSelector):
         super().__init__(parameters=parameters,
                          component_obj=feature_selection,
                          random_state=random_state)
+
+    def clone(self):
+        cloned_obj = RFClassifierSelectFromModel(number_features=self.parameters['number_features'],
+                                                 percent_features=self.parameters['percent_features'],
+                                                 threshold=self.parameters['threshold'],
+                                                 random_state=self.random_state)
+        cloned_feature_selector = sk_clone(self._component_obj)
+        cloned_obj._component_obj = cloned_feature_selector
+        return cloned_obj

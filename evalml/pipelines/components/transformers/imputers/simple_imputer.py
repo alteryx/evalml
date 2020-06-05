@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.base import clone as sk_clone
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -55,3 +56,11 @@ class SimpleImputer(Transformer):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
         return X_t
+
+    def clone(self):
+        cloned_obj = SimpleImputer(impute_strategy=self.parameters['impute_strategy'],
+                                   fill_value=self.parameters['fill_value'],
+                                   random_state=self.random_state)
+        cloned_imputer = sk_clone(self._component_obj)
+        cloned_obj._component_obj = cloned_imputer
+        return cloned_obj

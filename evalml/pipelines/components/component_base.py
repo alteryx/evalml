@@ -26,6 +26,10 @@ class ComponentBase(ABC):
     def model_family(cls):
         """Returns ModelFamily of this component"""
 
+    def clone(self):
+        """Constructs a new unfit/untrained component with the same parameters"""
+        raise NotImplementedError
+
     def fit(self, X, y=None):
         """Fits component to data
 

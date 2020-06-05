@@ -114,3 +114,25 @@ def test_col_with_non_numeric():
 
     X_t = transformer.transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+
+
+def test_clone():
+    X = pd.DataFrame()
+    X["col_1"] = [2, 0, 1, 0, 0]
+    X["col_2"] = [3, 2, 5, 1, 3]
+    X["col_3"] = [0, 0, 1, 3, 2]
+    X["col_4"] = [2, 4, 1, 4, 0]
+
+    imputer = SimpleImputer()
+
+    imputer.fit(X)
+    transformed_imputer = imputer.transform(X)
+    assert isinstance(transformed_imputer, pd.DataFrame)
+
+    imputer_clone = imputer.clone()
+    with pytest.raises(ValueError):
+        imputer_clone.transform(X)
+
+    imputer_clone.fit(X)
+    transformed_imputer_clone = imputer_clone.transform(X)
+    np.testing.assert_almost_equal(transformed_imputer.values, transformed_imputer_clone.values)
