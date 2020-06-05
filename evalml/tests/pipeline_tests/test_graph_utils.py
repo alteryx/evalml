@@ -171,10 +171,12 @@ def test_graph_roc_curve_binary(X_y):
 
 
 def test_graph_roc_curve_edge():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
         fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)
     fig_dict = fig.to_dict()
+    assert isinstance(fig, type(go.Figure()))
     assert np.array_equal(fig_dict['data'][0]['x'], np.array([0., 1.]))
     assert np.allclose(fig_dict['data'][0]['y'], np.array([np.nan, np.nan]), equal_nan=True)
     graph_roc_curve(np.array([np.nan, 0, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9]))
