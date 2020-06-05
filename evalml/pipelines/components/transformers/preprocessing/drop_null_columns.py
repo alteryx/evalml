@@ -12,7 +12,7 @@ class DropNullColumns(Transformer):
         """Initalizes an transformer to drop features whose percentage of NaN values exceeds a specified threshold.
 
         Arguments:
-            pct_null_threshold(float): The percentage of NaN values in an input feature to drop. 
+            pct_null_threshold(float): The percentage of NaN values in an input feature to drop.
                 Must be a value between [0, 1] inclusive. If equal to 0.0, will drop columns with any null values. Defaults to 0.95.
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
