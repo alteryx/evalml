@@ -70,17 +70,16 @@ class OneHotEncoder(CategoricalEncoder):
             X = pd.DataFrame(X)
         X_t = X
         cols_to_encode = self._get_cat_cols(X_t)
-        self.col_unique_values = {}
+
+        # If there are no categorical columns, nothing needs to happen
+        if len(cols_to_encode) == 0:
+            categories = 'auto'
 
         # Use the categories parameter
-        if isinstance(self.parameters['categories'], list):
+        elif isinstance(self.parameters['categories'], list):
             if top_n is not None:
                 raise ValueError("Cannot use categories and top_n arguments simultaneously")
             categories = self.parameters['categories']
-            for col in X_t[cols_to_encode]:
-                value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                unique_values = value_counts.index.tolist()
-                self.col_unique_values[col] = np.sort(unique_values)
 
         # Use the top_n parameter
         else:
@@ -98,11 +97,7 @@ class OneHotEncoder(CategoricalEncoder):
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
-                self.col_unique_values[col] = unique_values
                 categories.append(unique_values)
-
-            if len(cols_to_encode) == 0:
-                categories = 'auto'
 
         # Create an encoder to pass off the rest of the computation to
         encoder = SKOneHotEncoder(categories=categories,
@@ -120,9 +115,7 @@ class OneHotEncoder(CategoricalEncoder):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        try:
-            col_values = self.col_unique_values
-        except AttributeError:
+        if self.encoder is None:
             raise RuntimeError("You must fit one hot encoder before calling transform!")
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -134,11 +127,11 @@ class OneHotEncoder(CategoricalEncoder):
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
         for col in X.columns:
-            if col not in col_values:
+            if col not in cat_cols:
                 X_t = pd.concat([X_t, X[col]], axis=1)
 
         # Call sklearn's transform on the categorical columns
-        if len(col_values) != 0:
+        if len(cat_cols) != 0:
             X_cat = pd.DataFrame(self.encoder.transform(X[cat_cols]).toarray())
             X_cat.columns = self.encoder.get_feature_names(input_features=cat_cols)
             X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
