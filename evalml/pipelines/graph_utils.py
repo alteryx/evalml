@@ -2,12 +2,12 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
+from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
 from evalml.utils import import_or_raise
@@ -99,15 +99,19 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-    lb = preprocessing.LabelBinarizer()
-    lb.fit(np.unique(y_true))
-    y_true = lb.transform(y_true)
-    n_classes = y_true.shape[1]
-    if n_classes == 1:
-        y_pred_proba = np.reshape(y_pred_proba, (-1, 1))
+    if y_pred_proba.ndim == 1:
+        y_pred_proba = y_pred_proba.reshape(-1, 1)
 
-    if custom_class_names:
-        if len(custom_class_names) != n_classes:
+    nan_indices = np.logical_or(np.isnan(y_true), np.isnan(y_pred_proba).any(axis=1))
+    y_true = y_true[~nan_indices]
+    y_pred_proba = y_pred_proba[~nan_indices]
+
+    lb = LabelBinarizer()
+    lb.fit(np.unique(y_true))
+    y_one_hot_true = lb.transform(y_true)
+    n_classes = y_one_hot_true.shape[1]
+
+    if custom_class_names and len(custom_class_names) != n_classes:
             raise ValueError('Number of custom class names does not match number of classes')
 
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
@@ -117,9 +121,9 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
     data = []
     for i in range(n_classes):
-        roc_curve_data = roc_curve(y_true[:, i], y_pred_proba[:, i])
+        roc_curve_data = roc_curve(y_one_hot_true[:, i], y_pred_proba[:, i])
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                                name='ROC (AUC {:06f}) of Class {name}'
+                                name='Class {name} (AUC {:06f})'
                                 .format(roc_curve_data['auc_score'],
                                         name=i + 1 if custom_class_names is None else custom_class_names[i]),
                                 line=dict(width=3)))

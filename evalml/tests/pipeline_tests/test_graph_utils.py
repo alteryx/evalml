@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 
 from evalml.pipelines.graph_utils import (
@@ -12,6 +13,14 @@ from evalml.pipelines.graph_utils import (
     precision_recall_curve,
     roc_curve
 )
+
+
+@pytest.fixture
+def Binarized_ys(X_y_multi):
+    rs = np.random.RandomState(42)
+    y_tr = label_binarize(X_y_multi[1], classes=[0, 1, 2])
+    y_pred_proba = y_tr * rs.random(y_tr.shape)
+    return X_y_multi[1], y_tr, y_pred_proba
 
 
 def test_precision_recall_curve():
@@ -155,18 +164,27 @@ def test_graph_roc_curve_binary(X_y):
     roc_curve_data = roc_curve(y_true, y_pred_proba)
     assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
     assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
-    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f}) of Class 1'.format(roc_curve_data['auc_score'])
+    assert fig_dict['data'][0]['name'] == 'Class 1 (AUC {:06f})'.format(roc_curve_data['auc_score'])
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
 
 
-def test_graph_roc_curve_multiclass(X_y_multi):
+def test_graph_roc_curve_edge():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_multi
-    rs = np.random.RandomState(42)
-    y_tr = label_binarize(y_true, classes=[0, 1, 2])
-    y_pred_proba = y_tr * rs.random(y_tr.shape)
+    one_val_y_zero = np.array([0])
+    with pytest.warns(UndefinedMetricWarning):
+        fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)
+    fig_dict = fig.to_dict()
+    assert np.array_equal(fig_dict['data'][0]['x'], np.array([0., 1.]))
+    assert np.allclose(fig_dict['data'][0]['y'], np.array([np.nan, np.nan]), equal_nan=True)
+    graph_roc_curve(np.array([np.nan, 0, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9]))
+    graph_roc_curve(np.array([1, 0, 1, 0, 1]), np.array([0, np.nan, 0.5, 0.1, 0.9]))
+
+
+def test_graph_roc_curve_multiclass(Binarized_ys):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true, y_tr, y_pred_proba = Binarized_ys
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -176,7 +194,7 @@ def test_graph_roc_curve_multiclass(X_y_multi):
         roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
-        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {:d}'.format(roc_curve_data['auc_score'], i + 1)
+        assert fig_dict['data'][i]['name'] == 'Class {name} (AUC {:06f})'.format(roc_curve_data['auc_score'], name=i + 1)
     assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
@@ -185,12 +203,9 @@ def test_graph_roc_curve_multiclass(X_y_multi):
         graph_roc_curve(y_true, y_pred_proba, custom_class_names=['one', 'two'])
 
 
-def test_custom_class_names_roc_curve_multiclass(X_y_multi):
+def test_graph_roc_curve_multiclass_custom_class_names(Binarized_ys):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_multi
-    rs = np.random.RandomState(42)
-    y_tr = label_binarize(y_true, classes=[0, 1, 2])
-    y_pred_proba = y_tr * rs.random(y_tr.shape)
+    y_true, y_tr, y_pred_proba = Binarized_ys
     custom_class_names = ['one', 'two', 'three']
     fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
     assert isinstance(fig, type(go.Figure()))
@@ -200,7 +215,7 @@ def test_custom_class_names_roc_curve_multiclass(X_y_multi):
         roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
         assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
         assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
-        assert fig_dict['data'][i]['name'] == 'ROC (AUC {:06f}) of Class {name}'.format(roc_curve_data['auc_score'], name=custom_class_names[i])
+        assert fig_dict['data'][i]['name'] == 'Class {name} (AUC {:06f})'.format(roc_curve_data['auc_score'], name=custom_class_names[i])
     assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
