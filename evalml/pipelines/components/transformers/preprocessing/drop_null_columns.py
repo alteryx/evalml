@@ -12,7 +12,8 @@ class DropNullColumns(Transformer):
         """Initalizes an transformer to drop features whose percentage of NaN values exceeds a specified threshold.
 
         Arguments:
-            pct_null_threshold(float): The percentage of NaN values in an input feature to drop. Defaults to 0.95.
+            pct_null_threshold(float): The percentage of NaN values in an input feature to drop. 
+                Must be a value between [0, 1] inclusive. If equal to 0.0, will drop columns with any null values. Defaults to 0.95.
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
             raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
@@ -26,12 +27,12 @@ class DropNullColumns(Transformer):
         pct_null_threshold = self.parameters["pct_null_threshold"]
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        percent_null = (X.isnull().mean()).to_dict()
+        percent_null = X.isnull().mean()
         if pct_null_threshold == 0.0:
-            null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
+            null_cols = percent_null[percent_null > 0]
         else:
-            null_cols = {key: value for key, value in percent_null.items() if value >= pct_null_threshold}
-        self.cols_to_drop = null_cols.keys()
+            null_cols = percent_null[percent_null >= pct_null_threshold]
+        self.cols_to_drop = list(null_cols.index)
         return self
 
     def transform(self, X, y=None):
