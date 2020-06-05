@@ -130,6 +130,7 @@ def test_clone():
     assert isinstance(transformed_imputer, pd.DataFrame)
 
     imputer_clone = imputer.clone()
+    assert imputer.random_state == imputer_clone.random_state
     with pytest.raises(ValueError):
         imputer_clone.transform(X)
 

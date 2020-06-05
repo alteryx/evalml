@@ -69,6 +69,7 @@ def test_clone(X_y):
     assert isinstance(predicted, type(np.array([])))
 
     clf_clone = clf.clone()
+    assert clf.random_state == clf_clone.random_state
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
     assert clf_clone._component_obj.min_samples_split == 3

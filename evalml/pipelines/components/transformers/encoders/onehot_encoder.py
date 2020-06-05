@@ -73,3 +73,7 @@ class OneHotEncoder(CategoricalEncoder):
             else:
                 X_t = pd.concat([X_t, X[col]], axis=1)
         return X_t
+
+    def clone(self):
+        cloned_obj = OneHotEncoder(top_n=self.parameters['top_n'], random_state=self.random_state)
+        return cloned_obj

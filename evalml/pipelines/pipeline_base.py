@@ -404,3 +404,15 @@ class PipelineBase(ABC):
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def clone(self):
+        cloned_components = []
+        for component in self.component_graph:
+            cloned_components.append(component.clone())
+
+        pipeline_class = self.__class__
+        cloned_pipeline = pipeline_class(self.parameters, random_state=self.random_state)
+        cloned_pipeline.component_graph = cloned_components
+        cloned_pipeline.estimator = cloned_components[-1] if isinstance(cloned_components[-1], Estimator) else None
+
+        return cloned_pipeline
