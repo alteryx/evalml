@@ -21,7 +21,16 @@ def test_datetime_featurization_init():
 
 def test_datetime_featurization_transform():
     datetime_transformer = DateTimeFeaturization()
-    X = pd.DataFrame(pd.date_range('2015-02-24', periods=5, freq='T'))
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame({'Date': rng, 'Val': [0] * len(rng)})
     datetime_transformer.fit(X)
+
     # print (datetime_transformer.transform(X))
+    # assert
 # test: col doesn't have name originally
+# test: no datetime cols
+# test: some datetime cols
+# assert original column is gone
+# test features_to_extract is empty list
+# test custom features_to_extract
+# assert type is categorical

@@ -4,23 +4,19 @@ from evalml.pipelines.components.transformers import Transformer
 
 
 def _extract_year(col):
-    col_name = f"{col.name}_Year"
-    return col.apply(lambda datetime_val: datetime_val.strftime('%H')).reset_index(drop=True).rename(col_name)
+    return col.dt.year
 
 
 def _extract_month(col):
-    col_name = f"{col.name}_Month"
-    return col.apply(lambda datetime_val: datetime_val.strftime("%B")).reset_index(drop=True).rename(col_name)
+    return col.dt.month_name().astype('category')
 
 
 def _extract_day_of_week(col):
-    col_name = f"{col.name}_DayOfWeek"
-    return col.dt.hour.rename(col_name)
+    return col.dt.day_name().astype('category')
 
 
 def _extract_hour(col):
-    col_name = f"{col.name}_Hour"
-    return col.dt.year.rename(col_name)
+    return col.dt.hour
 
 
 class DateTimeFeaturization(Transformer):
@@ -71,6 +67,5 @@ class DateTimeFeaturization(Transformer):
             X_t = pd.DataFrame(X_t)
         for col_name, col in self._date_time_cols.iteritems():
             for feature, feature_function in self.featurization_functions.items():
-                col_name = f"{col_name}_{feature}"
-                X_t[col_name] = feature_function(col)
+                X_t[f"{col_name}_{feature}"] = feature_function(col)
         return X_t.drop(self._date_time_cols, axis=1)
