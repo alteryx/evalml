@@ -20,16 +20,18 @@ def _extract_hour(col):
 
 
 class DateTimeFeaturization(Transformer):
-    """"""
+    """Transformer that can automatically featurize DateTime columns."""
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
-    mappings = {"year": _extract_year, "month": _extract_month, "day_of_week": _extract_day_of_week, "hour": _extract_hour}
+    function_mappings = {"year": _extract_year, "month": _extract_month, "day_of_week": _extract_day_of_week, "hour": _extract_hour}
 
     def __init__(self, features_to_extract=None, random_state=0):
         """Extracts features from DateTime columns
 
         Arguments:
-            features_to_extract (list)
+            features_to_extract (list):
+            random_state (int, np.random.RandomState): Seed for the random number generator.
+
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
@@ -40,7 +42,7 @@ class DateTimeFeaturization(Transformer):
             raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
         parameters = {"features_to_extract": features_to_extract}
         self._date_time_cols = None
-        self.featurization_functions = {key: self.mappings[key] for key in features_to_extract}
+        self.featurization_functions = {key: self.function_mappings[key] for key in features_to_extract}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)

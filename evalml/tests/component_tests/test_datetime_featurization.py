@@ -3,8 +3,6 @@ import pytest
 
 from evalml.pipelines.components import DateTimeFeaturization
 
-# from evalml.pipelines.components.transformers.preprocessing.datetime_featurization import
-
 
 def test_datetime_featurization_init():
     datetime_transformer = DateTimeFeaturization()
@@ -23,6 +21,27 @@ def test_datetime_featurization_transform():
     datetime_transformer = DateTimeFeaturization()
     rng = pd.date_range('2020-02-24', periods=20, freq='D')
     X = pd.DataFrame({'Date': rng, 'Val': [0] * len(rng)})
+    datetime_transformer.fit(X)
+
+def test_datetime_featurization_no_col_names():
+    datetime_transformer = DateTimeFeaturization()
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame([rng, [0] * len(rng)])
+    datetime_transformer.fit(X)
+def test_datetime_featurization_no_features_to_extract():
+    datetime_transformer = DateTimeFeaturization(features_to_extract=[])
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame([rng, [0] * len(rng)])
+    datetime_transformer.fit(X)
+def test_datetime_featurization_custom_features_to_extract():
+    datetime_transformer = DateTimeFeaturization(features_to_extract=[])
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame([rng, [0] * len(rng)])
+    datetime_transformer.fit(X)
+def test_datetime_featurization_numpy_array_input():
+    datetime_transformer = DateTimeFeaturization(features_to_extract=[])
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame([rng, [0] * len(rng)])
     datetime_transformer.fit(X)
 
     # print (datetime_transformer.transform(X))
