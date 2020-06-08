@@ -27,6 +27,7 @@ from .transformers import (
     FeatureSelector,
     CategoricalEncoder,
     DropColumns,
+    DropNullColumns,
     DateTimeFeaturization
     )
 
