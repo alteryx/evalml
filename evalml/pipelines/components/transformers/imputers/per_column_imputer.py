@@ -35,18 +35,6 @@ class PerColumnImputer(Transformer):
                          component_obj=None,
                          random_state=random_state)
 
-    def _init_imputers(self, X):
-        imputers = dict()
-        for column in X.columns:
-            strategy = self.impute_strategies.get(column, self.default_impute_strategy)
-            print(strategy)
-            if isinstance(strategy, tuple):
-                imputers[column] = SkImputer(strategy=strategy[0], fill_value=strategy[1])
-            else:
-                imputers[column] = SkImputer(strategy=strategy)
-            print(imputers[column])
-        return imputers
-
     def fit(self, X, y=None):
         """Fits imputers on data X
 
@@ -56,7 +44,14 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
-        self.imputers = self._init_imputers(X)
+        self.imputers = dict()
+        for column in X.columns:
+            strategy = self.impute_strategies.get(column, self.default_impute_strategy)
+            if isinstance(strategy, tuple):
+                self.imputers[column] = SkImputer(strategy=strategy[0], fill_value=strategy[1])
+            else:
+                self.imputers[column] = SkImputer(strategy=strategy)
+
         for column, imputer in self.imputers.items():
             imputer.fit(X[[column]])
 
