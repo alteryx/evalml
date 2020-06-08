@@ -27,6 +27,7 @@ from .transformers import (
     StandardScaler,
     FeatureSelector,
     CategoricalEncoder,
+    DropNullColumns,
     DropColumns
     )
 
