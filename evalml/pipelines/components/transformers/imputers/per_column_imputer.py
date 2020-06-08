@@ -26,6 +26,9 @@ class PerColumnImputer(Transformer):
         self.imputers = None
         self.default_impute_strategy = default_impute_strategy
 
+        if not isinstance(impute_strategies, dict):
+            raise ValueError("`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. ")
+
         self.impute_strategies = impute_strategies or dict()
         parameters = {"impute_strategies": impute_strategies}
 

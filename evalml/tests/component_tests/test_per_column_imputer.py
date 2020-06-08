@@ -16,6 +16,16 @@ def non_numeric_df():
     return X
 
 
+def test_invalid_parameters():
+    with pytest.raises(ValueError):
+        strategies = ("impute_strategy", 'mean')
+        PerColumnImputer(impute_strategies=strategies)
+
+    with pytest.raises(ValueError):
+        strategies = ['mean']
+        PerColumnImputer(impute_strategies=strategies)
+
+
 def test_all_strategies():
     X = pd.DataFrame([[2, 4, 6, "a"],
                       [4, 6, 8, "a"],
