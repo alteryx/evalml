@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
@@ -35,11 +36,11 @@ class DateTimeFeaturization(Transformer):
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
-
         valid_features = ["year", "month", "day_of_week", "hour"]
         invalid_features = [feature for feature in features_to_extract if feature not in valid_features]
         if len(invalid_features) > 0:
             raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
+
         parameters = {"features_to_extract": features_to_extract}
         self._date_time_cols = None
         self.featurization_functions = {key: self.function_mappings[key] for key in features_to_extract}
@@ -50,7 +51,7 @@ class DateTimeFeaturization(Transformer):
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._date_time_cols = X.select_dtypes(include=['datetime64'])
+        self._date_time_cols = X.select_dtypes(include=[np.datetime64])
         return self
 
     def transform(self, X, y=None):
@@ -67,6 +68,8 @@ class DateTimeFeaturization(Transformer):
         X_t = X
         if not isinstance(X_t, pd.DataFrame):
             X_t = pd.DataFrame(X_t)
+        if len(self.featurization_functions) == 0:
+            return X_t
         for col_name, col in self._date_time_cols.iteritems():
             for feature, feature_function in self.featurization_functions.items():
                 X_t[f"{col_name}_{feature}"] = feature_function(col)
