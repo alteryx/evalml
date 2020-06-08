@@ -1,6 +1,6 @@
 import category_encoders as ce
 import numpy as np
-from pytest import importorskip
+from pytest import importorskip, raises
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
@@ -9,7 +9,7 @@ from evalml.pipelines import XGBoostRegressionPipeline
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import get_random_seed, get_random_state, import_or_raise
 
-importorskip('xgboost', reason='Skipping test because xgboost not installed')
+xgboost = importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
 def test_xg_init(X_y_reg):
@@ -102,3 +102,33 @@ def test_xgr_input_feature_names(X_y_categorical_regression):
     clf = XGBoostRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_clone(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'XGBoost Regressor': {
+            "n_estimators": 15,
+            "eta": 0.1,
+            "min_child_weight": 1,
+            "max_depth": 3
+        }
+    }
+    clf = XGBoostRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert isinstance(clf_clone, XGBoostRegressionPipeline)
+    assert clf.random_state == clf_clone.random_state
+    assert clf_clone.estimator.parameters['n_estimators'] == 15
+    assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
+    with raises(RuntimeError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)

@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.base import clone as sk_clone
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -55,3 +56,13 @@ class XGBoostRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.feature_importances_
+
+    def clone(self):
+        cloned_obj = XGBoostRegressor(eta=self.parameters['eta'],
+                                      max_depth=self.parameters['max_depth'],
+                                      min_child_weight=self.parameters['min_child_weight'],
+                                      n_estimators=self.parameters['n_estimators'],
+                                      random_state=self.random_state)
+        cloned_regressor = sk_clone(self._component_obj)
+        cloned_obj._component_obj = cloned_regressor
+        return cloned_obj

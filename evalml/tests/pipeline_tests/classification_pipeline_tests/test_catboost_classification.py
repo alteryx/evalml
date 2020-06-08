@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
+from pytest import importorskip, raises
+from sklearn.exceptions import NotFittedError
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
@@ -151,3 +152,33 @@ def test_catboost_categorical(X_y_categorical_classification):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_clone(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 50,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert isinstance(clf_clone, CatBoostBinaryClassificationPipeline)
+    assert clf.random_state == clf_clone.random_state
+    assert clf_clone.estimator.parameters['bootstrap_type'] == 'Bernoulli'
+    assert clf_clone.component_graph[0].parameters['impute_strategy'] == "most_frequent"
+    with raises(NotFittedError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)

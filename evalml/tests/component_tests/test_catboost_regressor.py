@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from pytest import importorskip
+from pytest import importorskip, raises
 
 from evalml.pipelines.components import CatBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
-importorskip('catboost', reason='Skipping test because catboost not installed')
+catboost = importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
 def test_catboost_regressor_random_state_bounds_seed(X_y):
@@ -41,3 +41,42 @@ def test_catboost_regressor_random_state_bounds_rng(X_y):
     rng = make_mock_random_state(CatBoostRegressor.SEED_MAX)
     clf = CatBoostRegressor(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
+
+
+def test_clone(X_y):
+    X, y = X_y
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    y = pd.Series(y)
+
+    # Test without boostrap_types parameter
+    clf = CatBoostRegressor(n_estimators=2, max_depth=1)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert 'bootstrap_type' not in clf_clone.parameters
+    assert clf.random_state == clf_clone.random_state
+    with raises(catboost.CatBoostError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    assert clf_clone.parameters['n_estimators'] == 2
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+    # Test with boostrap_types parameter
+    clf = CatBoostRegressor(n_estimators=2, max_depth=1, bootstrap_type='Bernoulli')
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert clf_clone.parameters['bootstrap_type'] == 'Bernoulli'
+    assert clf.random_state == clf_clone.random_state
+    with raises(catboost.CatBoostError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    assert clf_clone.parameters['n_estimators'] == 2
+    np.testing.assert_almost_equal(X_t, X_t_clone)

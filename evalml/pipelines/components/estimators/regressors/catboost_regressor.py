@@ -1,3 +1,4 @@
+from sklearn.base import clone as sk_clone
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -60,3 +61,19 @@ class CatBoostRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.get_feature_importance()
+
+    def clone(self):
+        if 'bootstrap_type' in self.parameters:
+            cloned_obj = CatBoostRegressor(n_estimators=self.parameters['n_estimators'],
+                                           eta=self.parameters['eta'],
+                                           max_depth=self.parameters['max_depth'],
+                                           bootstrap_type=self.parameters['bootstrap_type'],
+                                           random_state=self.random_state)
+        else:
+            cloned_obj = CatBoostRegressor(n_estimators=self.parameters['n_estimators'],
+                                           eta=self.parameters['eta'],
+                                           max_depth=self.parameters['max_depth'],
+                                           random_state=self.random_state)
+        cloned_regressor = sk_clone(self._component_obj)
+        cloned_obj._component_obj = cloned_regressor
+        return cloned_obj

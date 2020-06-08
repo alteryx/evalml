@@ -2,7 +2,7 @@ import string
 
 import numpy as np
 import pandas as pd
-from pytest import importorskip
+from pytest import importorskip, raises
 
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import SEED_BOUNDS
@@ -58,3 +58,24 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
     assert not np.isnan(predictions).all()
+
+
+def test_clone(X_y):
+    X, y = X_y
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    y = pd.Series(y)
+
+    clf = XGBoostRegressor(n_estimators=2, max_depth=1)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert clf.random_state == clf_clone.random_state
+    with raises(xgb.core.XGBoostError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    assert clf_clone.parameters['n_estimators'] == 2
+    np.testing.assert_almost_equal(X_t, X_t_clone)

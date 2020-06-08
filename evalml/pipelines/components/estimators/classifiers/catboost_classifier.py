@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.base import clone as sk_clone
 from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
 
@@ -67,3 +68,19 @@ class CatBoostClassifier(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.get_feature_importance()
+
+    def clone(self):
+        if 'bootstrap_type' in self.parameters:
+            cloned_obj = CatBoostClassifier(n_estimators=self.parameters['n_estimators'],
+                                            eta=self.parameters['eta'],
+                                            max_depth=self.parameters['max_depth'],
+                                            bootstrap_type=self.parameters['bootstrap_type'],
+                                            random_state=self.random_state)
+        else:
+            cloned_obj = CatBoostClassifier(n_estimators=self.parameters['n_estimators'],
+                                            eta=self.parameters['eta'],
+                                            max_depth=self.parameters['max_depth'],
+                                            random_state=self.random_state)
+        cloned_classifier = sk_clone(self._component_obj)
+        cloned_obj._component_obj = cloned_classifier
+        return cloned_obj
