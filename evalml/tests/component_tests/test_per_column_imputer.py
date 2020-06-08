@@ -31,10 +31,10 @@ def test_all_strategies():
     X_expected.columns = ['A', 'B', 'C', 'D']
 
     strategies = {
-        'A': 'mean',
-        'B': 'median',
-        'C': ('constant', 100),
-        'D': 'most_frequent',
+        'A': {"impute_strategy": "mean"},
+        'B': {"impute_strategy": "median"},
+        'C': {"impute_strategy": "constant", "fill_value": 100},
+        'D': {"impute_strategy": "most_frequent"},
     }
 
     transformer = PerColumnImputer(impute_strategies=strategies)
@@ -56,7 +56,7 @@ def test_fit_transform():
     X.columns = ['A']
     X_expected.columns = ['A']
 
-    strategies = {'A': 'median'}
+    strategies = {'A': {"impute_strategy": "median"}}
 
     transformer = PerColumnImputer(impute_strategies=strategies)
     transformer.fit(X)
@@ -73,7 +73,7 @@ def test_non_numeric_errors(non_numeric_df):
     X = non_numeric_df
 
     # mean with all strings
-    strategies = {'A': 'mean'}
+    strategies = {'A': {"impute_strategy": "mean"}}
     with pytest.raises(ValueError, match="Cannot use mean strategy with non-numeric data"):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
@@ -82,7 +82,7 @@ def test_non_numeric_errors(non_numeric_df):
         transformer.fit(X)
 
     # median with all strings
-    strategies = {'B': 'median'}
+    strategies = {'B': {"impute_strategy": "median"}}
     with pytest.raises(ValueError, match="Cannot use median strategy with non-numeric data"):
         transformer = PerColumnImputer(impute_strategies=strategies)
         transformer.fit_transform(X)
@@ -95,7 +95,7 @@ def test_non_numeric_valid(non_numeric_df):
     X = non_numeric_df
 
     # most frequent with all strings
-    strategies = {'C': 'most_frequent'}
+    strategies = {'C': {"impute_strategy": "most_frequent"}}
     transformer = PerColumnImputer(impute_strategies=strategies)
 
     X_expected = pd.DataFrame([["a", "a", "a", "a"],
@@ -108,7 +108,7 @@ def test_non_numeric_valid(non_numeric_df):
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 
     # constant with all strings
-    strategies = {'D': ('constant', 100)}
+    strategies = {'D': {"impute_strategy": "constant", "fill_value": 100}}
     transformer = PerColumnImputer(impute_strategies=strategies)
 
     X_expected = pd.DataFrame([["a", "a", "a", "a"],

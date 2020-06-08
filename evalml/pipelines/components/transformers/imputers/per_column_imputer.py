@@ -12,9 +12,7 @@ class PerColumnImputer(Transformer):
         """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
-            impute_strategies (dict): Column and either impute_strategy or (impute_strategy, fill_value) pairings.
-                Dict values can be either a singular string strategy or a tuple with a strategy and fill value.
-
+            impute_strategies (dict): Column and {"impute_strategy": strategy, "fill_value":value} pairings.
                 Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types. Defaults to "most_frequent" for all columns.
 
@@ -46,11 +44,10 @@ class PerColumnImputer(Transformer):
         """
         self.imputers = dict()
         for column in X.columns:
-            strategy = self.impute_strategies.get(column, self.default_impute_strategy)
-            if isinstance(strategy, tuple):
-                self.imputers[column] = SkImputer(strategy=strategy[0], fill_value=strategy[1])
-            else:
-                self.imputers[column] = SkImputer(strategy=strategy)
+            strategy_dict = self.impute_strategies.get(column, dict())
+            strategy = strategy_dict.get('impute_strategy', self.default_impute_strategy)
+            fill_value = strategy_dict.get('fill_value', None)
+            self.imputers[column] = SkImputer(strategy=strategy, fill_value=fill_value)
 
         for column, imputer in self.imputers.items():
             imputer.fit(X[[column]])
