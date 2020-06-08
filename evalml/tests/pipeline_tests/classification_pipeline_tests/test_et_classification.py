@@ -135,3 +135,53 @@ def test_et_input_feature_names(X_y):
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
         assert "col_" in col_name
+
+
+def test_clone_binary(X_y):
+    X, y = X_y
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Extra Trees Classifier': {
+            "n_estimators": 10,
+            "max_features": "log2"
+        }
+    }
+    clf = ETBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert clf_clone.estimator.parameters['n_estimators'] == 10
+    with pytest.raises(RuntimeError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_multiclass(X_y_multi):
+    X, y = X_y_multi
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Extra Trees Classifier': {
+            "n_estimators": 12,
+            "max_features": "log2"
+        }
+    }
+    clf = ETMulticlassClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert clf_clone.estimator.parameters['n_estimators'] == 12
+    with pytest.raises(RuntimeError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
