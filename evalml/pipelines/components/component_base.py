@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from sklearn.base import clone as sk_clone
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import get_logger, get_random_state, log_subtitle
@@ -29,6 +30,10 @@ class ComponentBase(ABC):
     def clone(self):
         """Constructs a new unfit/untrained component with the same parameters"""
         raise NotImplementedError
+
+    def clone_learned(self):
+        """Returns a new component with the fit/trained information"""
+        return sk_clone(self, safe=False)
 
     def fit(self, X, y=None):
         """Fits component to data
