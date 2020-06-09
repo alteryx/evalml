@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-
-from sklearn.base import clone as sk_clone
+import copy
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import get_logger, get_random_state, log_subtitle
@@ -28,13 +27,18 @@ class ComponentBase(ABC):
     def model_family(cls):
         """Returns ModelFamily of this component"""
 
-    def clone(self):
-        """Constructs a new unfit/untrained component with the same parameters"""
-        raise NotImplementedError
+    def clone(self, learned=True):
+        """Constructs a new component with the same parameters.
 
-    def clone_learned(self):
-        """Returns a new component with the fit/trained information"""
-        return sk_clone(self, safe=False)
+        If learned=True, any learning done on this component will be maintained. If False, an object with the identical parameters
+        but without the fit will be returned
+        """
+        if learned:
+            return copy.deepcopy(self)
+        else:
+            component_class = self.__class__
+            cloned_component = component_class(parameters=self.parameters, random_state=self.random_state)
+            return cloned_component
 
     def fit(self, X, y=None):
         """Fits component to data
