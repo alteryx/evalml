@@ -67,15 +67,15 @@ def roc_curve(y_true, y_pred_proba):
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note that 1 dimensional input is expected.
 
 
     Returns:
-        dict: Dictionary containing metrics used to generate an ROC plot, with the following keys, each of which contains a dictionary for each classification class:
-                  * `fpr_rates`: False positive rates.
-                  * `tpr_rates`: True positive rates.
-                  * `thresholds`: Threshold values used to produce each pair of true/false positive rates.
-                  * `auc_scores`: The area under the ROC curve. (One vs Rest)
+        dict: Dictionary containing metrics used to generate an ROC plot, with the following keys:
+                  * `fpr_rate`: False positive rate.
+                  * `tpr_rate`: True positive rate.
+                  * `threshold`: Threshold values used to produce each pair of true/false positive rates.
+                  * `auc_score`: The area under the ROC curve.
     """
     fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(fpr_rates, tpr_rates)
@@ -90,7 +90,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label in the binary case.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
         custom_class_labels (list or None): if not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
