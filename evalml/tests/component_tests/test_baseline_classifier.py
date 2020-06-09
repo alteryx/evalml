@@ -139,3 +139,14 @@ def test_clone(X_y):
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())
+
+
+def test_clone_learned(X_y):
+    X, y = X_y
+    clf = BaselineClassifier()
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())

@@ -79,3 +79,20 @@ def test_clone(X_y):
 
     assert clf_clone.parameters['n_estimators'] == 2
     np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned(X_y):
+    X, y = X_y
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    y = pd.Series(y)
+
+    clf = XGBoostRegressor(n_estimators=2, max_depth=1)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    X_t_clone = clf_clone.predict(X)
+
+    assert clf_clone.parameters['n_estimators'] == 2
+    np.testing.assert_almost_equal(X_t, X_t_clone)

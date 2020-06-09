@@ -80,3 +80,17 @@ def test_clone(X_y):
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)
+
+
+def test_clone_learned(X_y):
+    X, y = X_y
+    clf = ElasticNetRegressor(normalize=True)
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+    assert isinstance(predicted, type(np.array([])))
+
+    clf_clone = clf.clone_learned()
+
+    assert clf_clone._component_obj.normalize is True
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted, predicted_clone)
