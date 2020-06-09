@@ -182,3 +182,29 @@ def test_clone(X_y_reg):
     X_t_clone = clf_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned(X_y):
+    X, y = X_y
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Classifier': {
+            "n_estimators": 50,
+            "bootstrap_type": 'Bernoulli',
+            "eta": 0.1,
+            "max_depth": 3,
+        }
+    }
+    clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert isinstance(clf_clone, CatBoostBinaryClassificationPipeline)
+    assert clf_clone.estimator.parameters['bootstrap_type'] == 'Bernoulli'
+    assert clf_clone.component_graph[0].parameters['impute_strategy'] == "most_frequent"
+
+    X_t_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(X_t, X_t_clone)

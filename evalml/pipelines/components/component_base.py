@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from sklearn.base import clone as sk_clone
 
 from evalml.exceptions import MethodPropertyNotFoundError

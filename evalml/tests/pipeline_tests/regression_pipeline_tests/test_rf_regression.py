@@ -1,6 +1,7 @@
 import category_encoders as ce
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -102,3 +103,54 @@ def test_rfr_input_feature_names(X_y_reg):
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
         assert "col_" in col_name
+
+
+def test_clone(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Random Forest Regressor': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert isinstance(clf_clone, RFRegressionPipeline)
+    assert clf.random_state == clf_clone.random_state
+    assert clf_clone.component_graph[-1].parameters['n_estimators'] == 20
+    with pytest.raises(RuntimeError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'Random Forest Regressor': {
+            "n_estimators": 20,
+            "max_depth": 5,
+        }
+    }
+    clf = RFRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert isinstance(clf_clone, RFRegressionPipeline)
+    print(clf_clone.estimator.parameters.keys())
+    assert clf_clone.estimator.parameters['n_estimators'] == 20
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)

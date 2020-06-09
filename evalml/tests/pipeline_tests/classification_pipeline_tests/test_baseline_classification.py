@@ -137,3 +137,17 @@ def test_clone(X_y_reg):
     cloned_clf.fit(X, y)
 
     np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))
+
+
+def test_clone_learned(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "mode"
+        }
+    }
+    clf = BaselineMulticlassPipeline(parameters=parameters)
+    clf.fit(X, y)
+
+    cloned_clf = clf.clone_learned()
+    np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))

@@ -95,8 +95,8 @@ def test_lr_input_feature_names(X_y):
         assert "col_" in col_name
 
 
-def test_clone(X_y):
-    X, y = X_y
+def test_clone(X_y_reg):
+    X, y = X_y_reg
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -115,6 +115,28 @@ def test_clone(X_y):
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    clf = LinearRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert clf_clone.estimator.parameters['normalize'] is True
     X_t_clone = clf_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)

@@ -48,3 +48,22 @@ def test_clone(X_y_reg):
     cloned_clf.fit(X, y)
 
     np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))
+
+
+def test_clone_learned(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        "Baseline Regressor": {
+            "strategy": "mean"
+        }
+    }
+    clf = BaselineRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert isinstance(clf_clone, BaselineRegressionPipeline)
+    assert clf_clone.component_graph[-1].parameters['strategy'] == "mean"
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t.values, X_t_clone.values)

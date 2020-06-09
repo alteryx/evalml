@@ -1,7 +1,8 @@
 import numpy as np
-from pytest import importorskip
+from pytest import importorskip, raises
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import NotFittedError
 
 from evalml.objectives import R2
 from evalml.pipelines import CatBoostRegressionPipeline
@@ -90,3 +91,57 @@ def test_cbr_input_feature_names(X_y_categorical_regression):
     clf.fit(X, y)
     assert len(clf.feature_importances) == len(X.columns)
     assert not clf.feature_importances.isnull().all().all()
+
+
+def test_clone(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Regressor': {
+            "n_estimators": 1000,
+            "bootstrap_type": 'Bayesian',
+            "eta": 0.03,
+            "max_depth": 6,
+        }
+    }
+    clf = CatBoostRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone()
+    assert isinstance(clf_clone, CatBoostRegressionPipeline)
+    assert clf.random_state == clf_clone.random_state
+    assert clf_clone.component_graph[-1].parameters['eta'] == 0.03
+    with raises(NotFittedError):
+        clf_clone.predict(X)
+    clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned(X_y_reg):
+    X, y = X_y_reg
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'CatBoost Regressor': {
+            "n_estimators": 1000,
+            "bootstrap_type": 'Bayesian',
+            "eta": 0.03,
+            "max_depth": 6,
+        }
+    }
+    clf = CatBoostRegressionPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert isinstance(clf_clone, CatBoostRegressionPipeline)
+    assert clf_clone.component_graph[-1].parameters['max_depth'] == 6
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)

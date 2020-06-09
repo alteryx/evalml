@@ -146,14 +146,14 @@ def test_clone_binary(X_y):
     }
     clf = ENBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
-    X_t = clf.predict(X)
+    X_t = clf.predict_proba(X)
 
     clf_clone = clf.clone()
     assert clf_clone.estimator.parameters['alpha'] == 0.6
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
-    X_t_clone = clf_clone.predict(X)
+    X_t_clone = clf_clone.predict_proba(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
@@ -180,6 +180,54 @@ def test_clone_multiclass(X_y_multi):
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned_binary(X_y):
+    X, y = X_y
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean',
+            'fill_value': None
+        },
+        'One Hot Encoder': {'top_n': 10},
+        'Elastic Net Classifier': {
+            "alpha": 0.6,
+            "l1_ratio": 0.5,
+        }
+    }
+    clf = ENBinaryPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert clf_clone.estimator.parameters['alpha'] == 0.6
+    X_t_clone = clf_clone.predict(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_clone_learned_multiclass(X_y_multi):
+    X, y = X_y_multi
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean',
+            'fill_value': None
+        },
+        'One Hot Encoder': {'top_n': 10},
+        'Elastic Net Classifier': {
+            "alpha": 0.7,
+            "l1_ratio": 0.5,
+        }
+    }
+    clf = ENMulticlassPipeline(parameters=parameters)
+    clf.fit(X, y)
+    X_t = clf.predict(X)
+
+    clf_clone = clf.clone_learned()
+    assert clf_clone.estimator.parameters['alpha'] == 0.7
     X_t_clone = clf_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
