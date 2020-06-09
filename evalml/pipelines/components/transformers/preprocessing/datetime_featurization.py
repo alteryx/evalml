@@ -30,7 +30,7 @@ class DateTimeFeaturization(Transformer):
         """Extracts features from DateTime columns
 
         Arguments:
-            features_to_extract (list):
+            features_to_extract (list): list of features to extract. Valid options include "year", "month", "day_of_week", "hour".
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
@@ -42,7 +42,7 @@ class DateTimeFeaturization(Transformer):
             raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
 
         parameters = {"features_to_extract": features_to_extract}
-        self._date_time_cols = None
+        self._date_time_col_names = None
         self.featurization_functions = {key: self.function_mappings[key] for key in features_to_extract}
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -51,7 +51,7 @@ class DateTimeFeaturization(Transformer):
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._date_time_cols = X.select_dtypes(include=[np.datetime64])
+        self._date_time_col_names = list(X.select_dtypes(include=[np.datetime64]))
         return self
 
     def transform(self, X, y=None):
@@ -63,14 +63,14 @@ class DateTimeFeaturization(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._date_time_cols is None:
+        if self._date_time_col_names is None:
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
         X_t = X
         if not isinstance(X_t, pd.DataFrame):
             X_t = pd.DataFrame(X_t)
         if len(self.featurization_functions) == 0:
             return X_t
-        for col_name, col in self._date_time_cols.iteritems():
+        for col_name in self._date_time_col_names:
             for feature, feature_function in self.featurization_functions.items():
-                X_t[f"{col_name}_{feature}"] = feature_function(col)
-        return X_t.drop(self._date_time_cols, axis=1)
+                X_t[f"{col_name}_{feature}"] = feature_function(X_t[col_name])
+        return X_t.drop(self._date_time_col_names, axis=1)

@@ -8,11 +8,11 @@ from evalml.pipelines.components import DateTimeFeaturization
 def test_datetime_featurization_init():
     datetime_transformer = DateTimeFeaturization()
     assert datetime_transformer.parameters == {"features_to_extract": ["year", "month", "day_of_week", "hour"]}
-    assert datetime_transformer._date_time_cols is None
+    assert datetime_transformer._date_time_col_names is None
 
     datetime_transformer = DateTimeFeaturization(features_to_extract=["year", "month"])
     assert datetime_transformer.parameters == {"features_to_extract": ["year", "month"]}
-    assert datetime_transformer._date_time_cols is None
+    assert datetime_transformer._date_time_col_names is None
 
     with pytest.raises(ValueError, match="'invalid', 'parameters' are not valid options for features_to_extract"):
         DateTimeFeaturization(features_to_extract=["invalid", "parameters"])
@@ -25,26 +25,32 @@ def test_datetime_featurization_transform_without_fit():
 
 
 def test_datetime_featurization_transform():
-    datetime_transformer = DateTimeFeaturization()
+    datetime_transformer = DateTimeFeaturization(features_to_extract=["year"])
     X = pd.DataFrame({'Numerical 1': range(20),
-                      'Date Col 1': pd.date_range('2020-05-19', periods=20, freq='D'),
-                      'Date Col 2': pd.date_range('2020-02-03', periods=20, freq='M'),
+                      'Date Col 1': pd.date_range('2000-05-19', periods=20, freq='D'),
+                      'Date Col 2': pd.date_range('2000-02-03', periods=20, freq='W'),
                       'Numerical 2': [0] * 20})
+    X_test = pd.DataFrame({'Numerical 1': range(20),
+                           'Date Col 1': pd.date_range('2020-05-19', periods=20, freq='D'),
+                           'Date Col 2': pd.date_range('2020-02-03', periods=20, freq='W'),
+                           'Numerical 2': [0] * 20})
     datetime_transformer.fit(X)
-    assert list(datetime_transformer.transform(X).columns) == ['Numerical 1', 'Numerical 2',
-                                                               'Date Col 1_year', 'Date Col 1_month', 'Date Col 1_day_of_week', 'Date Col 1_hour',
-                                                               'Date Col 2_year', 'Date Col 2_month', 'Date Col 2_day_of_week', 'Date Col 2_hour']
+    transformed = datetime_transformer.transform(X_test)
+    assert list(transformed.columns) == ['Numerical 1', 'Numerical 2', 'Date Col 1_year', 'Date Col 2_year']
+    assert transformed["Date Col 1_year"].equals(pd.Series([2020] * 20))
+    assert transformed["Date Col 2_year"].equals(pd.Series([2020] * 20))
 
 
 def test_datetime_featurization_fit_transform():
-    datetime_transformer = DateTimeFeaturization()
+    datetime_transformer = DateTimeFeaturization(features_to_extract=["year"])
     X = pd.DataFrame({'Numerical 1': range(20),
                       'Date Col 1': pd.date_range('2020-05-19', periods=20, freq='D'),
-                      'Date Col 2': pd.date_range('2020-02-03', periods=20, freq='M'),
+                      'Date Col 2': pd.date_range('2020-02-03', periods=20, freq='W'),
                       'Numerical 2': [0] * 20})
-    assert list(datetime_transformer.fit_transform(X).columns) == ['Numerical 1', 'Numerical 2',
-                                                                   'Date Col 1_year', 'Date Col 1_month', 'Date Col 1_day_of_week', 'Date Col 1_hour',
-                                                                   'Date Col 2_year', 'Date Col 2_month', 'Date Col 2_day_of_week', 'Date Col 2_hour']
+    transformed = datetime_transformer.fit_transform(X)
+    assert list(transformed.columns) == ['Numerical 1', 'Numerical 2', 'Date Col 1_year', 'Date Col 2_year']
+    assert transformed["Date Col 1_year"].equals(pd.Series([2020] * 20))
+    assert transformed["Date Col 2_year"].equals(pd.Series([2020] * 20))
 
 
 def test_datetime_featurization_no_col_names():
