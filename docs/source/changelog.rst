@@ -10,6 +10,7 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
+        * Added preprocessing component to handle DateTime columns featurization :pr:`838`
     * Fixes
     * Changes
     * Documentation Changes
