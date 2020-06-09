@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
+from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
 from evalml.utils import import_or_raise
@@ -62,17 +63,18 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba):
     """
-    Given labels and binary classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
+    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.array): true labels.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note that 1 dimensional input is expected.
+
 
     Returns:
         dict: Dictionary containing metrics used to generate an ROC plot, with the following keys:
-                  * `fpr_rates`: False positive rates.
-                  * `tpr_rates`: True positive rates.
-                  * `thresholds`: Threshold values used to produce each pair of true/false positive rates.
+                  * `fpr_rate`: False positive rate.
+                  * `tpr_rate`: True positive rate.
+                  * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
     fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_true, y_pred_proba)
@@ -83,27 +85,48 @@ def roc_curve(y_true, y_pred_proba):
             'auc_score': auc_score}
 
 
-def graph_roc_curve(y_true, y_pred_proba, title_addition=None):
+def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
     """Generate and display a Receiver Operating Characteristic (ROC) plot.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.array): true labels.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
+        custom_class_labels (list or None): if not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
         plotly.Figure representing the ROC plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    roc_curve_data = roc_curve(y_true, y_pred_proba)
+
+    if y_pred_proba.ndim == 1:
+        y_pred_proba = y_pred_proba.reshape(-1, 1)
+
+    nan_indices = np.logical_or(np.isnan(y_true), np.isnan(y_pred_proba).any(axis=1))
+    y_true = y_true[~nan_indices]
+    y_pred_proba = y_pred_proba[~nan_indices]
+
+    lb = LabelBinarizer()
+    lb.fit(np.unique(y_true))
+    y_one_hot_true = lb.transform(y_true)
+    n_classes = y_one_hot_true.shape[1]
+
+    if custom_class_names and len(custom_class_names) != n_classes:
+        raise ValueError('Number of custom class names does not match number of classes')
+
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
+
     data = []
-    data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                            name='ROC (AUC {:06f})'.format(roc_curve_data['auc_score']),
-                            line=dict(width=3)))
+    for i in range(n_classes):
+        roc_curve_data = roc_curve(y_one_hot_true[:, i], y_pred_proba[:, i])
+        data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
+                                name='Class {name} (AUC {:06f})'
+                                .format(roc_curve_data['auc_score'],
+                                        name=i + 1 if custom_class_names is None else custom_class_names[i]),
+                                line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',
                             line=dict(dash='dash')))
