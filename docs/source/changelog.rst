@@ -7,6 +7,7 @@ Changelog
     * Enhancements
         * Added preprocessing component to drop features whose percentage of NaN values exceeds a specified threshold :pr:`834`
         * Added data check to check for problematic target labels :pr:`814`
+        * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
     * Fixes
     * Changes
