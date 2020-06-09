@@ -57,8 +57,8 @@ def test_clone(X_y):
     assert isinstance(transformed_classifier, type(np.array([])))
     assert isinstance(transformed_regressor, type(np.array([])))
 
-    clf_clone = rf_classifier.clone()
-    reg_clone = rf_regressor.clone()
+    clf_clone = rf_classifier.clone(learned=False)
+    reg_clone = rf_regressor.clone(learned=False)
     with pytest.raises(ValueError):
         clf_clone.transform(X)
     with pytest.raises(ValueError):

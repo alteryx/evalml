@@ -23,7 +23,9 @@ def test_et_parameters():
     expected_parameters = {
         "n_estimators": 20,
         "max_features": "auto",
-        "max_depth": 5
+        "max_depth": 5,
+        "min_samples_split": 2,
+        "min_weight_fraction_leaf": 0.0
     }
 
     assert clf.parameters == expected_parameters
@@ -68,7 +70,8 @@ def test_clone(X_y):
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert clf.random_state == clf_clone.random_state
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
@@ -78,15 +81,8 @@ def test_clone(X_y):
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    clf = ExtraTreesRegressor(min_samples_split=3)
-    clf.fit(X, y)
-    predicted = clf.predict(X)
-    assert isinstance(predicted, type(np.array([])))
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert clf_clone._component_obj.min_samples_split == 3
 
     predicted_clone = clf_clone.predict(X)

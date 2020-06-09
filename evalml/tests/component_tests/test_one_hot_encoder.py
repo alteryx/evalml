@@ -176,7 +176,8 @@ def test_clone():
     encoder.fit(X)
     X_t = encoder.transform(X)
 
-    encoder_clone = encoder.clone()
+    # Test unlearned clone
+    encoder_clone = encoder.clone(learned=False)
     assert encoder.random_state == encoder_clone.random_state
     with pytest.raises(RuntimeError):
         encoder_clone.transform(X)
@@ -185,19 +186,8 @@ def test_clone():
     assert encoder_clone.parameters['top_n'] == 5
     np.testing.assert_almost_equal(X_t.values, X_t_clone.values)
 
-
-def test_clone_learned():
-    X = pd.DataFrame()
-    X["col_1"] = ["f", "b", "c", "d", "e"]
-    X["col_2"] = ["a", "e", "d", "d", "e"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [3, 3, 2, 2, 1]
-
-    encoder = OneHotEncoder(top_n=5)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
-    encoder_clone = encoder.clone_learned()
+    # Test learned clone
+    encoder_clone = encoder.clone()
     X_t_clone = encoder_clone.transform(X)
 
     assert encoder_clone.parameters['top_n'] == 5

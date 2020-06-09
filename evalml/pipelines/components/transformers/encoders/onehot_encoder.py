@@ -11,9 +11,10 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, top_n=10, random_state=0):
+    def __init__(self, top_n=10, random_state=0, parameters=None):
         """Initalizes self."""
-        parameters = {"top_n": top_n}
+        if parameters is None:
+            parameters = {"top_n": top_n}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -73,7 +74,3 @@ class OneHotEncoder(CategoricalEncoder):
             else:
                 X_t = pd.concat([X_t, X[col]], axis=1)
         return X_t
-
-    def clone(self):
-        cloned_obj = OneHotEncoder(top_n=self.parameters['top_n'], random_state=self.random_state)
-        return cloned_obj

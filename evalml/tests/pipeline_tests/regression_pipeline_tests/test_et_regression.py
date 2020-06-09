@@ -40,6 +40,8 @@ def test_et_init(X_y_reg):
             'max_features': "auto",
             'n_estimators': 20,
             'max_depth': 6,
+            'min_samples_split': 2,
+            'min_weight_fraction_leaf': 0.0
         }
     }
 
@@ -108,7 +110,8 @@ def test_clone(X_y_reg):
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert isinstance(clf_clone, ETRegressionPipeline)
     assert clf.random_state == clf_clone.random_state
     assert clf_clone.estimator.parameters['n_estimators'] == 15
@@ -120,26 +123,8 @@ def test_clone(X_y_reg):
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean',
-            'fill_value': None
-        },
-        'One Hot Encoder': {'top_n': 10},
-        'Extra Trees Regressor': {
-            "n_estimators": 15,
-            "max_features": "auto",
-            "max_depth": 6
-        }
-    }
-    clf = ETRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, ETRegressionPipeline)
     assert clf_clone.estimator.parameters['n_estimators'] == 15
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"

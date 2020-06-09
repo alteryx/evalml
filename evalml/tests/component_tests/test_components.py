@@ -66,7 +66,10 @@ def test_describe_component():
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10}}
     assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
-    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'percent_features': 0.3, 'threshold': -np.inf, 'number_features': 5}}
+    assert feature_selection.describe(return_dict=True) == {
+        'name': 'RF Classifier Select From Model',
+        'parameters': {'percent_features': 0.3, 'threshold': -np.inf, 'number_features': 5, 'n_estimators': 10, 'max_depth': None}
+    }
 
     # testing estimators
     lr_classifier = LogisticRegressionClassifier()
@@ -77,14 +80,23 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
-    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5}}
+    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'C': 1.0, 'penalty': 'l2'}}
-    assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10}}
-    assert et_regressor.describe(return_dict=True) == {'name': 'Extra Trees Regressor', 'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10}}
+    assert et_classifier.describe(return_dict=True) == {
+        'name': 'Extra Trees Classifier',
+        'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0}
+    }
+    assert et_regressor.describe(return_dict=True) == {
+        'name': 'Extra Trees Regressor',
+        'parameters': {'max_depth': 6, 'max_features': "auto", 'n_estimators': 10, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0}
+    }
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'max_depth': 3, 'n_estimators': 10}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False}}
-    assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5}}
+    assert en_regressor.describe(return_dict=True) == {
+        'name': 'Elastic Net Regressor',
+        'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'normalize': False, 'max_iter': 1000}
+    }
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}

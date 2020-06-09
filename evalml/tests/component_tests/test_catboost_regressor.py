@@ -49,28 +49,15 @@ def test_clone(X_y):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
 
-    # Test without boostrap_types parameter
-    clf = CatBoostRegressor(n_estimators=2, max_depth=1)
+    # Test unlearned clone
+    clf = CatBoostRegressor(n_estimators=2, eta=0.04, max_depth=1, bootstrap_type='Bernoulli')
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
-    assert 'bootstrap_type' not in clf_clone.parameters
-    assert clf.random_state == clf_clone.random_state
-    with raises(catboost.CatBoostError):
-        clf_clone.predict(X)
-    clf_clone.fit(X, y)
-    X_t_clone = clf_clone.predict(X)
-
+    clf_clone = clf.clone(learned=False)
     assert clf_clone.parameters['n_estimators'] == 2
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test with boostrap_types parameter
-    clf = CatBoostRegressor(n_estimators=2, max_depth=1, bootstrap_type='Bernoulli')
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone()
+    assert clf_clone.parameters['eta'] == 0.04
+    assert clf_clone.parameters['max_depth'] == 1
     assert clf_clone.parameters['bootstrap_type'] == 'Bernoulli'
     assert clf.random_state == clf_clone.random_state
     with raises(catboost.CatBoostError):
@@ -81,19 +68,8 @@ def test_clone(X_y):
     assert clf_clone.parameters['n_estimators'] == 2
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
-
-    # Test without boostrap_types parameter
-    clf = CatBoostRegressor(n_estimators=2, max_depth=1)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert 'bootstrap_type' not in clf_clone.parameters
     X_t_clone = clf_clone.predict(X)
 

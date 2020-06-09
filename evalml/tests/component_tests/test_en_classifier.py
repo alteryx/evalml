@@ -19,7 +19,8 @@ def test_en_parameters():
     clf = ElasticNetClassifier(alpha=0.75, l1_ratio=0.5, random_state=2)
     expected_parameters = {
         "alpha": 0.75,
-        "l1_ratio": 0.5
+        "l1_ratio": 0.5,
+        "max_iter": 1000
     }
 
     assert clf.parameters == expected_parameters
@@ -118,7 +119,8 @@ def test_clone(X_y):
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
     assert clf_clone._component_obj.max_iter == 500
@@ -127,15 +129,8 @@ def test_clone(X_y):
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    clf = ElasticNetClassifier(max_iter=500)
-    clf.fit(X, y)
-    predicted = clf.predict(X)
-    assert isinstance(predicted, type(np.array([])))
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert clf_clone._component_obj.max_iter == 500
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)

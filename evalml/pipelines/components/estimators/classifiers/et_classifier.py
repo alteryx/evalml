@@ -1,4 +1,3 @@
-from sklearn.base import clone as sk_clone
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 from skopt.space import Integer
 
@@ -25,26 +24,21 @@ class ExtraTreesClassifier(Estimator):
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
                  n_jobs=-1,
-                 random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "max_features": max_features,
-                      "max_depth": max_depth}
-        et_classifier = SKExtraTreesClassifier(n_estimators=n_estimators,
-                                               max_features=max_features,
-                                               max_depth=max_depth,
-                                               min_samples_split=min_samples_split,
-                                               min_weight_fraction_leaf=min_weight_fraction_leaf,
+                 random_state=0,
+                 parameters=None):
+        if parameters is None:
+            parameters = {"n_estimators": n_estimators,
+                          "max_features": max_features,
+                          "max_depth": max_depth,
+                          "min_samples_split": min_samples_split,
+                          "min_weight_fraction_leaf": min_weight_fraction_leaf}
+        et_classifier = SKExtraTreesClassifier(n_estimators=parameters['n_estimators'],
+                                               max_features=parameters['max_features'],
+                                               max_depth=parameters['max_depth'],
+                                               min_samples_split=parameters['min_samples_split'],
+                                               min_weight_fraction_leaf=parameters['min_weight_fraction_leaf'],
                                                n_jobs=n_jobs,
                                                random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=et_classifier,
                          random_state=random_state)
-
-    def clone(self):
-        cloned_obj = ExtraTreesClassifier(n_estimators=self.parameters['n_estimators'],
-                                          max_features=self.parameters['max_features'],
-                                          max_depth=self.parameters['max_depth'],
-                                          random_state=self.random_state)
-        cloned_classifier = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_classifier
-        return cloned_obj

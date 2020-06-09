@@ -191,7 +191,8 @@ def test_clone(X_y):
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert isinstance(clf_clone, RFBinaryClassificationPipeline)
     assert clf.random_state == clf_clone.random_state
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
@@ -202,30 +203,8 @@ def test_clone(X_y):
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": len(X.columns),
-            "n_estimators": 20
-        },
-        'Random Forest Classifier': {
-            "n_estimators": 20,
-            "max_depth": 5,
-        }
-    }
-    clf = RFBinaryClassificationPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, RFBinaryClassificationPipeline)
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
 

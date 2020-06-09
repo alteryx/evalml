@@ -41,27 +41,18 @@ def test_clone(X_y_reg):
     }
     clf = BaselineRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
+    X_t = clf.predict(X)
 
-    cloned_clf = clf.clone()
+    # Test unlearned clone
+    cloned_clf = clf.clone(learned=False)
     with pytest.raises(RuntimeError):
         cloned_clf.predict(X)
     cloned_clf.fit(X, y)
 
-    np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))
+    np.testing.assert_allclose(X_t, cloned_clf.predict(X))
 
-
-def test_clone_learned(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        "Baseline Regressor": {
-            "strategy": "mean"
-        }
-    }
-    clf = BaselineRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, BaselineRegressionPipeline)
     assert clf_clone.component_graph[-1].parameters['strategy'] == "mean"
     X_t_clone = clf_clone.predict(X)

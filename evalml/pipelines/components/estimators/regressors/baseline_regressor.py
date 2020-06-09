@@ -16,7 +16,7 @@ class BaselineRegressor(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, strategy="mean", random_state=0):
+    def __init__(self, strategy="mean", random_state=0, parameters=None):
         """Baseline regressor that uses a simple strategy to make predictions.
 
         Arguments:
@@ -26,7 +26,8 @@ class BaselineRegressor(Estimator):
         """
         if strategy not in ["mean", "median"]:
             raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
-        parameters = {"strategy": strategy}
+        if parameters is None:
+            parameters = {"strategy": strategy}
         self._prediction_value = None
         self._num_features = None
         super().__init__(parameters=parameters,
@@ -66,6 +67,3 @@ class BaselineRegressor(Estimator):
         if self._num_features is None:
             raise RuntimeError("You must fit Baseline regressor before accessing feature_importances!")
         return np.zeros(self._num_features)
-
-    def clone(self):
-        return BaselineRegressor(strategy=self.parameters['strategy'], random_state=self.random_state)

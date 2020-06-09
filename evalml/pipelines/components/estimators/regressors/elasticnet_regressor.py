@@ -1,4 +1,3 @@
-from sklearn.base import clone as sk_clone
 from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
@@ -18,14 +17,17 @@ class ElasticNetRegressor(Estimator):
     supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, alpha=0.5, l1_ratio=0.5, random_state=0, normalize=False,
-                 max_iter=1000, n_jobs=-1):
-        parameters = {'alpha': alpha,
-                      'l1_ratio': l1_ratio}
-        en_regressor = SKElasticNet(alpha=alpha,
-                                    l1_ratio=l1_ratio,
+                 max_iter=1000, n_jobs=-1, parameters=None):
+        if parameters is None:
+            parameters = {'alpha': alpha,
+                          'l1_ratio': l1_ratio,
+                          'normalize': normalize,
+                          'max_iter': max_iter}
+        en_regressor = SKElasticNet(alpha=parameters['alpha'],
+                                    l1_ratio=parameters['l1_ratio'],
                                     random_state=random_state,
-                                    normalize=normalize,
-                                    max_iter=max_iter
+                                    normalize=parameters['normalize'],
+                                    max_iter=parameters['max_iter']
                                     )
         super().__init__(parameters=parameters,
                          component_obj=en_regressor,
@@ -34,11 +36,3 @@ class ElasticNetRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.coef_
-
-    def clone(self):
-        cloned_obj = ElasticNetRegressor(alpha=self.parameters['alpha'],
-                                         l1_ratio=self.parameters['l1_ratio'],
-                                         random_state=self.random_state)
-        cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_regressor
-        return cloned_obj

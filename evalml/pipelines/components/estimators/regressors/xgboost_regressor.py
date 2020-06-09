@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.base import clone as sk_clone
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -25,19 +24,20 @@ class XGBoostRegressor(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0):
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0, parameters=None):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
-        parameters = {"eta": eta,
-                      "max_depth": max_depth,
-                      "min_child_weight": min_child_weight,
-                      "n_estimators": n_estimators}
+        if parameters is None:
+            parameters = {"eta": eta,
+                          "max_depth": max_depth,
+                          "min_child_weight": min_child_weight,
+                          "n_estimators": n_estimators}
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_Regressor = xgb.XGBRegressor(random_state=random_seed,
-                                         eta=eta,
-                                         max_depth=max_depth,
-                                         n_estimators=n_estimators,
-                                         min_child_weight=min_child_weight)
+                                         eta=parameters['eta'],
+                                         max_depth=parameters['max_depth'],
+                                         n_estimators=parameters['n_estimators'],
+                                         min_child_weight=parameters['min_child_weight'])
         super().__init__(parameters=parameters,
                          component_obj=xgb_Regressor,
                          random_state=random_state)
@@ -56,13 +56,3 @@ class XGBoostRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.feature_importances_
-
-    def clone(self):
-        cloned_obj = XGBoostRegressor(eta=self.parameters['eta'],
-                                      max_depth=self.parameters['max_depth'],
-                                      min_child_weight=self.parameters['min_child_weight'],
-                                      n_estimators=self.parameters['n_estimators'],
-                                      random_state=self.random_state)
-        cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_regressor
-        return cloned_obj

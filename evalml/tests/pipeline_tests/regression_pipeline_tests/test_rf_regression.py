@@ -120,7 +120,8 @@ def test_clone(X_y_reg):
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert isinstance(clf_clone, RFRegressionPipeline)
     assert clf.random_state == clf_clone.random_state
     assert clf_clone.component_graph[-1].parameters['n_estimators'] == 20
@@ -131,23 +132,8 @@ def test_clone(X_y_reg):
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'Random Forest Regressor': {
-            "n_estimators": 20,
-            "max_depth": 5,
-        }
-    }
-    clf = RFRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, RFRegressionPipeline)
     print(clf_clone.estimator.parameters.keys())
     assert clf_clone.estimator.parameters['n_estimators'] == 20

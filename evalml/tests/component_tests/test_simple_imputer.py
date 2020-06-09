@@ -129,7 +129,8 @@ def test_clone():
     transformed_imputer = imputer.transform(X)
     assert isinstance(transformed_imputer, pd.DataFrame)
 
-    imputer_clone = imputer.clone()
+    # Test unlearned clone
+    imputer_clone = imputer.clone(learned=False)
     assert imputer.random_state == imputer_clone.random_state
     with pytest.raises(ValueError):
         imputer_clone.transform(X)
@@ -138,20 +139,7 @@ def test_clone():
     transformed_imputer_clone = imputer_clone.transform(X)
     np.testing.assert_almost_equal(transformed_imputer.values, transformed_imputer_clone.values)
 
-
-def test_clone_learned():
-    X = pd.DataFrame()
-    X["col_1"] = [2, 0, 1, 0, 0]
-    X["col_2"] = [3, 2, 5, 1, 3]
-    X["col_3"] = [0, 0, 1, 3, 2]
-    X["col_4"] = [2, 4, 1, 4, 0]
-
-    imputer = SimpleImputer()
-
-    imputer.fit(X)
-    transformed_imputer = imputer.transform(X)
-    assert isinstance(transformed_imputer, pd.DataFrame)
-
-    imputer_clone = imputer.clone_learned()
+    # Test learned clone
+    imputer_clone = imputer.clone()
     transformed_imputer_clone = imputer_clone.transform(X)
     np.testing.assert_almost_equal(transformed_imputer.values, transformed_imputer_clone.values)

@@ -110,7 +110,8 @@ def test_clone(X_y_reg):
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert clf_clone.estimator.parameters['normalize'] is True
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -119,23 +120,8 @@ def test_clone(X_y_reg):
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'most_frequent'
-        },
-        'Linear Regressor': {
-            'fit_intercept': True,
-            'normalize': True,
-        }
-    }
-    clf = LinearRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert clf_clone.estimator.parameters['normalize'] is True
     X_t_clone = clf_clone.predict(X)
 

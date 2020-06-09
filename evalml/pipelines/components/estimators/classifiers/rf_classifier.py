@@ -1,4 +1,3 @@
-from sklearn.base import clone as sk_clone
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from skopt.space import Integer
 
@@ -17,11 +16,11 @@ class RandomForestClassifier(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
+    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0, parameters=None):
         parameters = {"n_estimators": n_estimators,
                       "max_depth": max_depth}
-        rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
-                                                 max_depth=max_depth,
+        rf_classifier = SKRandomForestClassifier(n_estimators=parameters['n_estimators'],
+                                                 max_depth=parameters['max_depth'],
                                                  n_jobs=n_jobs,
                                                  random_state=random_state)
         super().__init__(parameters=parameters,
@@ -31,11 +30,3 @@ class RandomForestClassifier(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.feature_importances_
-
-    def clone(self):
-        cloned_obj = RandomForestClassifier(n_estimators=self.parameters['n_estimators'],
-                                            max_depth=self.parameters['max_depth'],
-                                            random_state=self.random_state)
-        cloned_classifier = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_classifier
-        return cloned_obj

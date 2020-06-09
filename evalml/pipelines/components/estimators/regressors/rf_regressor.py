@@ -1,4 +1,3 @@
-from sklearn.base import clone as sk_clone
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 
@@ -17,12 +16,13 @@ class RandomForestRegressor(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
-        parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
+    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0, parameters=None):
+        if parameters is None:
+            parameters = {"n_estimators": n_estimators,
+                          "max_depth": max_depth}
         rf_regressor = SKRandomForestRegressor(random_state=random_state,
-                                               n_estimators=n_estimators,
-                                               max_depth=max_depth,
+                                               n_estimators=parameters['n_estimators'],
+                                               max_depth=parameters['max_depth'],
                                                n_jobs=n_jobs)
         super().__init__(parameters=parameters,
                          component_obj=rf_regressor,
@@ -31,11 +31,3 @@ class RandomForestRegressor(Estimator):
     @property
     def feature_importances(self):
         return self._component_obj.feature_importances_
-
-    def clone(self):
-        cloned_obj = RandomForestRegressor(n_estimators=self.parameters['n_estimators'],
-                                           max_depth=self.parameters['max_depth'],
-                                           random_state=self.random_state)
-        cloned_regressor = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_regressor
-        return cloned_obj

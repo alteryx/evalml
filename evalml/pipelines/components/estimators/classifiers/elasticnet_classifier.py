@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.base import clone as sk_clone
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 from skopt.space import Real
 
@@ -18,16 +17,18 @@ class ElasticNetClassifier(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, random_state=0, max_iter=1000):
-        parameters = {'alpha': alpha,
-                      'l1_ratio': l1_ratio}
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, random_state=0, max_iter=1000, parameters=None):
+        if parameters is None:
+            parameters = {'alpha': alpha,
+                          'l1_ratio': l1_ratio,
+                          'max_iter': max_iter}
         en_classifier = SKElasticNetClassifier(loss="log",
                                                penalty="elasticnet",
-                                               alpha=alpha,
-                                               l1_ratio=l1_ratio,
+                                               alpha=parameters['alpha'],
+                                               l1_ratio=parameters['l1_ratio'],
                                                n_jobs=n_jobs,
                                                random_state=random_state,
-                                               max_iter=max_iter)
+                                               max_iter=parameters['max_iter'])
         super().__init__(parameters=parameters,
                          component_obj=en_classifier,
                          random_state=random_state)
@@ -41,11 +42,3 @@ class ElasticNetClassifier(Estimator):
         else:
             # mutliclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
-
-    def clone(self):
-        cloned_obj = ElasticNetClassifier(alpha=self.parameters['alpha'],
-                                          l1_ratio=self.parameters['l1_ratio'],
-                                          random_state=self.random_state)
-        cloned_classifier = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_classifier
-        return cloned_obj

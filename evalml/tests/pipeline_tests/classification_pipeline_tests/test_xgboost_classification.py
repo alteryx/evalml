@@ -216,7 +216,8 @@ def test_clone(X_y):
     clf.fit(X, y)
     X_t = clf.predict(X)
 
-    clf_clone = clf.clone()
+    # Test unlearned clone
+    clf_clone = clf.clone(learned=False)
     assert isinstance(clf_clone, XGBoostBinaryPipeline)
     assert clf.random_state == clf_clone.random_state
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "median"
@@ -227,31 +228,8 @@ def test_clone(X_y):
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'median'
-        },
-        'RF Classifier Select From Model': {
-            "percent_features": 1.0,
-            "number_features": X.shape[1],
-            "n_estimators": 20,
-            "max_depth": 5
-        },
-        'XGBoost Classifier': {
-            "n_estimators": 20,
-            "eta": 0.2,
-            "min_child_weight": 3,
-            "max_depth": 5,
-        }
-    }
-    clf = XGBoostBinaryPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    clf_clone = clf.clone_learned()
+    # Test learned clone
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, XGBoostBinaryPipeline)
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "median"
 

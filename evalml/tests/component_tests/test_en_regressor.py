@@ -19,7 +19,9 @@ def test_en_parameters():
     clf = ElasticNetRegressor(alpha=0.75, l1_ratio=0.5, random_state=2)
     expected_parameters = {
         "alpha": 0.75,
-        "l1_ratio": 0.5
+        "l1_ratio": 0.5,
+        "normalize": False,
+        "max_iter": 1000
     }
 
     assert clf.parameters == expected_parameters
@@ -71,26 +73,18 @@ def test_clone(X_y):
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
 
-    clf_clone = clf.clone()
+    # Test copying unlearned
+    clf_clone = clf.clone(learned=False)
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
-
     assert clf_clone._component_obj.normalize is True
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)
 
-
-def test_clone_learned(X_y):
-    X, y = X_y
-    clf = ElasticNetRegressor(normalize=True)
-    clf.fit(X, y)
-    predicted = clf.predict(X)
-    assert isinstance(predicted, type(np.array([])))
-
-    clf_clone = clf.clone_learned()
-
+    # Test copying unlearned
+    clf_clone = clf.clone(learned=True)
     assert clf_clone._component_obj.normalize is True
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)

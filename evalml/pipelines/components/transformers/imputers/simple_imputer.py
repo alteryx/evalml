@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.base import clone as sk_clone
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -10,7 +9,7 @@ class SimpleImputer(Transformer):
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0, parameters=None):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -19,10 +18,11 @@ class SimpleImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
-        parameters = {"impute_strategy": impute_strategy,
-                      "fill_value": fill_value}
-        imputer = SkImputer(strategy=impute_strategy,
-                            fill_value=fill_value)
+        if parameters is None:
+            parameters = {"impute_strategy": impute_strategy,
+                          "fill_value": fill_value}
+        imputer = SkImputer(strategy=parameters['impute_strategy'],
+                            fill_value=parameters['fill_value'])
         super().__init__(parameters=parameters,
                          component_obj=imputer,
                          random_state=random_state)
@@ -56,11 +56,3 @@ class SimpleImputer(Transformer):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
         return X_t
-
-    def clone(self):
-        cloned_obj = SimpleImputer(impute_strategy=self.parameters['impute_strategy'],
-                                   fill_value=self.parameters['fill_value'],
-                                   random_state=self.random_state)
-        cloned_imputer = sk_clone(self._component_obj)
-        cloned_obj._component_obj = cloned_imputer
-        return cloned_obj
