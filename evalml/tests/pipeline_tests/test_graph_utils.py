@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.exceptions import UndefinedMetricWarning
+from sklearn.preprocessing import label_binarize
 
 from evalml.pipelines.graph_utils import (
     confusion_matrix,
@@ -11,6 +13,15 @@ from evalml.pipelines.graph_utils import (
     precision_recall_curve,
     roc_curve
 )
+
+
+@pytest.fixture
+def binarized_ys(X_y_multi):
+    _, y_true = X_y_multi
+    rs = np.random.RandomState(42)
+    y_tr = label_binarize(y_true, classes=[0, 1, 2])
+    y_pred_proba = y_tr * rs.random(y_tr.shape)
+    return y_true, y_tr, y_pred_proba
 
 
 def test_precision_recall_curve():
@@ -60,7 +71,7 @@ def test_graph_precision_recall_curve_title_addition(X_y):
     assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
-def test_roc_curve():
+def test_roc_curve_binary():
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     roc_curve_data = roc_curve(y_true, y_predict_proba)
@@ -141,7 +152,7 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'all')
 
 
-def test_graph_roc_curve(X_y):
+def test_graph_roc_curve_binary(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
     rs = np.random.RandomState(42)
@@ -154,10 +165,63 @@ def test_graph_roc_curve(X_y):
     roc_curve_data = roc_curve(y_true, y_pred_proba)
     assert np.array_equal(fig_dict['data'][0]['x'], roc_curve_data['fpr_rates'])
     assert np.array_equal(fig_dict['data'][0]['y'], roc_curve_data['tpr_rates'])
-    assert fig_dict['data'][0]['name'] == 'ROC (AUC {:06f})'.format(roc_curve_data['auc_score'])
+    assert fig_dict['data'][0]['name'] == 'Class 1 (AUC {:06f})'.format(roc_curve_data['auc_score'])
     assert np.array_equal(fig_dict['data'][1]['x'], np.array([0, 1]))
     assert np.array_equal(fig_dict['data'][1]['y'], np.array([0, 1]))
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
+
+
+def test_graph_roc_curve_nans():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    one_val_y_zero = np.array([0])
+    with pytest.warns(UndefinedMetricWarning):
+        fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert np.array_equal(fig_dict['data'][0]['x'], np.array([0., 1.]))
+    assert np.allclose(fig_dict['data'][0]['y'], np.array([np.nan, np.nan]), equal_nan=True)
+    fig1 = graph_roc_curve(np.array([np.nan, 1, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9]))
+    fig2 = graph_roc_curve(np.array([1, 0, 1, 0, 1]), np.array([0, np.nan, 0.5, 0.1, 0.9]))
+    assert fig1 == fig2
+
+
+def test_graph_roc_curve_multiclass(binarized_ys):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true, y_tr, y_pred_proba = binarized_ys
+    fig = graph_roc_curve(y_true, y_pred_proba)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
+    assert len(fig_dict['data']) == 4
+    for i in range(3):
+        roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
+        assert fig_dict['data'][i]['name'] == 'Class {name} (AUC {:06f})'.format(roc_curve_data['auc_score'], name=i + 1)
+    assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
+    assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
+    assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
+
+    with pytest.raises(ValueError, match='Number of custom class names does not match number of classes'):
+        graph_roc_curve(y_true, y_pred_proba, custom_class_names=['one', 'two'])
+
+
+def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true, y_tr, y_pred_proba = binarized_ys
+    custom_class_names = ['one', 'two', 'three']
+    fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic'
+    for i in range(3):
+        roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])
+        assert np.array_equal(fig_dict['data'][i]['x'], roc_curve_data['fpr_rates'])
+        assert np.array_equal(fig_dict['data'][i]['y'], roc_curve_data['tpr_rates'])
+        assert fig_dict['data'][i]['name'] == 'Class {name} (AUC {:06f})'.format(roc_curve_data['auc_score'], name=custom_class_names[i])
+    assert np.array_equal(fig_dict['data'][3]['x'], np.array([0, 1]))
+    assert np.array_equal(fig_dict['data'][3]['y'], np.array([0, 1]))
+    assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
 
 
 def test_graph_roc_curve_title_addition(X_y):
