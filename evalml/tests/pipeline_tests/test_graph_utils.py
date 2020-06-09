@@ -16,11 +16,12 @@ from evalml.pipelines.graph_utils import (
 
 
 @pytest.fixture
-def Binarized_ys(X_y_multi):
+def binarized_ys(X_y_multi):
+    _, y_true = X_y_multi
     rs = np.random.RandomState(42)
-    y_tr = label_binarize(X_y_multi[1], classes=[0, 1, 2])
+    y_tr = label_binarize(y_true, classes=[0, 1, 2])
     y_pred_proba = y_tr * rs.random(y_tr.shape)
-    return X_y_multi[1], y_tr, y_pred_proba
+    return y_true, y_tr, y_pred_proba
 
 
 def test_precision_recall_curve():
@@ -170,7 +171,7 @@ def test_graph_roc_curve_binary(X_y):
     assert fig_dict['data'][1]['name'] == 'Trivial Model (AUC 0.5)'
 
 
-def test_graph_roc_curve_edge():
+def test_graph_roc_curve_nans():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
@@ -179,13 +180,14 @@ def test_graph_roc_curve_edge():
     fig_dict = fig.to_dict()
     assert np.array_equal(fig_dict['data'][0]['x'], np.array([0., 1.]))
     assert np.allclose(fig_dict['data'][0]['y'], np.array([np.nan, np.nan]), equal_nan=True)
-    graph_roc_curve(np.array([np.nan, 0, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9]))
-    graph_roc_curve(np.array([1, 0, 1, 0, 1]), np.array([0, np.nan, 0.5, 0.1, 0.9]))
+    fig1 = graph_roc_curve(np.array([np.nan, 1, 1, 0, 1]), np.array([0, 0, 0.5, 0.1, 0.9]))
+    fig2 = graph_roc_curve(np.array([1, 0, 1, 0, 1]), np.array([0, np.nan, 0.5, 0.1, 0.9]))
+    assert fig1 == fig2
 
 
-def test_graph_roc_curve_multiclass(Binarized_ys):
+def test_graph_roc_curve_multiclass(binarized_ys):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    y_true, y_tr, y_pred_proba = Binarized_ys
+    y_true, y_tr, y_pred_proba = binarized_ys
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -204,9 +206,9 @@ def test_graph_roc_curve_multiclass(Binarized_ys):
         graph_roc_curve(y_true, y_pred_proba, custom_class_names=['one', 'two'])
 
 
-def test_graph_roc_curve_multiclass_custom_class_names(Binarized_ys):
+def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    y_true, y_tr, y_pred_proba = Binarized_ys
+    y_true, y_tr, y_pred_proba = binarized_ys
     custom_class_names = ['one', 'two', 'three']
     fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
     assert isinstance(fig, type(go.Figure()))
