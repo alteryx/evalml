@@ -26,6 +26,7 @@ from .transformers import (
     DropColumns,
     FeatureSelector,
     OneHotEncoder,
+    PerColumnImputer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,

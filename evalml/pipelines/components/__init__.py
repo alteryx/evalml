@@ -22,6 +22,7 @@ from .transformers import (
     OneHotEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    PerColumnImputer,
     SimpleImputer,
     StandardScaler,
     FeatureSelector,
