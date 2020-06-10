@@ -6,6 +6,15 @@ import pytest
 from evalml.pipelines import ENBinaryPipeline, ENMulticlassPipeline
 
 
+def make_mock_random_state(return_value):
+
+    class MockRandomState(np.random.RandomState):
+
+        def randint(self, min_bound, max_bound):
+            return return_value
+    return MockRandomState()
+
+
 @pytest.fixture
 def dummy_en_multi_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
@@ -144,15 +153,16 @@ def test_clone_binary(X_y):
         'Elastic Net Classifier': {
             "alpha": 0.6,
             "l1_ratio": 0.5,
+            "max_iter": 750
         }
     }
-    clf = ENBinaryPipeline(parameters=parameters)
+    clf = ENBinaryPipeline(parameters=parameters, random_state=42)
     clf.fit(X, y)
     X_t = clf.predict_proba(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
-    assert clf_clone.estimator.parameters['alpha'] == 0.6
+    clf_clone = clf.clone(learned=False, random_state=42)
+    assert clf.parameters == clf_clone.parameters
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
@@ -163,7 +173,7 @@ def test_clone_binary(X_y):
     # Test learned clone
     clf_clone = clf.clone()
     assert clf_clone.estimator.parameters['alpha'] == 0.6
-    X_t_clone = clf_clone.predict(X)
+    X_t_clone = clf_clone.predict_proba(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
@@ -181,12 +191,12 @@ def test_clone_multiclass(X_y_multi):
             "l1_ratio": 0.5,
         }
     }
-    clf = ENMulticlassPipeline(parameters=parameters)
+    clf = ENMulticlassPipeline(parameters=parameters, random_state=42)
     clf.fit(X, y)
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone(learned=False, random_state=42)
     assert clf_clone.estimator.parameters['alpha'] == 0.7
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -196,7 +206,7 @@ def test_clone_multiclass(X_y_multi):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learn clone
-    clf_clone = clf.clone_learned()
+    clf_clone = clf.clone()
     assert clf_clone.estimator.parameters['alpha'] == 0.7
     X_t_clone = clf_clone.predict(X)
 

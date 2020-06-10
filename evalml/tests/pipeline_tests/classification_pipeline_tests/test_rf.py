@@ -187,14 +187,13 @@ def test_clone(X_y):
             "max_depth": 5,
         }
     }
-    clf = RFBinaryClassificationPipeline(parameters=parameters)
+    clf = RFBinaryClassificationPipeline(parameters=parameters, random_state=2)
     clf.fit(X, y)
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone(learned=False, random_state=2)
     assert isinstance(clf_clone, RFBinaryClassificationPipeline)
-    assert clf.random_state == clf_clone.random_state
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)

@@ -116,14 +116,13 @@ def test_clone(X_y_reg):
             "max_depth": 5,
         }
     }
-    clf = RFRegressionPipeline(parameters=parameters)
+    clf = RFRegressionPipeline(parameters=parameters, random_state=75)
     clf.fit(X, y)
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone(learned=False, random_state=75)
     assert isinstance(clf_clone, RFRegressionPipeline)
-    assert clf.random_state == clf_clone.random_state
     assert clf_clone.component_graph[-1].parameters['n_estimators'] == 20
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)

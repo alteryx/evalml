@@ -12,6 +12,15 @@ from evalml.utils import get_random_seed, get_random_state
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
+def make_mock_random_state(return_value):
+
+    class MockRandomState(np.random.RandomState):
+
+        def randint(self, min_bound, max_bound):
+            return return_value
+    return MockRandomState()
+
+
 def test_catboost_init():
     parameters = {
         'Simple Imputer': {
@@ -106,20 +115,21 @@ def test_clone(X_y_reg):
             "max_depth": 6,
         }
     }
-    clf = CatBoostRegressionPipeline(parameters=parameters)
+    rng = make_mock_random_state(CatBoostRegressor.SEED_MAX)
+    clf = CatBoostRegressionPipeline(parameters=parameters, random_state=rng)
     clf.fit(X, y)
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone(learned=False, random_state=rng)
     assert isinstance(clf_clone, CatBoostRegressionPipeline)
-    assert clf.random_state == clf_clone.random_state
-    assert clf_clone.component_graph[-1].parameters['eta'] == 0.03
+    assert clf_clone.estimator.parameters == clf.estimator.parameters
     with raises(NotFittedError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
     X_t_clone = clf_clone.predict(X)
 
+    np.testing.assert_almost_equal(clf.feature_importances.values, clf_clone.feature_importances.values)
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone

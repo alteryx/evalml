@@ -27,7 +27,7 @@ class ComponentBase(ABC):
     def model_family(cls):
         """Returns ModelFamily of this component"""
 
-    def clone(self, learned=True):
+    def clone(self, learned=True, random_state='match'):
         """Constructs a new component with the same parameters.
 
         If learned=True, any learning done on this component will be maintained. If False, an object with the identical parameters
@@ -37,7 +37,10 @@ class ComponentBase(ABC):
             return copy.deepcopy(self)
         else:
             component_class = self.__class__
-            cloned_component = component_class(parameters=self.parameters, random_state=self.random_state)
+            if random_state == 'match':
+                cloned_component = component_class(parameters=self.parameters, random_state=self.random_state)
+            else:
+                cloned_component = component_class(parameters=self.parameters, random_state=random_state)
             return cloned_component
 
     def fit(self, X, y=None):
