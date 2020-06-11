@@ -6,6 +6,16 @@ from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import get_random_state
 
 
+def test_init():
+    parameters = {"top_n": 10,
+                  "categories": None,
+                  "drop": None,
+                  "handle_unknown": "ignore",
+                  "handle_missing": "error"}
+    encoder = OneHotEncoder()
+    assert encoder.parameters == parameters
+
+
 def test_fit_first():
     encoder = OneHotEncoder()
     with pytest.raises(RuntimeError, match="You must fit one hot encoder before calling transform!"):
@@ -57,6 +67,31 @@ def test_null_values_in_dataframe():
 
     with pytest.raises(ValueError, match="Input contains NaN"):
         encoder.fit(X)
+
+    # Test NaN values in transformed data
+    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "d"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(handle_missing='error')
+    encoder.fit(X)
+    X_missing = pd.DataFrame({'col_1': ["a", "b", "c", "d", "d"],
+                              'col_2': ["a", "b", np.nan, "c", "b"],
+                              'col_3': ["a", "a", "a", "a", "a"]})
+    with pytest.raises(ValueError, match="Input contains NaN"):
+        encoder.transform(X_missing)
+
+
+def test_drop():
+    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "d"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, drop='first', handle_unknown='error')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = set(["col_1_b", "col_1_c", "col_1_d",
+                              "col_2_b", "col_2_c"])
+    assert col_names == expected_col_names
 
 
 def test_handle_unknown():
