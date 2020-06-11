@@ -152,7 +152,7 @@ def test_clone_binary(X_y):
     X_t = clf.predict_proba(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=42)
+    clf_clone = clf.clone(random_state=42)
     assert clf.parameters == clf_clone.parameters
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -162,7 +162,7 @@ def test_clone_binary(X_y):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert clf_clone.estimator.parameters['alpha'] == 0.6
     X_t_clone = clf_clone.predict_proba(X)
 
@@ -187,7 +187,7 @@ def test_clone_multiclass(X_y_multi):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=42)
+    clf_clone = clf.clone(random_state=42)
     assert clf_clone.estimator.parameters['alpha'] == 0.7
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -197,7 +197,7 @@ def test_clone_multiclass(X_y_multi):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learn clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert clf_clone.estimator.parameters['alpha'] == 0.7
     X_t_clone = clf_clone.predict(X)
 

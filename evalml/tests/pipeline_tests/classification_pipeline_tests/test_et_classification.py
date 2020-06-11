@@ -155,7 +155,7 @@ def test_clone_binary(X_y):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=9)
+    clf_clone = clf.clone(random_state=9)
     assert clf_clone.estimator.parameters['n_estimators'] == 10
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -165,7 +165,7 @@ def test_clone_binary(X_y):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert clf_clone.estimator.parameters['n_estimators'] == 10
     X_t_clone = clf_clone.predict(X)
 
@@ -188,7 +188,7 @@ def test_clone_multiclass(X_y_multi):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=43)
+    clf_clone = clf.clone(random_state=43)
     assert clf_clone.estimator.parameters['n_estimators'] == 12
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
@@ -199,7 +199,7 @@ def test_clone_multiclass(X_y_multi):
 
     # Test learned clone
     clf = ETMulticlassClassificationPipeline(parameters=parameters, random_state=43)
-    clf_clone = clf.clone(random_state=43)
+    clf_clone = clf.clone(deep=True, random_state=43)
     assert clf_clone.estimator.parameters['n_estimators'] == 12
     clf_clone.fit(X, y)
     X_t_clone = clf_clone.predict(X)

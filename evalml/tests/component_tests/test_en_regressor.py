@@ -74,7 +74,7 @@ def test_clone(X_y):
     assert isinstance(predicted, type(np.array([])))
 
     # Test copying unlearned
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone()
     with pytest.raises(MethodPropertyNotFoundError):
         clf_clone.predict(X)
     assert clf_clone._component_obj.normalize is True
@@ -84,7 +84,7 @@ def test_clone(X_y):
     np.testing.assert_almost_equal(predicted, predicted_clone)
 
     # Test copying unlearned
-    clf_clone = clf.clone(learned=True)
+    clf_clone = clf.clone(deep=True)
     assert clf_clone._component_obj.normalize is True
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)

@@ -192,7 +192,7 @@ def test_clone(X_y):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=2)
+    clf_clone = clf.clone(random_state=2)
     assert isinstance(clf_clone, RFBinaryClassificationPipeline)
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
     with pytest.raises(RuntimeError):
@@ -203,7 +203,7 @@ def test_clone(X_y):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert isinstance(clf_clone, RFBinaryClassificationPipeline)
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
 

@@ -121,7 +121,7 @@ def test_clone(X_y_reg):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=75)
+    clf_clone = clf.clone(random_state=75)
     assert isinstance(clf_clone, RFRegressionPipeline)
     assert clf_clone.component_graph[-1].parameters['n_estimators'] == 20
     with pytest.raises(RuntimeError):
@@ -132,7 +132,7 @@ def test_clone(X_y_reg):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert isinstance(clf_clone, RFRegressionPipeline)
     print(clf_clone.estimator.parameters.keys())
     assert clf_clone.estimator.parameters['n_estimators'] == 20

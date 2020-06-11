@@ -133,7 +133,7 @@ def test_clone(X_y):
     predicted = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone()
     with pytest.raises(RuntimeError):
         clf_clone.predict(X)
 
@@ -142,6 +142,6 @@ def test_clone(X_y):
     np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())

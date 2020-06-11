@@ -177,8 +177,7 @@ def test_clone():
     X_t = encoder.transform(X)
 
     # Test unlearned clone
-    encoder_clone = encoder.clone(learned=False)
-    assert encoder.random_state == encoder_clone.random_state
+    encoder_clone = encoder.clone()
     with pytest.raises(RuntimeError):
         encoder_clone.transform(X)
     X_t_clone = encoder_clone.fit_transform(X)
@@ -187,7 +186,7 @@ def test_clone():
     np.testing.assert_almost_equal(X_t.values, X_t_clone.values)
 
     # Test learned clone
-    encoder_clone = encoder.clone()
+    encoder_clone = encoder.clone(deep=True)
     X_t_clone = encoder_clone.transform(X)
 
     assert encoder_clone.parameters['top_n'] == 5

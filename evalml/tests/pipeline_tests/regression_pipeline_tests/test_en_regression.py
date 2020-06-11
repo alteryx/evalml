@@ -82,9 +82,8 @@ def test_clone(X_y_reg):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone()
     assert isinstance(clf_clone, ENRegressionPipeline)
-    assert clf.random_state == clf_clone.random_state
     assert clf_clone.estimator.parameters['alpha'] == 0.6
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
     with pytest.raises(RuntimeError):
@@ -95,7 +94,7 @@ def test_clone(X_y_reg):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert isinstance(clf_clone, ENRegressionPipeline)
     assert clf_clone.estimator.parameters['alpha'] == 0.6
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"

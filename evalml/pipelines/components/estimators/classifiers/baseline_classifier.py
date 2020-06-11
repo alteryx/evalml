@@ -17,7 +17,7 @@ class BaselineClassifier(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, strategy="mode", random_state=0, parameters=None):
+    def __init__(self, strategy="mode", random_state=0):
         """Baseline classifier that uses a simple strategy to make predictions.
 
         Arguments:
@@ -27,8 +27,7 @@ class BaselineClassifier(Estimator):
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
-        if parameters is None:
-            parameters = {"strategy": strategy}
+        parameters = {"strategy": strategy}
         self._classes = None
         self._percentage_freq = None
         self._num_features = None

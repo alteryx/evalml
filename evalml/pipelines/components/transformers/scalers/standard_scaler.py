@@ -8,9 +8,8 @@ class StandardScaler(Transformer):
     name = "Standard Scaler"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=0, parameters=None):
-        if parameters is None:
-            parameters = {}
+    def __init__(self, random_state=0):
+        parameters = {}
         scaler = SkScaler()
         super().__init__(parameters=parameters,
                          component_obj=scaler,

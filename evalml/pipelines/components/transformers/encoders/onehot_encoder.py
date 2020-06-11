@@ -11,10 +11,9 @@ class OneHotEncoder(CategoricalEncoder):
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
-    def __init__(self, top_n=10, random_state=0, parameters=None):
+    def __init__(self, top_n=10, random_state=0):
         """Initalizes self."""
-        if parameters is None:
-            parameters = {"top_n": top_n}
+        parameters = {"top_n": top_n}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)

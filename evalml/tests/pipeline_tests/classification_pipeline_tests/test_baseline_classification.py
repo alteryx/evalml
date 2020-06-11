@@ -132,7 +132,7 @@ def test_clone(X_y_reg):
     clf.fit(X, y)
 
     # Test unlearned clone
-    cloned_clf = clf.clone(learned=False)
+    cloned_clf = clf.clone()
     with pytest.raises(RuntimeError):
         cloned_clf.predict(X)
     cloned_clf.fit(X, y)
@@ -140,5 +140,5 @@ def test_clone(X_y_reg):
     np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))
 
     # Test learned clone
-    cloned_clf = clf.clone()
+    cloned_clf = clf.clone(deep=True)
     np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))

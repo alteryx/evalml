@@ -71,8 +71,7 @@ def test_clone(X_y):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
-    assert clf.random_state == clf_clone.random_state
+    clf_clone = clf.clone()
     with raises(xgb.core.XGBoostError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
@@ -82,7 +81,7 @@ def test_clone(X_y):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     X_t_clone = clf_clone.predict(X)
 
     assert clf_clone.parameters['n_estimators'] == 2

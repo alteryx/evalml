@@ -111,7 +111,7 @@ def test_clone(X_y_reg):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False, random_state=4)
+    clf_clone = clf.clone(random_state=4)
     assert isinstance(clf_clone, ETRegressionPipeline)
     assert clf_clone.estimator.parameters['n_estimators'] == 15
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
@@ -123,7 +123,7 @@ def test_clone(X_y_reg):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
     # Test learned clone
-    clf_clone = clf.clone(random_state=4)
+    clf_clone = clf.clone(deep=True, random_state=4)
     assert isinstance(clf_clone, ETRegressionPipeline)
     assert clf_clone.estimator.parameters['n_estimators'] == 15
     assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"

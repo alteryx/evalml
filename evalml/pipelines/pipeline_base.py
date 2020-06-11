@@ -405,16 +405,18 @@ class PipelineBase(ABC):
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
 
-    def clone(self, learned=True, random_state='match'):
+    def clone(self, deep=False, random_state=0):
+        """Constructs a new pipeline with the same parameters and components.
+
+        If deep=True, any learning done on this pipeline will be maintained. If False, an object with the identical parameters
+        but without the fit will be returned.
+        """
         cloned_components = []
         for component in self.component_graph:
-            cloned_components.append(component.clone(learned, random_state))
+            cloned_components.append(component.clone(deep, random_state))
 
         pipeline_class = self.__class__
-        if random_state == 'match':
-            cloned_pipeline = pipeline_class(self.parameters, random_state=self.random_state)
-        else:
-            cloned_pipeline = pipeline_class(self.parameters, random_state=random_state)
+        cloned_pipeline = pipeline_class(self.parameters, random_state=random_state)
         cloned_pipeline.component_graph = cloned_components
         cloned_pipeline.estimator = cloned_components[-1] if isinstance(cloned_components[-1], Estimator) else None
 

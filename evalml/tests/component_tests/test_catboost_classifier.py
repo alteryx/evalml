@@ -54,16 +54,15 @@ def test_clone(X_y):
     X_t = clf.predict(X)
 
     # Test unlearned clone
-    clf_clone = clf.clone(learned=False)
+    clf_clone = clf.clone()
     assert clf_clone.parameters['bootstrap_type'] == 'Bernoulli'
-    assert clf.random_state == clf_clone.random_state
     with raises(catboost.CatBoostError):
         clf_clone.predict(X)
     clf_clone.fit(X, y)
     X_t_clone = clf_clone.predict(X)
 
     # Test learned clone
-    clf_clone = clf.clone()
+    clf_clone = clf.clone(deep=True)
     assert clf_clone.parameters['bootstrap_type'] == 'Bernoulli'
 
     X_t_clone = clf_clone.predict(X)

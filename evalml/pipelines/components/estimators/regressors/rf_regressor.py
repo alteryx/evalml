@@ -16,10 +16,9 @@ class RandomForestRegressor(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0, parameters=None):
-        if parameters is None:
-            parameters = {"n_estimators": n_estimators,
-                          "max_depth": max_depth}
+    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
+        parameters = {"n_estimators": n_estimators,
+                        "max_depth": max_depth}
         rf_regressor = SKRandomForestRegressor(random_state=random_state,
                                                n_estimators=parameters['n_estimators'],
                                                max_depth=parameters['max_depth'],

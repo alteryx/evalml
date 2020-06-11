@@ -24,13 +24,12 @@ class XGBoostClassifier(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0, parameters=None):
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
-        if parameters is None:
-            parameters = {"eta": eta,
-                          "max_depth": max_depth,
-                          "min_child_weight": min_child_weight,
-                          "n_estimators": n_estimators}
+        parameters = {"eta": eta,
+                      "max_depth": max_depth,
+                      "min_child_weight": min_child_weight,
+                      "n_estimators": n_estimators}
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(random_state=random_seed,
