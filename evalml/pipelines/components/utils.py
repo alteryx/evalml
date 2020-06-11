@@ -23,8 +23,10 @@ from .estimators import (
 )
 from .transformers import (
     CategoricalEncoder,
+    DropColumns,
     FeatureSelector,
     OneHotEncoder,
+    PerColumnImputer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
