@@ -77,15 +77,12 @@ class OneHotEncoder(CategoricalEncoder):
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
 
-        # If there are no categorical columns, no fitting needs to happen
         if len(cols_to_encode) == 0:
             categories = 'auto'
 
-        # Use the categories parameter
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
 
-        # Use the top_n parameter
         else:
             categories = []
             for col in X_t[cols_to_encode]:

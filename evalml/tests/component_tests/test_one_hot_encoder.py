@@ -112,8 +112,9 @@ def test_handle_unknown():
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
                       "col_3": ["a", "a", "a", "a", "a", "a", "b"],
                       "col_4": [2, 0, 1, 3, 0, 1, 2]})
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exec_info:
         encoder.transform(X)
+    assert "Found unknown categories" in exec_info.value.args[0]
 
 
 def test_no_top_n():
@@ -143,8 +144,9 @@ def test_no_top_n():
                           "col_3": ["a", "a", "a", "a"],
                           "col_4": [2, 0, 1, 3]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as exec_info:
         encoder.transform(X_new)
+    assert "Found unknown categories" in exec_info.value.args[0]
 
 
 def test_categories():
