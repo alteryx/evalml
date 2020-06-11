@@ -306,9 +306,11 @@ def test_component_parameters_all_saved():
         spec = inspect.getfullargspec(component_class.__init__)
         args = spec.args
         assert args.pop(0) == 'self'
-        defaults = spec.defaults
+        defaults = list(spec.defaults)
         assert len(args) == len(defaults)
+        # the last arg should always be random_state
+        assert args.pop(-1) == 'random_state'
+        assert defaults.pop(-1) == 0
 
         expected_parameters = {arg: default for (arg, default) in zip(args, defaults)}
-        assert expected_parameters.pop('random_state') == 0
         assert parameters == expected_parameters
