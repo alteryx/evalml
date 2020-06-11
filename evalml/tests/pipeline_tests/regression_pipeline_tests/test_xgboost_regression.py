@@ -22,10 +22,10 @@ def test_xg_init(X_y_reg):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto',
+            'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',
-            'handle_missing': 'ignore'},
+            'handle_missing': 'error'},
         'XGBoost Regressor': {
             'eta': 0.2,
             'max_depth': 5,

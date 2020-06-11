@@ -33,7 +33,7 @@ def test_et_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10, 'categories': 'auto'},
+        'One Hot Encoder': {'top_n': 10},
         'Extra Trees Classifier': {
             "n_estimators": 20,
             "max_features": "auto",
@@ -47,10 +47,10 @@ def test_et_init(X_y):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto',
+            'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',
-            'handle_missing': 'ignore'},
+            'handle_missing': 'error'},
         'Extra Trees Classifier': {
             'max_depth': 6,
             'max_features': "auto",

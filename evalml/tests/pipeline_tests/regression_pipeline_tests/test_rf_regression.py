@@ -31,10 +31,10 @@ def test_rf_init(X_y_reg):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto',
+            'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',
-            'handle_missing': 'ignore'},
+            'handle_missing': 'error'},
         'Random Forest Regressor': {
             'max_depth': 5,
             'n_estimators': 20

@@ -13,31 +13,32 @@ def test_fit_first():
 
 
 def test_null_values_in_dataframe():
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", np.nan]
-    X["col_2"] = ["a", "b", "a", "c", "b"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [2, 0, 1, np.nan, 0]
+    error_msg = "Invalid input {} for handle_missing".format("peanut butter")
+    with pytest.raises(ValueError, match=error_msg):
+        encoder = OneHotEncoder(handle_missing="peanut butter")
+
+    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", np.nan],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
 
     # Test NaN will be counted as a category if within the top_n
-    encoder = OneHotEncoder()
+    encoder = OneHotEncoder(handle_missing='as_category')
     encoder.fit(X)
     X_t = encoder.transform(X)
 
     expected_col_names = set(["col_1_a", "col_1_b", "col_1_c", "col_1_d", "col_1_nan",
-                              "col_2_a", "col_2_b", "col_2_c", "col_3_a", "col_4"])
+                              "col_2_a", "col_2_b", "col_2_c", "col_3_a"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
-    assert X_t.shape == (5, 10)
+    assert X_t.shape == (5, 9)
 
     # Test NaN will not be counted as a category if not in the top_n
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "a", "c", "c", np.nan]
-    X["col_2"] = ["a", "b", "a", "c", "b"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [2, 0, 1, np.nan, 0]
+    X = pd.DataFrame({'col_1': ["a", "a", "c", "c", np.nan],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"],
+                      'col_4': [2, 0, 1, np.nan, 0]})
 
-    encoder = OneHotEncoder(top_n=2)
+    encoder = OneHotEncoder(top_n=2, handle_missing='as_category')
     encoder.fit(X)
     X_t = encoder.transform(X)
 
@@ -46,55 +47,46 @@ def test_null_values_in_dataframe():
     assert (col_names == expected_col_names)
     assert X_t.shape == (5, 6)
 
+    # Test handle_missing='error' throws an error
+    encoder = OneHotEncoder(handle_missing='error')
 
-def test_handling_flags():
-    # Ensure invalid variables fail
-    with pytest.raises(ValueError):
-        encoder = OneHotEncoder(handle_missing="peanut butter")
-    with pytest.raises(ValueError):
+    X = pd.DataFrame({"col_1": [np.nan, "b", "c", "d", "e", "f", "g"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2]})
+
+    with pytest.raises(ValueError, match="Input contains NaN"):
+        encoder.fit(X)
+
+
+def test_handle_unknown():
+    error_msg = "Invalid input {} for handle_unknown".format("bananas")
+    with pytest.raises(ValueError, match=error_msg):
         encoder = OneHotEncoder(handle_unknown="bananas")
 
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
-    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
-    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2]})
 
-    # Test handle_unknown='error'
     encoder = OneHotEncoder(handle_unknown='error')
     encoder.fit(X)
     assert isinstance(encoder.transform(X), pd.DataFrame)
 
-    X_new = X.replace(0, 'x')
-    with pytest.raises(ValueError):
-        encoder.transform(X_new)
-
-    # Test handle_missing='error'
-    encoder = OneHotEncoder(handle_missing='error')
-
-    X = pd.DataFrame()
-    X["col_1"] = [np.nan, "b", "c", "d", "e", "f", "g"]
-    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
-    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
-
-    with pytest.raises(ValueError):
-        encoder.fit(X)
-
-    X.at[0, 'col_1'] = 'b'
-    encoder.fit(X)
-    X.at[0, 'col_1'] = np.nan
+    X = pd.DataFrame({"col_1": ["x", "b", "c", "d", "e", "f", "g"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2]})
     with pytest.raises(ValueError):
         encoder.transform(X)
 
 
 def test_no_top_n():
     # test all categories in all columns are encoded when top_n is None
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
-    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"]
-    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]})
 
     encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
     encoder.fit(X)
@@ -111,22 +103,20 @@ def test_no_top_n():
     assert (col_names == expected_col_names)
 
     # Make sure unknown values cause an error
-    X_new = pd.DataFrame()
-    X_new["col_1"] = ["a", "b", "c", "x"]
-    X_new["col_2"] = ["a", "c", "d", "b"]
-    X_new["col_3"] = ["a", "a", "a", "a"]
-    X_new["col_4"] = [2, 0, 1, 3]
+    X_new = pd.DataFrame({"col_1": ["a", "b", "c", "x"],
+                          "col_2": ["a", "c", "d", "b"],
+                          "col_3": ["a", "a", "a", "a"],
+                          "col_4": [2, 0, 1, 3]})
 
     with pytest.raises(ValueError):
         encoder.transform(X_new)
 
 
 def test_categories():
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
-    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
-    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2]})
 
     categories = [["a", "b", "c", "d"],
                   ["a", "b", "c"],
@@ -145,18 +135,16 @@ def test_categories():
     assert (col_names == expected_col_names)
 
     # test categories with top_n errors
-    encoder = OneHotEncoder(top_n=10, categories=categories, random_state=2)
-    with pytest.raises(ValueError):
-        encoder.fit(X)
+    with pytest.raises(ValueError, match="Cannot use categories and top_n arguments simultaneously"):
+        encoder = OneHotEncoder(top_n=10, categories=categories, random_state=2)
 
 
 def test_less_than_top_n_unique_values():
     # test that columns with less than n unique values encodes properly
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "a"]
-    X["col_2"] = ["a", "b", "a", "c", "b"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [2, 0, 1, 0, 0]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "a"],
+                      "col_2": ["a", "b", "a", "c", "b"],
+                      "col_3": ["a", "a", "a", "a", "a"],
+                      "col_4": [2, 0, 1, 0, 0]})
 
     encoder = OneHotEncoder()
     encoder.parameters['top_n'] = 5
@@ -170,11 +158,10 @@ def test_less_than_top_n_unique_values():
 
 def test_more_top_n_unique_values():
     # test that columns with >= n unique values encodes properly
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g"]
-    X["col_2"] = ["a", "c", "d", "b", "e", "e", "f"]
-    X["col_3"] = ["a", "a", "a", "a", "a", "a", "b"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
+                      "col_2": ["a", "c", "d", "b", "e", "e", "f"],
+                      "col_3": ["a", "a", "a", "a", "a", "a", "b"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2]})
 
     random_seed = 2
     encoder = OneHotEncoder(random_state=random_seed)
@@ -203,11 +190,10 @@ def test_more_top_n_unique_values():
 
 
 def test_more_top_n_unique_values_large():
-    X = pd.DataFrame()
-    X["col_1"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
-    X["col_2"] = ["a", "a", "a", "b", "b", "c", "c", "d", "e"]
-    X["col_3"] = ["a", "a", "a", "b", "b", "b", "c", "c", "d"]
-    X["col_4"] = [2, 0, 1, 3, 0, 1, 2, 4, 1]
+    X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g", "h", "i"],
+                      "col_2": ["a", "a", "a", "b", "b", "c", "c", "d", "e"],
+                      "col_3": ["a", "a", "a", "b", "b", "b", "c", "c", "d"],
+                      "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1]})
 
     random_seed = 2
     encoder = OneHotEncoder(random_state=random_seed)
@@ -229,11 +215,10 @@ def test_more_top_n_unique_values_large():
 
 def test_categorical_dtype():
     # test that columns with the categorical type are encoded properly
-    X = pd.DataFrame()
-    X["col_1"] = ["f", "b", "c", "d", "e"]
-    X["col_2"] = ["a", "e", "d", "d", "e"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [3, 3, 2, 2, 1]
+    X = pd.DataFrame({"col_1": ["f", "b", "c", "d", "e"],
+                      "col_2": ["a", "e", "d", "d", "e"],
+                      "col_3": ["a", "a", "a", "a", "a"],
+                      "col_4": [3, 3, 2, 2, 1]})
     X["col_4"] = X["col_4"].astype('category')
 
     encoder = OneHotEncoder()
@@ -251,11 +236,10 @@ def test_categorical_dtype():
 
 def test_all_numerical_dtype():
     # test that columns with the numerical type are preserved
-    X = pd.DataFrame()
-    X["col_1"] = [2, 0, 1, 0, 0]
-    X["col_2"] = [3, 2, 5, 1, 3]
-    X["col_3"] = [0, 0, 1, 3, 2]
-    X["col_4"] = [2, 4, 1, 4, 0]
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0],
+                      "col_2": [3, 2, 5, 1, 3],
+                      "col_3": [0, 0, 1, 3, 2],
+                      "col_4": [2, 4, 1, 4, 0]})
 
     encoder = OneHotEncoder()
     encoder.parameters['top_n'] = 5

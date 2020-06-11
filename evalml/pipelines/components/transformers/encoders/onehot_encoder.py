@@ -14,26 +14,27 @@ class OneHotEncoder(CategoricalEncoder):
 
     def __init__(self,
                  top_n=10,
-                 categories="auto",
+                 categories=None,
                  drop=None,
                  handle_unknown="ignore",
-                 handle_missing="ignore",
+                 handle_missing="error",
                  random_state=0):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
 
         Arguments:
-            top_n (int): Number of categories per column to maintain. If None, all categories will be encoded.
+            top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
                 Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
-            categories (list): A list of categories that will be considered for each column, or `"auto"` if `top_n`
-                is not None. Defaults to `auto`.
+            categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
+                for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
             drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
                 a list specifying which method to use for each feature. Defaults to None.
-            handle_unknown (string): Option to "ignore" or "error" for unknown categories for a feature encountered
+            handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If `top_n` is used to limit the number of categories, this must be
                 "ignore". Defaults to "ignore".
-            handle_missing (string): Option to "ignore" or "error" for missing (NaN) values encountered during
-                `fit` or `transform`. If this is set to "ignore" and NaN values are within the `n` most frequent,
-                "nan" values will be encoded as their own column. Defaults to "ignore".
+            handle_missing (string): Options for how to handle missing (NaN) values encountered during
+                `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
+                "nan" values will be encoded as their own column. If this is set to "error", any missing
+                values encountered will raise an error. Defaults to "error".
         """
         parameters = {"top_n": top_n,
                       "categories": categories,
@@ -42,16 +43,16 @@ class OneHotEncoder(CategoricalEncoder):
                       "handle_missing": handle_missing}
 
         # Check correct inputs
-        correct_options = ["ignore", "error"]
-        if handle_unknown not in correct_options:
-            raise ValueError("{} not a valid option for handle_unknown, options are {}".format(handle_unknown, correct_options))
-        if handle_missing not in correct_options:
-            raise ValueError("{} not a valid option for handle_missing, options are {}".format(handle_missing, correct_options))
+        unknown_input_options = ["ignore", "error"]
+        missing_input_options = ["as_category", "error"]
+        if handle_unknown not in unknown_input_options:
+            raise ValueError("Invalid input {} for handle_unknown".format(handle_unknown))
+        if handle_missing not in missing_input_options:
+            raise ValueError("Invalid input {} for handle_missing".format(handle_missing))
+        if top_n is not None and categories is not None:
+            raise ValueError("Cannot use categories and top_n arguments simultaneously")
 
-        self.encoder = None
-        self.drop = drop
-        self.handle_unknown = handle_unknown
-        self.handle_missing = handle_missing
+        self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -71,23 +72,22 @@ class OneHotEncoder(CategoricalEncoder):
         X_t = X
         cols_to_encode = self._get_cat_cols(X_t)
 
-        # If there are no categorical columns, nothing needs to happen
+        if self.parameters['handle_missing'] == "as_category":
+            X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
+        elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
+            raise ValueError("Input contains NaN")
+
+        # If there are no categorical columns, no fitting needs to happen
         if len(cols_to_encode) == 0:
             categories = 'auto'
 
         # Use the categories parameter
-        elif isinstance(self.parameters['categories'], list):
-            if top_n is not None:
-                raise ValueError("Cannot use categories and top_n arguments simultaneously")
+        elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
 
         # Use the top_n parameter
         else:
             categories = []
-            if self.handle_missing == "ignore":
-                X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
-
-            # Find the top_n most common categories in each column
             for col in X_t[cols_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if top_n is None or len(value_counts) <= top_n:
@@ -100,10 +100,10 @@ class OneHotEncoder(CategoricalEncoder):
                 categories.append(unique_values)
 
         # Create an encoder to pass off the rest of the computation to
-        encoder = SKOneHotEncoder(categories=categories,
-                                  drop=self.drop,
-                                  handle_unknown=self.handle_unknown)
-        self.encoder = encoder.fit(X_t[cols_to_encode])
+        self._encoder = SKOneHotEncoder(categories=categories,
+                                        drop=self.parameters['drop'],
+                                        handle_unknown=self.parameters['handle_unknown'])
+        self._encoder.fit(X_t[cols_to_encode])
         return self
 
     def transform(self, X, y=None):
@@ -115,14 +115,16 @@ class OneHotEncoder(CategoricalEncoder):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        if self.encoder is None:
+        if self._encoder is None:
             raise RuntimeError("You must fit one hot encoder before calling transform!")
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         cat_cols = self._get_cat_cols(X)
 
-        if self.handle_missing == "ignore":
+        if self.parameters['handle_missing'] == "as_category":
             X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
+        elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
+            raise ValueError("Input contains NaN")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
@@ -131,9 +133,9 @@ class OneHotEncoder(CategoricalEncoder):
                 X_t = pd.concat([X_t, X[col]], axis=1)
 
         # Call sklearn's transform on the categorical columns
-        if len(cat_cols) != 0:
-            X_cat = pd.DataFrame(self.encoder.transform(X[cat_cols]).toarray())
-            X_cat.columns = self.encoder.get_feature_names(input_features=cat_cols)
+        if len(cat_cols) > 0:
+            X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray())
+            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols)
             X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
 
         return X_t

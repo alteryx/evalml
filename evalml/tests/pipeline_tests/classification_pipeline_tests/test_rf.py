@@ -24,7 +24,6 @@ def test_rf_init(X_y):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto'
         },
         'Random Forest Classifier': {
             "n_estimators": 20,
@@ -39,10 +38,10 @@ def test_rf_init(X_y):
         },
         'One Hot Encoder': {
             'top_n': 10,
-            'categories': 'auto',
+            'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',
-            'handle_missing': 'ignore'},
+            'handle_missing': 'error'},
         'Random Forest Classifier': {
             'max_depth': 5,
             'n_estimators': 20
@@ -51,11 +50,11 @@ def test_rf_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer'
+    assert clf.summary == 'Random Forest Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_summary():
-    assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer'
+    assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_rf_objective_tuning(X_y):
