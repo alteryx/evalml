@@ -6,15 +6,6 @@ import pytest
 from evalml.pipelines import ENBinaryPipeline, ENMulticlassPipeline
 
 
-def make_mock_random_state(return_value):
-
-    class MockRandomState(np.random.RandomState):
-
-        def randint(self, min_bound, max_bound):
-            return return_value
-    return MockRandomState()
-
-
 @pytest.fixture
 def dummy_en_multi_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class

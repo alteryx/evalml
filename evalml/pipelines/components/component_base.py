@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 import copy
 
 from evalml.exceptions import MethodPropertyNotFoundError
