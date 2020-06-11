@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 import pytest
 
@@ -292,3 +294,21 @@ def test_component_parameters_init():
         parameters2 = component2.parameters
 
         assert parameters == parameters2
+
+
+def test_component_parameters_all_saved():
+    components = all_components()
+    for component_name, component_class in components.items():
+        print('Testing component {}'.format(component_class.name))
+        component = component_class()
+        parameters = component.parameters
+
+        spec = inspect.getfullargspec(component_class.__init__)
+        args = spec.args
+        assert args.pop(0) == 'self'
+        defaults = spec.defaults
+        assert len(args) == len(defaults)
+
+        expected_parameters = {arg: default for (arg, default) in zip(args, defaults)}
+        assert expected_parameters.pop('random_state') == 0
+        assert parameters == expected_parameters
