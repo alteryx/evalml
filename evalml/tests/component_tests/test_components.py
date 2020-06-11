@@ -45,19 +45,19 @@ def test_classes():
 
 def test_init(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
-    assert MockComponent({}, None, 0).name == "Mock Component"
-    assert MockEstimator({}, None, 0).name == "Mock Estimator"
-    assert MockTransformer({}, None, 0).name == "Mock Transformer"
+    assert MockComponent().name == "Mock Component"
+    assert MockEstimator().name == "Mock Estimator"
+    assert MockTransformer().name == "Mock Transformer"
 
 
 def test_describe(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
     params = {'param_a': 'value_a', 'param_b': 123}
-    component = MockComponent(params, None, random_state=0)
+    component = MockComponent(parameters=params)
     assert component.describe(return_dict=True) == {'name': 'Mock Component', 'parameters': params}
-    estimator = MockEstimator(params, None, random_state=0)
+    estimator = MockEstimator(parameters=params)
     assert estimator.describe(return_dict=True) == {'name': 'Mock Estimator', 'parameters': params}
-    transformer = MockTransformer(params, None, random_state=0)
+    transformer = MockTransformer(parameters=params)
     assert transformer.describe(return_dict=True) == {'name': 'Mock Transformer', 'parameters': params}
 
 
@@ -104,20 +104,20 @@ def test_missing_attributes(X_y):
         model_family = ModelFamily.NONE
 
     with pytest.raises(TypeError):
-        MockComponentName(parameters={}, component_obj=None, random_state=0)
+        MockComponentName()
 
     class MockComponentModelFamily(ComponentBase):
         name = "Mock Component"
 
     with pytest.raises(TypeError):
-        MockComponentModelFamily(parameters={}, component_obj=None, random_state=0)
+        MockComponentModelFamily()
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
 
     with pytest.raises(TypeError):
-        MockEstimator(parameters={}, component_obj=None, random_state=0)
+        MockEstimator()
 
 
 def test_missing_methods_on_components(X_y, test_classes):
@@ -130,18 +130,18 @@ def test_missing_methods_on_components(X_y, test_classes):
         def fit(self, X, y=None):
             return X
 
-    component = MockComponent(parameters={}, component_obj=None, random_state=0)
+    component = MockComponent()
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         component.fit(X)
 
-    estimator = MockEstimator(parameters={}, component_obj=None, random_state=0)
+    estimator = MockEstimator()
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
 
-    transformer = MockTransformer(parameters={}, component_obj=None, random_state=0)
-    transformer_with_fit = MockTransformerWithFit(parameters={}, component_obj=None, random_state=0)
+    transformer = MockTransformer()
+    transformer_with_fit = MockTransformerWithFit()
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -260,23 +260,31 @@ def test_model_family_components(test_classes):
 def test_regressor_call_predict_proba(test_classes):
     X = np.array([])
     _, MockEstimator, _ = test_classes
-    component = MockEstimator({}, None, 0)
+    component = MockEstimator()
     with pytest.raises(MethodPropertyNotFoundError):
         component.predict_proba(X)
 
 
 def test_component_describe(test_classes, caplog):
     MockComponent, _, _ = test_classes
-    component = MockComponent({}, None, 0)
+    component = MockComponent()
     component.describe(print_name=True)
     out = caplog.text
     assert "Mock Component" in out
 
 
-def test_component_parameters():
+def test_component_parameters_getter(test_classes):
+    MockComponent, _, _ = test_classes
+    component = MockComponent({'test': 'parameter'})
+    assert component.parameters == {'test': 'parameter'}
+    component.parameters['test'] = 'new'
+    assert component.parameters == {'test': 'parameter'}
+
+
+def test_component_parameters_init():
     components = all_components()
     for component_name, component_class in components.items():
-        print('Inspecting component {}'.format(component_class.name))
+        print('Testing component {}'.format(component_class.name))
         component = component_class()
         parameters = component.parameters
 
