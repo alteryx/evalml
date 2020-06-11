@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 import copy
+from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import get_logger, get_random_state, log_subtitle
@@ -31,7 +31,6 @@ class ComponentBase(ABC):
     def parameters(self):
         """Returns the parameters which were used to initialize the component"""
         return copy.copy(self._parameters)
-
 
     def fit(self, X, y=None):
         """Fits component to data

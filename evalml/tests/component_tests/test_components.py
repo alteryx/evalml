@@ -4,7 +4,6 @@ import pytest
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
-    all_components,
     ComponentBase,
     DropColumns,
     ElasticNetClassifier,
@@ -22,7 +21,8 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler,
     Transformer,
-    XGBoostClassifier
+    XGBoostClassifier,
+    all_components
 )
 
 
