@@ -4,6 +4,7 @@ import pytest
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    all_components,
     ComponentBase,
     DropColumns,
     ElasticNetClassifier,
@@ -270,3 +271,16 @@ def test_component_describe(test_classes, caplog):
     component.describe(print_name=True)
     out = caplog.text
     assert "Mock Component" in out
+
+
+def test_component_parameters():
+    components = all_components()
+    for component_name, component_class in components.items():
+        print('Inspecting component {}'.format(component_class.name))
+        component = component_class()
+        parameters = component.parameters
+
+        component2 = component_class(**parameters)
+        parameters2 = component2.parameters
+
+        assert parameters == parameters2
