@@ -221,10 +221,10 @@ def test_parameters(X_y, lr_pipeline):
         'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0
+            'C': 3.0,
+            'n_jobs': -1
         }
     }
-
     assert params == lrp.parameters
 
 
@@ -274,7 +274,7 @@ def test_multi_format_creation(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
+        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
 
         hyperparameters = {
             'Simple Imputer': {
@@ -311,7 +311,7 @@ def test_multiple_feature_selectors(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
             'Simple Imputer': {
@@ -499,7 +499,7 @@ def test_no_default_parameters():
             self.c = c
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
+        component_graph = [MockComponent, 'Logistic Regression Classifier']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
@@ -514,13 +514,8 @@ def test_no_random_state_argument_in_component():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2'):
-            self.a = a
-            self.b = b
-            self.c = c
-
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
+        component_graph = [MockComponent, 'Logistic Regression Classifier']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
@@ -598,7 +593,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
     class MockPipelineNone(BinaryClassificationPipeline):
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}

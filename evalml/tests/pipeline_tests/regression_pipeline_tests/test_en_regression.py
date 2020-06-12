@@ -12,7 +12,7 @@ def dummy_en_regression_pipeline_class(dummy_regressor_estimator_class):
 
     class MockENRegressionPipeline(ENRegressionPipeline):
         estimator = MockRegressor
-        component_graph = [MockRegressor()]
+        component_graph = [MockRegressor]
 
     return MockENRegressionPipeline
 
@@ -50,6 +50,8 @@ def test_en_init(X_y_reg):
         'Elastic Net Regressor': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
+            "max_iter": 1000,
+            "normalize": False
         }
     }
 

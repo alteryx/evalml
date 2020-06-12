@@ -32,4 +32,4 @@ from .transformers import (
     DateTimeFeaturization
     )
 
-from .utils import all_components, handle_component
+from .utils import all_components, handle_component_class
