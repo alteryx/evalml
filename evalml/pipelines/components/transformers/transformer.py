@@ -31,11 +31,11 @@ class Transformer(ComponentBase):
         """
         try:
             X_t = self._component_obj.transform(X)
-            if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-                X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-            return X_t
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
+        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        return pd.DataFrame(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -56,5 +56,5 @@ class Transformer(ComponentBase):
                 raise e
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            X_t = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return X_t
+            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        return pd.DataFrame(X_t)
