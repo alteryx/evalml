@@ -12,6 +12,7 @@ Changelog
         * Added transformer to drop specific columns :pr:`827`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
     * Fixes
+        * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
     * Changes
     * Documentation Changes
     * Testing Changes
