@@ -10,10 +10,10 @@ logger = get_logger(__file__)
 class ComponentBase(ABC):
     "Base class for all components"
 
-    def __init__(self, parameters={}, component_obj=None, random_state=0):
+    def __init__(self, parameters=None, component_obj=None, random_state=0):
         self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
-        self._parameters = parameters
+        self._parameters = parameters or {}
 
     @property
     @classmethod
