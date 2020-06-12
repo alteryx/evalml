@@ -514,11 +514,6 @@ def test_no_random_state_argument_in_component():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2'):
-            self.a = a
-            self.b = b
-            self.c = c
-
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, 'Logistic Regression Classifier']
 
