@@ -9,7 +9,7 @@ import pandas as pd
 
 from .components import Estimator, handle_component
 
-from evalml.exceptions import IllFormattedClassNameError
+from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -102,7 +102,12 @@ class PipelineBase(ABC):
 
     def _instantiate_component(self, component, parameters):
         """Instantiates components with parameters in `parameters`"""
-        component = handle_component(component)
+        try:
+            component = handle_component(component)
+        except MissingComponentError as e:
+            err = "Error recieved when retrieving class for component {}".format(component)
+            raise MissingComponentError(err) from e
+
         component_class = component.__class__
         component_name = component.name
         try:

@@ -30,7 +30,10 @@ from .transformers import (
     StandardScaler
 )
 
-from evalml.utils import import_or_raise
+from evalml.exceptions import MissingComponentError
+from evalml.utils import get_logger, import_or_raise
+
+logger = get_logger(__file__)
 
 # When adding new components please import above.
 # components_dict() automatically generates dict of components without required parameters
@@ -60,16 +63,13 @@ def all_components():
         dict: a dict mapping component name to component class
     """
     components = copy.copy(_ALL_COMPONENTS)
-    try:
-        import_or_raise("xgboost", error_msg="XGBoost not installed.")
-    except ImportError:
-        components.pop(XGBoostClassifier.name)
-        components.pop(XGBoostRegressor.name)
-    try:
-        import_or_raise("catboost", error_msg="Catboost not installed.")
-    except ImportError:
-        components.pop(CatBoostClassifier.name)
-        components.pop(CatBoostRegressor.name)
+    for component_str, component_class in _ALL_COMPONENTS.items():
+        try:
+            component_class()
+        except ImportError:
+            component_name = component_class.name
+            logger.debug('Component {} failed import, withholding from all_components'.format(component_name))
+            components.pop(component_name)
     return components
 
 
@@ -92,6 +92,6 @@ def handle_component(component):
         raise ValueError("handle_component only takes in str or ComponentBase")
     components = all_components()
     if component not in components:
-        raise KeyError("Component {} was not found".format(component))
+        raise MissingComponentError('Component "{}" was not found'.format(component))
     component_class = all_components()[component]
     return component_class()
