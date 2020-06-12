@@ -11,7 +11,6 @@ from .estimators import (
     CatBoostRegressor,
     ElasticNetClassifier,
     ElasticNetRegressor,
-    Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     LinearRegressor,
@@ -22,16 +21,13 @@ from .estimators import (
     XGBoostRegressor
 )
 from .transformers import (
-    CategoricalEncoder,
     DropColumns,
-    FeatureSelector,
     OneHotEncoder,
     PerColumnImputer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
-    StandardScaler,
-    Transformer
+    StandardScaler
 )
 
 from evalml.utils import import_or_raise
@@ -47,7 +43,7 @@ def _components_dict():
     components = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
-        if issubclass(obj, ComponentBase):
+        if issubclass(obj, ComponentBase) and obj is not ComponentBase:
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
                     components[obj.name] = obj

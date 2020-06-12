@@ -18,11 +18,10 @@ class RandomForestRegressor(Estimator):
 
     def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
         parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
+                      "max_depth": max_depth,
+                      "n_jobs": n_jobs}
         rf_regressor = SKRandomForestRegressor(random_state=random_state,
-                                               n_estimators=n_estimators,
-                                               max_depth=max_depth,
-                                               n_jobs=n_jobs)
+                                               **parameters)
         super().__init__(parameters=parameters,
                          component_obj=rf_regressor,
                          random_state=random_state)

@@ -22,6 +22,7 @@ def test_lr_init(X_y_categorical_regression):
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
+            'n_jobs': -1
         },
     }
     clf = LinearRegressionPipeline(parameters=parameters, random_state=2)
