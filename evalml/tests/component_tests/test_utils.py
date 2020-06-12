@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
+from evalml.exceptions import MissingComponentError
 from evalml.pipelines.components import all_components, handle_component
 
 
@@ -32,7 +33,7 @@ def test_handle_component_names():
         assert isinstance(handle_component(name), cls)
 
     invalid_name = 'This Component Does Not Exist'
-    with pytest.raises(KeyError):
+    with pytest.raises(MissingComponentError, match='Component "This Component Does Not Exist" was not found'):
         handle_component(invalid_name)
 
     class NonComponent:
