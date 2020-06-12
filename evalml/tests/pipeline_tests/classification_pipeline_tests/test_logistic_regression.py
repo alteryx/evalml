@@ -136,38 +136,3 @@ def test_lor_input_feature_names(X_y):
     assert not clf.feature_importances.isnull().all().all()
     for col_name in clf.feature_importances["feature"]:
         assert "col_" in col_name
-
-
-def test_clone(X_y):
-    X, y = X_y
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 1.0,
-        }
-    }
-    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    # Test unlearned clone
-    clf_clone = clf.clone()
-    assert isinstance(clf_clone, LogisticRegressionBinaryPipeline)
-    assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
-    with pytest.raises(RuntimeError):
-        clf_clone.predict(X)
-    clf_clone.fit(X, y)
-    X_t_clone = clf_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test learned clone
-    clf_clone = clf.clone(deep=True)
-    assert isinstance(clf_clone, LogisticRegressionBinaryPipeline)
-    assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
-
-    X_t_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(X_t, X_t_clone)

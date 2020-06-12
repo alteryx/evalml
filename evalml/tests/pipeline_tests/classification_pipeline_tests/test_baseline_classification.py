@@ -119,26 +119,3 @@ def test_baseline_multi_mode():
     expected_predicted_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
     pd.testing.assert_frame_equal(expected_predicted_proba, predicted_proba)
     np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
-
-
-def test_clone(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        "Baseline Classifier": {
-            "strategy": "mode"
-        }
-    }
-    clf = BaselineMulticlassPipeline(parameters=parameters)
-    clf.fit(X, y)
-
-    # Test unlearned clone
-    cloned_clf = clf.clone()
-    with pytest.raises(RuntimeError):
-        cloned_clf.predict(X)
-    cloned_clf.fit(X, y)
-
-    np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))
-
-    # Test learned clone
-    cloned_clf = clf.clone(deep=True)
-    np.testing.assert_allclose(clf.predict(X), cloned_clf.predict(X))

@@ -33,10 +33,14 @@ class ComponentBase(ABC):
         return copy.copy(self._parameters)
 
     def clone(self, deep=False, random_state=0):
-        """Constructs a new component with the same parameters.
+        """Constructs a new component with the same parameters
 
-        If deep=True, any learning done on this component will be maintained. If False, an object with the identical parameters
-        but without the fit will be returned.
+        Arguments:
+            deep (bool): whether to maintain any learned state
+            random_state (int): the value to seed the random state with
+
+        Returns:
+            A new instance of this component with identical parameters
         """
         if deep:
             return copy.deepcopy(self)

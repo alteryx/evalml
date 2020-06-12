@@ -1,8 +1,6 @@
 import numpy as np
-import pytest
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
     ElasticNetClassifier
@@ -109,27 +107,3 @@ def test_feature_importances_multi(X_y_multi):
     sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
 
     np.testing.assert_almost_equal(sk_features, clf.feature_importances, decimal=5)
-
-
-def test_clone(X_y):
-    X, y = X_y
-    clf = ElasticNetClassifier(max_iter=500)
-    clf.fit(X, y)
-    predicted = clf.predict(X)
-    assert isinstance(predicted, type(np.array([])))
-
-    # Test unlearned clone
-    clf_clone = clf.clone()
-    with pytest.raises(MethodPropertyNotFoundError):
-        clf_clone.predict(X)
-    assert clf_clone._component_obj.max_iter == 500
-
-    clf_clone.fit(X, y)
-    predicted_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(predicted, predicted_clone)
-
-    # Test learned clone
-    clf_clone = clf.clone(deep=True)
-    assert clf_clone._component_obj.max_iter == 500
-    predicted_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(predicted, predicted_clone)

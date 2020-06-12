@@ -314,3 +314,50 @@ def test_component_parameters_all_saved():
 
         expected_parameters = {arg: default for (arg, default) in zip(args, defaults)}
         assert parameters == expected_parameters
+
+
+def test_clone(X_y):
+
+    class MockFitComponent(ComponentBase):
+        model_family = ModelFamily.NONE
+        name = 'Mock Fit Component'
+
+        def __init__(self, param_a=2, param_b=10, random_state=0):
+            self.is_fitted = False
+            parameters = {'param_a': param_a, 'param_b': param_b}
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=0)
+
+        def fit(self, X, y=None):
+            self.is_fitted = True
+
+        def predict(self, X):
+            if not self.is_fitted:
+                raise ValueError('Component is not fit')
+            return np.array([self.parameters['param_a'] * 2, self.parameters['param_b'] * 10])
+
+    X, y = X_y
+    params = {'param_a': 3, 'param_b': 7}
+    clf = MockFitComponent(**params)
+
+    clf.fit(X, y)
+    predicted = clf.predict(X)
+    assert isinstance(predicted, type(np.array([])))
+
+    # Test unlearned clone
+    clf_clone = clf.clone()
+    with pytest.raises(ValueError, match='Component is not fit'):
+        clf_clone.predict(X)
+    clf.parameters == clf_clone.parameters
+
+    clf_clone.fit(X, y)
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted, predicted_clone)
+
+    # Test learned clone
+    clf_clone = clf.clone(deep=True)
+    assert clf.parameters == clf_clone.parameters
+
+    predicted_clone = clf_clone.predict(X)
+    np.testing.assert_almost_equal(predicted, predicted_clone)

@@ -1,6 +1,6 @@
 import category_encoders as ce
 import numpy as np
-from pytest import importorskip, raises
+from pytest import importorskip
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 
@@ -102,42 +102,3 @@ def test_xgr_input_feature_names(X_y_categorical_regression):
     clf = XGBoostRegressionPipeline(parameters=parameters)
     clf.fit(X, y)
     assert not clf.feature_importances.isnull().all().all()
-
-
-def test_clone(X_y_reg):
-    X, y = X_y_reg
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'mean'
-        },
-        'XGBoost Regressor': {
-            "n_estimators": 15,
-            "eta": 0.1,
-            "min_child_weight": 1,
-            "max_depth": 3
-        }
-    }
-    clf = XGBoostRegressionPipeline(parameters=parameters)
-    clf.fit(X, y)
-    X_t = clf.predict(X)
-
-    # Test unlearned clone
-    clf_clone = clf.clone()
-    assert isinstance(clf_clone, XGBoostRegressionPipeline)
-    assert clf_clone.estimator.parameters['n_estimators'] == 15
-    assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
-    with raises(RuntimeError):
-        clf_clone.predict(X)
-    clf_clone.fit(X, y)
-    X_t_clone = clf_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test learned clone
-    clf_clone = clf.clone(deep=True)
-    assert isinstance(clf_clone, XGBoostRegressionPipeline)
-    assert clf_clone.estimator.parameters['n_estimators'] == 15
-    assert clf_clone.component_graph[1].parameters['impute_strategy'] == "mean"
-    X_t_clone = clf_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)

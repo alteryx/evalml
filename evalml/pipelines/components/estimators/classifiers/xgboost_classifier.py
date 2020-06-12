@@ -33,10 +33,10 @@ class XGBoostClassifier(Estimator):
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(random_state=random_seed,
-                                           eta=parameters['eta'],
-                                           max_depth=parameters['max_depth'],
-                                           n_estimators=parameters['n_estimators'],
-                                           min_child_weight=parameters['min_child_weight'])
+                                           eta=eta,
+                                           max_depth=max_depth,
+                                           n_estimators=n_estimators,
+                                           min_child_weight=min_child_weight)
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
                          random_state=random_state)

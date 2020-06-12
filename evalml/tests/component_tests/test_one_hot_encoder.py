@@ -168,31 +168,3 @@ def test_large_number_of_categories():
     expected_col_names = ['cat_' + str(200000 + i) for i in range(10)]
     assert X_t.shape == (1000100, 10)
     assert set(expected_col_names) == set(list(X_t.columns))
-
-
-def test_clone():
-    X = pd.DataFrame()
-    X["col_1"] = ["f", "b", "c", "d", "e"]
-    X["col_2"] = ["a", "e", "d", "d", "e"]
-    X["col_3"] = ["a", "a", "a", "a", "a"]
-    X["col_4"] = [3, 3, 2, 2, 1]
-
-    encoder = OneHotEncoder(top_n=5)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
-    # Test unlearned clone
-    encoder_clone = encoder.clone()
-    with pytest.raises(RuntimeError):
-        encoder_clone.transform(X)
-    X_t_clone = encoder_clone.fit_transform(X)
-
-    assert encoder_clone.parameters['top_n'] == 5
-    np.testing.assert_almost_equal(X_t.values, X_t_clone.values)
-
-    # Test learned clone
-    encoder_clone = encoder.clone(deep=True)
-    X_t_clone = encoder_clone.transform(X)
-
-    assert encoder_clone.parameters['top_n'] == 5
-    np.testing.assert_almost_equal(X_t.values, X_t_clone.values)

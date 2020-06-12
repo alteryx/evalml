@@ -47,24 +47,3 @@ def test_baseline_median(X_y_reg):
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([median] * len(X)))
     np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
-
-
-def test_clone(X_y):
-    X, y = X_y
-    clf = BaselineRegressor()
-    clf.fit(X, y)
-    predicted = clf.predict(X)
-
-    # Test unlearned clone
-    clf_clone = clf.clone()
-    with pytest.raises(RuntimeError):
-        clf_clone.predict(X)
-
-    clf_clone.fit(X, y)
-    predicted_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())
-
-    # Test learned clone
-    clf_clone = clf.clone(deep=True)
-    predicted_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(predicted.to_numpy(), predicted_clone.to_numpy())
