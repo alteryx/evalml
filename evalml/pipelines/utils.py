@@ -19,6 +19,7 @@ from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
 from evalml.problem_types import handle_problem_types
 from evalml.utils import get_logger
+from evalml.pipelines.components.estimators import Estimator
 
 logger = get_logger(__file__)
 
@@ -109,3 +110,51 @@ def list_model_families(problem_type):
             problem_pipelines.append(p)
 
     return list(set([p.model_family for p in problem_pipelines]))
+
+
+def all_estimators():
+    """Returns a complete list of all supported estimator classes.
+
+    Returns:
+        list[Estimator]: a list of estimator classes
+    """
+    return Estimator.__subclasses__()
+
+
+def get_estimators(problem_type, model_families=None):
+    """Returns the pipelines allowed for a particular problem type.
+
+    Can also optionally filter by a list of model types.
+
+    Arguments:
+
+    Returns:
+        list[PipelineBase]: a list of pipeline classes
+    """
+    if model_families is not None and not isinstance(model_families, list):
+        raise TypeError("model_families parameter is not a list.")
+
+    if model_families:
+        model_families = [handle_model_family(model_family) for model_family in model_families]
+
+    problem_pipelines = []
+    problem_type = handle_problem_types(problem_type)
+    for p in all_pipelines():
+        if problem_type == handle_problem_types(p.problem_type):
+            problem_pipelines.append(p)
+
+    if model_families is None:
+        return problem_pipelines
+
+    all_model_families = list_model_families(problem_type)
+    for model_family in model_families:
+        if model_family not in all_model_families:
+            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
+
+    pipelines = []
+
+    for p in problem_pipelines:
+        if p.model_family in model_families:
+            pipelines.append(p)
+
+    return pipelines
