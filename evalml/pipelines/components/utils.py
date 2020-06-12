@@ -73,11 +73,11 @@ def all_components():
     return components
 
 
-def handle_component(component):
-    """Standardizes input to a new ComponentBase instance if necessary.
+def handle_component_class(component_class):
+    """Standardizes input from a string name to a ComponentBase subclass if necessary.
 
     If a str is provided, will attempt to look up a ComponentBase class by that name and
-    return a new instance. Otherwise if a ComponentBase instance is provided, will return that
+    return a new instance. Otherwise if a ComponentBase subclass is provided, will return that
     without modification.
 
     Arguments:
@@ -86,12 +86,13 @@ def handle_component(component):
     Returns:
         ComponentBase
     """
-    if isinstance(component, ComponentBase):
-        return component
-    if not isinstance(component, str):
-        raise ValueError("handle_component only takes in str or ComponentBase")
-    components = all_components()
-    if component not in components:
-        raise MissingComponentError('Component "{}" was not found'.format(component))
-    component_class = all_components()[component]
-    return component_class()
+    if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
+        return component_class
+    if not isinstance(component_class, str):
+        raise ValueError(("component_graph may only contain str or ComponentBase subclasses, not '{}'")
+                         .format(type(component_class)))
+    component_classes = all_components()
+    if component_class not in component_classes:
+        raise MissingComponentError('Component "{}" was not found'.format(component_class))
+    component_class = component_classes[component_class]
+    return component_class

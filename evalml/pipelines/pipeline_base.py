@@ -1,4 +1,5 @@
 import copy
+import inspect
 import os
 import re
 from abc import ABC, abstractmethod
@@ -7,7 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .components import Estimator, handle_component
+from .components import Estimator, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.utils import (
@@ -32,7 +33,7 @@ class PipelineBase(ABC):
         """Returns list of components representing pipeline graph structure
 
         Returns:
-            list(str/ComponentBase): list of ComponentBase objects or strings denotes graph structure of this pipeline
+            list(str / ComponentBase subclass): list of ComponentBase subclasses or strings denotes graph structure of this pipeline
         """
 
     custom_hyperparameters = None
@@ -43,7 +44,7 @@ class PipelineBase(ABC):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase objects in the list
+            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
 
         Arguments:
             parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -51,7 +52,7 @@ class PipelineBase(ABC):
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
-        self.component_graph = [self._instantiate_component(c, parameters) for c in self.component_graph]
+        self.component_graph = [self._instantiate_component(component_class, parameters) for component_class in self.component_graph]
         self.input_feature_names = {}
         self.results = {}
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
@@ -79,18 +80,18 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component(component) for component in copy.copy(cls.component_graph)]
+        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
         component_graph[-1] = component_graph[-1]
 
-        if isinstance(component_graph[-1], Estimator):
-            estimator = component_graph.pop()
-            summary = estimator.name
+        if inspect.isclass(component_graph[-1]) and issubclass(component_graph[-1], Estimator):
+            estimator_class = component_graph.pop(-1)
+            summary = estimator_class.name
         if len(component_graph) == 0:
             return summary
-        component_names = [component.name for component in component_graph]
+        component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
     def _validate_estimator_problem_type(self):
@@ -100,16 +101,15 @@ class PipelineBase(ABC):
             raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
                              .format(self.problem_type, estimator_problem_types))
 
-    def _instantiate_component(self, component, parameters):
+    def _instantiate_component(self, component_class, parameters):
         """Instantiates components with parameters in `parameters`"""
         try:
-            component = handle_component(component)
+            component_class = handle_component_class(component_class)
         except MissingComponentError as e:
-            err = "Error recieved when retrieving class for component {}".format(component)
+            err = "Error recieved when retrieving class for component {}".format(component_class)
             raise MissingComponentError(err) from e
 
-        component_class = component.__class__
-        component_name = component.name
+        component_name = component_class.name
         try:
             component_parameters = parameters.get(component_name, {})
             new_component = component_class(**component_parameters, random_state=self.random_state)
@@ -246,19 +246,19 @@ class PipelineBase(ABC):
     def model_family(cls):
         "Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
-        return handle_component(component_graph[-1]).model_family
+        return handle_component_class(component_graph[-1]).model_family
 
     @classproperty
     def hyperparameters(cls):
         "Returns hyperparameter ranges from all components as a dictionary"
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
-        for component in component_graph:
-            component = handle_component(component)
-            component_hyperparameters = copy.copy(component.hyperparameter_ranges)
-            if cls.custom_hyperparameters and component.name in cls.custom_hyperparameters:
-                component_hyperparameters.update(cls.custom_hyperparameters.get(component.name, {}))
-            hyperparameter_ranges[component.name] = component_hyperparameters
+        for component_class in component_graph:
+            component_class = handle_component_class(component_class)
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if cls.custom_hyperparameters and component_class.name in cls.custom_hyperparameters:
+                component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))
+            hyperparameter_ranges[component_class.name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property
