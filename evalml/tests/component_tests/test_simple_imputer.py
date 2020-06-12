@@ -116,6 +116,42 @@ def test_col_with_non_numeric():
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
+def test_fit_transform_drop_all_nan_columns():
+    X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                      "some_nan": [np.nan, 1, 0],
+                      "another_col": [0, 1, 2]})
+
+    transformer = SimpleImputer(impute_strategy='most_frequent')
+    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+
+
+def test_transform_drop_all_nan_columns():
+    X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                      "some_nan": [np.nan, 1, 0],
+                      "another_col": [0, 1, 2]})
+    transformer = SimpleImputer(impute_strategy='most_frequent')
+    transformer.fit(X)
+    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    assert_frame_equal(X_expected_arr, transformer.transform(X), check_dtype=False)
+
+
+def test_transform_drop_all_nan_columns_empty():
+    X = pd.DataFrame([[np.nan, np.nan, np.nan]])
+    transformer = SimpleImputer(impute_strategy='most_frequent')
+    assert transformer.fit_transform(X).empty
+
+    transformer = SimpleImputer(impute_strategy='most_frequent')
+    transformer.fit(X)
+    assert transformer.transform(X).empty
+
+
+def test_transform_before_fit():
+    with pytest.raises(RuntimeError, match="Must fit transformer before calling transform!"):
+        SimpleImputer(impute_strategy='most_frequent').transform(pd.DataFrame())
+
+
 def test_drop_all_nan_columns():
     X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                       "some_nan": [np.nan, 1, 0],
@@ -139,3 +175,14 @@ def test_drop_all_nan_columns():
     transformer = SimpleImputer(impute_strategy='most_frequent')
     transformer.fit(X)
     assert transformer.fit_transform(X).empty
+
+
+def test_numpy_input():
+    X = np.array([[np.nan, 0, 1, np.nan],
+                  [np.nan, 2, 3, 2],
+                  [np.nan, 2, 3, 0]])
+    transformer = SimpleImputer(impute_strategy='mean')
+    X_expected_arr = np.array([[0, 1, 1],
+                               [2, 3, 2],
+                               [2, 3, 0]])
+    assert np.allclose(X_expected_arr, transformer.fit_transform(X))
