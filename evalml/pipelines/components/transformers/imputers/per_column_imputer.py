@@ -23,14 +23,14 @@ class PerColumnImputer(Transformer):
                 Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
         """
+        parameters = {"impute_strategies": impute_strategies,
+                      "default_impute_strategy": default_impute_strategy}
         self.imputers = None
         self.default_impute_strategy = default_impute_strategy
         self.impute_strategies = impute_strategies or dict()
 
         if not isinstance(self.impute_strategies, dict):
             raise ValueError("`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. ")
-
-        parameters = {"impute_strategies": impute_strategies}
 
         super().__init__(parameters=parameters,
                          component_obj=None,

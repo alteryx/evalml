@@ -44,7 +44,8 @@ def test_rf_init(X_y):
             'handle_missing': 'error'},
         'Random Forest Classifier': {
             'max_depth': 5,
-            'n_estimators': 20
+            'n_estimators': 20,
+            'n_jobs': -1
         }
     }
 

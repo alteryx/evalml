@@ -29,8 +29,8 @@ class OneHotEncoder(CategoricalEncoder):
             drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
                 a list specifying which method to use for each feature. Defaults to None.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
-                during `fit` or `transform`. If `top_n` is used to limit the number of categories, this must be
-                "ignore". Defaults to "ignore".
+                during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
+                per column, this must be "ignore". Defaults to "ignore".
             handle_missing (string): Options for how to handle missing (NaN) values encountered during
                 `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
                 "nan" values will be encoded as their own column. If this is set to "error", any missing

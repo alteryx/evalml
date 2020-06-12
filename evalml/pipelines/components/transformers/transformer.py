@@ -8,6 +8,14 @@ from evalml.pipelines.components import ComponentBase
 class Transformer(ComponentBase):
     """A component that may or may not need fitting that transforms data.
     These components are used before an estimator.
+
+    To implement a new Transformer, define your own class which is a subclass of Transformer, including
+    a name and a list of acceptable ranges for any parameters to be tuned during the automl search (hyperparameters).
+    Define an `__init__` method which sets up any necessary state and objects. Make sure your `__init__` only
+    uses standard keyword arguments and calls `super().__init__()` with a parameters dict. You may also override the
+    `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
+
+    To see some examples, check out the definitions of any Transformer component.
     """
 
     model_family = ModelFamily.NONE

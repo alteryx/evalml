@@ -55,6 +55,8 @@ def test_en_init(X_y_reg):
         'Elastic Net Regressor': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
+            "max_iter": 1000,
+            "normalize": False
         }
     }
 

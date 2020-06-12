@@ -227,10 +227,10 @@ def test_parameters(X_y, lr_pipeline):
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0
+            'C': 3.0,
+            'n_jobs': -1
         }
     }
-
     assert params == lrp.parameters
 
 
