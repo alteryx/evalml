@@ -8,7 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .components import Estimator, handle_component
+from .components import Estimator, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.utils import (
@@ -80,7 +80,7 @@ class PipelineBase(ABC):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component(component_class) for component_class in copy.copy(cls.component_graph)]
+        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -104,7 +104,7 @@ class PipelineBase(ABC):
     def _instantiate_component(self, component_class, parameters):
         """Instantiates components with parameters in `parameters`"""
         try:
-            component_class = handle_component(component_class)
+            component_class = handle_component_class(component_class)
         except MissingComponentError as e:
             err = "Error recieved when retrieving class for component {}".format(component_class)
             raise MissingComponentError(err) from e
@@ -246,7 +246,7 @@ class PipelineBase(ABC):
     def model_family(cls):
         "Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
-        return handle_component(component_graph[-1]).model_family
+        return handle_component_class(component_graph[-1]).model_family
 
     @classproperty
     def hyperparameters(cls):
@@ -254,7 +254,7 @@ class PipelineBase(ABC):
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         for component_class in component_graph:
-            component_class = handle_component(component_class)
+            component_class = handle_component_class(component_class)
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if cls.custom_hyperparameters and component_class.name in cls.custom_hyperparameters:
                 component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))

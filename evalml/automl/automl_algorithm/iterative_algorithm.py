@@ -2,7 +2,7 @@ import inspect
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
-from evalml.pipelines.components import handle_component
+from evalml.pipelines.components import handle_component_class
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -75,7 +75,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        component_graph = [handle_component(c) for c in pipeline_class.component_graph]
+        component_graph = [handle_component_class(c) for c in pipeline_class.component_graph]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters

@@ -73,7 +73,7 @@ def all_components():
     return components
 
 
-def handle_component(component_class):
+def handle_component_class(component_class):
     """Standardizes input from a string name to a ComponentBase subclass if necessary.
 
     If a str is provided, will attempt to look up a ComponentBase class by that name and
