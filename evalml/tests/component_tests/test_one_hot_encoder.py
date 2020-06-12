@@ -19,7 +19,11 @@ def test_init():
 def test_parameters():
     encoder = OneHotEncoder(top_n=123)
     expected_parameters = {
-        'top_n': 123
+        'top_n': 123,
+        'categories': None,
+        'drop': None,
+        'handle_unknown': 'ignore',
+        'handle_missing': 'error'
     }
     assert encoder.parameters == expected_parameters
 
