@@ -36,6 +36,7 @@ class CatBoostRegressor(Estimator):
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
+        # catboost will choose an intelligent default for bootstrap_type, so only set if provided
         cb_parameters = copy.copy(parameters)
         if bootstrap_type is None:
             cb_parameters.pop('bootstrap_type')
