@@ -682,21 +682,12 @@ def test_clone_regression(X_y_reg):
     pipeline.fit(X, y)
     X_t = pipeline.predict(X)
 
-    # Test unlearned clone
     pipeline_clone = pipeline.clone()
     assert isinstance(pipeline_clone, LinearRegressionPipeline)
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(RuntimeError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test learned clone
-    pipeline_clone = pipeline.clone(deep=True)
-    assert isinstance(pipeline_clone, LinearRegressionPipeline)
-    assert pipeline.parameters == pipeline_clone.parameters
     X_t_clone = pipeline_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
@@ -708,19 +699,11 @@ def test_clone_binary(X_y, lr_pipeline):
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
-    # Test unlearned clone
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(RuntimeError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict_proba(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test learned clone
-    pipeline_clone = pipeline.clone(deep=True)
-    assert pipeline.parameters == pipeline_clone.parameters
     X_t_clone = pipeline_clone.predict_proba(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
@@ -741,19 +724,11 @@ def test_clone_multiclass(X_y_multi):
     pipeline.fit(X, y)
     X_t = pipeline.predict(X)
 
-    # Test unlearned clone
     pipeline_clone = pipeline.clone(random_state=42)
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(RuntimeError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-    # Test learn clone
-    pipeline_clone = pipeline.clone(deep=True)
-    assert pipeline.parameters == pipeline_clone.parameters
     X_t_clone = pipeline_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)

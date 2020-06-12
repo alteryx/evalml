@@ -345,19 +345,11 @@ def test_clone(X_y):
     predicted = clf.predict(X)
     assert isinstance(predicted, type(np.array([])))
 
-    # Test unlearned clone
     clf_clone = clf.clone()
     with pytest.raises(ValueError, match='Component is not fit'):
         clf_clone.predict(X)
     clf.parameters == clf_clone.parameters
 
     clf_clone.fit(X, y)
-    predicted_clone = clf_clone.predict(X)
-    np.testing.assert_almost_equal(predicted, predicted_clone)
-
-    # Test learned clone
-    clf_clone = clf.clone(deep=True)
-    assert clf.parameters == clf_clone.parameters
-
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)

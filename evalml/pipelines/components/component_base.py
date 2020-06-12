@@ -36,14 +36,11 @@ class ComponentBase(ABC):
         """Constructs a new component with the same parameters
 
         Arguments:
-            deep (bool): whether to maintain any learned state
             random_state (int): the value to seed the random state with
 
         Returns:
             A new instance of this component with identical parameters
         """
-        if deep:
-            return copy.deepcopy(self)
         return self.__class__(**self.parameters, random_state=random_state)
 
     def fit(self, X, y=None):

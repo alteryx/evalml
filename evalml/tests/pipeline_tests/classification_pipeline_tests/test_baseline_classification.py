@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 from evalml.pipelines import BaselineBinaryPipeline, BaselineMulticlassPipeline
 from evalml.utils import get_random_state

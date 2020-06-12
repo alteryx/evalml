@@ -11,15 +11,6 @@ from evalml.utils import get_random_seed, get_random_state
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
-def make_mock_random_state(return_value):
-
-    class MockRandomState(np.random.RandomState):
-
-        def randint(self, min_bound, max_bound):
-            return return_value
-    return MockRandomState()
-
-
 def test_catboost_init():
     parameters = {
         'Simple Imputer': {
