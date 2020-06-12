@@ -28,14 +28,11 @@ class AutoClassificationSearch(AutoSearchBase):
                  verbose=True,
                  optimize_thresholds=False,
                  multiclass=False):
-        """Automated classifier pipeline search
+        """Automated multiclass classifier pipeline search
 
         Arguments:
             objective (Object): The objective to optimize for.
-                Defaults to LogLossBinary for binary classification problems and
-                LogLossMulticlass for multiclass classification problems.
-
-            multiclass (bool): If True, expecting multiclass data. Defaults to False.
+                Defaults to LogLossMulticlass.
 
             max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
@@ -85,15 +82,12 @@ class AutoClassificationSearch(AutoSearchBase):
             cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
-        if objective is None and not multiclass:
-            objective = "log_loss_binary"
-            problem_type = ProblemTypes.BINARY
-        elif objective is None and multiclass:
+        if objective is None:
             objective = "log_loss_multi"
-            problem_type = ProblemTypes.MULTICLASS
         else:
             objective = get_objective(objective)
-            problem_type = objective.problem_type
+        
+        problem_type = ProblemTypes.MULTICLASS
 
         super().__init__(
             problem_type=problem_type,
