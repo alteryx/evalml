@@ -16,6 +16,7 @@ Changelog
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
     * Changes
+        * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
     * Documentation Changes
     * Testing Changes
       * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
