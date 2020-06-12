@@ -53,7 +53,8 @@ def test_en_init(X_y):
         'Elastic Net Classifier': {
             "alpha": 0.5,
             "l1_ratio": 0.5,
-            "max_iter": 1000
+            "max_iter": 1000,
+            "n_jobs": -1
         }
     }
 

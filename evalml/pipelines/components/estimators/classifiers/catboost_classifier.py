@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -32,14 +34,17 @@ class CatBoostClassifier(Estimator):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
-                      "max_depth": max_depth}
-        if bootstrap_type is not None:
-            parameters['bootstrap_type'] = bootstrap_type
+                      "max_depth": max_depth,
+                      'bootstrap_type': bootstrap_type}
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         self._label_encoder = None
-        cb_classifier = catboost.CatBoostClassifier(**parameters,
+        # catboost will choose an intelligent default for bootstrap_type, so only set if provided
+        cb_parameters = copy.copy(parameters)
+        if bootstrap_type is None:
+            cb_parameters.pop('bootstrap_type')
+        cb_classifier = catboost.CatBoostClassifier(**cb_parameters,
                                                     random_seed=random_seed,
                                                     silent=True,
                                                     allow_writing_files=False)

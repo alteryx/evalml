@@ -221,10 +221,10 @@ def test_parameters(X_y, lr_pipeline):
         'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0
+            'C': 3.0,
+            'n_jobs': -1
         }
     }
-
     assert params == lrp.parameters
 
 

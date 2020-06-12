@@ -29,14 +29,10 @@ class ExtraTreesClassifier(Estimator):
                       "max_features": max_features,
                       "max_depth": max_depth,
                       "min_samples_split": min_samples_split,
-                      "min_weight_fraction_leaf": min_weight_fraction_leaf}
-        et_classifier = SKExtraTreesClassifier(n_estimators=parameters['n_estimators'],
-                                               max_features=parameters['max_features'],
-                                               max_depth=parameters['max_depth'],
-                                               min_samples_split=parameters['min_samples_split'],
-                                               min_weight_fraction_leaf=parameters['min_weight_fraction_leaf'],
-                                               n_jobs=n_jobs,
-                                               random_state=random_state)
+                      "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                      "n_jobs": n_jobs}
+        et_classifier = SKExtraTreesClassifier(random_state=random_state,
+                                               **parameters)
         super().__init__(parameters=parameters,
                          component_obj=et_classifier,
                          random_state=random_state)

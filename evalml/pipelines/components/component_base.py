@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
-
 import copy
+from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.utils import get_logger, get_random_state, log_subtitle
@@ -11,10 +10,10 @@ logger = get_logger(__file__)
 class ComponentBase(ABC):
     "Base class for all components"
 
-    def __init__(self, parameters, component_obj, random_state):
+    def __init__(self, parameters=None, component_obj=None, random_state=0):
         self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
-        self.parameters = parameters
+        self._parameters = parameters or {}
 
     @property
     @classmethod
@@ -27,6 +26,11 @@ class ComponentBase(ABC):
     @abstractmethod
     def model_family(cls):
         """Returns ModelFamily of this component"""
+
+    @property
+    def parameters(self):
+        """Returns the parameters which were used to initialize the component"""
+        return copy.copy(self._parameters)
 
     def clone(self, deep=False, random_state=0):
         """Constructs a new component with the same parameters.

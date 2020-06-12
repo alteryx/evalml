@@ -15,15 +15,13 @@ def test_model_family():
 
 
 def test_en_parameters():
-
     clf = ElasticNetRegressor(alpha=0.75, l1_ratio=0.5, random_state=2)
     expected_parameters = {
         "alpha": 0.75,
         "l1_ratio": 0.5,
-        "normalize": False,
-        "max_iter": 1000
+        'max_iter': 1000,
+        'normalize': False
     }
-
     assert clf.parameters == expected_parameters
 
 

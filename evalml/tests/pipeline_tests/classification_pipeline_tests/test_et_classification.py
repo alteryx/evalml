@@ -50,8 +50,9 @@ def test_et_init(X_y):
             'max_depth': 6,
             'max_features': "auto",
             'n_estimators': 20,
-            'min_samples_split': 2,
-            'min_weight_fraction_leaf': 0.0
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "n_jobs": -1
         }
     }
 

@@ -33,7 +33,8 @@ def test_rf_init(X_y_reg):
         'One Hot Encoder': {'top_n': 10},
         'Random Forest Regressor': {
             'max_depth': 5,
-            'n_estimators': 20
+            'n_estimators': 20,
+            'n_jobs': -1
         }
     }
 

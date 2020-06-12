@@ -39,3 +39,10 @@ def test_handle_component_names():
         pass
     with pytest.raises(ValueError):
         handle_component(NonComponent())
+
+
+def test_all_components_names():
+    components = all_components()
+    for component_name, component_class in components.items():
+        print('Inspecting component {}'.format(component_class.name))
+        assert component_class.name == component_name

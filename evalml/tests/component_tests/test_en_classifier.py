@@ -15,14 +15,13 @@ def test_model_family():
 
 
 def test_en_parameters():
-
     clf = ElasticNetClassifier(alpha=0.75, l1_ratio=0.5, random_state=2)
     expected_parameters = {
         "alpha": 0.75,
         "l1_ratio": 0.5,
-        "max_iter": 1000
+        'max_iter': 1000,
+        'n_jobs': -1
     }
-
     assert clf.parameters == expected_parameters
 
 

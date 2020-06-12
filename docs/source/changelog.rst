@@ -12,7 +12,10 @@ Changelog
         * Added transformer to drop specific columns :pr:`827`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
+        * Define getter method for component `parameters` :pr:`847`
     * Fixes
+        * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
+        * Don't list base classes in `all_components` output :pr:`847`
     * Changes
     * Documentation Changes
     * Testing Changes

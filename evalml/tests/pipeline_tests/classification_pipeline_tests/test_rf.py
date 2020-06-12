@@ -37,7 +37,8 @@ def test_rf_init(X_y):
         'One Hot Encoder': {'top_n': 10},
         'Random Forest Classifier': {
             'max_depth': 5,
-            'n_estimators': 20
+            'n_estimators': 20,
+            'n_jobs': -1
         }
     }
 
