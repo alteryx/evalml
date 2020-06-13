@@ -151,6 +151,6 @@ def test_numpy_input():
                                [2, 3, 2],
                                [2, 3, 0]])
     assert np.allclose(X_expected_arr, transformer.fit_transform(X))
-    assert np.allclose(X, np.array([[np.nan, 0, 1, np.nan],
-                                    [np.nan, 2, 3, 2],
-                                    [np.nan, 2, 3, 0]]))
+    np.testing.assert_almost_equal(X, np.array([[np.nan, 0, 1, np.nan],
+                                                [np.nan, 2, 3, 2],
+                                                [np.nan, 2, 3, 0]]))
