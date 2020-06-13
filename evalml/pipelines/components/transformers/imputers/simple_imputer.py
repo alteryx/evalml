@@ -28,6 +28,15 @@ class SimpleImputer(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        """Fits imputer to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training labels of length [n_samples]
+
+        Returns:
+            self
+        """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         self._component_obj.fit(X, y)
@@ -55,4 +64,12 @@ class SimpleImputer(Transformer):
         return X_t
 
     def fit_transform(self, X, y=None):
+        """Fits on X and transforms X
+
+        Arguments:
+            X (pd.DataFrame): Data to fit and transform
+            y (pd. DataFrame): Labels to fit and transform
+        Returns:
+            pd.DataFrame: Transformed X
+        """
         return self.fit(X, y).transform(X, y)
