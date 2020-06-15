@@ -54,17 +54,10 @@ def test_all_pipelines(has_minimal_dependencies):
         assert len(all_pipelines()) == 12
 
 
-def test_all_estimators(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(all_estimators()) == 10
-    else:
-        assert len(all_estimators()) == 14
-
-
-def make_mock_import_module(libs_to_blacklist):
+def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
-        if library in libs_to_blacklist:
-            raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
+        if library in libs_to_exclude:
+            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
         return import_module(library)
     return _import_module
 
