@@ -128,7 +128,15 @@ def all_estimators():
     Returns:
         list[Estimator]: a list of estimator classes
     """
-    return Estimator.__subclasses__()
+    estimators = []
+    for estimator_class in Estimator.__subclasses__():
+        try:
+            estimator_class({})
+            estimators.append(estimator_class)
+        except (MissingComponentError, ImportError):
+            estimator_name = estimator_class.name
+            logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
+    return estimators
 
 
 def get_estimators(problem_type, model_families=None):
