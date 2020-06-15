@@ -15,6 +15,7 @@ Changelog
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
 
     * Fixes
+        * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
     * Changes
