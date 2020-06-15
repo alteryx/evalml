@@ -26,9 +26,7 @@ from evalml.pipelines.components import (
     Transformer
 )
 from evalml.pipelines.utils import (
-    all_estimators,
     all_pipelines,
-    get_estimators,
     get_pipelines,
     list_model_families
 )
@@ -52,13 +50,6 @@ def test_all_pipelines(has_minimal_dependencies):
         assert len(all_pipelines()) == 6
     else:
         assert len(all_pipelines()) == 12
-
-
-def test_all_estimators(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(all_estimators()) == 10
-    else:
-        assert len(all_estimators()) == 14
 
 
 def make_mock_import_module(libs_to_blacklist):
@@ -92,26 +83,6 @@ def test_get_pipelines(has_minimal_dependencies):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
-
-
-def test_get_estimators(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
-    else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
-
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_estimators(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        get_estimators(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
-    with pytest.raises(KeyError):
-        get_estimators(problem_type="Not A Valid Problem Type")
 
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))

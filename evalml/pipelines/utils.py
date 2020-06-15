@@ -17,7 +17,6 @@ from .regression import (
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
-from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import handle_problem_types
 from evalml.utils import get_logger
 
@@ -54,22 +53,12 @@ def all_pipelines():
     return pipelines
 
 
-def _handle_filtering_parameters(problem_type, model_families=None):
-    """Helper function to help get problem type and model families"""
-    if model_families is not None and not isinstance(model_families, list):
-        raise TypeError("model_families parameter is not a list.")
-    if model_families:
-        model_families = [handle_model_family(model_family) for model_family in model_families]
-
-
 def get_pipelines(problem_type, model_families=None):
     """Returns the pipelines allowed for a particular problem type.
 
     Can also optionally filter by a list of model types.
 
     Arguments:
-        problem_type (ProblemTypes or str): problem type to filter for
-        model_families (list[ModelFamily] or list[str]): model families to filter for
 
     Returns:
         list[PipelineBase]: a list of pipeline classes
@@ -120,61 +109,3 @@ def list_model_families(problem_type):
             problem_pipelines.append(p)
 
     return list(set([p.model_family for p in problem_pipelines]))
-
-
-def all_estimators():
-    """Returns a complete list of all supported estimator classes.
-
-    Returns:
-        list[Estimator]: a list of estimator classes
-    """
-    estimators = []
-    for estimator_class in Estimator.__subclasses__():
-        try:
-            estimator_class()
-            estimators.append(estimator_class)
-        except (MissingComponentError, ImportError):
-            estimator_name = estimator_class.name
-            logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
-    return estimators
-
-
-def get_estimators(problem_type, model_families=None):
-    """Returns the estimators allowed for a particular problem type.
-
-    Can also optionally filter by a list of model types.
-
-    Arguments:
-        problem_type (ProblemTypes or str): problem type to filter for
-        model_families (list[ModelFamily] or list[str]): model families to filter for
-
-    Returns:
-        list[Estimator]: a list of estimator classes
-    """
-    if model_families is not None and not isinstance(model_families, list):
-        raise TypeError("model_families parameter is not a list.")
-
-    if model_families:
-        model_families = [handle_model_family(model_family) for model_family in model_families]
-
-    problem_estimators = []
-    problem_type = handle_problem_types(problem_type)
-    for estimator in all_estimators():
-        if problem_type in [handle_problem_types(supported_pt) for supported_pt in estimator.supported_problem_types]:
-            problem_estimators.append(estimator)
-
-    if model_families is None:
-        return problem_estimators
-
-    all_model_families = list_model_families(problem_type)
-    for model_family in model_families:
-        if model_family not in all_model_families:
-            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
-
-    estimators = []
-
-    for estimator in problem_estimators:
-        if estimator.model_family in model_families:
-            estimators.append(estimator)
-
-    return estimators
