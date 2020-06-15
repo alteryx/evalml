@@ -131,7 +131,7 @@ def all_estimators():
     estimators = []
     for estimator_class in Estimator.__subclasses__():
         try:
-            estimator_class({})
+            estimator_class()
             estimators.append(estimator_class)
         except (MissingComponentError, ImportError):
             estimator_name = estimator_class.name
