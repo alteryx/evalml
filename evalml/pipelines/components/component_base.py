@@ -36,7 +36,7 @@ class ComponentBase(ABC):
         """Constructs a new component with the same parameters
 
         Arguments:
-            random_state (int): the value to seed the random state with
+            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
 
         Returns:
             A new instance of this component with identical parameters

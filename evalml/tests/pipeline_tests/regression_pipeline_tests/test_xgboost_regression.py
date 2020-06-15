@@ -9,7 +9,7 @@ from evalml.pipelines import XGBoostRegressionPipeline
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import get_random_seed, get_random_state, import_or_raise
 
-xgboost = importorskip('xgboost', reason='Skipping test because xgboost not installed')
+importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
 def test_xg_init(X_y_reg):

@@ -5,16 +5,7 @@ from pytest import importorskip
 from evalml.pipelines.components import CatBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
-catboost = importorskip('catboost', reason='Skipping test because catboost not installed')
-
-
-def make_mock_random_state(return_value):
-
-    class MockRandomState(np.random.RandomState):
-
-        def randint(self, min_bound, max_bound):
-            return return_value
-    return MockRandomState()
+importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
 def test_catboost_regressor_random_state_bounds_seed(X_y):
@@ -31,6 +22,14 @@ def test_catboost_regressor_random_state_bounds_seed(X_y):
 
 def test_catboost_regressor_random_state_bounds_rng(X_y):
     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for catboost is in catboost's supported range"""
+
+    def make_mock_random_state(return_value):
+
+        class MockRandomState(np.random.RandomState):
+
+            def randint(self, min_bound, max_bound):
+                return return_value
+        return MockRandomState()
 
     X, y = X_y
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]

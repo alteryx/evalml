@@ -414,7 +414,7 @@ class PipelineBase(ABC):
         """Constructs a new pipeline with the same parameters and components.
 
         Arguments:
-            random_state (int): the value to seed the random state with
+            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
 
         Returns:
             A new instance of this pipeline with identical parameters and components

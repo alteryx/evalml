@@ -5,7 +5,7 @@ from pytest import importorskip
 from evalml.pipelines.components import CatBoostClassifier
 from evalml.utils import SEED_BOUNDS
 
-catboost = importorskip('catboost', reason='Skipping test because catboost not installed')
+importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
 def test_catboost_classifier_random_state_bounds_seed(X_y_reg):

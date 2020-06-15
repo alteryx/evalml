@@ -14,7 +14,6 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     LinearRegressionPipeline,
     LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
@@ -662,8 +661,7 @@ def test_drop_columns_in_pipeline():
     assert list(pipeline_with_drop_col.feature_importances["feature"]) == ['other col']
 
 
-def test_clone_regression(X_y_reg):
-    X, y = X_y_reg
+def test_clone_init():
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -674,21 +672,30 @@ def test_clone_regression(X_y_reg):
         }
     }
     pipeline = LinearRegressionPipeline(parameters=parameters)
-    pipeline.fit(X, y)
-    X_t = pipeline.predict(X)
-
     pipeline_clone = pipeline.clone()
-    assert isinstance(pipeline_clone, LinearRegressionPipeline)
     assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(RuntimeError):
-        pipeline_clone.predict(X)
-    pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
 
 
-def test_clone_binary(X_y, lr_pipeline):
+def test_clone_random_state():
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(2))
+    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(2))
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+
+def test_clone_fitted(X_y, lr_pipeline):
     X, y = X_y
     pipeline = lr_pipeline
     pipeline.fit(X, y)
@@ -700,30 +707,5 @@ def test_clone_binary(X_y, lr_pipeline):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
-
-
-def test_clone_multiclass(X_y_multi):
-    X, y = X_y_multi
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'median'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 3.0,
-        }
-    }
-    pipeline = LogisticRegressionMulticlassPipeline(parameters=parameters, random_state=42)
-    pipeline.fit(X, y)
-    X_t = pipeline.predict(X)
-
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(RuntimeError):
-        pipeline_clone.predict(X)
-    pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
