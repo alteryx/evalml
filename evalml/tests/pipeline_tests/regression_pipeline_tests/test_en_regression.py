@@ -12,7 +12,7 @@ def dummy_en_regression_pipeline_class(dummy_regressor_estimator_class):
 
     class MockENRegressionPipeline(ENRegressionPipeline):
         estimator = MockRegressor
-        component_graph = [MockRegressor()]
+        component_graph = [MockRegressor]
 
     return MockENRegressionPipeline
 

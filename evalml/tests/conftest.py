@@ -115,7 +115,7 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
 
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
         estimator = MockEstimator
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     return MockBinaryClassificationPipeline
 
@@ -139,5 +139,5 @@ def dummy_regression_pipeline(dummy_regressor_estimator_class):
     MockRegressor = dummy_regressor_estimator_class
 
     class MockRegressionPipeline(RegressionPipeline):
-        component_graph = [MockRegressor()]
+        component_graph = [MockRegressor]
     return MockRegressionPipeline(parameters={})

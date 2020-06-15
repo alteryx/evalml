@@ -1,5 +1,3 @@
-import copy
-
 from .classification import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline,
@@ -17,9 +15,12 @@ from .regression import (
     XGBoostRegressionPipeline
 )
 
+from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
 from evalml.problem_types import handle_problem_types
-from evalml.utils import import_or_raise
+from evalml.utils import get_logger
+
+logger = get_logger(__file__)
 
 _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   CatBoostMulticlassClassificationPipeline,
@@ -41,19 +42,14 @@ def all_pipelines():
     Returns:
         list[PipelineBase]: a list of pipeline classes
     """
-    pipelines = copy.copy(_ALL_PIPELINES)
-    try:
-        import_or_raise("xgboost", error_msg="XGBoost not installed.")
-    except ImportError:
-        pipelines.remove(XGBoostBinaryPipeline)
-        pipelines.remove(XGBoostMulticlassPipeline)
-        pipelines.remove(XGBoostRegressionPipeline)
-    try:
-        import_or_raise("catboost", error_msg="Catboost not installed.")
-    except ImportError:
-        pipelines.remove(CatBoostBinaryClassificationPipeline)
-        pipelines.remove(CatBoostMulticlassClassificationPipeline)
-        pipelines.remove(CatBoostRegressionPipeline)
+    pipelines = []
+    for pipeline_class in _ALL_PIPELINES:
+        try:
+            pipeline_class({})
+            pipelines.append(pipeline_class)
+        except (MissingComponentError, ImportError):
+            pipeline_name = pipeline_class.name
+            logger.debug('Pipeline {} failed import, withholding from all_pipelines'.format(pipeline_name))
     return pipelines
 
 

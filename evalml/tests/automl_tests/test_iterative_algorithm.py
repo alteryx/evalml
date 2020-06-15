@@ -46,15 +46,15 @@ def dummy_binary_pipeline_classes():
 
     class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
         estimator = MockEstimator
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
         estimator = MockEstimator
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
         estimator = MockEstimator
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     return [MockBinaryClassificationPipeline1,
             MockBinaryClassificationPipeline2,
