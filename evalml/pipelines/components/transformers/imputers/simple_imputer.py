@@ -20,11 +20,28 @@ class SimpleImputer(Transformer):
         """
         parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
-        imputer = SkImputer(strategy=parameters['impute_strategy'],
-                            fill_value=parameters['fill_value'])
+        imputer = SkImputer(strategy=impute_strategy,
+                            fill_value=fill_value)
+        self._all_null_cols = None
         super().__init__(parameters=parameters,
                          component_obj=imputer,
                          random_state=random_state)
+
+    def fit(self, X, y=None):
+        """Fits imputer to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training labels of length [n_samples]
+
+        Returns:
+            self
+        """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        self._component_obj.fit(X, y)
+        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
+        return self
 
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values
@@ -35,23 +52,24 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        if self._all_null_cols is None:
+            raise RuntimeError("Must fit transformer before calling transform!")
         X_t = self._component_obj.transform(X)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
-            X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
+            X_null_dropped = X.drop(self._all_null_cols, axis=1)
+            if X_null_dropped.empty:
+                return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
         return X_t
 
     def fit_transform(self, X, y=None):
-        """Fits imputer on data X then imputes missing values in X
+        """Fits on X and transforms X
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Labels to fit and transform
+            y (pd. DataFrame): Labels to fit and transform
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_t = self._component_obj.fit_transform(X, y)
-        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            # skLearn's SimpleImputer loses track of column type, so we need to restore
-            X_t = pd.DataFrame(X_t, columns=X.columns).astype(X.dtypes.to_dict())
-        return X_t
+        return self.fit(X, y).transform(X, y)

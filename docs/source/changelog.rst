@@ -14,6 +14,7 @@ Changelog
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
     * Fixes
+        * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
     * Changes
