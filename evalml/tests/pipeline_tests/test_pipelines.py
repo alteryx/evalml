@@ -698,10 +698,12 @@ def test_clone_random_state():
 def test_clone_fitted(X_y, lr_pipeline):
     X, y = X_y
     pipeline = lr_pipeline
+    random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
-    pipeline_clone = pipeline.clone()
+    pipeline_clone = pipeline.clone(random_state=42)
+    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(RuntimeError):
         pipeline_clone.predict(X)

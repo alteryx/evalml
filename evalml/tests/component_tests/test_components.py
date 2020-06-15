@@ -359,11 +359,13 @@ def test_clone_fitted(X_y):
     X, y = X_y
     params = {'param_a': 3, 'param_b': 7}
     clf = MockFitComponent(**params)
+    random_state_first_val = clf.random_state.randint(2**30)
 
     clf.fit(X, y)
     predicted = clf.predict(X)
 
     clf_clone = clf.clone()
+    assert clf_clone.random_state.randint(2**30) == random_state_first_val
     with pytest.raises(ValueError, match='Component is not fit'):
         clf_clone.predict(X)
     assert clf.parameters == clf_clone.parameters
