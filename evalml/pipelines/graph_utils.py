@@ -49,6 +49,12 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
         plotly.Figure representing the precision-recall plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.to_numpy()
+    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
+        y_pred_proba = y_pred_proba.to_numpy()
+
     precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
     title = 'Precision-Recall{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
@@ -99,6 +105,11 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.to_numpy()
+    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
+        y_pred_proba = y_pred_proba.to_numpy()
+
     if y_pred_proba.ndim == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
 
@@ -144,6 +155,12 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Returns:
         np.array: confusion matrix
     """
+
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.to_numpy()
+    if isinstance(y_predicted, pd.Series):
+        y_predicted = y_predicted.to_numpy()
+
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, columns=labels)
@@ -191,6 +208,12 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
         plotly.Figure representing the confusion matrix plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.to_numpy()
+    if isinstance(y_pred, pd.Series):
+        y_pred = y_pred.to_numpy()
+
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
     labels = conf_mat.columns
