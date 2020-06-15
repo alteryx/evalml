@@ -32,7 +32,7 @@ class ComponentBase(ABC):
         """Returns the parameters which were used to initialize the component"""
         return copy.copy(self._parameters)
 
-    def clone(self, deep=False, random_state=0):
+    def clone(self, random_state=0):
         """Constructs a new component with the same parameters
 
         Arguments:
