@@ -32,6 +32,17 @@ class ComponentBase(ABC):
         """Returns the parameters which were used to initialize the component"""
         return copy.copy(self._parameters)
 
+    def clone(self, random_state=0):
+        """Constructs a new component with the same parameters
+
+        Arguments:
+            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+
+        Returns:
+            A new instance of this component with identical parameters
+        """
+        return self.__class__(**self.parameters, random_state=random_state)
+
     def fit(self, X, y=None):
         """Fits component to data
 

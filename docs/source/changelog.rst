@@ -11,6 +11,7 @@ Changelog
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
+        * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
