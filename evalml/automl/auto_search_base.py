@@ -367,53 +367,56 @@ class AutoSearchBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
+    def _do_evaluation(self, pipeline, X, y, train, test, raise_errors=True, pbar=None):
+        if isinstance(X, pd.DataFrame):
+            X_train, X_test = X.iloc[train], X.iloc[test]
+        else:
+            X_train, X_test = X[train], X[test]
+        if isinstance(y, pd.Series):
+            y_train, y_test = y.iloc[train], y.iloc[test]
+        else:
+            y_train, y_test = y[train], y[test]
+
+        objectives_to_score = [self.objective] + self.additional_objectives
+        try:
+            X_threshold_tuning = None
+            y_threshold_tuning = None
+
+            if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+            pipeline.fit(X_train, y_train)
+            if self.objective.problem_type == ProblemTypes.BINARY:
+                pipeline.threshold = 0.5
+                if self.optimize_thresholds and self.objective.can_optimize_threshold:
+                    y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+                    if isinstance(y_predict_proba, pd.DataFrame):
+                        y_predict_proba = y_predict_proba.iloc[:, 1]
+                    else:
+                        y_predict_proba = y_predict_proba[:, 1]
+                    pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+            scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+            score = scores[self.objective.name]
+        except Exception as e:
+            logger.error("Exception during automl search: {}".format(str(e)))
+            if raise_errors:
+                raise e
+            if pbar:
+                pbar.write(str(e))
+            score = np.nan
+            scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+        ordered_scores = OrderedDict()
+        ordered_scores.update({self.objective.name: score})
+        ordered_scores.update(scores)
+        ordered_scores.update({"# Training": len(y_train)})
+        ordered_scores.update({"# Testing": len(y_test)})
+        return {"all_objective_scores": ordered_scores, "score": score}
+
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
         cv_data = []
 
         for train, test in self.cv.split(X, y):
-            if isinstance(X, pd.DataFrame):
-                X_train, X_test = X.iloc[train], X.iloc[test]
-            else:
-                X_train, X_test = X[train], X[test]
-            if isinstance(y, pd.Series):
-                y_train, y_test = y.iloc[train], y.iloc[test]
-            else:
-                y_train, y_test = y[train], y[test]
-
-            objectives_to_score = [self.objective] + self.additional_objectives
-            try:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-
-                if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
-                pipeline.fit(X_train, y_train)
-                if self.objective.problem_type == ProblemTypes.BINARY:
-                    pipeline.threshold = 0.5
-                    if self.optimize_thresholds and self.objective.can_optimize_threshold:
-                        y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                        if isinstance(y_predict_proba, pd.DataFrame):
-                            y_predict_proba = y_predict_proba.iloc[:, 1]
-                        else:
-                            y_predict_proba = y_predict_proba[:, 1]
-                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
-                score = scores[self.objective.name]
-            except Exception as e:
-                logger.error("Exception during automl search: {}".format(str(e)))
-                if raise_errors:
-                    raise e
-                if pbar:
-                    pbar.write(str(e))
-                score = np.nan
-                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
-            ordered_scores = OrderedDict()
-            ordered_scores.update({self.objective.name: score})
-            ordered_scores.update(scores)
-            ordered_scores.update({"# Training": len(y_train)})
-            ordered_scores.update({"# Testing": len(y_test)})
-            cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+            cv_data.append(self._do_evaluation(pipeline, X, y, train, test, raise_errors, pbar))
 
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
