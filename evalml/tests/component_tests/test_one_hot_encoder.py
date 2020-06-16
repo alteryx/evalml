@@ -34,11 +34,30 @@ def test_fit_first():
         encoder.transform(pd.DataFrame())
 
 
-def test_null_values_in_dataframe():
+def test_invalid_inputs():
     error_msg = "Invalid input {} for handle_missing".format("peanut butter")
     with pytest.raises(ValueError, match=error_msg):
         encoder = OneHotEncoder(handle_missing="peanut butter")
 
+    error_msg = "Invalid input {} for handle_unknown".format("bananas")
+    with pytest.raises(ValueError, match=error_msg):
+        encoder = OneHotEncoder(handle_unknown="bananas")
+
+    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "a"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, categories=[["a", "b"], ["a", "c"]])
+    error_msg = "Categories argument must contain a list of categories for each categorical feature"
+    with pytest.raises(ValueError, match=error_msg):
+        encoder.fit(X)
+
+    encoder = OneHotEncoder(top_n=None, categories=["a", "b", "c"])
+    error_msg = "Categories argument must contain a list of categories for each categorical feature"
+    with pytest.raises(ValueError, match=error_msg):
+        encoder.fit(X)
+
+
+def test_null_values_in_dataframe():
     X = pd.DataFrame({'col_1': ["a", "b", "c", "d", np.nan],
                       'col_2': ["a", "b", "a", "c", "b"],
                       'col_3': ["a", "a", "a", "a", "a"]})
@@ -107,10 +126,6 @@ def test_drop():
 
 
 def test_handle_unknown():
-    error_msg = "Invalid input {} for handle_unknown".format("bananas")
-    with pytest.raises(ValueError, match=error_msg):
-        encoder = OneHotEncoder(handle_unknown="bananas")
-
     X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
                       "col_3": ["a", "a", "a", "a", "a", "a", "b"],
@@ -136,17 +151,17 @@ def test_no_top_n():
                       "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
                       "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]})
 
-    encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-
     expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
     for val in X["col_1"]:
         expected_col_names.add("col_1_" + val)
     for val in X["col_2"]:
         expected_col_names.add("col_2_" + val)
-    col_names = set(X_t.columns)
 
+    encoder = OneHotEncoder(top_n=None, handle_unknown="error", random_state=2)
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+
+    col_names = set(X_t.columns)
     assert (X_t.shape == (11, 20))
     assert (col_names == expected_col_names)
 

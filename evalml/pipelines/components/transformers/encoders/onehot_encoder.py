@@ -82,6 +82,8 @@ class OneHotEncoder(CategoricalEncoder):
 
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
+            if len(categories) != len(cols_to_encode) or not isinstance(categories[0], list):
+                raise ValueError('Categories argument must contain a list of categories for each categorical feature')
 
         else:
             categories = []
@@ -120,7 +122,7 @@ class OneHotEncoder(CategoricalEncoder):
 
         if self.parameters['handle_missing'] == "as_category":
             X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
-        elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
+        if self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
 
         X_t = pd.DataFrame()
