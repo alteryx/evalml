@@ -129,3 +129,49 @@ def test_non_numeric_valid(non_numeric_df):
 
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t, check_dtype=False)
+
+
+def test_fit_transform_drop_all_nan_columns():
+    X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                      "some_nan": [np.nan, 1, 0],
+                      "another_col": [0, 1, 2]})
+    strategies = {'all_nan': {"impute_strategy": "most_frequent"},
+                  'some_nan': {"impute_strategy": "most_frequent"},
+                  'another_col': {"impute_strategy": "most_frequent"}}
+    transformer = PerColumnImputer(impute_strategies=strategies)
+    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+    assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                                        "some_nan": [np.nan, 1, 0],
+                                        "another_col": [0, 1, 2]}))
+
+
+def test_transform_drop_all_nan_columns():
+    X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                      "some_nan": [np.nan, 1, 0],
+                      "another_col": [0, 1, 2]})
+    strategies = {'all_nan': {"impute_strategy": "most_frequent"},
+                  'some_nan': {"impute_strategy": "most_frequent"},
+                  'another_col': {"impute_strategy": "most_frequent"}}
+    transformer = PerColumnImputer(impute_strategies=strategies)
+    transformer.fit(X)
+    X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
+    assert_frame_equal(X_expected_arr, transformer.transform(X), check_dtype=False)
+    assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
+                                        "some_nan": [np.nan, 1, 0],
+                                        "another_col": [0, 1, 2]}))
+
+
+def test_transform_drop_all_nan_columns_empty():
+    X = pd.DataFrame([[np.nan, np.nan, np.nan]])
+    strategies = {'0': {"impute_strategy": "most_frequent"}, }
+    transformer = PerColumnImputer(impute_strategies=strategies)
+    assert transformer.fit_transform(X).empty
+    assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
+
+    strategies = {'0': {"impute_strategy": "most_frequent"}}
+    transformer = PerColumnImputer(impute_strategies=strategies)
+    transformer.fit(X)
+    assert transformer.transform(X).empty
+    assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))

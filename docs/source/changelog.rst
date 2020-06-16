@@ -18,6 +18,7 @@ Changelog
 
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
+        * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
     * Changes

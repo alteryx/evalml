@@ -1,6 +1,7 @@
-from sklearn.impute import SimpleImputer as SkImputer
-
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.transformers.imputers.simple_imputer import (
+    SimpleImputer
+)
 
 
 class PerColumnImputer(Transformer):
@@ -50,7 +51,7 @@ class PerColumnImputer(Transformer):
             strategy_dict = self.impute_strategies.get(column, dict())
             strategy = strategy_dict.get('impute_strategy', self.default_impute_strategy)
             fill_value = strategy_dict.get('fill_value', None)
-            self.imputers[column] = SkImputer(strategy=strategy, fill_value=fill_value)
+            self.imputers[column] = SimpleImputer(impute_strategy=strategy, fill_value=fill_value)
 
         for column, imputer in self.imputers.items():
             imputer.fit(X[[column]])
@@ -67,8 +68,14 @@ class PerColumnImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_t = X.copy()
+        cols_to_drop = []
         for column, imputer in self.imputers.items():
-            X_t[column] = imputer.transform(X[[column]]).astype(X.dtypes[column])
+            transformed = imputer.transform(X[[column]])
+            if transformed.empty:
+                cols_to_drop.append(column)
+            else:
+                X_t[column] = transformed
+        X_t = X_t.drop(cols_to_drop, axis=1)
         return X_t
 
     def fit_transform(self, X, y=None):
