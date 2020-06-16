@@ -15,7 +15,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
     }
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
-                 percent_features=0.5, threshold=-np.inf, n_jobs=-1, random_state=0):
+                 percent_features=0.5, threshold=-np.inf, n_jobs=-1, random_state=0, **kwargs):
         max_features = None
         if number_features:
             max_features = max(1, int(percent_features * number_features))
@@ -28,7 +28,8 @@ class RFClassifierSelectFromModel(FeatureSelector):
                                              n_jobs=n_jobs)
         feature_selection = SkSelect(estimator=estimator,
                                      max_features=max_features,
-                                     threshold=threshold)
+                                     threshold=threshold,
+                                     **kwargs)
 
         super().__init__(parameters=parameters,
                          component_obj=feature_selection,

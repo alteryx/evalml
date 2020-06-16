@@ -16,7 +16,7 @@ class RandomForestClassifier(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
+    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0, **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "max_depth": max_depth}
         rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
@@ -25,7 +25,8 @@ class RandomForestClassifier(Estimator):
                                                  random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=rf_classifier,
-                         random_state=random_state)
+                         random_state=random_state,
+                         **kwargs)
 
     @property
     def feature_importances(self):

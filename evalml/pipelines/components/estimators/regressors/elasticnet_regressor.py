@@ -17,14 +17,15 @@ class ElasticNetRegressor(Estimator):
     supported_problem_types = [ProblemTypes.REGRESSION]
 
     def __init__(self, alpha=0.5, l1_ratio=0.5, random_state=0, normalize=False,
-                 max_iter=1000, n_jobs=-1):
+                 max_iter=1000, n_jobs=-1, **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio}
         en_regressor = SKElasticNet(alpha=alpha,
                                     l1_ratio=l1_ratio,
                                     random_state=random_state,
                                     normalize=normalize,
-                                    max_iter=max_iter
+                                    max_iter=max_iter,
+                                    **kwargs
                                     )
         super().__init__(parameters=parameters,
                          component_obj=en_regressor,

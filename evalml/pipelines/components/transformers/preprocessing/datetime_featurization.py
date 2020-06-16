@@ -29,7 +29,7 @@ class DateTimeFeaturization(Transformer):
                           "day_of_week": _extract_day_of_week,
                           "hour": _extract_hour}
 
-    def __init__(self, features_to_extract=None, random_state=0):
+    def __init__(self, features_to_extract=None, random_state=0, **kwargs):
         """Extracts features from DateTime columns
 
         Arguments:

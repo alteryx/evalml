@@ -8,7 +8,7 @@ class DropNullColumns(Transformer):
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, pct_null_threshold=1.0, random_state=0):
+    def __init__(self, pct_null_threshold=1.0, random_state=0, **kwargs):
         """Initalizes an transformer to drop features whose percentage of NaN values exceeds a specified threshold.
 
         Arguments:

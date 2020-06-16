@@ -17,7 +17,7 @@ class BaselineClassifier(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, strategy="mode", random_state=0):
+    def __init__(self, strategy="mode", random_state=0, **kwargs):
         """Baseline classifier that uses a simple strategy to make predictions.
 
         Arguments:

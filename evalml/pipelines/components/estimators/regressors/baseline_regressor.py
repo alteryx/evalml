@@ -16,7 +16,7 @@ class BaselineRegressor(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, strategy="mean", random_state=0):
+    def __init__(self, strategy="mean", random_state=0, **kwargs):
         """Baseline regressor that uses a simple strategy to make predictions.
 
         Arguments:
