@@ -72,7 +72,7 @@ class PerColumnImputer(Transformer):
         for column, imputer in self.imputers.items():
             transformed = imputer.transform(X[[column]])
             if transformed.empty:
-                cols_to_drop += [column]
+                cols_to_drop.append(column)
             else:
                 X_t[column] = transformed
         X_t = X_t.drop(cols_to_drop, axis=1)
