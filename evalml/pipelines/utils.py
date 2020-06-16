@@ -70,14 +70,6 @@ def all_pipelines():
     return pipelines
 
 
-def _handle_filtering_parameters(problem_type, model_families=None):
-    """Helper function to help get problem type and model families"""
-    if model_families is not None and not isinstance(model_families, list):
-        raise TypeError("model_families parameter is not a list.")
-    if model_families:
-        model_families = [handle_model_family(model_family) for model_family in model_families]
-
-
 def get_pipelines(problem_type, model_families=None):
     """Returns the pipelines allowed for a particular problem type.
 
