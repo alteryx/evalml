@@ -18,7 +18,12 @@ def test_lr_init(X_y_categorical_regression):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
