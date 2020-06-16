@@ -12,6 +12,7 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    LinearRegressionPipeline,
     LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
@@ -66,10 +67,10 @@ def test_all_estimators(has_minimal_dependencies):
         assert len(all_estimators()) == 14
 
 
-def make_mock_import_module(libs_to_blacklist):
+def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
-        if library in libs_to_blacklist:
-            raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
+        if library in libs_to_exclude:
+            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
         return import_module(library)
     return _import_module
 
@@ -705,3 +706,55 @@ def test_drop_columns_in_pipeline():
     pipeline_with_drop_col.fit(X, y)
     pipeline_with_drop_col.score(X, y, ['auc'])
     assert list(pipeline_with_drop_col.feature_importances["feature"]) == ['other col']
+
+
+def test_clone_init():
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters)
+    pipeline_clone = pipeline.clone()
+    assert pipeline.parameters == pipeline_clone.parameters
+
+
+def test_clone_random_state():
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=2)
+    pipeline_clone = pipeline.clone(random_state=2)
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+
+def test_clone_fitted(X_y, lr_pipeline):
+    X, y = X_y
+    pipeline = lr_pipeline
+    random_state_first_val = pipeline.random_state.randint(2**30)
+    pipeline.fit(X, y)
+    X_t = pipeline.predict_proba(X)
+
+    pipeline_clone = pipeline.clone(random_state=42)
+    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
+    assert pipeline.parameters == pipeline_clone.parameters
+    with pytest.raises(RuntimeError):
+        pipeline_clone.predict(X)
+    pipeline_clone.fit(X, y)
+    X_t_clone = pipeline_clone.predict_proba(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)
