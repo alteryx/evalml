@@ -409,3 +409,14 @@ class PipelineBase(ABC):
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def clone(self, random_state=0):
+        """Constructs a new pipeline with the same parameters and components.
+
+        Arguments:
+            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+
+        Returns:
+            A new instance of this pipeline with identical parameters and components
+        """
+        return self.__class__(self.parameters, random_state=random_state)
