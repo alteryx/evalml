@@ -717,3 +717,19 @@ def test_clone_fitted(X_y, lr_pipeline):
     X_t_clone = pipeline_clone.predict_proba(X)
 
     np.testing.assert_almost_equal(X_t, X_t_clone)
+
+
+def test_get_permutations(X_y):
+    X, y = X_y
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    assert pipeline.get_permutation_importances(X, y) is not None
