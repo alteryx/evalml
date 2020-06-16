@@ -350,8 +350,8 @@ def test_clone_random_state():
     clf_clone = clf.clone(random_state=np.random.RandomState(42))
     assert clf_clone.random_state.randint(2**30) == clf.random_state.randint(2**30)
 
-    clf = MockFitComponent(**params, random_state=np.random.RandomState(2))
-    clf_clone = clf.clone(random_state=np.random.RandomState(2))
+    clf = MockFitComponent(**params, random_state=2)
+    clf_clone = clf.clone(random_state=2)
     assert clf_clone.random_state.randint(2**30) == clf.random_state.randint(2**30)
 
 

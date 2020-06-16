@@ -419,13 +419,14 @@ class PipelineBase(ABC):
         Returns:
             A new instance of this pipeline with identical parameters and components
         """
-        cloned_components = []
-        for component in self.component_graph:
-            cloned_components.append(component.clone(random_state))
+        # cloned_components = []
+        # for component in self.component_graph:
+        #     cloned_components.append(component.clone(random_state))
 
-        pipeline_class = self.__class__
-        cloned_pipeline = pipeline_class(self.parameters, random_state=random_state)
-        cloned_pipeline.component_graph = cloned_components
-        cloned_pipeline.estimator = cloned_components[-1] if isinstance(cloned_components[-1], Estimator) else None
+        # pipeline_class = self.__class__
+        # cloned_pipeline = pipeline_class(self.parameters, random_state=random_state)
+        # cloned_pipeline.component_graph = cloned_components
+        # cloned_pipeline.estimator = cloned_components[-1] if isinstance(cloned_components[-1], Estimator) else None
 
-        return cloned_pipeline
+        # return cloned_pipeline
+        return self.__class__(self.parameters, random_state=random_state)

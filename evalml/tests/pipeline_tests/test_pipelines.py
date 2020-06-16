@@ -690,8 +690,8 @@ def test_clone_random_state():
     pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
-    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(2))
-    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(2))
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=2)
+    pipeline_clone = pipeline.clone(random_state=2)
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
 
