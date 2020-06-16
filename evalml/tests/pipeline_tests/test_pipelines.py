@@ -183,7 +183,7 @@ def test_indexing(X_y, lr_pipeline):
     clf = lr_pipeline
     clf.fit(X, y)
 
-    assert isinstance(clf[0], OneHotEncoder)
+    assert isinstance(clf[1], OneHotEncoder)
     assert isinstance(clf['Simple Imputer'], SimpleImputer)
 
     setting_err_msg = 'Setting pipeline components is not supported.'
@@ -219,7 +219,13 @@ def test_parameters(X_y, lr_pipeline):
             'impute_strategy': 'median',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
