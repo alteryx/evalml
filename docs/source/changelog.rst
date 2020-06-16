@@ -12,6 +12,7 @@ Changelog
         * Added transformer to drop specific columns :pr:`827`
         * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
+        * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
@@ -20,6 +21,7 @@ Changelog
     * Changes
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
+        * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
     * Documentation Changes
     * Testing Changes
       * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
