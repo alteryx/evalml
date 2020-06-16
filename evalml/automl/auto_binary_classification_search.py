@@ -7,7 +7,7 @@ from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes
 
 
-class AutoClassificationSearch(AutoSearchBase):
+class AutoBinaryClassificationSearch(AutoSearchBase):
     """Automatic pipeline search class for classification problems"""
 
     def __init__(self,
@@ -26,16 +26,12 @@ class AutoClassificationSearch(AutoSearchBase):
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=False,
-                 multiclass=False):
+                 optimize_thresholds=False):
         """Automated classifier pipeline search
 
         Arguments:
             objective (Object): The objective to optimize for.
-                Defaults to LogLossBinary for binary classification problems and
-                LogLossMulticlass for multiclass classification problems.
-
-            multiclass (bool): If True, expecting multiclass data. Defaults to False.
+                Defaults to LogLossBinary.
 
             max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
@@ -56,9 +52,8 @@ class AutoClassificationSearch(AutoSearchBase):
                 allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
-                to `multiclass` if your problem type is different. Note that if allowed_pipelines was provided, this parameter
-                will be ignored.
+                model families. Run evalml.list_model_families("binary") to see options. Note that if allowed_pipelines was 
+                provided, this parameter will be ignored.
 
             cv: cross-validation method to use. Defaults to StratifiedKFold.
 
