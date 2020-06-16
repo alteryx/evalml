@@ -114,7 +114,7 @@ def get_pipelines(problem_type, model_families=None):
 def list_model_families(problem_type):
     """List model type for a particular problem type
 
-    Args:
+    Arguments:
         problem_types (ProblemTypes or str): binary, multiclass, or regression
 
     Returns:
@@ -189,6 +189,16 @@ def get_estimators(problem_type, model_families=None):
 
 
 def get_preprocessing_components(X, y, estimator):
+    """Gets a list of preprocessing components to use for the given data and estimator.
+
+    Arguments:
+        X (pd.DataFrame): the input data of shape [n_samples, n_features]
+        y (pd.Series): the target labels of length [n_samples]
+        estimator (Estimator): estimator for pipeline
+    
+    Returns:
+        list[Transformer]: a list of applicable preprocessing components to use with the estimator
+    """
     pp_components = []
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
@@ -211,10 +221,23 @@ def get_preprocessing_components(X, y, estimator):
 
 
 def make_pipeline(X, y, estimator, problem_type):
-    preprocessing_components = get_preprocessing_components(X, y, estimator)
-    complete_component_graph = preprocessing_components + [estimator]
+    """Generates a Pipeline class with the given estimator
+  
+   Arguments:
+        X (pd.DataFrame): the input data of shape [n_samples, n_features]
+        y (pd.Series): the target labels of length [n_samples]
+        estimator (Estimator): estimator for pipeline
+        problem_type (ProblemTypes or str): problem type for pipeline to generate
+
+    Returns:
+        PipelineBase: Pipeline class with dynamically generated preprocessing components and specified estimator
+   
+    """
+    problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
+    preprocessing_components = get_preprocessing_components(X, y, estimator)
+    complete_component_graph = preprocessing_components + [estimator]
     if problem_type == ProblemTypes.BINARY:
         class GeneratedBinaryClassificationPipeline(BinaryClassificationPipeline):
             component_graph = complete_component_graph
