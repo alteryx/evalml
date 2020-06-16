@@ -26,7 +26,7 @@ def test_xg_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {
-            'top_n': 10
+            'top_n': 10,
         },
         'XGBoost Classifier': {
             "n_estimators": 20,
@@ -44,8 +44,11 @@ def test_xg_init(X_y):
             'fill_value': None
         },
         'One Hot Encoder': {
-            'top_n': 10
-        },
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'XGBoost Classifier': {
             'eta': 0.2,
             'max_depth': 5,
@@ -56,11 +59,11 @@ def test_xg_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
-    assert clf.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer'
+    assert clf.summary == 'XGBoost Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_summary():
-    assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ One Hot Encoder + Simple Imputer'
+    assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_xgboost_objective_tuning(X_y):

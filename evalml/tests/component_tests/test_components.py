@@ -89,8 +89,12 @@ def test_describe_component():
     column_imputer = PerColumnImputer({"a": "mean", "b": ("constant", 100)})
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
+                                                                                        'categories': None,
+                                                                                        'drop': None,
+                                                                                        'handle_unknown': 'ignore',
+                                                                                        'handle_missing': 'error'}}
     drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
-    assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10}}
     assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert column_imputer.describe(return_dict=True) == {'name': 'Per Column Imputer', 'parameters': {'impute_strategies': {'a': 'mean', 'b': ('constant', 100)}, 'default_impute_strategy': 'most_frequent'}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
