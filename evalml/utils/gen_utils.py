@@ -92,7 +92,7 @@ class classproperty:
             def summary(cls):
             summary = ""
             for component in cls.component_graph:
-                component = handle_component(component)
+                component = handle_component_class(component)
                 summary += component.name + " + "
             return summary
 

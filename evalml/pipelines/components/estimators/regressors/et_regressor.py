@@ -27,14 +27,12 @@ class ExtraTreesRegressor(Estimator):
                  random_state=0):
         parameters = {"n_estimators": n_estimators,
                       "max_features": max_features,
-                      "max_depth": max_depth}
+                      "max_depth": max_depth,
+                      "min_samples_split": min_samples_split,
+                      "min_weight_fraction_leaf": min_weight_fraction_leaf,
+                      "n_jobs": n_jobs}
         et_regressor = SKExtraTreesRegressor(random_state=random_state,
-                                             n_estimators=n_estimators,
-                                             max_features=max_features,
-                                             max_depth=max_depth,
-                                             min_samples_split=min_samples_split,
-                                             min_weight_fraction_leaf=min_weight_fraction_leaf,
-                                             n_jobs=n_jobs)
+                                             **parameters)
         super().__init__(parameters=parameters,
                          component_obj=et_regressor,
                          random_state=random_state)

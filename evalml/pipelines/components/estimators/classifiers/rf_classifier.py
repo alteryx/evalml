@@ -18,11 +18,10 @@ class RandomForestClassifier(Estimator):
 
     def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
         parameters = {"n_estimators": n_estimators,
-                      "max_depth": max_depth}
-        rf_classifier = SKRandomForestClassifier(n_estimators=n_estimators,
-                                                 max_depth=max_depth,
-                                                 n_jobs=n_jobs,
-                                                 random_state=random_state)
+                      "max_depth": max_depth,
+                      "n_jobs": n_jobs}
+        rf_classifier = SKRandomForestClassifier(random_state=random_state,
+                                                 **parameters)
         super().__init__(parameters=parameters,
                          component_obj=rf_classifier,
                          random_state=random_state)

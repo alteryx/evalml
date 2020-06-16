@@ -11,3 +11,8 @@ class ObjectiveNotFoundError(Exception):
 class IllFormattedClassNameError(Exception):
     """Exception to raise when a class name does not comply with EvalML standards"""
     pass
+
+
+class MissingComponentError(Exception):
+    """An exception thrown when a component is not found in all_components()"""
+    pass

@@ -10,11 +10,26 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
+        * Added preprocessing component to handle DateTime columns featurization :pr:`838`
+        * Added ability to clone pipelines and components :pr:`842`
+        * Define getter method for component `parameters` :pr:`847`
     * Fixes
+        * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
+        * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
+        * Don't list base classes in `all_components` output :pr:`847`
     * Changes
+        * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
+        * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
+        * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
     * Documentation Changes
     * Testing Changes
       * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
+
+.. warning::
+
+    **Breaking Changes**
+        * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
+        * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
 
 
 **v0.10.0 May 29, 2020**

@@ -21,13 +21,12 @@ class LogisticRegressionClassifier(Estimator):
 
     def __init__(self, penalty="l2", C=1.0, n_jobs=-1, random_state=0):
         parameters = {"penalty": penalty,
-                      "C": C}
-        lr_classifier = LogisticRegression(penalty=penalty,
-                                           C=C,
-                                           random_state=random_state,
+                      "C": C,
+                      "n_jobs": n_jobs}
+        lr_classifier = LogisticRegression(random_state=random_state,
                                            multi_class="auto",
                                            solver="lbfgs",
-                                           n_jobs=n_jobs)
+                                           **parameters)
         super().__init__(parameters=parameters,
                          component_obj=lr_classifier,
                          random_state=random_state)

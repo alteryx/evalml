@@ -19,7 +19,7 @@ class DropColumns(Transformer):
                          random_state=random_state)
 
     def _check_input_for_columns(self, X):
-        cols = self.parameters["columns"] or []
+        cols = self.parameters.get("columns", [])
         missing_cols = set(cols) - set(X.columns)
         if len(missing_cols) > 0:
             raise ValueError("Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in missing_cols)))
@@ -40,7 +40,7 @@ class DropColumns(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        cols = self.parameters["columns"] or []
+        cols = self.parameters.get("columns", [])
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         self._check_input_for_columns(X)

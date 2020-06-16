@@ -45,5 +45,5 @@ installdeps-dev:
 
 .PHONY: dependenciesfile
 dependenciesfile:
-		$(eval whitelist='pandas|numpy|scikit|xgboost|catboost|cloudpickle|distributed|pyzmq')
-		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $(whitelist) > $(DEPENDENCY_FILE_PATH)
+		$(eval allow_list='pandas|numpy|scikit|xgboost|catboost|cloudpickle|distributed|pyzmq')
+		pip freeze | grep -v "FeatureLabs/evalml.git" | grep -E $(allow_list) > $(DEPENDENCY_FILE_PATH)

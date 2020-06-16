@@ -26,6 +26,7 @@ def test_lor_init(X_y):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,
+            'n_jobs': -1
         }
     }
     clf = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=1)

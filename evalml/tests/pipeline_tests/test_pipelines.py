@@ -12,6 +12,7 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    LinearRegressionPipeline,
     LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
@@ -52,10 +53,10 @@ def test_all_pipelines(has_minimal_dependencies):
         assert len(all_pipelines()) == 12
 
 
-def make_mock_import_module(libs_to_blacklist):
+def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
-        if library in libs_to_blacklist:
-            raise ImportError("Cannot import {}; blacklisted by mock muahahaha".format(library))
+        if library in libs_to_exclude:
+            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
         return import_module(library)
     return _import_module
 
@@ -221,10 +222,10 @@ def test_parameters(X_y, lr_pipeline):
         'One Hot Encoder': {'top_n': 10},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
-            'C': 3.0
+            'C': 3.0,
+            'n_jobs': -1
         }
     }
-
     assert params == lrp.parameters
 
 
@@ -274,7 +275,7 @@ def test_multi_format_creation(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler(), 'Logistic Regression Classifier']
+        component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
 
         hyperparameters = {
             'Simple Imputer': {
@@ -311,7 +312,7 @@ def test_multiple_feature_selectors(X_y):
     X, y = X_y
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler(), 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
             'Simple Imputer': {
@@ -499,7 +500,7 @@ def test_no_default_parameters():
             self.c = c
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
+        component_graph = [MockComponent, 'Logistic Regression Classifier']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
@@ -514,13 +515,8 @@ def test_no_random_state_argument_in_component():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2'):
-            self.a = a
-            self.b = b
-            self.c = c
-
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent(a=0), 'Logistic Regression Classifier']
+        component_graph = [MockComponent, 'Logistic Regression Classifier']
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
@@ -598,7 +594,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
     class MockPipelineNone(BinaryClassificationPipeline):
-        component_graph = [MockEstimator()]
+        component_graph = [MockEstimator]
 
     assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
@@ -663,3 +659,55 @@ def test_drop_columns_in_pipeline():
     pipeline_with_drop_col.fit(X, y)
     pipeline_with_drop_col.score(X, y, ['auc'])
     assert list(pipeline_with_drop_col.feature_importances["feature"]) == ['other col']
+
+
+def test_clone_init():
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters)
+    pipeline_clone = pipeline.clone()
+    assert pipeline.parameters == pipeline_clone.parameters
+
+
+def test_clone_random_state():
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=2)
+    pipeline_clone = pipeline.clone(random_state=2)
+    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+
+
+def test_clone_fitted(X_y, lr_pipeline):
+    X, y = X_y
+    pipeline = lr_pipeline
+    random_state_first_val = pipeline.random_state.randint(2**30)
+    pipeline.fit(X, y)
+    X_t = pipeline.predict_proba(X)
+
+    pipeline_clone = pipeline.clone(random_state=42)
+    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
+    assert pipeline.parameters == pipeline_clone.parameters
+    with pytest.raises(RuntimeError):
+        pipeline_clone.predict(X)
+    pipeline_clone.fit(X, y)
+    X_t_clone = pipeline_clone.predict_proba(X)
+
+    np.testing.assert_almost_equal(X_t, X_t_clone)

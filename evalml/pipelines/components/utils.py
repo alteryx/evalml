@@ -11,7 +11,6 @@ from .estimators import (
     CatBoostRegressor,
     ElasticNetClassifier,
     ElasticNetRegressor,
-    Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     LinearRegressor,
@@ -22,19 +21,19 @@ from .estimators import (
     XGBoostRegressor
 )
 from .transformers import (
-    CategoricalEncoder,
     DropColumns,
-    FeatureSelector,
     OneHotEncoder,
     PerColumnImputer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SimpleImputer,
-    StandardScaler,
-    Transformer
+    StandardScaler
 )
 
-from evalml.utils import import_or_raise
+from evalml.exceptions import MissingComponentError
+from evalml.utils import get_logger, import_or_raise
+
+logger = get_logger(__file__)
 
 # When adding new components please import above.
 # components_dict() automatically generates dict of components without required parameters
@@ -47,7 +46,7 @@ def _components_dict():
     components = dict()
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
         params = inspect.getargspec(obj.__init__)
-        if issubclass(obj, ComponentBase):
+        if issubclass(obj, ComponentBase) and obj is not ComponentBase:
             if params.defaults:
                 if len(params.args) - 1 == len(params.defaults):
                     components[obj.name] = obj
@@ -64,24 +63,21 @@ def all_components():
         dict: a dict mapping component name to component class
     """
     components = copy.copy(_ALL_COMPONENTS)
-    try:
-        import_or_raise("xgboost", error_msg="XGBoost not installed.")
-    except ImportError:
-        components.pop(XGBoostClassifier.name)
-        components.pop(XGBoostRegressor.name)
-    try:
-        import_or_raise("catboost", error_msg="Catboost not installed.")
-    except ImportError:
-        components.pop(CatBoostClassifier.name)
-        components.pop(CatBoostRegressor.name)
+    for component_str, component_class in _ALL_COMPONENTS.items():
+        try:
+            component_class()
+        except ImportError:
+            component_name = component_class.name
+            logger.debug('Component {} failed import, withholding from all_components'.format(component_name))
+            components.pop(component_name)
     return components
 
 
-def handle_component(component):
-    """Standardizes input to a new ComponentBase instance if necessary.
+def handle_component_class(component_class):
+    """Standardizes input from a string name to a ComponentBase subclass if necessary.
 
     If a str is provided, will attempt to look up a ComponentBase class by that name and
-    return a new instance. Otherwise if a ComponentBase instance is provided, will return that
+    return a new instance. Otherwise if a ComponentBase subclass is provided, will return that
     without modification.
 
     Arguments:
@@ -90,12 +86,13 @@ def handle_component(component):
     Returns:
         ComponentBase
     """
-    if isinstance(component, ComponentBase):
-        return component
-    if not isinstance(component, str):
-        raise ValueError("handle_component only takes in str or ComponentBase")
-    components = all_components()
-    if component not in components:
-        raise KeyError("Component {} was not found".format(component))
-    component_class = all_components()[component]
-    return component_class()
+    if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
+        return component_class
+    if not isinstance(component_class, str):
+        raise ValueError(("component_graph may only contain str or ComponentBase subclasses, not '{}'")
+                         .format(type(component_class)))
+    component_classes = all_components()
+    if component_class not in component_classes:
+        raise MissingComponentError('Component "{}" was not found'.format(component_class))
+    component_class = component_classes[component_class]
+    return component_class
