@@ -82,6 +82,11 @@ def test_all_pipelines_core_dependencies_mock():
     assert len(all_pipelines()) == 6
 
 
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_all_pipelines_core_dependencies_mock():
+    assert len(all_estimators()) == 10
+
+
 def test_get_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
