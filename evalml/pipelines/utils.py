@@ -195,7 +195,7 @@ def get_preprocessing_components(X, y, estimator):
         X (pd.DataFrame): the input data of shape [n_samples, n_features]
         y (pd.Series): the target labels of length [n_samples]
         estimator (Estimator): estimator for pipeline
-    
+
     Returns:
         list[Transformer]: a list of applicable preprocessing components to use with the estimator
     """
@@ -222,7 +222,7 @@ def get_preprocessing_components(X, y, estimator):
 
 def make_pipeline(X, y, estimator, problem_type):
     """Generates a Pipeline class with the given estimator
-  
+
    Arguments:
         X (pd.DataFrame): the input data of shape [n_samples, n_features]
         y (pd.Series): the target labels of length [n_samples]
@@ -231,7 +231,7 @@ def make_pipeline(X, y, estimator, problem_type):
 
     Returns:
         PipelineBase: Pipeline class with dynamically generated preprocessing components and specified estimator
-   
+
     """
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
