@@ -1,3 +1,6 @@
+import numpy as np
+
+from .binary_classification_pipeline import BinaryClassificationPipeline
 from .classification import (
     CatBoostBinaryClassificationPipeline,
     CatBoostMulticlassClassificationPipeline,
@@ -8,17 +11,30 @@ from .classification import (
     XGBoostBinaryPipeline,
     XGBoostMulticlassPipeline
 )
+from .multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline
+)
 from .regression import (
     CatBoostRegressionPipeline,
     LinearRegressionPipeline,
     RFRegressionPipeline,
     XGBoostRegressionPipeline
 )
+from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
+from evalml.pipelines.components import (
+    DateTimeFeaturization,
+    DropNullColumns,
+    LinearRegressor,
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    SimpleImputer,
+    StandardScaler
+)
 from evalml.pipelines.components.estimators import Estimator
-from evalml.problem_types import handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -178,3 +194,43 @@ def get_estimators(problem_type, model_families=None):
             estimators.append(estimator)
 
     return estimators
+
+
+def get_preprocessing_components(X, y, estimator):
+    pp_components = []
+    all_null_cols = X.columns[X.isnull().all()]
+    if len(all_null_cols) > 0:
+        pp_components += [DropNullColumns]
+    X = X.drop(all_null_cols, axis=1)
+    pp_components += [SimpleImputer]
+
+    datetime_cols = X.select_dtypes(include=[np.datetime64])
+    if len(datetime_cols.columns) > 0:
+        pp_components += [DateTimeFeaturization]
+
+    categorical_cols = X.select_dtypes(include=['category', 'object'])
+    if len(datetime_cols.columns) > 0 or len(categorical_cols.columns) > 0:
+        pp_components += [OneHotEncoder]
+
+    if estimator is LinearRegressor or estimator is LogisticRegressionClassifier:
+        pp_components += [StandardScaler]
+    return pp_components
+
+
+def make_pipeline(X, y, estimator, problem_type, allowed_model_family):
+    # creates pipeline s.t. all data_cleaning components
+    # come before all feature_engineering components
+    preprocessing_components = get_preprocessing_components(X, y, estimator)
+    if problem_type == ProblemTypes.BINARY:
+        class GeneratedBinaryClassificationPipeline(BinaryClassificationPipeline):
+            custom_name = ""
+            component_graph = preprocessing_components + [estimator]
+        return GeneratedBinaryClassificationPipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        class GeneratedMulticlassClassificationPipeline(MulticlassClassificationPipeline):
+            component_graph = preprocessing_components + [estimator]
+        return GeneratedMulticlassClassificationPipeline
+    elif problem_type == ProblemTypes.REGRESSION:
+        class GeneratedRegressionPipeline(RegressionPipeline):
+            component_graph = preprocessing_components + [estimator]
+        return GeneratedRegressionPipeline

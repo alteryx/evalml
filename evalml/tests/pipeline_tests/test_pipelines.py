@@ -18,8 +18,12 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.components import (
+    DateTimeFeaturization,
+    DropNullColumns,
+    LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
+    RandomForestClassifier,
     RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
@@ -30,6 +34,7 @@ from evalml.pipelines.utils import (
     all_pipelines,
     get_estimators,
     get_pipelines,
+    get_preprocessing_components,
     list_model_families
 )
 from evalml.problem_types import ProblemTypes
@@ -124,6 +129,19 @@ def test_get_pipelines_core_dependencies_mock():
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
+
+
+def test_get_preprocessing_components():
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    y = pd.Series([0, 0, 1, 2, 0])
+    assert get_preprocessing_components(X, y, RandomForestClassifier) == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder]
+    assert get_preprocessing_components(X, y, LogisticRegressionClassifier) == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler]
+    assert get_preprocessing_components(X, y, LinearRegressor) == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler]
+    assert get_preprocessing_components(X[["all_null"]], y, RandomForestClassifier) == [DropNullColumns, SimpleImputer]
+    assert get_preprocessing_components(X[["categorical"]], y, LogisticRegressionClassifier) == [SimpleImputer, OneHotEncoder, StandardScaler]
+    assert get_preprocessing_components(X[["some dates"]], y, LinearRegressor) == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler]
 
 
 @pytest.fixture
