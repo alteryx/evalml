@@ -27,7 +27,7 @@ class AutoBinaryClassificationSearch(AutoSearchBase):
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False):
-        """Automated classifier pipeline search
+        """Automated binary classifier pipeline search
 
         Arguments:
             objective (Object): The objective to optimize for.
@@ -52,7 +52,7 @@ class AutoBinaryClassificationSearch(AutoSearchBase):
                 allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.list_model_families("binary") to see options. Note that if allowed_pipelines was 
+                model families. Run evalml.list_model_families("binary") to see options. Note that if allowed_pipelines was
                 provided, this parameter will be ignored.
 
             cv: cross-validation method to use. Defaults to StratifiedKFold.
@@ -84,7 +84,7 @@ class AutoBinaryClassificationSearch(AutoSearchBase):
             objective = "log_loss_binary"
         else:
             objective = get_objective(objective)
-        
+
         problem_type = ProblemTypes.BINARY
 
         super().__init__(

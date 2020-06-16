@@ -52,7 +52,7 @@ class AutoMulticlassClassificationSearch(AutoSearchBase):
                 allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.list_model_families("multiclass") to see options. Note that if allowed_pipelines was 
+                model families. Run evalml.list_model_families("multiclass") to see options. Note that if allowed_pipelines was
                 provided, this parameter will be ignored.
 
             cv: cross-validation method to use. Defaults to StratifiedKFold.
@@ -84,7 +84,7 @@ class AutoMulticlassClassificationSearch(AutoSearchBase):
             objective = "log_loss_multi"
         else:
             objective = get_objective(objective)
-        
+
         problem_type = ProblemTypes.MULTICLASS
 
         super().__init__(

@@ -64,14 +64,14 @@ class SearchIterationPlot():
 
 
 class PipelineSearchPlots:
-    """Plots for the AutoClassificationSearch/AutoRegressionSearch class.
+    """Plots for the AutoBinaryClassificationSearch/AutoMulticlassClassificationSearch/AutoRegressionSearch class.
     """
 
     def __init__(self, data):
-        """Make plots for the AutoClassificationSearch/AutoRegressionSearch class.
+        """Make plots for the AutoBinaryClassificationSearch/AutoMulticlassClassificationSearch/AutoRegressionSearch class.
 
         Args:
-            data (AutoClassificationSearch or AutoRegressionSearch): Automated pipeline search object
+            data (AutoBinaryClassificationSearch or AutoMulticlassClassificationSearch or AutoRegressionSearch): Automated pipeline search object
         """
         self._go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
         self.data = data

@@ -47,7 +47,8 @@ AutoML Search Classes
     :template: class_with_properties.rst
     :nosignatures:
 
-    AutoClassificationSearch
+    AutoBinaryClassificationSearch
+    AutoMulticlassClassificationSearch
     AutoRegressionSearch
     AutoSearchBase
 

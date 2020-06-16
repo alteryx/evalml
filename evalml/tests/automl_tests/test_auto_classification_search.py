@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
-from evalml import AutoClassificationSearch
+from evalml import AutoBinaryClassificationSearch, AutoMulticlassClassificationSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
@@ -30,7 +30,7 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y):
     X, y = X_y
 
-    automl = AutoClassificationSearch(multiclass=False, max_pipelines=1, n_jobs=4)
+    automl = AutoBinaryClassificationSearch(max_pipelines=1, n_jobs=4)
     automl.search(X, y)
 
     assert automl.n_jobs == 4
@@ -58,7 +58,7 @@ def test_init(X_y):
 def test_get_pipeline_none(X_y):
     X, y = X_y
 
-    automl = AutoClassificationSearch()
+    automl = AutoBinaryClassificationSearch()
     with pytest.raises(RuntimeError, match="Pipeline not found"):
         automl.describe_pipeline(0)
 
@@ -66,13 +66,13 @@ def test_get_pipeline_none(X_y):
 def test_cv(X_y):
     X, y = X_y
     cv_folds = 5
-    automl = AutoClassificationSearch(cv=StratifiedKFold(cv_folds), max_pipelines=1)
+    automl = AutoBinaryClassificationSearch(cv=StratifiedKFold(cv_folds), max_pipelines=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
-    automl = AutoClassificationSearch(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
+    automl = AutoBinaryClassificationSearch(cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -82,14 +82,14 @@ def test_cv(X_y):
 def test_max_pipelines(X_y):
     X, y = X_y
     max_pipelines = 5
-    automl = AutoClassificationSearch(max_pipelines=max_pipelines)
+    automl = AutoBinaryClassificationSearch(max_pipelines=max_pipelines)
     automl.search(X, y)
     assert len(automl.full_rankings) == max_pipelines
 
 
 def test_specify_objective(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective=Precision(), max_pipelines=1)
+    automl = AutoBinaryClassificationSearch(objective=Precision(), max_pipelines=1)
     automl.search(X, y)
     assert isinstance(automl.objective, Precision)
     assert automl.best_pipeline.threshold is not None
@@ -99,18 +99,18 @@ def test_recall_error(X_y):
     X, y = X_y
     error_msg = 'Could not find the specified objective.'
     with pytest.raises(ObjectiveNotFoundError, match=error_msg):
-        AutoClassificationSearch(objective='recall', max_pipelines=1)
+        AutoBinaryClassificationSearch(objective='recall', max_pipelines=1)
 
 
 def test_recall_object(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective=Recall(), max_pipelines=1)
+    automl = AutoBinaryClassificationSearch(objective=Recall(), max_pipelines=1)
     automl.search(X, y)
 
 
 def test_binary_auto(X_y):
     X, y = X_y
-    automl = AutoClassificationSearch(objective="log_loss_binary", multiclass=False, max_pipelines=5)
+    automl = AutoBinaryClassificationSearch(objective="log_loss_binary", max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
 
@@ -119,7 +119,7 @@ def test_binary_auto(X_y):
 
 def test_multi_error(X_y_multi):
     X, y = X_y_multi
-    error_automls = [AutoClassificationSearch(objective='precision'), AutoClassificationSearch(objective='precision_micro', additional_objectives=['precision'], multiclass=True)]
+    error_automls = [AutoBinaryClassificationSearch(objective='precision'), AutoMulticlassClassificationSearch(objective='precision_micro', additional_objectives=['precision'])]
     error_msg = 'not compatible with a multiclass problem.'
     for automl in error_automls:
         with pytest.raises(ValueError, match=error_msg):
@@ -128,13 +128,13 @@ def test_multi_error(X_y_multi):
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    automl = AutoClassificationSearch(objective="f1_micro", multiclass=True, max_pipelines=5)
+    automl = AutoMulticlassClassificationSearch(objective="f1_micro", max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     objective = PrecisionMicro()
-    automl = AutoClassificationSearch(objective=objective, multiclass=True, max_pipelines=5)
+    automl = AutoMulticlassClassificationSearch(objective=objective, max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
@@ -148,28 +148,28 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    automl = AutoClassificationSearch(objective="log_loss_binary")
+    automl = AutoBinaryClassificationSearch(objective="log_loss_binary")
     assert automl.problem_type == ProblemTypes.BINARY
 
-    automl = AutoClassificationSearch(objective="log_loss_multi")
+    automl = AutoMulticlassClassificationSearch(objective="log_loss_multi")
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='auc_micro')
+    automl = AutoMulticlassClassificationSearch(objective='auc_micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch(objective='auc')
+    automl = AutoBinaryClassificationSearch(objective='auc')
     assert automl.problem_type == ProblemTypes.BINARY
 
-    automl = AutoClassificationSearch(multiclass=True)
+    automl = AutoMulticlassClassificationSearch()
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoClassificationSearch()
+    automl = AutoBinaryClassificationSearch()
     assert automl.problem_type == ProblemTypes.BINARY
 
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    automl = AutoClassificationSearch(objective="precision", max_pipelines=5, multiclass=False)
+    automl = AutoBinaryClassificationSearch(objective="precision", max_pipelines=5)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
@@ -178,10 +178,10 @@ def test_categorical_classification(X_y_categorical_classification):
 def test_random_state(X_y):
     X, y = X_y
 
-    automl = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
+    automl = AutoBinaryClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl.search(X, y)
 
-    automl_1 = AutoClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
+    automl_1 = AutoBinaryClassificationSearch(objective=Precision(), max_pipelines=5, random_state=0)
     automl_1.search(X, y)
     assert automl.rankings.equals(automl_1.rankings)
 
@@ -201,9 +201,9 @@ def test_callback(X_y):
         counts["add_result_callback"] += 1
 
     max_pipelines = 3
-    automl = AutoClassificationSearch(objective=Precision(), max_pipelines=max_pipelines,
-                                      start_iteration_callback=start_iteration_callback,
-                                      add_result_callback=add_result_callback)
+    automl = AutoBinaryClassificationSearch(objective=Precision(), max_pipelines=max_pipelines,
+                                            start_iteration_callback=start_iteration_callback,
+                                            add_result_callback=add_result_callback)
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
@@ -217,7 +217,7 @@ def test_additional_objectives(X_y):
                           interchange_fee=.02,
                           fraud_payout_percentage=.75,
                           amount_col=10)
-    automl = AutoClassificationSearch(objective='F1', max_pipelines=2, additional_objectives=[objective])
+    automl = AutoBinaryClassificationSearch(objective='F1', max_pipelines=2, additional_objectives=[objective])
     automl.search(X, y)
 
     results = automl.describe_pipeline(0, return_dict=True)
@@ -231,7 +231,7 @@ def test_additional_objectives(X_y):
 def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, caplog):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=True)
+    automl = AutoBinaryClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
@@ -252,7 +252,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y
-    automl = AutoClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=False)
+    automl = AutoBinaryClassificationSearch(objective='precision', max_pipelines=1, optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
     mock_fit.assert_called()
@@ -267,7 +267,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     mock_score.return_value = {"AUC": 1.0}
     X, y = X_y
-    automl = AutoClassificationSearch(objective='AUC', max_pipelines=1)
+    automl = AutoBinaryClassificationSearch(objective='AUC', max_pipelines=1)
     automl.search(X, y)
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -276,7 +276,7 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
 
 def test_describe_pipeline_objective_ordered(X_y, caplog):
     X, y = X_y
-    automl = AutoClassificationSearch(objective='AUC', max_pipelines=2)
+    automl = AutoBinaryClassificationSearch(objective='AUC', max_pipelines=2)
     automl.search(X, y)
 
     automl.describe_pipeline(0)
@@ -291,33 +291,33 @@ def test_describe_pipeline_objective_ordered(X_y, caplog):
 
 
 def test_max_time_units():
-    str_max_time = AutoClassificationSearch(objective='F1', max_time='60 seconds')
+    str_max_time = AutoBinaryClassificationSearch(objective='F1', max_time='60 seconds')
     assert str_max_time.max_time == 60
 
-    hour_max_time = AutoClassificationSearch(objective='F1', max_time='1 hour')
+    hour_max_time = AutoBinaryClassificationSearch(objective='F1', max_time='1 hour')
     assert hour_max_time.max_time == 3600
 
-    min_max_time = AutoClassificationSearch(objective='F1', max_time='30 mins')
+    min_max_time = AutoBinaryClassificationSearch(objective='F1', max_time='30 mins')
     assert min_max_time.max_time == 1800
 
-    min_max_time = AutoClassificationSearch(objective='F1', max_time='30 s')
+    min_max_time = AutoBinaryClassificationSearch(objective='F1', max_time='30 s')
     assert min_max_time.max_time == 30
 
     with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
-        AutoClassificationSearch(objective='F1', max_time='30 years')
+        AutoBinaryClassificationSearch(objective='F1', max_time='30 years')
 
     with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
-        AutoClassificationSearch(objective='F1', max_time=(30, 'minutes'))
+        AutoBinaryClassificationSearch(objective='F1', max_time=(30, 'minutes'))
 
 
 def test_early_stopping(caplog):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
+        automl = AutoBinaryClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoBinaryClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    automl = AutoClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    automl = AutoBinaryClassificationSearch(objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
@@ -338,7 +338,7 @@ def test_early_stopping(caplog):
 def test_plot_disabled_missing_dependency(X_y, has_minimal_dependencies):
     X, y = X_y
 
-    automl = AutoClassificationSearch(max_pipelines=3)
+    automl = AutoBinaryClassificationSearch(max_pipelines=3)
     if has_minimal_dependencies:
         with pytest.raises(AttributeError):
             automl.plot.search_iteration_plot
@@ -350,7 +350,7 @@ def test_plot_iterations_max_pipelines(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl = AutoBinaryClassificationSearch(objective="f1", max_pipelines=3)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -368,7 +368,7 @@ def test_plot_iterations_max_time(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoClassificationSearch(objective="f1", max_time=10)
+    automl = AutoBinaryClassificationSearch(objective="f1", max_time=10)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -388,11 +388,11 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl = AutoBinaryClassificationSearch(objective="f1", max_pipelines=3)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot(interactive_plot=True)
     assert isinstance(plot, SearchIterationPlot)
-    assert isinstance(plot.data, AutoClassificationSearch)
+    assert isinstance(plot.data, AutoBinaryClassificationSearch)
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
@@ -402,7 +402,7 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoClassificationSearch(objective="f1", max_pipelines=3)
+    automl = AutoBinaryClassificationSearch(objective="f1", max_pipelines=3)
     automl.search(X, y)
 
     mock_ipython_display.side_effect = ImportError('KABOOOOOOMMMM')
@@ -422,34 +422,34 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
 
 def test_max_time(X_y):
     X, y = X_y
-    clf = AutoClassificationSearch(max_time=1e-16)
+    clf = AutoBinaryClassificationSearch(max_time=1e-16)
     clf.search(X, y)
     # search will always run at least one pipeline
     assert len(clf.results['pipeline_results']) == 1
 
 
 def test_automl_allowed_pipelines_init(dummy_binary_pipeline_class):
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
 
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
 
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
@@ -463,8 +463,8 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
 
     allowed_pipelines = [dummy_binary_pipeline_class]
     start_iteration_callback = MagicMock()
-    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
-                                      allowed_pipelines=allowed_pipelines)
+    automl = AutoBinaryClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
+                                            allowed_pipelines=allowed_pipelines)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2

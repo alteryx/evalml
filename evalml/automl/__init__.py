@@ -1,4 +1,5 @@
 # flake8:noqas
-from .auto_classification_search import AutoClassificationSearch
+from .auto_binary_classification_search import AutoBinaryClassificationSearch
+from .auto_multiclass_classification_search import AutoMulticlassClassificationSearch
 from .auto_regression_search import AutoRegressionSearch
 from .auto_search_base import AutoSearchBase
