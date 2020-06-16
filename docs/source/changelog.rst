@@ -11,6 +11,7 @@ Changelog
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
+        * Added kwargs to all components :pr:`858`
     * Fixes
     * Changes
     * Documentation Changes
