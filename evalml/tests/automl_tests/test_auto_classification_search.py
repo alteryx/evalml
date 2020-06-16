@@ -6,7 +6,10 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
-from evalml import AutoBinaryClassificationSearch, AutoMulticlassClassificationSearch
+from evalml import (
+    AutoBinaryClassificationSearch,
+    AutoMulticlassClassificationSearch
+)
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
