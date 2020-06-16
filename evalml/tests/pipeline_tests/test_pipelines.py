@@ -83,7 +83,7 @@ def test_all_pipelines_core_dependencies_mock():
 
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_pipelines_core_dependencies_mock():
+def test_all_estimators_core_dependencies_mock():
     assert len(all_estimators()) == 10
 
 
