@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    RandomForestRegressor,
     RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
@@ -36,7 +37,8 @@ from evalml.pipelines.utils import (
     get_estimators,
     get_pipelines,
     get_preprocessing_components,
-    list_model_families
+    list_model_families,
+    make_pipeline
 )
 from evalml.problem_types import ProblemTypes
 
@@ -143,6 +145,39 @@ def test_get_preprocessing_components():
     assert get_preprocessing_components(X[["all_null"]], y, RandomForestClassifier) == [DropNullColumns, SimpleImputer]
     assert get_preprocessing_components(X[["categorical"]], y, LogisticRegressionClassifier) == [SimpleImputer, OneHotEncoder, StandardScaler]
     assert get_preprocessing_components(X[["some dates"]], y, LinearRegressor) == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler]
+
+
+def test_make_pipeline():
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    y = pd.Series([0, 0, 1, 2, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
+
+    regression_pipeline = make_pipeline(X, y, LinearRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LinearRegressor]
+
+
+def test_make_pipeline_problem_type_mismatch():
+    with pytest.raises(ValueError, match=f"{LogisticRegressionClassifier.name} is not a valid estimator for problem type"):
+        make_pipeline(pd.DataFrame(), pd.Series(), LogisticRegressionClassifier, ProblemTypes.REGRESSION)
+    with pytest.raises(ValueError, match=f"{LinearRegressor.name} is not a valid estimator for problem type"):
+        make_pipeline(pd.DataFrame(), pd.Series(), LinearRegressor, ProblemTypes.MULTICLASS)
 
 
 @pytest.fixture

@@ -208,6 +208,7 @@ def get_preprocessing_components(X, y, estimator):
     if len(datetime_cols.columns) > 0:
         pp_components += [DateTimeFeaturization]
 
+    # DateTimeFeaturization can create categorical columns
     categorical_cols = X.select_dtypes(include=['category', 'object'])
     if len(datetime_cols.columns) > 0 or len(categorical_cols.columns) > 0:
         pp_components += [OneHotEncoder]
@@ -217,20 +218,20 @@ def get_preprocessing_components(X, y, estimator):
     return pp_components
 
 
-def make_pipeline(X, y, estimator, problem_type, allowed_model_family):
-    # creates pipeline s.t. all data_cleaning components
-    # come before all feature_engineering components
+def make_pipeline(X, y, estimator, problem_type):
     preprocessing_components = get_preprocessing_components(X, y, estimator)
+    complete_component_graph = preprocessing_components + [estimator]
+    if estimator not in get_estimators(problem_type):
+        raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     if problem_type == ProblemTypes.BINARY:
         class GeneratedBinaryClassificationPipeline(BinaryClassificationPipeline):
-            custom_name = ""
-            component_graph = preprocessing_components + [estimator]
+            component_graph = complete_component_graph
         return GeneratedBinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
         class GeneratedMulticlassClassificationPipeline(MulticlassClassificationPipeline):
-            component_graph = preprocessing_components + [estimator]
+            component_graph = complete_component_graph
         return GeneratedMulticlassClassificationPipeline
     elif problem_type == ProblemTypes.REGRESSION:
         class GeneratedRegressionPipeline(RegressionPipeline):
-            component_graph = preprocessing_components + [estimator]
+            component_graph = complete_component_graph
         return GeneratedRegressionPipeline
