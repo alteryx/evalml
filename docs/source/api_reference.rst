@@ -136,7 +136,6 @@ Pipeline Utils
     get_pipelines
     all_estimators
     get_estimators
-    get_preprocessing_components
     make_pipeline
     list_model_families
 
