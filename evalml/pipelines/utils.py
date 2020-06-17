@@ -154,7 +154,7 @@ def all_estimators():
             if estimator_class in inspect.getmembers(importlib.import_module("tests", evalml), inspect.isclass):
                 continue
             else:
-                raise ValueError("???")
+                raise ValueError(f"{estimator_class.__module__}, {estimator_class}")
     return estimators
 
 

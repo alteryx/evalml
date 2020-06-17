@@ -67,13 +67,13 @@ def test_all_pipelines(has_minimal_dependencies):
 def test_all_estimators(has_minimal_dependencies):
     import importlib
     import inspect
-    test_classes = []
+    test_classes = set()
     for name, cls in inspect.getmembers(importlib.import_module("tests", evalml), inspect.isclass):
-        test_classes.append(cls)
+        test_classes.add(cls)
     if has_minimal_dependencies:
-        assert len({all_estimators() - test_classes}) == 10
+        assert len(set(all_estimators()) - test_classes) == 10
     else:
-        assert len({all_estimators() - test_classes}) == 14
+        assert len(set(all_estimators()) - test_classes) == 14
     assert test_classes == []
 
 
