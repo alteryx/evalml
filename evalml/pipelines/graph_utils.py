@@ -155,7 +155,6 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Returns:
         np.array: confusion matrix
     """
-
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
     if isinstance(y_predicted, pd.Series):

@@ -24,6 +24,16 @@ def binarized_ys(X_y_multi):
     return y_true, y_tr, y_pred_proba
 
 
+def test_precision_recall_curve_return_type():
+    y_true = np.array([0, 0, 1, 1])
+    y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
+    assert isinstance(precision_recall_curve_data['precision'], np.ndarray)
+    assert isinstance(precision_recall_curve_data['recall'], np.ndarray)
+    assert isinstance(precision_recall_curve_data['thresholds'], np.ndarray)
+    assert isinstance(precision_recall_curve_data['auc_score'], float)
+
+
 def test_precision_recall_curve():
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
@@ -42,9 +52,13 @@ def test_precision_recall_curve():
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
 
 
-def test_graph_precision_recall_curve(X_y):
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_graph_precision_recall_curve(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
+    if data_type == 'pd':
+        X = pd.DataFrame(X)
+        y_true = pd.Series(y_true)
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_precision_recall_curve(y_true, y_pred_proba)
@@ -71,9 +85,13 @@ def test_graph_precision_recall_curve_title_addition(X_y):
     assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
-def test_roc_curve_binary():
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_roc_curve_binary(data_type):
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_predict_proba = pd.DataFrame(y_predict_proba)
     roc_curve_data = roc_curve(y_true, y_predict_proba)
     fpr_rates = roc_curve_data.get('fpr_rates')
     tpr_rates = roc_curve_data.get('tpr_rates')
@@ -86,38 +104,54 @@ def test_roc_curve_binary():
     assert np.array_equal(tpr_expected, tpr_rates)
     assert np.array_equal(thresholds_expected, thresholds)
     assert auc_score == pytest.approx(0.25, 1e-5)
+    assert isinstance(roc_curve_data['fpr_rates'], np.ndarray)
+    assert isinstance(roc_curve_data['tpr_rates'], np.ndarray)
+    assert isinstance(roc_curve_data['thresholds'], np.ndarray)
 
 
-def test_confusion_matrix():
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_confusion_matrix(data_type):
     y_true = [2, 0, 2, 2, 0, 1]
     y_predicted = [0, 0, 2, 2, 0, 2]
+    expected_return_type = pd.DataFrame
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_predicted = pd.Series(y_predicted)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
     conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, expected_return_type)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
     conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, expected_return_type)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
     conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
     assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
+    assert isinstance(conf_mat, expected_return_type)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
     conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, expected_return_type)
     with pytest.raises(ValueError, match='Invalid value provided'):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
 
 
-def test_normalize_confusion_matrix():
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_normalize_confusion_matrix(data_type):
     conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
+    if data_type == 'pd':
+        conf_mat = pd.DataFrame(conf_mat)
     conf_mat_normalized = normalize_confusion_matrix(conf_mat)
     assert all(conf_mat_normalized.sum(axis=1) == 1.0)
+    assert isinstance(conf_mat_normalized, type(conf_mat))
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
     for col_sum in conf_mat_normalized.sum(axis=0):
         assert col_sum == 1.0 or col_sum == 0.0
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
-    assert conf_mat_normalized.sum() == 1.0
+    assert conf_mat_normalized.sum().sum() == 1.0
 
     # testing with pd.DataFrames
     conf_mat_df = pd.DataFrame()
