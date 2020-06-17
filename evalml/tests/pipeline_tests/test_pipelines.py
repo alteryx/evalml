@@ -65,10 +65,14 @@ def test_all_pipelines(has_minimal_dependencies):
 
 
 def test_all_estimators(has_minimal_dependencies):
+    estimators = all_estimators()
+    for estimator in estimators:
+        if estimator in locals():
+            estimators.remove(estimator)
     if has_minimal_dependencies:
-        assert len(all_estimators()) == 10
+        assert len(estimators) == 10
     else:
-        assert len(all_estimators()) == 14
+        assert len(estimators) == 14
 
 
 def make_mock_import_module(libs_to_exclude):

@@ -134,9 +134,6 @@ def list_model_families(problem_type):
 
 
 def all_estimators():
-    import importlib
-    import inspect
-    import evalml
     """Returns a complete list of all supported estimator classes.
 
     Returns:
@@ -147,14 +144,9 @@ def all_estimators():
         try:
             estimator_class()
             estimators.append(estimator_class)
-        except (MissingComponentError, ImportError):
+        except (MissingComponentError, ImportError, TypeError):
             estimator_name = estimator_class.name
             logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
-        except TypeError:
-            if estimator_class in locals():
-                continue
-            else:
-                raise ValueError(f"{estimator_class.__module__}, {estimator_class}")
     return estimators
 
 
