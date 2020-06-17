@@ -154,7 +154,7 @@ def all_estimators():
             if estimator_class in locals():
                 continue
             else:
-                raise ValueError(f"{estimator_class.__module__}, {estimator_class")
+                raise ValueError(f"{estimator_class.__module__}, {estimator_class}")
     return estimators
 
 
