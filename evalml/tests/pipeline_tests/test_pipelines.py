@@ -170,13 +170,20 @@ def test_make_pipeline():
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LinearRegressor]
 
-    catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
-    assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
-    assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostClassifier]
 
-    catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
-    assert isinstance(catboost_pipeline, type(RegressionPipeline))
-    assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostRegressor]
+def test_make_pipelines_mock(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                        "categorical": ["a", "b", "a", "c", "c"],
+                        "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+        y = pd.Series([0, 0, 1, 2, 0])
+        catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
+        assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
+        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostClassifier]
+
+        catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
+        assert isinstance(catboost_pipeline, type(RegressionPipeline))
+        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostRegressor]
 
 
 def test_make_pipeline_no_nulls():
