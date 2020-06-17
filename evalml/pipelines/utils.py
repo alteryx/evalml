@@ -151,10 +151,10 @@ def all_estimators():
             estimator_name = estimator_class.name
             logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
         except TypeError:
-            if estimator_class in inspect.getmembers(importlib.import_module("tests", evalml), inspect.isclass):
+            if estimator_class in locals():
                 continue
             else:
-                raise ValueError(f"{estimator_class.__module__}, {estimator_class}")
+                raise ValueError(f"{estimator_class.__module__}, {estimator_class")
     return estimators
 
 
