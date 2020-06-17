@@ -28,7 +28,7 @@ from evalml.pipelines.components import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
