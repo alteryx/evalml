@@ -65,16 +65,10 @@ def test_all_pipelines(has_minimal_dependencies):
 
 
 def test_all_estimators(has_minimal_dependencies):
-    import importlib
-    import inspect
-    test_classes = set()
-    for name, cls in inspect.getmembers(importlib.import_module("tests", evalml), inspect.isclass):
-        test_classes.add(cls)
     if has_minimal_dependencies:
-        assert len(set(all_estimators()) - test_classes) == 10
+        assert len(all_estimators()) == 10
     else:
-        assert len(set(all_estimators()) - test_classes) == 14
-    assert test_classes == []
+        assert len(all_estimators()) == 14
 
 
 def make_mock_import_module(libs_to_exclude):
