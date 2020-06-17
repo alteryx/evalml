@@ -171,8 +171,8 @@ def test_make_pipeline():
     assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LinearRegressor]
 
 
-def test_make_pipelines_mock(has_minimal_dependencies):
-    if has_minimal_dependencies:
+def test_make_pipelines_catboost(has_minimal_dependencies):
+    if not has_minimal_dependencies:
         X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                         "categorical": ["a", "b", "a", "c", "c"],
                         "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
