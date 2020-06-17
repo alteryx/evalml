@@ -1,12 +1,13 @@
 import os
 from importlib import import_module
 from unittest.mock import patch
-import evalml
+
 import numpy as np
 import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
+import evalml
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
@@ -74,6 +75,7 @@ def test_all_estimators(has_minimal_dependencies):
     else:
         assert len({all_estimators() - test_classes}) == 14
     assert test_classes == []
+
 
 def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
