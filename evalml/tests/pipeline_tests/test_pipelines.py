@@ -120,6 +120,8 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
         assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
 
+    assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
+    assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.REGRESSION, model_families=[])) == 0
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):

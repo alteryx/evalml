@@ -40,7 +40,6 @@ from evalml.pipelines.components import (
     XGBoostClassifier,
     XGBoostRegressor
 )
-from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 
@@ -179,18 +178,20 @@ def get_estimators(problem_type, model_families=None):
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
     problem_type = handle_problem_types(problem_type)
-    if model_families:
-        model_families = [handle_model_family(model_family) for model_family in model_families]
-        all_model_families = list_model_families(problem_type)
-        for model_family in model_families:
-            if model_family not in all_model_families:
-                raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
+    if model_families is None:
+        model_families = list_model_families(problem_type)
+
+    model_families = [handle_model_family(model_family) for model_family in model_families]
+    all_model_families = list_model_families(problem_type)
+    for model_family in model_families:
+        if model_family not in all_model_families:
+            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
 
     estimator_classes = []
     for estimator_class in all_estimators():
         if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
             continue
-        if model_families is not None and estimator_class.model_family not in model_families:
+        if estimator_class.model_family not in model_families:
             continue
         estimator_classes.append(estimator_class)
     return estimator_classes
