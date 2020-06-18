@@ -24,13 +24,16 @@ class ExtraTreesClassifier(Estimator):
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
                  n_jobs=-1,
-                 random_state=0):
+                 random_state=0,
+                 **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "max_features": max_features,
                       "max_depth": max_depth,
                       "min_samples_split": min_samples_split,
                       "min_weight_fraction_leaf": min_weight_fraction_leaf,
                       "n_jobs": n_jobs}
+        parameters.update(kwargs)
+
         et_classifier = SKExtraTreesClassifier(random_state=random_state,
                                                **parameters)
         super().__init__(parameters=parameters,

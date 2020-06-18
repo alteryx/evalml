@@ -17,11 +17,13 @@ class ElasticNetClassifier(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=0):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=0, **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio,
                       'n_jobs': n_jobs,
                       'max_iter': max_iter}
+        parameters.update(kwargs)
+
         en_classifier = SKElasticNetClassifier(loss="log",
                                                penalty="elasticnet",
                                                random_state=random_state,
