@@ -70,7 +70,6 @@ def test_all_estimators(has_minimal_dependencies):
             estimators.remove(estimator)
     if has_minimal_dependencies:
         assert len(estimators) == 10
-        assert estimators == []
     else:
         assert len(estimators) == 14
 
