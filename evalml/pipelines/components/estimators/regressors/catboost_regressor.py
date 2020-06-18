@@ -27,12 +27,13 @@ class CatBoostRegressor(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
+    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,
                       'bootstrap_type': bootstrap_type}
+        parameters.update(kwargs)
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)

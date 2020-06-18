@@ -1,4 +1,6 @@
+import importlib
 import inspect
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -28,7 +30,7 @@ from evalml.pipelines.components import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
@@ -138,12 +140,12 @@ def test_missing_attributes(X_y):
     with pytest.raises(TypeError):
         MockComponentModelFamily()
 
-    class MockEstimator(Estimator):
+    class MockEstimatorWithoutAttribute(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
 
     with pytest.raises(TypeError):
-        MockEstimator()
+        MockEstimatorWithoutAttribute()
 
 
 def test_missing_methods_on_components(X_y, test_classes):
@@ -377,3 +379,32 @@ def test_clone_fitted(X_y):
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)
     np.testing.assert_almost_equal(predicted, predicted_clone)
+
+
+def test_components_init_kwargs():
+    components = all_components()
+    for component_name, component_class in components.items():
+        component = component_class()
+        if component._component_obj is None:
+            continue
+
+        obj_class = component._component_obj.__class__.__name__
+        module = component._component_obj.__module__
+        importlib.import_module(module, obj_class)
+        patched = module + '.' + obj_class + '.__init__'
+
+        def all_init(self, *args, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+        with patch(patched, new=all_init) as _:
+            component = component_class(test_arg="test")
+            assert component.parameters['test_arg'] == "test"
+            assert component._component_obj.test_arg == "test"
+
+
+def test_component_has_random_state():
+    components = all_components()
+    for component_name, component_class in components.items():
+        params = inspect.signature(component_class.__init__).parameters
+        assert "random_state" in params

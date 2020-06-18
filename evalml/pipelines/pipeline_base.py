@@ -7,8 +7,6 @@ from abc import ABC, abstractmethod
 import cloudpickle
 import numpy as np
 import pandas as pd
-from sklearn.inspection import \
-    permutation_importance as sk_permutation_importance
 
 from .components import Estimator, handle_component_class
 
@@ -230,13 +228,6 @@ class PipelineBase(ABC):
         Returns:
             dict: ordered dictionary of objective scores
         """
-
-    def get_permutation_importances(self, X, y):
-        """TODO"""
-        def scorer(pipeline, X, y):
-            scores = pipeline.score(X, y, objectives=["RMSE"])
-            return -scores['Root Mean Squared Error']
-        return sk_permutation_importance(self, X, y, scoring=scorer)
 
     @staticmethod
     def _score(X, y, predictions, objective):

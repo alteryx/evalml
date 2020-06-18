@@ -62,7 +62,11 @@ from .regression import (
 from .utils import (
     all_pipelines,
     get_pipelines,
-    list_model_families
+    list_model_families,
+    all_estimators,
+    get_estimators,
+    make_pipeline,
+    get_permutation_importances
 )
 from .graph_utils import (
     precision_recall_curve,

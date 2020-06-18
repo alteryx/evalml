@@ -14,7 +14,9 @@ Changelog
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
-        * Added permutation importance :pr:`860`
+        * Added utility methods to calculate and graph permutation importances :pr:`860`
+        * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
+        * Added kwargs to all components :pr:`863`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
