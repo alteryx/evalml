@@ -64,6 +64,7 @@ def test_all_pipelines(has_minimal_dependencies):
 
 
 def test_all_estimators(has_minimal_dependencies):
+    # checking locals() because pytest occasionally picks up estimators we defined in previous tests
     estimators = [estimator for estimator in all_estimators() if estimator not in locals()]
     if has_minimal_dependencies:
         assert len(estimators) == 10
@@ -90,6 +91,7 @@ def test_all_estimators_core_dependencies_mock():
 
 
 def test_get_pipelines(has_minimal_dependencies):
+    # checking locals() because pytest occasionally picks up estimators we defined in previous tests
     if has_minimal_dependencies:
         assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY) if pipeline not in locals()]) == 2
         assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if pipeline not in locals()]) == 1
@@ -110,6 +112,7 @@ def test_get_pipelines(has_minimal_dependencies):
 
 
 def test_get_estimators(has_minimal_dependencies):
+    # checking locals() because pytest occasionally picks up estimators we defined in previous tests
     if has_minimal_dependencies:
         assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY) if estimator not in locals()]) == 5
         assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if estimator not in locals()]) == 2
