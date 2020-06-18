@@ -65,7 +65,6 @@ from .utils import (
     list_model_families,
     all_estimators,
     get_estimators,
-    _get_preprocessing_components,
     make_pipeline
 )
 from .graph_utils import (
