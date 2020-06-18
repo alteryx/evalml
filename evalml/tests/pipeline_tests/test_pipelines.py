@@ -69,6 +69,8 @@ def test_all_estimators(has_minimal_dependencies):
         if estimator in locals():
             estimators.remove(estimator)
     if has_minimal_dependencies:
+        print (estimators)
+        assert estimators == []
         assert len(estimators) == 10
     else:
         assert len(estimators) == 14
