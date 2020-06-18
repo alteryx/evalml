@@ -30,7 +30,7 @@ from evalml.pipelines.components import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
@@ -140,12 +140,12 @@ def test_missing_attributes(X_y):
     with pytest.raises(TypeError):
         MockComponentModelFamily()
 
-    class MockEstimator(Estimator):
+    class MockEstimatorWithoutAttribute(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
 
     with pytest.raises(TypeError):
-        MockEstimator()
+        MockEstimatorWithoutAttribute()
 
 
 def test_missing_methods_on_components(X_y, test_classes):
