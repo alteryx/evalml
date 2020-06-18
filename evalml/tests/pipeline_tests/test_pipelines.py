@@ -926,7 +926,9 @@ def test_get_permutations_correlated_features():
     }
     pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    permutation_importances = get_permutation_importances(pipeline, X, y)
-    assert list(permutation_importances.columns) == ["feature", "importance"]
-    assert not permutation_importances.isnull().all().all()
-    assert permutation_importances["importance"]["correlated"] > permutation_importances["importance"]["not correlated"]
+    importances = get_permutation_importances(pipeline, X, y)
+    assert list(importances.columns) == ["feature", "importance"]
+    assert not importances.isnull().all().all()
+    correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "correlated"][0]]
+    not_correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "not correlated"][0]]
+    assert correlated_importance_val > not_correlated_importance_val
