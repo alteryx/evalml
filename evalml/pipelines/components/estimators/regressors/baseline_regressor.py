@@ -16,7 +16,7 @@ class BaselineRegressor(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, strategy="mean", random_state=0):
+    def __init__(self, strategy="mean", random_state=0, **kwargs):
         """Baseline regressor that uses a simple strategy to make predictions.
 
         Arguments:
@@ -27,6 +27,8 @@ class BaselineRegressor(Estimator):
         if strategy not in ["mean", "median"]:
             raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
         parameters = {"strategy": strategy}
+        parameters.update(kwargs)
+
         self._prediction_value = None
         self._num_features = None
         super().__init__(parameters=parameters,

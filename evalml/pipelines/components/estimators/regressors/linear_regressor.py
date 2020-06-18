@@ -15,12 +15,13 @@ class LinearRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1, random_state=0):
+    def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1, random_state=0, **kwargs):
         parameters = {
             'fit_intercept': fit_intercept,
             'normalize': normalize,
             'n_jobs': n_jobs
         }
+        parameters.update(kwargs)
         linear_regressor = SKLinearRegression(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=linear_regressor,

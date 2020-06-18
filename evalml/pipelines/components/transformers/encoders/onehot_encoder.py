@@ -18,7 +18,8 @@ class OneHotEncoder(CategoricalEncoder):
                  drop=None,
                  handle_unknown="ignore",
                  handle_missing="error",
-                 random_state=0):
+                 random_state=0,
+                 **kwargs):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
 
         Arguments:
@@ -41,6 +42,7 @@ class OneHotEncoder(CategoricalEncoder):
                       "drop": drop,
                       "handle_unknown": handle_unknown,
                       "handle_missing": handle_missing}
+        parameters.update(kwargs)
 
         # Check correct inputs
         unknown_input_options = ["ignore", "error"]
