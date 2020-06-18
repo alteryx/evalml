@@ -64,10 +64,7 @@ def test_all_pipelines(has_minimal_dependencies):
 
 
 def test_all_estimators(has_minimal_dependencies):
-    estimators = all_estimators()
-    for estimator in estimators:
-        if estimator in locals():
-            estimators.remove(estimator)
+    estimators = [estimator for estimator in all_estimators() if estimator not in locals()]
     if has_minimal_dependencies:
         assert len(estimators) == 10
     else:
