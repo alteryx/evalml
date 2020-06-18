@@ -186,11 +186,15 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'all')
 
 
-def test_graph_roc_curve_binary(X_y):
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_graph_roc_curve_binary(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_pred_proba = pd.DataFrame(y_pred_proba)
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -269,11 +273,15 @@ def test_graph_roc_curve_title_addition(X_y):
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic with added title text'
 
 
-def test_graph_confusion_matrix_default(X_y):
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_graph_confusion_matrix_default(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_pred = pd.Series(y_pred)
     fig = graph_confusion_matrix(y_true, y_pred)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
