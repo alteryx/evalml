@@ -8,12 +8,13 @@ class DropColumns(Transformer):
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, columns=None, random_state=0):
+    def __init__(self, columns=None, random_state=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
         Arguments:
             columns (list(string)): List of column names, used to determine which columns to drop.
         """
         parameters = {"columns": columns}
+        parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
