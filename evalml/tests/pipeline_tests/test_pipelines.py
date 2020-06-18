@@ -676,20 +676,6 @@ def test_no_default_parameters():
     assert TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
-def test_no_random_state_argument_in_component():
-    class MockComponent(Transformer):
-        name = "Mock Component"
-        hyperparameter_ranges = {
-            'a': [0, 1, 2]
-        }
-
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent, 'Logistic Regression Classifier']
-
-    with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
-
-
 def test_init_components_invalid_parameters():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']

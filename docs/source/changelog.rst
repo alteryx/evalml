@@ -15,7 +15,7 @@ Changelog
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
-
+        * Added kwargs to all components :pr:`863`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
