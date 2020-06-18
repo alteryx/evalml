@@ -134,7 +134,6 @@ Pipeline Utils
 
     all_pipelines
     get_pipelines
-    all_estimators
     get_estimators
     make_pipeline
     list_model_families
