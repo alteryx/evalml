@@ -401,3 +401,10 @@ def test_components_init_kwargs():
             component = component_class(test_arg="test")
             assert component.parameters['test_arg'] == "test"
             assert component._component_obj.test_arg == "test"
+
+
+def test_component_has_random_state():
+    components = all_components()
+    for component_name, component_class in components.items():
+        params = inspect.signature(component_class.__init__).parameters
+        assert "random_state" in params
