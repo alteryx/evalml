@@ -33,8 +33,12 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
+    RandomForestClassifier,
+    RandomForestRegressor,
     SimpleImputer,
-    StandardScaler
+    StandardScaler,
+    XGBoostClassifier,
+    XGBoostRegressor
 )
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -54,6 +58,16 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   LinearRegressionPipeline,
                   RFRegressionPipeline,
                   XGBoostRegressionPipeline]
+
+
+_ALL_ESTIMATORS = [CatBoostClassifier,
+                   CatBoostRegressor,
+                   LinearRegressor,
+                   LogisticRegressionClassifier,
+                   RandomForestClassifier,
+                   RandomForestRegressor,
+                   XGBoostClassifier,
+                   XGBoostRegressor]
 
 
 def all_pipelines():
@@ -140,11 +154,11 @@ def all_estimators():
         list[Estimator]: a list of estimator classes
     """
     estimators = []
-    for estimator_class in Estimator.__subclasses__():
+    for estimator_class in _ALL_ESTIMATORS:
         try:
             estimator_class()
             estimators.append(estimator_class)
-        except (MissingComponentError, ImportError, TypeError):
+        except (MissingComponentError, ImportError):
             estimator_name = estimator_class.name
             logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
     return estimators
