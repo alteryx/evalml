@@ -390,7 +390,6 @@ def test_components_init_kwargs():
 
         obj_class = component._component_obj.__class__.__name__
         module = component._component_obj.__module__
-        base = "evalml.pipelines.components." + component_class.__name__
         importlib.import_module(module, obj_class)
         patched = module + '.' + obj_class + '.__init__'
 
@@ -398,7 +397,7 @@ def test_components_init_kwargs():
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
-        with patch(patched, new=all_init) as mock_obj_class:
+        with patch(patched, new=all_init) as _:
             component = component_class(test_arg="test")
             assert component.parameters['test_arg'] == "test"
             assert component._component_obj.test_arg == "test"
