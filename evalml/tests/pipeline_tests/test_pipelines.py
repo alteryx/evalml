@@ -870,7 +870,7 @@ def test_clone_fitted(X_y, lr_pipeline):
     np.testing.assert_almost_equal(X_t, X_t_clone)
 
 
-def test_get_permutations(X_y):
+def test_get_permutations_numpy_input(X_y):
     X, y = X_y
     parameters = {
         'Simple Imputer': {
@@ -883,4 +883,50 @@ def test_get_permutations(X_y):
     }
     pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    assert get_permutation_importances(pipeline, X, y) is not None
+    permutation_importances = get_permutation_importances(pipeline, X, y)
+    assert len(permutation_importances) == X.shape[1]
+    assert not permutation_importances.isnull().all().all()
+
+
+def test_get_permutations_dataframe_input(X_y):
+    X, y = X_y
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    permutation_importances = get_permutation_importances(pipeline, X, y)
+    assert list(permutation_importances.columns) == ["feature", "importance"]
+    assert not permutation_importances.isnull().all().all()
+
+
+def test_get_permutations_correlated_features():
+    y = pd.Series([1, 0, 1, 1])
+    X = pd.DataFrame()
+    X["correlated"] = y * 2
+    X["not correlated"] = [-1, -1, -1, 0]
+    y = y.astype(bool)
+
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent'
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    permutation_importances = get_permutation_importances(pipeline, X, y)
+    assert list(permutation_importances.columns) == ["feature", "importance"]
+    assert not permutation_importances.isnull().all().all()
+    assert permutation_importances["importance"]["correlated"] > permutation_importances["importance"]["not correlated"]

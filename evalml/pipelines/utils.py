@@ -273,8 +273,27 @@ def make_pipeline(X, y, estimator, problem_type):
 
 
 def get_permutation_importances(pipeline, X, y):
-    """TODO"""
+    """Calculates permutation importance for features.
+
+    Arguments:
+        X (pd.DataFrame): the input data used to score and compute permutation importance
+        y (pd.Series): the target labels
+        pipeline (PipelineBase or subclass): fitted pipeline
+
+    Returns:
+        Mean feature importance scores over 5 shuffles.
+    """
+    # check if dataframe then restore names
+    if isinstance(X, pd.DataFrame):
+        feature_names = list(X.columns)
+
     def scorer(pipeline, X, y):
         scores = pipeline.score(X, y, objectives=["RMSE"])
         return -scores['Root Mean Squared Error']
-    return sk_permutation_importance(pipeline, X, y, scoring=scorer)
+    perm_importances = sk_permutation_importance(pipeline, X, y, scoring=scorer)["importances_mean"]
+    if isinstance(X, pd.DataFrame):
+        feature_names = list(X.columns)
+        perm_importances = list(zip(feature_names, perm_importances))
+        perm_importances.sort(key=lambda x: -abs(x[1]))
+        return pd.DataFrame(perm_importances, columns=["feature", "importance"])
+    return pd.DataFrame(perm_importances)
