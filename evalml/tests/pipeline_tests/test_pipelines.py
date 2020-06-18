@@ -111,15 +111,15 @@ def test_get_pipelines(has_minimal_dependencies):
 
 def test_get_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY) if estimator not in locals()]) == 5
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if estimator not in locals()]) == 2
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.MULTICLASS) if estimator not in locals()]) == 5
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.REGRESSION) if estimator not in locals()]) == 5
     else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY) if estimator not in locals()]) == 7
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if estimator not in locals()]) == 2
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.MULTICLASS) if estimator not in locals()]) == 7
+        assert len([estimator for estimator in get_estimators(problem_type=ProblemTypes.REGRESSION) if estimator not in locals()]) == 7
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_estimators(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
