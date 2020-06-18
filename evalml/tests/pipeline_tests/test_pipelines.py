@@ -69,9 +69,8 @@ def test_all_estimators(has_minimal_dependencies):
         if estimator in locals():
             estimators.remove(estimator)
     if has_minimal_dependencies:
-        print (estimators)
-        assert estimators == []
         assert len(estimators) == 10
+        assert estimators == []
     else:
         assert len(estimators) == 14
 
@@ -96,15 +95,15 @@ def test_all_estimators_core_dependencies_mock():
 
 def test_get_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY) if pipeline not in locals()]) == 2
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if pipeline not in locals()]) == 1
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.MULTICLASS) if pipeline not in locals()]) == 2
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.REGRESSION) if pipeline not in locals()]) == 2
     else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY) if pipeline not in locals()]) == 4
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL]) if pipeline not in locals()]) == 1
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.MULTICLASS) if pipeline not in locals()]) == 4
+        assert len([pipeline for pipeline in get_pipelines(problem_type=ProblemTypes.REGRESSION) if pipeline not in locals()]) == 4
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
