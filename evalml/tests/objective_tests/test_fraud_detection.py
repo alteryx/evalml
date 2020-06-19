@@ -105,6 +105,13 @@ def test_fraud_objective_score(X_y):
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
 
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
+    assert isinstance(out, pd.Series)
+    assert out.tolist() == y_true
+    score = fraud_cost.score(y_true, out, extra_columns)
+    assert (score == 0.0)
+
+    out = fraud_cost.decision_function(y_predicted.to_numpy(), 5, extra_columns)
+    assert isinstance(out, pd.Series)
     assert out.tolist() == y_true
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
