@@ -113,26 +113,25 @@ def test_roc_curve_binary(data_type):
 def test_confusion_matrix(data_type):
     y_true = [2, 0, 2, 2, 0, 1]
     y_predicted = [0, 0, 2, 2, 0, 2]
-    expected_return_type = pd.DataFrame
     if data_type == 'pd':
         y_true = pd.Series(y_true)
         y_predicted = pd.Series(y_predicted)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
     conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(conf_mat_expected, conf_mat)
-    assert isinstance(conf_mat, expected_return_type)
+    assert isinstance(conf_mat, pd.DataFrame)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
     conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
-    assert isinstance(conf_mat, expected_return_type)
+    assert isinstance(conf_mat, pd.DataFrame)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
     conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
     assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
-    assert isinstance(conf_mat, expected_return_type)
+    assert isinstance(conf_mat, pd.DataFrame)
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
     conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
-    assert isinstance(conf_mat, expected_return_type)
+    assert isinstance(conf_mat, pd.DataFrame)
     with pytest.raises(ValueError, match='Invalid value provided'):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
 
