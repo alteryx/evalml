@@ -8,6 +8,7 @@ import pytest
 from skopt.space import Real
 
 from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.utils import graph_permutation_importances
 
 
 @pytest.fixture
@@ -99,5 +100,28 @@ def test_feature_importance_plot_show_all_features(X_y, test_pipeline):
     assert (np.all(data['x']))
 
     figure = clf.graph_feature_importance(show_all_features=True)
+    data = figure.data[0]
+    assert (np.any(data['x'] == 0.0))
+
+
+def test_permutation_importance_plot(X_y, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y
+    clf = test_pipeline
+    clf.fit(X, y)
+    assert isinstance(graph_permutation_importances(test_pipeline, X, y), go.Figure)
+
+
+@patch('evalml.pipelines.utils.get_permutation_importances')
+def test_permutation_importance_plot_show_all_features(mock_perm_importances):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    mock_perm_importances.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+    figure = graph_permutation_importances(test_pipeline, pd.DataFrame(), pd.Series())
+    assert isinstance(figure, go.Figure)
+
+    data = figure.data[0]
+    assert (np.all(data['x']))
+
+    figure = graph_permutation_importances(test_pipeline, pd.DataFrame(), pd.Series(), show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))

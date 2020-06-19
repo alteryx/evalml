@@ -43,7 +43,7 @@ from evalml.pipelines.components import (
     XGBoostRegressor
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_logger
+from evalml.utils import get_logger, import_or_raise
 
 logger = get_logger(__file__)
 
@@ -293,49 +293,48 @@ def get_permutation_importances(pipeline, X, y, n_repeats=5, n_jobs=None, random
     perm_importances = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
     mean_perm_importances = perm_importances["importances_mean"]
     if not isinstance(X, pd.DataFrame):
-        return pd.DataFrame(mean_perm_importances)
+        X = pd.DataFrame(X)
     feature_names = list(X.columns)
     mean_perm_importances = list(zip(feature_names, mean_perm_importances))
     mean_perm_importances.sort(key=lambda x: -abs(x[1]))
     return pd.DataFrame(mean_perm_importances, columns=["feature", "importance"])
 
 
-# def graph_permutation_importances(pipeline, X, y, show_all_features=True):
-#     """Generate a bar graph of the pipeline's feature permutation importances
+def graph_permutation_importances(pipeline, X, y, show_all_features=False):
+    """Generate a bar graph of the pipeline's permutation importances
 
-#         Arguments:
-#             show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to False.
-#         Returns:
-#             plotly.Figure, a bar graph showing features and their importances
-#         """
-#         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-#         get_permutation_importances(pipeline, X, y)
-#         feat_imp['importance'] = abs(feat_imp['importance'])
+        Arguments:
+            show_all_features (bool, optional) : If True, graph features with a permutation importance value of zero. Defaults to False.
+        Returns:
+            plotly.Figure, a bar graph showing features and their permutation importances
+    """
+    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    perm_importances = get_permutation_importances(pipeline, X, y)
+    perm_importances['importance'] = abs(perm_importances['importance'])
 
-#         if not show_all_features:
-#             # Remove features with zero importance
-#             feat_imp = feat_imp[feat_imp['importance'] != 0]
+    if not show_all_features:
+        # Remove features with zero importance
+        perm_importances = perm_importances[perm_importances['importance'] != 0]
 
-#         # List is reversed to go from ascending order to descending order
-#         feat_imp = feat_imp.iloc[::-1]
+    # List is reversed to go from ascending order to descending order
+    perm_importances = perm_importances.iloc[::-1]
 
-#         title = 'Feature Importances'
-#         subtitle = 'May display fewer features due to feature selection'
-#         data = [go.Bar(
-#             x=feat_imp['importance'],
-#             y=feat_imp['feature'],
-#             orientation='h'
-#         )]
+    title = 'Permutation Importances'
+    subtitle = 'May display fewer features due to feature selection'
+    data = [go.Bar(x=perm_importances['importance'],
+                   y=perm_importances['feature'],
+                   orientation='h'
+                   )]
 
-#         layout = {
-#             'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
-#             'height': 800,
-#             'xaxis_title': 'Feature Importance',
-#             'yaxis_title': 'Feature',
-#             'yaxis': {
-#                 'type': 'category'
-#             }
-#         }
+    layout = {
+        'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
+        'height': 800,
+        'xaxis_title': 'Permutation Importance',
+        'yaxis_title': 'Feature',
+        'yaxis': {
+            'type': 'category'
+        }
+    }
 
-#         fig = go.Figure(data=data, layout=layout)
-#         return fig
+    fig = go.Figure(data=data, layout=layout)
+    return fig
