@@ -1,5 +1,6 @@
 import copy
 
+import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -59,6 +60,10 @@ class CatBoostRegressor(Estimator):
         Returns:
             self
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
         cat_cols = X.select_dtypes(['object', 'category'])
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return model

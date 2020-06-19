@@ -86,7 +86,7 @@ def test_xgboost_regression(X_y_reg):
     # testing objective parameter passed in does not change results
     clf.fit(X, y)
     y_pred_with_objective = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_xgr_input_feature_names(X_y_categorical_regression):

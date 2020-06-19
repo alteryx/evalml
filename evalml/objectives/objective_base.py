@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
 
 
 class ObjectiveBase(ABC):
@@ -49,8 +50,24 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
+        y_true = self._standardize_input_type(y_true)
+        y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
+
+    @staticmethod
+    def _standardize_input_type(y_in):
+        """Standardize np or pd input to np for scoring
+
+        Arguments:
+            y_in (np.ndarray or pd.Series): a matrix of predictions or predicted probabilities
+
+        Returns:
+            np.ndarray: a 1d np array, or a 2d np array if predicted probabilities were provided.
+        """
+        if isinstance(y_in, (pd.Series, pd.DataFrame)):
+            return y_in.to_numpy()
+        return y_in
 
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.

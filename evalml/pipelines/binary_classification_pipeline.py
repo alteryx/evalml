@@ -48,8 +48,5 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         Will return `np.nan` if the objective errors.
         """
         if predictions.ndim > 1:
-            if isinstance(predictions, pd.DataFrame):
-                predictions = predictions.iloc[:, 1]
-            else:
-                predictions = predictions[:, 1]
+            predictions = predictions.iloc[:, 1]
         return ClassificationPipeline._score(X, y, predictions, objective)

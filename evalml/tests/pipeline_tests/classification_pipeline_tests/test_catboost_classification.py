@@ -64,13 +64,13 @@ def test_catboost_objective_tuning(X_y):
     # testing objective parameter passed in does not change results
     objective = Precision()
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
     # testing objective parameter passed and set threshold does change results
     with pytest.raises(AssertionError):
         clf.threshold = 0.01
         y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+        np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_catboost_multi(X_y_multi):
@@ -103,7 +103,10 @@ def test_catboost_multi(X_y_multi):
     clf_score = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
-    assert((y_pred == sk_pipeline.predict(X)).all())
+    sk_pipeline_preds = sk_pipeline.predict(X)
+    assert sk_pipeline_preds.shape == (len(y_pred), 1)
+    sk_pipeline_preds = sk_pipeline_preds.flatten()
+    assert((y_pred == sk_pipeline_preds).all())
     assert (sk_score == clf_score[objective.name])
     assert len(np.unique(y_pred)) == 3
     assert len(clf.feature_importances) == len(X[0])

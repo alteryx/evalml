@@ -3,6 +3,7 @@ import inspect
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.exceptions import MethodPropertyNotFoundError
@@ -28,6 +29,7 @@ from evalml.pipelines.components import (
     XGBoostClassifier,
     all_components
 )
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture(scope="module")
@@ -238,7 +240,7 @@ def test_component_fit_transform(X_y):
         hyperparameter_ranges = {}
 
         def fit(self, X, y=None):
-            return X
+            return self
 
         def transform(self, X, y=None):
             return X
@@ -254,7 +256,7 @@ def test_component_fit_transform(X_y):
         hyperparameter_ranges = {}
 
         def fit(self, X, y=None):
-            return X
+            return self
 
         def __init__(self):
             parameters = {}
@@ -262,15 +264,20 @@ def test_component_fit_transform(X_y):
                              component_obj=None,
                              random_state=0)
 
+    # convert data to pd DataFrame, because the component classes don't
+    # standardize to pd DataFrame
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
     component = MockTransformerWithFitTransform()
-    assert isinstance(component.fit_transform(X, y), np.ndarray)
+    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
 
     component = MockTransformerWithFitTransformButError()
     with pytest.raises(RuntimeError):
         component.fit_transform(X, y)
 
     component = MockTransformerWithFitAndTransform()
-    assert isinstance(component.fit_transform(X, y), np.ndarray)
+    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
 
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
@@ -408,3 +415,82 @@ def test_component_has_random_state():
     for component_name, component_class in components.items():
         params = inspect.signature(component_class.__init__).parameters
         assert "random_state" in params
+
+
+def test_transformer_transform_output_type(X_y):
+    X_np, y_np = X_y
+    assert isinstance(X_np, np.ndarray)
+    assert isinstance(y_np, np.ndarray)
+    y_list = list(y_np)
+    X_df_no_col_names = pd.DataFrame(X_np)
+    range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
+    X_df_with_col_names = pd.DataFrame(X_np, columns=['x' + str(i) for i in range(X_np.shape[1])])
+    y_series_no_name = pd.Series(y_np)
+    y_series_with_name = pd.Series(y_np, name='target')
+    datatype_combos = [(X_np, y_np, range_index),
+                       (X_np, y_list, range_index),
+                       (X_df_no_col_names, y_series_no_name, range_index),
+                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
+
+    components = all_components()
+    transformers = dict(filter(lambda el: issubclass(el[1], Transformer), components.items()))
+    for component_name, component_class in transformers.items():
+        print('Testing transformer {}'.format(component_class.name))
+        for X, y, X_cols_expected in datatype_combos:
+            print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
+                  .format(component_class.name, type(X),
+                          X.columns if isinstance(X, pd.DataFrame) else None, type(y),
+                          y.name if isinstance(y, pd.Series) else None))
+            component = component_class()
+            component.fit(X, y=y)
+            transform_output = component.transform(X, y=y)
+            assert isinstance(transform_output, pd.DataFrame)
+            assert transform_output.shape == X.shape
+            assert (transform_output.columns == X_cols_expected).all()
+            transform_output = component.fit_transform(X, y=y)
+            assert isinstance(transform_output, pd.DataFrame)
+            assert transform_output.shape == X.shape
+            assert (transform_output.columns == X_cols_expected).all()
+
+
+def test_estimator_predict_output_type(X_y):
+    X_np, y_np = X_y
+    assert isinstance(X_np, np.ndarray)
+    assert isinstance(y_np, np.ndarray)
+    y_list = list(y_np)
+    X_df_no_col_names = pd.DataFrame(X_np)
+    range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
+    X_df_with_col_names = pd.DataFrame(X_np, columns=['x' + str(i) for i in range(X_np.shape[1])])
+    y_series_no_name = pd.Series(y_np)
+    y_series_with_name = pd.Series(y_np, name='target')
+    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np)),
+                       (X_np, y_list, range_index, np.unique(y_np)),
+                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
+                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
+
+    components = all_components()
+    estimators = dict(filter(lambda el: issubclass(el[1], Estimator), components.items()))
+    for component_name, component_class in estimators.items():
+        for X, y, X_cols_expected, y_cols_expected in datatype_combos:
+            print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
+                  .format(component_class.name, type(X),
+                          X.columns if isinstance(X, pd.DataFrame) else None, type(y),
+                          y.name if isinstance(y, pd.Series) else None))
+            component = component_class()
+            component.fit(X, y=y)
+            predict_output = component.predict(X)
+            assert isinstance(predict_output, pd.Series)
+            assert len(predict_output) == len(y)
+            assert predict_output.name is None
+
+            if not ((ProblemTypes.BINARY in component_class.supported_problem_types) or
+                    (ProblemTypes.MULTICLASS in component_class.supported_problem_types)):
+                continue
+            print('Checking output of predict_proba for estimator "{}" on X type {} cols {}, y type {} name {}'
+                  .format(component_class.name, type(X),
+                          X.columns if isinstance(X, pd.DataFrame) else None, type(y),
+                          y.name if isinstance(y, pd.Series) else None))
+            predict_proba_output = component.predict_proba(X)
+            assert isinstance(predict_proba_output, pd.DataFrame)
+            assert predict_proba_output.shape == (len(y), len(np.unique(y)))
+            assert (predict_proba_output.columns == y_cols_expected).all()
