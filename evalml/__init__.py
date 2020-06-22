@@ -26,7 +26,7 @@ import evalml.utils
 import evalml.data_checks
 
 from evalml.pipelines import list_model_families
-from evalml.automl import AutoClassificationSearch, AutoRegressionSearch
+from evalml.automl import AutoMLSearch
 from evalml.utils import print_info
 
 warnings.filterwarnings("ignore", category=FutureWarning)
