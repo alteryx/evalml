@@ -39,5 +39,5 @@ class ElasticNetClassifier(Estimator):
         if len(coef_) <= 2:
             return coef_.flatten()
         else:
-            # mutliclass classification case
+            # multiclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)

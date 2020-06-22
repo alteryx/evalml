@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from evalml import AutoRegressionSearch
+from evalml import AutoMLSearch
 from evalml.demos import load_diabetes
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
@@ -26,7 +26,7 @@ def X_y():
 def test_init(X_y):
     X, y = X_y
 
-    automl = AutoRegressionSearch(objective="R2", max_pipelines=3, n_jobs=4)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=3, n_jobs=4)
     automl.search(X, y)
 
     assert automl.n_jobs == 4
@@ -50,10 +50,10 @@ def test_init(X_y):
 
 def test_random_state(X_y):
     X, y = X_y
-    automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=5, random_state=0)
     automl.search(X, y)
 
-    automl_1 = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl_1 = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=5, random_state=0)
     automl_1.search(X, y)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
@@ -62,7 +62,7 @@ def test_random_state(X_y):
 
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=5, random_state=0)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
     assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
@@ -83,9 +83,9 @@ def test_callback(X_y):
         counts["add_result_callback"] += 1
 
     max_pipelines = 3
-    automl = AutoRegressionSearch(objective="R2", max_pipelines=max_pipelines,
-                                  start_iteration_callback=start_iteration_callback,
-                                  add_result_callback=add_result_callback)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=max_pipelines,
+                          start_iteration_callback=start_iteration_callback,
+                          add_result_callback=add_result_callback)
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_pipelines
@@ -95,7 +95,8 @@ def test_callback(X_y):
 def test_early_stopping(caplog):
     tolerance = 0.005
     patience = 2
-    automl = AutoRegressionSearch(objective='mse', max_time='60 seconds', patience=patience, tolerance=tolerance, allowed_model_families=['linear_model'], random_state=0)
+    automl = AutoMLSearch(problem_type='regression', objective='mse', max_time='60 seconds',
+                          patience=patience, tolerance=tolerance, allowed_model_families=['linear_model'], random_state=0)
 
     mock_results = {
         'search_order': [0, 1, 2],
@@ -117,7 +118,7 @@ def test_early_stopping(caplog):
 def test_plot_disabled_missing_dependency(X_y, has_minimal_dependencies):
     X, y = X_y
 
-    automl = AutoRegressionSearch(max_pipelines=3)
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=3)
     if has_minimal_dependencies:
         with pytest.raises(AttributeError):
             automl.plot.search_iteration_plot
@@ -129,7 +130,7 @@ def test_plot_iterations_max_pipelines(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoRegressionSearch(max_pipelines=3)
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=3)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -147,7 +148,7 @@ def test_plot_iterations_max_time(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y
 
-    automl = AutoRegressionSearch(max_time=10, random_state=1)
+    automl = AutoMLSearch(problem_type='regression', max_time=10, random_state=1)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -163,35 +164,38 @@ def test_plot_iterations_max_time(X_y):
 
 def test_log_metrics_only_passed_directly():
     with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
-        AutoRegressionSearch(additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
+        AutoMLSearch(problem_type='regression', additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
 
-    ar = AutoRegressionSearch(additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
+    ar = AutoMLSearch(problem_type='regression', additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])
     assert ar.additional_objectives[0].name == 'Root Mean Squared Log Error'
     assert ar.additional_objectives[1].name == 'Mean Squared Log Error'
 
 
 def test_automl_allowed_pipelines_init(dummy_regression_pipeline):
-    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION)
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
 
-    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=None)
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__],
+                          allowed_model_families=None)
     expected_pipelines = [dummy_regression_pipeline.__class__]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
 
-    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, allowed_pipelines=None,
+                          allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
     expected_pipelines = get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline.__class__],
+                          allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = [dummy_regression_pipeline.__class__]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
@@ -205,8 +209,8 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
 
     allowed_pipelines = [dummy_regression_pipeline.__class__]
     start_iteration_callback = MagicMock()
-    automl = AutoRegressionSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback,
-                                  allowed_pipelines=allowed_pipelines)
+    automl = AutoMLSearch(problem_type='regression', max_pipelines=2, start_iteration_callback=start_iteration_callback,
+                          allowed_pipelines=allowed_pipelines)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2

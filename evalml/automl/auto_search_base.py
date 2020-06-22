@@ -53,8 +53,7 @@ class AutoSearchBase:
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=False,
-                 multiclass=None):
+                 optimize_thresholds=False):
         self.problem_type = problem_type
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback

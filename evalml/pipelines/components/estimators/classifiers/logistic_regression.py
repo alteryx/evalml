@@ -40,5 +40,5 @@ class LogisticRegressionClassifier(Estimator):
         if len(coef_) <= 2:
             return coef_[0]
         else:
-            # mutliclass classification case
+            # multiclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
