@@ -5,6 +5,7 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
@@ -158,7 +159,7 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True, force_problem_type=False):
         """Find best classifier
 
         Arguments:
@@ -176,6 +177,8 @@ class AutoSearchBase:
 
             data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
+            force_problem_type (boolean, False): If True, doesn't throw error if evalml-guessed problem type for y mismatches user-input problem type.
+        
         Returns:
 
             self
@@ -194,14 +197,13 @@ class AutoSearchBase:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if self.problem_type != ProblemTypes.REGRESSION:
-            self._check_multiclass(y)
-
         if data_checks is None:
             data_checks = DefaultDataChecks()
 
         if not isinstance(data_checks, DataChecks):
             raise ValueError("data_checks parameter must be a DataChecks object!")
+
+        self._check_problem_type_compatability()
 
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
@@ -213,6 +215,11 @@ class AutoSearchBase:
                     logger.error(message)
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+
+        # check problem type against target values
+        inferred_type = self._determine_problem_type(y)
+        if not force_problem_type and not inferred_type == self.problem_type:
+            raise ValueError("Given problem type {} does not match inferred problem type {}".format(self.problem_type.value, inferred_type.value))
 
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
@@ -326,14 +333,20 @@ class AutoSearchBase:
                 return False
         return should_continue
 
-    def _check_multiclass(self, y):
-        if y.nunique() <= 2:
-            return
-        if self.objective.problem_type != ProblemTypes.MULTICLASS:
-            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
+    def _determine_problem_type(self, y):
+        n_unique = len(np.unique(y))
+        if n_unique == 2:
+            return ProblemTypes.BINARY
+        if is_numeric_dtype(y.dtypes) and n_unique > max(len(y) / 10, 10):
+            return ProblemTypes.REGRESSION
+        return ProblemTypes.MULTICLASS
+
+    def _check_problem_type_compatability(self):
+        if self.objective.problem_type != self.problem_type:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         for obj in self.additional_objectives:
-            if obj.problem_type != ProblemTypes.MULTICLASS:
-                raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
+            if obj.problem_type != self.problem_type:
+                raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
 
     def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:

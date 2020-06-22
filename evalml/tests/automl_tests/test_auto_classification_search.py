@@ -119,11 +119,13 @@ def test_binary_auto(X_y):
 
 def test_multi_error(X_y_multi):
     X, y = X_y_multi
-    error_automls = [AutoMLSearch(problem_type='binary', objective='precision'), AutoMLSearch(problem_type='multiclass', objective='precision_micro', additional_objectives=['precision'])]
-    error_msg = 'not compatible with a multiclass problem.'
-    for automl in error_automls:
-        with pytest.raises(ValueError, match=error_msg):
-            automl.search(X, y)
+    error_automl = [AutoMLSearch(problem_type='binary', objective='precision'), AutoMLSearch(problem_type='multiclass', objective='precision_micro', additional_objectives=['precision'])]
+    error_msg = 'does not match inferred problem type'
+    with pytest.raises(ValueError, match=error_msg):
+        error_automl[0].search(X, y)
+    error_msg = 'is not compatible with a'
+    with pytest.raises(ValueError, match=error_msg):
+        error_automl[1].search(X, y)
 
 
 def test_multi_auto(X_y_multi):

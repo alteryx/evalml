@@ -6,7 +6,7 @@ from evalml.objectives import get_objective, standard_metrics
 from evalml.problem_types import ProblemTypes
 
 
-class ObjectiveMismatchError(Exception):
+class ObjectiveProblemTypeError(Exception):
     """An exception thrown when a given objective and problem_type do not match"""
     pass
 
@@ -19,8 +19,8 @@ class AutoMLSearch(AutoSearchBase):
                 'multiclass': {'type': ProblemTypes.MULTICLASS, 'objective': standard_metrics.LogLossMulticlass()}}
 
     def __init__(self,
-                 problem_type,
-                 objective=None,
+                 problem_type=None,
+                 objective='auto',
                  max_pipelines=None,
                  max_time=None,
                  patience=None,
@@ -42,8 +42,8 @@ class AutoMLSearch(AutoSearchBase):
             problem_type (str): Choice of 'regression', 'binary', or 'multiclass', depending on the desired kind of
                 problem.
 
-            objective (Object): The objective to optimize for.
-                Defaults to LogLossBinary for binary classification problems,
+            objective (Object): The objective to optimize for. When set to auto, chooses:
+                LogLossBinary for binary classification problems,
                 LogLossMulticlass for multiclass classification problems, and
                 R2 for regression problems.
 
@@ -90,8 +90,10 @@ class AutoMLSearch(AutoSearchBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
+        if problem_type is None:
+            raise ObjectiveProblemTypeError('choose one of (binary, multiclass, regression) as problem_type')
 
-        if objective is None:
+        if objective is 'auto':
             objective = self.defaults[problem_type]['objective']
         else:
             objective = get_objective(objective)
@@ -99,7 +101,7 @@ class AutoMLSearch(AutoSearchBase):
         problem_type = self.defaults[problem_type]['type']
 
         if not objective.problem_type == problem_type:
-            raise ObjectiveMismatchError('objective does not match given problem type')
+            raise ObjectiveProblemTypeError('objective does not match given problem type')
 
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
