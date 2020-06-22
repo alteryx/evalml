@@ -27,6 +27,7 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
+from evalml.objectives import get_objective
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
@@ -272,13 +273,14 @@ def make_pipeline(X, y, estimator, problem_type):
     return GeneratedPipeline
 
 
-def get_permutation_importances(pipeline, X, y, n_repeats=5, n_jobs=None, random_state=0):
+def get_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
     Arguments:
         pipeline (PipelineBase or subclass): fitted pipeline
         X (pd.DataFrame): the input data used to score and compute permutation importance
         y (pd.Series): the target labels
+        objective (str, ObjectiveBase): objective to score on
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -287,42 +289,53 @@ def get_permutation_importances(pipeline, X, y, n_repeats=5, n_jobs=None, random
     Returns:
         Mean feature importance scores over 5 shuffles.
     """
+    objective = get_objective(objective)
+    if objective.problem_type != pipeline.problem_type:
+        raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
+
     def scorer(pipeline, X, y):
-        scores = pipeline.score(X, y, objectives=["RMSE"])
-        return -scores['Root Mean Squared Error']
-    perm_importances = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
-    mean_perm_importances = perm_importances["importances_mean"]
+        scores = pipeline.score(X, y, objectives=[objective])
+        return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
+    perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
+    mean_perm_importance = perm_importance["importances_mean"]
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
     feature_names = list(X.columns)
-    mean_perm_importances = list(zip(feature_names, mean_perm_importances))
-    mean_perm_importances.sort(key=lambda x: -abs(x[1]))
-    return pd.DataFrame(mean_perm_importances, columns=["feature", "importance"])
+    mean_perm_importance = list(zip(feature_names, mean_perm_importance))
+    mean_perm_importance.sort(key=lambda x: -abs(x[1]))
+    return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def graph_permutation_importances(pipeline, X, y, show_all_features=False):
-    """Generate a bar graph of the pipeline's permutation importances
+def graph_permutation_importances(pipeline, X, y, objective, show_all_features=False):
+    """Generate a bar graph of the pipeline's permutation importance.
 
-        Arguments:
-            show_all_features (bool, optional) : If True, graph features with a permutation importance value of zero. Defaults to False.
-        Returns:
-            plotly.Figure, a bar graph showing features and their permutation importances
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target labels
+        objective (str, ObjectiveBase): Objective to score on
+        show_all_features (bool, optional) : If True, graph features with a permutation importance value of zero. Defaults to False.
+
+    Returns:
+        plotly.Figure, a bar graph showing features and their respective permutation importance.
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    perm_importances = get_permutation_importances(pipeline, X, y)
-    perm_importances['importance'] = abs(perm_importances['importance'])
+    perm_importance = get_permutation_importances(pipeline, X, y, objective)
+    perm_importance['importance'] = abs(perm_importance['importance'])
 
     if not show_all_features:
         # Remove features with zero importance
-        perm_importances = perm_importances[perm_importances['importance'] != 0]
+        perm_importance = perm_importance[perm_importance['importance'] != 0]
 
     # List is reversed to go from ascending order to descending order
-    perm_importances = perm_importances.iloc[::-1]
+    perm_importance = perm_importance.iloc[::-1]
 
-    title = 'Permutation Importances'
-    subtitle = 'May display fewer features due to feature selection'
-    data = [go.Bar(x=perm_importances['importance'],
-                   y=perm_importances['feature'],
+    title = "Permutation Importance"
+    subtitle = "The relative importance of each input feature's "\
+               "overall influence on the pipelines' predictions, computed using "\
+               "the permutation importance algorithm."
+    data = [go.Bar(x=perm_importance['importance'],
+                   y=perm_importance['feature'],
                    orientation='h'
                    )]
 

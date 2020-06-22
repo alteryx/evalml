@@ -153,7 +153,7 @@ Pipeline Graph Utils
     confusion_matrix
     normalize_confusion_matrix
     graph_confusion_matrix
-
+    graph_permutation_importances
 
 .. currentmodule:: evalml.pipelines.components
 
