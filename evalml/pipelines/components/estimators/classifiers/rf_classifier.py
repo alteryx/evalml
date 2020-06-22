@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
-    """Random Forest Classifier"""
+    """Random Forest Classifier."""
     name = "Random Forest Classifier"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),

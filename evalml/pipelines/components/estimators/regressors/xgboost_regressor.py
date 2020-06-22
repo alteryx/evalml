@@ -8,7 +8,7 @@ from evalml.utils import get_random_seed, import_or_raise
 
 
 class XGBoostRegressor(Estimator):
-    """XGBoost Regressor"""
+    """XGBoost Regressor."""
     name = "XGBoost Regressor"
     hyperparameter_ranges = {
         "eta": Real(0.000001, 1),

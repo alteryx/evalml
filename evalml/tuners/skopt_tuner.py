@@ -12,7 +12,7 @@ logger = get_logger(__file__)
 
 
 class SKOptTuner(Tuner):
-    """Bayesian Optimizer"""
+    """Bayesian Optimizer."""
 
     def __init__(self, pipeline_hyperparameter_ranges, random_state=0):
         """ Init SkOptTuner
