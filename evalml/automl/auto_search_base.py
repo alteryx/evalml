@@ -21,6 +21,7 @@ from evalml.pipelines import (
     ModeBaselineMulticlassPipeline,
     get_pipelines
 )
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
@@ -215,9 +216,14 @@ class AutoSearchBase:
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
+        self._allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+        pipelines_to_search = []
+        for estimator in self._allowed_estimators:
+            pipelines_to_search.append(make_pipeline(X, y, estimator, self.problem_type))
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
-            allowed_pipelines=self.allowed_pipelines,
+            allowed_pipelines=pipelines_to_search,
+            # allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
