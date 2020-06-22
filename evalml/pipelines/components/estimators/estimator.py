@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+import pandas as pd
+
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import ComponentBase
 
@@ -32,9 +34,12 @@ class Estimator(ComponentBase):
             pd.Series : estimated labels
         """
         try:
-            return self._component_obj.predict(X)
+            predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
+        if not isinstance(predictions, pd.Series):
+            predictions = pd.Series(predictions)
+        return predictions
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -46,9 +51,12 @@ class Estimator(ComponentBase):
             pd.DataFrame : probability estimates
         """
         try:
-            return self._component_obj.predict_proba(X)
+            pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
+        if not isinstance(pred_proba, pd.DataFrame):
+            pred_proba = pd.DataFrame(pred_proba)
+        return pred_proba
 
     @property
     def feature_importances(self):

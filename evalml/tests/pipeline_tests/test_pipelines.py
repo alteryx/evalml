@@ -866,8 +866,7 @@ def test_clone_fitted(X_y, lr_pipeline):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
-
-    np.testing.assert_almost_equal(X_t, X_t_clone)
+    pd.testing.assert_frame_equal(X_t, X_t_clone)
 
 
 def test_get_permutations_numpy_input(X_y):

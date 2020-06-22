@@ -54,6 +54,10 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
         cat_cols = X.select_dtypes(['category', 'object'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -65,9 +69,12 @@ class CatBoostClassifier(Estimator):
 
     def predict(self, X):
         predictions = self._component_obj.predict(X)
+        if predictions.ndim == 2 and predictions.shape[1] == 1:
+            predictions = predictions.flatten()
         if self._label_encoder:
-            return self._label_encoder.inverse_transform(predictions.astype(np.int64))
-
+            predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
+        if not isinstance(predictions, pd.Series):
+            predictions = pd.Series(predictions)
         return predictions
 
     @property

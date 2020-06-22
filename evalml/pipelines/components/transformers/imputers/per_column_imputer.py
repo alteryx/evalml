@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
@@ -46,6 +48,8 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -67,6 +71,8 @@ class PerColumnImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():

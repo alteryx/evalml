@@ -62,8 +62,8 @@ class SimpleImputer(Transformer):
             X_null_dropped = X.drop(self._all_null_cols, axis=1)
             if X_null_dropped.empty:
                 return pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
-        return X_t
+            return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
+        return pd.DataFrame(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

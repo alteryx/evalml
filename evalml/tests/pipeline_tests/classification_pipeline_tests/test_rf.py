@@ -87,13 +87,13 @@ def test_rf_objective_tuning(X_y):
     # testing objective parameter passed in does not change results
     objective = Precision()
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
     # testing objective parameter passed and set threshold does change results
     with pytest.raises(AssertionError):
         clf.threshold = 0.01
         y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+        np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_rf_multi(X_y_multi):
@@ -146,7 +146,7 @@ def test_rf_multi(X_y_multi):
     clf = RFMulticlassClassificationPipeline(parameters=parameters)
     clf.fit(X, y)
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_rf_input_feature_names(X_y):
