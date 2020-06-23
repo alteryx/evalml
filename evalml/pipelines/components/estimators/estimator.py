@@ -7,7 +7,7 @@ from evalml.pipelines.components import ComponentBase
 
 
 class Estimator(ComponentBase):
-    """A component that fits and predicts given data
+    """A component that fits and predicts given data.
 
     To implement a new Transformer, define your own class which is a subclass of Transformer, including
     a name and a list of acceptable ranges for any parameters to be tuned during the automl search (hyperparameters).

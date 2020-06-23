@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetClassifier(Estimator):
-    """Elastic Net Classifier"""
+    """Elastic Net Classifier."""
     name = "Elastic Net Classifier"
     hyperparameter_ranges = {
         "alpha": Real(0, 1),

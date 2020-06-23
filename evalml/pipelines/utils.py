@@ -131,7 +131,7 @@ def get_pipelines(problem_type, model_families=None):
 
 
 def list_model_families(problem_type):
-    """List model type for a particular problem type
+    """List model type for a particular problem type.
 
     Arguments:
         problem_types (ProblemTypes or str): binary, multiclass, or regression
