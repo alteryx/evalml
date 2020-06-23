@@ -9,7 +9,7 @@ from evalml.problem_types import ProblemTypes
 
 class LogisticRegressionClassifier(Estimator):
     """
-    Logistic Regression Classifier
+    Logistic Regression Classifier.
     """
     name = "Logistic Regression Classifier"
     hyperparameter_ranges = {

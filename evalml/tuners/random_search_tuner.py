@@ -5,7 +5,7 @@ from evalml.utils import get_random_state
 
 
 class RandomSearchTuner(Tuner):
-    """Random Search Optimizer
+    """Random Search Optimizer.
 
     Example:
         >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_state=42)

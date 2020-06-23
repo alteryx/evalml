@@ -73,7 +73,7 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
 
 
 def number_of_features(dtypes):
-    """Get the number of features for specific dtypes
+    """Get the number of features for specific dtypes.
 
     Arguments:
 
@@ -96,7 +96,7 @@ def number_of_features(dtypes):
 
 
 def label_distribution(labels):
-    """Get the label distributions
+    """Get the label distributions.
 
     Arguments:
         labels (pd.Series): Label values
