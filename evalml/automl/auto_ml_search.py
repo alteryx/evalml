@@ -100,9 +100,6 @@ class AutoMLSearch(AutoSearchBase):
 
         problem_type = self.defaults[problem_type]['type']
 
-        if not objective.problem_type == problem_type:
-            raise ObjectiveProblemTypeError('objective does not match given problem type')
-
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
 
