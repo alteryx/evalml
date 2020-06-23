@@ -137,6 +137,7 @@ Pipeline Utils
     get_estimators
     make_pipeline
     list_model_families
+    calculate_permutation_importances
 
 
 Pipeline Graph Utils
@@ -152,7 +153,7 @@ Pipeline Graph Utils
     confusion_matrix
     normalize_confusion_matrix
     graph_confusion_matrix
-
+    graph_permutation_importances
 
 .. currentmodule:: evalml.pipelines.components
 
