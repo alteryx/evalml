@@ -153,23 +153,23 @@ def test_make_pipeline():
     y = pd.Series([0, 0, 1, 2, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
 
     binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, OneHotEncoder, SimpleImputer, RandomForestClassifier]
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, OneHotEncoder, SimpleImputer, RandomForestRegressor]
 
     regression_pipeline = make_pipeline(X, y, LinearRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LinearRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, OneHotEncoder, SimpleImputer, StandardScaler, LinearRegressor]
 
 
 def test_make_pipelines_catboost(has_minimal_dependencies):
@@ -178,13 +178,19 @@ def test_make_pipelines_catboost(has_minimal_dependencies):
                           "categorical": ["a", "b", "a", "c", "c"],
                           "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
         y = pd.Series([0, 0, 1, 2, 0])
+        expected_hyperparameters = {
+            'Simple Imputer': {
+                "impute_strategy": ["most_frequent"]
+            }
+        }
         catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
         assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
-        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostClassifier]
-
+        assert catboost_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, SimpleImputer, CatBoostClassifier]
+        assert catboost_pipeline.custom_hyperparameters == expected_hyperparameters
         catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
         assert isinstance(catboost_pipeline, type(RegressionPipeline))
-        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostRegressor]
+        assert catboost_pipeline.component_graph == [DropNullColumns, DateTimeFeaturization, SimpleImputer, CatBoostRegressor]
+        assert catboost_pipeline.custom_hyperparameters == expected_hyperparameters
 
 
 def test_make_pipeline_no_nulls():
@@ -194,15 +200,17 @@ def test_make_pipeline_no_nulls():
     y = pd.Series([0, 0, 1, 2, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-
+    assert binary_pipeline.component_graph == [DateTimeFeaturization, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.custom_hyperparameters is None
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DateTimeFeaturization, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DateTimeFeaturization, OneHotEncoder, SimpleImputer, RandomForestRegressor]
+    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_no_datetimes():
@@ -212,15 +220,18 @@ def test_make_pipeline_no_datetimes():
     y = pd.Series([0, 0, 1, 2, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, RandomForestRegressor]
+    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_no_column_names():
@@ -228,15 +239,18 @@ def test_make_pipeline_no_column_names():
     y = pd.Series([0, 0, 1])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, OneHotEncoder, SimpleImputer, RandomForestRegressor]
+    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_numpy_input():
@@ -244,15 +258,18 @@ def test_make_pipeline_numpy_input():
     y = np.array([0, 0, 1, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, StandardScaler, SimpleImputer, LogisticRegressionClassifier]
+    assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, StandardScaler, SimpleImputer, LogisticRegressionClassifier]
+    assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, RandomForestRegressor]
+    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_problem_type_mismatch():
