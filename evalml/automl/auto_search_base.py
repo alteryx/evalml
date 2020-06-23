@@ -521,6 +521,32 @@ class AutoSearchBase:
         if return_dict:
             return pipeline_results
 
+    def add_to_leaderboard(self, pipeline, X, y):
+        """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
+
+        Arguments:
+            pipeline (PipelineBase): pipeline to train and evaluate.
+
+            X (pd.DataFrame): the input training data of shape [n_samples, n_features].
+
+            y (pd.Series): the target training labels of length [n_samples].
+
+        Returns:
+            evaluation_results (dict): dictionary containing training time, cv scores, and other metrics.
+        """
+        parameters = pipeline.parameters
+
+        evaluation_results = self._evaluate(pipeline, X, y, raise_errors=True)
+        logger.debug('Adding results for pipeline {} using `add_to_leaderboard()`\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=evaluation_results['training_time'],
+                         cv_data=evaluation_results['cv_data'],
+                         cv_scores=evaluation_results['cv_scores'])
+        logger.debug('Adding results complete')
+
+        return evaluation_results
+
     @property
     def rankings(self):
         """Returns a pandas.DataFrame with scoring results from the highest-scoring set of parameters used with each pipeline."""

@@ -388,3 +388,22 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_leaderboard(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    allowed_pipelines = [dummy_binary_pipeline_class]
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=allowed_pipelines)
+    automl.search(X, y)
+
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_leaderboard(test_pipeline, X, y)
+
+    assert len(automl.rankings) == 2
+    assert 0.1234 in automl.rankings['score'].values
