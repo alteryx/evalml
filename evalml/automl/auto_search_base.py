@@ -203,8 +203,6 @@ class AutoSearchBase:
         if not isinstance(data_checks, DataChecks):
             raise ValueError("data_checks parameter must be a DataChecks object!")
 
-        self._check_problem_type_compatability()
-
         data_check_results = data_checks.validate(X, y)
         if len(data_check_results) > 0:
             self._data_check_results = data_check_results
@@ -216,7 +214,8 @@ class AutoSearchBase:
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
-        # check problem type against target values
+        self._check_problem_type_compatability()
+
         inferred_type = self._determine_problem_type(y)
         if not force_problem_type and not inferred_type == self.problem_type:
             raise ValueError("Given problem type {} does not match inferred problem type {}".format(self.problem_type.value, inferred_type.value))

@@ -389,3 +389,10 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+
+
+def test_obj_matches_problem_type(X_y):
+    X, y = X_y
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        auto = AutoMLSearch(problem_type='binary', objective='R2')
+        auto.search(X, y, data_checks=EmptyDataChecks())

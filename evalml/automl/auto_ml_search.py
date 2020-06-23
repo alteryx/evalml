@@ -6,11 +6,6 @@ from evalml.objectives import get_objective, standard_metrics
 from evalml.problem_types import ProblemTypes
 
 
-class ObjectiveProblemTypeError(Exception):
-    """An exception thrown when a given objective and problem_type do not match"""
-    pass
-
-
 class AutoMLSearch(AutoSearchBase):
     """Automatic pipeline search class"""
 
@@ -90,8 +85,8 @@ class AutoMLSearch(AutoSearchBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
-        if problem_type is None:
-            raise ObjectiveProblemTypeError('choose one of (binary, multiclass, regression) as problem_type')
+        if problem_type is None or not problem_type in defaults:
+            raise ValueError('choose one of (binary, multiclass, regression) as problem_type')
 
         if objective == 'auto':
             objective = self.defaults[problem_type]['objective']
