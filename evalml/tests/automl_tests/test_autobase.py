@@ -14,7 +14,8 @@ from evalml.data_checks import (
     EmptyDataChecks
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -391,4 +392,5 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert mock_algo_init.call_count == 2
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
-    assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+    for actual, expected in zip(kwargs['allowed_pipelines'], [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=allowed_model_families)]):
+        assert actual.parameters == expected.parameters
