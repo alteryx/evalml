@@ -302,7 +302,7 @@ def calculate_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_
         X = pd.DataFrame(X)
     feature_names = list(X.columns)
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))
-    mean_perm_importance.sort(key=lambda x: -abs(x[1]))
+    mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
@@ -324,9 +324,8 @@ def graph_permutation_importances(pipeline, X, y, objective, show_all_features=F
     perm_importance['importance'] = perm_importance['importance']
 
     if not show_all_features:
-        # Remove features with zero importance
-        perm_importance = perm_importance[abs(perm_importance['importance']) > 1e-5]
-
+        # Remove features with close to zero importance
+        perm_importance = perm_importance[abs(perm_importance['importance']) >= 1e-3]
     # List is reversed to go from ascending order to descending order
     perm_importance = perm_importance.iloc[::-1]
 
