@@ -5,7 +5,7 @@ from evalml.pipelines.components.transformers import Transformer
 
 
 class SimpleImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy"""
+    """Imputes missing data according to a specified imputation strategy."""
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 

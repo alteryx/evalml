@@ -4,7 +4,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 
 
 class LeadScoring(BinaryClassificationObjective):
-    """Lead scoring"""
+    """Lead scoring."""
     name = "Lead Scoring"
     greater_is_better = True
     score_needs_proba = False

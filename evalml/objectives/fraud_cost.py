@@ -4,7 +4,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 
 
 class FraudCost(BinaryClassificationObjective):
-    """Score the percentage of money lost of the total transaction amount process due to fraud"""
+    """Score the percentage of money lost of the total transaction amount process due to fraud."""
     name = "Fraud Cost"
     greater_is_better = False
     score_needs_proba = False
@@ -31,7 +31,7 @@ class FraudCost(BinaryClassificationObjective):
         self.amount_col = amount_col
 
     def decision_function(self, ypred_proba, threshold=0.0, X=None):
-        """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount
+        """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount.
 
             Arguments:
                 ypred_proba (pd.Series): Predicted probablities
@@ -51,7 +51,7 @@ class FraudCost(BinaryClassificationObjective):
         return transformed_probs > threshold
 
     def objective_function(self, y_true, y_predicted, X):
-        """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount
+        """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
             Arguments:
                 y_predicted (pd.Series): predicted fraud labels

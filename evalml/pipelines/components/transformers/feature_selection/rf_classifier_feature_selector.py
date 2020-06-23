@@ -7,7 +7,7 @@ from .feature_selector import FeatureSelector
 
 
 class RFClassifierSelectFromModel(FeatureSelector):
-    """Selects top features based on importance weights using a Random Forest classifier"""
+    """Selects top features based on importance weights using a Random Forest classifier."""
     name = 'RF Classifier Select From Model'
     hyperparameter_ranges = {
         "percent_features": Real(.01, 1),

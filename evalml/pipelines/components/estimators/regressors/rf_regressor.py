@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RandomForestRegressor(Estimator):
-    """Random Forest Regressor"""
+    """Random Forest Regressor."""
     name = "Random Forest Regressor"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),

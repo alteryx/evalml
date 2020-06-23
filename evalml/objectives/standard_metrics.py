@@ -12,7 +12,7 @@ from .regression_objective import RegressionObjective
 
 
 class AccuracyBinary(BinaryClassificationObjective):
-    """Accuracy score for binary classification"""
+    """Accuracy score for binary classification."""
     name = "Accuracy Binary"
     greater_is_better = True
     score_needs_proba = False
@@ -22,7 +22,7 @@ class AccuracyBinary(BinaryClassificationObjective):
 
 
 class AccuracyMulticlass(MulticlassClassificationObjective):
-    """Accuracy score for multiclass classification"""
+    """Accuracy score for multiclass classification."""
     name = "Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
@@ -32,7 +32,7 @@ class AccuracyMulticlass(MulticlassClassificationObjective):
 
 
 class BalancedAccuracyBinary(BinaryClassificationObjective):
-    """Balanced accuracy score for binary classification"""
+    """Balanced accuracy score for binary classification."""
     name = "Balanced Accuracy Binary"
     greater_is_better = True
     score_needs_proba = False
@@ -42,7 +42,7 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
 
 
 class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
-    """Balanced accuracy score for multiclass classification"""
+    """Balanced accuracy score for multiclass classification."""
     name = "Balanced Accuracy Multiclass"
     greater_is_better = True
     score_needs_proba = False
@@ -52,7 +52,7 @@ class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
 
 
 class F1(BinaryClassificationObjective):
-    """F1 score for binary classification"""
+    """F1 score for binary classification."""
     name = "F1"
     greater_is_better = True
     score_needs_proba = False
@@ -62,7 +62,7 @@ class F1(BinaryClassificationObjective):
 
 
 class F1Micro(MulticlassClassificationObjective):
-    """F1 score for multiclass classification using micro averaging"""
+    """F1 score for multiclass classification using micro averaging."""
     name = "F1 Micro"
     greater_is_better = True
     score_needs_proba = False
@@ -72,7 +72,7 @@ class F1Micro(MulticlassClassificationObjective):
 
 
 class F1Macro(MulticlassClassificationObjective):
-    """F1 score for multiclass classification using macro averaging"""
+    """F1 score for multiclass classification using macro averaging."""
     name = "F1 Macro"
     greater_is_better = True
     score_needs_proba = False
@@ -82,7 +82,7 @@ class F1Macro(MulticlassClassificationObjective):
 
 
 class F1Weighted(MulticlassClassificationObjective):
-    """F1 score for multiclass classification using weighted averaging"""
+    """F1 score for multiclass classification using weighted averaging."""
     name = "F1 Weighted"
     greater_is_better = True
     score_needs_proba = False
@@ -92,7 +92,7 @@ class F1Weighted(MulticlassClassificationObjective):
 
 
 class Precision(BinaryClassificationObjective):
-    """Precision score for binary classification"""
+    """Precision score for binary classification."""
     name = "Precision"
     greater_is_better = True
     score_needs_proba = False
@@ -102,7 +102,7 @@ class Precision(BinaryClassificationObjective):
 
 
 class PrecisionMicro(MulticlassClassificationObjective):
-    """Precision score for multiclass classification using micro averaging"""
+    """Precision score for multiclass classification using micro averaging."""
     name = "Precision Micro"
     greater_is_better = True
     score_needs_proba = False
@@ -112,7 +112,7 @@ class PrecisionMicro(MulticlassClassificationObjective):
 
 
 class PrecisionMacro(MulticlassClassificationObjective):
-    """Precision score for multiclass classification using macro averaging"""
+    """Precision score for multiclass classification using macro averaging."""
     name = "Precision Macro"
     greater_is_better = True
     score_needs_proba = False
@@ -122,7 +122,7 @@ class PrecisionMacro(MulticlassClassificationObjective):
 
 
 class PrecisionWeighted(MulticlassClassificationObjective):
-    """Precision score for multiclass classification using weighted averaging"""
+    """Precision score for multiclass classification using weighted averaging."""
     name = "Precision Weighted"
     greater_is_better = True
     score_needs_proba = False
@@ -132,7 +132,7 @@ class PrecisionWeighted(MulticlassClassificationObjective):
 
 
 class Recall(BinaryClassificationObjective):
-    """Recall score for binary classification"""
+    """Recall score for binary classification."""
     name = "Recall"
     greater_is_better = True
     score_needs_proba = False
@@ -142,7 +142,7 @@ class Recall(BinaryClassificationObjective):
 
 
 class RecallMicro(MulticlassClassificationObjective):
-    """Recall score for multiclass classification using micro averaging"""
+    """Recall score for multiclass classification using micro averaging."""
     name = "Recall Micro"
     greater_is_better = True
     score_needs_proba = False
@@ -152,7 +152,7 @@ class RecallMicro(MulticlassClassificationObjective):
 
 
 class RecallMacro(MulticlassClassificationObjective):
-    """Recall score for multiclass classification using macro averaging"""
+    """Recall score for multiclass classification using macro averaging."""
     name = "Recall Macro"
     greater_is_better = True
     score_needs_proba = False
@@ -162,7 +162,7 @@ class RecallMacro(MulticlassClassificationObjective):
 
 
 class RecallWeighted(MulticlassClassificationObjective):
-    """Recall score for multiclass classification using weighted averaging"""
+    """Recall score for multiclass classification using weighted averaging."""
     name = "Recall Weighted"
     greater_is_better = True
     score_needs_proba = False
@@ -172,7 +172,7 @@ class RecallWeighted(MulticlassClassificationObjective):
 
 
 class AUC(BinaryClassificationObjective):
-    """AUC score for binary classification"""
+    """AUC score for binary classification."""
     name = "AUC"
     greater_is_better = True
     score_needs_proba = True
@@ -182,7 +182,7 @@ class AUC(BinaryClassificationObjective):
 
 
 class AUCMicro(MulticlassClassificationObjective):
-    """AUC score for multiclass classification using micro averaging"""
+    """AUC score for multiclass classification using micro averaging."""
     name = "AUC Micro"
     greater_is_better = True
     score_needs_proba = True
@@ -193,7 +193,7 @@ class AUCMicro(MulticlassClassificationObjective):
 
 
 class AUCMacro(MulticlassClassificationObjective):
-    """AUC score for multiclass classification using macro averaging"""
+    """AUC score for multiclass classification using macro averaging."""
     name = "AUC Macro"
     greater_is_better = True
     score_needs_proba = True
@@ -204,7 +204,7 @@ class AUCMacro(MulticlassClassificationObjective):
 
 
 class AUCWeighted(MulticlassClassificationObjective):
-    """AUC Score for multiclass classification using weighted averaging"""
+    """AUC Score for multiclass classification using weighted averaging."""
     name = "AUC Weighted"
     greater_is_better = True
     score_needs_proba = True
@@ -215,7 +215,7 @@ class AUCWeighted(MulticlassClassificationObjective):
 
 
 class LogLossBinary(BinaryClassificationObjective):
-    """Log Loss for binary classification"""
+    """Log Loss for binary classification."""
     name = "Log Loss Binary"
     greater_is_better = False
     score_needs_proba = True
@@ -225,7 +225,7 @@ class LogLossBinary(BinaryClassificationObjective):
 
 
 class LogLossMulticlass(MulticlassClassificationObjective):
-    """Log Loss for multiclass classification"""
+    """Log Loss for multiclass classification."""
     name = "Log Loss Multiclass"
     greater_is_better = False
     score_needs_proba = True
@@ -235,7 +235,7 @@ class LogLossMulticlass(MulticlassClassificationObjective):
 
 
 class MCCBinary(BinaryClassificationObjective):
-    """Matthews correlation coefficient for binary classification"""
+    """Matthews correlation coefficient for binary classification."""
     name = "MCC Binary"
     greater_is_better = True
     score_needs_proba = False
@@ -248,7 +248,7 @@ class MCCBinary(BinaryClassificationObjective):
 
 
 class MCCMulticlass(MulticlassClassificationObjective):
-    """Matthews correlation coefficient for multiclass classification"""
+    """Matthews correlation coefficient for multiclass classification."""
     name = "MCC Multiclass"
     greater_is_better = True
     score_needs_proba = False
@@ -261,7 +261,7 @@ class MCCMulticlass(MulticlassClassificationObjective):
 
 
 class RootMeanSquaredError(RegressionObjective):
-    """Root mean squared error for regression"""
+    """Root mean squared error for regression."""
     name = "Root Mean Squared Error"
     greater_is_better = False
     score_needs_proba = False
@@ -271,8 +271,10 @@ class RootMeanSquaredError(RegressionObjective):
 
 
 class RootMeanSquaredLogError(RegressionObjective):
-    """Root mean squared log error for regression. Only valid for nonnegative inputs.
-    Otherwise, will throw a ValueError"""
+    """Root mean squared log error for regression.
+
+    Only valid for nonnegative inputs.Otherwise, will throw a ValueError.
+    """
     name = "Root Mean Squared Log Error"
     greater_is_better = False
     score_needs_proba = False
@@ -282,8 +284,10 @@ class RootMeanSquaredLogError(RegressionObjective):
 
 
 class MeanSquaredLogError(RegressionObjective):
-    """Mean squared log error for regression. Only valid for nonnegative inputs.
-    Otherwise, will throw a ValueError"""
+    """Mean squared log error for regression.
+
+    Only valid for nonnegative inputs. Otherwise, will throw a ValueError
+    """
     name = "Mean Squared Log Error"
     greater_is_better = False
     score_needs_proba = False
@@ -293,7 +297,7 @@ class MeanSquaredLogError(RegressionObjective):
 
 
 class R2(RegressionObjective):
-    """Coefficient of determination for regression"""
+    """Coefficient of determination for regression."""
     name = "R2"
     greater_is_better = True
     score_needs_proba = False
@@ -303,7 +307,7 @@ class R2(RegressionObjective):
 
 
 class MAE(RegressionObjective):
-    """Mean absolute error for regression"""
+    """Mean absolute error for regression."""
     name = "MAE"
     greater_is_better = False
     score_needs_proba = False
@@ -313,7 +317,7 @@ class MAE(RegressionObjective):
 
 
 class MSE(RegressionObjective):
-    """Mean squared error for regression"""
+    """Mean squared error for regression."""
     name = "MSE"
     greater_is_better = False
     score_needs_proba = False
@@ -323,7 +327,7 @@ class MSE(RegressionObjective):
 
 
 class MedianAE(RegressionObjective):
-    """Median absolute error for regression"""
+    """Median absolute error for regression."""
     name = "MedianAE"
     greater_is_better = False
     score_needs_proba = False
@@ -333,7 +337,7 @@ class MedianAE(RegressionObjective):
 
 
 class MaxError(RegressionObjective):
-    """Maximum residual error for regression"""
+    """Maximum residual error for regression."""
     name = "MaxError"
     greater_is_better = False
     score_needs_proba = False
@@ -343,7 +347,7 @@ class MaxError(RegressionObjective):
 
 
 class ExpVariance(RegressionObjective):
-    """Explained variance score for regression"""
+    """Explained variance score for regression."""
     name = "ExpVariance"
     greater_is_better = True
     score_needs_proba = False

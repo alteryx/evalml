@@ -3,6 +3,7 @@ from evalml.pipelines.components.transformers import Transformer
 
 
 class CategoricalEncoder(Transformer):
+    """Base class for encoding num-numeric data."""
 
     def get_feature_names(self):
         """Returns names of transformed and added columns

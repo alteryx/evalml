@@ -8,7 +8,7 @@ from .encoder import CategoricalEncoder
 
 class OneHotEncoder(CategoricalEncoder):
 
-    """One-hot encoder to encode non-numeric data"""
+    """One-hot encoder to encode non-numeric data."""
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
 
