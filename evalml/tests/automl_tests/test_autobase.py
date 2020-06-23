@@ -391,6 +391,14 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
 
 
+def test_verifies_allowed_pipelines(X_y_reg):
+    X, y = X_y_reg
+    allowed_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
+    auto = AutoMLSearch(problem_type='regression', allowed_pipelines=allowed_pipelines)
+    with pytest.raises(ValueError, match="is not compatible with problem_type"):
+        auto.search(X, y)
+
+
 def test_obj_matches_problem_type(X_y):
     X, y = X_y
     with pytest.raises(ValueError, match="is not compatible with a"):

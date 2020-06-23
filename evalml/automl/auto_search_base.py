@@ -220,9 +220,7 @@ class AutoSearchBase:
         if not force_problem_type and not inferred_type == self.problem_type:
             raise ValueError("Given problem type {} does not match inferred problem type {}".format(self.problem_type.value, inferred_type.value))
 
-        # #check if allowed pipelines are valid
-        # if not self.allowed_pipelines is None:
-        #     self.check_pipelines_valid()
+        self._check_pipelines_valid()
 
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
@@ -352,12 +350,11 @@ class AutoSearchBase:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
             return
 
-    # def check_pipelines_valid(self):
-    #     valid = get_pipelines(self.problem_type)
-    #     for pipeline in self.allowed_pipelines:
-    #         if not pipeline in valid:
-    #             raise ValueError("Given pipeline {} is not compatible with a {} problem.".format(pipeline.name, self.problem_type.value))
-    #     return
+    def _check_pipelines_valid(self):
+        for pipeline in self.allowed_pipelines:
+            if not pipeline.problem_type == self.problem_type:
+                raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
+        return
 
     def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:

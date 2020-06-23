@@ -9,9 +9,9 @@ from evalml.problem_types import ProblemTypes
 class AutoMLSearch(AutoSearchBase):
     """Automatic pipeline search class"""
 
-    defaults = {'regression': {'type': ProblemTypes.REGRESSION, 'objective': standard_metrics.R2()},
-                'binary': {'type': ProblemTypes.BINARY, 'objective': standard_metrics.LogLossBinary()},
-                'multiclass': {'type': ProblemTypes.MULTICLASS, 'objective': standard_metrics.LogLossMulticlass()}}
+    default_matches = {'regression': {'type': ProblemTypes.REGRESSION, 'objective': standard_metrics.R2()},
+                       'binary': {'type': ProblemTypes.BINARY, 'objective': standard_metrics.LogLossBinary()},
+                       'multiclass': {'type': ProblemTypes.MULTICLASS, 'objective': standard_metrics.LogLossMulticlass()}}
 
     def __init__(self,
                  problem_type=None,
@@ -85,15 +85,15 @@ class AutoMLSearch(AutoSearchBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
-        if problem_type is None or not problem_type in defaults:
+        if problem_type is None or problem_type not in self.default_matches:
             raise ValueError('choose one of (binary, multiclass, regression) as problem_type')
 
         if objective == 'auto':
-            objective = self.defaults[problem_type]['objective']
+            objective = self.default_matches[problem_type]['objective']
         else:
             objective = get_objective(objective)
 
-        problem_type = self.defaults[problem_type]['type']
+        problem_type = self.default_matches[problem_type]['type']
 
         if cv is None:
             cv = KFold(n_splits=3, random_state=random_state)
