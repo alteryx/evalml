@@ -2,10 +2,10 @@ from .problem_types import ProblemTypes
 
 
 def handle_problem_types(problem_type):
-    """Handles problem_type by either returning the ProblemTypes or converting from a str
+    """Handles problem_type by either returning the ProblemTypes or converting from a str.
 
     Args:
-        problem_types (str or ProblemTypes) : problem type that needs to be handled
+        problem_type (str or ProblemTypes) : problem type that needs to be handled
 
     Returns:
         ProblemTypes

@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ExtraTreesRegressor(Estimator):
-    """Extra Trees Regressor"""
+    """Extra Trees Regressor."""
     name = "Extra Trees Regressor"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),

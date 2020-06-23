@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 
 class Tuner(ABC):
-    """Defines API for Tuners
+    """Defines API for Tuners.
 
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
     """
