@@ -218,7 +218,8 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-    X = X.drop(all_null_cols, axis=1)
+    X = X.drop(all_null_cols, axis=1)  # TODO: is this necessary??
+    pp_components.append(SimpleImputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
     add_datetime_featurization = len(datetime_cols.columns) > 0
@@ -229,8 +230,6 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     categorical_cols = X.select_dtypes(include=['category', 'object'])
     if (add_datetime_featurization or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
-
-    pp_components.append(SimpleImputer)
 
     if estimator_class in {LinearRegressor, LogisticRegressionClassifier}:
         pp_components.append(StandardScaler)
@@ -259,7 +258,8 @@ def make_pipeline(X, y, estimator, problem_type):
     complete_component_graph = preprocessing_components + [estimator]
 
     hyperparameters = None
-    if estimator in {CatBoostClassifier, CatBoostRegressor}:
+    categorical_cols = X.select_dtypes(include=['category', 'object'])
+    if estimator in {CatBoostClassifier, CatBoostRegressor} or len(categorical_cols) > 0:
         hyperparameters = {
             'Simple Imputer': {
                 "impute_strategy": ["most_frequent"]
