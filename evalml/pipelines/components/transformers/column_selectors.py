@@ -38,7 +38,7 @@ class ColumnSelector(Transformer):
 
     @abstractmethod
     def _modify_columns(self, cols, X, y=None):
-        pass
+        """How the transformer modifies the columns of the input data."""
 
     def fit(self, X, y=None):
         """'Fits' the transformer by checking if the column names are present in the dataset.
