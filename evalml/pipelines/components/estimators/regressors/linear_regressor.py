@@ -6,7 +6,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class LinearRegressor(Estimator):
-    """Linear Regressor"""
+    """Linear Regressor."""
     name = "Linear Regressor"
     hyperparameter_ranges = {
         'fit_intercept': [True, False],

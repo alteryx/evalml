@@ -8,7 +8,7 @@ logger = get_logger(__file__)
 
 
 class ComponentBase(ABC):
-    "Base class for all components"
+    """Base class for all components."""
 
     def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
         self.random_state = get_random_state(random_state)
