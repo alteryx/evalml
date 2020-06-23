@@ -93,7 +93,7 @@ class AutoMLSearch(AutoSearchBase):
         if problem_type is None:
             raise ObjectiveProblemTypeError('choose one of (binary, multiclass, regression) as problem_type')
 
-        if objective is 'auto':
+        if objective == 'auto':
             objective = self.defaults[problem_type]['objective']
         else:
             objective = get_objective(objective)

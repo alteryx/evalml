@@ -178,7 +178,7 @@ class AutoSearchBase:
             data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
 
             force_problem_type (boolean, False): If True, doesn't throw error if evalml-guessed problem type for y mismatches user-input problem type.
-        
+
         Returns:
 
             self
