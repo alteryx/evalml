@@ -10,6 +10,7 @@ class ColumnSelector(Transformer):
 
     def __init__(self, columns=None, random_state=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
+
         Arguments:
             columns (list(string)): List of column names, used to determine which columns to drop.
         """
@@ -43,7 +44,7 @@ class ColumnSelector(Transformer):
     def fit(self, X, y=None):
         """'Fits' the transformer by checking if the column names are present in the dataset.
 
-        Args:
+        Arguments:
             X (pd.DataFrame): Data to check.
             y (pd.Series, optional): Targets.
 
@@ -59,14 +60,15 @@ class ColumnSelector(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        self.fit(X, y)
+        self._check_input_for_columns(X)
 
         cols = self.parameters.get("columns") or []
         return self._modify_columns(cols, X, y)
 
     def fit_transform(self, X, y=None):
         """Fit transformer to data, then transform data.
-        Args:
+
+        Arguments:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -75,6 +77,7 @@ class ColumnSelector(Transformer):
         """
 
         # transform method already calls fit under the hood.
+        self.fit(X, y)
         return self.transform(X, y)
 
 
@@ -89,7 +92,7 @@ class DropColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
 
-        Args:
+        Arguments:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -110,7 +113,7 @@ class SelectColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
 
-        Args:
+        Arguments:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 

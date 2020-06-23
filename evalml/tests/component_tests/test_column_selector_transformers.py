@@ -5,150 +5,139 @@ import pytest
 from evalml.pipelines.components import DropColumns, SelectColumns
 
 
-def test_column_transformer_init():
-    drop_transformer = DropColumns(columns=None)
-    select_transformer = SelectColumns(columns=None)
-    assert drop_transformer.parameters["columns"] is None
-    assert select_transformer.parameters["columns"] is None
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
+def test_column_transformer_init(class_to_test):
+    transformer = class_to_test(columns=None)
+    assert transformer.parameters["columns"] is None
 
-    drop_transformer = DropColumns(columns=[])
-    select_transformer = SelectColumns(columns=[])
-    assert drop_transformer.parameters["columns"] == []
-    assert select_transformer.parameters["columns"] == []
+    transformer = class_to_test(columns=[])
+    assert transformer.parameters["columns"] == []
 
-    drop_transformer = DropColumns(columns=["a", "b"])
-    select_transformer = SelectColumns(columns=["a", "b"])
-    assert drop_transformer.parameters["columns"] == ["a", "b"]
-    assert select_transformer.parameters["columns"] == ["a", "b"]
+    transformer = class_to_test(columns=["a", "b"])
+    assert transformer.parameters["columns"] == ["a", "b"]
 
     with pytest.raises(ValueError, match="Parameter columns must be a list."):
-        _ = DropColumns(columns="Column1")
-    with pytest.raises(ValueError, match="Parameter columns must be a list."):
-        _ = SelectColumns(columns="Column2")
+        _ = class_to_test(columns="Column1")
 
 
-def test_column_transformer_empty_X():
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
+def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
-    drop_transformer = DropColumns(columns=[])
-    select_transformer = SelectColumns(columns=[])
-    assert drop_transformer.transform(X).equals(X)
-    assert select_transformer.transform(X).equals(X)
+    transformer = class_to_test(columns=[])
+    assert transformer.transform(X).equals(X)
 
-    drop_transformer = DropColumns(columns=[])
-    select_transformer = SelectColumns(columns=[])
-    assert drop_transformer.fit_transform(X).equals(X)
-    assert select_transformer.fit_transform(X).equals(X)
+    transformer = class_to_test(columns=[])
+    assert transformer.fit_transform(X).equals(X)
 
-    drop_transformer = DropColumns(columns=["not in data"])
-    select_transformer = SelectColumns(columns=["not in data"])
+    transformer = class_to_test(columns=["not in data"])
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        drop_transformer.fit(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        select_transformer.fit(X)
+        transformer.fit(X)
 
-    drop_transformer = DropColumns(columns=list(X.columns))
-    select_transformer = SelectColumns(columns=list(X.columns))
-    assert drop_transformer.transform(X).empty
-    assert select_transformer.transform(X).empty
+    transformer = class_to_test(columns=list(X.columns))
+    assert transformer.transform(X).empty
 
 
-def test_column_transformer_transform():
+@pytest.mark.parametrize("class_to_test,checking_functions",
+                         [(DropColumns, [lambda df, X: df.equals(X),
+                                         lambda df, X: df.equals(X),
+                                         lambda df, X: df.equals(X.drop(columns=["one"])),
+                                         lambda df, X: df.empty]),
+                          (SelectColumns, [lambda df, X: df.empty,
+                                           lambda df, X: df.empty,
+                                           lambda df, X: df.equals(X[["one"]]),
+                                           lambda df, X: df.equals(X)])
+                          ])
+def test_column_transformer_transform(class_to_test, checking_functions):
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
-    drop_transformer = DropColumns(columns=None)
-    select_transformer = SelectColumns(columns=None)
-    assert drop_transformer.transform(X).equals(X)
-    assert select_transformer.transform(X).empty
+    check1, check2, check3, check4 = checking_functions
 
-    drop_transformer = DropColumns(columns=[])
-    select_transformer = SelectColumns(columns=[])
-    assert drop_transformer.transform(X).equals(X)
-    assert select_transformer.transform(X).empty
+    transformer = class_to_test(columns=None)
+    assert check1(transformer.transform(X), X)
 
-    drop_transformer = DropColumns(columns=["one"])
-    select_transformer = SelectColumns(columns=["one"])
-    assert drop_transformer.transform(X).equals(X.drop(["one"], axis=1))
-    assert select_transformer.transform(X).equals(X[["one"]])
+    transformer = class_to_test(columns=[])
+    assert check2(transformer.transform(X), X)
 
-    drop_transformer = DropColumns(columns=list(X.columns))
-    select_transformer = SelectColumns(columns=list(X.columns))
-    assert drop_transformer.transform(X).empty
-    assert select_transformer.transform(X).equals(X)
+    transformer = class_to_test(columns=["one"])
+    assert check3(transformer.transform(X), X)
+
+    transformer = class_to_test(columns=list(X.columns))
+    assert check4(transformer.transform(X), X)
 
 
-def test_column_transformer_fit_transform():
+@pytest.mark.parametrize("class_to_test,checking_functions",
+                         [(DropColumns, [lambda df, X: df.equals(X),
+                                         lambda df, X: df.equals(X.drop(columns=["one"])),
+                                         lambda df, X: df.empty]),
+                          (SelectColumns, [lambda df, X: df.empty,
+                                           lambda df, X: df.equals(X[["one"]]),
+                                           lambda df, X: df.equals(X)])
+                          ])
+def test_column_transformer_fit_transform(class_to_test, checking_functions):
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
-    assert DropColumns(columns=[]).fit_transform(X).equals(X)
-    assert SelectColumns(columns=[]).fit_transform(X).empty
+    check1, check2, check3 = checking_functions
 
-    assert DropColumns(columns=["one"]).fit_transform(X).equals(X.drop(["one"], axis=1))
-    assert DropColumns(columns=["one"]).fit_transform(X).equals(DropColumns(columns=["one"]).fit(X).transform(X))
-    assert SelectColumns(columns=["one"]).fit_transform(X).equals(X[["one"]])
+    assert check1(class_to_test(columns=[]).fit_transform(X), X)
 
-    assert DropColumns(columns=list(X.columns)).fit_transform(X).empty
-    assert SelectColumns(columns=list(X.columns)).fit_transform(X).equals(X)
+    assert check2(class_to_test(columns=["one"]).fit_transform(X), X)
+
+    assert check3(class_to_test(columns=list(X.columns)).fit_transform(X), X)
 
 
-def test_drop_column_transformer_input_invalid_col_name():
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
+def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
-    drop_transformer = DropColumns(columns=["not in data"])
-    select_transformer = SelectColumns(columns=["not in data"])
+    transformer = class_to_test(columns=["not in data"])
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        drop_transformer.fit(X)
+        transformer.fit(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        select_transformer.fit(X)
+        transformer.transform(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        drop_transformer.transform(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        select_transformer.transform(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        drop_transformer.fit_transform(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        select_transformer.fit_transform(X)
+        transformer.transform(X)
 
     X = np.arange(12).reshape(3, 4)
-    drop_transformer = DropColumns(columns=[5])
-    select_transformer = SelectColumns(columns=[5])
+    transformer = class_to_test(columns=[5])
     with pytest.raises(ValueError, match="'5' not found in input data"):
-        drop_transformer.fit(X)
+        transformer.fit(X)
     with pytest.raises(ValueError, match="'5' not found in input data"):
-        select_transformer.fit(X)
+        transformer.transform(X)
     with pytest.raises(ValueError, match="'5' not found in input data"):
-        drop_transformer.transform(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
-        select_transformer.transform(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
-        drop_transformer.fit_transform(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
-        select_transformer.fit_transform(X)
+        transformer.fit_transform(X)
 
 
-def test_column_transformer_numpy():
+@pytest.mark.parametrize("class_to_test,answers",
+                         [(DropColumns, [np.array([[0, 2, 3], [4, 6, 7], [8, 10, 11]]),
+                                         np.array([[], [], []]),
+                                         np.arange(12).reshape(3, 4)]),
+                          (SelectColumns, [np.array([[1], [5], [9]]),
+                                           np.arange(12).reshape(3, 4),
+                                           np.array([[], [], []])])
+                          ])
+def test_column_transformer_numpy(class_to_test, answers):
     X = np.arange(12).reshape(3, 4)
+    answer1, answer2, answer3 = answers
 
-    drop_transformer = DropColumns(columns=[1])
-    select_transformer = SelectColumns(columns=[1])
-    np.testing.assert_allclose(drop_transformer.transform(X).values, np.array([[0, 2, 3], [4, 6, 7], [8, 10, 11]]))
-    np.testing.assert_allclose(select_transformer.transform(X).values, np.array([[1], [5], [9]]))
+    transformer = class_to_test(columns=[1])
+    np.testing.assert_allclose(transformer.transform(X).values, answer1)
 
-    drop_transformer = DropColumns(columns=[0, 1, 2, 3])
-    select_transformer = SelectColumns(columns=[0, 1, 2, 3])
-    np.testing.assert_allclose(drop_transformer.transform(X).values, np.array([[], [], []]))
-    np.testing.assert_allclose(select_transformer.transform(X).values, X)
+    transformer = class_to_test(columns=[0, 1, 2, 3])
+    np.testing.assert_allclose(transformer.transform(X).values, answer2)
 
-    select_transformer = SelectColumns(columns=[])
-    np.testing.assert_allclose(select_transformer.transform(X).values, np.array([[], [], []]))
+    transformer = class_to_test(columns=[])
+    np.testing.assert_allclose(transformer.transform(X).values, answer3)
 
 
-def test_column_transformer_int_col_names():
+@pytest.mark.parametrize("class_to_test,answers",
+                         [(DropColumns, [np.array([[0, 2, 3], [4, 6, 7], [8, 10, 11]]),
+                                         np.array([[], [], []])]),
+                          (SelectColumns, [np.array([[1], [5], [9]]),
+                                           np.arange(12).reshape(3, 4)])
+                          ])
+def test_column_transformer_int_col_names(class_to_test, answers):
     X = np.arange(12).reshape(3, 4)
+    answer1, answer2 = answers
 
-    drop_transformer = DropColumns(columns=[1])
-    select_transformer = SelectColumns(columns=[1])
-    np.testing.assert_allclose(drop_transformer.transform(X).values,
-                               pd.DataFrame(np.array([[0, 2, 3], [4, 6, 7], [8, 10, 11]])))
-    np.testing.assert_allclose(select_transformer.transform(X).values, pd.DataFrame(np.array([[1], [5], [9]])))
+    transformer = class_to_test(columns=[1])
+    np.testing.assert_allclose(transformer.transform(X).values, answer1)
 
-    drop_transformer = DropColumns(columns=[0, 1, 2, 3])
-    select_transformer = SelectColumns(columns=[0, 1, 2, 3])
-    np.testing.assert_allclose(drop_transformer.transform(X).values, pd.DataFrame(np.array([[], [], []])))
-    np.testing.assert_allclose(select_transformer.transform(X).values, X)
+    transformer = class_to_test(columns=[0, 1, 2, 3])
+    np.testing.assert_allclose(transformer.transform(X).values, answer2)
