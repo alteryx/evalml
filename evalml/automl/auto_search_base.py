@@ -348,13 +348,11 @@ class AutoSearchBase:
         for obj in self.additional_objectives:
             if obj.problem_type != self.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
-            return
 
     def _check_pipelines_valid(self):
         for pipeline in self.allowed_pipelines:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
-        return
 
     def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
