@@ -94,12 +94,15 @@ def test_drop_column_transformer_input_invalid_col_name():
     select_transformer = SelectColumns(columns=["not in data"])
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
         drop_transformer.fit(X)
+    with pytest.raises(ValueError, match="'not in data' not found in input data"):
         select_transformer.fit(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
         drop_transformer.transform(X)
+    with pytest.raises(ValueError, match="'not in data' not found in input data"):
         select_transformer.transform(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
         drop_transformer.fit_transform(X)
+    with pytest.raises(ValueError, match="'not in data' not found in input data"):
         select_transformer.fit_transform(X)
 
     X = np.arange(12).reshape(3, 4)
@@ -107,12 +110,15 @@ def test_drop_column_transformer_input_invalid_col_name():
     select_transformer = SelectColumns(columns=[5])
     with pytest.raises(ValueError, match="'5' not found in input data"):
         drop_transformer.fit(X)
+    with pytest.raises(ValueError, match="'5' not found in input data"):
         select_transformer.fit(X)
     with pytest.raises(ValueError, match="'5' not found in input data"):
         drop_transformer.transform(X)
+    with pytest.raises(ValueError, match="'5' not found in input data"):
         select_transformer.transform(X)
     with pytest.raises(ValueError, match="'5' not found in input data"):
         drop_transformer.fit_transform(X)
+    with pytest.raises(ValueError, match="'5' not found in input data"):
         select_transformer.fit_transform(X)
 
 
