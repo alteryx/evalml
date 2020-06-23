@@ -21,9 +21,9 @@ from evalml.objectives import (
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     ModeBaselineBinaryPipeline,
-    PipelineBase,
-    get_pipelines
+    PipelineBase
 )
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -428,27 +428,55 @@ def test_max_time(X_y):
     assert len(clf.results['pipeline_results']) == 1
 
 
-def test_automl_allowed_pipelines_init(dummy_binary_pipeline_class):
-    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
-    assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.PipelineBase.fit')
+def test_automl_allowed_pipelines_init(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
 
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=None)]
+    assert automl.allowed_pipelines is None
+    automl.search(X, y)
+    for actual, expected in zip(automl.allowed_pipelines, expected_pipelines):
+        assert actual.parameters == expected.parameters
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
     automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
 
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
     automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
-    assert automl.allowed_pipelines == expected_pipelines
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+    automl.search(X, y)
+    for actual, expected in zip(automl.allowed_pipelines, expected_pipelines):
+        assert actual.parameters == expected.parameters
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
 
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
     automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
-    assert automl.allowed_pipelines == expected_pipelines
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+    automl.search(X, y)
+    for actual, expected in zip(automl.allowed_pipelines, expected_pipelines):
+        assert actual.parameters == expected.parameters
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
 
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
     automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines

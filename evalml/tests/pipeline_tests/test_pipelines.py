@@ -757,11 +757,11 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline, X_y):
+def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y):
     X, y = X_y
     mock_predict.return_value = np.array([1] * 100)
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
-        dummy_regression_pipeline.score(X, y, ['precision', 'auc'])
+        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
     mock_predict.assert_called()
 
 

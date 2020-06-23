@@ -18,8 +18,7 @@ from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
-    get_pipelines
+    ModeBaselineMulticlassPipeline
 )
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -113,7 +112,7 @@ class AutoSearchBase:
         self._data_check_results = None
 
         self.allowed_pipelines = allowed_pipelines
-        self.allowed_model_families = [handle_model_family(f) for f in (allowed_model_families or [])]
+        self.allowed_model_families = [handle_model_family(f) for f in (allowed_model_families or [])] or list(set([p.model_family for p in (self.allowed_pipelines or [])]))
         self._automl_algorithm = None
 
     @property
@@ -222,7 +221,9 @@ class AutoSearchBase:
             self.allowed_pipelines = []
             for estimator in self._allowed_estimators:
                 self.allowed_pipelines.append(make_pipeline(X, y, estimator, self.problem_type))
-        else:    
+            self.allowed_model_families = list(set([p.model_family for p in self.allowed_pipelines]))
+
+        else:
             self.allowed_model_families = list(set([p.model_family for p in self.allowed_pipelines]))
 
         self._automl_algorithm = IterativeAlgorithm(

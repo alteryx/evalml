@@ -153,8 +153,11 @@ def test_rankings(X_y, X_y_reg):
     assert len(automl.rankings) == 2
 
 
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_str_search(mock_fit, X_y):
+def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     def _dummy_callback(param1, param2):
         return None
 
@@ -179,7 +182,7 @@ def test_automl_str_search(mock_fit, X_y):
         'Objective': search_params['objective'],
         'Max Time': search_params['max_time'],
         'Max Pipelines': search_params['max_pipelines'],
-        'Allowed Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
+        'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
@@ -194,7 +197,6 @@ def test_automl_str_search(mock_fit, X_y):
 
     automl = AutoClassificationSearch(**search_params)
     str_rep = str(automl)
-
     for param, value in param_str_reps.items():
         if isinstance(value, list):
             assert f"{param}" in str_rep
@@ -204,10 +206,16 @@ def test_automl_str_search(mock_fit, X_y):
             assert f"{param}: {str(value)}" in str_rep
     assert "Search Results" not in str_rep
 
-    automl.search(X, y, raise_errors=False)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    mock_predict_proba.assert_called()
+    mock_predict_proba.optimize_threshold()
+
     str_rep = str(automl)
     assert "Search Results:" in str_rep
-    assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
+    assert automl.rankings.drop(['parameters'], axis='columns').to_string() in str_rep
 
 
 def test_automl_data_check_results_is_none_before_search():
@@ -278,9 +286,7 @@ def test_automl_str_no_param_search():
         'Objective': 'Log Loss Binary',
         'Max Time': 'None',
         'Max Pipelines': 'None',
-        'Allowed Pipelines': [
-            'Logistic Regression Binary Pipeline',
-            'Random Forest Binary Classification Pipeline'],
+        'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
@@ -312,8 +318,7 @@ def test_automl_str_no_param_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.auto_search_base.get_pipelines')
-def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
+def test_automl_feature_selection(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
@@ -324,9 +329,8 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
             """Mock fit, noop"""
 
     allowed_pipelines = [MockFeatureSelectionPipeline]
-    mock_get_pipelines.return_value = allowed_pipelines
     start_iteration_callback = MagicMock()
-    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback)
+    automl = AutoClassificationSearch(max_pipelines=2, start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2

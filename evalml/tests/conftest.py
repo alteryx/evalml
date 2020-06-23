@@ -135,9 +135,9 @@ def dummy_regressor_estimator_class():
 
 
 @pytest.fixture
-def dummy_regression_pipeline(dummy_regressor_estimator_class):
+def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
     MockRegressor = dummy_regressor_estimator_class
 
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
-    return MockRegressionPipeline(parameters={})
+    return MockRegressionPipeline
