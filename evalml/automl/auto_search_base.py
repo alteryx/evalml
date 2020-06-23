@@ -6,6 +6,7 @@ from sys import stdout
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import BaseCrossValidator
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -43,7 +44,7 @@ class AutoSearchBase:
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 cv=None,
+                 data_split=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
@@ -59,10 +60,12 @@ class AutoSearchBase:
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
-        self.cv = cv
+        self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.objective = get_objective(objective)
+        if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
+            raise ValueError("Object {} is not a valid data splitter".format(self.data_split.__class__))
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
@@ -140,7 +143,7 @@ class AutoSearchBase:
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
-            f"Cross Validation: {self.cv}\n"
+            f"Data Splitting: {self.data_split}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
@@ -415,7 +418,7 @@ class AutoSearchBase:
         start = time.time()
         cv_data = []
 
-        for train, test in self.cv.split(X, y):
+        for train, test in self.data_split.split(X, y):
             cv_data.append(self._do_evaluation(pipeline, X, y, train, test, raise_errors, pbar))
 
         training_time = time.time() - start

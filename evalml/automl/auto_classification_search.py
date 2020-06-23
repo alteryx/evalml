@@ -16,7 +16,7 @@ class AutoClassificationSearch(AutoSearchBase):
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 cv=None,
+                 data_split=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
@@ -60,7 +60,7 @@ class AutoClassificationSearch(AutoSearchBase):
                 to `multiclass` if your problem type is different. Note that if allowed_pipelines was provided, this parameter
                 will be ignored.
 
-            cv: cross-validation method to use. Defaults to StratifiedKFold.
+            data_split: cross-validation method to use. Defaults to StratifiedKFold.
 
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 
@@ -81,8 +81,8 @@ class AutoClassificationSearch(AutoSearchBase):
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
 
-        if cv is None:
-            cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
+        if data_split is None:
+            data_split = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
         if objective is None and not multiclass:
@@ -102,7 +102,7 @@ class AutoClassificationSearch(AutoSearchBase):
             max_time=max_time,
             patience=patience,
             tolerance=tolerance,
-            cv=cv,
+            data_split=data_split,
             allowed_pipelines=allowed_pipelines,
             allowed_model_families=allowed_model_families,
             start_iteration_callback=start_iteration_callback,
