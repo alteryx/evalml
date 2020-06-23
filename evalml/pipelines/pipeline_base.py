@@ -203,7 +203,7 @@ class PipelineBase(ABC):
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
@@ -220,7 +220,7 @@ class PipelineBase(ABC):
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
-        Args:
+        Arguments:
             X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
             y (pd.Series) : true labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
