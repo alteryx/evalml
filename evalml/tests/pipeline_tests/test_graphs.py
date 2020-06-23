@@ -112,7 +112,7 @@ def test_graph_permutation_importances(X_y, test_pipeline):
     X, y = X_y
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_permutation_importances(test_pipeline, X, y, "log_loss_binary")
+    fig = graph_permutation_importances(test_pipeline, X, y, "log_loss_binary", show_all_features=True)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
