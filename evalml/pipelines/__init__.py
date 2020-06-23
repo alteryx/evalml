@@ -65,7 +65,9 @@ from .utils import (
     list_model_families,
     all_estimators,
     get_estimators,
-    make_pipeline
+    make_pipeline,
+    calculate_permutation_importances,
+    graph_permutation_importances
 )
 from .graph_utils import (
     precision_recall_curve,
