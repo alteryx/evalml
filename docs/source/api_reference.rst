@@ -137,7 +137,7 @@ Pipeline Utils
     get_estimators
     make_pipeline
     list_model_families
-    get_permutation_importances
+    calculate_permutation_importances
 
 
 Pipeline Graph Utils

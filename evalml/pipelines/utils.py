@@ -273,7 +273,7 @@ def make_pipeline(X, y, estimator, problem_type):
     return GeneratedPipeline
 
 
-def get_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
+def calculate_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
     Arguments:
@@ -320,12 +320,12 @@ def graph_permutation_importances(pipeline, X, y, objective, show_all_features=F
         plotly.Figure, a bar graph showing features and their respective permutation importance.
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    perm_importance = get_permutation_importances(pipeline, X, y, objective)
-    perm_importance['importance'] = abs(perm_importance['importance'])
+    perm_importance = calculate_permutation_importances(pipeline, X, y, objective)
+    perm_importance['importance'] = perm_importance['importance']
 
     if not show_all_features:
         # Remove features with zero importance
-        perm_importance = perm_importance[perm_importance['importance'] != 0]
+        perm_importance = perm_importance[abs(perm_importance['importance']) > 1e-5]
 
     # List is reversed to go from ascending order to descending order
     perm_importance = perm_importance.iloc[::-1]
