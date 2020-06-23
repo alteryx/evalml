@@ -201,16 +201,16 @@ def test_make_pipeline_no_nulls():
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert binary_pipeline.custom_hyperparameters is None
+    assert binary_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert multiclass_pipeline.custom_hyperparameters is None
+    assert multiclass_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
-    assert regression_pipeline.custom_hyperparameters is None
+    assert regression_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
 
 def test_make_pipeline_no_datetimes():
@@ -221,17 +221,17 @@ def test_make_pipeline_no_datetimes():
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert binary_pipeline.custom_hyperparameters is None
+    assert binary_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert multiclass_pipeline.custom_hyperparameters is None
+    assert multiclass_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
-    assert regression_pipeline.custom_hyperparameters is None
+    assert regression_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
 
 def test_make_pipeline_no_column_names():
@@ -240,17 +240,17 @@ def test_make_pipeline_no_column_names():
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert binary_pipeline.custom_hyperparameters is None
+    assert binary_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert multiclass_pipeline.custom_hyperparameters is None
+    assert multiclass_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
-    assert regression_pipeline.custom_hyperparameters is None
+    assert regression_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
 
 
 def test_make_pipeline_numpy_input():

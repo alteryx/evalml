@@ -258,8 +258,10 @@ def make_pipeline(X, y, estimator, problem_type):
     complete_component_graph = preprocessing_components + [estimator]
 
     hyperparameters = None
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
     categorical_cols = X.select_dtypes(include=['category', 'object'])
-    if estimator in {CatBoostClassifier, CatBoostRegressor} or (len(categorical_cols) > 0 and estimator not in {CatBoostClassifier, CatBoostRegressor}):
+    if estimator in {CatBoostClassifier, CatBoostRegressor} or (len(categorical_cols.columns) > 0 and estimator not in {CatBoostClassifier, CatBoostRegressor}):
         hyperparameters = {
             'Simple Imputer': {
                 "impute_strategy": ["most_frequent"]
