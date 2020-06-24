@@ -446,6 +446,13 @@ def test_automl_allowed_pipelines_init(mock_fit, mock_score, dummy_binary_pipeli
 
     mock_fit.reset_mock()
     mock_score.reset_mock()
+    automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=None, allowed_model_families=[])
+    assert automl.allowed_pipelines is None
+    with pytest.raises(ValueError, match="No allowed pipelines to search"):
+        automl.search(X, y)
+
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
     automl = AutoClassificationSearch(max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
