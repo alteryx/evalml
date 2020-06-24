@@ -541,6 +541,12 @@ class AutoSearchBase:
         Returns:
             evaluation_results (dict): dictionary containing training time, cv scores, and other metrics.
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
         evaluation_results = self._evaluate(pipeline, X, y, raise_errors=True)
         return evaluation_results
 
