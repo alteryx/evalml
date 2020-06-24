@@ -28,6 +28,8 @@ Changelog
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Rename `automl` `cv` argument to `data_split` :pr:`877`
+        * Update `automl` default data splitter to train/validation split for large datasets :pr:`877`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
