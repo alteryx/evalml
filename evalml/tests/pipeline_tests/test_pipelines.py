@@ -925,3 +925,12 @@ def test_get_permutation_importance_correlated_features():
     correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "correlated"][0]]
     not_correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
+
+
+pipelines = all_pipelines()
+
+
+@pytest.mark.parametrize("cls", pipelines)
+def test_pipeline_default_parameters(cls):
+
+    assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."

@@ -39,10 +39,13 @@ class ComponentBase(ABC):
         return copy.copy(self._parameters)
 
     @classproperty
-    def default_parameters(cls,):
+    def default_parameters(cls):
         """Returns the default parameters for this component.
 
         Our convention is that Component.default_parameters == Component().parameters.
+
+        Returns:
+            dict: default parameters for this component.
         """
         signature = inspect.signature(cls.__init__)
 
