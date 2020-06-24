@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
-    """Random Forest Classifier"""
+    """Random Forest Classifier."""
     name = "Random Forest Classifier"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
@@ -16,10 +16,12 @@ class RandomForestClassifier(Estimator):
     model_family = ModelFamily.RANDOM_FOREST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0):
+    def __init__(self, n_estimators=100, max_depth=6, n_jobs=-1, random_state=0, **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "max_depth": max_depth,
                       "n_jobs": n_jobs}
+        parameters.update(kwargs)
+
         rf_classifier = SKRandomForestClassifier(random_state=random_state,
                                                  **parameters)
         super().__init__(parameters=parameters,

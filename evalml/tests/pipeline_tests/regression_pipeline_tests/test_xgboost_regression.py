@@ -21,8 +21,11 @@ def test_xg_init(X_y_reg):
             'fill_value': None
         },
         'One Hot Encoder': {
-            'top_n': 10
-        },
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'XGBoost Regressor': {
             'eta': 0.2,
             'max_depth': 5,
@@ -83,7 +86,7 @@ def test_xgboost_regression(X_y_reg):
     # testing objective parameter passed in does not change results
     clf.fit(X, y)
     y_pred_with_objective = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_xgr_input_feature_names(X_y_categorical_regression):

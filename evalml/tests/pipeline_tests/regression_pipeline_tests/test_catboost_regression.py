@@ -64,13 +64,16 @@ def test_catboost_regression(X_y_reg):
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
+    sk_pipeline_preds = sk_pipeline.predict(X)
+    assert sk_pipeline_preds.shape == (len(y_pred),)
+    assert ((y_pred == sk_pipeline_preds).all())
+    np.testing.assert_almost_equal(y_pred.to_numpy(), sk_pipeline_preds, decimal=5)
     np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
 
     # testing objective parameter passed in does not change results
     clf.fit(X, y)
     y_pred_with_objective = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_cbr_input_feature_names(X_y_categorical_regression):

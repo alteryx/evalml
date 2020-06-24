@@ -5,11 +5,11 @@ from evalml.pipelines.components.transformers import Transformer
 
 
 class SimpleImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy"""
+    """Imputes missing data according to a specified imputation strategy."""
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -20,8 +20,10 @@ class SimpleImputer(Transformer):
         """
         parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
+        parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy,
-                            fill_value=fill_value)
+                            fill_value=fill_value,
+                            **kwargs)
         self._all_null_cols = None
         super().__init__(parameters=parameters,
                          component_obj=imputer,
@@ -60,8 +62,8 @@ class SimpleImputer(Transformer):
             X_null_dropped = X.drop(self._all_null_cols, axis=1)
             if X_null_dropped.empty:
                 return pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
-        return X_t
+            return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
+        return pd.DataFrame(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

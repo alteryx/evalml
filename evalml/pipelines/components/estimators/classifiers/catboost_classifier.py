@@ -30,12 +30,13 @@ class CatBoostClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0):
+    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,
                       'bootstrap_type': bootstrap_type}
+        parameters.update(kwargs)
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
@@ -53,6 +54,10 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
         cat_cols = X.select_dtypes(['category', 'object'])
 
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -64,9 +69,12 @@ class CatBoostClassifier(Estimator):
 
     def predict(self, X):
         predictions = self._component_obj.predict(X)
+        if predictions.ndim == 2 and predictions.shape[1] == 1:
+            predictions = predictions.flatten()
         if self._label_encoder:
-            return self._label_encoder.inverse_transform(predictions.astype(np.int64))
-
+            predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
+        if not isinstance(predictions, pd.Series):
+            predictions = pd.Series(predictions)
         return predictions
 
     @property

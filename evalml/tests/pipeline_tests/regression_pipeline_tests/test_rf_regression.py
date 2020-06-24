@@ -29,7 +29,12 @@ def test_rf_init(X_y_reg):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'Random Forest Regressor': {
             'max_depth': 5,
             'n_estimators': 20,
@@ -75,12 +80,12 @@ def test_rf_regression(X_y_categorical_regression):
     clf.fit(X, y)
     clf_scores = clf.score(X, y, [objective])
     y_pred = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred, sk_pipeline.predict(X), decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), sk_pipeline.predict(X), decimal=5)
     np.testing.assert_almost_equal(sk_score, clf_scores[objective.name], decimal=5)
 
     # testing objective parameter passed in does not change results
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_rfr_input_feature_names(X_y_reg):

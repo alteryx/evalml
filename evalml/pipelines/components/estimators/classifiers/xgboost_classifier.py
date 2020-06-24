@@ -8,7 +8,7 @@ from evalml.utils import get_random_seed, import_or_raise
 
 
 class XGBoostClassifier(Estimator):
-    """XGBoost Classifier"""
+    """XGBoost Classifier."""
     name = "XGBoost Classifier"
     hyperparameter_ranges = {
         "eta": Real(0.000001, 1),
@@ -24,19 +24,19 @@ class XGBoostClassifier(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0):
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"eta": eta,
                       "max_depth": max_depth,
                       "min_child_weight": min_child_weight,
                       "n_estimators": n_estimators}
+        parameters.update(kwargs)
+
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_classifier = xgb.XGBClassifier(random_state=random_seed,
-                                           eta=eta,
-                                           max_depth=max_depth,
-                                           n_estimators=n_estimators,
-                                           min_child_weight=min_child_weight)
+        xgb_classifier = xgb.XGBClassifier(**parameters,
+                                           random_state=random_seed)
+
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
                          random_state=random_state)

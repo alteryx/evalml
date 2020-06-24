@@ -6,7 +6,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class AutoClassificationSearch(AutoSearchBase):
-    """Automatic pipeline search class for classification problems"""
+    """Automatic pipeline search class for classification problems."""
 
     def __init__(self,
                  objective=None,

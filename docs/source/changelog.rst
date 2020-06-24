@@ -10,20 +10,29 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
+        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
+        * Added utility methods to calculate and graph permutation importances :pr:`860`
+        * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
+        * Added kwargs to all components :pr:`863`
+        * Added SelectColumns transformer :pr:`873`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
+        * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
+        * Standardize all components to output pandas datastructures, and accept either pandas or numpy :pr:`853`
     * Changes
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
     * Documentation Changes
+        * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
-      * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
+        * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
+        * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
 
 .. warning::
 

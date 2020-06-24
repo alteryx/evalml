@@ -1,6 +1,9 @@
-from sklearn.impute import SimpleImputer as SkImputer
+import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.transformers.imputers.simple_imputer import (
+    SimpleImputer
+)
 
 
 class PerColumnImputer(Transformer):
@@ -8,7 +11,7 @@ class PerColumnImputer(Transformer):
     name = 'Per Column Imputer'
     hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", random_state=0):
+    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", random_state=0, **kwargs):
         """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
@@ -45,12 +48,14 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
             strategy = strategy_dict.get('impute_strategy', self.default_impute_strategy)
             fill_value = strategy_dict.get('fill_value', None)
-            self.imputers[column] = SkImputer(strategy=strategy, fill_value=fill_value)
+            self.imputers[column] = SimpleImputer(impute_strategy=strategy, fill_value=fill_value)
 
         for column, imputer in self.imputers.items():
             imputer.fit(X[[column]])
@@ -66,9 +71,17 @@ class PerColumnImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         X_t = X.copy()
+        cols_to_drop = []
         for column, imputer in self.imputers.items():
-            X_t[column] = imputer.transform(X[[column]]).astype(X.dtypes[column])
+            transformed = imputer.transform(X[[column]])
+            if transformed.empty:
+                cols_to_drop.append(column)
+            else:
+                X_t[column] = transformed
+        X_t = X_t.drop(cols_to_drop, axis=1)
         return X_t
 
     def fit_transform(self, X, y=None):

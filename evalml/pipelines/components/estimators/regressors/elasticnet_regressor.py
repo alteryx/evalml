@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetRegressor(Estimator):
-    """Elastic Net Regressor"""
+    """Elastic Net Regressor."""
     name = "Elastic Net Regressor"
     hyperparameter_ranges = {
         "alpha": Real(0, 1),
@@ -16,11 +16,13 @@ class ElasticNetRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.REGRESSION]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, max_iter=1000, normalize=False, random_state=0):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, max_iter=1000, normalize=False, random_state=0, **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio,
                       'max_iter': max_iter,
                       'normalize': normalize}
+        parameters.update(kwargs)
+
         en_regressor = SKElasticNet(random_state=random_state,
                                     **parameters)
         super().__init__(parameters=parameters,

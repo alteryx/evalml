@@ -22,7 +22,12 @@ def test_lor_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 0.5,
@@ -32,11 +37,11 @@ def test_lor_init(X_y):
     clf = LogisticRegressionBinaryPipeline(parameters=parameters, random_state=1)
     assert clf.parameters == parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0])
-    assert clf.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert clf.summary == 'Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder + Standard Scaler'
 
 
 def test_summary():
-    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ One Hot Encoder + Simple Imputer + Standard Scaler'
+    assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder + Standard Scaler'
 
 
 def test_lor_objective_tuning(X_y):
@@ -62,13 +67,13 @@ def test_lor_objective_tuning(X_y):
     # testing objective parameter passed in does not change results
     objective = Precision()
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
     # testing objective parameter passed and set threshold does change results
     with pytest.raises(AssertionError):
         clf.threshold = 0.01
         y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+        np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_lor_multi(X_y_multi):

@@ -22,7 +22,9 @@ def test_rf_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+        },
         'Random Forest Classifier': {
             "n_estimators": 20,
             "max_depth": 5,
@@ -34,7 +36,12 @@ def test_rf_init(X_y):
             'impute_strategy': 'mean',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'},
         'Random Forest Classifier': {
             'max_depth': 5,
             'n_estimators': 20,
@@ -44,11 +51,11 @@ def test_rf_init(X_y):
 
     assert clf.parameters == expected_parameters
     assert (clf.random_state.get_state()[0] == np.random.RandomState(2).get_state()[0])
-    assert clf.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer'
+    assert clf.summary == 'Random Forest Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_summary():
-    assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ One Hot Encoder + Simple Imputer'
+    assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ Simple Imputer + One Hot Encoder'
 
 
 def test_rf_objective_tuning(X_y):
@@ -80,13 +87,13 @@ def test_rf_objective_tuning(X_y):
     # testing objective parameter passed in does not change results
     objective = Precision()
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
     # testing objective parameter passed and set threshold does change results
     with pytest.raises(AssertionError):
         clf.threshold = 0.01
         y_pred_with_objective = clf.predict(X, objective)
-        np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+        np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_rf_multi(X_y_multi):
@@ -139,7 +146,7 @@ def test_rf_multi(X_y_multi):
     clf = RFMulticlassClassificationPipeline(parameters=parameters)
     clf.fit(X, y)
     y_pred_with_objective = clf.predict(X, objective)
-    np.testing.assert_almost_equal(y_pred, y_pred_with_objective, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
 def test_rf_input_feature_names(X_y):

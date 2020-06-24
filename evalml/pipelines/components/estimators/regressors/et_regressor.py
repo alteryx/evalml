@@ -7,7 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ExtraTreesRegressor(Estimator):
-    """Extra Trees Regressor"""
+    """Extra Trees Regressor."""
     name = "Extra Trees Regressor"
     hyperparameter_ranges = {
         "n_estimators": Integer(10, 1000),
@@ -24,13 +24,16 @@ class ExtraTreesRegressor(Estimator):
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
                  n_jobs=-1,
-                 random_state=0):
+                 random_state=0,
+                 **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "max_features": max_features,
                       "max_depth": max_depth,
                       "min_samples_split": min_samples_split,
                       "min_weight_fraction_leaf": min_weight_fraction_leaf,
                       "n_jobs": n_jobs}
+        parameters.update(kwargs)
+
         et_regressor = SKExtraTreesRegressor(random_state=random_state,
                                              **parameters)
         super().__init__(parameters=parameters,

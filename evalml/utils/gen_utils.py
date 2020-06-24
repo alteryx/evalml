@@ -26,6 +26,7 @@ def import_or_raise(library, error_msg=None):
 
 
 def convert_to_seconds(input_str):
+    """Converts a string describing a length of time to its length in seconds."""
     hours = {'h', 'hr', 'hour', 'hours'}
     minutes = {'m', 'min', 'minute', 'minutes'}
     seconds = {'s', 'sec', 'second', 'seconds'}

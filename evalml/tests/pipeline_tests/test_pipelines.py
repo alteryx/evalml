@@ -9,27 +9,39 @@ from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import FraudCost, Precision, get_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     LinearRegressionPipeline,
     LogisticRegressionBinaryPipeline,
+    LogisticRegressionMulticlassPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
 )
 from evalml.pipelines.components import (
+    CatBoostClassifier,
+    CatBoostRegressor,
+    DateTimeFeaturization,
+    DropNullColumns,
+    LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
+    RandomForestClassifier,
+    RandomForestRegressor,
     RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
     Transformer
 )
 from evalml.pipelines.utils import (
+    all_estimators,
     all_pipelines,
+    calculate_permutation_importances,
+    get_estimators,
     get_pipelines,
-    list_model_families
+    list_model_families,
+    make_pipeline
 )
 from evalml.problem_types import ProblemTypes
 
@@ -53,6 +65,13 @@ def test_all_pipelines(has_minimal_dependencies):
         assert len(all_pipelines()) == 12
 
 
+def test_all_estimators(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        assert len(all_estimators()) == 4
+    else:
+        assert len(all_estimators()) == 8
+
+
 def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
         if library in libs_to_exclude:
@@ -64,6 +83,11 @@ def make_mock_import_module(libs_to_exclude):
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_pipelines_core_dependencies_mock():
     assert len(all_pipelines()) == 6
+
+
+@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
+def test_all_estimators_core_dependencies_mock():
+    assert len(all_estimators()) == 4
 
 
 def test_get_pipelines(has_minimal_dependencies):
@@ -86,6 +110,30 @@ def test_get_pipelines(has_minimal_dependencies):
         get_pipelines(problem_type="Not A Valid Problem Type")
 
 
+def test_get_estimators(has_minimal_dependencies):
+    if has_minimal_dependencies:
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 2
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 2
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 2
+    else:
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 4
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
+
+    assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
+    assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
+    assert len(get_estimators(problem_type=ProblemTypes.REGRESSION, model_families=[])) == 0
+
+    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
+        get_estimators(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
+    with pytest.raises(TypeError, match="model_families parameter is not a list."):
+        get_estimators(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
+    with pytest.raises(KeyError):
+        get_estimators(problem_type="Not A Valid Problem Type")
+
+
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_get_pipelines_core_dependencies_mock():
     assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
@@ -96,6 +144,124 @@ def test_get_pipelines_core_dependencies_mock():
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
     with pytest.raises(KeyError):
         get_pipelines(problem_type="Not A Valid Problem Type")
+
+
+def test_make_pipeline():
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    y = pd.Series([0, 0, 1, 2, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
+
+    regression_pipeline = make_pipeline(X, y, LinearRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LinearRegressor]
+
+
+def test_make_pipelines_catboost(has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                          "categorical": ["a", "b", "a", "c", "c"],
+                          "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+        y = pd.Series([0, 0, 1, 2, 0])
+        catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
+        assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
+        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostClassifier]
+
+        catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
+        assert isinstance(catboost_pipeline, type(RegressionPipeline))
+        assert catboost_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, CatBoostRegressor]
+
+
+def test_make_pipeline_no_nulls():
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    y = pd.Series([0, 0, 1, 2, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestRegressor]
+
+
+def test_make_pipeline_no_datetimes():
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan]})
+    y = pd.Series([0, 0, 1, 2, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
+
+
+def test_make_pipeline_no_column_names():
+    X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
+    y = pd.Series([0, 0, 1])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, OneHotEncoder, RandomForestRegressor]
+
+
+def test_make_pipeline_numpy_input():
+    X = np.array([[1, 2, 0, np.nan], [2, 2, 1, np.nan], [5, 1, np.nan, np.nan]])
+    y = np.array([0, 0, 1, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [DropNullColumns, SimpleImputer, RandomForestRegressor]
+
+
+def test_make_pipeline_problem_type_mismatch():
+    with pytest.raises(ValueError, match=f"{LogisticRegressionClassifier.name} is not a valid estimator for problem type"):
+        make_pipeline(pd.DataFrame(), pd.Series(), LogisticRegressionClassifier, ProblemTypes.REGRESSION)
+    with pytest.raises(ValueError, match=f"{LinearRegressor.name} is not a valid estimator for problem type"):
+        make_pipeline(pd.DataFrame(), pd.Series(), LinearRegressor, ProblemTypes.MULTICLASS)
+    with pytest.raises(ValueError, match=f"{Transformer.name} is not a valid estimator for problem type"):
+        make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
 @pytest.fixture
@@ -183,7 +349,7 @@ def test_indexing(X_y, lr_pipeline):
     clf = lr_pipeline
     clf.fit(X, y)
 
-    assert isinstance(clf[0], OneHotEncoder)
+    assert isinstance(clf[1], OneHotEncoder)
     assert isinstance(clf['Simple Imputer'], SimpleImputer)
 
     setting_err_msg = 'Setting pipeline components is not supported.'
@@ -219,7 +385,13 @@ def test_parameters(X_y, lr_pipeline):
             'impute_strategy': 'median',
             'fill_value': None
         },
-        'One Hot Encoder': {'top_n': 10},
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
@@ -508,20 +680,6 @@ def test_no_default_parameters():
     assert TestPipeline(parameters={'Mock Component': {'a': 42}})
 
 
-def test_no_random_state_argument_in_component():
-    class MockComponent(Transformer):
-        name = "Mock Component"
-        hyperparameter_ranges = {
-            'a': [0, 1, 2]
-        }
-
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent, 'Logistic Regression Classifier']
-
-    with pytest.raises(ValueError, match="Error received when instantiating component *."):
-        TestPipeline(parameters={'Mock Component': {'a': 42}}, random_state=0)
-
-
 def test_init_components_invalid_parameters():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
@@ -709,5 +867,61 @@ def test_clone_fitted(X_y, lr_pipeline):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
+    pd.testing.assert_frame_equal(X_t, X_t_clone)
 
-    np.testing.assert_almost_equal(X_t, X_t_clone)
+
+def test_get_permutation_importance_invalid_objective(X_y_reg):
+    X, y = X_y_reg
+    pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
+    with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
+        calculate_permutation_importances(pipeline, X, y, "mcc_multi")
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_get_permutation_importance_binary(X_y, data_type):
+    X, y = X_y
+    if data_type == 'pd':
+        X = pd.DataFrame(X)
+        y = pd.Series(y)
+    pipeline = LogisticRegressionBinaryPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.BINARY):
+        permutation_importances = calculate_permutation_importances(pipeline, X, y, objective)
+        assert list(permutation_importances.columns) == ["feature", "importance"]
+        assert not permutation_importances.isnull().all().all()
+
+
+def test_get_permutation_importance_multiclass(X_y_multi):
+    X, y = X_y_multi
+    pipeline = LogisticRegressionMulticlassPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.MULTICLASS):
+        permutation_importances = calculate_permutation_importances(pipeline, X, y, objective)
+        assert list(permutation_importances.columns) == ["feature", "importance"]
+        assert not permutation_importances.isnull().all().all()
+
+
+def test_get_permutation_importance_regression(X_y_reg):
+    X, y = X_y_reg
+    pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.REGRESSION):
+        permutation_importances = calculate_permutation_importances(pipeline, X, y, objective)
+        assert list(permutation_importances.columns) == ["feature", "importance"]
+        assert not permutation_importances.isnull().all().all()
+
+
+def test_get_permutation_importance_correlated_features():
+    y = pd.Series([1, 0, 1, 1])
+    X = pd.DataFrame()
+    X["correlated"] = y * 2
+    X["not correlated"] = [-1, -1, -1, 0]
+    y = y.astype(bool)
+    pipeline = LogisticRegressionBinaryPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    importances = calculate_permutation_importances(pipeline, X, y, objective="log_loss_binary", random_state=0)
+    assert list(importances.columns) == ["feature", "importance"]
+    assert not importances.isnull().all().all()
+    correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "correlated"][0]]
+    not_correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "not correlated"][0]]
+    assert correlated_importance_val > not_correlated_importance_val

@@ -7,7 +7,7 @@ from .tuner_exceptions import NoParamsException
 
 
 class GridSearchTuner(Tuner):
-    """Grid Search Optimizer
+    """Grid Search Optimizer.
 
     Example:
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
