@@ -268,17 +268,10 @@ class AutoSearchBase:
             desc = desc.ljust(self._MAX_NAME_LEN)
             pbar.set_description_str(desc=desc, refresh=True)
 
-            evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
-            logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
             score = evaluation_results['cv_score_mean']
             score_to_minimize = -score if self.objective.greater_is_better else score
             self._automl_algorithm.add_result(score_to_minimize, pipeline)
-            logger.debug('Adding results complete')
-            self._add_result(trained_pipeline=pipeline,
-                             parameters=parameters,
-                             training_time=evaluation_results['training_time'],
-                             cv_data=evaluation_results['cv_data'],
-                             cv_scores=evaluation_results['cv_scores'])
 
             desc = "✔" + desc[1:]
             pbar.set_description_str(desc=desc, refresh=True)
@@ -450,9 +443,9 @@ class AutoSearchBase:
 
         self._save_pipeline(pipeline_id, trained_pipeline)
 
-    def _evaluate(self, pipeline, X, y, raise_errors=True):
+    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         parameters = pipeline.parameters
-        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors)
+        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
         logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 
         self._add_result(trained_pipeline=pipeline,
