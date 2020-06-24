@@ -1,5 +1,3 @@
-from sklearn.model_selection import KFold
-
 from .auto_search_base import AutoSearchBase
 
 from evalml.problem_types import ProblemTypes
@@ -78,9 +76,6 @@ class AutoRegressionSearch(AutoSearchBase):
             objective = "R2"
 
         problem_type = ProblemTypes.REGRESSION
-
-        if data_split is None:
-            data_split = KFold(n_splits=3, random_state=random_state)
 
         super().__init__(
             problem_type=problem_type,

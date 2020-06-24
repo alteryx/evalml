@@ -1,6 +1,4 @@
 # from evalml.pipelines import get_pipelines_by_model_type
-from sklearn.model_selection import StratifiedKFold
-
 from .auto_search_base import AutoSearchBase
 
 from evalml.objectives import get_objective
@@ -80,9 +78,6 @@ class AutoClassificationSearch(AutoSearchBase):
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
         """
-
-        if data_split is None:
-            data_split = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
 
         # set default objective if none provided
         if objective is None and not multiclass:

@@ -5,13 +5,13 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import BaseCrossValidator
+from sklearn.model_selection import BaseCrossValidator, KFold, StratifiedKFold, train_test_split
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.model_family import handle_model_family
@@ -197,6 +197,15 @@ class AutoSearchBase:
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        # Set the default data splitter
+        if self.data_split is None:
+            if len(X.index) > 100000:
+                self.data_split = TrainingValidationSplit(test_size=0.25)
+            if self.problem_type != ProblemTypes.REGRESSION:
+                self.data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
+            else:
+                self.data_split = KFold(n_splits=3, random_state=self.random_state)
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
