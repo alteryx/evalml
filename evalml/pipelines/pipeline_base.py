@@ -270,6 +270,16 @@ class PipelineBase(ABC):
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
+    @classproperty
+    def default_parameters(cls):
+        """Returns the default parameter dictionary for this pipeline."""
+        defaults = {}
+        for c in cls.component_graph:
+            component = handle_component_class(c)
+            if component.default_parameters:
+                defaults[component.name] = component.default_parameters
+        return defaults
+
     @property
     def feature_importances(self):
         """Return feature importances. Features dropped by feature selection are excluded"""
