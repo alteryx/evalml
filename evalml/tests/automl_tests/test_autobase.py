@@ -392,7 +392,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_add_to_leaderboard(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
@@ -403,7 +403,7 @@ def test_add_to_leaderboard(mock_fit, mock_score, dummy_binary_pipeline_class, X
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
     test_pipeline = dummy_binary_pipeline_class(parameters={})
-    automl.add_to_leaderboard(test_pipeline, X, y)
+    automl.add_to_rankings(test_pipeline, X, y)
 
     assert len(automl.rankings) == 2
     assert 0.1234 in automl.rankings['score'].values

@@ -268,7 +268,7 @@ class AutoSearchBase:
             desc = desc.ljust(self._MAX_NAME_LEN)
             pbar.set_description_str(desc=desc, refresh=True)
 
-            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+            evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
             logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
             score = evaluation_results['cv_score_mean']
             score_to_minimize = -score if self.objective.greater_is_better else score
@@ -356,7 +356,7 @@ class AutoSearchBase:
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
 
-        baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
+        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,
                          training_time=baseline_results['training_time'],
@@ -367,7 +367,7 @@ class AutoSearchBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
+    def _compute_cv_scores(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
         cv_data = []
 
@@ -450,6 +450,20 @@ class AutoSearchBase:
 
         self._save_pipeline(pipeline_id, trained_pipeline)
 
+    def _evaluate(self, pipeline, X, y, raise_errors=True):
+        parameters = pipeline.parameters
+        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors)
+        logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=evaluation_results['training_time'],
+                         cv_data=evaluation_results['cv_data'],
+                         cv_scores=evaluation_results['cv_scores'])
+
+        logger.debug('Adding results complete')
+        return evaluation_results
+
     def _save_pipeline(self, pipeline_id, trained_pipeline):
         self.trained_pipelines[pipeline_id] = trained_pipeline
 
@@ -521,7 +535,7 @@ class AutoSearchBase:
         if return_dict:
             return pipeline_results
 
-    def add_to_leaderboard(self, pipeline, X, y):
+    def add_to_rankings(self, pipeline, X, y):
         """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
 
         Arguments:
@@ -534,17 +548,7 @@ class AutoSearchBase:
         Returns:
             evaluation_results (dict): dictionary containing training time, cv scores, and other metrics.
         """
-        parameters = pipeline.parameters
-
         evaluation_results = self._evaluate(pipeline, X, y, raise_errors=True)
-        logger.debug('Adding results for pipeline {} using `add_to_leaderboard()`\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
-        self._add_result(trained_pipeline=pipeline,
-                         parameters=parameters,
-                         training_time=evaluation_results['training_time'],
-                         cv_data=evaluation_results['cv_data'],
-                         cv_scores=evaluation_results['cv_scores'])
-        logger.debug('Adding results complete')
-
         return evaluation_results
 
     @property
