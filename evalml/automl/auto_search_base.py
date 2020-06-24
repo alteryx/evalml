@@ -63,8 +63,6 @@ class AutoSearchBase:
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.objective = get_objective(objective)
-        if self.problem_type != self.objective.problem_type:
-            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
             additional_objectives = get_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it
