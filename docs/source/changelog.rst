@@ -28,6 +28,7 @@ Changelog
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Moved permutation importance from `evalml.pipeline.utils` to `evalml.pipeline.graph_utils` :pr:`875`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
@@ -39,6 +40,7 @@ Changelog
     **Breaking Changes**
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
+        * ``calculate_permutation_importances`` and ``graph_permutation_importances`` were moved from `evalml.pipeline.utils` to `evalml.pipeline.graph_utils` :pr:`875`
 
 
 **v0.10.0 May 29, 2020**
