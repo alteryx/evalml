@@ -391,6 +391,13 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
 
 
+def test_invalid_data_splitter():
+    data_splitter = pd.DataFrame()
+    with pytest.raises(ValueError) as exec_info:
+        AutoClassificationSearch(data_split=data_splitter)
+    assert "not a valid data splitter" in exec_info.value.args[0]
+
+
 def test_large_dataset():
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i % 2 for i in range(101000)])
