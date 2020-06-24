@@ -6,6 +6,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoClassificationSearch, AutoRegressionSearch
+from evalml.automl import TrainingValidationSplit
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -388,3 +389,13 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+
+
+def test_large_dataset():
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i % 2 for i in range(101000)])
+
+    automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=1)
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
