@@ -18,6 +18,7 @@ Changelog
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
         * Added kwargs to all components :pr:`863`
         * Added SelectColumns transformer :pr:`873`
+        * Added `default_parameters` class property to components and pipelines :pr:`879`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
