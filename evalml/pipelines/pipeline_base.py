@@ -272,7 +272,11 @@ class PipelineBase(ABC):
 
     @classproperty
     def default_parameters(cls):
-        """Returns the default parameter dictionary for this pipeline."""
+        """Returns the default parameter dictionary for this pipeline.
+
+        Returns:
+            dict: dictionary of all component default parameters.
+        """
         defaults = {}
         for c in cls.component_graph:
             component = handle_component_class(c)

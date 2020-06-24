@@ -866,3 +866,9 @@ def test_clone_fitted(X_y, lr_pipeline):
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
     pd.testing.assert_frame_equal(X_t, X_t_clone)
+
+
+@pytest.mark.parametrize("cls", all_pipelines())
+def test_pipeline_default_parameters(cls):
+
+    assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."

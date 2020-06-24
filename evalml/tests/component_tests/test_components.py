@@ -23,6 +23,7 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    SelectColumns,
     SimpleImputer,
     StandardScaler,
     Transformer,
@@ -441,16 +442,29 @@ def test_transformer_transform_output_type(X_y):
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
+
             component = component_class()
+
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
             assert isinstance(transform_output, pd.DataFrame)
-            assert transform_output.shape == X.shape
-            assert (transform_output.columns == X_cols_expected).all()
+
+            if isinstance(component, SelectColumns):
+                assert transform_output.shape == (X.shape[0], 0)
+                assert isinstance(transform_output.columns, pd.Index)
+            else:
+                assert transform_output.shape == X.shape
+                assert (transform_output.columns == X_cols_expected).all()
+
             transform_output = component.fit_transform(X, y=y)
             assert isinstance(transform_output, pd.DataFrame)
-            assert transform_output.shape == X.shape
-            assert (transform_output.columns == X_cols_expected).all()
+
+            if isinstance(component, SelectColumns):
+                assert transform_output.shape == (X.shape[0], 0)
+                assert isinstance(transform_output.columns, pd.Index)
+            else:
+                assert transform_output.shape == X.shape
+                assert (transform_output.columns == X_cols_expected).all()
 
 
 def test_estimator_predict_output_type(X_y):
@@ -494,3 +508,12 @@ def test_estimator_predict_output_type(X_y):
             assert isinstance(predict_proba_output, pd.DataFrame)
             assert predict_proba_output.shape == (len(y), len(np.unique(y)))
             assert (predict_proba_output.columns == y_cols_expected).all()
+
+
+components = all_components().items()
+
+
+@pytest.mark.parametrize("class_name,cls", components)
+def test_default_parameters(class_name, cls):
+
+    assert cls.default_parameters == cls().parameters, f"{class_name}'s default parameters don't match __init__."
