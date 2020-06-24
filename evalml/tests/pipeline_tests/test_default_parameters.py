@@ -3,6 +3,7 @@ import sys
 
 import pytest
 
+from evalml.exceptions import MissingComponentError
 from evalml.pipelines.classification import *  # noqa: F401,F403
 from evalml.pipelines.components import *  # noqa: F401,F403
 from evalml.pipelines.regression import *  # noqa: F401,F403
@@ -14,24 +15,35 @@ classification_pipelines = inspect.getmembers(sys.modules['evalml.pipelines.clas
 all_pipelines = regression_pipelines + classification_pipelines
 
 
+def cannot_check_because_base_or_not_instaled(cls):
+
+    if issubclass(cls, ComponentBase):  # noqa: F405
+        def function(cls):
+            cls().parameters
+    else:
+        def function(cls):
+            cls().parameters
+    try:
+        function(cls)
+    except (ImportError, TypeError, MissingComponentError):
+        return True
+    else:
+        return False
+
+
 @pytest.mark.parametrize("class_name,cls", all_components)
 def test_default_parameters(class_name, cls):
 
-    # Can't instantiate these base classes to check the defaults.
-    if class_name in {"Transformer", "FeatureSelector", "Estimator", "ComponentBase",
-                      "CategoricalEncoder"}:
-        assert True
+    if cannot_check_because_base_or_not_instaled(cls):
+        pytest.skip(f"Skipping {class_name} because it is not installed or it is a base class.")
 
-    else:
-        assert cls.default_parameters == cls().parameters, f"{class_name}'s default parameters don't match __init__."
+    assert cls.default_parameters == cls().parameters, f"{class_name}'s default parameters don't match __init__."
 
 
 @pytest.mark.parametrize("class_name,cls", all_pipelines)
 def test_pipeline_default_parameters(class_name, cls):
 
-    # Can't instantiate the base class to check the defaults.
-    if class_name in {"PipelineBase"}:
-        assert True
+    if cannot_check_because_base_or_not_instaled(cls):
+        pytest.skip("")
 
-    else:
-        assert cls.default_parameters == cls({}).parameters, f"{class_name}'s default parameters don't match __init__."
+    assert cls.default_parameters == cls({}).parameters, f"{class_name}'s default parameters don't match __init__."
