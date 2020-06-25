@@ -28,6 +28,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer,
     XGBoostClassifier,
+    DateTimeFeaturization,
     all_components
 )
 from evalml.problem_types import ProblemTypes
@@ -510,7 +511,7 @@ def test_estimator_predict_output_type(X_y):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-components = all_components().items()
+components = list(all_components().items()) + [(DateTimeFeaturization.name, DateTimeFeaturization)]
 
 
 @pytest.mark.parametrize("class_name,cls", components)
