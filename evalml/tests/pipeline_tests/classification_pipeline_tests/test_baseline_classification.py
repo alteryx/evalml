@@ -20,7 +20,7 @@ def test_baseline_binary_random(X_y):
     np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X)))
     assert predicted_proba.shape == (len(X), 2)
     np.testing.assert_allclose(predicted_proba, np.array([[0.5 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_binary_random_weighted(X_y):
@@ -41,7 +41,7 @@ def test_baseline_binary_random_weighted(X_y):
     np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X), p=percent_freq))
     assert predicted_proba.shape == (len(X), 2)
     np.testing.assert_allclose(predicted_proba, np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_binary_mode():
@@ -59,7 +59,7 @@ def test_baseline_binary_mode():
     assert predicted_proba.shape == (len(X), 2)
     expected_predicted_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
     pd.testing.assert_frame_equal(expected_predicted_proba, predicted_proba)
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_multi_random(X_y_multi):
@@ -77,7 +77,7 @@ def test_baseline_multi_random(X_y_multi):
     np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X)))
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[1. / 3 for i in range(len(values))]] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_multi_random_weighted(X_y_multi):
@@ -99,7 +99,7 @@ def test_baseline_multi_random_weighted(X_y_multi):
     assert predicted_proba.shape == (len(X), 3)
     np.testing.assert_allclose(predicted_proba, np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
 
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_multi_mode():
@@ -117,4 +117,4 @@ def test_baseline_multi_mode():
     assert predicted_proba.shape == (len(X), 3)
     expected_predicted_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
     pd.testing.assert_frame_equal(expected_predicted_proba, predicted_proba)
-    np.testing.assert_allclose(clf.feature_importances.iloc[:, 1], np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))

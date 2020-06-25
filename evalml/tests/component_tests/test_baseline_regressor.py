@@ -22,7 +22,7 @@ def test_baseline_access_without_fit(X_y_reg):
     with pytest.raises(RuntimeError):
         clf.predict(X)
     with pytest.raises(RuntimeError):
-        clf.feature_importances
+        clf.feature_importance
 
 
 def test_baseline_y_is_None(X_y_reg):
@@ -37,7 +37,7 @@ def test_baseline_mean(X_y_reg):
     clf = BaselineRegressor()
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([mean] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
 def test_baseline_median(X_y_reg):
@@ -46,4 +46,4 @@ def test_baseline_median(X_y_reg):
     clf = BaselineRegressor(strategy="median")
     clf.fit(X, y)
     np.testing.assert_allclose(clf.predict(X), np.array([median] * len(X)))
-    np.testing.assert_allclose(clf.feature_importances, np.array([0.0] * X.shape[1]))
+    np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))

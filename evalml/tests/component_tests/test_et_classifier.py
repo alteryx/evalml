@@ -65,19 +65,19 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
 
 
-def test_feature_importances(X_y):
+def test_feature_importance(X_y):
     X, y = X_y
 
-    # testing that feature importances can't be called before fit
+    # testing that feature_importance can't be called before fit
     clf = ExtraTreesClassifier()
     with pytest.raises(MethodPropertyNotFoundError):
-        feature_importances = clf.feature_importances
+        feature_importance = clf.feature_importance
 
     sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
-    sk_feature_importances = sk_clf.feature_importances_
+    sk_feature_importance = sk_clf.feature_importances_
 
     clf.fit(X, y)
-    feature_importances = clf.feature_importances
+    feature_importance = clf.feature_importance
 
-    np.testing.assert_almost_equal(sk_feature_importances, feature_importances, decimal=5)
+    np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=5)
