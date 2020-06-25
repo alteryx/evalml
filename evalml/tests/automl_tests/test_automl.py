@@ -443,3 +443,10 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi
     error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)
+
+
+def test_objective_at_search_time(X_y_multi):
+    X, y = X_y_multi
+    error_automl = AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'],)
+    with pytest.raises(ValueError, match="is not compatible with a "):
+        error_automl.search(X, y)
