@@ -32,7 +32,7 @@ def test_init(X_y):
     assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
+    assert isinstance(automl.best_pipeline.feature_importance, pd.DataFrame)
 
     # test with datafarmes
     automl.search(pd.DataFrame(X), pd.Series(y))
@@ -65,7 +65,7 @@ def test_categorical_regression(X_y_categorical_regression):
     automl = AutoRegressionSearch(objective="R2", max_pipelines=5, random_state=0)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
-    assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
+    assert not automl.get_pipeline(0).feature_importance.isnull().all().all()
 
 
 def test_callback(X_y):
