@@ -29,7 +29,6 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer,
     XGBoostClassifier,
-    DateTimeFeaturization,
     all_components
 )
 from evalml.problem_types import ProblemTypes
