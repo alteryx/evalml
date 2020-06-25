@@ -530,7 +530,7 @@ class AutoSearchBase:
 
     def add_to_rankings(self, pipeline, X, y):
         """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
-           If pipeline already exists in rankings this method will return `None`.
+        If pipeline already exists in rankings this method will return `None`.
         Arguments:
             pipeline (PipelineBase): pipeline to train and evaluate.
 
