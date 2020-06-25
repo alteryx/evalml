@@ -20,7 +20,7 @@ class Tuner(ABC):
         self._search_space_ranges = []
         if not isinstance(pipeline_hyperparameter_ranges, dict):
             raise ValueError('pipeline_hyperparameter_ranges must be a dict but is of type {}'.format(type(pipeline_hyperparameter_ranges)))
-        self._component_names = pipeline_hyperparameter_ranges.keys()
+        self._component_names = list(pipeline_hyperparameter_ranges.keys())
         for component_name, component_ranges in pipeline_hyperparameter_ranges.items():
             if not isinstance(component_ranges, dict):
                 raise ValueError('pipeline_hyperparameter_ranges has invalid entry for {}: {}'.format(component_name, component_ranges))
