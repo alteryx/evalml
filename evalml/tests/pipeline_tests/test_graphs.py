@@ -37,9 +37,9 @@ def test_pipeline():
 
         @property
         def feature_importance(self):
-            importances = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
-            feature_names = range(len(importances))
-            f_i = list(zip(feature_names, importances))
+            importance = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
+            feature_names = range(len(importance))
+            f_i = list(zip(feature_names, importance))
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
@@ -163,11 +163,11 @@ def test_get_permutation_importance_correlated_features():
     y = y.astype(bool)
     pipeline = LogisticRegressionBinaryPipeline(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    importances = calculate_permutation_importance(pipeline, X, y, objective="log_loss_binary", random_state=0)
-    assert list(importances.columns) == ["feature", "importance"]
-    assert not importances.isnull().all().all()
-    correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "correlated"][0]]
-    not_correlated_importance_val = importances["importance"][importances.index[importances["feature"] == "not correlated"][0]]
+    importance = calculate_permutation_importance(pipeline, X, y, objective="log_loss_binary", random_state=0)
+    assert list(importance.columns) == ["feature", "importance"]
+    assert not importance.isnull().all().all()
+    correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
+    not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
 
 
@@ -191,9 +191,9 @@ def test_graph_permutation_importance(X_y, test_pipeline):
 
 
 @patch('evalml.pipelines.graph_utils.calculate_permutation_importance')
-def test_graph_permutation_importance_show_all_features(mock_perm_importances):
+def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    mock_perm_importances.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+    mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
     assert isinstance(figure, go.Figure)
 

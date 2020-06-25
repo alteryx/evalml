@@ -87,7 +87,7 @@ class BaselineClassifier(Estimator):
 
     @property
     def feature_importance(self):
-        """Returns feature importances. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
+        """Returns importance associated with each feature. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
             np.array (float) : an array of zeroes

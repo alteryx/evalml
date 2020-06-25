@@ -60,7 +60,7 @@ class Estimator(ComponentBase):
 
     @property
     def feature_importance(self):
-        """Returns feature importances.
+        """Returns importance associated with each feature.
 
         Returns:
             list(float) : importance associated with each feature

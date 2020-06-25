@@ -68,7 +68,7 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y):
     X, y = X_y
 
-    # testing that feature importances can't be called before fit
+    # testing that feature_importance can't be called before fit
     clf = ExtraTreesClassifier()
     with pytest.raises(MethodPropertyNotFoundError):
         feature_importance = clf.feature_importance
