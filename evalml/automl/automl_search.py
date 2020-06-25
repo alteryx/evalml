@@ -5,7 +5,7 @@ from sys import stdout
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
+from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -14,7 +14,11 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.model_family import handle_model_family
-from evalml.objectives import get_default_objective, get_objective, get_objectives
+from evalml.objectives import (
+    get_default_objective,
+    get_objective,
+    get_objectives
+)
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
