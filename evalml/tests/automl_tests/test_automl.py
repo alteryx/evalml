@@ -13,6 +13,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
+from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -313,7 +314,7 @@ def test_automl_str_no_param_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.auto_search_base.get_pipelines')
+@patch('evalml.automl.automl_search.get_pipelines')
 def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
@@ -404,3 +405,41 @@ def test_obj_matches_problem_type(X_y):
     with pytest.raises(ValueError, match="is not compatible with a"):
         auto = AutoMLSearch(problem_type='binary', objective='R2')
         auto.search(X, y, data_checks=EmptyDataChecks())
+
+
+def test_init_problem_type_error():
+    with pytest.raises(ValueError, match=r"choose one of \(binary, multiclass, regression\) as problem_type"):
+        AutoMLSearch()
+
+    with pytest.raises(KeyError, match=r"does not exist"):
+        AutoMLSearch(problem_type='multi')
+
+
+def test_init_objective():
+    defaults = {'multiclass': 'Log Loss Multiclass', 'binary': 'Log Loss Binary', 'regression': 'R2'}
+    for problem_type in defaults:
+        error_automl = AutoMLSearch(problem_type=problem_type)
+        assert error_automl.objective.name == defaults[problem_type]
+
+    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
+        AutoMLSearch(problem_type='binary', objective='binary')
+
+
+@patch('evalml.automl.automl_search.AutoMLSearch.search')
+def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi):
+    X, y = X_y_multi
+
+    error_text = "in search, problem_type mismatches label type."
+    mock_search.side_effect = ValueError(error_text)
+
+    error_automl = AutoMLSearch(problem_type='regression', objective="R2")
+    with pytest.raises(ValueError, match=error_text):
+        error_automl.search(X, y)
+
+    error_text = "in search, problem_type mismatches allowed_pipelines."
+    mock_search.side_effect = ValueError(error_text)
+
+    allowed_pipelines = [dummy_regression_pipeline.__class__]
+    error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
+    with pytest.raises(ValueError, match=error_text):
+        error_automl.search(X, y)

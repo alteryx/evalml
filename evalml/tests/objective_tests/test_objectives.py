@@ -9,7 +9,8 @@ from evalml.objectives import (
     Precision,
     RegressionObjective,
     get_objective,
-    get_objectives
+    get_objectives,
+    get_default_objective
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
@@ -78,3 +79,15 @@ def test_objective_outputs(X_y, X_y_multi):
                 y_predicted_pd = pd.DataFrame(y_predicted)
             np.testing.assert_almost_equal(objective.score(y_true_multi_np, y_predicted), expected_value)
             np.testing.assert_almost_equal(objective.score(pd.Series(y_true_multi_np), y_predicted_pd), expected_value)
+
+
+def test_default_objective():
+    correct_matches = {ProblemTypes.MULTICLASS: 'Log Loss Multiclass',
+                       ProblemTypes.BINARY: 'Log Loss Binary',
+                       ProblemTypes.REGRESSION: 'R2'}
+    for problem_type in correct_matches:
+        assert get_default_objective(problem_type).name == correct_matches[problem_type]
+        assert get_default_objective(problem_type.name).name == correct_matches[problem_type]
+
+    with pytest.raises(KeyError, match="does not exist"):
+        get_default_objective('fake_class')
