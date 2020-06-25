@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-from sklearn.inspection import \
-    permutation_importance as sk_permutation_importance
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .classification import (
@@ -27,7 +25,6 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family
-from evalml.objectives import get_objective
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
@@ -44,7 +41,7 @@ from evalml.pipelines.components import (
     XGBoostRegressor
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_logger, import_or_raise
+from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
@@ -285,82 +282,3 @@ def make_pipeline(X, y, estimator, problem_type):
         custom_hyperparameters = hyperparameters
 
     return GeneratedPipeline
-
-
-def calculate_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
-    """Calculates permutation importance for features.
-
-    Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute permutation importance
-        y (pd.Series): the target labels
-        objective (str, ObjectiveBase): objective to score on
-        n_repeats (int): Number of times to permute a feature. Defaults to 5.
-        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
-            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
-
-    Returns:
-        Mean feature importance scores over 5 shuffles.
-    """
-    objective = get_objective(objective)
-    if objective.problem_type != pipeline.problem_type:
-        raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
-
-    def scorer(pipeline, X, y):
-        scores = pipeline.score(X, y, objectives=[objective])
-        return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-    perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
-    mean_perm_importance = perm_importance["importances_mean"]
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
-    feature_names = list(X.columns)
-    mean_perm_importance = list(zip(feature_names, mean_perm_importance))
-    mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
-    return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
-
-
-def graph_permutation_importances(pipeline, X, y, objective, show_all_features=False):
-    """Generate a bar graph of the pipeline's permutation importance.
-
-    Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target labels
-        objective (str, ObjectiveBase): Objective to score on
-        show_all_features (bool, optional) : If True, graph features with a permutation importance value of zero. Defaults to False.
-
-    Returns:
-        plotly.Figure, a bar graph showing features and their respective permutation importance.
-    """
-    go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    perm_importance = calculate_permutation_importances(pipeline, X, y, objective)
-    perm_importance['importance'] = perm_importance['importance']
-
-    if not show_all_features:
-        # Remove features with close to zero importance
-        perm_importance = perm_importance[abs(perm_importance['importance']) >= 1e-3]
-    # List is reversed to go from ascending order to descending order
-    perm_importance = perm_importance.iloc[::-1]
-
-    title = "Permutation Importance"
-    subtitle = "The relative importance of each input feature's "\
-               "overall influence on the pipelines' predictions, computed using "\
-               "the permutation importance algorithm."
-    data = [go.Bar(x=perm_importance['importance'],
-                   y=perm_importance['feature'],
-                   orientation='h'
-                   )]
-
-    layout = {
-        'title': '{0}<br><sub>{1}</sub>'.format(title, subtitle),
-        'height': 800,
-        'xaxis_title': 'Permutation Importance',
-        'yaxis_title': 'Feature',
-        'yaxis': {
-            'type': 'category'
-        }
-    }
-
-    fig = go.Figure(data=data, layout=layout)
-    return fig
