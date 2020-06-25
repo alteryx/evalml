@@ -216,9 +216,10 @@ class AutoSearchBase:
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
         if self.allowed_pipelines is None:
-            self._allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+            logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             self.allowed_pipelines = []
-            for estimator in self._allowed_estimators:
+            for estimator in allowed_estimators:
                 self.allowed_pipelines.append(make_pipeline(X, y, estimator, self.problem_type))
             self.allowed_model_families = list(set([p.model_family for p in self.allowed_pipelines]))
 
