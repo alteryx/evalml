@@ -197,7 +197,7 @@ def test_automl_allowed_pipelines_init(mock_fit, mock_score, X_y_reg, dummy_regr
     automl = AutoRegressionSearch(max_pipelines=2, allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_regression_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+    assert automl.allowed_model_families is None
 
     mock_fit.reset_mock()
     mock_score.reset_mock()

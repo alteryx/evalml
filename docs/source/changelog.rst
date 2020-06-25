@@ -43,6 +43,7 @@ Changelog
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
 
 
 **v0.10.0 May 29, 2020**
