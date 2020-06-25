@@ -530,7 +530,7 @@ class AutoSearchBase:
 
     def add_to_rankings(self, pipeline, X, y):
         """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
-
+           If pipeline already exists in rankings this method will return `None`.
         Arguments:
             pipeline (PipelineBase): pipeline to train and evaluate.
 
@@ -546,6 +546,18 @@ class AutoSearchBase:
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        pipeline_name = pipeline.name
+        pipeline_parameters = pipeline.parameters
+        full_rankings = pd.DataFrame.copy(self.full_rankings)
+
+        if pipeline_name in full_rankings['pipeline_name'].values:
+            pipeline_rows = full_rankings[full_rankings['pipeline_name'] == pipeline_name]
+            parameters = pipeline_rows['parameters'].values
+
+            for parameter in parameters:
+                if pipeline_parameters == parameter:
+                    return None
 
         evaluation_results = self._evaluate(pipeline, X, y, raise_errors=True)
         return evaluation_results

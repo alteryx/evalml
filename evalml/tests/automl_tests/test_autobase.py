@@ -410,7 +410,23 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y)
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_add_to_rankings_with_trained(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_rankings(test_pipeline, X, y)
+
+    test_pipeline_duplicate = dummy_binary_pipeline_class(parameters={})
+    assert automl.add_to_rankings(test_pipeline_duplicate, X, y) is None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
@@ -420,10 +436,11 @@ def test_add_to_rankings_with_trained(mock_fit, mock_score, dummy_binary_pipelin
     test_pipeline = dummy_binary_pipeline_class(parameters={})
     results_unfitted = automl.add_to_rankings(test_pipeline, X, y)
 
-    mock_fit.return_value = dummy_binary_pipeline_class(parameters={})
-    mock_score.return_value = {'Log Loss Binary': 0.1234}
+    class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
+        name = "Cool Binary Classification Pipeline"
 
-    test_pipeline_fitted = dummy_binary_pipeline_class(parameters={}).fit(X, y)
-    results_fitted = automl.add_to_rankings(test_pipeline_fitted, X, y)
+    mock_fit.return_value = CoolBinaryClassificationPipeline(parameters={})
+    test_pipeline_trained = CoolBinaryClassificationPipeline(parameters={}).fit(X, y)
+    results_fitted = automl.add_to_rankings(test_pipeline_trained, X, y)
 
-    assert results_fitted['cv_data'][0]['score'] == results_unfitted['cv_data'][0]['score']
+    assert results_unfitted['cv_data'][0]['score'] == results_fitted['cv_data'][0]['score']
