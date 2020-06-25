@@ -48,7 +48,6 @@ AutoML Search Classes
     :nosignatures:
 
     AutoMLSearch
-    AutoSearchBase
 
 
 .. currentmodule:: evalml.automl.automl_algorithm

@@ -347,7 +347,7 @@ def test_automl_tuner_exception(mock_fit, mock_score, mock_is_search_space_exhau
     mock_is_search_space_exhausted.side_effect = NoParamsException(error_text)
     clf = AutoMLSearch(problem_type='regression', objective="R2", tuner_class=RandomSearchTuner, max_pipelines=10)
     with pytest.raises(NoParamsException, match=error_text):
-        clf.search(X, y, force_problem_type=True)
+        clf.search(X, y)
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
