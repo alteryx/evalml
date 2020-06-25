@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import classproperty
 
 
 def _extract_year(col):
@@ -51,14 +50,6 @@ class DateTimeFeaturization(Transformer):
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
-
-    @classproperty
-    def default_parameters(cls,):
-        """Returns the default parameters for this component."""
-        # Our convention is that default parameters are what get passed in to the parameters dict
-        # when nothing is changed to the init. In this case, since we use None to encode a list of date units,
-        # we need to manually specify the defaults.
-        return {"features_to_extract": ["year", "month", "day_of_week", "hour"]}
 
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
