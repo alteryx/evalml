@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+import os
 
 import numpy as np
 import pandas as pd
@@ -388,3 +389,15 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+
+
+
+
+def test_automl_serialization(X_y, tmpdir):
+    X, y = X_y
+    path = os.path.join(str(tmpdir), 'automl.pkl')
+    automl = AutoClassificationSearch()
+    automl.search(X, y)
+    pipeline = automl.get_pipeline(1)
+    automl.save(path)
+    assert pipeline.score(X, y, ['precision']) == automl.load(path).get_pipeline(1).score(X, y, ['precision'])

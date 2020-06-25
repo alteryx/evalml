@@ -2,6 +2,7 @@ import time
 import warnings
 from collections import OrderedDict
 from sys import stdout
+import cloudpickle
 
 import numpy as np
 import pandas as pd
@@ -544,3 +545,29 @@ class AutoSearchBase:
         """Returns the best model found"""
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
+
+
+    def save(self, file_path):
+        """Saves AutoML object at file path
+
+        Args:
+            file_path (str) : location to save file
+
+        Returns:
+            None
+        """
+        with open(file_path, 'wb') as f:
+            cloudpickle.dump(self, f)
+
+    @staticmethod
+    def load(file_path):
+        """Loads AutoML object at file path
+
+        Args:
+            file_path (str) : location to load file
+
+        Returns:
+            AutoSearchBase object
+        """
+        with open(file_path, 'rb') as f:
+            return cloudpickle.load(f)
