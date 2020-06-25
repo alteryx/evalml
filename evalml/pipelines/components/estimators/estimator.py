@@ -66,6 +66,6 @@ class Estimator(ComponentBase):
             list(float) : importance associated with each feature
         """
         try:
-            return self._component_obj.feature_importance_
+            return self._component_obj.feature_importances_
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importance_")
+            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")

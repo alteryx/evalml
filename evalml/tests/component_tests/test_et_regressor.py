@@ -47,14 +47,14 @@ def test_fit_predict(X_y):
 def test_feature_importance(X_y):
     X, y = X_y
 
-    # testing that feature importances can't be called before fit
+    # testing that feature importance can't be called before fit
     clf = ExtraTreesRegressor()
     with pytest.raises(MethodPropertyNotFoundError):
         feature_importance = clf.feature_importance
 
     sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
-    sk_feature_importance = sk_clf.feature_importance_
+    sk_feature_importance = sk_clf.feature_importances_
 
     clf.fit(X, y)
     feature_importance = clf.feature_importance

@@ -30,4 +30,4 @@ class RandomForestRegressor(Estimator):
 
     @property
     def feature_importance(self):
-        return self._component_obj.feature_importance_
+        return self._component_obj.feature_importances_

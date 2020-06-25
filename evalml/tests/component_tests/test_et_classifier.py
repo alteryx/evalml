@@ -75,7 +75,7 @@ def test_feature_importance(X_y):
 
     sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
-    sk_feature_importance = sk_clf.feature_importance_
+    sk_feature_importance = sk_clf.feature_importances_
 
     clf.fit(X, y)
     feature_importance = clf.feature_importance
