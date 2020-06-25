@@ -65,9 +65,7 @@ from .utils import (
     list_model_families,
     all_estimators,
     get_estimators,
-    make_pipeline,
-    calculate_permutation_importances,
-    graph_permutation_importances
+    make_pipeline
 )
 from .graph_utils import (
     precision_recall_curve,
@@ -77,4 +75,6 @@ from .graph_utils import (
     confusion_matrix,
     normalize_confusion_matrix,
     graph_confusion_matrix,
+    calculate_permutation_importance,
+    graph_permutation_importance
 )

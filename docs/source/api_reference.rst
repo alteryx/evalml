@@ -137,7 +137,6 @@ Pipeline Utils
     get_estimators
     make_pipeline
     list_model_families
-    calculate_permutation_importances
 
 
 Pipeline Graph Utils
@@ -153,7 +152,8 @@ Pipeline Graph Utils
     confusion_matrix
     normalize_confusion_matrix
     graph_confusion_matrix
-    graph_permutation_importances
+    calculate_permutation_importance
+    graph_permutation_importance
 
 .. currentmodule:: evalml.pipelines.components
 
@@ -183,6 +183,7 @@ Transformers are components that take in data as input and output transformed da
     :nosignatures:
 
     DropColumns
+    SelectColumns
     OneHotEncoder
     PerColumnImputer
     SimpleImputer

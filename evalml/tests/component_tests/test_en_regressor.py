@@ -46,7 +46,7 @@ def test_fit_predict(X_y):
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
 
 
-def test_feature_importances(X_y):
+def test_feature_importance(X_y):
     X, y = X_y
 
     sk_clf = SKElasticNetRegressor(alpha=0.5,
@@ -59,4 +59,4 @@ def test_feature_importances(X_y):
     clf = ElasticNetRegressor()
     clf.fit(X, y)
 
-    np.testing.assert_almost_equal(sk_clf.coef_, clf.feature_importances, decimal=5)
+    np.testing.assert_almost_equal(sk_clf.coef_, clf.feature_importance, decimal=5)

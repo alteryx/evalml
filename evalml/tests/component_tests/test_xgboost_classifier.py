@@ -52,8 +52,8 @@ def test_xgboost_feature_name_with_random_ascii(X_y):
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
     X = pd.DataFrame(X, columns=col_names)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not np.isnan(clf.feature_importances).all().all()
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not np.isnan(clf.feature_importance).all().all()
     assert list(X.columns) == col_names
 
     predictions = clf.predict(X)
