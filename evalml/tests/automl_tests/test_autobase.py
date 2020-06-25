@@ -396,8 +396,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y)
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    allowed_pipelines = [dummy_binary_pipeline_class]
-    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=allowed_pipelines)
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
     automl.search(X, y)
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
@@ -407,3 +406,24 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y)
 
     assert len(automl.rankings) == 2
     assert 0.1234 in automl.rankings['score'].values
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_with_trained(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    results_unfitted = automl.add_to_rankings(test_pipeline, X, y)
+
+    mock_fit.return_value = dummy_binary_pipeline_class(parameters={})
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    test_pipeline_fitted = dummy_binary_pipeline_class(parameters={}).fit(X, y)
+    results_fitted = automl.add_to_rankings(test_pipeline_fitted, X, y)
+
+    assert results_fitted['cv_data'][0]['score'] == results_unfitted['cv_data'][0]['score']
