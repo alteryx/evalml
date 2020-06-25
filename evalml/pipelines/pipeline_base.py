@@ -271,10 +271,10 @@ class PipelineBase(ABC):
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
     @property
-    def feature_importances(self):
+    def feature_importance(self):
         """Return feature importances. Features dropped by feature selection are excluded"""
         feature_names = self.input_feature_names[self.estimator.name]
-        importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
+        importances = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
         importances.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importances, columns=["feature", "importance"])
         return df
@@ -354,7 +354,7 @@ class PipelineBase(ABC):
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-        feat_imp = self.feature_importances
+        feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
 
         if not show_all_features:

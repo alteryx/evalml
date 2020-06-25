@@ -86,7 +86,7 @@ class BaselineClassifier(Estimator):
             return pd.DataFrame(proba_arr, columns=self._classes)
 
     @property
-    def feature_importances(self):
+    def feature_importance(self):
         """Returns feature importances. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
@@ -94,5 +94,5 @@ class BaselineClassifier(Estimator):
 
         """
         if self._num_unique is None:
-            raise RuntimeError("You must fit Baseline classifier before getting feature_importances!")
+            raise RuntimeError("You must fit Baseline classifier before getting feature_importance!")
         return np.zeros(self._num_features)

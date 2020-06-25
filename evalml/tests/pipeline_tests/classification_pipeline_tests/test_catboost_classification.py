@@ -109,8 +109,8 @@ def test_catboost_multi(X_y_multi):
     assert((y_pred == sk_pipeline_preds).all())
     assert (sk_score == clf_score[objective.name])
     assert len(np.unique(y_pred)) == 3
-    assert len(clf.feature_importances) == len(X[0])
-    assert not clf.feature_importances.isnull().all().all()
+    assert len(clf.feature_importance) == len(X[0])
+    assert not clf.feature_importance.isnull().all().all()
 
 
 def test_catboost_input_feature_names(X_y):
@@ -131,9 +131,9 @@ def test_catboost_input_feature_names(X_y):
     }
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
-    for col_name in clf.feature_importances["feature"]:
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()
+    for col_name in clf.feature_importance["feature"]:
         assert "col_" in col_name
 
 
@@ -152,5 +152,5 @@ def test_catboost_categorical(X_y_categorical_classification):
     }
     clf = CatBoostBinaryClassificationPipeline(parameters=parameters)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()

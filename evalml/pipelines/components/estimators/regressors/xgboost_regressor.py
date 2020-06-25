@@ -52,5 +52,5 @@ class XGBoostRegressor(Estimator):
         return super().predict(X)
 
     @property
-    def feature_importances(self):
-        return self._component_obj.feature_importances_
+    def feature_importance(self):
+        return self._component_obj.feature_importance_

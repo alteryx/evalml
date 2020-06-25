@@ -75,6 +75,6 @@ from .graph_utils import (
     confusion_matrix,
     normalize_confusion_matrix,
     graph_confusion_matrix,
-    calculate_permutation_importances,
-    graph_permutation_importances
+    calculate_permutation_importance,
+    graph_permutation_importance
 )
