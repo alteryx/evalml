@@ -58,5 +58,5 @@ class XGBoostClassifier(Estimator):
         return super().predict_proba(X)
 
     @property
-    def feature_importances(self):
+    def feature_importance(self):
         return self._component_obj.feature_importances_

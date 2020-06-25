@@ -30,5 +30,5 @@ class ElasticNetRegressor(Estimator):
                          random_state=random_state)
 
     @property
-    def feature_importances(self):
+    def feature_importance(self):
         return self._component_obj.coef_

@@ -241,7 +241,7 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     return fig
 
 
-def calculate_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
+def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
     Arguments:
@@ -274,7 +274,7 @@ def calculate_permutation_importances(pipeline, X, y, objective, n_repeats=5, n_
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def graph_permutation_importances(pipeline, X, y, objective, show_all_features=False):
+def graph_permutation_importance(pipeline, X, y, objective, show_all_features=False):
     """Generate a bar graph of the pipeline's permutation importance.
 
     Arguments:
@@ -288,7 +288,7 @@ def graph_permutation_importances(pipeline, X, y, objective, show_all_features=F
         plotly.Figure, a bar graph showing features and their respective permutation importance.
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    perm_importance = calculate_permutation_importances(pipeline, X, y, objective)
+    perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
     perm_importance['importance'] = perm_importance['importance']
 
     if not show_all_features:
