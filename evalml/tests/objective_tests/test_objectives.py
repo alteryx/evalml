@@ -8,9 +8,9 @@ from evalml.objectives import (
     MulticlassClassificationObjective,
     Precision,
     RegressionObjective,
+    get_default_objective,
     get_objective,
-    get_objectives,
-    get_default_objective
+    get_objectives
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes

@@ -14,7 +14,7 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.model_family import handle_model_family
-from evalml.objectives import get_objective, get_objectives, get_default_objective
+from evalml.objectives import get_default_objective, get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
