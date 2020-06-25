@@ -10,6 +10,7 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
+    DateTimeFeaturization,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -28,7 +29,6 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer,
     XGBoostClassifier,
-    DateTimeFeaturization,
     all_components
 )
 from evalml.problem_types import ProblemTypes
