@@ -33,7 +33,7 @@ class ElasticNetClassifier(Estimator):
                          random_state=random_state)
 
     @property
-    def feature_importances(self):
+    def feature_importance(self):
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
