@@ -475,7 +475,7 @@ def test_multi_format_creation(X_y):
 
     clf.fit(X, y)
     clf.score(X, y, ['precision'])
-    assert not clf.feature_importances.isnull().all().all()
+    assert not clf.feature_importance.isnull().all().all()
 
 
 def test_multiple_feature_selectors(X_y):
@@ -502,7 +502,7 @@ def test_multiple_feature_selectors(X_y):
 
     clf.fit(X, y)
     clf.score(X, y, ['precision'])
-    assert not clf.feature_importances.isnull().all().all()
+    assert not clf.feature_importance.isnull().all().all()
 
 
 def test_problem_types():
@@ -814,7 +814,7 @@ def test_drop_columns_in_pipeline():
     y = pd.Series([1, 0, 1, 0])
     pipeline_with_drop_col.fit(X, y)
     pipeline_with_drop_col.score(X, y, ['auc'])
-    assert list(pipeline_with_drop_col.feature_importances["feature"]) == ['other col']
+    assert list(pipeline_with_drop_col.feature_importance["feature"]) == ['other col']
 
 
 def test_clone_init():
