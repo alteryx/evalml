@@ -47,9 +47,7 @@ AutoML Search Classes
     :template: class_with_properties.rst
     :nosignatures:
 
-    AutoClassificationSearch
-    AutoRegressionSearch
-    AutoSearchBase
+    AutoMLSearch
 
 
 .. currentmodule:: evalml.automl.automl_algorithm

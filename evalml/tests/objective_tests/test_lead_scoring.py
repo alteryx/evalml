@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml import AutoClassificationSearch
+from evalml import AutoMLSearch
 from evalml.objectives import LeadScoring
 
 
@@ -12,7 +12,7 @@ def test_lead_scoring_objective(X_y):
     objective = LeadScoring(true_positives=1,
                             false_positives=-1)
 
-    automl = AutoClassificationSearch(objective=objective, max_pipelines=1, random_state=0)
+    automl = AutoMLSearch(problem_type='binary', objective=objective, max_pipelines=1, random_state=0)
     automl.search(X, y)
     pipeline = automl.best_pipeline
     pipeline.predict(X)
