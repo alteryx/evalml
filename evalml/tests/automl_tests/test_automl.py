@@ -402,6 +402,7 @@ def test_automl_serialization(X_y, tmpdir):
     loaded_automl = automl.load(path)
     for i in range(num_max_pipelines):
         assert automl.get_pipeline(i).score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
+        assert automl.results == loaded_automl.results
         pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
 
