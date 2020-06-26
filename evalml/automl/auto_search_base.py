@@ -387,7 +387,16 @@ class AutoSearchBase:
         if self.verbose:  # To force new line between progress bar iterations
             print('')
 
-    def _do_evaluation(self, pipeline, X_train, X_test, y_train, y_test, raise_errors=True, pbar=None):
+    def _do_evaluation(self, pipeline, X, y, train, test, raise_errors=True, pbar=None):
+        if isinstance(X, pd.DataFrame):
+            X_train, X_test = X.iloc[train], X.iloc[test]
+        else:
+            X_train, X_test = X[train], X[test]
+        if isinstance(y, pd.Series):
+            y_train, y_test = y.iloc[train], y.iloc[test]
+        else:
+            y_train, y_test = y[train], y[test]
+
         objectives_to_score = [self.objective] + self.additional_objectives
         try:
             X_threshold_tuning = None
@@ -426,20 +435,8 @@ class AutoSearchBase:
         start = time.time()
         cv_data = []
 
-        if self.data_split.get_n_splits() > 1:
-            for train, test in self.data_split.split(X, y):
-                if isinstance(X, pd.DataFrame):
-                    X_train, X_test = X.iloc[train], X.iloc[test]
-                else:
-                    X_train, X_test = X[train], X[test]
-                if isinstance(y, pd.Series):
-                    y_train, y_test = y.iloc[train], y.iloc[test]
-                else:
-                    y_train, y_test = y[train], y[test]
-                cv_data.append(self._do_evaluation(pipeline, X_train, X_test, y_train, y_test, raise_errors, pbar))
-        else:
-            X_train, X_test, y_train, y_test = self.data_split.split(X, y)
-            cv_data.append(self._do_evaluation(pipeline, X_train, X_test, y_train, y_test, raise_errors, pbar))
+        for train, test in self.data_split.split(X, y):
+            cv_data.append(self._do_evaluation(pipeline, X, y, train, test, raise_errors, pbar))
 
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])

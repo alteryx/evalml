@@ -41,4 +41,5 @@ class TrainingValidationSplit(BaseCrossValidator):
             Returns:
                 list: training and testing split of both X and y inputs
         """
-        return train_test_split(X, y, test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_state)
+        train, test = train_test_split(X.index, test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_state)
+        return [(train, test)]
