@@ -36,9 +36,9 @@ class AutoMLSearch:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
-    _DEFAULT_OBJECTIVES = {'binary': get_objective('log_loss_binary'),
-                           'multiclass': get_objective('log_loss_multi'),
-                           'regression': get_objective('r2')}
+    _DEFAULT_OBJECTIVES = {'binary': 'log_loss_binary',
+                           'multiclass': 'log_loss_multi',
+                           'regression': 'r2'}
 
     def __init__(self,
                  problem_type=None,
