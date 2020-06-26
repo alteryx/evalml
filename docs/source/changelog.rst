@@ -14,10 +14,12 @@ Changelog
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
-        * Added utility methods to calculate and graph permutation importances :pr:`860`
+        * Added utility methods to calculate and graph permutation importances :pr:`860`, :pr:`880`
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
         * Added kwargs to all components :pr:`863`
         * Added SelectColumns transformer :pr:`873`
+        * Added ability to evaluate additional pipelines for automl search :pr:`874`
+        * Added `default_parameters` class property to components and pipelines :pr:`879`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
@@ -28,7 +30,9 @@ Changelog
         * Updated `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactored `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactored "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
+        * Added open source license, update some repo metadata :pr:`887`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
@@ -41,6 +45,7 @@ Changelog
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Renamed `automl` `cv` argument to `data_split` :pr:`877`
+        * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
 
 
 **v0.10.0 May 29, 2020**

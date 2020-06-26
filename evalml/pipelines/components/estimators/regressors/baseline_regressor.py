@@ -58,13 +58,13 @@ class BaselineRegressor(Estimator):
         return pd.Series([self._prediction_value] * len(X))
 
     @property
-    def feature_importances(self):
-        """Returns feature importances. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
+    def feature_importance(self):
+        """Returns importance associated with each feature. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
             np.array (float) : an array of zeroes
 
         """
         if self._num_features is None:
-            raise RuntimeError("You must fit Baseline regressor before accessing feature_importances!")
+            raise RuntimeError("You must fit Baseline regressor before accessing feature_importance!")
         return np.zeros(self._num_features)

@@ -59,8 +59,8 @@ class Estimator(ComponentBase):
         return pred_proba
 
     @property
-    def feature_importances(self):
-        """Returns feature importances.
+    def feature_importance(self):
+        """Returns importance associated with each feature.
 
         Returns:
             list(float) : importance associated with each feature
@@ -68,4 +68,4 @@ class Estimator(ComponentBase):
         try:
             return self._component_obj.feature_importances_
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a feature_importances property or a component_obj that implements feature_importances_")
+            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")

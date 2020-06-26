@@ -36,7 +36,7 @@ def test_init(X_y):
     assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert isinstance(automl.best_pipeline.feature_importances, pd.DataFrame)
+    assert isinstance(automl.best_pipeline.feature_importance, pd.DataFrame)
     # test with datafarmes
     automl.search(pd.DataFrame(X), pd.Series(y))
 
@@ -52,7 +52,7 @@ def test_init(X_y):
 
     scores = automl.best_pipeline.score(X, y, ['precision'])
     assert not any(np.isnan(val) for val in scores.values())
-    assert not automl.best_pipeline.feature_importances.isnull().all().all()
+    assert not automl.best_pipeline.feature_importance.isnull().all().all()
 
 
 def test_get_pipeline_none(X_y):
@@ -172,7 +172,7 @@ def test_categorical_classification(X_y_categorical_classification):
     automl = AutoClassificationSearch(objective="precision", max_pipelines=5, multiclass=False)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
-    assert not automl.get_pipeline(0).feature_importances.isnull().all().all()
+    assert not automl.get_pipeline(0).feature_importance.isnull().all().all()
 
 
 def test_random_state(X_y):

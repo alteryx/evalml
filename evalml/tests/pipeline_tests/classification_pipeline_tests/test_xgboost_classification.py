@@ -156,8 +156,8 @@ def test_xg_multi(X_y_multi):
     assert (sk_score == clf_score)
     np.testing.assert_almost_equal(sk_score, 0.95, decimal=5)
     assert len(np.unique(y_pred)) == 3
-    assert len(clf.feature_importances) == len(X[0])
-    assert not clf.feature_importances.isnull().all().all()
+    assert len(clf.feature_importance) == len(X[0])
+    assert not clf.feature_importance.isnull().all().all()
 
     # testing objective parameter passed in does not change results
     clf.fit(X, y)
@@ -190,7 +190,7 @@ def test_xg_input_feature_names(X_y):
 
     clf = XGBoostBinaryPipeline(parameters=parameters, random_state=42)
     clf.fit(X, y)
-    assert len(clf.feature_importances) == len(X.columns)
-    assert not clf.feature_importances.isnull().all().all()
-    for col_name in clf.feature_importances["feature"]:
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()
+    for col_name in clf.feature_importance["feature"]:
         assert "col_" in col_name

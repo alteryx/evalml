@@ -270,13 +270,27 @@ class PipelineBase(ABC):
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
+    @classproperty
+    def default_parameters(cls):
+        """Returns the default parameter dictionary for this pipeline.
+
+        Returns:
+            dict: dictionary of all component default parameters.
+        """
+        defaults = {}
+        for c in cls.component_graph:
+            component = handle_component_class(c)
+            if component.default_parameters:
+                defaults[component.name] = component.default_parameters
+        return defaults
+
     @property
-    def feature_importances(self):
-        """Return feature importances. Features dropped by feature selection are excluded"""
+    def feature_importance(self):
+        """Return importance associated with each feature. Features dropped by feature selection are excluded"""
         feature_names = self.input_feature_names[self.estimator.name]
-        importances = list(zip(feature_names, self.estimator.feature_importances))  # note: this only works for binary
-        importances.sort(key=lambda x: -abs(x[1]))
-        df = pd.DataFrame(importances, columns=["feature", "importance"])
+        importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
+        importance.sort(key=lambda x: -abs(x[1]))
+        df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
 
     def graph(self, filepath=None):
@@ -344,17 +358,17 @@ class PipelineBase(ABC):
         return graph
 
     def graph_feature_importance(self, show_all_features=False):
-        """Generate a bar graph of the pipeline's feature importances
+        """Generate a bar graph of the pipeline's feature importance
 
         Arguments:
             show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
 
         Returns:
-            plotly.Figure, a bar graph showing features and their importances
+            plotly.Figure, a bar graph showing features and their corresponding importance
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
-        feat_imp = self.feature_importances
+        feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
 
         if not show_all_features:
@@ -364,7 +378,7 @@ class PipelineBase(ABC):
         # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
 
-        title = 'Feature Importances'
+        title = 'Feature Importance'
         subtitle = 'May display fewer features due to feature selection'
         data = [go.Bar(
             x=feat_imp['importance'],

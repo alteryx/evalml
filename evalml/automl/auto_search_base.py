@@ -289,16 +289,9 @@ class AutoSearchBase:
             pbar.set_description_str(desc=desc, refresh=True)
 
             evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
-            logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
             score = evaluation_results['cv_score_mean']
             score_to_minimize = -score if self.objective.greater_is_better else score
             self._automl_algorithm.add_result(score_to_minimize, pipeline)
-            logger.debug('Adding results complete')
-            self._add_result(trained_pipeline=pipeline,
-                             parameters=parameters,
-                             training_time=evaluation_results['training_time'],
-                             cv_data=evaluation_results['cv_data'],
-                             cv_scores=evaluation_results['cv_scores'])
 
             desc = "✔" + desc[1:]
             pbar.set_description_str(desc=desc, refresh=True)
@@ -376,7 +369,7 @@ class AutoSearchBase:
         desc = desc.ljust(self._MAX_NAME_LEN)
         pbar.set_description_str(desc=desc, refresh=True)
 
-        baseline_results = self._evaluate(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
+        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
                          parameters=strategy_dict,
                          training_time=baseline_results['training_time'],
@@ -425,7 +418,7 @@ class AutoSearchBase:
         ordered_scores.update({"# Testing": len(y_test)})
         return {"all_objective_scores": ordered_scores, "score": score}
 
-    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
+    def _compute_cv_scores(self, pipeline, X, y, raise_errors=True, pbar=None):
         start = time.time()
         cv_data = []
 
@@ -466,6 +459,20 @@ class AutoSearchBase:
             self.add_result_callback(self.results['pipeline_results'][pipeline_id], trained_pipeline)
 
         self._save_pipeline(pipeline_id, trained_pipeline)
+
+    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
+        parameters = pipeline.parameters
+        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+        logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+
+        self._add_result(trained_pipeline=pipeline,
+                         parameters=parameters,
+                         training_time=evaluation_results['training_time'],
+                         cv_data=evaluation_results['cv_data'],
+                         cv_scores=evaluation_results['cv_scores'])
+
+        logger.debug('Adding results complete')
+        return evaluation_results
 
     def _save_pipeline(self, pipeline_id, trained_pipeline):
         self.trained_pipelines[pipeline_id] = trained_pipeline
@@ -537,6 +544,27 @@ class AutoSearchBase:
 
         if return_dict:
             return pipeline_results
+
+    def add_to_rankings(self, pipeline, X, y):
+        """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
+        If pipeline already exists in rankings this method will return `None`.
+        Arguments:
+            pipeline (PipelineBase): pipeline to train and evaluate.
+
+            X (pd.DataFrame): the input training data of shape [n_samples, n_features].
+
+            y (pd.Series): the target training labels of length [n_samples].
+        """
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+
+        pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
+        for parameter in pipeline_rows['parameters']:
+            if pipeline.parameters == parameter:
+                return
+        self._evaluate(pipeline, X, y, raise_errors=True)
 
     @property
     def rankings(self):

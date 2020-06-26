@@ -390,7 +390,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
 
-
+    
 def test_invalid_data_splitter():
     data_splitter = pd.DataFrame()
     with pytest.raises(ValueError, match='Not a valid data splitter'):
@@ -443,3 +443,60 @@ def test_large_dataset_regression(mock_score):
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_rankings(test_pipeline, X, y)
+
+    assert len(automl.rankings) == 2
+    assert 0.1234 in automl.rankings['score'].values
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_rankings(test_pipeline, X, y)
+
+    test_pipeline_duplicate = dummy_binary_pipeline_class(parameters={})
+    assert automl.add_to_rankings(test_pipeline_duplicate, X, y) is None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoClassificationSearch(max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_rankings(test_pipeline, X, y)
+
+    class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
+        name = "Cool Binary Classification Pipeline"
+
+    mock_fit.return_value = CoolBinaryClassificationPipeline(parameters={})
+    test_pipeline_trained = CoolBinaryClassificationPipeline(parameters={}).fit(X, y)
+    automl.add_to_rankings(test_pipeline_trained, X, y)
+
+    assert list(automl.rankings['score'].values).count(0.1234) == 2
