@@ -114,10 +114,6 @@ class AutoSearchBase:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
 
-    @staticmethod
-    def _compute_allowed_model_families(allowed_pipelines):
-        return list(set([p.model_family for p in (allowed_pipelines)]))
-
     @property
     def data_check_results(self):
         return self._data_check_results
@@ -220,9 +216,13 @@ class AutoSearchBase:
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+
             self.allowed_pipelines = [make_pipeline(X, y, estimator, self.problem_type) for estimator in allowed_estimators]
-            logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
+
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
+
+        logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
         if self.allowed_pipelines == []:

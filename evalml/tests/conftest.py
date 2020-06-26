@@ -7,7 +7,11 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline
+)
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -21,6 +25,21 @@ def pytest_addoption(parser):
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def assert_allowed_pipelines_equal_helper():
+    def assert_allowed_pipelines_equal_helper(actual_allowed_pipelines, expected_allowed_pipelines):
+        for actual, expected in zip(actual_allowed_pipelines, expected_allowed_pipelines):
+            for pipeline_subclass in [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline]:
+                if issubclass(expected, pipeline_subclass):
+                    assert issubclass(expected, pipeline_subclass)
+                    break
+            assert actual.parameters == expected.parameters
+            assert actual.name == expected.name
+            assert actual.problem_type == expected.problem_type
+            assert actual.component_graph == expected.component_graph
+    return assert_allowed_pipelines_equal_helper
 
 
 @pytest.fixture
@@ -118,6 +137,17 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
         component_graph = [MockEstimator]
 
     return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+    return MockMulticlassClassificationPipeline
 
 
 @pytest.fixture

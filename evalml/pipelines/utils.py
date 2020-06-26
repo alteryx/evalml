@@ -260,6 +260,7 @@ def make_pipeline(X, y, estimator, problem_type):
     categorical_cols = X.select_dtypes(include=['category', 'object'])
     if estimator in {CatBoostClassifier, CatBoostRegressor} or len(categorical_cols.columns) > 0:
         # a workaround to avoid choosing an impute_strategy which won't work with categorical inputs
+        logger.debug("Limiting SimpleImputer to use 'most_frequent' strategy to avoid choosing an impute strategy that won't work with categorical inputs.")
         hyperparameters = {
             'Simple Imputer': {
                 "impute_strategy": ["most_frequent"]
