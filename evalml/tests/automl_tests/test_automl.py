@@ -13,7 +13,8 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -152,8 +153,11 @@ def test_rankings(X_y, X_y_reg):
     assert len(automl.rankings) == 2
 
 
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_str_search(mock_fit, X_y):
+def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     def _dummy_callback(param1, param2):
         return None
 
@@ -179,7 +183,7 @@ def test_automl_str_search(mock_fit, X_y):
         'Objective': search_params['objective'],
         'Max Time': search_params['max_time'],
         'Max Pipelines': search_params['max_pipelines'],
-        'Allowed Pipelines': ['Random Forest Binary Classification Pipeline', 'Logistic Regression Binary Pipeline'],
+        'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
         'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
@@ -194,7 +198,6 @@ def test_automl_str_search(mock_fit, X_y):
 
     automl = AutoMLSearch(**search_params)
     str_rep = str(automl)
-
     for param, value in param_str_reps.items():
         if isinstance(value, list):
             assert f"{param}" in str_rep
@@ -204,10 +207,16 @@ def test_automl_str_search(mock_fit, X_y):
             assert f"{param}: {str(value)}" in str_rep
     assert "Search Results" not in str_rep
 
-    automl.search(X, y, raise_errors=False)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    mock_predict_proba.assert_called()
+    mock_optimize_threshold.assert_called()
+
     str_rep = str(automl)
     assert "Search Results:" in str_rep
-    assert str(automl.rankings.drop(['parameters'], axis='columns')) in str_rep
+    assert automl.rankings.drop(['parameters'], axis='columns').to_string() in str_rep
 
 
 def test_automl_data_check_results_is_none_before_search():
@@ -299,9 +308,7 @@ def test_automl_str_no_param_search():
         'Objective': 'Log Loss Binary',
         'Max Time': 'None',
         'Max Pipelines': 'None',
-        'Allowed Pipelines': [
-            'Logistic Regression Binary Pipeline',
-            'Random Forest Binary Classification Pipeline'],
+        'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
         'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
@@ -333,8 +340,7 @@ def test_automl_str_no_param_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.automl_search.get_pipelines')
-def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
+def test_automl_feature_selection(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
@@ -345,9 +351,8 @@ def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y)
             """Mock fit, noop"""
 
     allowed_pipelines = [MockFeatureSelectionPipeline]
-    mock_get_pipelines.return_value = allowed_pipelines
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, start_iteration_callback=start_iteration_callback)
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2
@@ -408,7 +413,8 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert mock_algo_init.call_count == 2
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_pipelines'] == 1
-    assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
+    for actual, expected in zip(kwargs['allowed_pipelines'], [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=allowed_model_families)]):
+        assert actual.parameters == expected.parameters
 
 
 def test_verifies_allowed_pipelines(X_y_reg):
@@ -442,7 +448,7 @@ def test_init_objective():
 
 
 @patch('evalml.automl.automl_search.AutoMLSearch.search')
-def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi):
+def test_checks_at_search_time(mock_search, dummy_regression_pipeline_class, X_y_multi):
     X, y = X_y_multi
 
     error_text = "in search, problem_type mismatches label type."
@@ -455,7 +461,7 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi
     error_text = "in search, problem_type mismatches allowed_pipelines."
     mock_search.side_effect = ValueError(error_text)
 
-    allowed_pipelines = [dummy_regression_pipeline.__class__]
+    allowed_pipelines = [dummy_regression_pipeline_class]
     error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)

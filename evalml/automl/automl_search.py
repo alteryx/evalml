@@ -18,14 +18,13 @@ from evalml.data_checks import (
     EmptyDataChecks
 )
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
-from evalml.model_family import handle_model_family
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
-    get_pipelines
+    ModeBaselineMulticlassPipeline
 )
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
@@ -183,9 +182,8 @@ class AutoMLSearch:
 
         self._data_check_results = None
 
-        self.allowed_pipelines = allowed_pipelines or get_pipelines(problem_type=self.problem_type, model_families=allowed_model_families)
-        self.allowed_model_families = [handle_model_family(f) for f in (allowed_model_families or [])] or list(set([p.model_family for p in self.allowed_pipelines]))
-
+        self.allowed_pipelines = allowed_pipelines
+        self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
 
     @property
@@ -316,8 +314,21 @@ class AutoMLSearch:
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
 
-        self._validate_problem_type()
+        if self.allowed_pipelines is None:
+            logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+            self.allowed_pipelines = [make_pipeline(X, y, estimator, self.problem_type) for estimator in allowed_estimators]
 
+        if self.allowed_pipelines == []:
+            raise ValueError("No allowed pipelines to search")
+
+        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
+
+        logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
+        logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+
+        self._validate_problem_type()
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
