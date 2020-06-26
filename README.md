@@ -22,7 +22,7 @@ pip install evalml --index-url https://install.featurelabs.com/<KEY>
 
 #### Define objective
 ```python
-from evalml import AutoClassificationSearch
+from evalml import AutoMLSearch
 from evalml.objectives import FraudCost
 
 
@@ -36,7 +36,7 @@ fraud_objective = FraudCost(
 
 #### Run automl
 ```python
-automl = AutoClassificationSearch(objective=fraud_objective,
+automl = AutoMLSearch(problem_type='binary', objective=fraud_objective,
                      max_pipelines=3)
 
 automl.search(X_train, y_train)
@@ -62,7 +62,7 @@ pipeline.predict(X_test)
 
 Read more about EvalML in our [Documentation](https://evalml.featurelabs.com).
 
-## Built at Feature Labs
-<a href="https://www.featurelabs.com/">
-    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
+## Built at Alteryx Innovation Labs
+<a href="https://www.alteryx.com/innovation-labs">
+    <img src="docs/source/images/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
 </a>

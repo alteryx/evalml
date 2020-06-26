@@ -28,8 +28,8 @@ sys.path.insert(0, os.path.abspath(path))
 # -- Project information -----------------------------------------------------
 
 project = 'EvalML'
-copyright = '2019, Feature Labs, Inc.'
-author = 'Feature Labs, Inc.'
+copyright = '2019, Alteryx, Inc.'
+author = 'Alteryx Innovation Labs'
 
 # The short X.Y version
 version = evalml.__version__
@@ -150,7 +150,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'EvalML.tex', 'EvalML Documentation',
-     'Feature Labs, Inc.', 'manual'),
+     author, 'manual'),
 ]
 
 
