@@ -398,11 +398,10 @@ def test_automl_serialization(X_y, tmpdir):
     num_max_pipelines = 5
     automl = AutoMLSearch(problem_type='binary', max_pipelines=num_max_pipelines)
     automl.search(X, y)
-    pipeline = automl.get_pipeline(1)
     automl.save(path)
     loaded_automl = automl.load(path)
     for i in range(num_max_pipelines):
-        assert pipeline.score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
+        assert automl.get_pipeline(i).score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
         assert automl.rankings == loaded_automl.rankings
 
 
