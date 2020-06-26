@@ -320,8 +320,7 @@ def test_automl_str_no_param_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.automl_search.get_pipelines')
-def test_automl_feature_selection(mock_get_pipelines, mock_fit, mock_score, X_y):
+def test_automl_feature_selection(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
@@ -418,7 +417,7 @@ def test_init_problem_type_error():
         AutoMLSearch()
 
     with pytest.raises(KeyError, match=r"does not exist"):
-        AutoMLSearch(problem_type='multiclass')
+        AutoMLSearch(problem_type='multi')
 
 
 def test_init_objective():
@@ -442,7 +441,7 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi
     error_text = "in search, problem_type mismatches allowed_pipelines."
     mock_search.side_effect = ValueError(error_text)
 
-    allowed_pipelines = [dummy_regression_pipeline.__class__]
+    allowed_pipelines = [dummy_regression_pipeline]
     error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)

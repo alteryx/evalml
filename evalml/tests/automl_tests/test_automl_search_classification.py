@@ -432,7 +432,6 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y, X_y_mul
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
