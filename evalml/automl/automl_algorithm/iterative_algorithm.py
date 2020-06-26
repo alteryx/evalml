@@ -1,9 +1,10 @@
 import inspect
+import operator
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.pipelines.components import handle_component_class
-import operator
+
 
 class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
