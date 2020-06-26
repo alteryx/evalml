@@ -150,7 +150,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'EvalML.tex', 'EvalML Documentation',
-     'Alteryx Innovation Labs', 'manual'),
+     author, 'manual'),
 ]
 
 
