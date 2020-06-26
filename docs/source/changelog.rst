@@ -30,7 +30,7 @@ Changelog
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
-
+        * Add open source license, update some repo metadata :pr:`887`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
