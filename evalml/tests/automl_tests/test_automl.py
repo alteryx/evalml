@@ -428,7 +428,7 @@ def test_init_objective():
 
 
 @patch('evalml.automl.automl_search.AutoMLSearch.search')
-def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi):
+def test_checks_at_search_time(mock_search, dummy_regression_pipeline_class, X_y_multi):
     X, y = X_y_multi
 
     error_text = "in search, problem_type mismatches label type."
@@ -441,7 +441,7 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi
     error_text = "in search, problem_type mismatches allowed_pipelines."
     mock_search.side_effect = ValueError(error_text)
 
-    allowed_pipelines = [dummy_regression_pipeline]
+    allowed_pipelines = [dummy_regression_pipeline_class]
     error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)
