@@ -27,9 +27,10 @@ Changelog
         * Don't list base classes in `all_components` output :pr:`847`
         * Standardize all components to output pandas datastructures, and accept either pandas or numpy :pr:`853`
     * Changes
-        * Updated `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
-        * Refactored `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
-        * Refactored "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
+        * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
+        * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
         * Added open source license, update some repo metadata :pr:`887`
@@ -38,6 +39,7 @@ Changelog
     * Testing Changes
         * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
+        * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
 
 .. warning::
 

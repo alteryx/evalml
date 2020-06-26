@@ -35,17 +35,21 @@ from evalml.utils.logger import get_logger, log_subtitle, log_title
 logger = get_logger(__file__)
 
 
-class AutoSearchBase:
-    """Base class for AutoML searches."""
-    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
+class AutoMLSearch:
+    """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
+    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
+    _DEFAULT_OBJECTIVES = {'binary': 'log_loss_binary',
+                           'multiclass': 'log_loss_multi',
+                           'regression': 'r2'}
+
     def __init__(self,
                  problem_type=None,
-                 objective=None,
+                 objective='auto',
                  max_pipelines=None,
                  max_time=None,
                  patience=None,
@@ -60,15 +64,73 @@ class AutoSearchBase:
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=False,
-                 multiclass=None):
-        self.problem_type = problem_type
+                 optimize_thresholds=False):
+        """Automated pipeline search
+
+        Arguments:
+            problem_type (str or ProblemTypes): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
+
+            objective (str, ObjectiveBase): The objective to optimize for. When set to auto, chooses:
+                LogLossBinary for binary classification problems,
+                LogLossMulticlass for multiclass classification problems, and
+                R2 for regression problems.
+
+            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+                max_time is not set, then max_pipelines will default to max_pipelines of 5.
+
+            max_time (int, str): Maximum time to search for pipelines.
+                This will not start a new pipeline search after the duration
+                has elapsed. If it is an integer, then the time will be in seconds.
+                For strings, time can be specified as seconds, minutes, or hours.
+
+            patience (int): Number of iterations without improvement to stop search early. Must be positive.
+                If None, early stopping is disabled. Defaults to None.
+
+            tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+                Only applicable if patience is not None. Defaults to None.
+
+            allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
+                The default of None indicates all pipelines for this problem type are allowed. Setting this field will cause
+                allowed_model_families to be ignored.
+
+            allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
+                model families. Run evalml.list_model_families("binary") to see options. Change `binary`
+                to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
+                this parameter will be ignored.
+
+            data_split: data splitting method to use. Defaults to StratifiedKFold.
+
+            tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
+
+            start_iteration_callback (callable): function called before each pipeline training iteration.
+                Passed two parameters: pipeline_class, parameters.
+
+            add_result_callback (callable): function called after each pipeline training iteration.
+                Passed two parameters: results, trained_pipeline.
+
+            additional_objectives (list): Custom set of objectives to score on.
+                Will override default objectives for problem type if not empty.
+
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
+                None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+
+            verbose (boolean): If True, turn verbosity on. Defaults to True
+        """
+        try:
+            self.problem_type = handle_problem_types(problem_type)
+        except ValueError:
+            raise ValueError('choose one of (binary, multiclass, regression) as problem_type')
+
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
+        if objective == 'auto':
+            objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
         self.objective = get_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
@@ -215,9 +277,6 @@ class AutoSearchBase:
 
         self.data_split = self.data_split or default_data_split
 
-        if self.problem_type != ProblemTypes.REGRESSION:
-            self._check_multiclass(y)
-
         if data_checks is None:
             data_checks = DefaultDataChecks()
 
@@ -234,6 +293,8 @@ class AutoSearchBase:
                     logger.error(message)
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
                 raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+
+        self._validate_problem_type()
 
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
@@ -340,14 +401,16 @@ class AutoSearchBase:
                 return False
         return should_continue
 
-    def _check_multiclass(self, y):
-        if y.nunique() <= 2:
-            return
-        if self.objective.problem_type != ProblemTypes.MULTICLASS:
-            raise ValueError("Given objective {} is not compatible with a multiclass problem.".format(self.objective.name))
+    def _validate_problem_type(self):
+        if self.objective.problem_type != self.problem_type:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         for obj in self.additional_objectives:
-            if obj.problem_type != ProblemTypes.MULTICLASS:
-                raise ValueError("Additional objective {} is not compatible with a multiclass problem.".format(obj.name))
+            if obj.problem_type != self.problem_type:
+                raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
+
+        for pipeline in self.allowed_pipelines:
+            if not pipeline.problem_type == self.problem_type:
+                raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
     def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
