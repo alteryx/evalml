@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
+from .data_check_message import DataCheckError, DataCheckWarning
 
 from evalml.utils.logger import get_logger
 
@@ -9,24 +9,51 @@ logger = get_logger(__file__)
 
 
 class NoVarianceDataCheck(DataCheck):
+    """Check if any of the features or labels have no variance."""
 
     def __init__(self, count_nan_as_value=False):
+        """Check if any of the features or labels have no variance.
+
+        Arguments:
+            count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
+                If set to True, a feature that has one unique value and all other data is missing, a
+                DataCheckWarning will be returned instead of an error. Defaults to False.
+        """
 
         self.dropnan = not count_nan_as_value
 
     def _check_for_errors(self, column_name, count_unique, any_nulls):
+        """Checks if a column has no variance.
+
+        Arguments:
+            column_name (str): Name of column we are currently checking.
+            count_unique (float): Number of unique values in this column.
+            any_nulls (bool): Whether this column has any missing data.
+
+        Returns:
+            DataCheckWarning if the column has no variance.
+        """
 
         message = f"{column_name} {int(count_unique)} unique value."
 
         if count_unique <= 1:
 
-            return DataCheckWarning(message.format(name=column_name), self.name)
+            return DataCheckError(message.format(name=column_name), self.name)
 
         elif count_unique == 2 and not self.dropnan and any_nulls:
-            logger.warning(f"{column_name} two unique values including nulls. Consider encoding the nulls for "
-                           "this column to be useful for machine learning.")
+            return DataCheckWarning(f"{column_name} two unique values including nulls. Consider encoding the nulls for "
+                                    "this column to be useful for machine learning.", self.name)
 
-    def validate(self, X, y=None):
+    def validate(self, X, y):
+        """Check if any of the features or if the labels have no variance (1 unique value).
+
+        Args:
+            X (pd.DataFrame): The input features.
+            y (pd.Series): The labes.
+
+        Returns:
+            list (DataCheckWarning or DataCheckError), list of warnings/errors corresponding to features or labels with no variance.
+        """
 
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
