@@ -537,30 +537,17 @@ class AutoSearchBase:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features].
 
             y (pd.Series): the target training labels of length [n_samples].
-
-        Returns:
-            evaluation_results (dict): dictionary containing training time, cv scores, and other metrics.
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        pipeline_name = pipeline.name
-        pipeline_parameters = pipeline.parameters
-        full_rankings = pd.DataFrame.copy(self.full_rankings)
-
-        if pipeline_name in full_rankings['pipeline_name'].values:
-            pipeline_rows = full_rankings[full_rankings['pipeline_name'] == pipeline_name]
-            parameters = pipeline_rows['parameters'].values
-
-            for parameter in parameters:
-                if pipeline_parameters == parameter:
-                    return None
-
-        evaluation_results = self._evaluate(pipeline, X, y, raise_errors=True)
-        return evaluation_results
+        pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
+        for parameter in pipeline_rows['parameters']:
+            if pipeline.parameters == parameter:
+                return
+        self._evaluate(pipeline, X, y, raise_errors=True)
 
     @property
     def rankings(self):
