@@ -213,7 +213,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     mock_fit.assert_called()
     mock_score.assert_called()
     mock_predict_proba.assert_called()
-    mock_predict_proba.optimize_threshold()
+    mock_optimize_threshold.assert_called()
 
     str_rep = str(automl)
     assert "Search Results:" in str_rep
