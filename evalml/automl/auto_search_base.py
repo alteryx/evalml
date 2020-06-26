@@ -388,14 +388,8 @@ class AutoSearchBase:
             print('')
 
     def _do_evaluation(self, pipeline, X, y, train, test, raise_errors=True, pbar=None):
-        if isinstance(X, pd.DataFrame):
-            X_train, X_test = X.iloc[train], X.iloc[test]
-        else:
-            X_train, X_test = X[train], X[test]
-        if isinstance(y, pd.Series):
-            y_train, y_test = y.iloc[train], y.iloc[test]
-        else:
-            y_train, y_test = y[train], y[test]
+        X_train, X_test = X.iloc[train], X.iloc[test]
+        y_train, y_test = y.iloc[train], y.iloc[test]
 
         objectives_to_score = [self.objective] + self.additional_objectives
         try:
