@@ -10,8 +10,7 @@ from evalml.data_checks import (
     DataCheck,
     DataCheckError,
     DataChecks,
-    DataCheckWarning,
-    EmptyDataChecks
+    DataCheckWarning
 )
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
@@ -221,11 +220,18 @@ def test_automl_data_check_results_is_none_before_search():
 def test_automl_empty_data_checks(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, data_checks=EmptyDataChecks())
+
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
+    automl.search(X, y, data_checks=[])
     assert automl.data_check_results is None
     mock_fit.assert_called()
     mock_score.assert_called()
+
+    automl.search(X, y, data_checks="disabled")
+    assert automl.data_check_results is None
+
+    automl.search(X, y, data_checks=None)
+    assert automl.data_check_results is None
 
 
 @patch('evalml.data_checks.DefaultDataChecks.validate')
@@ -253,23 +259,34 @@ def test_automl_data_checks_raises_error(caplog):
         def validate(self, X, y):
             return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
 
-    data_checks = DataChecks(data_checks=[MockDataCheckErrorAndWarning()])
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    def _run_test(with_data_checks):
 
-    with pytest.raises(ValueError, match="Data checks raised"):
-        automl.search(X, y, data_checks=data_checks)
-    out = caplog.text
-    assert "error one" in out
-    assert "warning one" in out
-    assert automl.data_check_results == data_checks.validate(X, y)
+        automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
+
+        with pytest.raises(ValueError, match="Data checks raised"):
+            automl.search(X, y, data_checks=with_data_checks)
+        out = caplog.text
+        assert "error one" in out
+        assert "warning one" in out
+        assert automl.data_check_results == MockDataCheckErrorAndWarning().validate(X, y)
+
+    _run_test(with_data_checks=[MockDataCheckErrorAndWarning()])
+    _run_test(with_data_checks=DataChecks([MockDataCheckErrorAndWarning()]))
 
 
-def test_automl_not_data_check_object():
+def test_automl_bad_data_check_parameter_type():
     X = pd.DataFrame()
     y = pd.Series()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    with pytest.raises(ValueError, match="data_checks parameter must be a DataChecks object!"):
+
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
+
+    with pytest.raises(ValueError, match="Parameter data_checks must be a list, string, or None. Received int"):
         automl.search(X, y, data_checks=1)
+    with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
+        automl.search(X, y, data_checks=[1])
+    with pytest.raises(ValueError, match="If data_checks is a string, it must be either 'auto' or 'disabled'. "
+                                         "Received 'default'."):
+        automl.search(X, y, data_checks="default")
 
 
 def test_automl_str_no_param_search():
@@ -403,7 +420,7 @@ def test_obj_matches_problem_type(X_y):
     X, y = X_y
     with pytest.raises(ValueError, match="is not compatible with a"):
         auto = AutoMLSearch(problem_type='binary', objective='R2')
-        auto.search(X, y, data_checks=EmptyDataChecks())
+        auto.search(X, y, data_checks=[])
 
 
 def test_init_problem_type_error():
