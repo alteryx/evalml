@@ -11,7 +11,12 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
-from evalml.data_checks import DataChecks, DefaultDataChecks
+from evalml.data_checks import (
+    DataCheck,
+    DataChecks,
+    DefaultDataChecks,
+    EmptyDataChecks
+)
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.model_family import handle_model_family
 from evalml.objectives import get_objective, get_objectives
@@ -159,7 +164,43 @@ class AutoSearchBase:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    @staticmethod
+    def _validate_data_checks(data_checks):
+        """Validate data_checks parameter.
+
+        Arguments:
+            data_checks (DataChecks, list(Datacheck), str, None): Input to validate. If not of the right type,
+                raise an exception.
+
+        Returns:
+            An instance of DataChecks to perform.
+        """
+
+        if isinstance(data_checks, DataChecks):
+            return data_checks
+
+        elif isinstance(data_checks, list):
+            if not all(isinstance(check, DataCheck) for check in data_checks):
+                raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
+            return DataChecks(data_checks)
+
+        elif isinstance(data_checks, str):
+            if data_checks == "auto":
+                return DefaultDataChecks()
+            elif data_checks == "disabled":
+                return EmptyDataChecks()
+            else:
+                raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
+                                 f"Received '{data_checks}'.")
+
+        elif data_checks is None:
+            return EmptyDataChecks()
+
+        else:
+            raise ValueError("Parameter data_checks must be a list, string, or None. "
+                             f"Received {type(data_checks).__name__}")
+
+    def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -175,10 +216,12 @@ class AutoSearchBase:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
-            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
+            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before searching
+                for the best classifier. If data checks produce any errors, an exception will be thrown before the
+                search begins. If "disabled" or None, no data checks will be done.
+                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
         Returns:
-
             self
         """
         # don't show iteration plot outside of a jupyter notebook
@@ -198,13 +241,9 @@ class AutoSearchBase:
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)
 
-        if data_checks is None:
-            data_checks = DefaultDataChecks()
-
-        if not isinstance(data_checks, DataChecks):
-            raise ValueError("data_checks parameter must be a DataChecks object!")
-
+        data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
+
         if len(data_check_results) > 0:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
