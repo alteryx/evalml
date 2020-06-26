@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -16,6 +17,8 @@ all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 
 cases = [(all_distinct_X, all_distinct_y, True, []),
+         ([1, 2, 3, 4], [1, 2, 3, 2], False, []),
+         (np.arange(12).reshape(4, 3), [1, 2, 3], True, []),
          (all_null_X, all_distinct_y, False, [DataCheckWarning("Column feature has 0 unique value.", "NoVarianceDataCheck")]),
          (all_null_X, all_distinct_y, True, [DataCheckWarning("Column feature has 1 unique value.", "NoVarianceDataCheck")]),
          (all_distinct_X, all_null_y, True, [DataCheckWarning("The Labels have 1 unique value.", "NoVarianceDataCheck")]),
@@ -35,6 +38,6 @@ def test_no_variance_data_check_warnings(X, y, countna, answer, caplog):
 
     out = caplog.text
 
-    if caplog.text:
-        "Column feature has two unique values including nulls. Consider encoding the nulls for "
-        "this column to be useful for machine learning."
+    if out:
+        assert "Column feature has" in out
+        assert "The Labels have" in out
