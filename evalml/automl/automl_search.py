@@ -2,8 +2,8 @@ import time
 import warnings
 from collections import OrderedDict
 from sys import stdout
-import cloudpickle
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
@@ -600,6 +600,7 @@ class AutoMLSearch:
     def add_to_rankings(self, pipeline, X, y):
         """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
         If pipeline already exists in rankings this method will return `None`.
+
         Arguments:
             pipeline (PipelineBase): pipeline to train and evaluate.
 
@@ -642,11 +643,10 @@ class AutoMLSearch:
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
 
-
     def save(self, file_path):
         """Saves AutoML object at file path
 
-        Args:
+        Arguments:
             file_path (str) : location to save file
 
         Returns:
@@ -659,8 +659,8 @@ class AutoMLSearch:
     def load(file_path):
         """Loads AutoML object at file path
 
-        Args:
-            file_path (str) : location to load file
+        Arguments:
+            file_path (str) : location to find file to load
 
         Returns:
             AutoSearchBase object
