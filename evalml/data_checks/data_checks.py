@@ -1,5 +1,6 @@
 from .data_check import DataCheck
 
+
 class DataChecks:
     """A collection of data checks."""
 
