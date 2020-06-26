@@ -222,10 +222,14 @@ def test_automl_empty_data_checks(mock_fit, mock_score, X_y):
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
+
     automl.search(X, y, data_checks=[])
     assert automl.data_check_results is None
     mock_fit.assert_called()
     mock_score.assert_called()
+
+    automl.search(X, y, data_checks="disabled")
+    assert automl.data_check_results is None
 
     automl.search(X, y, data_checks="disabled")
     assert automl.data_check_results is None
