@@ -19,6 +19,7 @@ Changelog
         * Added kwargs to all components :pr:`863`
         * Updated `AutoSearchBase` to use dynamically generated preprocessing pipelines :pr:`870`
         * Added SelectColumns transformer :pr:`873`
+        * Added `default_parameters` class property to components and pipelines :pr:`879`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`

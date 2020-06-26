@@ -5,7 +5,9 @@
 .. inheritance-diagram:: {{ objname }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type', 'model_family', 'hyperparameters', 'custom_hyperparameters'] %}
+   {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type',
+                              'model_family', 'hyperparameters', 'custom_hyperparameters',
+                              'default_parameters'] %}
 
 
    {% block attributes %}
@@ -19,6 +21,7 @@
    .. autoattribute:: model_family
    .. autoattribute:: hyperparameters
    .. autoattribute:: custom_hyperparameters
+   .. autoattribute:: default_parameters
    {% endblock %}
 
    {% block instance_attributes %}
