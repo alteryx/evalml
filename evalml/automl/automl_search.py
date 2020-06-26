@@ -240,15 +240,13 @@ class AutoMLSearch:
                 raise an exception.
 
         Returns:
-            An instance of DataChecks to perform.
+            An instance of DataChecks used to perform checks before search.
         """
 
         if isinstance(data_checks, DataChecks):
             return data_checks
 
         elif isinstance(data_checks, list):
-            if not all(isinstance(check, DataCheck) for check in data_checks):
-                raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
             return DataChecks(data_checks)
 
         elif isinstance(data_checks, str):
@@ -264,7 +262,7 @@ class AutoMLSearch:
             return EmptyDataChecks()
 
         else:
-            raise ValueError("Parameter data_checks must be a list, string, or None. "
+            raise ValueError("Parameter data_checks must be a DataChecks instance, list, string, or None. "
                              f"Received {type(data_checks).__name__}")
 
     def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):

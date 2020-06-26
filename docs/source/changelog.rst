@@ -20,7 +20,7 @@ Changelog
         * Added SelectColumns transformer :pr:`873`
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
-        * Better support for disabling data checks in automl search :pr:`892`
+        * Added better support for disabling data checks in automl search :pr:`892`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
@@ -47,6 +47,7 @@ Changelog
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
 
 
 **v0.10.0 May 29, 2020**
