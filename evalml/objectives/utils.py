@@ -35,11 +35,6 @@ OPTIONS = {
 }
 
 
-default_objectives = {'binary': standard_metrics.LogLossBinary(),
-                      'multiclass': standard_metrics.LogLossMulticlass(),
-                      'regression': standard_metrics.R2()}
-
-
 def get_objective(objective):
     """Returns the Objective object of the given objective name
 
@@ -72,16 +67,3 @@ def get_objectives(problem_type):
     """
     problem_type = handle_problem_types(problem_type)
     return [obj for obj in OPTIONS.values() if obj.problem_type == problem_type]
-
-
-def get_default_objective(problem_type):
-    """Returns default objective associated with the given problem type
-
-    Args:
-        problem_type (str/ProblemTypes) : type of problem
-
-    Returns:
-        Default Objectives
-    """
-    problem_type = handle_problem_types(problem_type)
-    return default_objectives[problem_type.value]

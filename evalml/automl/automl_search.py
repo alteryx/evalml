@@ -14,11 +14,7 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.data_checks import DataChecks, DefaultDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.model_family import handle_model_family
-from evalml.objectives import (
-    get_default_objective,
-    get_objective,
-    get_objectives
-)
+from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
@@ -39,6 +35,10 @@ class AutoMLSearch:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
+
+    _DEFAULT_OBJECTIVES = {'binary': get_objective('log_loss_binary'),
+                           'multiclass': get_objective('log_loss_multi'),
+                           'regression': get_objective('r2')}
 
     def __init__(self,
                  problem_type=None,
@@ -61,7 +61,7 @@ class AutoMLSearch:
         """Automated pipeline search
 
         Arguments:
-            problem_type (str): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
+            problem_type (str or ProblemTypes): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
 
             objective (str, ObjectiveBase): The objective to optimize for. When set to auto, chooses:
                 LogLossBinary for binary classification problems,
@@ -129,9 +129,9 @@ class AutoMLSearch:
         else:
             self.cv = cv
         if objective == 'auto':
-            self.objective = get_default_objective(self.problem_type)
-        else:
-            self.objective = get_objective(objective)
+            objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
+        self.objective = get_objective(objective)
+
         if additional_objectives is None:
             additional_objectives = get_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it

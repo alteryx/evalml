@@ -13,7 +13,6 @@ from evalml.data_checks import (
     DataCheckWarning,
     EmptyDataChecks
 )
-from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
 from evalml.problem_types import ProblemTypes
@@ -421,9 +420,6 @@ def test_init_objective():
         error_automl = AutoMLSearch(problem_type=problem_type)
         assert error_automl.objective.name == defaults[problem_type]
 
-    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
-        AutoMLSearch(problem_type='binary', objective='binary')
-
 
 @patch('evalml.automl.automl_search.AutoMLSearch.search')
 def test_checks_at_search_time(mock_search, dummy_regression_pipeline, X_y_multi):
@@ -450,3 +446,15 @@ def test_objective_at_search_time(X_y_multi):
     error_automl = AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'],)
     with pytest.raises(ValueError, match="is not compatible with a "):
         error_automl.search(X, y)
+
+
+def test_default_objective():
+    correct_matches = {ProblemTypes.MULTICLASS: 'Log Loss Multiclass',
+                       ProblemTypes.BINARY: 'Log Loss Binary',
+                       ProblemTypes.REGRESSION: 'R2'}
+    for problem_type in correct_matches:
+        automl = AutoMLSearch(problem_type=problem_type)
+        assert automl.objective.name == correct_matches[problem_type]
+
+        automl = AutoMLSearch(problem_type=problem_type.name)
+        assert automl.objective.name == correct_matches[problem_type]
