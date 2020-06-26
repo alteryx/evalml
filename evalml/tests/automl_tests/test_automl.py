@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -415,6 +416,20 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert kwargs['max_pipelines'] == 1
     for actual, expected in zip(kwargs['allowed_pipelines'], [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=allowed_model_families)]):
         assert actual.parameters == expected.parameters
+
+
+def test_automl_serialization(X_y, tmpdir):
+    X, y = X_y
+    path = os.path.join(str(tmpdir), 'automl.pkl')
+    num_max_pipelines = 5
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=num_max_pipelines)
+    automl.search(X, y)
+    automl.save(path)
+    loaded_automl = automl.load(path)
+    for i in range(num_max_pipelines):
+        assert automl.get_pipeline(i).score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
+        assert automl.results == loaded_automl.results
+        pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
 
 def test_verifies_allowed_pipelines(X_y_reg):

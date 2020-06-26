@@ -22,6 +22,7 @@ Changelog
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
         * Added better support for disabling data checks in automl search :pr:`892`
+        * Added ability to save and load AutoML objects to file :pr:`888`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`

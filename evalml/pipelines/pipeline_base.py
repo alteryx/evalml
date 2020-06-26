@@ -402,7 +402,7 @@ class PipelineBase(ABC):
     def save(self, file_path):
         """Saves pipeline at file path
 
-        Args:
+        Arguments:
             file_path (str) : location to save file
 
         Returns:
@@ -415,11 +415,11 @@ class PipelineBase(ABC):
     def load(file_path):
         """Loads pipeline at file path
 
-        Args:
+        Arguments:
             file_path (str) : location to load file
 
         Returns:
-            PipelineBase obj
+            PipelineBase object
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
