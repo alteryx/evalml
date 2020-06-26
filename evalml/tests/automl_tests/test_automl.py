@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
 
-from evalml.automl import TrainingValidationSplit
 from evalml import AutoMLSearch
+from evalml.automl import TrainingValidationSplit
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,

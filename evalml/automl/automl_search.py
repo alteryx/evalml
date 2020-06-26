@@ -459,10 +459,7 @@ class AutoMLSearch:
                 pipeline.threshold = 0.5
                 if self.optimize_thresholds and self.objective.can_optimize_threshold:
                     y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                    if isinstance(y_predict_proba, pd.DataFrame):
-                        y_predict_proba = y_predict_proba.iloc[:, 1]
-                    else:
-                        y_predict_proba = y_predict_proba[:, 1]
+                    y_predict_proba = y_predict_proba[:, 1]
                     pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
             scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
             score = scores[self.objective.name]
