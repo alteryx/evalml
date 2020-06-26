@@ -62,7 +62,10 @@ pipeline.predict(X_test)
 
 Read more about EvalML in our [Documentation](https://evalml.featurelabs.com).
 
-## Built at Feature Labs
-<a href="https://www.featurelabs.com/">
-    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
+## Built at Alteryx Innovation Labs
+<a href="https://www.alteryx.com/innovation-labs">
+    <img src="https://innovation.alteryx.com/content/images/size/w1000/2020/04/innolabs_ayx_placeholder.png" alt="Alteryx Innovation Labs" />
+</a>
+<a href="https://www.alteryx.com/innovation-labs">
+    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Feature Labs" />
 </a>

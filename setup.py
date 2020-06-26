@@ -3,9 +3,9 @@ from setuptools import find_packages, setup
 setup(
     name='evalml',
     version='0.10.0',
-    author='Feature Labs, Inc.',
+    author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
-    url='http://www.featurelabs.com/',
+    url='https://www.alteryx.com/innovation-labs',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
     tests_require=open('test-requirements.txt').readlines(),
     packages=find_packages(),
