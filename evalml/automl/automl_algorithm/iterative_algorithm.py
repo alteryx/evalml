@@ -3,7 +3,7 @@ import inspect
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.pipelines.components import handle_component_class
-
+import operator
 
 class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
@@ -45,7 +45,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
                 raise AutoMLAlgorithmException('No results were reported from the first batch')
-            self._first_batch_results = sorted(self._first_batch_results)
+            self._first_batch_results = sorted(self._first_batch_results, key=operator.itemgetter(0))
 
         next_batch = []
         if self._batch_number == 0:

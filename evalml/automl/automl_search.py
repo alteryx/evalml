@@ -292,7 +292,6 @@ class AutoMLSearch:
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
         self._validate_problem_type()
-
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
