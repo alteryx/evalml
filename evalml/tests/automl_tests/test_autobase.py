@@ -390,7 +390,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     assert kwargs['max_pipelines'] == 1
     assert kwargs['allowed_pipelines'] == get_pipelines(problem_type=ProblemTypes.BINARY, model_families=allowed_model_families)
 
-    
+
 def test_invalid_data_splitter():
     data_splitter = pd.DataFrame()
     with pytest.raises(ValueError, match='Not a valid data splitter'):
