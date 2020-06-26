@@ -18,6 +18,7 @@ Changelog
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
         * Added kwargs to all components :pr:`863`
         * Added SelectColumns transformer :pr:`873`
+        * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
@@ -31,7 +32,7 @@ Changelog
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
-
+        * Add open source license, update some repo metadata :pr:`887`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
