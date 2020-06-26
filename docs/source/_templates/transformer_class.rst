@@ -6,13 +6,14 @@
 
 .. autoclass:: {{ objname }}
 
-   {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges'] %}
+   {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges', 'default_parameters'] %}
 
    {% block attributes %}
    .. Class attributes:
    .. autoattribute:: name
    .. autoattribute:: model_family
    .. autoattribute:: hyperparameter_ranges
+   .. autoattribute:: default_parameters
    {% endblock %}
 
    {% block instance_attributes %}

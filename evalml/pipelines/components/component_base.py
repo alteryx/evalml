@@ -2,13 +2,19 @@ import copy
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.utils import get_logger, get_random_state, log_subtitle
+from evalml.utils import (
+    classproperty,
+    get_logger,
+    get_random_state,
+    log_subtitle
+)
 
 logger = get_logger(__file__)
 
 
 class ComponentBase(ABC):
     """Base class for all components."""
+    _default_parameters = None
 
     def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
         self.random_state = get_random_state(random_state)
@@ -31,6 +37,21 @@ class ComponentBase(ABC):
     def parameters(self):
         """Returns the parameters which were used to initialize the component"""
         return copy.copy(self._parameters)
+
+    @classproperty
+    def default_parameters(cls):
+        """Returns the default parameters for this component.
+
+         Our convention is that Component.default_parameters == Component().parameters.
+
+         Returns:
+             dict: default parameters for this component.
+        """
+
+        if cls._default_parameters is None:
+            cls._default_parameters = cls().parameters
+
+        return cls._default_parameters
 
     def clone(self, random_state=0):
         """Constructs a new component with the same parameters
