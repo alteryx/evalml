@@ -58,7 +58,7 @@ class AutoClassificationSearch(AutoSearchBase):
                 to `multiclass` if your problem type is different. Note that if allowed_pipelines was provided, this parameter
                 will be ignored.
 
-            data_split: cross-validation method to use. Defaults to StratifiedKFold.
+            data_split: data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 

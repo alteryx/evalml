@@ -51,7 +51,7 @@ class AutoRegressionSearch(AutoSearchBase):
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            data_split: cross validation method to use. By default StratifiedKFold
+            data_split: data splitting method to use. Defaults to KFold.
 
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 

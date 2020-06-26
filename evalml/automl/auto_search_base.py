@@ -37,6 +37,7 @@ logger = get_logger(__file__)
 
 class AutoSearchBase:
     """Base class for AutoML searches."""
+    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
     _MAX_NAME_LEN = 40
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
@@ -70,7 +71,7 @@ class AutoSearchBase:
         self.optimize_thresholds = optimize_thresholds
         self.objective = get_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
-            raise ValueError("Object {} is not a valid data splitter".format(self.data_split.__class__))
+            raise ValueError("Not a valid data splitter")
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
@@ -204,13 +205,15 @@ class AutoSearchBase:
             y = pd.Series(y)
 
         # Set the default data splitter
-        if self.data_split is None:
-            if len(X.index) > 100000:
-                self.data_split = TrainingValidationSplit(test_size=0.25)
-            elif self.problem_type != ProblemTypes.REGRESSION:
-                self.data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
-            else:
-                self.data_split = KFold(n_splits=3, random_state=self.random_state)
+        if self.problem_type == ProblemTypes.REGRESSION:
+            default_data_split = self.data_split or KFold(n_splits=3, random_state=self.random_state)
+        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            default_data_split = self.data_split or StratifiedKFold(n_splits=3, random_state=self.random_state)
+
+        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
+            default_data_split = TrainingValidationSplit(test_size=0.25)
+
+        self.data_split = self.data_split or default_data_split
 
         if self.problem_type != ProblemTypes.REGRESSION:
             self._check_multiclass(y)

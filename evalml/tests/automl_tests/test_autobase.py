@@ -393,16 +393,53 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
 
 def test_invalid_data_splitter():
     data_splitter = pd.DataFrame()
-    with pytest.raises(ValueError) as exec_info:
+    with pytest.raises(ValueError, match='Not a valid data splitter'):
         AutoClassificationSearch(data_split=data_splitter)
-    assert "not a valid data splitter" in exec_info.value.args[0]
 
 
-def test_large_dataset():
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_large_dataset_binary(mock_score):
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i % 2 for i in range(101000)])
 
     automl = AutoClassificationSearch(multiclass=False, max_time=1, max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+def test_large_dataset_multiclass(mock_score):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i % 4 for i in range(101000)])
+
+    automl = AutoClassificationSearch(multiclass=True, max_time=1, max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_large_dataset_regression(mock_score):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i for i in range(101000)])
+
+    automl = AutoRegressionSearch(max_time=1, max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
