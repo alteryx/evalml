@@ -30,6 +30,7 @@ Changelog
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
+        * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Add open source license, update some repo metadata :pr:`887`
     * Documentation Changes
@@ -37,6 +38,7 @@ Changelog
     * Testing Changes
         * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
+        * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
 
 .. warning::
 
