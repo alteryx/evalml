@@ -17,7 +17,7 @@ from evalml.data_checks import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
-from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
@@ -486,8 +486,7 @@ def test_verifies_allowed_pipelines(X_y_reg):
 def test_obj_matches_problem_type(X_y):
     X, y = X_y
     with pytest.raises(ValueError, match="is not compatible with a"):
-        auto = AutoMLSearch(problem_type='binary', objective='R2')
-        auto.search(X, y, data_checks=EmptyDataChecks())
+        AutoMLSearch(problem_type='binary', objective='R2')
 
 
 def test_init_problem_type_error():
