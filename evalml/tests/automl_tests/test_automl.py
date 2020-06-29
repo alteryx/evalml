@@ -15,6 +15,7 @@ from evalml.data_checks import (
     EmptyDataChecks
 )
 from evalml.model_family import ModelFamily
+from evalml.objectives import FraudCost
 from evalml.pipelines import BinaryClassificationPipeline, get_pipelines
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
@@ -403,7 +404,14 @@ def test_large_dataset_binary(mock_score):
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i % 2 for i in range(101000)])
 
-    automl = AutoMLSearch(problem_type='multiclass', max_time=1, max_pipelines=1)
+    fraud_objective = FraudCost(amount_col='col_0')
+
+    automl = AutoMLSearch(problem_type='binary',
+                          objective=fraud_objective,
+                          additional_objectives=['auc', 'f1', 'precision'],
+                          max_time=1,
+                          max_pipelines=1,
+                          optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
     automl.search(X, y)
@@ -411,6 +419,7 @@ def test_large_dataset_binary(mock_score):
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
