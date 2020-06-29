@@ -28,6 +28,7 @@ Changelog
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
         * Standardize all components to output pandas datastructures, and accept either pandas or numpy :pr:`853`
+        * Fixed rankings and full_rankings error when search has not been run :pr:`894`
     * Changes
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
