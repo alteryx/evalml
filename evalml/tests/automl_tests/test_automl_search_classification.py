@@ -21,9 +21,9 @@ from evalml.objectives import (
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     ModeBaselineBinaryPipeline,
-    PipelineBase,
-    get_pipelines
+    PipelineBase
 )
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -419,31 +419,167 @@ def test_max_time(X_y):
     assert len(clf.results['pipeline_results']) == 1
 
 
-def test_automl_allowed_pipelines_init(dummy_binary_pipeline_class):
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, allowed_pipelines=None, allowed_model_families=None)
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y, X_y_multi):
+    is_multiclass = automl_type == ProblemTypes.MULTICLASS
+    X, y = X_y_multi if is_multiclass else X_y
+    problem_type = 'multiclass' if is_multiclass else 'binary'
+    automl = AutoMLSearch(problem_type=problem_type, allowed_pipelines=None, allowed_model_families=[])
+    assert automl.allowed_pipelines is None
+    with pytest.raises(ValueError, match="No allowed pipelines to search"):
+        automl.search(X, y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
+    expected_pipelines = [dummy_binary_pipeline_class]
+    mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
+    assert automl.allowed_model_families is None
+
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert automl.allowed_pipelines == expected_pipelines
+    assert automl.allowed_model_families == [ModelFamily.NONE]
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi):
+    X, y = X_y_multi
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=[dummy_multiclass_pipeline_class], allowed_model_families=None)
+    expected_pipelines = [dummy_multiclass_pipeline_class]
+    mock_score.return_value = {automl.objective.name: 1.0}
+    assert automl.allowed_pipelines == expected_pipelines
+    assert automl.allowed_model_families is None
+
+    automl.search(X, y)
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    assert automl.allowed_pipelines == expected_pipelines
+    assert automl.allowed_model_families == [ModelFamily.NONE]
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_fit, mock_score, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    mock_score.return_value = {automl.objective.name: 1.0}
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=None, allowed_model_families=['random_forest'])
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_allowed_pipelines_specified_allowed_model_families_multi(mock_fit, mock_score, X_y_multi, assert_allowed_pipelines_equal_helper):
+    X, y = X_y_multi
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    mock_score.return_value = {automl.objective.name: 1.0}
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+    mock_fit.reset_mock()
+    mock_score.reset_mock()
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=None, allowed_model_families=['random_forest'])
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST])]
+    assert automl.allowed_pipelines is None
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fit, mock_score, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=None, allowed_model_families=None)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=None)]
+    assert automl.allowed_pipelines is None
+
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    mock_fit.assert_called()
+    mock_score.assert_called()
 
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit, mock_score, X_y_multi, assert_allowed_pipelines_equal_helper):
+    X, y = X_y_multi
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=None, allowed_model_families=None)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=None)]
+    assert automl.allowed_pipelines is None
+
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
+    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    mock_fit.assert_called()
+    mock_score.assert_called()
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi, assert_allowed_pipelines_equal_helper):
+    X, y = X_y_multi
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=[dummy_multiclass_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    expected_pipelines = [dummy_multiclass_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
 
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, allowed_pipelines=None, allowed_model_families=['random_forest'])
-    expected_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])
-    assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
-
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2, allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
-    expected_pipelines = [dummy_binary_pipeline_class]
-    assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    automl.search(X, y)
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    mock_fit.assert_called()
+    mock_score.assert_called()
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')

@@ -254,6 +254,19 @@ def make_pipeline(X, y, estimator, problem_type):
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
+    hyperparameters = None
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    categorical_cols = X.select_dtypes(include=['category', 'object'])
+    if estimator in {CatBoostClassifier, CatBoostRegressor} or len(categorical_cols.columns) > 0:
+        # a workaround to avoid choosing an impute_strategy which won't work with categorical inputs
+        logger.debug("Limiting SimpleImputer to use 'most_frequent' strategy to avoid choosing an impute strategy that won't work with categorical inputs.")
+        hyperparameters = {
+            'Simple Imputer': {
+                "impute_strategy": ["most_frequent"]
+            }
+        }
+
     def get_pipeline_base_class(problem_type):
         """Returns pipeline base class for problem_type"""
         if problem_type == ProblemTypes.BINARY:
@@ -266,5 +279,8 @@ def make_pipeline(X, y, estimator, problem_type):
     base_class = get_pipeline_base_class(problem_type)
 
     class GeneratedPipeline(base_class):
+        custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
         component_graph = complete_component_graph
+        custom_hyperparameters = hyperparameters
+
     return GeneratedPipeline

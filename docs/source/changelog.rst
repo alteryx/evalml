@@ -17,9 +17,11 @@ Changelog
         * Added utility methods to calculate and graph permutation importances :pr:`860`, :pr:`880`
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
         * Added kwargs to all components :pr:`863`
+        * Updated `AutoSearchBase` to use dynamically generated preprocessing pipelines :pr:`870`
         * Added SelectColumns transformer :pr:`873`
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
+        * Added ability to save and load AutoML objects to file :pr:`888`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
@@ -48,6 +50,7 @@ Changelog
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Renamed `automl` `cv` argument to `data_split` :pr:`877`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
 
 
 **v0.10.0 May 29, 2020**
