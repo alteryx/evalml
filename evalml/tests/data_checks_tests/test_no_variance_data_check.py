@@ -14,7 +14,6 @@ all_null_X = pd.DataFrame({"feature": [None] * 4,
 two_distinct_with_nulls_X = pd.DataFrame({"feature": [1, 1, None, None],
                                           "feature_2": list(range(4))})
 
-
 all_distinct_y = pd.Series([1, 2, 3, 4])
 all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
@@ -44,6 +43,5 @@ cases = [(all_distinct_X, all_distinct_y, True, []),
 
 @pytest.mark.parametrize("X,y,countna,answer", cases)
 def test_no_variance_data_check_warnings(X, y, countna, answer):
-
     check = NoVarianceDataCheck(countna)
     assert check.validate(X, y) == answer
