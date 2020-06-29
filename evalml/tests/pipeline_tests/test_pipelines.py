@@ -553,7 +553,7 @@ def make_mock_multiclass_pipeline():
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
-def test_score_regression_single(mock_predict, mock_fit, X_y):
+def test_score_regression_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
@@ -566,7 +566,7 @@ def test_score_regression_single(mock_predict, mock_fit, X_y):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
-def test_score_binary_single(mock_predict, mock_fit, X_y):
+def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -579,7 +579,7 @@ def test_score_binary_single(mock_predict, mock_fit, X_y):
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
-def test_score_multiclass_single(mock_predict, mock_fit, X_y):
+def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
@@ -592,7 +592,7 @@ def test_score_multiclass_single(mock_predict, mock_fit, X_y):
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
-def test_score_regression_list(mock_predict, mock_fit, X_y):
+def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
@@ -605,7 +605,7 @@ def test_score_regression_list(mock_predict, mock_fit, X_y):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
-def test_score_binary_list(mock_predict, mock_fit, X_y):
+def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -618,7 +618,7 @@ def test_score_binary_list(mock_predict, mock_fit, X_y):
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
-def test_score_multi_list(mock_predict, mock_fit, X_y):
+def test_score_multi_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
@@ -632,7 +632,7 @@ def test_score_multi_list(mock_predict, mock_fit, X_y):
 @patch('evalml.objectives.R2.score')
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
-def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = y
@@ -647,7 +647,7 @@ def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective
 @patch('evalml.objectives.F1.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
-def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = y
@@ -662,7 +662,7 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
 @patch('evalml.objectives.F1Micro.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
-def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
+def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = y
@@ -774,7 +774,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y):
+def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = np.array([1] * 100)
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):

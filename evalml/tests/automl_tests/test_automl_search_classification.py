@@ -66,13 +66,13 @@ def test_get_pipeline_none(X_y_binary):
 def test_cv(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(problem_type='binary', cv=StratifiedKFold(cv_folds), max_pipelines=1)
+    automl = AutoMLSearch(problem_type='binary', data_split=StratifiedKFold(cv_folds), max_pipelines=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
-    automl = AutoMLSearch(problem_type='binary', cv=TimeSeriesSplit(cv_folds), max_pipelines=1)
+    automl = AutoMLSearch(problem_type='binary', data_split=TimeSeriesSplit(cv_folds), max_pipelines=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -240,7 +240,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
+def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', objective='precision', max_pipelines=1, optimize_thresholds=False)
@@ -255,7 +255,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {"AUC": 1.0}
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', objective='AUC', max_pipelines=1)
@@ -374,7 +374,7 @@ def test_plot_iterations_max_time(X_y_binary):
 
 
 @patch('IPython.display.display')
-def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
+def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
@@ -388,7 +388,7 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
 
 
 @patch('IPython.display.display')
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
+def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
     pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
@@ -432,7 +432,7 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class]
@@ -584,7 +584,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 

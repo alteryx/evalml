@@ -92,7 +92,7 @@ def test_et_objective_type(X_y_binary):
 
 @patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.predict')
-def test_et_binary_score(mock_predict, mock_fit, X_y):
+def test_et_binary_score(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
 
     mock_predict.return_value = y
