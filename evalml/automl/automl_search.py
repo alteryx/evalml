@@ -306,7 +306,7 @@ class AutoMLSearch:
 
         self.data_split = self.data_split or default_data_split
 
-        data_checks = self._validate_data_checks(data_checks
+        data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
 
         if len(data_check_results) > 0:
