@@ -1,9 +1,8 @@
 import inspect
 from operator import itemgetter
 
+from ...pipelines.components.utils import handle_component_class
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
-
-from evalml.pipelines.components import handle_component_class
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):

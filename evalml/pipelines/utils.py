@@ -2,25 +2,10 @@ import numpy as np
 import pandas as pd
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .classification import (
-    CatBoostBinaryClassificationPipeline,
-    CatBoostMulticlassClassificationPipeline,
-    LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
-    RFBinaryClassificationPipeline,
-    RFMulticlassClassificationPipeline,
-    XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline
-)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
-from .regression import (
-    CatBoostRegressionPipeline,
-    LinearRegressionPipeline,
-    RFRegressionPipeline,
-    XGBoostRegressionPipeline
-)
+from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
@@ -33,57 +18,19 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    RandomForestClassifier,
-    RandomForestRegressor,
     SimpleImputer,
-    StandardScaler,
-    XGBoostClassifier,
-    XGBoostRegressor
+    StandardScaler
 )
+from evalml.pipelines.components.utils import all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
+from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-_ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
-                  CatBoostMulticlassClassificationPipeline,
-                  LogisticRegressionBinaryPipeline,
-                  LogisticRegressionMulticlassPipeline,
-                  RFBinaryClassificationPipeline,
-                  RFMulticlassClassificationPipeline,
-                  XGBoostBinaryPipeline,
-                  XGBoostMulticlassPipeline,
-                  CatBoostRegressionPipeline,
-                  LinearRegressionPipeline,
-                  RFRegressionPipeline,
-                  XGBoostRegressionPipeline]
 
-
-_ALL_ESTIMATORS = [CatBoostClassifier,
-                   CatBoostRegressor,
-                   LinearRegressor,
-                   LogisticRegressionClassifier,
-                   RandomForestClassifier,
-                   RandomForestRegressor,
-                   XGBoostClassifier,
-                   XGBoostRegressor]
-
-
-def all_pipelines():
-    """Returns a complete list of all supported pipeline classes.
-
-    Returns:
-        list[PipelineBase]: a list of pipeline classes
-    """
-    pipelines = []
-    for pipeline_class in _ALL_PIPELINES:
-        try:
-            pipeline_class({})
-            pipelines.append(pipeline_class)
-        except (MissingComponentError, ImportError):
-            pipeline_name = pipeline_class.name
-            logger.debug('Pipeline {} failed import, withholding from all_pipelines'.format(pipeline_name))
-    return pipelines
+all_pipelines = get_importable_subclasses(PipelineBase, args=[{}],
+                                          message='Pipeline {} failed import, withholding from all_pipelines')
 
 
 def get_pipelines(problem_type, model_families=None):
@@ -125,23 +72,6 @@ def get_pipelines(problem_type, model_families=None):
             pipelines.append(p)
 
     return pipelines
-
-
-def all_estimators():
-    """Returns a complete list of all supported estimator classes.
-
-    Returns:
-        list[Estimator]: a list of estimator classes
-    """
-    estimators = []
-    for estimator_class in _ALL_ESTIMATORS:
-        try:
-            estimator_class()
-            estimators.append(estimator_class)
-        except (MissingComponentError, ImportError):
-            estimator_name = estimator_class.name
-            logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
-    return estimators
 
 
 def get_estimators(problem_type, model_families=None):

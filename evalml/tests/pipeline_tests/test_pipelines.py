@@ -43,8 +43,9 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_list_model_families(has_minimal_dependencies):
-    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
-    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.BASELINE, ModelFamily.EXTRA_TREES]
+    expected_model_families_binary = set(families)
+    expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
@@ -56,29 +57,29 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_pipelines()) == 6
+        assert len(all_pipelines()) == 18
     else:
-        assert len(all_pipelines()) == 12
+        assert len(all_pipelines()) == 24
 
 
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_estimators()) == 4
+        assert len(all_estimators()) == 10
     else:
-        assert len(all_estimators()) == 8
+        assert len(all_estimators()) == 14
 
 
 def test_get_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 6
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
+        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 8
+        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 8
     else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 8
+        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
+        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 8
+        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 8
 
     with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
         get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
@@ -90,15 +91,15 @@ def test_get_pipelines(has_minimal_dependencies):
 
 def test_get_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 2
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 5
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 5
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
     else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0

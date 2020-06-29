@@ -1,77 +1,21 @@
 # flake8:noqa
-import copy
 import inspect
-import sys
-
-from .component_base import ComponentBase
-from .estimators import (
-    BaselineClassifier,
-    BaselineRegressor,
-    CatBoostClassifier,
-    CatBoostRegressor,
-    ElasticNetClassifier,
-    ElasticNetRegressor,
-    ExtraTreesClassifier,
-    ExtraTreesRegressor,
-    LinearRegressor,
-    LogisticRegressionClassifier,
-    RandomForestClassifier,
-    RandomForestRegressor,
-    XGBoostClassifier,
-    XGBoostRegressor
-)
-from .transformers import (
-    DropColumns,
-    OneHotEncoder,
-    PerColumnImputer,
-    RFClassifierSelectFromModel,
-    RFRegressorSelectFromModel,
-    SelectColumns,
-    SimpleImputer,
-    StandardScaler
-)
 
 from evalml.exceptions import MissingComponentError
-from evalml.utils import get_logger, import_or_raise
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.utils import get_logger
+from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-# When adding new components please import above.
-# components_dict() automatically generates dict of components without required parameters
-
-
-def _components_dict():
-    """components_dict() looks through all imported modules and returns all components
-        that only have default parameters and can be instantiated"""
-
-    components = dict()
-    for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
-        params = inspect.getargspec(obj.__init__)
-        if issubclass(obj, ComponentBase) and obj is not ComponentBase:
-            if params.defaults:
-                if len(params.args) - 1 == len(params.defaults):
-                    components[obj.name] = obj
-    return components
-
-
-_ALL_COMPONENTS = _components_dict()
+all_estimators = get_importable_subclasses(Estimator, args=[],
+                                           message='Estimator {} failed import, withholding from all_estimators')
+all_transformers = get_importable_subclasses(Transformer, args=[],
+                                             message='Transformer {} failed import, withholding from all_transformers')
 
 
 def all_components():
-    """Returns a complete dict of all supported component classes.
-
-    Returns:
-        dict: a dict mapping component name to component class
-    """
-    components = copy.copy(_ALL_COMPONENTS)
-    for component_str, component_class in _ALL_COMPONENTS.items():
-        try:
-            component_class()
-        except ImportError:
-            component_name = component_class.name
-            logger.debug('Component {} failed import, withholding from all_components'.format(component_name))
-            components.pop(component_name)
-    return components
+    return all_estimators() + all_transformers()
 
 
 def handle_component_class(component_class):
@@ -92,7 +36,7 @@ def handle_component_class(component_class):
     if not isinstance(component_class, str):
         raise ValueError(("component_graph may only contain str or ComponentBase subclasses, not '{}'")
                          .format(type(component_class)))
-    component_classes = all_components()
+    component_classes = {component.name: component for component in all_components()}
     if component_class not in component_classes:
         raise MissingComponentError('Component "{}" was not found'.format(component_class))
     component_class = component_classes[component_class]
