@@ -437,6 +437,7 @@ def test_large_dataset_binary(mock_score):
     assert automl.data_split is None
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -453,6 +454,7 @@ def test_large_dataset_multiclass(mock_score):
     assert automl.data_split is None
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -469,6 +471,7 @@ def test_large_dataset_regression(mock_score):
     assert automl.data_split is None
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
