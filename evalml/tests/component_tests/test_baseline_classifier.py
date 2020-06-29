@@ -18,8 +18,8 @@ def test_baseline_invalid_strategy():
         BaselineClassifier(strategy="unfortunately invalid strategy")
 
 
-def test_baseline_access_without_fit(X_y_binary):
-    X, _ = X_y_binary
+def test_baseline_access_without_fit(X_y):
+    X, _ = X_y
     clf = BaselineClassifier()
     with pytest.raises(RuntimeError):
         clf.predict(X)
@@ -29,13 +29,13 @@ def test_baseline_access_without_fit(X_y_binary):
         clf.feature_importance
 
 
-def test_baseline_y_is_None(X_y_binary):
-    X, _ = X_y_binary
+def test_baseline_y_is_None(X_y):
+    X, _ = X_y
     with pytest.raises(ValueError):
         BaselineClassifier().fit(X, y=None)
 
 
-def test_baseline_binary_mode(X_y_binary):
+def test_baseline_binary_mode(X_y):
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
     y = pd.Series([10, 11, 10, 10])
     clf = BaselineClassifier(strategy="mode")
@@ -48,8 +48,8 @@ def test_baseline_binary_mode(X_y_binary):
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
-def test_baseline_binary_random(X_y_binary):
-    X, y = X_y_binary
+def test_baseline_binary_random(X_y):
+    X, y = X_y
     values = np.unique(y)
     clf = BaselineClassifier(strategy="random", random_state=0)
     clf.fit(X, y)
@@ -60,8 +60,8 @@ def test_baseline_binary_random(X_y_binary):
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
-def test_baseline_binary_random_weighted(X_y_binary):
-    X, y = X_y_binary
+def test_baseline_binary_random_weighted(X_y):
+    X, y = X_y
     values, counts = np.unique(y, return_counts=True)
     percent_freq = counts.astype(float) / len(y)
     assert percent_freq.sum() == 1.0

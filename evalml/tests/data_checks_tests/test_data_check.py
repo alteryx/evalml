@@ -31,8 +31,8 @@ def test_empty_data_check_validate(mock_data_check_class):
     assert mock_data_check_class().validate(pd.DataFrame()) == []
 
 
-def test_data_check_validate_simple(X_y_binary):
-    X, y = X_y_binary
+def test_data_check_validate_simple(X_y):
+    X, y = X_y
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y=None):

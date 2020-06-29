@@ -12,8 +12,8 @@ from evalml.utils import get_random_seed, get_random_state, import_or_raise
 importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
-def test_xg_init(X_y_regression):
-    X, y = X_y_regression
+def test_xg_init(X_y_reg):
+    X, y = X_y_reg
 
     parameters = {
         'Simple Imputer': {
@@ -45,8 +45,8 @@ def test_summary():
     assert XGBoostRegressionPipeline.summary == 'XGBoost Regressor w/ One Hot Encoder + Simple Imputer'
 
 
-def test_xgboost_regression(X_y_regression):
-    X, y = X_y_regression
+def test_xgboost_regression(X_y_reg):
+    X, y = X_y_reg
 
     random_seed = 42
     xgb_random_seed = get_random_seed(get_random_state(random_seed), min_bound=XGBoostRegressor.SEED_MIN, max_bound=XGBoostRegressor.SEED_MAX)

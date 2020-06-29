@@ -131,7 +131,7 @@ def test_describe_component():
         pass
 
 
-def test_missing_attributes(X_y_binary):
+def test_missing_attributes(X_y):
     class MockComponentName(ComponentBase):
         model_family = ModelFamily.NONE
 
@@ -152,8 +152,8 @@ def test_missing_attributes(X_y_binary):
         MockEstimatorWithoutAttribute()
 
 
-def test_missing_methods_on_components(X_y_binary, test_classes):
-    X, y = X_y_binary
+def test_missing_methods_on_components(X_y, test_classes):
+    X, y = X_y
     MockComponent, MockEstimator, MockTransformer = test_classes
 
     class MockTransformerWithFit(Transformer):
@@ -184,8 +184,8 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         transformer_with_fit.fit_transform(X)
 
 
-def test_component_fit(X_y_binary):
-    X, y = X_y_binary
+def test_component_fit(X_y):
+    X, y = X_y
 
     class MockEstimator():
         def fit(self, X, y):
@@ -208,8 +208,8 @@ def test_component_fit(X_y_binary):
     assert isinstance(est.fit(X, y), ComponentBase)
 
 
-def test_component_fit_transform(X_y_binary):
-    X, y = X_y_binary
+def test_component_fit_transform(X_y):
+    X, y = X_y
 
     class MockTransformerWithFitTransform(Transformer):
         name = "Mock Transformer"
@@ -370,8 +370,8 @@ def test_clone_random_state():
     assert clf_clone.random_state.randint(2**30) == clf.random_state.randint(2**30)
 
 
-def test_clone_fitted(X_y_binary):
-    X, y = X_y_binary
+def test_clone_fitted(X_y):
+    X, y = X_y
     params = {'param_a': 3, 'param_b': 7}
     clf = MockFitComponent(**params)
     random_state_first_val = clf.random_state.randint(2**30)
@@ -419,8 +419,8 @@ def test_component_has_random_state():
         assert "random_state" in params
 
 
-def test_transformer_transform_output_type(X_y_binary):
-    X_np, y_np = X_y_binary
+def test_transformer_transform_output_type(X_y):
+    X_np, y_np = X_y
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
     y_list = list(y_np)
@@ -468,8 +468,8 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert (transform_output.columns == X_cols_expected).all()
 
 
-def test_estimator_predict_output_type(X_y_binary):
-    X_np, y_np = X_y_binary
+def test_estimator_predict_output_type(X_y):
+    X_np, y_np = X_y
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
     y_list = list(y_np)

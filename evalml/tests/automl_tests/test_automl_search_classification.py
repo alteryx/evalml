@@ -27,8 +27,8 @@ from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
-def test_init(X_y_binary):
-    X, y = X_y_binary
+def test_init(X_y):
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1, n_jobs=4)
     automl.search(X, y)
@@ -55,16 +55,16 @@ def test_init(X_y_binary):
     assert not automl.best_pipeline.feature_importance.isnull().all().all()
 
 
-def test_get_pipeline_none(X_y_binary):
-    X, y = X_y_binary
+def test_get_pipeline_none(X_y):
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary')
     with pytest.raises(RuntimeError, match="Pipeline not found"):
         automl.describe_pipeline(0)
 
 
-def test_cv(X_y_binary):
-    X, y = X_y_binary
+def test_data_split(X_y):
+    X, y = X_y
     cv_folds = 5
     automl = AutoMLSearch(problem_type='binary', data_split=StratifiedKFold(cv_folds), max_pipelines=1)
     automl.search(X, y)
@@ -79,37 +79,37 @@ def test_cv(X_y_binary):
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
 
-def test_max_pipelines(X_y_binary):
-    X, y = X_y_binary
+def test_max_pipelines(X_y):
+    X, y = X_y
     max_pipelines = 5
     automl = AutoMLSearch(problem_type='binary', max_pipelines=max_pipelines)
     automl.search(X, y)
     assert len(automl.full_rankings) == max_pipelines
 
 
-def test_specify_objective(X_y_binary):
-    X, y = X_y_binary
+def test_specify_objective(X_y):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_pipelines=1)
     automl.search(X, y)
     assert isinstance(automl.objective, Precision)
     assert automl.best_pipeline.threshold is not None
 
 
-def test_recall_error(X_y_binary):
-    X, y = X_y_binary
+def test_recall_error(X_y):
+    X, y = X_y
     error_msg = 'Could not find the specified objective.'
     with pytest.raises(ObjectiveNotFoundError, match=error_msg):
         AutoMLSearch(problem_type='binary', objective='recall', max_pipelines=1)
 
 
-def test_recall_object(X_y_binary):
-    X, y = X_y_binary
+def test_recall_object(X_y):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective=Recall(), max_pipelines=1)
     automl.search(X, y)
 
 
-def test_binary_auto(X_y_binary):
-    X, y = X_y_binary
+def test_binary_auto(X_y):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective="log_loss_binary", max_pipelines=5)
     automl.search(X, y)
     y_pred = automl.best_pipeline.predict(X)
@@ -166,8 +166,8 @@ def test_categorical_classification(X_y_categorical_classification):
     assert not automl.get_pipeline(0).feature_importance.isnull().all().all()
 
 
-def test_random_state(X_y_binary):
-    X, y = X_y_binary
+def test_random_state(X_y):
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_pipelines=5, random_state=0)
     automl.search(X, y)
@@ -177,8 +177,8 @@ def test_random_state(X_y_binary):
     assert automl.rankings.equals(automl_1.rankings)
 
 
-def test_callback(X_y_binary):
-    X, y = X_y_binary
+def test_callback(X_y):
+    X, y = X_y
 
     counts = {
         "start_iteration_callback": 0,
@@ -201,8 +201,8 @@ def test_callback(X_y_binary):
     assert counts["add_result_callback"] == max_pipelines
 
 
-def test_additional_objectives(X_y_binary):
-    X, y = X_y_binary
+def test_additional_objectives(X_y):
+    X, y = X_y
 
     objective = FraudCost(retry_percentage=.5,
                           interchange_fee=.02,
@@ -219,9 +219,9 @@ def test_additional_objectives(X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary, caplog):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y, caplog):
     mock_optimize_threshold.return_value = 0.8
-    X, y = X_y_binary
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective='precision', max_pipelines=1, optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
@@ -240,9 +240,9 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
+def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y):
     mock_optimize_threshold.return_value = 0.8
-    X, y = X_y_binary
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective='precision', max_pipelines=1, optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     automl.search(X, y)
@@ -255,9 +255,9 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.PipelineBase.fit')
-def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
+def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     mock_score.return_value = {"AUC": 1.0}
-    X, y = X_y_binary
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective='AUC', max_pipelines=1)
     automl.search(X, y)
     mock_fit.assert_called()
@@ -265,8 +265,8 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     assert automl.best_pipeline.threshold == 0.5
 
 
-def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
-    X, y = X_y_binary
+def test_describe_pipeline_objective_ordered(X_y, caplog):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective='AUC', max_pipelines=2)
     automl.search(X, y)
 
@@ -326,8 +326,8 @@ def test_early_stopping(caplog):
     assert "2 iterations without improvement. Stopping search early." in out
 
 
-def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
-    X, y = X_y_binary
+def test_plot_disabled_missing_dependency(X_y, has_minimal_dependencies):
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=3)
     if has_minimal_dependencies:
@@ -337,9 +337,9 @@ def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_pipelines(X_y_binary):
+def test_plot_iterations_max_pipelines(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y_binary
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', objective="f1", max_pipelines=3)
     automl.search(X, y)
@@ -355,9 +355,9 @@ def test_plot_iterations_max_pipelines(X_y_binary):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(X_y_binary):
+def test_plot_iterations_max_time(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y_binary
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', objective="f1", max_time=10)
     automl.search(X, y, show_iteration_plot=False)
@@ -374,10 +374,10 @@ def test_plot_iterations_max_time(X_y_binary):
 
 
 @patch('IPython.display.display')
-def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
+def test_plot_iterations_ipython_mock(mock_ipython_display, X_y):
     pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y_binary
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', objective="f1", max_pipelines=3)
     automl.search(X, y)
@@ -388,10 +388,10 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
 
 
 @patch('IPython.display.display')
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
+def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y):
     pytest.importorskip('IPython.display', reason='Skipping plotting test because ipywidgets not installed')
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y_binary
+    X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', objective="f1", max_pipelines=3)
     automl.search(X, y)
@@ -411,8 +411,8 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_b
     assert len(y) == 3
 
 
-def test_max_time(X_y_binary):
-    X, y = X_y_binary
+def test_max_time(X_y):
+    X, y = X_y
     clf = AutoMLSearch(problem_type='binary', max_time=1e-16)
     clf.search(X, y)
     # search will always run at least one pipeline
@@ -420,9 +420,9 @@ def test_max_time(X_y_binary):
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, X_y_multi):
+def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y, X_y_multi):
     is_multiclass = automl_type == ProblemTypes.MULTICLASS
-    X, y = X_y_multi if is_multiclass else X_y_binary
+    X, y = X_y_multi if is_multiclass else X_y
     problem_type = 'multiclass' if is_multiclass else 'binary'
     automl = AutoMLSearch(problem_type=problem_type, allowed_pipelines=None, allowed_model_families=[])
     assert automl.allowed_pipelines is None
@@ -432,8 +432,8 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
+def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class]
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -466,8 +466,8 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mo
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_fit, mock_score, X_y_binary, assert_allowed_pipelines_equal_helper):
-    X, y = X_y_binary
+def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_fit, mock_score, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
@@ -520,8 +520,8 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_multi(mock_fi
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fit, mock_score, X_y_binary, assert_allowed_pipelines_equal_helper):
-    X, y = X_y_binary
+def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fit, mock_score, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=None, allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=None)]
@@ -552,8 +552,8 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, assert_allowed_pipelines_equal_helper):
-    X, y = X_y_binary
+def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y, assert_allowed_pipelines_equal_helper):
+    X, y = X_y
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
@@ -584,8 +584,8 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     allowed_pipelines = [dummy_binary_pipeline_class]

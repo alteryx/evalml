@@ -28,8 +28,8 @@ def test_problem_types():
     assert len(ElasticNetRegressor.supported_problem_types) == 1
 
 
-def test_fit_predict(X_y_regression):
-    X, y = X_y_regression
+def test_fit_predict(X_y):
+    X, y = X_y
 
     sk_clf = SKElasticNetRegressor(alpha=0.5,
                                    l1_ratio=0.5,
@@ -46,8 +46,8 @@ def test_fit_predict(X_y_regression):
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
 
 
-def test_feature_importance(X_y_regression):
-    X, y = X_y_regression
+def test_feature_importance(X_y):
+    X, y = X_y
 
     sk_clf = SKElasticNetRegressor(alpha=0.5,
                                    l1_ratio=0.5,

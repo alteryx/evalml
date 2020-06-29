@@ -34,9 +34,9 @@ def test_summary():
     assert CatBoostRegressionPipeline.summary == 'CatBoost Regressor w/ Simple Imputer'
 
 
-def test_catboost_regression(X_y_regression):
+def test_catboost_regression(X_y_reg):
     from catboost import CatBoostRegressor as CBRegressor
-    X, y = X_y_regression
+    X, y = X_y_reg
 
     random_seed = 42
     catboost_random_seed = get_random_seed(get_random_state(random_seed), min_bound=CatBoostRegressor.SEED_MIN, max_bound=CatBoostRegressor.SEED_MAX)

@@ -37,15 +37,12 @@ Changelog
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
         * Added open source license, update some repo metadata :pr:`887`
-        * Remove dead code in `_get_preprocessing_components` :pr:`896`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
         * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
-        * Cleaned up fixture names and usages in tests :pr:`895`
-
 
 .. warning::
 

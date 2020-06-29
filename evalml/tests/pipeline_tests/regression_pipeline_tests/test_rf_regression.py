@@ -9,8 +9,8 @@ from evalml.objectives import R2
 from evalml.pipelines import RFRegressionPipeline
 
 
-def test_rf_init(X_y_regression):
-    X, y = X_y_regression
+def test_rf_init(X_y_reg):
+    X, y = X_y_reg
 
     parameters = {
         'Simple Imputer': {
@@ -88,8 +88,8 @@ def test_rf_regression(X_y_categorical_regression):
     np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
-def test_rfr_input_feature_names(X_y_regression):
-    X, y = X_y_regression
+def test_rfr_input_feature_names(X_y_reg):
+    X, y = X_y_reg
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

@@ -17,8 +17,8 @@ from evalml.utils import get_random_seed, get_random_state, import_or_raise
 importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
-def test_xg_init(X_y_binary):
-    X, y = X_y_binary
+def test_xg_init(X_y):
+    X, y = X_y
 
     parameters = {
         'Simple Imputer': {
@@ -66,8 +66,8 @@ def test_summary():
     assert XGBoostBinaryPipeline.summary == 'XGBoost Classifier w/ Simple Imputer + One Hot Encoder'
 
 
-def test_xgboost_objective_tuning(X_y_binary):
-    X, y = X_y_binary
+def test_xgboost_objective_tuning(X_y):
+    X, y = X_y
 
     parameters = {
         'Simple Imputer': {
@@ -165,8 +165,8 @@ def test_xg_multi(X_y_multi):
     assert((y_pred == y_pred_with_objective).all())
 
 
-def test_xg_input_feature_names(X_y_binary):
-    X, y = X_y_binary
+def test_xg_input_feature_names(X_y):
+    X, y = X_y
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

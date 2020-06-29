@@ -6,8 +6,8 @@ from evalml import AutoMLSearch
 from evalml.objectives import FraudCost
 
 
-def test_fraud_objective(X_y_binary):
-    X, y = X_y_binary
+def test_fraud_objective(X_y):
+    X, y = X_y
 
     objective = FraudCost(retry_percentage=.5,
                           interchange_fee=.02,
@@ -23,8 +23,8 @@ def test_fraud_objective(X_y_binary):
     pipeline.score(X, y, [objective])
 
 
-def test_fraud_objective_function_amount_col(X_y_binary):
-    X, y = X_y_binary
+def test_fraud_objective_function_amount_col(X_y):
+    X, y = X_y
 
     objective = FraudCost(retry_percentage=.5,
                           interchange_fee=.02,
@@ -36,7 +36,7 @@ def test_fraud_objective_function_amount_col(X_y_binary):
         objective.objective_function(y_true, y_predicted, X)
 
 
-def test_input_contains_nan(X_y_binary):
+def test_input_contains_nan(X_y):
     fraud_cost = FraudCost(amount_col="value")
     y_predicted = np.array([np.nan, 0, 0])
     y_true = np.array([1, 2, 1])
@@ -96,8 +96,8 @@ def test_binary_more_than_two_unique_values():
         fraud_cost.score(y_true, y_predicted)
 
 
-def test_fraud_objective_score(X_y_binary):
-    X, y = X_y_binary
+def test_fraud_objective_score(X_y):
+    X, y = X_y
     fraud_cost = FraudCost(amount_col="value")
 
     y_predicted = pd.Series([.1, .5, .5])
