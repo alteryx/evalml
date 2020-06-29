@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from evalml import AutoMLSearch
-from evalml.demos import load_diabetes
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
@@ -55,8 +54,8 @@ def test_random_state(X_y_regression):
     assert pd.testing.assert_frame_equal(automl.rankings, automl_1.rankings) is None
 
 
-def test_categorical_regression(X_y_regression_categorical_regression):
-    X, y = X_y_regression_categorical_regression
+def test_categorical_regression(X_y_categorical_regression):
+    X, y = X_y_categorical_regression
     automl = AutoMLSearch(problem_type='regression', objective="R2", max_pipelines=5, random_state=0)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
