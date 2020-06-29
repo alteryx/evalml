@@ -501,6 +501,20 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y)
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    automl.add_to_rankings(test_pipeline, X, y)
+
+    assert len(automl.rankings) == 1
+    assert 0.1234 in automl.rankings['score'].values
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 0.1234}
@@ -550,7 +564,7 @@ def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     assert automl.has_searched == True
 
 
-def test_no_search_properties():
+def test_no_search():
     automl = AutoMLSearch(problem_type='binary')
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
@@ -560,12 +574,12 @@ def test_no_search_properties():
     assert (automl.full_rankings.columns == df_columns).all()
 
     assert automl._data_check_results is None
-
+    
     with pytest.raises(RuntimeError):
         automl.best_pipeline
-
+    
     with pytest.raises(RuntimeError):
         automl.get_pipeline(0)
-
+    
     with pytest.raises(RuntimeError):
         automl.describe_pipeline(0)
