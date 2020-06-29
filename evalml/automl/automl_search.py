@@ -20,8 +20,10 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
+from evalml.exceptions import PipelineNotFoundError
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
+    BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline
@@ -170,7 +172,6 @@ class AutoMLSearch:
             'pipeline_results': {},
             'search_order': []
         }
-        self.trained_pipelines = {}
         self.random_state = get_random_state(random_state)
         self.n_jobs = n_jobs
 
@@ -500,17 +501,18 @@ class AutoMLSearch:
 
                 if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
-                pipeline.fit(X_train, y_train)
+                cv_pipeline = pipeline.clone()
+                cv_pipeline.fit(X_train, y_train)
                 if self.objective.problem_type == ProblemTypes.BINARY:
-                    pipeline.threshold = 0.5
+                    cv_pipeline.threshold = 0.5
                     if self.optimize_thresholds and self.objective.can_optimize_threshold:
-                        y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+                        y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
                         if isinstance(y_predict_proba, pd.DataFrame):
                             y_predict_proba = y_predict_proba.iloc[:, 1]
                         else:
                             y_predict_proba = y_predict_proba[:, 1]
-                        pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                scores = pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 score = scores[self.objective.name]
             except Exception as e:
                 logger.error("Exception during automl search: {}".format(str(e)))
@@ -525,7 +527,11 @@ class AutoMLSearch:
             ordered_scores.update(scores)
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
-            cv_data.append({"all_objective_scores": ordered_scores, "score": score})
+
+            evaluation_entry = {"all_objective_scores": ordered_scores, "score": score}
+            if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
+                evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
+            cv_data.append(evaluation_entry)
 
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
@@ -552,15 +558,12 @@ class AutoMLSearch:
             "score": cv_score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
-            "cv_data": cv_data
+            "cv_data": cv_data,
         }
-
         self.results['search_order'].append(pipeline_id)
 
         if self.add_result_callback:
             self.add_result_callback(self.results['pipeline_results'][pipeline_id], trained_pipeline)
-
-        self._save_pipeline(pipeline_id, trained_pipeline)
 
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         parameters = pipeline.parameters
@@ -576,22 +579,25 @@ class AutoMLSearch:
         logger.debug('Adding results complete')
         return evaluation_results
 
-    def _save_pipeline(self, pipeline_id, trained_pipeline):
-        self.trained_pipelines[pipeline_id] = trained_pipeline
-
-    def get_pipeline(self, pipeline_id):
-        """Retrieves trained pipeline
+    def get_pipeline(self, pipeline_id, random_state=0):
+        """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
+        initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
         Returns:
-            Pipeline: pipeline associated with id
+            PipelineBase: untrained pipeline instance associated with the provided ID
         """
-        if pipeline_id not in self.trained_pipelines:
-            raise RuntimeError("Pipeline not found")
-
-        return self.trained_pipelines[pipeline_id]
+        pipeline_results = self.results['pipeline_results'].get(pipeline_id)
+        if pipeline_results is None:
+            raise PipelineNotFoundError("Pipeline not found in automl results")
+        pipeline_class = pipeline_results.get('pipeline_class')
+        parameters = pipeline_results.get('parameters')
+        if pipeline_class is None or parameters is None:
+            raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
+        return pipeline_class(parameters)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
@@ -689,7 +695,11 @@ class AutoMLSearch:
 
     @property
     def best_pipeline(self):
-        """Returns the best model found"""
+        """Returns an untrained instance of the best pipeline and parameters found during automl search.
+
+        Returns:
+            PipelineBase: untrained pipeline instance associated with the best automl search result.
+        """
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
 
