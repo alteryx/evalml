@@ -346,6 +346,5 @@ def test_data_types(data_type):
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert X_t.shape == (3, 3)
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
