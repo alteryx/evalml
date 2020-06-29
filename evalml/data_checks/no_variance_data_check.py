@@ -21,32 +21,35 @@ class NoVarianceDataCheck(DataCheck):
         """
         self.dropnan = not count_nan_as_value
 
-    def _check_for_errors(self, column_name, count_unique, any_nulls):
+    def _check_for_errors(self, column_name_representation, count_unique, any_nulls):
         """Checks if a column has no variance.
 
         Arguments:
-            column_name (str): Name of column we are currently checking.
+            column_name_representation (str): How the column will be represented in the warning/error message.
+                If we are checking a feature column, the representation will be 'Column {column_name} has'.
+                If we are checking the labels, it will be 'The Labels have'.
             count_unique (float): Number of unique values in this column.
             any_nulls (bool): Whether this column has any missing data.
 
         Returns:
             DataCheckError if the column has no variance.
         """
-        message = f"{column_name} {int(count_unique)} unique value."
+        message = f"{column_name_representation} {int(count_unique)} unique value."
 
         if count_unique <= 1:
-            return DataCheckError(message.format(name=column_name), self.name)
+            return DataCheckError(message.format(name=column_name_representation), self.name)
 
         elif count_unique == 2 and not self.dropnan and any_nulls:
-            return DataCheckWarning(f"{column_name} two unique values including nulls. Consider encoding the nulls for "
+            return DataCheckWarning(f"{column_name_representation} two unique values including nulls. " 
+                                    "Consider encoding the nulls for "
                                     "this column to be useful for machine learning.", self.name)
 
     def validate(self, X, y):
         """Check if any of the features or if the labels have no variance (1 unique value).
 
-        Args:
+        Arguments:
             X (pd.DataFrame): The input features.
-            y (pd.Series): The labes.
+            y (pd.Series): The labels.
 
         Returns:
             list (DataCheckWarning or DataCheckError), list of warnings/errors corresponding to features or labels with no variance.
