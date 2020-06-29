@@ -10,7 +10,7 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
-        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
+        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830` :pr:`897`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
