@@ -21,13 +21,14 @@ Changelog
         * Added SelectColumns transformer :pr:`873`
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
+        * Added better support for disabling data checks in automl search :pr:`892`
         * Added ability to save and load AutoML objects to file :pr:`888`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
-        * Standardize all components to output pandas datastructures, and accept either pandas or numpy :pr:`853`
+        * Standardize all components to output pandas data structures, and accept either pandas or numpy :pr:`853`
     * Changes
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor `handle_components` to `handle_components_class`, standardize to `ComponentBase` subclass instead of instance :pr:`850`
@@ -48,6 +49,7 @@ Changelog
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
 
 

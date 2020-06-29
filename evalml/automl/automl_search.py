@@ -12,7 +12,7 @@ from tqdm import tqdm
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
-from evalml.data_checks import DataChecks, DefaultDataChecks
+from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
@@ -225,7 +225,35 @@ class AutoMLSearch:
 
         return search_desc + rankings_desc
 
-    def search(self, X, y, data_checks=None, feature_types=None, raise_errors=True, show_iteration_plot=True):
+    @staticmethod
+    def _validate_data_checks(data_checks):
+        """Validate data_checks parameter.
+
+        Arguments:
+            data_checks (DataChecks, list(Datacheck), str, None): Input to validate. If not of the right type,
+                raise an exception.
+
+        Returns:
+            An instance of DataChecks used to perform checks before search.
+        """
+        if isinstance(data_checks, DataChecks):
+            return data_checks
+        elif isinstance(data_checks, list):
+            return DataChecks(data_checks)
+        elif isinstance(data_checks, str):
+            if data_checks == "auto":
+                return DefaultDataChecks()
+            elif data_checks == "disabled":
+                return EmptyDataChecks()
+            else:
+                raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
+                                 f"Received '{data_checks}'.")
+        elif data_checks is None:
+            return EmptyDataChecks()
+        else:
+            return DataChecks(data_checks)
+
+    def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
         Arguments:
@@ -241,10 +269,12 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
-            data_checks (DataChecks, None): A collection of data checks to run before searching for the best classifier. If data checks produce any errors, an exception will be thrown before the search begins. If None, uses DefaultDataChecks. Defaults to None.
+            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
+                automl search. If data checks produce any errors, an exception will be thrown before the
+                search begins. If "disabled" or None, no data checks will be done.
+                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
         Returns:
-
             self
         """
         # don't show iteration plot outside of a jupyter notebook
@@ -261,13 +291,9 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if data_checks is None:
-            data_checks = DefaultDataChecks()
-
-        if not isinstance(data_checks, DataChecks):
-            raise ValueError("data_checks parameter must be a DataChecks object!")
-
+        data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
+
         if len(data_check_results) > 0:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
