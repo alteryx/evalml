@@ -631,6 +631,11 @@ class AutoMLSearch:
         self._evaluate(pipeline, X, y, raise_errors=True)
 
     @property
+    def has_searched(self):
+        searched = True if self.results['pipeline_results'] else False
+        return searched
+
+    @property
     def rankings(self):
         """Returns a pandas.DataFrame with scoring results from the highest-scoring set of parameters used with each pipeline."""
         return self.full_rankings.drop_duplicates(subset="pipeline_name", keep="first")
@@ -642,6 +647,9 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
+        if not self.has_searched:
+            return pd.DataFrame(columns=["id", "pipeline_name", "score", "high_variance_cv", "parameters"])
+
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
         rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
@@ -651,6 +659,10 @@ class AutoMLSearch:
     @property
     def best_pipeline(self):
         """Returns the best model found"""
+
+        if not self.has_searched:
+            raise RuntimeError("automl search must be run before selecting `best_pipeline`.")
+
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
 

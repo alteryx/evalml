@@ -536,3 +536,36 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     automl.add_to_rankings(test_pipeline_trained, X, y)
 
     assert list(automl.rankings['score'].values).count(0.1234) == 2
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    assert automl.has_searched == False
+
+    automl.search(X, y)
+    assert automl.has_searched == True
+
+
+def test_no_search_properties():
+    automl = AutoMLSearch(problem_type='binary')
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.full_rankings, pd.DataFrame)
+
+    df_columns = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+    assert (automl.rankings.columns == df_columns).all()
+    assert (automl.full_rankings.columns == df_columns).all()
+
+    assert automl._data_check_results is None
+
+    with pytest.raises(RuntimeError):
+        automl.best_pipeline
+
+    with pytest.raises(RuntimeError):
+        automl.get_pipeline(0)
+
+    with pytest.raises(RuntimeError):
+        automl.describe_pipeline(0)
