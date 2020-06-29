@@ -29,8 +29,8 @@ def test_problem_types():
     assert len(ElasticNetClassifier.supported_problem_types) == 2
 
 
-def test_fit_predict_binary(X_y):
-    X, y = X_y
+def test_fit_predict_binary(X_y_binary):
+    X, y = X_y_binary
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",
@@ -73,8 +73,8 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
 
 
-def test_feature_importance(X_y):
-    X, y = X_y
+def test_feature_importance(X_y_binary):
+    X, y = X_y_binary
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",

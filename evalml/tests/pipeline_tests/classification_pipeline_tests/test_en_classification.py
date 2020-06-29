@@ -28,8 +28,8 @@ def dummy_en_binary_pipeline_class(dummy_classifier_estimator_class):
     return MockENBinaryClassificationPipeline
 
 
-def test_en_init(X_y):
-    X, y = X_y
+def test_en_init(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -73,8 +73,8 @@ def test_summary():
 
 
 @patch('evalml.pipelines.PipelineBase._transform')
-def test_en_binary_predict_pipeline_objective_mismatch(mock_transform, X_y, dummy_en_binary_pipeline_class):
-    X, y = X_y
+def test_en_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, dummy_en_binary_pipeline_class):
+    X, y = X_y_binary
     binary_pipeline = dummy_en_binary_pipeline_class(parameters={})
     with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
         binary_pipeline.predict(X, "precision_micro")
@@ -82,8 +82,8 @@ def test_en_binary_predict_pipeline_objective_mismatch(mock_transform, X_y, dumm
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_en_multi_classification_pipeline_predict(mock_predict, X_y, dummy_en_multi_pipeline_class):
-    X, y = X_y
+def test_en_multi_classification_pipeline_predict(mock_predict, X_y_binary, dummy_en_multi_pipeline_class):
+    X, y = X_y_binary
     multi_pipeline = dummy_en_multi_pipeline_class(parameters={})
     multi_pipeline.predict(X)
     mock_predict.assert_called()
@@ -96,9 +96,9 @@ def test_en_multi_classification_pipeline_predict(mock_predict, X_y, dummy_en_mu
 @patch('evalml.pipelines.PipelineBase._transform')
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_en_binary_classification_pipeline_predict(mock_fit, mock_transform, mock_predict,
-                                                   mock_predict_proba, mock_obj_decision, X_y,
+                                                   mock_predict_proba, mock_obj_decision, X_y_binary,
                                                    dummy_en_multi_pipeline_class, dummy_en_binary_pipeline_class):
-    X, y = X_y
+    X, y = X_y_binary
     en_pipeline = dummy_en_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     en_pipeline.predict(X)

@@ -14,8 +14,8 @@ from evalml.pipelines import (
 )
 
 
-def test_lor_init(X_y):
-    X, y = X_y
+def test_lor_init(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -44,8 +44,8 @@ def test_summary():
     assert LogisticRegressionBinaryPipeline.summary == 'Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder + Standard Scaler'
 
 
-def test_lor_objective_tuning(X_y):
-    X, y = X_y
+def test_lor_objective_tuning(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -120,8 +120,8 @@ def test_lor_multi(X_y_multi):
     assert((y_pred == y_pred_with_objective).all())
 
 
-def test_lor_input_feature_names(X_y):
-    X, y = X_y
+def test_lor_input_feature_names(X_y_binary):
+    X, y = X_y_binary
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

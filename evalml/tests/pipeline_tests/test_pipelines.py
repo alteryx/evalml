@@ -301,8 +301,8 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(X_y, tmpdir, lr_pipeline):
-    X, y = X_y
+def test_serialization(X_y_binary, tmpdir, lr_pipeline):
+    X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pipe.pkl')
     pipeline = lr_pipeline
     pipeline.fit(X, y)
@@ -311,8 +311,8 @@ def test_serialization(X_y, tmpdir, lr_pipeline):
 
 
 @pytest.fixture
-def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
-    X, y = X_y
+def pickled_pipeline_path(X_y_binary, tmpdir, lr_pipeline):
+    X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
     pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
     pipeline.fit(X, y)
@@ -320,8 +320,8 @@ def pickled_pipeline_path(X_y, tmpdir, lr_pipeline):
     return path
 
 
-def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path, lr_pipeline):
-    X, y = X_y
+def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipeline_path, lr_pipeline):
+    X, y = X_y_binary
     # checks that class is not defined before loading in pipeline
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
@@ -331,8 +331,8 @@ def test_load_pickled_pipeline_with_custom_objective(X_y, pickled_pipeline_path,
     assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
-def test_reproducibility(X_y):
-    X, y = X_y
+def test_reproducibility(X_y_binary):
+    X, y = X_y_binary
     objective = FraudCost(
         retry_percentage=.5,
         interchange_fee=.02,
@@ -359,8 +359,8 @@ def test_reproducibility(X_y):
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
 
-def test_indexing(X_y, lr_pipeline):
-    X, y = X_y
+def test_indexing(X_y_binary, lr_pipeline):
+    X, y = X_y_binary
     clf = lr_pipeline
     clf.fit(X, y)
 
@@ -376,8 +376,8 @@ def test_indexing(X_y, lr_pipeline):
         clf[:1]
 
 
-def test_describe(X_y, caplog, lr_pipeline):
-    X, y = X_y
+def test_describe(X_y_binary, caplog, lr_pipeline):
+    X, y = X_y_binary
     lrp = lr_pipeline
     lrp.describe()
     out = caplog.text
@@ -392,8 +392,8 @@ def test_describe(X_y, caplog, lr_pipeline):
         assert component.name in out
 
 
-def test_parameters(X_y, lr_pipeline):
-    X, y = X_y
+def test_parameters(X_y_binary, lr_pipeline):
+    X, y = X_y_binary
     lrp = lr_pipeline
     params = {
         'Simple Imputer': {
@@ -436,8 +436,8 @@ def test_name():
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
 
-def test_estimator_not_last(X_y):
-    X, y = X_y
+def test_estimator_not_last(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -458,8 +458,8 @@ def test_estimator_not_last(X_y):
         MockLogisticRegressionBinaryPipeline(parameters=parameters)
 
 
-def test_multi_format_creation(X_y):
-    X, y = X_y
+def test_multi_format_creation(X_y_binary):
+    X, y = X_y_binary
 
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = component_graph = ['Simple Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
@@ -495,8 +495,8 @@ def test_multi_format_creation(X_y):
     assert not clf.feature_importance.isnull().all().all()
 
 
-def test_multiple_feature_selectors(X_y):
-    X, y = X_y
+def test_multiple_feature_selectors(X_y_binary):
+    X, y = X_y_binary
 
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
@@ -554,7 +554,7 @@ def make_mock_multiclass_pipeline():
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_single(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
@@ -567,7 +567,7 @@ def test_score_regression_single(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
 def test_score_binary_single(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
@@ -580,7 +580,7 @@ def test_score_binary_single(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
 def test_score_multiclass_single(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
@@ -593,7 +593,7 @@ def test_score_multiclass_single(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_list(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
@@ -606,7 +606,7 @@ def test_score_regression_list(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
 def test_score_binary_list(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
@@ -619,7 +619,7 @@ def test_score_binary_list(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
 def test_score_multi_list(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
@@ -634,7 +634,7 @@ def test_score_multi_list(mock_predict, mock_fit, X_y):
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
@@ -649,7 +649,7 @@ def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict')
 def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
@@ -664,7 +664,7 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
 @patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
 def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, X_y):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
@@ -775,15 +775,15 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y):
-    X, y = X_y
+    X, y = X_y_binary
     mock_predict.return_value = np.array([1] * 100)
     with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
         dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
     mock_predict.assert_called()
 
 
-def test_score_auc(X_y, lr_pipeline):
-    X, y = X_y
+def test_score_auc(X_y_binary, lr_pipeline):
+    X, y = X_y_binary
     lr_pipeline.fit(X, y)
     lr_pipeline.score(X, y, ['auc'])
 
@@ -868,8 +868,8 @@ def test_clone_random_state():
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
 
-def test_clone_fitted(X_y, lr_pipeline):
-    X, y = X_y
+def test_clone_fitted(X_y_binary, lr_pipeline):
+    X, y = X_y_binary
     pipeline = lr_pipeline
     random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)

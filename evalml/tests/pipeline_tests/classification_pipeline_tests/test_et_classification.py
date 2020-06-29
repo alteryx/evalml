@@ -25,8 +25,8 @@ def make_mock_et_multiclass_pipeline():
     return MockETMulticlassPipeline({})
 
 
-def test_et_init(X_y):
-    X, y = X_y
+def test_et_init(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -70,8 +70,8 @@ def test_summary():
     assert ETBinaryClassificationPipeline.summary == 'Extra Trees Classifier w/ One Hot Encoder + Simple Imputer'
 
 
-def test_et_objective_type(X_y):
-    X, y = X_y
+def test_et_objective_type(X_y_binary):
+    X, y = X_y_binary
 
     parameters = {
         'Simple Imputer': {
@@ -93,7 +93,7 @@ def test_et_objective_type(X_y):
 @patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.classification.ETBinaryClassificationPipeline.predict')
 def test_et_binary_score(mock_predict, mock_fit, X_y):
-    X, y = X_y
+    X, y = X_y_binary
 
     mock_predict.return_value = y
     clf = make_mock_et_binary_pipeline()
@@ -122,8 +122,8 @@ def test_et_multiclass_score(mock_predict, mock_fit, X_y_multi):
     assert scores == {'F1 Micro': 1.0}
 
 
-def test_et_input_feature_names(X_y):
-    X, y = X_y
+def test_et_input_feature_names(X_y_binary):
+    X, y = X_y_binary
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

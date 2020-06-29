@@ -18,16 +18,16 @@ def dummy_en_regression_pipeline_class(dummy_regressor_estimator_class):
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_en_regression_pipeline_predict(mock_predict, X_y, dummy_en_regression_pipeline_class):
-    X, y = X_y
+def test_en_regression_pipeline_predict(mock_predict, X_y_binary, dummy_en_regression_pipeline_class):
+    X, y = X_y_regression
     multi_pipeline = dummy_en_regression_pipeline_class(parameters={})
     multi_pipeline.predict(X)
     mock_predict.assert_called()
     mock_predict.reset_mock()
 
 
-def test_en_init(X_y_reg):
-    X, y = X_y_reg
+def test_en_init(X_y_regression):
+    X, y = X_y_regression
 
     parameters = {
         'Simple Imputer': {
