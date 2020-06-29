@@ -40,7 +40,7 @@ class NoVarianceDataCheck(DataCheck):
             return DataCheckError(message.format(name=column_name_representation), self.name)
 
         elif count_unique == 2 and not self.dropnan and any_nulls:
-            return DataCheckWarning(f"{column_name_representation} two unique values including nulls. " 
+            return DataCheckWarning(f"{column_name_representation} two unique values including nulls. "
                                     "Consider encoding the nulls for "
                                     "this column to be useful for machine learning.", self.name)
 
