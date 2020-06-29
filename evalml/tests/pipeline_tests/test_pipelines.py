@@ -144,7 +144,8 @@ def test_get_pipelines_core_dependencies_mock():
         get_pipelines(problem_type="Not A Valid Problem Type")
 
 
-def test_make_pipeline_nan_no_categoricals():
+def test_make_pipeline_all_nan_no_categoricals():
+    # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "num": [1, 2, 3, 4, 5]})
     y = pd.Series([0, 0, 1, 2, 0])
