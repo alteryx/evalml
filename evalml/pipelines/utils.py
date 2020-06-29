@@ -215,7 +215,6 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-    X = X.drop(all_null_cols, axis=1)
     pp_components.append(SimpleImputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
