@@ -227,8 +227,11 @@ def test_automl_data_check_results_is_none_before_search():
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_empty_data_checks(mock_fit, mock_score, X_y):
-    X, y = X_y
+def test_automl_empty_data_checks(mock_fit, mock_score):
+    X = pd.DataFrame({"feature1": [1, 2, 3],
+                      "feature2": [None, None, None]})
+    y = pd.Series([1, 1, 1])
+
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
@@ -270,7 +273,9 @@ class MockDataCheckErrorAndWarning(DataCheck):
 @pytest.mark.parametrize("data_checks",
                          [[MockDataCheckErrorAndWarning()],
                           DataChecks([MockDataCheckErrorAndWarning()])])
-def test_automl_data_checks_raises_error(data_checks, caplog):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_data_checks_raises_error(mock_fit, mock_score, data_checks, caplog):
     X = pd.DataFrame()
     y = pd.Series()
 
@@ -291,7 +296,7 @@ def test_automl_bad_data_check_parameter_type():
 
     automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
 
-    with pytest.raises(ValueError, match="Parameter data_checks must be a DataChecks instance, list, string, or None. Received int"):
+    with pytest.raises(ValueError, match="Parameter data_checks must be a list. Received int."):
         automl.search(X, y, data_checks=1)
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         automl.search(X, y, data_checks=[1])

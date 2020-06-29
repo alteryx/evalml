@@ -236,13 +236,10 @@ class AutoMLSearch:
         Returns:
             An instance of DataChecks used to perform checks before search.
         """
-
         if isinstance(data_checks, DataChecks):
             return data_checks
-
         elif isinstance(data_checks, list):
             return DataChecks(data_checks)
-
         elif isinstance(data_checks, str):
             if data_checks == "auto":
                 return DefaultDataChecks()
@@ -251,13 +248,10 @@ class AutoMLSearch:
             else:
                 raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
                                  f"Received '{data_checks}'.")
-
         elif data_checks is None:
             return EmptyDataChecks()
-
         else:
-            raise ValueError("Parameter data_checks must be a DataChecks instance, list, string, or None. "
-                             f"Received {type(data_checks).__name__}")
+            return DataChecks(data_checks)
 
     def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
@@ -275,8 +269,8 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
 
-            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before searching
-                for the best classifier. If data checks produce any errors, an exception will be thrown before the
+            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
+                automl search. If data checks produce any errors, an exception will be thrown before the
                 search begins. If "disabled" or None, no data checks will be done.
                 If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 

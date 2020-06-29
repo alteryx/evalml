@@ -11,7 +11,8 @@ class DataChecks:
         Arguments:
             data_checks (list (DataCheck)): list of DataCheck objects
         """
-
+        if not isinstance(data_checks, list):
+            raise ValueError(f"Parameter data_checks must be a list. Received {type(data_checks).__name__}.")
         if not all(isinstance(check, DataCheck) for check in data_checks):
             raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
 
