@@ -217,10 +217,10 @@ class AutoMLSearch:
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
-        try:
+        if not self.rankings.empty:
             rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
-        except KeyError:
+        else:
             rankings_desc = ""
 
         return search_desc + rankings_desc
