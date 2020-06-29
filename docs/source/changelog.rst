@@ -37,7 +37,7 @@ Changelog
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
         * Added open source license, update some repo metadata :pr:`887`
-        * Remove dead code in `_get_preprocessing_components` :pr:`896`
+        * Removed dead code in `_get_preprocessing_components` :pr:`896`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
