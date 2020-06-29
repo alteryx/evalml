@@ -7,6 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl import TrainingValidationSplit
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -14,6 +15,7 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.model_family import ModelFamily
+from evalml.objectives import FraudCost
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
@@ -171,7 +173,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'cv': StratifiedKFold(5),
+        'data_split': StratifiedKFold(5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -187,7 +189,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Cross Validation': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -317,7 +319,7 @@ def test_automl_str_no_param_search():
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Cross Validation': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
+        'Data Splitting': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'Accuracy Binary',
@@ -437,6 +439,70 @@ def test_automl_serialization(X_y, tmpdir):
         pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
 
+def test_invalid_data_splitter():
+    data_splitter = pd.DataFrame()
+    with pytest.raises(ValueError, match='Not a valid data splitter'):
+        AutoMLSearch(problem_type='binary', data_split=data_splitter)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_large_dataset_binary(mock_score):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i % 2 for i in range(101000)])
+
+    fraud_objective = FraudCost(amount_col='col_0')
+
+    automl = AutoMLSearch(problem_type='binary',
+                          objective=fraud_objective,
+                          additional_objectives=['auc', 'f1', 'precision'],
+                          max_time=1,
+                          max_pipelines=1,
+                          optimize_thresholds=True)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+def test_large_dataset_multiclass(mock_score):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i % 4 for i in range(101000)])
+
+    automl = AutoMLSearch(problem_type='multiclass', max_time=1, max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_large_dataset_regression(mock_score):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i for i in range(101000)])
+
+    automl = AutoMLSearch(problem_type='regression', max_time=1, max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.get_n_splits() == 1
+
+    for pipeline_id in automl.results['search_order']:
+        assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
+        assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+
+
 def test_verifies_allowed_pipelines(X_y_reg):
     X, y = X_y_reg
     allowed_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
@@ -448,8 +514,7 @@ def test_verifies_allowed_pipelines(X_y_reg):
 def test_obj_matches_problem_type(X_y):
     X, y = X_y
     with pytest.raises(ValueError, match="is not compatible with a"):
-        auto = AutoMLSearch(problem_type='binary', objective='R2')
-        auto.search(X, y, data_checks=[])
+        AutoMLSearch(problem_type='binary', objective='R2')
 
 
 def test_init_problem_type_error():

@@ -35,7 +35,8 @@ Changelog
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
-        * Add open source license, update some repo metadata :pr:`887`
+        * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
+        * Added open source license, update some repo metadata :pr:`887`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
@@ -48,6 +49,7 @@ Changelog
     **Breaking Changes**
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
+        * Renamed `automl` `cv` argument to `data_split` :pr:`877`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
         * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`

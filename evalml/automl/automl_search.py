@@ -6,12 +6,18 @@ from sys import stdout
 import cloudpickle
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import KFold, StratifiedKFold, train_test_split
+from sklearn.model_selection import (
+    BaseCrossValidator,
+    KFold,
+    StratifiedKFold,
+    train_test_split
+)
 from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.objectives import get_objective, get_objectives
@@ -32,6 +38,7 @@ logger = get_logger(__file__)
 class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
+    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
@@ -47,7 +54,7 @@ class AutoMLSearch:
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 cv=None,
+                 data_split=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
@@ -91,7 +98,7 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            cv: cross-validation method to use. Defaults to StratifiedKFold.
+            data_split (sklearn.model_selection.BaseCrossValidator): data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 
@@ -119,19 +126,16 @@ class AutoMLSearch:
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
+        self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
-        if cv is None:
-            if self.problem_type.value == 'regression':
-                self.cv = KFold(n_splits=3, random_state=random_state)
-            else:
-                self.cv = StratifiedKFold(n_splits=3, random_state=random_state, shuffle=True)
-        else:
-            self.cv = cv
         if objective == 'auto':
             objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
         self.objective = get_objective(objective)
-
+        if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
+            raise ValueError("Not a valid data splitter")
+        if self.problem_type != self.objective.problem_type:
+            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
             additional_objectives = get_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it
@@ -206,7 +210,7 @@ class AutoMLSearch:
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
-            f"Cross Validation: {self.cv}\n"
+            f"Data Splitting: {self.data_split}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
@@ -290,6 +294,17 @@ class AutoMLSearch:
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        # Set the default data splitter
+        if self.problem_type == ProblemTypes.REGRESSION:
+            default_data_split = KFold(n_splits=3, random_state=self.random_state)
+        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
+
+        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
+            default_data_split = TrainingValidationSplit(test_size=0.25)
+
+        self.data_split = self.data_split or default_data_split
 
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
@@ -425,8 +440,6 @@ class AutoMLSearch:
         return should_continue
 
     def _validate_problem_type(self):
-        if self.objective.problem_type != self.problem_type:
-            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         for obj in self.additional_objectives:
             if obj.problem_type != self.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
@@ -470,7 +483,7 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
 
-        for train, test in self.cv.split(X, y):
+        for train, test in self.data_split.split(X, y):
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
             else:
