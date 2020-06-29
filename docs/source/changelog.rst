@@ -44,6 +44,8 @@ Changelog
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Cleaned up fixture names and usages in tests :pr:`895`
+
+
 .. warning::
 
     **Breaking Changes**
