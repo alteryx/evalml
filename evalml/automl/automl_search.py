@@ -414,8 +414,6 @@ class AutoMLSearch:
         return should_continue
 
     def _validate_problem_type(self):
-        if self.objective.problem_type != self.problem_type:
-            raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         for obj in self.additional_objectives:
             if obj.problem_type != self.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
