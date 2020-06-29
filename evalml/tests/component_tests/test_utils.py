@@ -1,5 +1,4 @@
 import inspect
-from importlib import import_module
 from unittest.mock import patch
 
 import pytest
@@ -23,7 +22,6 @@ def make_mock_import_module(libs_to_exclude):
     def _import_module(library):
         if library in libs_to_exclude:
             raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
-        return import_module(library)
     return _import_module
 
 
