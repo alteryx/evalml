@@ -58,6 +58,7 @@ def test_search_results(X_y_reg, X_y, X_y_multi, automl_type):
         assert isinstance(results['cv_data'], list)
         for cv_result in results['cv_data']:
             assert cv_result.keys() == expected_cv_data_keys
+        assert automl.get_pipeline(pipeline_id).parameters == results['parameters']
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert np.all(automl.rankings.dtypes == pd.Series(
