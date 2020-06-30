@@ -6,9 +6,8 @@ import sys
 
 import pkg_resources
 import psutil
-from psutil._common import bytes2human
-
 import requirements
+from psutil._common import bytes2human
 
 import evalml
 from evalml.utils import get_logger
