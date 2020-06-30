@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='evalml',
-    version='0.10.0',
+    version='0.11.0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     url='https://www.alteryx.com/innovation-labs',
