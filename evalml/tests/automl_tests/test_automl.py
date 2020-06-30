@@ -14,27 +14,90 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning
 )
+from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline
+)
 from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
-def test_pipeline_limits(caplog, X_y_binary):
-    X, y = X_y_binary
+@pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
+    expected_cv_data_keys = {'all_objective_scores', 'score', 'binary_classification_threshold'}
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
+    if automl_type == ProblemTypes.REGRESSION:
+        expected_pipeline_class = RegressionPipeline
+        X, y = X_y_regression
+    elif automl_type == ProblemTypes.BINARY:
+        expected_pipeline_class = BinaryClassificationPipeline
+        X, y = X_y_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        expected_pipeline_class = MulticlassClassificationPipeline
+        X, y = X_y_multi
+
+    automl.search(X, y)
+    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results['search_order'] == [0, 1]
+    assert len(automl.results['pipeline_results']) == 2
+    for pipeline_id, results in automl.results['pipeline_results'].items():
+        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time', 'cv_data'}
+        assert results['id'] == pipeline_id
+        assert isinstance(results['pipeline_name'], str)
+        assert issubclass(results['pipeline_class'], expected_pipeline_class)
+        assert isinstance(results['pipeline_summary'], str)
+        assert isinstance(results['parameters'], dict)
+        assert isinstance(results['score'], float)
+        assert isinstance(results['high_variance_cv'], np.bool_)
+        assert isinstance(results['cv_data'], list)
+        for cv_result in results['cv_data']:
+            assert cv_result.keys() == expected_cv_data_keys
+            if automl_type == ProblemTypes.BINARY:
+                assert isinstance(cv_result['binary_classification_threshold'], float)
+            else:
+                assert cv_result['binary_classification_threshold'] is None
+        assert automl.get_pipeline(pipeline_id).parameters == results['parameters']
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.full_rankings, pd.DataFrame)
+    assert np.all(automl.rankings.dtypes == pd.Series(
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+    assert np.all(automl.full_rankings.dtypes == pd.Series(
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipeline_limits(mock_fit, mock_score, caplog, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 1 pipelines. " in out
+    assert len(automl.results['pipeline_results']) == 1
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_time=1)
     automl.search(X, y)
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
+    assert len(automl.results['pipeline_results']) >= 1
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type='multiclass', max_time=1e-16)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Will stop searching for new pipelines after 0 seconds" in out
+    # search will always run at least one pipeline
+    assert len(automl.results['pipeline_results']) >= 1
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_time=1, max_pipelines=5)
@@ -42,12 +105,14 @@ def test_pipeline_limits(caplog, X_y_binary):
     out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
+    assert len(automl.results['pipeline_results']) <= 5
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y)
     out = caplog.text
     assert "Using default limit of max_pipelines=5." in out
+    assert len(automl.results['pipeline_results']) <= 5
 
 
 def test_search_order(X_y_binary):
@@ -434,7 +499,8 @@ def test_automl_serialization(X_y_binary, tmpdir):
     automl.save(path)
     loaded_automl = automl.load(path)
     for i in range(num_max_pipelines):
-        assert automl.get_pipeline(i).score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
+        assert automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
+        assert automl.get_pipeline(i).parameters == loaded_automl.get_pipeline(i).parameters
         assert automl.results == loaded_automl.results
         pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
@@ -626,3 +692,57 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     automl.add_to_rankings(test_pipeline_trained, X, y)
 
     assert list(automl.rankings['score'].values).count(0.1234) == 2
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary')
+    with pytest.raises(PipelineNotFoundError, match="Pipeline not found in automl results"):
+        automl.get_pipeline(1000)
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
+    automl.results['pipeline_results'][0].pop('pipeline_class')
+    with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
+        automl.get_pipeline(0)
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
+    automl.results['pipeline_results'][0].pop('parameters')
+    with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
+        automl.get_pipeline(0)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Searching up to 1 pipelines. " in out
+
+    assert len(automl.results['pipeline_results']) == 1
+    caplog.clear()
+    automl.describe_pipeline(0)
+    out = caplog.text
+    assert "Mode Baseline Binary Classification Pipeline" in out
+    assert "Problem Type: Binary Classification" in out
+    assert "Model Family: Baseline" in out
+    assert "* strategy : random_weighted" in out
+    assert "Total training time (including CV): " in out
+    assert """Log Loss Binary # Training # Testing
+0                      1.000     66.000    34.000
+1                      1.000     67.000    33.000
+2                      1.000     67.000    33.000
+mean                   1.000          -         -
+std                    0.000          -         -
+coef of var            0.000          -         -""" in out

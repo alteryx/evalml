@@ -136,7 +136,8 @@ class OneHotEncoder(CategoricalEncoder):
         # Call sklearn's transform on the categorical columns
         if len(cat_cols) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray())
-            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols)
+            cat_cols_str = [str(c) for c in cat_cols]
+            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
             X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
 
         return X_t

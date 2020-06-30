@@ -15,6 +15,7 @@ def test_lead_scoring_objective(X_y_binary):
     automl = AutoMLSearch(problem_type='binary', objective=objective, max_pipelines=1, random_state=0)
     automl.search(X, y)
     pipeline = automl.best_pipeline
+    pipeline.fit(X, y)
     pipeline.predict(X)
     pipeline.predict_proba(X)
     pipeline.score(X, y, [objective])
