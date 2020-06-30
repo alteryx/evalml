@@ -738,7 +738,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
     assert "Problem Type: Binary Classification" in out
     assert "Model Family: Baseline" in out
     assert "* strategy : random_weighted" in out
-    assert "Total training time (including CV): 0.0 seconds" in out
+    assert "Total training time (including CV): " in out
     assert """Log Loss Binary # Training # Testing
 0                      1.000     66.000    34.000
 1                      1.000     67.000    33.000
