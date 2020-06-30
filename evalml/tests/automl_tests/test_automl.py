@@ -699,3 +699,32 @@ def test_get_pipeline_invalid(automl_type):
     automl = AutoMLSearch(problem_type=automl_type)
     with pytest.raises(PipelineNotFoundError, match="Pipeline not found in automl results"):
         automl.get_pipeline(1000)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Searching up to 1 pipelines. " in out
+
+    assert len(automl.results['pipeline_results']) == 1
+    caplog.clear()
+    automl.describe_pipeline(0)
+    out = caplog.text
+    assert "Mode Baseline Binary Classification Pipeline" in out
+    assert "Problem Type: Binary Classification" in out
+    assert "Model Family: Baseline" in out
+    assert "* strategy : random_weighted" in out
+    assert "Total training time (including CV): 0.0 seconds" in out
+    assert """Log Loss Binary # Training # Testing
+0                      1.000     66.000    34.000
+1                      1.000     67.000    33.000
+2                      1.000     67.000    33.000
+mean                   1.000          -         -
+std                    0.000          -         -
+coef of var            0.000          -         -""" in out
