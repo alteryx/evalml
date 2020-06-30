@@ -29,14 +29,13 @@ from evalml.tuners import NoParamsException, RandomSearchTuner
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_search_results(X_y_reg, X_y, X_y_multi, automl_type):
-    expected_cv_data_keys = {'all_objective_scores', 'score'}
+    expected_cv_data_keys = {'all_objective_scores', 'score', 'binary_classification_threshold'}
     automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
     if automl_type == ProblemTypes.REGRESSION:
         expected_pipeline_class = RegressionPipeline
         X, y = X_y_reg
     elif automl_type == ProblemTypes.BINARY:
         expected_pipeline_class = BinaryClassificationPipeline
-        expected_cv_data_keys.add('binary_classification_threshold')
         X, y = X_y
     elif automl_type == ProblemTypes.MULTICLASS:
         expected_pipeline_class = MulticlassClassificationPipeline
@@ -58,6 +57,10 @@ def test_search_results(X_y_reg, X_y, X_y_multi, automl_type):
         assert isinstance(results['cv_data'], list)
         for cv_result in results['cv_data']:
             assert cv_result.keys() == expected_cv_data_keys
+            if automl_type == ProblemTypes.BINARY:
+                assert isinstance(cv_result['binary_classification_threshold'], float)
+            else:
+                assert cv_result['binary_classification_threshold'] is None
         assert automl.get_pipeline(pipeline_id).parameters == results['parameters']
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
