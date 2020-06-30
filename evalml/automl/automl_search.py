@@ -222,11 +222,10 @@ class AutoMLSearch:
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
-        try:
+        rankings_desc = ""
+        if not self.rankings.empty:
             rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
-        except KeyError:
-            rankings_desc = ""
 
         return search_desc + rankings_desc
 
@@ -612,7 +611,7 @@ class AutoMLSearch:
             type of pipeline components, problem, training time, cross validation, etc.
         """
         if pipeline_id not in self.results['pipeline_results']:
-            raise RuntimeError("Pipeline not found")
+            raise PipelineNotFoundError("Pipeline not found")
 
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results['pipeline_results'][pipeline_id]
@@ -654,8 +653,8 @@ class AutoMLSearch:
             return pipeline_results
 
     def add_to_rankings(self, pipeline, X, y):
-        """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
-        If pipeline already exists in rankings this method will return `None`.
+        """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
+        Please use the same data as previous runs of automl search. If pipeline already exists in rankings this method will return `None`.
 
         Arguments:
             pipeline (PipelineBase): pipeline to train and evaluate.
@@ -669,11 +668,20 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
+        if not self.has_searched:
+            raise RuntimeError("Please run automl search before calling `add_to_rankings()`")
+
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
         self._evaluate(pipeline, X, y, raise_errors=True)
+
+    @property
+    def has_searched(self):
+        "Returns `True` if search has been ran and `False` if not"
+        searched = True if self.results['pipeline_results'] else False
+        return searched
 
     @property
     def rankings(self):
@@ -687,8 +695,12 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
+        full_rankings_cols = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+        if not self.has_searched:
+            return pd.DataFrame(columns=full_rankings_cols)
+
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
-        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[full_rankings_cols]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
@@ -700,6 +712,9 @@ class AutoMLSearch:
         Returns:
             PipelineBase: untrained pipeline instance associated with the best automl search result.
         """
+        if not self.has_searched:
+            raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
+
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
 
