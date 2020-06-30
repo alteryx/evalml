@@ -657,6 +657,18 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y)
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
+
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
+    test_pipeline = dummy_binary_pipeline_class(parameters={})
+    with pytest.raises(RuntimeError, match="Please run automl"):
+        automl.add_to_rankings(test_pipeline, X, y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 0.1234}
@@ -696,6 +708,39 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
+    X, y = X_y
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    assert not automl.has_searched
+
+    automl.search(X, y)
+    assert automl.has_searched
+
+
+def test_no_search():
+    automl = AutoMLSearch(problem_type='binary')
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.full_rankings, pd.DataFrame)
+
+    df_columns = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+    assert (automl.rankings.columns == df_columns).all()
+    assert (automl.full_rankings.columns == df_columns).all()
+
+    assert automl._data_check_results is None
+
+    with pytest.raises(PipelineNotFoundError):
+        automl.best_pipeline
+
+    with pytest.raises(PipelineNotFoundError):
+        automl.get_pipeline(0)
+
+    with pytest.raises(PipelineNotFoundError):
+        automl.describe_pipeline(0)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
@@ -728,6 +773,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
+
     assert "Searching up to 1 pipelines. " in out
 
     assert len(automl.results['pipeline_results']) == 1
@@ -739,10 +785,10 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
     assert "Model Family: Baseline" in out
     assert "* strategy : random_weighted" in out
     assert "Total training time (including CV): " in out
-    assert """Log Loss Binary # Training # Testing
-0                      1.000     66.000    34.000
-1                      1.000     67.000    33.000
-2                      1.000     67.000    33.000
-mean                   1.000          -         -
-std                    0.000          -         -
-coef of var            0.000          -         -""" in out
+    assert "Log Loss Binary # Training # Testing" in out
+    assert "0                      1.000     66.000    34.000" in out
+    assert "1                      1.000     67.000    33.000" in out
+    assert "2                      1.000     67.000    33.000" in out
+    assert "mean                   1.000          -         -" in out
+    assert "std                    0.000          -         -" in out
+    assert "coef of var            0.000          -         -" in out
