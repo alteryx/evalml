@@ -654,8 +654,8 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     assert 0.1234 in automl.rankings['score'].values
 
 
-def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
-    X, y = X_y
+def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1, allowed_pipelines=[dummy_binary_pipeline_class])
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
