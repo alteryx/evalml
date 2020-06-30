@@ -611,7 +611,7 @@ class AutoMLSearch:
             type of pipeline components, problem, training time, cross validation, etc.
         """
         if pipeline_id not in self.results['pipeline_results']:
-            raise RuntimeError("Pipeline not found")
+            raise PipelineNotFoundError("Pipeline not found")
 
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self.results['pipeline_results'][pipeline_id]

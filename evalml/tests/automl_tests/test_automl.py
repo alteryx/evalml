@@ -732,13 +732,13 @@ def test_no_search():
 
     assert automl._data_check_results is None
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(PipelineNotFoundError):
         automl.best_pipeline
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(PipelineNotFoundError):
         automl.get_pipeline(0)
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(PipelineNotFoundError):
         automl.describe_pipeline(0)
 
 
