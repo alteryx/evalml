@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoMLSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
-from evalml.exceptions import ObjectiveNotFoundError
+from evalml.exceptions import ObjectiveNotFoundError, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
@@ -59,7 +59,7 @@ def test_get_pipeline_none(X_y):
     X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary')
-    with pytest.raises(RuntimeError, match="Pipeline not found"):
+    with pytest.raises(PipelineNotFoundError, match="Pipeline not found"):
         automl.describe_pipeline(0)
 
 
