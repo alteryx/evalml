@@ -663,11 +663,8 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
-    automl.add_to_rankings(test_pipeline, X, y)
-
-    assert len(automl.rankings) == 1
-    assert len(automl.full_rankings) == 1
-    assert 0.1234 in automl.rankings['score'].values
+    with pytest.raises(RuntimeError, match="Please run automl"):
+        automl.add_to_rankings(test_pipeline, X, y)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -742,6 +739,8 @@ def test_no_search():
         automl.describe_pipeline(0)
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}
@@ -774,6 +773,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
+
     assert "Searching up to 1 pipelines. " in out
 
     assert len(automl.results['pipeline_results']) == 1
@@ -785,10 +785,10 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
     assert "Model Family: Baseline" in out
     assert "* strategy : random_weighted" in out
     assert "Total training time (including CV): " in out
-    assert """Log Loss Binary # Training # Testing
-0                      1.000     66.000    34.000
-1                      1.000     67.000    33.000
-2                      1.000     67.000    33.000
-mean                   1.000          -         -
-std                    0.000          -         -
-coef of var            0.000          -         -""" in out
+    assert "Log Loss Binary # Training # Testing" in out
+    assert "0                      1.000     66.000    34.000" in out
+    assert "1                      1.000     67.000    33.000" in out
+    assert "2                      1.000     67.000    33.000" in out
+    assert "mean                   1.000          -         -" in out
+    assert "std                    0.000          -         -" in out
+    assert "coef of var            0.000          -         -" in out

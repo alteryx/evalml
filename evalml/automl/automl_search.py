@@ -653,8 +653,8 @@ class AutoMLSearch:
             return pipeline_results
 
     def add_to_rankings(self, pipeline, X, y):
-        """Fits and evaluates a given pipeline then adds the results to the AutoML rankings. Please use the same data as previous runs of AutoML search.
-        If pipeline already exists in rankings this method will return `None`.
+        """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
+        Please use the same data as previous runs of automl search. If pipeline already exists in rankings this method will return `None`.
 
         Arguments:
             pipeline (PipelineBase): pipeline to train and evaluate.
@@ -667,6 +667,9 @@ class AutoMLSearch:
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        if not self.has_searched:
+            raise RuntimeError("Please run automl search before calling `add_to_rankings()`")
 
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
         for parameter in pipeline_rows['parameters']:
