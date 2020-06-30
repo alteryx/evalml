@@ -10,7 +10,7 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
-        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
+        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830` :pr:`897`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
@@ -21,13 +21,16 @@ Changelog
         * Added SelectColumns transformer :pr:`873`
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added `default_parameters` class property to components and pipelines :pr:`879`
+        * Added better support for disabling data checks in automl search :pr:`892`
         * Added ability to save and load AutoML objects to file :pr:`888`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance :pr:`876`
+        * Saved learned binary classification thresholds in automl results cv data dict :pr:`876`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
         * Enforce requirement that builtin components save all inputted values in their parameters dict :pr:`847`
         * Don't list base classes in `all_components` output :pr:`847`
-        * Standardize all components to output pandas datastructures, and accept either pandas or numpy :pr:`853`
+        * Standardize all components to output pandas data structures, and accept either pandas or numpy :pr:`853`
         * Fixed rankings and full_rankings error when search has not been run :pr:`894`
     * Changes
         * Update `all_pipelines` and `all_components` to try initializing pipelines/components, and on failure exclude them :pr:`849`
@@ -35,7 +38,8 @@ Changelog
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
-        * Add open source license, update some repo metadata :pr:`887`
+        * Updated `automl` default data splitter to train/validation split for large datasets :pr:`877`
+        * Added open source license, update some repo metadata :pr:`887`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
@@ -48,8 +52,11 @@ Changelog
     **Breaking Changes**
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
+        * Renamed `automl` `cv` argument to `data_split` :pr:`877`
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
 
 
 **v0.10.0 May 29, 2020**
