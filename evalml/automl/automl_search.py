@@ -528,7 +528,7 @@ class AutoMLSearch:
             ordered_scores.update({"# Training": len(y_train)})
             ordered_scores.update({"# Testing": len(y_test)})
 
-            evaluation_entry = {"all_objective_scores": ordered_scores, "score": score}
+            evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
             if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
                 evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
             cv_data.append(evaluation_entry)
@@ -597,7 +597,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters)
+        return pipeline_class(parameters, random_state=random_state)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
