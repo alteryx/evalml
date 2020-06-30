@@ -23,8 +23,8 @@ Changelog
         * Added `default_parameters` class property to components and pipelines :pr:`879`
         * Added better support for disabling data checks in automl search :pr:`892`
         * Added ability to save and load AutoML objects to file :pr:`888`
-        * Update `AutoSearchBase.get_pipelines` to return an untrained pipeline instance :pr:`876`
-        * Save learned binary classification thresholds in automl results cv data dict :pr:`876`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance :pr:`876`
+        * Saved learned binary classification thresholds in automl results cv data dict :pr:`876`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
@@ -55,7 +55,7 @@ Changelog
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
         * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
-        * Update `AutoSearchBase.get_pipelines` to return an untrained pipeline instance, instead of one trained on the final cross-validation fold :pr:`876`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
 
 
 **v0.10.0 May 29, 2020**
