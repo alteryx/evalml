@@ -694,11 +694,29 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     assert list(automl.rankings['score'].values).count(0.1234) == 2
 
 
-@pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_get_pipeline_invalid(automl_type):
-    automl = AutoMLSearch(problem_type=automl_type)
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
+    X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary')
     with pytest.raises(PipelineNotFoundError, match="Pipeline not found in automl results"):
         automl.get_pipeline(1000)
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
+    automl.results['pipeline_results'][0].pop('pipeline_class')
+    with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
+        automl.get_pipeline(0)
+
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    automl.search(X, y)
+    assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
+    automl.results['pipeline_results'][0].pop('parameters')
+    with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
+        automl.get_pipeline(0)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
