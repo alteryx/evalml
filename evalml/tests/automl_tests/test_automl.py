@@ -17,25 +17,83 @@ from evalml.data_checks import (
 from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline
+)
 from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
-def test_pipeline_limits(caplog, X_y):
+@pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_search_results(X_y_reg, X_y, X_y_multi, automl_type):
+    expected_cv_data_keys = {'all_objective_scores', 'score'}
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
+    if automl_type == ProblemTypes.REGRESSION:
+        expected_pipeline_class = RegressionPipeline
+        X, y = X_y_reg
+    elif automl_type == ProblemTypes.BINARY:
+        expected_pipeline_class = BinaryClassificationPipeline
+        expected_cv_data_keys.add('binary_classification_threshold')
+        X, y = X_y
+    elif automl_type == ProblemTypes.MULTICLASS:
+        expected_pipeline_class = MulticlassClassificationPipeline
+        X, y = X_y_multi
+
+    automl.search(X, y)
+    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results['search_order'] == [0, 1]
+    assert len(automl.results['pipeline_results']) == 2
+    for pipeline_id, results in automl.results['pipeline_results'].items():
+        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time', 'cv_data'}
+        assert results['id'] == pipeline_id
+        assert isinstance(results['pipeline_name'], str)
+        assert issubclass(results['pipeline_class'], expected_pipeline_class)
+        assert isinstance(results['pipeline_summary'], str)
+        assert isinstance(results['parameters'], dict)
+        assert isinstance(results['score'], float)
+        assert isinstance(results['high_variance_cv'], np.bool_)
+        assert isinstance(results['cv_data'], list)
+        for cv_result in results['cv_data']:
+            assert cv_result.keys() == expected_cv_data_keys
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert isinstance(automl.full_rankings, pd.DataFrame)
+    assert np.all(automl.rankings.dtypes == pd.Series(
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+    assert np.all(automl.full_rankings.dtypes == pd.Series(
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipeline_limits(mock_fit, mock_score, caplog, X_y):
     X, y = X_y
+    mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 1 pipelines. " in out
+    assert len(automl.results['pipeline_results']) == 1
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_time=1)
     automl.search(X, y)
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
+    assert len(automl.results['pipeline_results']) >= 1
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type='multiclass', max_time=1e-16)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Will stop searching for new pipelines after 0 seconds" in out
+    # search will always run at least one pipeline
+    assert len(automl.results['pipeline_results']) >= 1
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_time=1, max_pipelines=5)
@@ -43,12 +101,14 @@ def test_pipeline_limits(caplog, X_y):
     out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
+    assert len(automl.results['pipeline_results']) <= 5
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y)
     out = caplog.text
     assert "Using default limit of max_pipelines=5." in out
+    assert len(automl.results['pipeline_results']) <= 5
 
 
 def test_search_order(X_y):
