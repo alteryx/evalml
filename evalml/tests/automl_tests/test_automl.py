@@ -14,6 +14,7 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning
 )
+from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
 from evalml.pipelines import BinaryClassificationPipeline
@@ -434,7 +435,8 @@ def test_automl_serialization(X_y, tmpdir):
     automl.save(path)
     loaded_automl = automl.load(path)
     for i in range(num_max_pipelines):
-        assert automl.get_pipeline(i).score(X, y, ['precision']) == loaded_automl.get_pipeline(i).score(X, y, ['precision'])
+        assert automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
+        assert automl.get_pipeline(i).parameters == loaded_automl.get_pipeline(i).parameters
         assert automl.results == loaded_automl.results
         pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
@@ -626,3 +628,10 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     automl.add_to_rankings(test_pipeline_trained, X, y)
 
     assert list(automl.rankings['score'].values).count(0.1234) == 2
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_get_pipeline_invalid(automl_type):
+    automl = AutoMLSearch(problem_type=automl_type)
+    with pytest.raises(PipelineNotFoundError, match="Pipeline not found in automl results"):
+        automl.get_pipeline(1000)
