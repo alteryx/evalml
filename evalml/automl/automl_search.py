@@ -217,11 +217,10 @@ class AutoMLSearch:
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
+        rankings_desc = ""
         if not self.rankings.empty:
             rankings_str = self.rankings.drop(['parameters'], axis='columns').to_string()
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
-        else:
-            rankings_desc = ""
 
         return search_desc + rankings_desc
 
@@ -632,6 +631,7 @@ class AutoMLSearch:
 
     @property
     def has_searched(self):
+        "Returns `True` if search has been ran and `False` if not"
         searched = True if self.results['pipeline_results'] else False
         return searched
 
@@ -647,11 +647,12 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
+        full_rankings_cols = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
         if not self.has_searched:
-            return pd.DataFrame(columns=["id", "pipeline_name", "score", "high_variance_cv", "parameters"])
+            return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
-        rankings_df = rankings_df[["id", "pipeline_name", "score", "high_variance_cv", "parameters"]]
+        rankings_df = rankings_df[full_rankings_cols]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
