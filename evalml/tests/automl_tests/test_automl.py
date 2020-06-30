@@ -666,6 +666,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     automl.add_to_rankings(test_pipeline, X, y)
 
     assert len(automl.rankings) == 1
+    assert len(automl.full_rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
 
 
@@ -714,10 +715,10 @@ def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y):
     X, y = X_y
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    assert automl.has_searched is False
+    assert not automl.has_searched
 
     automl.search(X, y)
-    assert automl.has_searched is True
+    assert automl.has_searched
 
 
 def test_no_search():
@@ -740,7 +741,7 @@ def test_no_search():
     with pytest.raises(RuntimeError):
         automl.describe_pipeline(0)
 
-        
+
 def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
     X, y = X_y
     mock_score.return_value = {'Log Loss Binary': 1.0}

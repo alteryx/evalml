@@ -710,7 +710,7 @@ class AutoMLSearch:
             PipelineBase: untrained pipeline instance associated with the best automl search result.
         """
         if not self.has_searched:
-            raise RuntimeError("automl search must be run before selecting `best_pipeline`.")
+            raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
 
         best = self.rankings.iloc[0]
         return self.get_pipeline(best["id"])
