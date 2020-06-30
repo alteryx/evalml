@@ -74,8 +74,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipeline_limits(mock_fit, mock_score, caplog, X_y):
-    X, y = X_y
+def test_pipeline_limits(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
@@ -696,8 +696,8 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
-    X, y = X_y
+def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type='binary')
@@ -721,8 +721,8 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_describe_pipeline(mock_fit, mock_score, caplog, X_y):
-    X, y = X_y
+def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
