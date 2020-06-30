@@ -331,3 +331,20 @@ def test_large_number_of_categories():
     expected_col_names = ['cat_' + str(200000 + i) for i in range(10)]
     assert X_t.shape == (1000100, 10)
     assert set(expected_col_names) == set(list(X_t.columns))
+
+
+@pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index'])
+def test_data_types(data_type):
+    if data_type == 'list':
+        X = ["a", "b", "c"]
+    elif data_type == 'np':
+        X = np.array(["a", "b", "c"])
+    elif data_type == 'pd_no_index':
+        X = pd.DataFrame(["a", "b", "c"])
+    elif data_type == 'pd_index':
+        X = pd.DataFrame(["a", "b", "c"], columns=['0'])
+    encoder = OneHotEncoder()
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    assert list(X_t.columns) == ['0_a', '0_b', '0_c']
+    np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
