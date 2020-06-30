@@ -1,5 +1,5 @@
 import inspect
-import operator
+from operator import itemgetter
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
@@ -46,7 +46,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
                 raise AutoMLAlgorithmException('No results were reported from the first batch')
-            self._first_batch_results = sorted(self._first_batch_results, key=operator.itemgetter(0))
+            self._first_batch_results = sorted(self._first_batch_results, key=itemgetter(0))
 
         next_batch = []
         if self._batch_number == 0:
