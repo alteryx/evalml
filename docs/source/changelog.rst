@@ -10,7 +10,7 @@ Changelog
         * Added data check to check for problematic target labels :pr:`814`
         * Added PerColumnImputer that allows imputation strategies per column :pr:`824`
         * Added transformer to drop specific columns :pr:`827`
-        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830`
+        * Added support for `categories`, `handle_error`, and `drop` parameters in `OneHotEncoder` :pr:`830` :pr:`897`
         * Added preprocessing component to handle DateTime columns featurization :pr:`838`
         * Added ability to clone pipelines and components :pr:`842`
         * Define getter method for component `parameters` :pr:`847`
@@ -23,6 +23,8 @@ Changelog
         * Added `default_parameters` class property to components and pipelines :pr:`879`
         * Added better support for disabling data checks in automl search :pr:`892`
         * Added ability to save and load AutoML objects to file :pr:`888`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance :pr:`876`
+        * Saved learned binary classification thresholds in automl results cv data dict :pr:`876`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
@@ -54,6 +56,7 @@ Changelog
         * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
         * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
+        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
 
 
 **v0.10.0 May 29, 2020**

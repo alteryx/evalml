@@ -390,14 +390,32 @@ def test_indexing(X_y, lr_pipeline):
         clf[:1]
 
 
-def test_describe(X_y, caplog, lr_pipeline):
-    X, y = X_y
+def test_describe(caplog, lr_pipeline):
     lrp = lr_pipeline
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
     assert "Problem Type: Binary Classification" in out
     assert "Model Family: Linear" in out
+    assert "Number of features: " not in out
+
+    for component in lrp.component_graph:
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
+
+
+def test_describe_fitted(X_y, caplog, lr_pipeline):
+    X, y = X_y
+    lrp = lr_pipeline
+    lrp.fit(X, y)
+    lrp.describe()
+    out = caplog.text
+    assert "Logistic Regression Binary Pipeline" in out
+    assert "Problem Type: Binary Classification" in out
+    assert "Model Family: Linear" in out
+    assert "Number of features: {}".format(X.shape[1]) in out
 
     for component in lrp.component_graph:
         if component.hyperparameter_ranges:

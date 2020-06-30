@@ -36,23 +36,23 @@ def test_init(X_y):
     assert automl.n_jobs == 4
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert isinstance(automl.best_pipeline.feature_importance, pd.DataFrame)
-    # test with datafarmes
+
+    # test with dataframes
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1, n_jobs=4)
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
-
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
-    with pytest.raises(RuntimeError, match="Pipeline not found"):
-        automl.get_pipeline(1000)
+    assert automl.objective.name == 'Log Loss Binary'
 
-    automl.describe_pipeline(0)
 
-    scores = automl.best_pipeline.score(X, y, ['precision'])
-    assert not any(np.isnan(val) for val in scores.values())
-    assert not automl.best_pipeline.feature_importance.isnull().all().all()
+def test_init_objective():
+    automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_pipelines=1)
+    assert isinstance(automl.objective, Precision)
+    automl = AutoMLSearch(problem_type='binary', objective='Precision', max_pipelines=1)
+    assert isinstance(automl.objective, Precision)
 
 
 def test_get_pipeline_none(X_y):
@@ -87,14 +87,6 @@ def test_max_pipelines(X_y):
     assert len(automl.full_rankings) == max_pipelines
 
 
-def test_specify_objective(X_y):
-    X, y = X_y
-    automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_pipelines=1)
-    automl.search(X, y)
-    assert isinstance(automl.objective, Precision)
-    assert automl.best_pipeline.threshold is not None
-
-
 def test_recall_error(X_y):
     X, y = X_y
     error_msg = 'Could not find the specified objective.'
@@ -106,28 +98,29 @@ def test_recall_object(X_y):
     X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective=Recall(), max_pipelines=1)
     automl.search(X, y)
+    assert len(automl.full_rankings) > 0
+    assert automl.objective.name == 'Recall'
 
 
 def test_binary_auto(X_y):
     X, y = X_y
     automl = AutoMLSearch(problem_type='binary', objective="log_loss_binary", max_pipelines=5)
     automl.search(X, y)
-    y_pred = automl.best_pipeline.predict(X)
 
+    best_pipeline = automl.best_pipeline
+    best_pipeline.fit(X, y)
+    y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 2
 
 
 def test_multi_auto(X_y_multi):
     X, y = X_y_multi
-    automl = AutoMLSearch(problem_type='multiclass', objective="f1_micro", max_pipelines=5)
-    automl.search(X, y)
-    y_pred = automl.best_pipeline.predict(X)
-    assert len(np.unique(y_pred)) == 3
-
     objective = PrecisionMicro()
     automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_pipelines=5)
     automl.search(X, y)
-    y_pred = automl.best_pipeline.predict(X)
+    best_pipeline = automl.best_pipeline
+    best_pipeline.fit(X, y)
+    y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
     expected_additional_objectives = get_objectives('multiclass')
@@ -163,7 +156,6 @@ def test_categorical_classification(X_y_categorical_classification):
     automl = AutoMLSearch(problem_type='binary', objective="precision", max_pipelines=5)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
-    assert not automl.get_pipeline(0).feature_importance.isnull().all().all()
 
 
 def test_random_state(X_y):
@@ -229,7 +221,10 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
     mock_score.assert_called()
     mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
-    assert automl.best_pipeline.threshold == 0.8
+    assert automl.best_pipeline.threshold is None
+    assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.8
+    assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.8
+    assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.8
 
     automl.describe_pipeline(0)
     out = caplog.text
@@ -250,7 +245,10 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
     mock_score.assert_called()
     assert not mock_predict_proba.called
     assert not mock_optimize_threshold.called
-    assert automl.best_pipeline.threshold == 0.5
+    assert automl.best_pipeline.threshold is None
+    assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
+    assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
+    assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -262,7 +260,10 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y):
     automl.search(X, y)
     mock_fit.assert_called()
     mock_score.assert_called()
-    assert automl.best_pipeline.threshold == 0.5
+    assert automl.best_pipeline.threshold is None
+    assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
+    assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
+    assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
 
 
 def test_describe_pipeline_objective_ordered(X_y, caplog):
