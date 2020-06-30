@@ -63,7 +63,7 @@ from .utils import (
     all_pipelines,
     get_pipelines,
     list_model_families,
-    all_estimators,
+    all_estimators_used_in_search,
     get_estimators,
     make_pipeline
 )

@@ -8,14 +8,28 @@ from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-all_estimators = get_importable_subclasses(Estimator, args=[],
-                                           message='Estimator {} failed import, withholding from all_estimators')
+# We need to differentiate between all estimators, and those we use for search.
+# We use the former for unit tests and the latter for creating pipelines.
+_estimator_message = 'Estimator {} failed import, withholding from all_estimators'
+_all_estimators = get_importable_subclasses(Estimator, args=[],
+                                            message=_estimator_message,
+                                            used_in_automl=False)
+all_estimators_used_in_search = get_importable_subclasses(Estimator, args=[],
+                                                          message=_estimator_message,
+                                                          used_in_automl=True)
+
 all_transformers = get_importable_subclasses(Transformer, args=[],
-                                             message='Transformer {} failed import, withholding from all_transformers')
+                                             message='Transformer {} failed import, withholding from all_transformers',
+                                             used_in_automl=False)
 
 
 def all_components():
-    return all_estimators() + all_transformers()
+    """Return all components (even if they are not used for automl search).
+
+    Returns:
+        List of all component classes.
+    """
+    return _all_estimators() + all_transformers()
 
 
 def handle_component_class(component_class):

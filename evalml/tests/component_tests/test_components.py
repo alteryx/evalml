@@ -31,7 +31,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.components.utils import (
     all_components,
-    all_estimators,
+    all_estimators_used_in_search,
     all_transformers
 )
 from evalml.problem_types import ProblemTypes
@@ -465,7 +465,7 @@ def test_estimator_predict_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
 
-    estimators = all_estimators()
+    estimators = all_estimators_used_in_search()
     for component_class in estimators:
         for X, y, X_cols_expected, y_cols_expected in datatype_combos:
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'

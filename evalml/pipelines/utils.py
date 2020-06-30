@@ -21,16 +21,16 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler
 )
-from evalml.pipelines.components.utils import all_estimators
+from evalml.pipelines.components.utils import all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-
 all_pipelines = get_importable_subclasses(PipelineBase, args=[{}],
-                                          message='Pipeline {} failed import, withholding from all_pipelines')
+                                          message='Pipeline {} failed import, withholding from all_pipelines',
+                                          used_in_automl=True)
 
 
 def get_pipelines(problem_type, model_families=None):
@@ -99,7 +99,7 @@ def get_estimators(problem_type, model_families=None):
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
 
     estimator_classes = []
-    for estimator_class in all_estimators():
+    for estimator_class in all_estimators_used_in_search():
         if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
             continue
         if estimator_class.model_family not in model_families:
