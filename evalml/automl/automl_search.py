@@ -471,7 +471,7 @@ class AutoMLSearch:
 
         baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
         self._add_result(trained_pipeline=baseline,
-                         parameters=strategy_dict,
+                         parameters=baseline.parameters,
                          training_time=baseline_results['training_time'],
                          cv_data=baseline_results['cv_data'],
                          cv_scores=baseline_results['cv_scores'])
