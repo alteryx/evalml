@@ -5,6 +5,14 @@ Changelog
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.11.0 June 30, 2020**
+    * Enhancements
         * Added multiclass support for ROC curve graphing :pr:`832`
         * Added preprocessing component to drop features whose percentage of NaN values exceeds a specified threshold :pr:`834`
         * Added data check to check for problematic target labels :pr:`814`
@@ -54,11 +62,11 @@ Changelog
     **Breaking Changes**
         * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
         * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
-        * Renamed `automl` `cv` argument to `data_split` :pr:`877`
-        * Pipelines' and classifiers' `feature_importances` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
-        * Passing data_checks=None to automl search will not perform any data checks as opposed to default checks. :pr:`892`
+        * Renamed automl's ``cv`` argument to ``data_split`` :pr:`877`
+        * Pipelines' and classifiers' ``feature_importances`` is renamed `feature_importance`, `graph_feature_importances` is renamed `graph_feature_importance` :pr:`883`
+        * Passing ``data_checks=None`` to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
-        * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
+        * Updated ``AutoSearchBase.get_pipelines`` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
 
 
 **v0.10.0 May 29, 2020**
