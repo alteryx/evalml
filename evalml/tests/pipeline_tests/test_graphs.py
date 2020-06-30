@@ -1,11 +1,12 @@
 import os
 from unittest.mock import patch
 
-import graphviz
 import numpy as np
 import pandas as pd
 import pytest
 from skopt.space import Real
+
+import graphviz
 
 from evalml.objectives import get_objectives
 from evalml.pipelines import (
