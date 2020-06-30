@@ -29,10 +29,12 @@ def test_init():
     assert rf_regressor.name == "RF Regressor Select From Model"
 
 
-def test_component_fit(X_y_binary, X_y_regression):
-    X, y = X_y_binary
+def test_component_fit(X_y_binary, X_y_multi, X_y_regression):
+    X_binary, y_binary = X_y_binary
+    X_multi, y_multi = X_y_multi
     X_reg, y_reg = X_y_regression
 
     rf_classifier, rf_regressor = make_rf_feature_selectors()
-    assert isinstance(rf_classifier.fit(X, y), ComponentBase)
+    assert isinstance(rf_classifier.fit(X_binary, y_binary), ComponentBase)
+    assert isinstance(rf_classifier.fit(X_multi, y_multi), ComponentBase)
     assert isinstance(rf_regressor.fit(X_reg, y_reg), ComponentBase)
