@@ -134,7 +134,6 @@ Pipeline Utils
     get_pipelines
     get_estimators
     make_pipeline
-    list_model_families
 
 
 Pipeline Graph Utils
@@ -345,6 +344,13 @@ Model Family
     :nosignatures:
 
     ModelFamily
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    handle_model_family
+    list_model_families
 
 
 .. currentmodule:: evalml.tuners

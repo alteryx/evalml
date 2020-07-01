@@ -8,7 +8,7 @@ import pytest
 from skopt.space import Integer, Real
 
 from evalml.exceptions import IllFormattedClassNameError
-from evalml.model_family import ModelFamily
+from evalml.model_family import ModelFamily, list_model_families
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -38,7 +38,6 @@ from evalml.pipelines.utils import (
     all_pipelines,
     get_estimators,
     get_pipelines,
-    list_model_families,
     make_pipeline
 )
 from evalml.problem_types import ProblemTypes
