@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
     * Changes
     * Documentation Changes
@@ -33,7 +34,6 @@ Changelog
         * Added ability to save and load AutoML objects to file :pr:`888`
         * Updated `AutoSearchBase.get_pipelines` to return an untrained pipeline instance :pr:`876`
         * Saved learned binary classification thresholds in automl results cv data dict :pr:`876`
-        * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
         * Fixed bug where PerColumnImputer cannot handle dropped columns :pr:`855`
