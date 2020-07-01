@@ -90,17 +90,17 @@ def test_invalid_path(tmpdir, test_pipeline):
     assert not os.path.exists(filepath)
 
 
-def test_graph_feature_importance(X_y, test_pipeline):
+def test_graph_feature_importance(X_y_binary, test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y
+    X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
     assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
-def test_graph_feature_importance_show_all_features(X_y, test_pipeline):
+def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y
+    X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
     figure = clf.graph_feature_importance()
@@ -114,16 +114,16 @@ def test_graph_feature_importance_show_all_features(X_y, test_pipeline):
     assert (np.any(data['x'] == 0.0))
 
 
-def test_get_permutation_importance_invalid_objective(X_y_reg):
-    X, y = X_y_reg
+def test_get_permutation_importance_invalid_objective(X_y_regression):
+    X, y = X_y_regression
     pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
         calculate_permutation_importance(pipeline, X, y, "mcc_multi")
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_get_permutation_importance_binary(X_y, data_type):
-    X, y = X_y
+def test_get_permutation_importance_binary(X_y_binary, data_type):
+    X, y = X_y_binary
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y = pd.Series(y)
@@ -145,8 +145,8 @@ def test_get_permutation_importance_multiclass(X_y_multi):
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_regression(X_y_reg):
-    X, y = X_y_reg
+def test_get_permutation_importance_regression(X_y_regression):
+    X, y = X_y_regression
     pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in get_objectives(ProblemTypes.REGRESSION):
@@ -171,9 +171,9 @@ def test_get_permutation_importance_correlated_features():
     assert correlated_importance_val > not_correlated_importance_val
 
 
-def test_graph_permutation_importance(X_y, test_pipeline):
+def test_graph_permutation_importance(X_y_binary, test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y = X_y
+    X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
     fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", show_all_features=True)

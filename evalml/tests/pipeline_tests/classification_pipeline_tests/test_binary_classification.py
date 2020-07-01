@@ -11,8 +11,8 @@ import pytest
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
                                                 mock_predict, mock_predict_proba,
-                                                mock_obj_decision, X_y, dummy_binary_pipeline_class):
-    X, y = X_y
+                                                mock_obj_decision, X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X)
@@ -53,8 +53,8 @@ def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
 
 
 @patch('evalml.pipelines.PipelineBase._transform')
-def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y, dummy_binary_pipeline_class):
-    X, y = X_y
+def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
     with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
         binary_pipeline.predict(X, "precision_micro")

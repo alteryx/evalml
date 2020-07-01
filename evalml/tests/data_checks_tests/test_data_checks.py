@@ -11,8 +11,8 @@ from evalml.data_checks.default_data_checks import DefaultDataChecks
 from evalml.data_checks.utils import EmptyDataChecks
 
 
-def test_data_checks(X_y):
-    X, y = X_y
+def test_data_checks(X_y_binary):
+    X, y = X_y_binary
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
@@ -38,8 +38,8 @@ def test_data_checks(X_y):
                                           DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
 
 
-def test_empty_data_checks(X_y):
-    X, y = X_y
+def test_empty_data_checks(X_y_binary):
+    X, y = X_y_binary
     data_checks = EmptyDataChecks()
     assert data_checks.validate(X, y) == []
 
@@ -53,7 +53,7 @@ messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyN
             DataCheckError("also_all_null has 0 unique value.", "NoVarianceDataCheck")]
 
 
-def test_default_data_checks_classification(X_y):
+def test_default_data_checks_classification():
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -73,7 +73,7 @@ def test_default_data_checks_classification(X_y):
     assert data_checks.validate(X, y) == messages
 
 
-def test_default_data_checks_regression(X_y):
+def test_default_data_checks_regression():
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],

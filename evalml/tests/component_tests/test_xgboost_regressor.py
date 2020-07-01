@@ -10,9 +10,9 @@ from evalml.utils import SEED_BOUNDS
 xgb = importorskip('xgboost', reason='Skipping test because xgboost not installed')
 
 
-def test_xgboost_regressor_random_state_bounds_seed(X_y_reg):
+def test_xgboost_regressor_random_state_bounds_seed(X_y_regression):
     """ensure xgboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
-    X, y = X_y_reg
+    X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
@@ -22,7 +22,7 @@ def test_xgboost_regressor_random_state_bounds_seed(X_y_reg):
     clf.fit(X, y)
 
 
-def test_xgboost_regressor_random_state_bounds_rng(X_y_reg):
+def test_xgboost_regressor_random_state_bounds_rng(X_y_regression):
     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for xgboost is in xgboost's supported range"""
 
     def make_mock_random_state(return_value):
@@ -33,7 +33,7 @@ def test_xgboost_regressor_random_state_bounds_rng(X_y_reg):
                 return return_value
         return MockRandomState()
 
-    X, y = X_y_reg
+    X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
@@ -45,8 +45,8 @@ def test_xgboost_regressor_random_state_bounds_rng(X_y_reg):
     clf.fit(X, y)
 
 
-def test_xgboost_feature_name_with_random_ascii(X_y):
-    X, y = X_y
+def test_xgboost_feature_name_with_random_ascii(X_y_regression):
+    X, y = X_y_regression
     clf = XGBoostRegressor()
     X = clf.random_state.random((X.shape[0], len(string.printable)))
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]

@@ -78,8 +78,8 @@ def test_linear_regression(X_y_categorical_regression):
     assert((y_pred == y_pred_with_objective).all())
 
 
-def test_lr_input_feature_names(X_y):
-    X, y = X_y
+def test_lr_input_feature_names(X_y_regression):
+    X, y = X_y_regression
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

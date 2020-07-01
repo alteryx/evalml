@@ -8,9 +8,9 @@ from evalml.utils import SEED_BOUNDS
 importorskip('catboost', reason='Skipping test because catboost not installed')
 
 
-def test_catboost_classifier_random_state_bounds_seed(X_y_reg):
+def test_catboost_classifier_random_state_bounds_seed(X_y_regression):
     """ensure catboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
-    X, y = X_y_reg
+    X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
@@ -20,7 +20,7 @@ def test_catboost_classifier_random_state_bounds_seed(X_y_reg):
     clf.fit(X, y)
 
 
-def test_catboost_classifier_random_state_bounds_rng(X_y_reg):
+def test_catboost_classifier_random_state_bounds_rng(X_y_regression):
     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for catboost is in catboost's supported range"""
 
     def make_mock_random_state(return_value):
@@ -31,7 +31,7 @@ def test_catboost_classifier_random_state_bounds_rng(X_y_reg):
                 return return_value
         return MockRandomState()
 
-    X, y = X_y_reg
+    X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
