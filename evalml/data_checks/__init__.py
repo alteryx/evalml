@@ -10,3 +10,4 @@ from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 from .outliers_data_check import OutliersDataCheck
+from .no_variance_data_check import NoVarianceDataCheck

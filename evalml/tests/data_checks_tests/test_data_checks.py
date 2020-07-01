@@ -44,7 +44,16 @@ def test_empty_data_checks(X_y_binary):
     assert data_checks.validate(X, y) == []
 
 
-def test_default_data_checks_classification(X_y_binary):
+messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+            DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
+            DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+            DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck"),
+            DataCheckError("lots_of_null has 1 unique value.", "NoVarianceDataCheck"),
+            DataCheckError("all_null has 0 unique value.", "NoVarianceDataCheck"),
+            DataCheckError("also_all_null has 0 unique value.", "NoVarianceDataCheck")]
+
+
+def test_default_data_checks_classification():
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -53,22 +62,18 @@ def test_default_data_checks_classification(X_y_binary):
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks()
-    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                          DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck"),
-                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
+
+    leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
+
+    assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:]
 
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
     data_checks = DefaultDataChecks()
-    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
+    assert data_checks.validate(X, y) == messages
 
 
-def test_default_data_checks_regression(X_y_binary):
+def test_default_data_checks_regression():
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -76,8 +81,10 @@ def test_default_data_checks_regression(X_y_binary):
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
+    y2 = pd.Series([5] * 4)
+
     data_checks = DefaultDataChecks()
-    assert data_checks.validate(X, y) == [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-                                          DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                          DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck")]
+    assert data_checks.validate(X, y) == messages
+
+    # Skip Invalid Target
+    assert data_checks.validate(X, y2) == messages[:3] + messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]
