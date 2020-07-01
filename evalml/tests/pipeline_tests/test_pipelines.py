@@ -35,9 +35,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.utils import (
     all_estimators,
-    all_pipelines,
     get_estimators,
-    get_pipelines,
     list_model_families,
     make_pipeline
 )
@@ -56,13 +54,6 @@ def test_list_model_families(has_minimal_dependencies):
     assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-def test_all_pipelines(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(all_pipelines()) == 6
-    else:
-        assert len(all_pipelines()) == 12
-
-
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_estimators()) == 4
@@ -79,33 +70,8 @@ def make_mock_import_module(libs_to_exclude):
 
 
 @patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_pipelines_core_dependencies_mock():
-    assert len(all_pipelines()) == 6
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
 def test_all_estimators_core_dependencies_mock():
     assert len(all_estimators()) == 4
-
-
-def test_get_pipelines(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
-
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -130,18 +96,6 @@ def test_get_estimators(has_minimal_dependencies):
         get_estimators(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
     with pytest.raises(KeyError):
         get_estimators(problem_type="Not A Valid Problem Type")
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_get_pipelines_core_dependencies_mock():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
 
 
 def test_make_pipeline_all_nan_no_categoricals():
@@ -918,9 +872,3 @@ def test_clone_fitted(X_y, lr_pipeline):
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
     pd.testing.assert_frame_equal(X_t, X_t_clone)
-
-
-@pytest.mark.parametrize("cls", all_pipelines())
-def test_pipeline_default_parameters(cls):
-
-    assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."

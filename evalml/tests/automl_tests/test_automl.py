@@ -22,7 +22,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -569,10 +569,9 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
 
 
-def test_verifies_allowed_pipelines(X_y_reg):
+def test_verifies_allowed_pipelines(X_y_reg, dummy_binary_pipeline_class):
     X, y = X_y_reg
-    allowed_pipelines = get_pipelines(problem_type=ProblemTypes.BINARY)
-    auto = AutoMLSearch(problem_type='regression', allowed_pipelines=allowed_pipelines)
+    auto = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
         auto.search(X, y)
 

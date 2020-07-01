@@ -45,8 +45,6 @@ from .regression import (
     MeanBaselineRegressionPipeline
 )
 from .utils import (
-    all_pipelines,
-    get_pipelines,
     list_model_families,
     all_estimators,
     get_estimators,
