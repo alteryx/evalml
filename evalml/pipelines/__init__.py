@@ -51,7 +51,7 @@ from .classification import (
 
 from .regression import (
     LinearRegressionPipeline,
-    RFRegressionPipeline,
+    # RFRegressionPipeline,
     CatBoostRegressionPipeline,
     ENRegressionPipeline,
     XGBoostRegressionPipeline,

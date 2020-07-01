@@ -106,24 +106,6 @@ Classification Pipelines
     ModeBaselineMulticlassPipeline
 
 
-Regression Pipelines
-~~~~~~~~~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
-    RFRegressionPipeline
-    CatBoostRegressionPipeline
-    ENRegressionPipeline
-    ETRegressionPipeline
-    LinearRegressionPipeline
-    XGBoostRegressionPipeline
-    BaselineRegressionPipeline
-    MeanBaselineRegressionPipeline
-
-
 Pipeline Utils
 ~~~~~~~~~~~~~~
 .. autosummary::

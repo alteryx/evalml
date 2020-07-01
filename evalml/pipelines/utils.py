@@ -18,7 +18,7 @@ from .multiclass_classification_pipeline import (
 from .regression import (
     CatBoostRegressionPipeline,
     LinearRegressionPipeline,
-    RFRegressionPipeline,
+    # RFRegressionPipeline,
     XGBoostRegressionPipeline
 )
 from .regression_pipeline import RegressionPipeline
@@ -55,7 +55,7 @@ _ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
                   XGBoostMulticlassPipeline,
                   CatBoostRegressionPipeline,
                   LinearRegressionPipeline,
-                  RFRegressionPipeline,
+                #   RFRegressionPipeline,
                   XGBoostRegressionPipeline]
 
 
