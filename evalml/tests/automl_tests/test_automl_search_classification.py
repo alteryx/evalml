@@ -55,9 +55,7 @@ def test_init_objective():
     assert isinstance(automl.objective, Precision)
 
 
-def test_get_pipeline_none(X_y_binary):
-    X, y = X_y_binary
-
+def test_get_pipeline_none():
     automl = AutoMLSearch(problem_type='binary')
     with pytest.raises(PipelineNotFoundError, match="Pipeline not found"):
         automl.describe_pipeline(0)
