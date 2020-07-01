@@ -119,7 +119,7 @@ def list_model_families(problem_type):
 
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in all_pipelines():
+    for p in all_estimators():
         if problem_type == handle_problem_types(p.problem_type):
             problem_pipelines.append(p)
 
