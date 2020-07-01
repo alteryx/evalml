@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
     * Changes
     * Documentation Changes
