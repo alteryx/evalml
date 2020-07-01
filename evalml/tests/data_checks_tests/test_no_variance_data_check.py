@@ -46,7 +46,7 @@ cases = [(all_distinct_X, all_distinct_y, True, []),
          ]
 
 
-@pytest.mark.parametrize("X,y,countna,answer", cases)
-def test_no_variance_data_check_warnings(X, y, countna, answer):
-    check = NoVarianceDataCheck(countna)
-    assert check.validate(X, y) == answer
+@pytest.mark.parametrize("X,y,count_nan_as_value,expected_validation_result", cases)
+def test_no_variance_data_check_warnings(X, y, count_nan_as_value, expected_validation_result):
+    check = NoVarianceDataCheck(count_nan_as_value)
+    assert check.validate(X, y) == expected_validation_result

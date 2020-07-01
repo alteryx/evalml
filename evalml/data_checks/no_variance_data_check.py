@@ -19,7 +19,7 @@ class NoVarianceDataCheck(DataCheck):
                 If set to True, a feature that has one unique value and all other data is missing, a
                 DataCheckWarning will be returned instead of an error. Defaults to False.
         """
-        self.dropnan = not count_nan_as_value
+        self._dropnan = not count_nan_as_value
 
     def _check_for_errors(self, column_name, count_unique, any_nulls):
         """Checks if a column has no variance.
@@ -37,7 +37,7 @@ class NoVarianceDataCheck(DataCheck):
         if count_unique <= 1:
             return DataCheckError(message.format(name=column_name), self.name)
 
-        elif count_unique == 2 and not self.dropnan and any_nulls:
+        elif count_unique == 2 and not self._dropnan and any_nulls:
             return DataCheckWarning(f"{column_name} has two unique values including nulls. "
                                     "Consider encoding the nulls for "
                                     "this column to be useful for machine learning.", self.name)
@@ -58,7 +58,7 @@ class NoVarianceDataCheck(DataCheck):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        unique_counts = X.nunique(dropna=self.dropnan).to_dict()
+        unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
 
         messages = []
@@ -73,7 +73,7 @@ class NoVarianceDataCheck(DataCheck):
         if not y_name:
             y_name = "Y"
 
-        label_message = self._check_for_errors(y_name, y.nunique(dropna=self.dropnan), y.isnull().any())
+        label_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
 
         if label_message:
             messages.append(label_message)
