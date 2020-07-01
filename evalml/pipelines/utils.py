@@ -116,12 +116,12 @@ def list_model_families(problem_type):
     Returns:
         list[ModelFamily]: a list of model families
     """
-
+    #  TODO: REDO VIA ESTIMATORS
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in all_estimators():
-        if problem_type == handle_problem_types(p.problem_type):
-            problem_pipelines.append(p)
+    for estimator in all_estimators():
+        if problem_type in [handle_problem_types(pt) for pt in estimator.supported_problem_types]:
+            problem_pipelines.append(estimator)
 
     return list(set([p.model_family for p in problem_pipelines]))
 
