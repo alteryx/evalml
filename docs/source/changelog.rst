@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
     * Changes
         * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`
