@@ -142,11 +142,25 @@ def test_get_pipelines_core_dependencies_mock():
         get_pipelines(problem_type="Not A Valid Problem Type")
 
 
+def test_make_pipeline_all_nan_no_categoricals():
+    # testing that all_null column is not considered categorical
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "num": [1, 2, 3, 4, 5]})
+    y = pd.Series([0, 0, 1, 1, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, StandardScaler, LogisticRegressionClassifier]
+
+    binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, RandomForestClassifier]
+
+
 def test_make_pipeline():
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
-    y = pd.Series([0, 0, 1, 2, 0])
+    y = pd.Series([0, 0, 1, 0, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
@@ -155,6 +169,7 @@ def test_make_pipeline():
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, RandomForestClassifier]
 
+    y = pd.Series([0, 2, 1, 2, 0])
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [DropNullColumns, SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
@@ -193,11 +208,13 @@ def test_make_pipeline_no_nulls():
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
-    y = pd.Series([0, 0, 1, 2, 0])
+    y = pd.Series([0, 1, 1, 0, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert binary_pipeline.custom_hyperparameters == {'Simple Imputer': {'impute_strategy': ['most_frequent']}}
+
+    y = pd.Series([0, 2, 1, 2, 0])
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [SimpleImputer, DateTimeFeaturization, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
