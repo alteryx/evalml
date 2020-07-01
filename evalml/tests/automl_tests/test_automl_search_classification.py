@@ -63,7 +63,7 @@ def test_get_pipeline_none(X_y_binary):
         automl.describe_pipeline(0)
 
 
-def test_cv(X_y_binary):
+def test_data_split(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
     automl = AutoMLSearch(problem_type='binary', data_split=StratifiedKFold(cv_folds), max_pipelines=1)
