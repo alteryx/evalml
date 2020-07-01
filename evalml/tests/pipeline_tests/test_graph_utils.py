@@ -53,9 +53,9 @@ def test_precision_recall_curve():
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_precision_recall_curve(X_y_binary, data_type):
+def test_graph_precision_recall_curve(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y_true = pd.Series(y_true)
@@ -74,9 +74,9 @@ def test_graph_precision_recall_curve(X_y_binary, data_type):
     assert fig_dict['data'][0]['name'] == 'Precision-Recall (AUC {:06f})'.format(precision_recall_curve_data['auc_score'])
 
 
-def test_graph_precision_recall_curve_title_addition(X_y_binary):
+def test_graph_precision_recall_curve_title_addition(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_precision_recall_curve(y_true, y_pred_proba, title_addition='with added title text')
@@ -186,9 +186,9 @@ def test_normalize_confusion_matrix_error():
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_roc_curve_binary(X_y_binary, data_type):
+def test_graph_roc_curve_binary(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     if data_type == 'pd':
@@ -261,9 +261,9 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
     assert fig_dict['data'][3]['name'] == 'Trivial Model (AUC 0.5)'
 
 
-def test_graph_roc_curve_title_addition(X_y_binary):
+def test_graph_roc_curve_title_addition(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_roc_curve(y_true, y_pred_proba, title_addition='with added title text')
@@ -273,9 +273,9 @@ def test_graph_roc_curve_title_addition(X_y_binary):
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_confusion_matrix_default(X_y_binary, data_type):
+def test_graph_confusion_matrix_default(X_y, data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     if data_type == 'pd':
@@ -300,9 +300,9 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type):
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Normalized Count</b>: %{z}<br><b>Raw Count</b>: %{customdata} <br><extra></extra>'
 
 
-def test_graph_confusion_matrix_norm_disabled(X_y_binary):
+def test_graph_confusion_matrix_norm_disabled(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, normalize_method=None)
@@ -324,9 +324,9 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary):
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Raw Count</b>: %{z}<br><b>Normalized Count</b>: %{customdata} <br><extra></extra>'
 
 
-def test_graph_confusion_matrix_title_addition(X_y_binary):
+def test_graph_confusion_matrix_title_addition(X_y):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X, y_true = X_y_binary
+    X, y_true = X_y
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, title_addition='with added title text')

@@ -6,8 +6,8 @@ from evalml import AutoMLSearch
 from evalml.objectives import LeadScoring
 
 
-def test_lead_scoring_objective(X_y_binary):
-    X, y = X_y_binary
+def test_lead_scoring_objective(X_y):
+    X, y = X_y
 
     objective = LeadScoring(true_positives=1,
                             false_positives=-1)
@@ -33,7 +33,7 @@ def test_lead_scoring_objective(X_y_binary):
     assert (score == 0.5)
 
 
-def test_input_contains_nan(X_y_binary):
+def test_input_contains_nan(X_y):
     objective = LeadScoring(true_positives=1,
                             false_positives=-1)
     y_predicted = np.array([np.nan, 0, 0])

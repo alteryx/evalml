@@ -43,7 +43,7 @@ def assert_allowed_pipelines_equal_helper():
 
 
 @pytest.fixture
-def X_y_binary():
+def X_y():
     X, y = datasets.make_classification(n_samples=100, n_features=20,
                                         n_informative=2, n_redundant=2, random_state=0)
 
@@ -51,7 +51,7 @@ def X_y_binary():
 
 
 @pytest.fixture
-def X_y_regression():
+def X_y_reg():
     X, y = datasets.make_regression(n_samples=100, n_features=20,
                                     n_informative=3, random_state=0)
     return X, y

@@ -4,7 +4,7 @@ import pytest
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 
 
-def test_search_iteration_plot_class():
+def test_search_iteration_plot_class(X_y):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockObjective:

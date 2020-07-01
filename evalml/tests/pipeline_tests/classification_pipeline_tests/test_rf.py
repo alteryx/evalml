@@ -14,8 +14,8 @@ from evalml.pipelines import (
 )
 
 
-def test_rf_init(X_y_binary):
-    X, y = X_y_binary
+def test_rf_init(X_y):
+    X, y = X_y
 
     parameters = {
         'Simple Imputer': {
@@ -58,8 +58,8 @@ def test_summary():
     assert RFBinaryClassificationPipeline.summary == 'Random Forest Classifier w/ Simple Imputer + One Hot Encoder'
 
 
-def test_rf_objective_tuning(X_y_binary):
-    X, y = X_y_binary
+def test_rf_objective_tuning(X_y):
+    X, y = X_y
 
     parameters = {
         'Simple Imputer': {
@@ -149,8 +149,8 @@ def test_rf_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred.to_numpy(), y_pred_with_objective.to_numpy(), decimal=5)
 
 
-def test_rf_input_feature_names(X_y_binary):
-    X, y = X_y_binary
+def test_rf_input_feature_names(X_y):
+    X, y = X_y
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

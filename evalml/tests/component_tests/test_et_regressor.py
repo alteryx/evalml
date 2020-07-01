@@ -30,8 +30,8 @@ def test_et_parameters():
     assert clf.parameters == expected_parameters
 
 
-def test_fit_predict(X_y_regression):
-    X, y = X_y_regression
+def test_fit_predict(X_y):
+    X, y = X_y
 
     sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
@@ -44,8 +44,8 @@ def test_fit_predict(X_y_regression):
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
 
 
-def test_feature_importance(X_y_regression):
-    X, y = X_y_regression
+def test_feature_importance(X_y):
+    X, y = X_y
 
     # testing that feature importance can't be called before fit
     clf = ExtraTreesRegressor()

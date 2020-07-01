@@ -39,8 +39,8 @@ def test_summary():
     assert CatBoostBinaryClassificationPipeline.summary == 'CatBoost Classifier w/ Simple Imputer'
 
 
-def test_catboost_objective_tuning(X_y_binary):
-    X, y = X_y_binary
+def test_catboost_objective_tuning(X_y):
+    X, y = X_y
 
     parameters = {
         'Simple Imputer': {
@@ -113,8 +113,8 @@ def test_catboost_multi(X_y_multi):
     assert not clf.feature_importance.isnull().all().all()
 
 
-def test_catboost_input_feature_names(X_y_binary):
-    X, y = X_y_binary
+def test_catboost_input_feature_names(X_y):
+    X, y = X_y
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

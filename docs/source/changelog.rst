@@ -7,15 +7,8 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`
     * Documentation Changes
     * Testing Changes
-
-
-.. warning::
-
-    **Breaking Changes**
-        * ``list_model_families`` has been moved to ``evalml.model_family.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`903`
 
 
 **v0.11.0 June 30, 2020**
@@ -62,8 +55,6 @@ Changelog
         * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
         * Replaced `AutoClassificationSearch` and `AutoRegressionSearch` with `AutoMLSearch` :pr:`871`
-        * Cleaned up fixture names and usages in tests :pr:`895`
-
 
 .. warning::
 

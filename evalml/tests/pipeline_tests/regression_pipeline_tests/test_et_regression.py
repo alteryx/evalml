@@ -13,8 +13,8 @@ def make_mock_et_regression_pipeline():
     return MockETRegressionPipeline({})
 
 
-def test_et_init(X_y_regression):
-    X, y = X_y_regression
+def test_et_init(X_y_reg):
+    X, y = X_y_reg
 
     parameters = {
         'Simple Imputer': {
@@ -61,8 +61,8 @@ def test_summary():
 
 @patch('evalml.pipelines.regression.ETRegressionPipeline.fit')
 @patch('evalml.pipelines.regression.ETRegressionPipeline.predict')
-def test_et_score(mock_predict, mock_fit, X_y_regression):
-    X, y = X_y_regression
+def test_et_score(mock_predict, mock_fit, X_y):
+    X, y = X_y
 
     mock_predict.return_value = y
     clf = make_mock_et_regression_pipeline()
@@ -75,8 +75,8 @@ def test_et_score(mock_predict, mock_fit, X_y_regression):
     assert scores == {'R2': 1.0}
 
 
-def test_et_input_feature_names(X_y_regression):
-    X, y = X_y_regression
+def test_et_input_feature_names(X_y_reg):
+    X, y = X_y_reg
     # create a list of column names
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
