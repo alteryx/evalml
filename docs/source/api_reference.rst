@@ -88,18 +88,9 @@ Classification Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    ENBinaryPipeline
-    ENMulticlassPipeline
-    ETBinaryClassificationPipeline
-    ETMulticlassClassificationPipeline
+
     LogisticRegressionBinaryPipeline
     LogisticRegressionMulticlassPipeline
-    RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
     BaselineBinaryPipeline
     BaselineMulticlassPipeline
     ModeBaselineBinaryPipeline

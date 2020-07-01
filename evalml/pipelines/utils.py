@@ -3,24 +3,13 @@ import pandas as pd
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .classification import (
-    CatBoostBinaryClassificationPipeline,
-    CatBoostMulticlassClassificationPipeline,
     LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
-    RFBinaryClassificationPipeline,
-    RFMulticlassClassificationPipeline,
-    XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline
+    LogisticRegressionMulticlassPipeline
 )
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
-from .regression import (
-    CatBoostRegressionPipeline,
-    LinearRegressionPipeline,
-    # RFRegressionPipeline,
-    XGBoostRegressionPipeline
-)
+from .regression import LinearRegressionPipeline
 from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
@@ -45,18 +34,9 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-_ALL_PIPELINES = [CatBoostBinaryClassificationPipeline,
-                  CatBoostMulticlassClassificationPipeline,
-                  LogisticRegressionBinaryPipeline,
+_ALL_PIPELINES = [LogisticRegressionBinaryPipeline,
                   LogisticRegressionMulticlassPipeline,
-                  RFBinaryClassificationPipeline,
-                  RFMulticlassClassificationPipeline,
-                  XGBoostBinaryPipeline,
-                  XGBoostMulticlassPipeline,
-                  CatBoostRegressionPipeline,
-                  LinearRegressionPipeline,
-                #   RFRegressionPipeline,
-                  XGBoostRegressionPipeline]
+                  LinearRegressionPipeline]
 
 
 _ALL_ESTIMATORS = [CatBoostClassifier,

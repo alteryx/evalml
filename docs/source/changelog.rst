@@ -7,9 +7,15 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Deleted static pipelines and refactored tests involving static pipelines :pr:`904`
     * Documentation Changes
     * Testing Changes
 
+
+.. warning::
+
+    **Breaking Changes**
+        * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase. :pr:`904`
 
 **v0.11.0 June 30, 2020**
     * Enhancements
