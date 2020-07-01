@@ -48,9 +48,9 @@ messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyN
             DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
             DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
             DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck"),
-            DataCheckError("Column lots_of_null has 1 unique value.", "NoVarianceDataCheck"),
-            DataCheckError("Column all_null has 0 unique value.", "NoVarianceDataCheck"),
-            DataCheckError("Column also_all_null has 0 unique value.", "NoVarianceDataCheck")]
+            DataCheckError("lots_of_null has 1 unique value.", "NoVarianceDataCheck"),
+            DataCheckError("all_null has 0 unique value.", "NoVarianceDataCheck"),
+            DataCheckError("also_all_null has 0 unique value.", "NoVarianceDataCheck")]
 
 
 def test_default_data_checks_classification(X_y):
@@ -87,4 +87,4 @@ def test_default_data_checks_regression(X_y):
     assert data_checks.validate(X, y) == messages
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y2) == messages[:3] + messages[4:] + [DataCheckError("The Labels have 1 unique value.", "NoVarianceDataCheck")]
+    assert data_checks.validate(X, y2) == messages[:3] + messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]
