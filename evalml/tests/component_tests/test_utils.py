@@ -18,18 +18,6 @@ def test_all_components(has_minimal_dependencies):
         assert len(all_components()) == 22
 
 
-def make_mock_import_module(libs_to_exclude):
-    def _import_module(library):
-        if library in libs_to_exclude:
-            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
-    return _import_module
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_components_core_dependencies_mock():
-    assert len(all_components()) == 18
-
-
 def test_handle_component_class_names():
     for name, cls in all_components().items():
         cls_ret = handle_component_class(cls)

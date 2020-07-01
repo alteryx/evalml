@@ -69,23 +69,6 @@ def test_all_estimators(has_minimal_dependencies):
         assert len(all_estimators()) == 8
 
 
-def make_mock_import_module(libs_to_exclude):
-    def _import_module(library):
-        if library in libs_to_exclude:
-            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
-    return _import_module
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_pipelines_core_dependencies_mock():
-    assert len(all_pipelines()) == 6
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_estimators_core_dependencies_mock():
-    assert len(all_estimators()) == 4
-
-
 def test_get_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
@@ -128,18 +111,6 @@ def test_get_estimators(has_minimal_dependencies):
         get_estimators(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
     with pytest.raises(KeyError):
         get_estimators(problem_type="Not A Valid Problem Type")
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_get_pipelines_core_dependencies_mock():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
 
 
 def test_make_pipeline_all_nan_no_categoricals():
