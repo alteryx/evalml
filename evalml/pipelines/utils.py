@@ -24,7 +24,7 @@ from .regression import (
 from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
-from evalml.model_family import handle_model_family
+from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
@@ -125,25 +125,6 @@ def get_pipelines(problem_type, model_families=None):
             pipelines.append(p)
 
     return pipelines
-
-
-def list_model_families(problem_type):
-    """List model type for a particular problem type.
-
-    Arguments:
-        problem_types (ProblemTypes or str): binary, multiclass, or regression
-
-    Returns:
-        list[ModelFamily]: a list of model families
-    """
-
-    problem_pipelines = []
-    problem_type = handle_problem_types(problem_type)
-    for p in all_pipelines():
-        if problem_type == handle_problem_types(p.problem_type):
-            problem_pipelines.append(p)
-
-    return list(set([p.model_family for p in problem_pipelines]))
 
 
 def all_estimators():
