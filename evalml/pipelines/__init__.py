@@ -38,7 +38,6 @@ from .classification import (
 )
 
 from .regression import (
-    LinearRegressionPipeline,
     BaselineRegressionPipeline,
     MeanBaselineRegressionPipeline
 )
