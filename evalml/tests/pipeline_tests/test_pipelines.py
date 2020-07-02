@@ -241,10 +241,10 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(X_y_binary, tmpdir, lr_pipeline):
+def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pipe.pkl')
-    pipeline = lr_pipeline
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     pipeline.save(path)
     assert pipeline.score(X, y, ['precision']) == PipelineBase.load(path).score(X, y, ['precision'])
@@ -254,7 +254,7 @@ def test_serialization(X_y_binary, tmpdir, lr_pipeline):
 def pickled_pipeline_path(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    pipeline = logistic_regression_binary_pipeline_class(parameters=logistic_regression_binary_pipeline_class.parameters)
+    pipeline = logistic_regression_binary_pipeline_class()
     pipeline.fit(X, y)
     pipeline.save(path)
     return path
@@ -266,7 +266,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipelin
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = logistic_regression_binary_pipeline_class(parameters=logistic_regression_binary_pipeline_class.parameters)
+    pipeline = logistic_regression_binary_pipeline_class()
     pipeline.fit(X, y)
     assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
@@ -299,9 +299,9 @@ def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
 
-def test_indexing(X_y_binary, lr_pipeline):
+def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    clf = lr_pipeline
+    clf = logistic_regression_binary_pipeline_class
     clf.fit(X, y)
 
     assert isinstance(clf[1], OneHotEncoder)
@@ -316,8 +316,8 @@ def test_indexing(X_y_binary, lr_pipeline):
         clf[:1]
 
 
-def test_describe(caplog, lr_pipeline):
-    lrp = lr_pipeline
+def test_describe(caplog, logistic_regression_binary_pipeline_class):
+    lrp = logistic_regression_binary_pipeline_class
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
@@ -332,9 +332,9 @@ def test_describe(caplog, lr_pipeline):
         assert component.name in out
 
 
-def test_describe_fitted(X_y_binary, caplog, lr_pipeline):
+def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = lr_pipeline
+    lrp = logistic_regression_binary_pipeline_class(parameters={})
     lrp.fit(X, y)
     lrp.describe()
     out = caplog.text
@@ -350,9 +350,9 @@ def test_describe_fitted(X_y_binary, caplog, lr_pipeline):
         assert component.name in out
 
 
-def test_parameters(X_y_binary, lr_pipeline):
+def test_parameters(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = lr_pipeline
+    lrp = logistic_regression_binary_pipeline_class
     params = {
         'Simple Imputer': {
             'impute_strategy': 'median',
@@ -667,8 +667,8 @@ def test_init_components_invalid_parameters():
         TestPipeline(parameters=parameters)
 
 
-def test_correct_parameters(lr_pipeline):
-    lr_pipeline = lr_pipeline
+def test_correct_parameters(logistic_regression_binary_pipeline_class):
+    lr_pipeline = logistic_regression_binary_pipeline_class
 
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
@@ -740,8 +740,9 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.assert_called()
 
 
-def test_score_auc(X_y_binary, lr_pipeline):
+def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
+    lr_pipeline = logistic_regression_binary_pipeline_class(parameters={})
     lr_pipeline.fit(X, y)
     lr_pipeline.score(X, y, ['auc'])
 
@@ -826,9 +827,9 @@ def test_clone_random_state(linear_regression_pipeline_class):
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
 
-def test_clone_fitted(X_y_binary, lr_pipeline):
+def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = lr_pipeline
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
