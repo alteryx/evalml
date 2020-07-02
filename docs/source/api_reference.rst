@@ -124,6 +124,18 @@ Regression Pipelines
     MeanBaselineRegressionPipeline
 
 
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    all_pipelines
+    get_pipelines
+    get_estimators
+    make_pipeline
+
+
 Pipeline Graph Utils
 ~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
@@ -139,20 +151,6 @@ Pipeline Graph Utils
     graph_confusion_matrix
     calculate_permutation_importance
     graph_permutation_importance
-
-
-.. currentmodule:: evalml.pipelines.utils
-
-Pipeline Utils
-~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    all_pipelines
-    get_pipelines
-    get_estimators
-    make_pipeline
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -347,6 +345,12 @@ Model Family
     :nosignatures:
 
     ModelFamily
+
+
+.. currentmodule:: evalml.model_family.utils
+
+Model Family Utils
+==================
 
 .. autosummary::
     :toctree: generated

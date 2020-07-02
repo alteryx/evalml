@@ -1,6 +1,7 @@
 import pytest
 
-from evalml.model_family import ModelFamily, handle_model_family
+from evalml.model_family import ModelFamily
+from evalml.model_family.utils import handle_model_family
 
 
 @pytest.fixture

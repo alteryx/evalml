@@ -8,8 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .components import Estimator
-from .components.utils import handle_component_class
+from .components import Estimator, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.utils import (

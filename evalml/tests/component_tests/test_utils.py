@@ -3,8 +3,8 @@ import inspect
 import pytest
 
 from evalml.exceptions import MissingComponentError
-from evalml.pipelines.components import ComponentBase
-from evalml.pipelines.components.utils import (
+from evalml.pipelines.components import (
+    ComponentBase,
     all_components,
     handle_component_class
 )

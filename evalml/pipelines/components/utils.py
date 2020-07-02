@@ -2,8 +2,7 @@
 import inspect
 
 from evalml.exceptions import MissingComponentError
-from evalml.pipelines import Estimator, Transformer
-from evalml.pipelines.components import ComponentBase
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
