@@ -76,7 +76,7 @@ def test_callback(X_y_regression):
     assert counts["add_result_callback"] == max_pipelines
 
 
-def test_early_stopping(caplog):
+def test_early_stopping(caplog, linear_regression_pipeline_class):
     tolerance = 0.005
     patience = 2
     automl = AutoMLSearch(problem_type='regression', objective='mse', max_time='60 seconds',

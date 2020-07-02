@@ -792,7 +792,7 @@ def test_drop_columns_in_pipeline():
     assert list(pipeline_with_drop_col.feature_importance["feature"]) == ['other col']
 
 
-def test_clone_init():
+def test_clone_init(linear_regression_pipeline_class):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -807,7 +807,7 @@ def test_clone_init():
     assert pipeline.parameters == pipeline_clone.parameters
 
 
-def test_clone_random_state():
+def test_clone_random_state(linear_regression_pipeline_class):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
