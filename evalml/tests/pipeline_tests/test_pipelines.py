@@ -677,7 +677,16 @@ def test_init_components_invalid_parameters():
 
 
 def test_correct_parameters(logistic_regression_binary_pipeline_class):
-    lr_pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    lr_pipeline = logistic_regression_binary_pipeline_class(parameters=parameters)
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
@@ -837,7 +846,7 @@ def test_clone_random_state(linear_regression_pipeline_class):
 
 def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
     random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
