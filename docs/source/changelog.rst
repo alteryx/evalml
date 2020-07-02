@@ -5,6 +5,7 @@ Changelog
 
 **Future Releases**
     * Enhancements
+        * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines :pr:`904`

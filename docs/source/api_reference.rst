@@ -349,6 +349,7 @@ Data Check Classes
     IDColumnsDataCheck
     LabelLeakageDataCheck
     OutliersDataCheck
+    NoVarianceDataCheck
 
 
 .. autosummary::
