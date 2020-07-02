@@ -896,22 +896,21 @@ def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_cla
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
-        'Simple Imputer':
-    {
-        'impute_strategy': 'most_frequent',
-    'fill_value': None
-    },
-    'One Hot Encoder': {
-        'top_n': 10,
-        'categories': None,
-         'drop': None,
-          'handle_unknown': 'ignore',
-           'handle_missing': 'error'
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent',
+            'fill_value': None
         },
-           'Logistic Regression Classifier': {
-               'penalty': 'l2',
-                'C': 1.0,
-                 'n_jobs': -1
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'n_jobs': -1
         }
-        }
+    }
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
