@@ -20,9 +20,9 @@ from evalml.objectives import FraudCost
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline, get_estimators
+    RegressionPipeline
 )
-from evalml.pipelines.utils import get_pipelines, make_pipeline
+from evalml.pipelines.utils import get_estimators, get_pipelines, make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 

@@ -30,9 +30,9 @@ from evalml.pipelines.components import (
     XGBoostClassifier
 )
 from evalml.pipelines.components.utils import (
-    _all_components,
     _all_estimators_used_in_search,
-    _all_transformers
+    _all_transformers,
+    all_components
 )
 from evalml.problem_types import ProblemTypes
 
@@ -322,7 +322,7 @@ def test_component_parameters_getter(test_classes):
 
 
 def test_component_parameters_init():
-    components = _all_components
+    components = all_components
     for component_class in components:
         print('Testing component {}'.format(component_class.name))
         component = component_class()
@@ -374,7 +374,7 @@ def test_clone_fitted(X_y_binary):
 
 
 def test_components_init_kwargs():
-    for component_class in _all_components:
+    for component_class in all_components:
         component = component_class()
         if component._component_obj is None:
             continue
@@ -395,7 +395,7 @@ def test_components_init_kwargs():
 
 
 def test_component_has_random_state():
-    for component_class in _all_components:
+    for component_class in all_components:
         params = inspect.signature(component_class.__init__).parameters
         assert "random_state" in params
 
@@ -488,7 +488,7 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", _all_components)
+@pytest.mark.parametrize("cls", all_components)
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."

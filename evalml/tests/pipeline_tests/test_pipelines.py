@@ -15,7 +15,7 @@ from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
-    RegressionPipeline, list_model_families, get_estimators
+    RegressionPipeline
 )
 from evalml.pipelines.components import (
     CatBoostClassifier,
@@ -35,6 +35,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import (
     _all_pipelines,
+    get_estimators,
     get_pipelines,
     make_pipeline
 )

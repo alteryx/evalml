@@ -21,9 +21,9 @@ from evalml.objectives import (
 from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     ModeBaselineBinaryPipeline,
-    PipelineBase, get_estimators
+    PipelineBase
 )
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 

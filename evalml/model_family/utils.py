@@ -1,5 +1,6 @@
 from .model_family import ModelFamily
 
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import handle_problem_types
 
 
@@ -31,12 +32,11 @@ def list_model_families(problem_type):
     Returns:
         list[ModelFamily]: a list of model families
     """
-    from evalml.pipelines import all_pipelines
 
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in all_pipelines():
-        if problem_type == handle_problem_types(p.problem_type):
+    for p in _all_estimators_used_in_search:
+        if problem_type in set(handle_problem_types(problem) for problem in p.supported_problem_types):
             problem_pipelines.append(p)
 
     return list(set([p.model_family for p in problem_pipelines]))
