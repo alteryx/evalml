@@ -33,7 +33,6 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     all_estimators,
     get_estimators,
-    get_pipelines,
     make_pipeline
 )
 from evalml.problem_types import ProblemTypes
