@@ -194,14 +194,3 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Standard Scaler', 'Linear Regressor']
     return LinearRegressionPipeline
-
-    # parameters = {
-    #     'Simple Imputer': {
-    #         'impute_strategy': 'median'
-    #     },
-    #     'Logistic Regression Classifier': {
-    #         'penalty': 'l2',
-    #         'C': 3.0,
-    #     }
-    # }
-    # return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)

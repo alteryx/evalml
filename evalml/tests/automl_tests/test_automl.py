@@ -569,7 +569,7 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
 
 
-def test_verifies_allowed_pipelines(X_y_regression, dummy_binary_pipeline_class):
+def test_allowed_pipelines_with_incorrect_problem_type(X_y_regression, dummy_binary_pipeline_class):
     X, y = X_y_regression
     auto = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(ValueError, match="is not compatible with problem_type"):

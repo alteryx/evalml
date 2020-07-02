@@ -859,3 +859,29 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
     pd.testing.assert_frame_equal(X_t, X_t_clone)
+
+
+def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X.columns),
+            "n_estimators": 20
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    clf = logistic_regression_binary_pipeline_class(parameters=parameters)
+    clf.fit(X, y)
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()
+    assert sorted(clf.feature_importance["feature"]) == sorted(col_names)
