@@ -16,8 +16,8 @@ def test_baseline_invalid_strategy():
         BaselineRegressor(strategy="unfortunately invalid strategy")
 
 
-def test_baseline_access_without_fit(X_y_reg):
-    X, _ = X_y_reg
+def test_baseline_access_without_fit(X_y_regression):
+    X, _ = X_y_regression
     clf = BaselineRegressor()
     with pytest.raises(RuntimeError):
         clf.predict(X)
@@ -25,14 +25,14 @@ def test_baseline_access_without_fit(X_y_reg):
         clf.feature_importance
 
 
-def test_baseline_y_is_None(X_y_reg):
-    X, _ = X_y_reg
+def test_baseline_y_is_None(X_y_regression):
+    X, _ = X_y_regression
     with pytest.raises(ValueError):
         BaselineRegressor().fit(X, y=None)
 
 
-def test_baseline_mean(X_y_reg):
-    X, y = X_y_reg
+def test_baseline_mean(X_y_regression):
+    X, y = X_y_regression
     mean = y.mean()
     clf = BaselineRegressor()
     clf.fit(X, y)
@@ -40,8 +40,8 @@ def test_baseline_mean(X_y_reg):
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
-def test_baseline_median(X_y_reg):
-    X, y = X_y_reg
+def test_baseline_median(X_y_regression):
+    X, y = X_y_regression
     median = np.median(y)
     clf = BaselineRegressor(strategy="median")
     clf.fit(X, y)

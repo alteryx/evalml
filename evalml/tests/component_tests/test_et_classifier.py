@@ -31,8 +31,8 @@ def test_et_parameters():
     assert clf.parameters == expected_parameters
 
 
-def test_fit_predict_binary(X_y):
-    X, y = X_y
+def test_fit_predict_binary(X_y_binary):
+    X, y = X_y_binary
 
     sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
@@ -65,8 +65,8 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
 
 
-def test_feature_importance(X_y):
-    X, y = X_y
+def test_feature_importance(X_y_binary):
+    X, y = X_y_binary
 
     # testing that feature_importance can't be called before fit
     clf = ExtraTreesClassifier()

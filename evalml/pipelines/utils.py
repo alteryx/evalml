@@ -8,7 +8,7 @@ from .multiclass_classification_pipeline import (
 from .regression_pipeline import RegressionPipeline
 
 from evalml.exceptions import MissingComponentError
-from evalml.model_family import handle_model_family
+from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
@@ -37,25 +37,6 @@ _ALL_ESTIMATORS = [CatBoostClassifier,
                    RandomForestRegressor,
                    XGBoostClassifier,
                    XGBoostRegressor]
-
-
-def list_model_families(problem_type):
-    """List model type for a particular problem type.
-
-    Arguments:
-        problem_types (ProblemTypes or str): binary, multiclass, or regression
-
-    Returns:
-        list[ModelFamily]: a list of model families
-    """
-    #  TODO: REDO VIA ESTIMATORS
-    problem_pipelines = []
-    problem_type = handle_problem_types(problem_type)
-    for estimator in all_estimators():
-        if problem_type in [handle_problem_types(pt) for pt in estimator.supported_problem_types]:
-            problem_pipelines.append(estimator)
-
-    return list(set([p.model_family for p in problem_pipelines]))
 
 
 def all_estimators():

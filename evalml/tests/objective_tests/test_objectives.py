@@ -50,8 +50,8 @@ def test_get_objectives_types():
     assert len(get_objectives(ProblemTypes.REGRESSION)) == 7
 
 
-def test_objective_outputs(X_y, X_y_multi):
-    _, y_binary_np = X_y
+def test_objective_outputs(X_y_binary, X_y_multi):
+    _, y_binary_np = X_y_binary
     assert isinstance(y_binary_np, np.ndarray)
     _, y_multi_np = X_y_multi
     assert isinstance(y_multi_np, np.ndarray)
