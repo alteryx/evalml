@@ -254,7 +254,7 @@ def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline_c
 def pickled_pipeline_path(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    pipeline = logistic_regression_binary_pipeline_class()
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     pipeline.save(path)
     return path
@@ -266,7 +266,7 @@ def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipelin
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = logistic_regression_binary_pipeline_class()
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
@@ -301,7 +301,7 @@ def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
 
 def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    clf = logistic_regression_binary_pipeline_class
+    clf = logistic_regression_binary_pipeline_class(parameters={})
     clf.fit(X, y)
 
     assert isinstance(clf[1], OneHotEncoder)
@@ -317,7 +317,7 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
 
 
 def test_describe(caplog, logistic_regression_binary_pipeline_class):
-    lrp = logistic_regression_binary_pipeline_class
+    lrp = logistic_regression_binary_pipeline_class(parameters={})
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
@@ -352,8 +352,17 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
 
 def test_parameters(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = logistic_regression_binary_pipeline_class
-    params = {
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
+    expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median',
             'fill_value': None
@@ -371,7 +380,7 @@ def test_parameters(X_y_binary, logistic_regression_binary_pipeline_class):
             'n_jobs': -1
         }
     }
-    assert params == lrp.parameters
+    assert lrp.parameters == expected_parameters
 
 
 def test_name():
@@ -668,8 +677,7 @@ def test_init_components_invalid_parameters():
 
 
 def test_correct_parameters(logistic_regression_binary_pipeline_class):
-    lr_pipeline = logistic_regression_binary_pipeline_class
-
+    lr_pipeline = logistic_regression_binary_pipeline_class(parameters={})
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
