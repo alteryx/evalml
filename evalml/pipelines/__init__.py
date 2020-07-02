@@ -60,13 +60,11 @@ from .regression import (
     MeanBaselineRegressionPipeline
 )
 from .utils import (
-    all_pipelines,
+    _all_pipelines,
     get_pipelines,
-    list_model_families,
-    all_estimators_used_in_search,
-    get_estimators,
     make_pipeline
 )
+from .components.utils import list_model_families, get_estimators
 from .graph_utils import (
     precision_recall_curve,
     graph_precision_recall_curve,

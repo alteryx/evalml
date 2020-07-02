@@ -15,7 +15,7 @@ from evalml.pipelines import (
     LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
-    RegressionPipeline
+    RegressionPipeline, list_model_families, get_estimators
 )
 from evalml.pipelines.components import (
     CatBoostClassifier,
@@ -32,10 +32,9 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import (
-    all_estimators_used_in_search,
-    all_pipelines,
-    get_estimators,
+    _all_pipelines,
     get_pipelines,
     make_pipeline
 )
@@ -57,16 +56,16 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_pipelines()) == 6
+        assert len(_all_pipelines) == 6
     else:
-        assert len(all_pipelines()) == 12
+        assert len(_all_pipelines) == 12
 
 
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_estimators_used_in_search()) == 4
+        assert len((_all_estimators_used_in_search)) == 4
     else:
-        assert len(all_estimators_used_in_search()) == 8
+        assert len(_all_estimators_used_in_search) == 8
 
 
 def test_get_pipelines(has_minimal_dependencies):
@@ -113,21 +112,6 @@ def test_get_estimators(has_minimal_dependencies):
         get_estimators(problem_type="Not A Valid Problem Type")
 
 
-<<<<<<< HEAD
-=======
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_get_pipelines_core_dependencies_mock():
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-    assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-    assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
-
-
->>>>>>> Adding ability to filter for classes used during automl search.
 def test_make_pipeline_all_nan_no_categoricals():
     # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
@@ -904,7 +888,7 @@ def test_clone_fitted(X_y_binary, lr_pipeline):
     pd.testing.assert_frame_equal(X_t, X_t_clone)
 
 
-@pytest.mark.parametrize("cls", all_pipelines())
+@pytest.mark.parametrize("cls", _all_pipelines)
 def test_pipeline_default_parameters(cls):
 
     assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."

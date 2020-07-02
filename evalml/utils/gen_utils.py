@@ -113,7 +113,7 @@ class classproperty:
         return self.func(klass)
 
 
-def _get_importable_subclasses(base_class):
+def _get_subclasses(base_class):
     """Gets all of the leaf nodes in the hiearchy tree for a given base class.
 
     Arguments:
@@ -147,7 +147,7 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'ExtraTreesCla
                        'ENMulticlassPipeline', 'ETMulticlassClassificationPipeline'}
 
 
-def get_importable_subclasses(base_class, args, message, used_in_automl=True):
+def get_importable_subclasses(base_class, args, used_in_automl=True):
     """Get importable subclasses of a base class. Used to list all of our
     estimators, transformers, components and pipelines dynamically.
 
@@ -155,7 +155,6 @@ def get_importable_subclasses(base_class, args, message, used_in_automl=True):
         base_class (abc.ABCMeta): Base class to find all of the subclasses for.
         args (list): Args used to instantiate the subclass. [{}] for a pipeline, and [] for
             all other classes.
-        message: Message to log
         used_in_automl: Not all components/pipelines/estimators are used in automl search. If True,
             only include those subclasses that are used in the search. This would mean excluding classes related to
             ExtraTrees, ElasticNet, and Baseline estimators.
@@ -163,20 +162,19 @@ def get_importable_subclasses(base_class, args, message, used_in_automl=True):
     Returns:
         List of subclasses.
     """
-    all_classes = _get_importable_subclasses(base_class)
+    all_classes = _get_subclasses(base_class)
 
-    def get_all_classes():
-        classes = []
-        for cls in all_classes:
-            try:
-                cls(*args)
-                classes.append(cls)
-            except (ImportError, MissingComponentError):
-                logger.debug(message.format(cls.name))
+    classes = []
+    for cls in all_classes:
+        if 'evalml.pipelines' not in cls.__module__:
+            continue
+        try:
+            cls(*args)
+            classes.append(cls)
+        except (ImportError, MissingComponentError, TypeError):
+            logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')
 
-        if used_in_automl:
-            classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
+    if used_in_automl:
+        classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
-        return classes
-
-    return get_all_classes
+    return classes

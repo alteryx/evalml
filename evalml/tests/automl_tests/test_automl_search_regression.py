@@ -11,9 +11,9 @@ from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
     LinearRegressionPipeline,
     MeanBaselineRegressionPipeline,
-    PipelineBase
+    PipelineBase, get_estimators
 )
-from evalml.pipelines.utils import get_estimators, make_pipeline
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 
 

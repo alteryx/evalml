@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from evalml.pipelines.components.utils import list_model_families, get_estimators
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
@@ -8,7 +9,6 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
@@ -21,16 +21,13 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler
 )
-from evalml.pipelines.components.utils import all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-all_pipelines = get_importable_subclasses(PipelineBase, args=[{}],
-                                          message='Pipeline {} failed import, withholding from all_pipelines',
-                                          used_in_automl=True)
+_all_pipelines = get_importable_subclasses(PipelineBase, args=[{}], used_in_automl=True)
 
 
 def get_pipelines(problem_type, model_families=None):
@@ -53,7 +50,7 @@ def get_pipelines(problem_type, model_families=None):
 
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in all_pipelines():
+    for p in _all_pipelines:
         if problem_type == handle_problem_types(p.problem_type):
             problem_pipelines.append(p)
 
@@ -72,40 +69,6 @@ def get_pipelines(problem_type, model_families=None):
             pipelines.append(p)
 
     return pipelines
-
-
-def get_estimators(problem_type, model_families=None):
-    """Returns the estimators allowed for a particular problem type.
-
-    Can also optionally filter by a list of model types.
-
-    Arguments:
-        problem_type (ProblemTypes or str): problem type to filter for
-        model_families (list[ModelFamily] or list[str]): model families to filter for
-
-    Returns:
-        list[class]: a list of estimator subclasses
-    """
-    if model_families is not None and not isinstance(model_families, list):
-        raise TypeError("model_families parameter is not a list.")
-    problem_type = handle_problem_types(problem_type)
-    if model_families is None:
-        model_families = list_model_families(problem_type)
-
-    model_families = [handle_model_family(model_family) for model_family in model_families]
-    all_model_families = list_model_families(problem_type)
-    for model_family in model_families:
-        if model_family not in all_model_families:
-            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
-
-    estimator_classes = []
-    for estimator_class in all_estimators_used_in_search():
-        if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
-            continue
-        if estimator_class.model_family not in model_families:
-            continue
-        estimator_classes.append(estimator_class)
-    return estimator_classes
 
 
 def _get_preprocessing_components(X, y, problem_type, estimator_class):

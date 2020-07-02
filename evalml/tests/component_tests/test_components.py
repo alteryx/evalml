@@ -30,9 +30,9 @@ from evalml.pipelines.components import (
     XGBoostClassifier
 )
 from evalml.pipelines.components.utils import (
-    all_components,
-    all_estimators_used_in_search,
-    all_transformers
+    _all_components,
+    _all_estimators_used_in_search,
+    _all_transformers
 )
 from evalml.problem_types import ProblemTypes
 
@@ -322,7 +322,7 @@ def test_component_parameters_getter(test_classes):
 
 
 def test_component_parameters_init():
-    components = all_components()
+    components = _all_components
     for component_class in components:
         print('Testing component {}'.format(component_class.name))
         component = component_class()
@@ -374,8 +374,7 @@ def test_clone_fitted(X_y_binary):
 
 
 def test_components_init_kwargs():
-    components = all_components()
-    for component_class in components:
+    for component_class in _all_components:
         component = component_class()
         if component._component_obj is None:
             continue
@@ -396,8 +395,7 @@ def test_components_init_kwargs():
 
 
 def test_component_has_random_state():
-    components = all_components()
-    for component_class in components:
+    for component_class in _all_components:
         params = inspect.signature(component_class.__init__).parameters
         assert "random_state" in params
 
@@ -417,8 +415,7 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
-    transformers = all_transformers()
-    for component_class in transformers:
+    for component_class in _all_transformers:
         print('Testing transformer {}'.format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
             print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
@@ -465,8 +462,7 @@ def test_estimator_predict_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
 
-    estimators = all_estimators_used_in_search()
-    for component_class in estimators:
+    for component_class in _all_estimators_used_in_search:
         for X, y, X_cols_expected, y_cols_expected in datatype_combos:
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
@@ -492,7 +488,7 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", _all_components)
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
