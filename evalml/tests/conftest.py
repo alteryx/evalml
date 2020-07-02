@@ -171,3 +171,36 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
     return MockRegressionPipeline
+
+
+@pytest.fixture
+def logistic_regression_multiclass_pipeline_class():
+    class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
+        """Logistic Regression Pipeline for binary classification."""
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+    return LogisticRegressionMulticlassPipeline
+
+@pytest.fixture
+def logistic_regression_binary_pipeline_class():
+    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+    return LogisticRegressionBinaryPipeline
+
+
+@pytest.fixture
+def linear_regression_pipeline_class():
+    class LinearRegressionPipeline(RegressionPipeline):
+        """Linear Regression Pipeline for regression problems."""
+        component_graph = ['One Hot Encoder', 'Simple Imputer', 'Standard Scaler', 'Linear Regressor']
+    return LinearRegressionPipeline
+
+    # parameters = {
+    #     'Simple Imputer': {
+    #         'impute_strategy': 'median'
+    #     },
+    #     'Logistic Regression Classifier': {
+    #         'penalty': 'l2',
+    #         'C': 3.0,
+    #     }
+    # }
+    # return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)

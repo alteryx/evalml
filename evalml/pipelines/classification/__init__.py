@@ -1,5 +1,3 @@
 # flake8:noqa
-from .logistic_regression_binary import LogisticRegressionBinaryPipeline
-from .logistic_regression_multiclass import LogisticRegressionMulticlassPipeline
 from .baseline_binary import BaselineBinaryPipeline, ModeBaselineBinaryPipeline
 from .baseline_multiclass import BaselineMulticlassPipeline, ModeBaselineMulticlassPipeline

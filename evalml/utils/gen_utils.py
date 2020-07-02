@@ -86,7 +86,7 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
-        class LogisticRegressionBinaryPipeline:
+        class LogisticRegressionBinaryPipeline(PipelineBase):
             component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
 
             @classproperty

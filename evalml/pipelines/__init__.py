@@ -31,8 +31,6 @@ from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .regression_pipeline import RegressionPipeline
 
 from .classification import (
-    LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
     BaselineBinaryPipeline,
     BaselineMulticlassPipeline,
     ModeBaselineBinaryPipeline,

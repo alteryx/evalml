@@ -88,9 +88,6 @@ Classification Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
     BaselineBinaryPipeline
     BaselineMulticlassPipeline
     ModeBaselineBinaryPipeline

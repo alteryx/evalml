@@ -12,8 +12,6 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    LinearRegressionPipeline,
-    LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
@@ -250,19 +248,6 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-@pytest.fixture
-def lr_pipeline():
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'median'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 3.0,
-        }
-    }
-    return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)
-
 
 def test_required_fields():
     class TestPipelineWithoutComponentGraph(PipelineBase):
@@ -438,13 +423,13 @@ def test_estimator_not_last(X_y):
         }
     }
 
-    class MockLogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Logistic Regression Pipeline"
+    class MockBinaryClassificationPipelineWithoutEstimator(BinaryClassificationPipeline):
+        name = "Mock Binary Classification Pipeline Without Estimator"
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockLogisticRegressionBinaryPipeline(parameters=parameters)
+        MockBinaryClassificationPipelineWithoutEstimator(parameters=parameters)
 
 
 def test_multi_format_creation(X_y):
