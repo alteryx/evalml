@@ -3,7 +3,7 @@ from operator import itemgetter
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
-from evalml.pipelines.components import handle_component_class
+from evalml.pipelines.components.utils import handle_component_class
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):

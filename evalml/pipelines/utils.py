@@ -8,7 +8,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.model_family.utils import handle_model_family, list_model_families
+from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
