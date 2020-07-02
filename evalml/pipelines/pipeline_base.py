@@ -106,7 +106,7 @@ class PipelineBase(ABC):
         try:
             component_class = handle_component_class(component_class)
         except MissingComponentError as e:
-            err = "Error recieved when retrieving class for component {}".format(component_class)
+            err = "Error recieved when retrieving class for component '{}'".format(component_class)
             raise MissingComponentError(err) from e
 
         component_name = component_class.name

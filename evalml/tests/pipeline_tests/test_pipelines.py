@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
-from evalml.exceptions import IllFormattedClassNameError
+from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.model_family import ModelFamily, list_model_families
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
@@ -885,3 +885,33 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
     assert len(clf.feature_importance) == len(X.columns)
     assert not clf.feature_importance.isnull().all().all()
     assert sorted(clf.feature_importance["feature"]) == sorted(col_names)
+
+
+def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
+    class FakePipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
+    with pytest.raises(MissingComponentError, match="Error recieved when retrieving class for component 'This Component Does Not Exist'"):
+        FakePipeline(parameters={})
+
+
+def test_get_default_parameters(logistic_regression_binary_pipeline_class):
+    expected_defaults = {
+        'Simple Imputer':
+    {
+        'impute_strategy': 'most_frequent',
+    'fill_value': None
+    },
+    'One Hot Encoder': {
+        'top_n': 10,
+        'categories': None,
+         'drop': None,
+          'handle_unknown': 'ignore',
+           'handle_missing': 'error'
+        },
+           'Logistic Regression Classifier': {
+               'penalty': 'l2',
+                'C': 1.0,
+                 'n_jobs': -1
+        }
+        }
+    assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
