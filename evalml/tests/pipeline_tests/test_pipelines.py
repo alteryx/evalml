@@ -58,40 +58,6 @@ def test_all_estimators(has_minimal_dependencies):
         assert len(all_estimators()) == 8
 
 
-<<<<<<< HEAD
-def make_mock_import_module(libs_to_exclude):
-    def _import_module(library):
-        if library in libs_to_exclude:
-            raise ImportError("Cannot import {}; excluded by mock muahahaha".format(library))
-        return import_module(library)
-    return _import_module
-
-
-@patch('importlib.import_module', make_mock_import_module({'xgboost', 'catboost'}))
-def test_all_estimators_core_dependencies_mock():
-    assert len(all_estimators()) == 4
-=======
-def test_get_pipelines(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
-
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
->>>>>>> origin
-
-
 def test_get_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 2
@@ -268,7 +234,6 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-
 def test_required_fields():
     class TestPipelineWithoutComponentGraph(PipelineBase):
         pass
@@ -287,27 +252,27 @@ def test_serialization(X_y_binary, tmpdir, lr_pipeline):
 
 
 @pytest.fixture
-def pickled_pipeline_path(X_y_binary, tmpdir, lr_pipeline):
+def pickled_pipeline_path(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
+    pipeline = logistic_regression_binary_pipeline_class(parameters=logistic_regression_binary_pipeline_class.parameters)
     pipeline.fit(X, y)
     pipeline.save(path)
     return path
 
 
-def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipeline_path, lr_pipeline):
+def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipeline_path, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     # checks that class is not defined before loading in pipeline
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
+    pipeline = logistic_regression_binary_pipeline_class(parameters=logistic_regression_binary_pipeline_class.parameters)
     pipeline.fit(X, y)
     assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
-def test_reproducibility(X_y_binary):
+def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     objective = FraudCost(
         retry_percentage=.5,
@@ -326,10 +291,10 @@ def test_reproducibility(X_y_binary):
         }
     }
 
-    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf = logistic_regression_binary_pipeline_class(parameters=parameters)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf_1 = logistic_regression_binary_pipeline_class(parameters=parameters)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
@@ -838,7 +803,7 @@ def test_clone_init():
             'normalize': True,
         }
     }
-    pipeline = LinearRegressionPipeline(parameters=parameters)
+    pipeline = linear_regression_pipeline_class(parameters=parameters)
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
 
@@ -853,11 +818,11 @@ def test_clone_random_state():
             'normalize': True,
         }
     }
-    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=np.random.RandomState(42))
     pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
-    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=2)
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=2)
     pipeline_clone = pipeline.clone(random_state=2)
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 

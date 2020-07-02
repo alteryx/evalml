@@ -180,6 +180,7 @@ def logistic_regression_multiclass_pipeline_class():
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
     return LogisticRegressionMulticlassPipeline
 
+
 @pytest.fixture
 def logistic_regression_binary_pipeline_class():
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):

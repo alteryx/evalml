@@ -1,3 +1,2 @@
 # flake8:noqa
-from .linear_regression import LinearRegressionPipeline
 from .baseline_regression import BaselineRegressionPipeline, MeanBaselineRegressionPipeline

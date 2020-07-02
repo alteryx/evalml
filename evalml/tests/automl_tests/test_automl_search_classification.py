@@ -18,11 +18,7 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import (
-    LogisticRegressionBinaryPipeline,
-    ModeBaselineBinaryPipeline,
-    PipelineBase
-)
+from evalml.pipelines import ModeBaselineBinaryPipeline, PipelineBase
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -300,7 +296,7 @@ def test_max_time_units():
         AutoMLSearch(problem_type='binary', objective='F1', max_time=(30, 'minutes'))
 
 
-def test_early_stopping(caplog):
+def test_early_stopping(caplog, logistic_regression_binary_pipeline_class):
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         automl = AutoMLSearch(problem_type='binary', objective='AUC', max_pipelines=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
@@ -317,7 +313,7 @@ def test_early_stopping(caplog):
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
-        mock_results['pipeline_results'][id]['pipeline_class'] = LogisticRegressionBinaryPipeline
+        mock_results['pipeline_results'][id]['pipeline_class'] = logistic_regression_binary_pipeline_class
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
