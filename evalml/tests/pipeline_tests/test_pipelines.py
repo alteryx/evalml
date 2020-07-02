@@ -34,7 +34,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import (
-    _all_pipelines,
+    all_pipelines,
     get_estimators,
     get_pipelines,
     make_pipeline
@@ -57,9 +57,9 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_pipelines(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(_all_pipelines) == 6
+        assert len(all_pipelines) == 6
     else:
-        assert len(_all_pipelines) == 12
+        assert len(all_pipelines) == 12
 
 
 def test_all_estimators(has_minimal_dependencies):
@@ -889,7 +889,7 @@ def test_clone_fitted(X_y_binary, lr_pipeline):
     pd.testing.assert_frame_equal(X_t, X_t_clone)
 
 
-@pytest.mark.parametrize("cls", _all_pipelines)
+@pytest.mark.parametrize("cls", all_pipelines)
 def test_pipeline_default_parameters(cls):
 
     assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."

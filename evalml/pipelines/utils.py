@@ -27,7 +27,7 @@ from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-_all_pipelines = get_importable_subclasses(PipelineBase, args=[{}], used_in_automl=True)
+all_pipelines = get_importable_subclasses(PipelineBase, args=[{}], used_in_automl=True)
 
 
 def get_pipelines(problem_type, model_families=None):
@@ -50,7 +50,7 @@ def get_pipelines(problem_type, model_families=None):
 
     problem_pipelines = []
     problem_type = handle_problem_types(problem_type)
-    for p in _all_pipelines:
+    for p in all_pipelines:
         if problem_type == handle_problem_types(p.problem_type):
             problem_pipelines.append(p)
 
