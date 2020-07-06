@@ -30,7 +30,8 @@ from .transformers import (
     DropColumns,
     DropNullColumns,
     DateTimeFeaturization,
-    SelectColumns
+    SelectColumns,
+    TextFeaturization
     )
 
 from .utils import all_components, handle_component_class
