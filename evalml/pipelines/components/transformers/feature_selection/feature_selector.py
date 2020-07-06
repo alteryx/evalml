@@ -6,15 +6,6 @@ from evalml.pipelines.components.transformers import Transformer
 class FeatureSelector(Transformer):
     """Selects top features based on importance weights"""
 
-    def get_indices(self):
-        """Get integer index of features selected
-
-        Returns:
-            list: list of indices
-        """
-        indices = self._component_obj.get_support(indices=True)
-        return indices
-
     def get_names(self):
         """Get names of selected features.
 
