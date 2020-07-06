@@ -1,5 +1,5 @@
 import featuretools as ft
-from nlp_primitives import (
+from featuretools.nlp_primitives import (
     DiversityScore,
     LSA,
     MeanCharactersPerWord,
@@ -85,6 +85,5 @@ class TextFeaturization(Transformer):
         feature_matrix = ft.calculate_feature_matrix(features=self._features,
                                                      entityset=es,
                                                      verbose=True)
-        print('FEATURE MATRIX', feature_matrix)
         X_t = pd.concat([X_t.reindex(feature_matrix.index), feature_matrix], axis=1)
         return X_t

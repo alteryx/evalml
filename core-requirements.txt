@@ -3,8 +3,8 @@ pandas>=0.25.0
 scipy>=1.2.1
 scikit-learn>=0.21.3,!=0.22,<0.23.0
 scikit-optimize
-featuretools>=0.16.0
-featuretools[nlp_primitives]>=0.3.0
+featuretools
+featuretools[nlp_primitives]
 tqdm>=4.33.0
 colorama
 cloudpickle>=0.2.2
