@@ -93,15 +93,15 @@ Classification Pipelines
     ModeBaselineBinaryPipeline
     ModeBaselineMulticlassPipeline
 
-Regression Pipelines	
+Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~
 
-.. autosummary::	
-    :toctree: generated	
-    :template: pipeline_class.rst	
-    :nosignatures:	
+.. autosummary::
+    :toctree: generated
+    :template: pipeline_class.rst
+    :nosignatures:
 
-    BaselineRegressionPipeline	
+    BaselineRegressionPipeline
     MeanBaselineRegressionPipeline
 
 
