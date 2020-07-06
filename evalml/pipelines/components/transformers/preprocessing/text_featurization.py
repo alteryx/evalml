@@ -32,7 +32,13 @@ class TextFeaturization(Transformer):
                          component_obj=None,
                          random_state=random_state)
 
+    def get_features(self):
+        return self._features
+
     def fit(self, X, y=None):
+        if len(self.text_col_names) == 0:
+            self._features = []
+            return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_text = X[self.text_col_names]
@@ -64,6 +70,8 @@ class TextFeaturization(Transformer):
         """
         if self._features is None:
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
+        if len(self._features) == 0:
+            return X
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -77,5 +85,6 @@ class TextFeaturization(Transformer):
         feature_matrix = ft.calculate_feature_matrix(features=self._features,
                                                      entityset=es,
                                                      verbose=True)
+        print('FEATURE MATRIX', feature_matrix)
         X_t = pd.concat([X_t.reindex(feature_matrix.index), feature_matrix], axis=1)
         return X_t
