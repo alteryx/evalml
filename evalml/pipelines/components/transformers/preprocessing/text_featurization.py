@@ -29,9 +29,11 @@ class TextFeaturization(Transformer):
         parameters = {}
         parameters.update(kwargs)
 
+        if len(text_columns) == 0:
+            warnings.warn("No text columns were given to TextFeaturization, component will have no effect", RuntimeWarning)
         for col_name in text_columns:
             if not isinstance(col_name, str):
-                raise ValueError("Column names must be of object type")
+                raise ValueError("Column names must be strings")
         self.text_col_names = text_columns
         self._features = None
         super().__init__(parameters=parameters,
@@ -55,6 +57,12 @@ class TextFeaturization(Transformer):
                 self.text_col_names.remove(col)
             warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
 
+    def _verify_col_types(self, entity_set):
+        var_types = entity_set.entities[0].variable_types
+        for col in self.text_col_names:
+            if var_types[col] is not ft.variable_types.variable.Text:
+                raise ValueError("Column {} is not a text column, cannot apply TextFeaturization component".format(col))
+
     def fit(self, X, y=None):
         if len(self.text_col_names) == 0:
             self._features = []
@@ -65,6 +73,7 @@ class TextFeaturization(Transformer):
 
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
+        self._verify_col_types(es)
 
         trans = [DiversityScore,
                  LSA,
@@ -99,6 +108,7 @@ class TextFeaturization(Transformer):
 
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
+        self._verify_col_types(es)
 
         feature_matrix = ft.calculate_feature_matrix(features=self._features,
                                                      entityset=es,

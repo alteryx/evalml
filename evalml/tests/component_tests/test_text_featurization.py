@@ -14,7 +14,7 @@ def text_df():
 
 
 def test_invalid_col_name():
-    with pytest.raises(ValueError, match="Column names must be of object type"):
+    with pytest.raises(ValueError, match="Column names must be strings"):
         TextFeaturization(text_columns=['col_1', 2])
 
 
@@ -73,7 +73,9 @@ def test_featurization_with_nontext(text_df):
 
 def test_featurization_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
-    tf = TextFeaturization()
+    warn_msg = "No text columns were given to TextFeaturization, component will have no effect"
+    with pytest.warns(RuntimeWarning, match=warn_msg):
+        tf = TextFeaturization()
 
     tf.fit(X)
     assert len(tf.features) == 0
@@ -115,3 +117,20 @@ def test_all_missing_col_names(text_df):
 
     with pytest.raises(RuntimeError, match="You must fit"):
         tf.transform(X)
+
+
+def test_invalid_text_column():
+    X = pd.DataFrame({'col_1': []})
+    tf = TextFeaturization(text_columns=['col_1'])
+    with pytest.raises(ValueError, match="not a text column"):
+        tf.fit(X)
+
+    X = pd.DataFrame(
+        {'col_1': [
+            'I\'m singing in the rain!$%^ do do do do do da do',
+            'just singing in the rain.................. \n',
+            325,
+            'I\'m happy again!!! lalalalalalalalalalala']})
+    tf = TextFeaturization(text_columns=['col_1'])
+    with pytest.raises(ValueError, match="not a text column"):
+        tf.fit(X)
