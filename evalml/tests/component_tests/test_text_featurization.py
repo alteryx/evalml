@@ -13,6 +13,11 @@ def text_df():
     yield df
 
 
+def test_invalid_col_name():
+    with pytest.raises(ValueError, match="Column names must be of object type"):
+        TextFeaturization(text_columns=['col_1', 2])
+
+
 def test_transform_without_fit(text_df):
     X = text_df
     tf = TextFeaturization(text_columns=['col_1', 'col_2'])
@@ -36,7 +41,7 @@ def test_featurization_only_text(text_df):
                              'PART_OF_SPEECH_COUNT(col_2)',
                              'POLARITY_SCORE(col_1)',
                              'POLARITY_SCORE(col_2)'])
-    features = set([feat.get_name() for feat in tf.get_features()])
+    features = set([feat.get_name() for feat in tf.features])
     assert expected_features == features
     X_t = tf.transform(X)
     assert len(X_t.columns) == 40
@@ -59,7 +64,7 @@ def test_featurization_with_nontext(text_df):
                              'PART_OF_SPEECH_COUNT(col_2)',
                              'POLARITY_SCORE(col_1)',
                              'POLARITY_SCORE(col_2)'])
-    features = set([feat.get_name() for feat in tf.get_features()])
+    features = set([feat.get_name() for feat in tf.features])
     assert expected_features == features
     X_t = tf.transform(X)
     assert len(X_t.columns) == 41
@@ -71,6 +76,42 @@ def test_featurization_no_text():
     tf = TextFeaturization()
 
     tf.fit(X)
-    assert len(tf.get_features()) == 0
+    assert len(tf.features) == 0
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
+
+
+def test_some_missing_col_names(text_df):
+    X = text_df
+    tf = TextFeaturization(text_columns=['col_1', 'col_2', 'col_3'])
+
+    with pytest.warns(RuntimeWarning, match="not found in the given DataFrame"):
+        tf.fit(X)
+
+    expected_features = set(['DIVERSITY_SCORE(col_1)',
+                             'DIVERSITY_SCORE(col_2)',
+                             'LSA(col_1)',
+                             'LSA(col_2)',
+                             'MEAN_CHARACTERS_PER_WORD(col_1)',
+                             'MEAN_CHARACTERS_PER_WORD(col_2)',
+                             'PART_OF_SPEECH_COUNT(col_1)',
+                             'PART_OF_SPEECH_COUNT(col_2)',
+                             'POLARITY_SCORE(col_1)',
+                             'POLARITY_SCORE(col_2)'])
+    features = set([feat.get_name() for feat in tf.features])
+    assert expected_features == features
+    X_t = tf.transform(X)
+    assert len(X_t.columns) == 40
+    assert X_t.dtypes.all() == np.float64
+
+
+def test_all_missing_col_names(text_df):
+    X = text_df
+    tf = TextFeaturization(text_columns=['col_3', 'col_4'])
+
+    error_msg = "None of the provided text column names match the columns in the given DataFrame"
+    with pytest.raises(RuntimeError, match=error_msg):
+        tf.fit(X)
+
+    with pytest.raises(RuntimeError, match="You must fit"):
+        tf.transform(X)

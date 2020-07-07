@@ -1,12 +1,14 @@
+import warnings
+
 import featuretools as ft
+import pandas as pd
 from nlp_primitives import (
-    DiversityScore,
     LSA,
+    DiversityScore,
     MeanCharactersPerWord,
     PartOfSpeechCount,
     PolarityScore
 )
-import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 
@@ -27,19 +29,37 @@ class TextFeaturization(Transformer):
         parameters = {}
         parameters.update(kwargs)
 
+        for col_name in text_columns:
+            if not isinstance(col_name, str):
+                raise ValueError("Column names must be of object type")
         self.text_col_names = text_columns
         self._features = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
-    def get_features(self):
+    @property
+    def features(self):
         return self._features
+
+    def _verify_col_names(self, col_names):
+        missing_cols = []
+        for col in self.text_col_names:
+            if col not in col_names:
+                missing_cols.append(col)
+
+        if len(missing_cols) > 0:
+            if len(missing_cols) == len(self.text_col_names):
+                raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
+            for col in missing_cols:
+                self.text_col_names.remove(col)
+            warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
 
     def fit(self, X, y=None):
         if len(self.text_col_names) == 0:
             self._features = []
             return self
+        self._verify_col_names(X.columns)
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
 
@@ -59,7 +79,7 @@ class TextFeaturization(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
+        """Transforms data X by creating new features using existing text columns
 
         Arguments:
             X (pd.DataFrame): Data to transform
@@ -71,6 +91,7 @@ class TextFeaturization(Transformer):
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
         if len(self._features) == 0:
             return X
+        self._verify_col_names(X.columns)
 
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
@@ -82,5 +103,5 @@ class TextFeaturization(Transformer):
         feature_matrix = ft.calculate_feature_matrix(features=self._features,
                                                      entityset=es,
                                                      verbose=True)
-        X_t = pd.concat([X_t.reindex(feature_matrix.index), feature_matrix], axis=1)
+        X_t = pd.concat([X_t, feature_matrix.reindex(X.index)], axis=1)
         return X_t
