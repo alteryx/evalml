@@ -40,8 +40,6 @@ class TextFeaturization(Transformer):
         if len(self.text_col_names) == 0:
             self._features = []
             return self
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
 
@@ -73,8 +71,6 @@ class TextFeaturization(Transformer):
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
         if len(self._features) == 0:
             return X
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
