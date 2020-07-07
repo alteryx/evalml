@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -171,6 +173,7 @@ def test_normalize_confusion_matrix(data_type):
 
 def test_normalize_confusion_matrix_error():
     conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    warnings.simplefilter('default', category=RuntimeWarning)
 
     with pytest.raises(ValueError, match='Invalid value provided'):
         normalize_confusion_matrix(conf_mat, normalize_method='invalid option')

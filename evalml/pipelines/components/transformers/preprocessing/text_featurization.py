@@ -1,10 +1,11 @@
 import featuretools as ft
-from featuretools.nlp_primitives import (
+from nlp_primitives import (
     DiversityScore,
     LSA,
     MeanCharactersPerWord,
     PartOfSpeechCount,
-    PolarityScore)
+    PolarityScore
+)
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer

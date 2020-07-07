@@ -4,6 +4,7 @@ scipy>=1.2.1
 scikit-learn>=0.21.3,!=0.22,<0.23.0
 scikit-optimize
 featuretools[nlp_primitives]
+nlp-primitives
 tqdm>=4.33.0
 colorama
 cloudpickle>=0.2.2
