@@ -1,5 +1,5 @@
 import featuretools as ft
-from featuretools.nlp_primitives import (
+from ft.nlp_primitives import (
     DiversityScore,
     LSA,
     MeanCharactersPerWord,
