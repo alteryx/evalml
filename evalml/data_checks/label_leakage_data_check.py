@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from sklearn.preprocessing import LabelEncoder 
 
 
 class LabelLeakageDataCheck(DataCheck):
@@ -46,6 +47,10 @@ class LabelLeakageDataCheck(DataCheck):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+
+        le = LabelEncoder()
+        le.fit(y)
+        y = pd.Series(le.transform(y))
         # only select numeric
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
         X = X.select_dtypes(include=numerics)
