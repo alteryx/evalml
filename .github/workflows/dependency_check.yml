@@ -26,5 +26,5 @@ jobs:
                  Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
           branch: dep-update
           branch-suffix: short-commit-hash
-          base: master
+          base: main
           reviewers: angela97lin, dsherry, jeremyliweishih
