@@ -790,3 +790,15 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -         -" in out
     assert "std                    0.000          -         -" in out
     assert "coef of var            0.000          -         -" in out
+
+def test_string_targets():
+    from sklearn.datasets import load_breast_cancer
+    data = load_breast_cancer()
+    X = pd.DataFrame(data["data"], columns=data["feature_names"])
+    y = pd.Series(data["target"])
+
+    y = y.map(lambda x: data["target_names"][x])
+
+    auto = AutoMLSearch(problem_type='binary')
+    auto.search(X, y)
+

@@ -4,10 +4,36 @@ import pandas as pd
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-
+from sklearn.preprocessing import LabelEncoder 
 
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
+
+    def fit(self, X, y):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+        y = self._encode_targets(y)
+        self._fit(X, y)
+        return self
+
+
+    def _encode_targets(self, y):
+        self.encoder = LabelEncoder()
+        self.encoder.fit(y)
+        return self.encoder.transform(y)
+
+    def _decode_targets(self, y):
+        return pd.Series(self.encoder.inverse_transform(y))
+
+    def predict(self, X, objective=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        X_t = self._transform(X)
+        predictions = self.estimator.predict(X_t)
+        return self._decode_targets(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
