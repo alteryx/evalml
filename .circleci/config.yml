@@ -243,7 +243,7 @@ jobs:
       - run:
           name: "Display Dependency Diff"
           command: |
-            echo Displaying dependencies which have changed, with master on the left and the new branch on the right:
+            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
             cat /tmp/dependencies_updated_artifacts/diff.txt
           when: on_fail
       - store_artifacts:
@@ -257,7 +257,7 @@ workflows:
           name: "changelog updated"
           filters:
             branches:
-              ignore: /^master?/
+              ignore: /^main?/
   build_docs:
     jobs:
       - build_docs:
@@ -280,7 +280,7 @@ workflows:
             python_version: "3.8"
             filters:
               branches:
-                ignore: /^master?/
+                ignore: /^main?/
   test_all_python_versions:
     jobs:
         - lint_test:
