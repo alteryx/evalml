@@ -10,6 +10,7 @@ Changelog
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`
         * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`
+        * Updated `all_pipelines`, `all_estimators`, `all_components` to use the same mechanism for dynamically generating their elements :pr:`898`
     * Documentation Changes
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`

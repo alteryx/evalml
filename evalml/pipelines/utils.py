@@ -7,7 +7,6 @@ from .multiclass_classification_pipeline import (
 )
 from .regression_pipeline import RegressionPipeline
 
-from evalml.exceptions import MissingComponentError
 from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
@@ -17,43 +16,14 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    RandomForestClassifier,
-    RandomForestRegressor,
     SimpleImputer,
-    StandardScaler,
-    XGBoostClassifier,
-    XGBoostRegressor
+    StandardScaler
 )
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-
-_ALL_ESTIMATORS = [CatBoostClassifier,
-                   CatBoostRegressor,
-                   LinearRegressor,
-                   LogisticRegressionClassifier,
-                   RandomForestClassifier,
-                   RandomForestRegressor,
-                   XGBoostClassifier,
-                   XGBoostRegressor]
-
-
-def all_estimators():
-    """Returns a complete list of all supported estimator classes.
-
-    Returns:
-        list[Estimator]: a list of estimator classes
-    """
-    estimators = []
-    for estimator_class in _ALL_ESTIMATORS:
-        try:
-            estimator_class()
-            estimators.append(estimator_class)
-        except (MissingComponentError, ImportError):
-            estimator_name = estimator_class.name
-            logger.debug('Estimator {} failed import, withholding from all_estimators'.format(estimator_name))
-    return estimators
 
 
 def get_estimators(problem_type, model_families=None):
@@ -81,7 +51,7 @@ def get_estimators(problem_type, model_families=None):
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
 
     estimator_classes = []
-    for estimator_class in all_estimators():
+    for estimator_class in _all_estimators_used_in_search:
         if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
             continue
         if estimator_class.model_family not in model_families:

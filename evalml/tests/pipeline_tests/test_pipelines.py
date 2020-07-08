@@ -30,17 +30,15 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
-from evalml.pipelines.utils import (
-    all_estimators,
-    get_estimators,
-    make_pipeline
-)
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
 def test_list_model_families(has_minimal_dependencies):
-    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
-    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL]
+    expected_model_families_binary = set(families)
+    expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
@@ -52,9 +50,9 @@ def test_list_model_families(has_minimal_dependencies):
 
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_estimators()) == 4
+        assert len((_all_estimators_used_in_search)) == 4
     else:
-        assert len(all_estimators()) == 8
+        assert len(_all_estimators_used_in_search) == 8
 
 
 def test_get_estimators(has_minimal_dependencies):

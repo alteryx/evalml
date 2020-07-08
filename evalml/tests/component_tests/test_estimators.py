@@ -3,12 +3,12 @@ import string
 import numpy as np
 import pandas as pd
 
-from evalml.pipelines.utils import all_estimators
+from evalml.pipelines.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression):
-    for estimator_class in all_estimators():
+    for estimator_class in _all_estimators_used_in_search:
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = estimator_class()
