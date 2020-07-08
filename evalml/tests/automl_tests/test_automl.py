@@ -804,3 +804,54 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+
+# The next three functions test whether or not the search finishes after the program receives a keyboard interrupt
+# These will be called in a subprocess. The send_end parameter is a connection from the subprocess to the main
+# process and is how we'll share data between them. We need to send the result we want to check to the main process
+# so that pytest can mark whether or not the test failed.
+def search_interrupt(X, y, send_end):
+    with patch("builtins.input", return_value="y"):
+        automl = AutoMLSearch(problem_type="binary", max_pipelines=10)
+        automl.search(X, y)
+        send_end.send(None)
+
+
+def search_dont_interrupt(X, y, send_end):
+    with patch("builtins.input", return_value="n"):
+        automl = AutoMLSearch(problem_type="binary", max_pipelines=3)
+        automl.search(X, y)
+        send_end.send(automl.has_searched)
+
+
+def search_interrupt_bad_message(X, y, send_end):
+    with patch("builtins.input", side_effect=["Yes", "yes.", "n"]):
+        automl = AutoMLSearch(problem_type="binary", max_pipelines=3)
+        automl.search(X, y)
+        send_end.send(automl.has_searched)
+
+
+@pytest.mark.parametrize("search", [search_interrupt, search_dont_interrupt, search_interrupt_bad_message])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"score": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit', return_value={"score": 1.0})
+def test_catch_keyboard_interrupt(mock_fit, mock_score, search, X_y_binary):
+
+    import multiprocessing
+    import signal
+    import os
+    import time
+
+    X, y = X_y_binary
+
+    recv_end, send_end = multiprocessing.Pipe(False)
+    process = multiprocessing.Process(target=search, args=(X, y, send_end))
+    process.start()
+
+    # This is the minimum amount of time we need before we enter the search
+    time.sleep(8)
+    os.kill(process.pid, signal.SIGINT)
+
+    result = recv_end.recv()
+
+    if result is not None:
+        assert result

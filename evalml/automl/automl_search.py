@@ -369,33 +369,53 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         while self._check_stopping_condition(self._start):
-            if len(current_batch_pipelines) == 0:
-                try:
-                    current_batch_pipelines = self._automl_algorithm.next_batch()
-                except StopIteration:
-                    logger.info('AutoML Algorithm out of recommendations, ending')
-                    break
-            pipeline = current_batch_pipelines.pop(0)
-            parameters = pipeline.parameters
-            logger.debug('Evaluating pipeline {}'.format(pipeline.name))
-            logger.debug('Pipeline parameters: {}'.format(parameters))
+            try:
+                if len(current_batch_pipelines) == 0:
+                    try:
+                        current_batch_pipelines = self._automl_algorithm.next_batch()
+                    except StopIteration:
+                        logger.info('AutoML Algorithm out of recommendations, ending')
+                        break
+                pipeline = current_batch_pipelines.pop(0)
+                parameters = pipeline.parameters
+                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
+                logger.debug('Pipeline parameters: {}'.format(parameters))
 
-            if self.start_iteration_callback:
-                self.start_iteration_callback(pipeline.__class__, parameters)
-            desc = f"{pipeline.name}"
-            if len(desc) > self._MAX_NAME_LEN:
-                desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-            desc = desc.ljust(self._MAX_NAME_LEN)
+                if self.start_iteration_callback:
+                    self.start_iteration_callback(pipeline.__class__, parameters)
+                desc = f"{pipeline.name}"
+                if len(desc) > self._MAX_NAME_LEN:
+                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                desc = desc.ljust(self._MAX_NAME_LEN)
 
-            update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
 
-            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
-            score = evaluation_results['cv_score_mean']
-            score_to_minimize = -score if self.objective.greater_is_better else score
-            self._automl_algorithm.add_result(score_to_minimize, pipeline)
+                evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
+                score = evaluation_results['cv_score_mean']
+                score_to_minimize = -score if self.objective.greater_is_better else score
+                self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
-            if search_iteration_plot:
-                search_iteration_plot.update()
+                if search_iteration_plot:
+                    search_iteration_plot.update()
+
+            except KeyboardInterrupt:
+                leading_char = "\n"
+                start_of_loop = time.time()
+                while True:
+                    choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
+                    if choice == "y":
+                        #pbar.clear()
+                        #pbar.close()
+                        logger.info("Exiting AutoMLSearch.")
+                        return
+                    elif choice == "n":
+                        # So that the time in this loop does not count towards the time budget (if set)
+                        time_in_loop = time.time() - start_of_loop
+                        self._start += time_in_loop
+                        current_batch_pipelines = [pipeline] + current_batch_pipelines
+                        break
+                    else:
+                        leading_char = ""
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
