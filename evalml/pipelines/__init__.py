@@ -31,18 +31,6 @@ from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .regression_pipeline import RegressionPipeline
 
 from .classification import (
-    CatBoostBinaryClassificationPipeline,
-    CatBoostMulticlassClassificationPipeline,
-    ENBinaryPipeline,
-    ENMulticlassPipeline,
-    ETBinaryClassificationPipeline,
-    ETMulticlassClassificationPipeline,
-    LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline,
-    RFBinaryClassificationPipeline,
-    RFMulticlassClassificationPipeline,
-    XGBoostBinaryPipeline,
-    XGBoostMulticlassPipeline,
     BaselineBinaryPipeline,
     BaselineMulticlassPipeline,
     ModeBaselineBinaryPipeline,
@@ -50,18 +38,10 @@ from .classification import (
 )
 
 from .regression import (
-    LinearRegressionPipeline,
-    RFRegressionPipeline,
-    CatBoostRegressionPipeline,
-    ENRegressionPipeline,
-    XGBoostRegressionPipeline,
-    ETRegressionPipeline,
     BaselineRegressionPipeline,
     MeanBaselineRegressionPipeline
 )
 from .utils import (
-    all_pipelines,
-    get_pipelines,
     list_model_families,
     all_estimators,
     get_estimators,

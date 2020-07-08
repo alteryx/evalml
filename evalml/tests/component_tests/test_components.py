@@ -516,5 +516,4 @@ components = list(all_components().items()) + [(DateTimeFeaturization.name, Date
 
 @pytest.mark.parametrize("class_name,cls", components)
 def test_default_parameters(class_name, cls):
-
     assert cls.default_parameters == cls().parameters, f"{class_name}'s default parameters don't match __init__."

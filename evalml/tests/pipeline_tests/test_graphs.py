@@ -8,12 +8,7 @@ import pytest
 from skopt.space import Real
 
 from evalml.objectives import get_objectives
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    LinearRegressionPipeline,
-    LogisticRegressionBinaryPipeline,
-    LogisticRegressionMulticlassPipeline
-)
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.graph_utils import (
     calculate_permutation_importance,
     graph_permutation_importance
@@ -114,20 +109,20 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
     assert (np.any(data['x'] == 0.0))
 
 
-def test_get_permutation_importance_invalid_objective(X_y_regression):
+def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
-    pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
         calculate_permutation_importance(pipeline, X, y, "mcc_multi")
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_get_permutation_importance_binary(X_y_binary, data_type):
+def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y = pd.Series(y)
-    pipeline = LogisticRegressionBinaryPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in get_objectives(ProblemTypes.BINARY):
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -135,9 +130,9 @@ def test_get_permutation_importance_binary(X_y_binary, data_type):
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_multiclass(X_y_multi):
+def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class):
     X, y = X_y_multi
-    pipeline = LogisticRegressionMulticlassPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in get_objectives(ProblemTypes.MULTICLASS):
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -145,9 +140,9 @@ def test_get_permutation_importance_multiclass(X_y_multi):
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_regression(X_y_regression):
+def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
-    pipeline = LinearRegressionPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in get_objectives(ProblemTypes.REGRESSION):
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -155,13 +150,13 @@ def test_get_permutation_importance_regression(X_y_regression):
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_correlated_features():
+def test_get_permutation_importance_correlated_features(logistic_regression_binary_pipeline_class):
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = LogisticRegressionBinaryPipeline(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(pipeline, X, y, objective="log_loss_binary", random_state=0)
     assert list(importance.columns) == ["feature", "importance"]

@@ -8,11 +8,7 @@ from evalml import AutoMLSearch
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
-from evalml.pipelines import (
-    LinearRegressionPipeline,
-    MeanBaselineRegressionPipeline,
-    PipelineBase
-)
+from evalml.pipelines import MeanBaselineRegressionPipeline, PipelineBase
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -80,7 +76,7 @@ def test_callback(X_y_regression):
     assert counts["add_result_callback"] == max_pipelines
 
 
-def test_early_stopping(caplog):
+def test_early_stopping(caplog, linear_regression_pipeline_class):
     tolerance = 0.005
     patience = 2
     automl = AutoMLSearch(problem_type='regression', objective='mse', max_time='60 seconds',
@@ -95,7 +91,7 @@ def test_early_stopping(caplog):
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
-        mock_results['pipeline_results'][id]['pipeline_class'] = LinearRegressionPipeline
+        mock_results['pipeline_results'][id]['pipeline_class'] = linear_regression_pipeline_class
 
     automl.results = mock_results
     automl._check_stopping_condition(time.time())
