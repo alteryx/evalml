@@ -5,7 +5,6 @@ from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
-from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
 from evalml.model_family import handle_model_family, list_model_families
@@ -23,52 +22,8 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
-from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
-
-all_pipelines = get_importable_subclasses(PipelineBase, args=[{}], used_in_automl=True)
-
-
-def get_pipelines(problem_type, model_families=None):
-    """Returns the pipelines allowed for a particular problem type.
-
-    Can also optionally filter by a list of model types.
-
-    Arguments:
-        problem_type (ProblemTypes or str): problem type to filter for
-        model_families (list[ModelFamily] or list[str]): model families to filter for
-
-    Returns:
-        list[PipelineBase]: a list of pipeline classes
-    """
-    if model_families is not None and not isinstance(model_families, list):
-        raise TypeError("model_families parameter is not a list.")
-
-    if model_families:
-        model_families = [handle_model_family(model_family) for model_family in model_families]
-
-    problem_pipelines = []
-    problem_type = handle_problem_types(problem_type)
-    for p in all_pipelines:
-        if problem_type == handle_problem_types(p.problem_type):
-            problem_pipelines.append(p)
-
-    if model_families is None:
-        return problem_pipelines
-
-    all_model_families = list_model_families(problem_type)
-    for model_family in model_families:
-        if model_family not in all_model_families:
-            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
-
-    pipelines = []
-
-    for p in problem_pipelines:
-        if p.model_family in model_families:
-            pipelines.append(p)
-
-    return pipelines
 
 
 def get_estimators(problem_type, model_families=None):

@@ -171,4 +171,4 @@ def test_get_importable_subclasses_wont_get_custom_classes():
     class ChildClass(ComponentBase):
         pass
 
-    assert ChildClass not in get_importable_subclasses(ComponentBase, args=[])
+    assert ChildClass not in get_importable_subclasses(ComponentBase)

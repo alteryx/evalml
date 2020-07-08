@@ -6,10 +6,7 @@ from evalml.automl.automl_algorithm import (
     IterativeAlgorithm
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    LogisticRegressionBinaryPipeline
-)
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
 
@@ -25,8 +22,8 @@ def test_iterative_algorithm_init():
     assert algo.allowed_pipelines == []
 
 
-def test_iterative_algorithm_allowed_pipelines():
-    allowed_pipelines = [LogisticRegressionBinaryPipeline]
+def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeline_class):
+    allowed_pipelines = [logistic_regression_binary_pipeline_class]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0

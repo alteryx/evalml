@@ -8,6 +8,7 @@ Changelog
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
     * Changes
+        * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`
         * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`
         * Updated `all_pipelines`, `all_estimators`, `all_components` to use the same mechanism for dynamically generating their elements :pr:`898`
     * Documentation Changes
@@ -19,6 +20,8 @@ Changelog
 
     **Breaking Changes**
         * ``list_model_families`` has been moved to ``evalml.model_family.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`903`
+        * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase :pr:`904`
+        * ``all_pipelines()`` and ``get_pipelines()`` utility methods have been removed :pr:`904`
 
 
 **v0.11.0 June 30, 2020**

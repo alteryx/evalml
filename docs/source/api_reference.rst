@@ -88,23 +88,10 @@ Classification Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    ENBinaryPipeline
-    ENMulticlassPipeline
-    ETBinaryClassificationPipeline
-    ETMulticlassClassificationPipeline
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
-    RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
     BaselineBinaryPipeline
     BaselineMulticlassPipeline
     ModeBaselineBinaryPipeline
     ModeBaselineMulticlassPipeline
-
 
 Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~
@@ -114,12 +101,6 @@ Regression Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    RFRegressionPipeline
-    CatBoostRegressionPipeline
-    ENRegressionPipeline
-    ETRegressionPipeline
-    LinearRegressionPipeline
-    XGBoostRegressionPipeline
     BaselineRegressionPipeline
     MeanBaselineRegressionPipeline
 
@@ -149,8 +130,6 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
-    all_pipelines
-    get_pipelines
     get_estimators
     make_pipeline
 

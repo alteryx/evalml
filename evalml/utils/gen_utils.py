@@ -91,7 +91,7 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
-        class LogisticRegressionBinaryPipeline:
+        class LogisticRegressionBinaryPipeline(PipelineBase):
             component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
 
             @classproperty
@@ -147,7 +147,7 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'ExtraTreesCla
                        'ENMulticlassPipeline', 'ETMulticlassClassificationPipeline'}
 
 
-def get_importable_subclasses(base_class, args, used_in_automl=True):
+def get_importable_subclasses(base_class, used_in_automl=True):
     """Get importable subclasses of a base class. Used to list all of our
     estimators, transformers, components and pipelines dynamically.
 
@@ -169,7 +169,7 @@ def get_importable_subclasses(base_class, args, used_in_automl=True):
         if 'evalml.pipelines' not in cls.__module__:
             continue
         try:
-            cls(*args)
+            cls()
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')

@@ -33,10 +33,10 @@ def list_model_families(problem_type):
         list[ModelFamily]: a list of model families
     """
 
-    problem_pipelines = []
+    estimators = []
     problem_type = handle_problem_types(problem_type)
-    for p in _all_estimators_used_in_search:
-        if problem_type in set(handle_problem_types(problem) for problem in p.supported_problem_types):
-            problem_pipelines.append(p)
+    for estimator in _all_estimators_used_in_search:
+        if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
+            estimators.append(estimator)
 
-    return list(set([p.model_family for p in problem_pipelines]))
+    return list(set([e.model_family for e in estimators]))

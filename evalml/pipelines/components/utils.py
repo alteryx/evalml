@@ -9,9 +9,9 @@ from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-_all_estimators = get_importable_subclasses(Estimator, args=[], used_in_automl=False)
-_all_estimators_used_in_search = get_importable_subclasses(Estimator, args=[], used_in_automl=True)
-_all_transformers = get_importable_subclasses(Transformer, args=[], used_in_automl=False)
+_all_estimators = get_importable_subclasses(Estimator, used_in_automl=False)
+_all_estimators_used_in_search = get_importable_subclasses(Estimator, used_in_automl=True)
+_all_transformers = get_importable_subclasses(Transformer, used_in_automl=False)
 all_components = _all_estimators + _all_transformers
 
 
