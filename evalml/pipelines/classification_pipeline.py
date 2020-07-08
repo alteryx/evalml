@@ -49,6 +49,11 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+
+        # todo: separate case for series? do under binary / multiclass
+        if not isinstance(proba, pd.DataFrame):
+            proba = pd.DataFrame(proba)
+        proba.columns = self.encoder.inverse_transform(proba.columns)
         return proba
 
     def score(self, X, y, objectives):

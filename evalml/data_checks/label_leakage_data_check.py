@@ -49,8 +49,7 @@ class LabelLeakageDataCheck(DataCheck):
             y = pd.Series(y)
 
         le = LabelEncoder()
-        le.fit(y)
-        y = pd.Series(le.transform(y))
+        y = pd.Series(le.fit_transform(y))
         # only select numeric
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
         X = X.select_dtypes(include=numerics)
