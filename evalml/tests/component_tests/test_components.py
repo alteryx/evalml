@@ -322,8 +322,7 @@ def test_component_parameters_getter(test_classes):
 
 
 def test_component_parameters_init():
-    components = all_components
-    for component_class in components:
+    for component_class in all_components:
         print('Testing component {}'.format(component_class.name))
         component = component_class()
         parameters = component.parameters
