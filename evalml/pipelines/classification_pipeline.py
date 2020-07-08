@@ -1,10 +1,11 @@
 from collections import OrderedDict
 
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-from sklearn.preprocessing import LabelEncoder 
+
 
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
@@ -18,14 +19,13 @@ class ClassificationPipeline(PipelineBase):
         self._fit(X, y)
         return self
 
-
     def _encode_targets(self, y):
-        self.encoder = LabelEncoder()
-        self.encoder.fit(y)
-        return self.encoder.transform(y)
+        self._encoder = LabelEncoder()
+        self._encoder.fit(y)
+        return self._encoder.transform(y)
 
     def _decode_targets(self, y):
-        return pd.Series(self.encoder.inverse_transform(y))
+        return self._encoder.inverse_transform(y)
 
     def predict(self, X, objective=None):
         if not isinstance(X, pd.DataFrame):
@@ -53,7 +53,7 @@ class ClassificationPipeline(PipelineBase):
         # todo: separate case for series? do under binary / multiclass
         if not isinstance(proba, pd.DataFrame):
             proba = pd.DataFrame(proba)
-        proba.columns = self.encoder.inverse_transform(proba.columns)
+        proba.columns = self._decode_targets(proba.columns)
         return proba
 
     def score(self, X, y, objectives):

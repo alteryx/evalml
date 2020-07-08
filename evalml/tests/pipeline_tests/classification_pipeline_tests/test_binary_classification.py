@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 
+@patch('evalml.pipelines.ClassificationPipeline._decode_targets')
+@patch('evalml.pipelines.ClassificationPipeline._encode_targets')
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba')
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -11,11 +13,14 @@ import pytest
 @patch('evalml.pipelines.PipelineBase.fit')
 def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
                                                 mock_predict, mock_predict_proba,
-                                                mock_obj_decision, X_y_binary, dummy_binary_pipeline_class):
+                                                mock_obj_decision, mock_encode, mock_decode,
+                                                X_y_binary, dummy_binary_pipeline_class):
+    mock_decode.return_value = [0, 1]
     X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X)
+    mock_decode.assert_called()
     mock_predict.assert_called()
     mock_predict.reset_mock()
 

@@ -1,8 +1,8 @@
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
-from sklearn.preprocessing import LabelEncoder 
 
 
 class LabelLeakageDataCheck(DataCheck):
