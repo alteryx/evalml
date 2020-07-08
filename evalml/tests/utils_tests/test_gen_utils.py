@@ -4,10 +4,12 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
+from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     classproperty,
     convert_to_seconds,
+    get_importable_subclasses,
     get_random_seed,
     get_random_state,
     import_or_raise
@@ -162,3 +164,11 @@ def test_class_property():
             return cls.name.upper()
 
     assert MockClass.caps_name == "MOCKCLASS"
+
+
+def test_get_importable_subclasses_wont_get_custom_classes():
+
+    class ChildClass(ComponentBase):
+        pass
+
+    assert ChildClass not in get_importable_subclasses(ComponentBase)

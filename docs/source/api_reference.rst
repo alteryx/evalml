@@ -88,23 +88,10 @@ Classification Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    CatBoostBinaryClassificationPipeline
-    CatBoostMulticlassClassificationPipeline
-    ENBinaryPipeline
-    ENMulticlassPipeline
-    ETBinaryClassificationPipeline
-    ETMulticlassClassificationPipeline
-    LogisticRegressionBinaryPipeline
-    LogisticRegressionMulticlassPipeline
-    RFBinaryClassificationPipeline
-    RFMulticlassClassificationPipeline
-    XGBoostBinaryPipeline
-    XGBoostMulticlassPipeline
     BaselineBinaryPipeline
     BaselineMulticlassPipeline
     ModeBaselineBinaryPipeline
     ModeBaselineMulticlassPipeline
-
 
 Regression Pipelines
 ~~~~~~~~~~~~~~~~~~~~
@@ -114,26 +101,8 @@ Regression Pipelines
     :template: pipeline_class.rst
     :nosignatures:
 
-    RFRegressionPipeline
-    CatBoostRegressionPipeline
-    ENRegressionPipeline
-    ETRegressionPipeline
-    LinearRegressionPipeline
-    XGBoostRegressionPipeline
     BaselineRegressionPipeline
     MeanBaselineRegressionPipeline
-
-
-Pipeline Utils
-~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    all_pipelines
-    get_pipelines
-    get_estimators
-    make_pipeline
 
 
 Pipeline Graph Utils
@@ -151,6 +120,19 @@ Pipeline Graph Utils
     graph_confusion_matrix
     calculate_permutation_importance
     graph_permutation_importance
+
+
+.. currentmodule:: evalml.pipelines.utils
+
+Pipeline Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_estimators
+    make_pipeline
+
 
 .. currentmodule:: evalml.pipelines.components
 

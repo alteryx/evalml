@@ -6,13 +6,11 @@ import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
-from evalml.exceptions import IllFormattedClassNameError
+from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
 from evalml.model_family import ModelFamily, list_model_families
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    LinearRegressionPipeline,
-    LogisticRegressionBinaryPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
@@ -32,19 +30,15 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
-from evalml.pipelines.utils import (
-    all_estimators,
-    all_pipelines,
-    get_estimators,
-    get_pipelines,
-    make_pipeline
-)
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
+from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
 def test_list_model_families(has_minimal_dependencies):
-    expected_model_families_binary = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
-    expected_model_families_regression = set([ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL])
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL]
+    expected_model_families_binary = set(families)
+    expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
@@ -54,38 +48,11 @@ def test_list_model_families(has_minimal_dependencies):
     assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-def test_all_pipelines(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(all_pipelines()) == 6
-    else:
-        assert len(all_pipelines()) == 12
-
-
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_estimators()) == 4
+        assert len((_all_estimators_used_in_search)) == 4
     else:
-        assert len(all_estimators()) == 8
-
-
-def test_get_pipelines(has_minimal_dependencies):
-    if has_minimal_dependencies:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 2
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 2
-    else:
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 1
-        assert len(get_pipelines(problem_type=ProblemTypes.MULTICLASS)) == 4
-        assert len(get_pipelines(problem_type=ProblemTypes.REGRESSION)) == 4
-
-    with pytest.raises(RuntimeError, match="Unrecognized model type for problem type"):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families=["random_forest", "none"])
-    with pytest.raises(TypeError, match="model_families parameter is not a list."):
-        get_pipelines(problem_type=ProblemTypes.REGRESSION, model_families='random_forest')
-    with pytest.raises(KeyError):
-        get_pipelines(problem_type="Not A Valid Problem Type")
+        assert len(_all_estimators_used_in_search) == 8
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -264,20 +231,6 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-@pytest.fixture
-def lr_pipeline():
-    parameters = {
-        'Simple Imputer': {
-            'impute_strategy': 'median'
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 3.0,
-        }
-    }
-    return LogisticRegressionBinaryPipeline(parameters=parameters, random_state=42)
-
-
 def test_required_fields():
     class TestPipelineWithoutComponentGraph(PipelineBase):
         pass
@@ -286,37 +239,37 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(X_y_binary, tmpdir, lr_pipeline):
+def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pipe.pkl')
-    pipeline = lr_pipeline
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     pipeline.save(path)
     assert pipeline.score(X, y, ['precision']) == PipelineBase.load(path).score(X, y, ['precision'])
 
 
 @pytest.fixture
-def pickled_pipeline_path(X_y_binary, tmpdir, lr_pipeline):
+def pickled_pipeline_path(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'pickled_pipe.pkl')
-    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     pipeline.save(path)
     return path
 
 
-def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipeline_path, lr_pipeline):
+def test_load_pickled_pipeline_with_custom_objective(X_y_binary, pickled_pipeline_path, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     # checks that class is not defined before loading in pipeline
     with pytest.raises(NameError):
         MockPrecision()  # noqa: F821: ignore flake8's "undefined name" error
     objective = Precision()
-    pipeline = LogisticRegressionBinaryPipeline(parameters=lr_pipeline.parameters)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     assert PipelineBase.load(pickled_pipeline_path).score(X, y, [objective]) == pipeline.score(X, y, [objective])
 
 
-def test_reproducibility(X_y_binary):
+def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     objective = FraudCost(
         retry_percentage=.5,
@@ -335,18 +288,18 @@ def test_reproducibility(X_y_binary):
         }
     }
 
-    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf = logistic_regression_binary_pipeline_class(parameters=parameters)
     clf.fit(X, y)
 
-    clf_1 = LogisticRegressionBinaryPipeline(parameters=parameters)
+    clf_1 = logistic_regression_binary_pipeline_class(parameters=parameters)
     clf_1.fit(X, y)
 
     assert clf_1.score(X, y, [objective]) == clf.score(X, y, [objective])
 
 
-def test_indexing(X_y_binary, lr_pipeline):
+def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    clf = lr_pipeline
+    clf = logistic_regression_binary_pipeline_class(parameters={})
     clf.fit(X, y)
 
     assert isinstance(clf[1], OneHotEncoder)
@@ -361,8 +314,8 @@ def test_indexing(X_y_binary, lr_pipeline):
         clf[:1]
 
 
-def test_describe(caplog, lr_pipeline):
-    lrp = lr_pipeline
+def test_describe(caplog, logistic_regression_binary_pipeline_class):
+    lrp = logistic_regression_binary_pipeline_class(parameters={})
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
@@ -377,9 +330,9 @@ def test_describe(caplog, lr_pipeline):
         assert component.name in out
 
 
-def test_describe_fitted(X_y_binary, caplog, lr_pipeline):
+def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = lr_pipeline
+    lrp = logistic_regression_binary_pipeline_class(parameters={})
     lrp.fit(X, y)
     lrp.describe()
     out = caplog.text
@@ -395,10 +348,19 @@ def test_describe_fitted(X_y_binary, caplog, lr_pipeline):
         assert component.name in out
 
 
-def test_parameters(X_y_binary, lr_pipeline):
+def test_parameters(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = lr_pipeline
-    params = {
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
+    expected_parameters = {
         'Simple Imputer': {
             'impute_strategy': 'median',
             'fill_value': None
@@ -416,7 +378,7 @@ def test_parameters(X_y_binary, lr_pipeline):
             'n_jobs': -1
         }
     }
-    assert params == lrp.parameters
+    assert lrp.parameters == expected_parameters
 
 
 def test_name():
@@ -452,13 +414,13 @@ def test_estimator_not_last(X_y_binary):
         }
     }
 
-    class MockLogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Logistic Regression Pipeline"
+    class MockBinaryClassificationPipelineWithoutEstimator(BinaryClassificationPipeline):
+        name = "Mock Binary Classification Pipeline Without Estimator"
         component_graph = ['One Hot Encoder', 'Simple Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockLogisticRegressionBinaryPipeline(parameters=parameters)
+        MockBinaryClassificationPipelineWithoutEstimator(parameters=parameters)
 
 
 def test_multi_format_creation(X_y_binary):
@@ -712,9 +674,17 @@ def test_init_components_invalid_parameters():
         TestPipeline(parameters=parameters)
 
 
-def test_correct_parameters(lr_pipeline):
-    lr_pipeline = lr_pipeline
-
+def test_correct_parameters(logistic_regression_binary_pipeline_class):
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'median'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    lr_pipeline = logistic_regression_binary_pipeline_class(parameters=parameters)
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Simple Imputer'].parameters['impute_strategy'] == 'median'
@@ -785,8 +755,9 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.assert_called()
 
 
-def test_score_auc(X_y_binary, lr_pipeline):
+def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
+    lr_pipeline = logistic_regression_binary_pipeline_class(parameters={})
     lr_pipeline.fit(X, y)
     lr_pipeline.score(X, y, ['auc'])
 
@@ -837,7 +808,7 @@ def test_drop_columns_in_pipeline():
     assert list(pipeline_with_drop_col.feature_importance["feature"]) == ['other col']
 
 
-def test_clone_init():
+def test_clone_init(linear_regression_pipeline_class):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -847,12 +818,12 @@ def test_clone_init():
             'normalize': True,
         }
     }
-    pipeline = LinearRegressionPipeline(parameters=parameters)
+    pipeline = linear_regression_pipeline_class(parameters=parameters)
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
 
 
-def test_clone_random_state():
+def test_clone_random_state(linear_regression_pipeline_class):
     parameters = {
         'Simple Imputer': {
             'impute_strategy': 'most_frequent'
@@ -862,18 +833,18 @@ def test_clone_random_state():
             'normalize': True,
         }
     }
-    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=np.random.RandomState(42))
     pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
-    pipeline = LinearRegressionPipeline(parameters=parameters, random_state=2)
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=2)
     pipeline_clone = pipeline.clone(random_state=2)
     assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
 
 
-def test_clone_fitted(X_y_binary, lr_pipeline):
+def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = lr_pipeline
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
     random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
@@ -888,7 +859,56 @@ def test_clone_fitted(X_y_binary, lr_pipeline):
     pd.testing.assert_frame_equal(X_t, X_t_clone)
 
 
-@pytest.mark.parametrize("cls", all_pipelines())
-def test_pipeline_default_parameters(cls):
+def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters = {
+        'Simple Imputer': {
+            'impute_strategy': 'mean'
+        },
+        'RF Classifier Select From Model': {
+            "percent_features": 1.0,
+            "number_features": len(X.columns),
+            "n_estimators": 20
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
 
-    assert cls.default_parameters == cls({}).parameters, f"{cls.__name__}'s default parameters don't match __init__."
+    clf = logistic_regression_binary_pipeline_class(parameters=parameters)
+    clf.fit(X, y)
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()
+    assert sorted(clf.feature_importance["feature"]) == sorted(col_names)
+
+
+def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
+    class FakePipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
+    with pytest.raises(MissingComponentError, match="Error recieved when retrieving class for component 'This Component Does Not Exist'"):
+        FakePipeline(parameters={})
+
+
+def test_get_default_parameters(logistic_regression_binary_pipeline_class):
+    expected_defaults = {
+        'Simple Imputer': {
+            'impute_strategy': 'most_frequent',
+            'fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'n_jobs': -1
+        }
+    }
+    assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults

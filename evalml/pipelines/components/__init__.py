@@ -33,5 +33,3 @@ from .transformers import (
     SelectColumns,
     TextFeaturization
     )
-
-from .utils import all_components, handle_component_class

@@ -10,7 +10,6 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
-    DateTimeFeaturization,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -28,7 +27,11 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler,
     Transformer,
-    XGBoostClassifier,
+    XGBoostClassifier
+)
+from evalml.pipelines.components.utils import (
+    _all_estimators_used_in_search,
+    _all_transformers,
     all_components
 )
 from evalml.problem_types import ProblemTypes
@@ -319,8 +322,7 @@ def test_component_parameters_getter(test_classes):
 
 
 def test_component_parameters_init():
-    components = all_components()
-    for component_name, component_class in components.items():
+    for component_class in all_components:
         print('Testing component {}'.format(component_class.name))
         component = component_class()
         parameters = component.parameters
@@ -329,26 +331,6 @@ def test_component_parameters_init():
         parameters2 = component2.parameters
 
         assert parameters == parameters2
-
-
-def test_component_parameters_all_saved():
-    components = all_components()
-    for component_name, component_class in components.items():
-        print('Testing component {}'.format(component_class.name))
-        component = component_class()
-        parameters = component.parameters
-
-        spec = inspect.getfullargspec(component_class.__init__)
-        args = spec.args
-        assert args.pop(0) == 'self'
-        defaults = list(spec.defaults)
-        assert len(args) == len(defaults)
-        # the last arg should always be random_state
-        assert args.pop(-1) == 'random_state'
-        assert defaults.pop(-1) == 0
-
-        expected_parameters = {arg: default for (arg, default) in zip(args, defaults)}
-        assert parameters == expected_parameters
 
 
 def test_clone_init():
@@ -391,8 +373,7 @@ def test_clone_fitted(X_y_binary):
 
 
 def test_components_init_kwargs():
-    components = all_components()
-    for component_name, component_class in components.items():
+    for component_class in all_components:
         component = component_class()
         if component._component_obj is None:
             continue
@@ -413,8 +394,7 @@ def test_components_init_kwargs():
 
 
 def test_component_has_random_state():
-    components = all_components()
-    for component_name, component_class in components.items():
+    for component_class in all_components:
         params = inspect.signature(component_class.__init__).parameters
         assert "random_state" in params
 
@@ -434,9 +414,7 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
-    components = all_components()
-    transformers = dict(filter(lambda el: issubclass(el[1], Transformer), components.items()))
-    for component_name, component_class in transformers.items():
+    for component_class in _all_transformers:
         print('Testing transformer {}'.format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
             print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
@@ -483,9 +461,7 @@ def test_estimator_predict_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
 
-    components = all_components()
-    estimators = dict(filter(lambda el: issubclass(el[1], Estimator), components.items()))
-    for component_name, component_class in estimators.items():
+    for component_class in _all_estimators_used_in_search:
         for X, y, X_cols_expected, y_cols_expected in datatype_combos:
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
@@ -511,10 +487,7 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-components = list(all_components().items()) + [(DateTimeFeaturization.name, DateTimeFeaturization)]
+@pytest.mark.parametrize("cls", all_components)
+def test_default_parameters(cls):
 
-
-@pytest.mark.parametrize("class_name,cls", components)
-def test_default_parameters(class_name, cls):
-
-    assert cls.default_parameters == cls().parameters, f"{class_name}'s default parameters don't match __init__."
+    assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
