@@ -72,35 +72,44 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
 
 
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipeline_limits(mock_fit, mock_score, caplog, X_y_binary):
-    X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
+def test_pipeline_limits(mock_fit_binary, mock_score_binary,
+                         mock_fit_multi, mock_score_multi,
+                         mock_fit_regression, mock_score_regression,
+                         automl_type, caplog,
+                         X_y_binary, X_y_multi, X_y_regression):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
 
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    mock_score_binary.return_value = {'Log Loss Binary': 1.0}
+    mock_score_multi.return_value = {'Log Loss Multiclass': 1.0}
+    mock_score_regression.return_value = {'R2': 1.0}
+
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 1 pipelines. " in out
     assert len(automl.results['pipeline_results']) == 1
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_time=1)
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1)
     automl.search(X, y)
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
     assert len(automl.results['pipeline_results']) >= 1
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='multiclass', max_time=1e-16)
-    automl.search(X, y)
-    out = caplog.text
-    assert "Will stop searching for new pipelines after 0 seconds" in out
-    # search will always run at least one pipeline
-    assert len(automl.results['pipeline_results']) >= 1
-
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_time=1, max_pipelines=5)
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1, max_pipelines=5)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 5 pipelines. " in out
@@ -108,11 +117,19 @@ def test_pipeline_limits(mock_fit, mock_score, caplog, X_y_binary):
     assert len(automl.results['pipeline_results']) <= 5
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='binary')
+    automl = AutoMLSearch(problem_type=automl_type)
     automl.search(X, y)
     out = caplog.text
     assert "Using default limit of max_pipelines=5." in out
     assert len(automl.results['pipeline_results']) <= 5
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1e-16)
+    automl.search(X, y)
+    out = caplog.text
+    assert "Will stop searching for new pipelines after 0 seconds" in out
+    # search will always run at least one pipeline
+    assert len(automl.results['pipeline_results']) >= 1
 
 
 def test_search_order(X_y_binary):
