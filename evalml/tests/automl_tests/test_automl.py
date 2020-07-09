@@ -265,6 +265,8 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     }
 
     automl = AutoMLSearch(**search_params)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    mock_optimize_threshold.return_value = 0.62
     str_rep = str(automl)
     for param, value in param_str_reps.items():
         if isinstance(value, list):
@@ -710,6 +712,7 @@ def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_bin
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.0}
     assert not automl.has_searched
 
     automl.search(X, y)

@@ -396,7 +396,7 @@ class AutoMLSearch:
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
         logger.info(f"Best pipeline: {best_pipeline_name}")
-        logger.info(f"Best pipeline {self.objective.name}: {round(best_pipeline['score'], 3)}")
+        logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
     def _check_stopping_condition(self, start):
         should_continue = True
@@ -504,10 +504,10 @@ class AutoMLSearch:
                         else:
                             y_predict_proba = y_predict_proba[:, 1]
                         cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({round(cv_pipeline.threshold, 3)})")
+                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
-                logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {round(scores[self.objective.name], 3)}")
+                logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
                 logger.error("Exception during automl search: {}".format(str(e)))
