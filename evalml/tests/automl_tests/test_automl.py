@@ -790,3 +790,22 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -         -" in out
     assert "std                    0.000          -         -" in out
     assert "coef of var            0.000          -         -" in out
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+
+    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    automl.search(X, y)
+
+    assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+    with pytest.raises(AttributeError, match= 'set attribute'):
+        automl.results = 2.0
+
+
