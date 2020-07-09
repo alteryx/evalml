@@ -169,6 +169,9 @@ Transformers are components that take in data as input and output transformed da
     StandardScaler
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
+    DropNullColumns
+    DateTimeFeaturization
+    TextFeaturization
 
 Estimators
 ~~~~~~~~~~
