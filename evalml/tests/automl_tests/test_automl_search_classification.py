@@ -204,7 +204,7 @@ def test_additional_objectives(X_y_binary):
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary, caplog):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
@@ -228,7 +228,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
@@ -246,7 +246,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {"AUC": 1.0}
     X, y = X_y_binary
