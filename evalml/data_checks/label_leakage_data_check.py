@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
@@ -48,16 +47,15 @@ class LabelLeakageDataCheck(DataCheck):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        le = LabelEncoder()
-        y = pd.Series(le.fit_transform(y))
-        # only select numeric
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
-        X = X.select_dtypes(include=numerics)
+        if y.dtype not in numerics:
+            return []
 
+        X = X.select_dtypes(include=numerics)
         if len(X.columns) == 0:
             return []
-        corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
 
+        corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         highly_corr_cols = {key: value for key, value in corrs.items() if value >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         return [DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name) for col_name in highly_corr_cols]
