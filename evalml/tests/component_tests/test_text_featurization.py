@@ -8,8 +8,13 @@ from evalml.pipelines.components import TextFeaturization
 @pytest.fixture()
 def text_df():
     df = pd.DataFrame(
-        {'col_1': ['I\'m singing in the rain!$%^ do do do do do da do', 'just singing in the rain.................. \n', '\t\n\n\n\nWhat a glorious feelinggggggggggg, I\'m happy again!!! lalalalalalalalalalala'],
-         'col_2': ['do you hear the people sing?////////////////////////////////////', 'singing the songs of angry men\n', '\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!']})
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living',
+                   'Red, the blood of angry men - black, the dark of ages past']
+         })
     yield df
 
 

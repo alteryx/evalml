@@ -1,3 +1,4 @@
+import string
 import warnings
 
 import featuretools as ft
@@ -44,6 +45,16 @@ class TextFeaturization(Transformer):
     def features(self):
         return self._features
 
+    def _clean_text(self, X):
+
+        def normalize(text):
+            text = text.translate(str.maketrans('', '', string.punctuation))
+            return text.lower()
+
+        for text_col in self.text_col_names:
+            X[text_col] = X[text_col].apply(normalize)
+        return X
+
     def _verify_col_names(self, col_names):
         missing_cols = []
         for col in self.text_col_names:
@@ -76,6 +87,7 @@ class TextFeaturization(Transformer):
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
         self._verify_col_types(es)
+        es.df = self._clean_text(X)
 
         trans = [DiversityScore,
                  LSA,
@@ -114,6 +126,7 @@ class TextFeaturization(Transformer):
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
         self._verify_col_types(es)
+        es.df = self._clean_text(X)
 
         feature_matrix = ft.calculate_feature_matrix(features=self._features,
                                                      entityset=es,
