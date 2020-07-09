@@ -9,6 +9,7 @@ from evalml.pipelines import PipelineBase
 
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
+
     def __init__(self, parameters, random_state=0):
         self._encoder = None
         super().__init__(parameters, random_state)
@@ -27,7 +28,7 @@ class ClassificationPipeline(PipelineBase):
         return self._encoder.fit_transform(y)
 
     def _decode_targets(self, y):
-        return self._encoder.inverse_transform(y)
+        return self._encoder.inverse_transform(y.astype(int))
 
     def predict(self, X, objective=None):
         if not isinstance(X, pd.DataFrame):
@@ -77,6 +78,9 @@ class ClassificationPipeline(PipelineBase):
 
         objectives = [get_objective(o) for o in objectives]
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
+        y = self._encode_targets(y)
+        if y_predicted is not None:
+            y_predicted = self._encode_targets(y_predicted)
         scores = OrderedDict()
         for objective in objectives:
             score = self._score(X, y, y_predicted_proba if objective.score_needs_proba else y_predicted, objective)
