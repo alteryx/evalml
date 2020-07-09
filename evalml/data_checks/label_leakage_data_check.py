@@ -50,7 +50,6 @@ class LabelLeakageDataCheck(DataCheck):
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
         if y.dtype not in numerics:
             return []
-
         X = X.select_dtypes(include=numerics)
         if len(X.columns) == 0:
             return []

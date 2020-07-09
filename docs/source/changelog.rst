@@ -6,7 +6,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
-        * Support string and categorical targets for binary and multiclass pipelines and `DetectLabelLeakage` data check :pr:`917`
+        * Added support for string and categorical targets for binary and multiclass pipelines and added check for numeric targets for `DetectLabelLeakage` data check :pr:`917`
     * Fixes
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`

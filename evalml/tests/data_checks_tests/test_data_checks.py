@@ -64,6 +64,7 @@ def test_default_data_checks_classification():
     data_checks = DefaultDataChecks()
 
     leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
+
     assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:]
 
     # multiclass

@@ -9,6 +9,9 @@ from evalml.pipelines import PipelineBase
 
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
+    def __init__(self, parameters, random_state=0):
+        self._encoder = None
+        super().__init__(parameters, random_state)
 
     def fit(self, X, y):
         if not isinstance(X, pd.DataFrame):
@@ -21,8 +24,7 @@ class ClassificationPipeline(PipelineBase):
 
     def _encode_targets(self, y):
         self._encoder = LabelEncoder()
-        self._encoder.fit(y)
-        return self._encoder.transform(y)
+        return self._encoder.fit_transform(y)
 
     def _decode_targets(self, y):
         return self._encoder.inverse_transform(y)
@@ -50,9 +52,10 @@ class ClassificationPipeline(PipelineBase):
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
 
-        # todo: separate case for series? do under binary / multiclass
-        if not isinstance(proba, pd.DataFrame):
+        if proba.shape[1] > 1 and not isinstance(proba, pd.DataFrame):
             proba = pd.DataFrame(proba)
+        elif proba.shape[1] == 1 and not isinstance(proba, pd.Series):
+            proba = pd.Series(proba)
         proba.columns = self._decode_targets(proba.columns)
         return proba
 

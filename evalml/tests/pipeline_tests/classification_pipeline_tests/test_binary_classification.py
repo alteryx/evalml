@@ -5,55 +5,60 @@ import pytest
 
 
 @patch('evalml.pipelines.ClassificationPipeline._decode_targets')
-@patch('evalml.pipelines.ClassificationPipeline._encode_targets')
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba')
 @patch('evalml.pipelines.components.Estimator.predict')
 @patch('evalml.pipelines.PipelineBase._transform')
-@patch('evalml.pipelines.PipelineBase.fit')
+@patch('evalml.pipelines.ClassificationPipeline.fit')
 def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
                                                 mock_predict, mock_predict_proba,
-                                                mock_obj_decision, mock_encode, mock_decode,
+                                                mock_obj_decision, mock_decode,
                                                 X_y_binary, dummy_binary_pipeline_class):
+    mock_objs = [mock_decode, mock_predict]
     mock_decode.return_value = [0, 1]
     X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X)
-    mock_decode.assert_called()
-    mock_predict.assert_called()
-    mock_predict.reset_mock()
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
 
     # test objective passed but no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X, 'precision')
-    mock_predict.assert_called()
-    mock_predict.reset_mock()
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+
+    mock_objs = [mock_decode, mock_predict_proba]
+    # test custom threshold set but no objective passed
+    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
+    binary_pipeline.threshold = 0.6
+    binary_pipeline.predict(X)
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+    mock_obj_decision.assert_not_called()
+    mock_predict.assert_not_called()
 
     # test custom threshold set but no objective passed
     mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X)
-    mock_predict.assert_not_called()
-    mock_predict_proba.assert_called()
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
     mock_obj_decision.assert_not_called()
-
-    # test custom threshold set but no objective passed
-    mock_predict.reset_mock()
-    mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
-    binary_pipeline.threshold = 0.6
-    binary_pipeline.predict(X)
     mock_predict.assert_not_called()
-    mock_predict_proba.assert_called()
-    mock_obj_decision.assert_not_called()
 
     # test custom threshold set and objective passed
-    mock_predict.reset_mock()
-    mock_predict_proba.reset_mock()
     mock_predict_proba.return_value = np.array([[0.1, 0.2], [0.1, 0.2]])
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X, 'precision')
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
     mock_predict.assert_not_called()
-    mock_predict_proba.assert_called()
     mock_obj_decision.assert_called()
 
 
