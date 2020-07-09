@@ -3,6 +3,7 @@ import warnings
 from collections import OrderedDict
 from sys import stdout
 
+import copy
 import cloudpickle
 import numpy as np
 import pandas as pd
@@ -681,7 +682,7 @@ class AutoMLSearch:
     def results(self):
         """Returns a dictionary containing 'pipeline_results', a dictionary with results from the various pipelines,
            and 'search_order', a list describing the search order."""
-        return self._results
+        return copy.deepcopy(self._results)
 
     @property
     def has_searched(self):
