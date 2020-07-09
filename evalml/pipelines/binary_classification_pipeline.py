@@ -32,11 +32,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self._decode_targets(self.estimator.predict(X_t))
         ypred_proba = self.predict_proba(X)
-
-        if isinstance(ypred_proba, pd.DataFrame):
-            ypred_proba = ypred_proba.iloc[:, 1]
-        else:
-            ypred_proba = ypred_proba[:, 1]
+        ypred_proba = ypred_proba.iloc[:, 1]
+ 
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
