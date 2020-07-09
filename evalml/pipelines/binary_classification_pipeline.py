@@ -38,8 +38,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         else:
             ypred_proba = ypred_proba[:, 1]
         if objective is None:
-            return self._decode_targets(ypred_proba > self.threshold)
-        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
+            return ypred_proba > self.threshold
+        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
 
     @staticmethod
     def _score(X, y, predictions, objective):
