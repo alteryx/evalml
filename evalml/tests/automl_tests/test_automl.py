@@ -750,14 +750,14 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('pipeline_class')
+    automl._results['pipeline_results'][0].pop('pipeline_class')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('parameters')
+    automl._results['pipeline_results'][0].pop('parameters')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
