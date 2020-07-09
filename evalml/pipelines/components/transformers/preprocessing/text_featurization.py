@@ -101,9 +101,10 @@ class TextFeaturization(Transformer):
         if self._features is None:
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X).rename(columns=str)
+            X = pd.DataFrame(X)
         if len(self._features) == 0:
             return X
+        X = X.rename(columns=str)
         self._verify_col_names(X.columns)
 
         X_text = X[self.text_col_names]
