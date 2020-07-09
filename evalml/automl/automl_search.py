@@ -3,7 +3,6 @@ import warnings
 from collections import OrderedDict
 from sys import stdout
 
-import copy
 import cloudpickle
 import numpy as np
 import pandas as pd

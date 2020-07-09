@@ -805,7 +805,5 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
-    with pytest.raises(AttributeError, match= 'set attribute'):
+    with pytest.raises(AttributeError, match='set attribute'):
         automl.results = 2.0
-
-
