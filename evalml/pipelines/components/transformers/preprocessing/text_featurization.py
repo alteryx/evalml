@@ -31,9 +31,9 @@ class TextFeaturization(Transformer):
 
         if len(text_columns) == 0:
             warnings.warn("No text columns were given to TextFeaturization, component will have no effect", RuntimeWarning)
-        for col_name in text_columns:
+        for i, col_name in enumerate(text_columns):
             if not isinstance(col_name, str):
-                raise ValueError("Column names must be strings")
+                text_columns[i] = str(col_name)
         self.text_col_names = text_columns
         self._features = None
         super().__init__(parameters=parameters,
@@ -68,7 +68,7 @@ class TextFeaturization(Transformer):
             self._features = []
             return self
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+            X = pd.DataFrame(X).rename(columns=str)
         self._verify_col_names(X.columns)
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
@@ -101,7 +101,7 @@ class TextFeaturization(Transformer):
         if self._features is None:
             raise RuntimeError(f"You must fit {self.name} before calling transform!")
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+            X = pd.DataFrame(X).rename(columns=str)
         if len(self._features) == 0:
             return X
         self._verify_col_names(X.columns)

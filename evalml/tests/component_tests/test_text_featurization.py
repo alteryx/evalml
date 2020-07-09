@@ -13,11 +13,6 @@ def text_df():
     yield df
 
 
-def test_invalid_col_name():
-    with pytest.raises(ValueError, match="Column names must be strings"):
-        TextFeaturization(text_columns=['col_1', 2])
-
-
 def test_transform_without_fit(text_df):
     X = text_df
     tf = TextFeaturization(text_columns=['col_1', 'col_2'])
@@ -134,3 +129,27 @@ def test_invalid_text_column():
     tf = TextFeaturization(text_columns=['col_1'])
     with pytest.raises(ValueError, match="not a text column"):
         tf.fit(X)
+
+
+def test_index_col_names():
+    X = np.array([['I\'m singing in the rain!$%^ do do do do do da do', 'do you hear the people sing?////////////////////////////////////'],
+                  ['just singing in the rain.................. \n', 'singing the songs of angry men\n'],
+                  ['\t\n\n\n\nWhat a glorious feelinggggggggggg, I\'m happy again!!! lalalalalalalalalalala', '\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!']])
+    tf = TextFeaturization(text_columns=[0, 1])
+
+    tf.fit(X)
+    expected_features = set(['DIVERSITY_SCORE(0)',
+                             'DIVERSITY_SCORE(1)',
+                             'LSA(0)',
+                             'LSA(1)',
+                             'MEAN_CHARACTERS_PER_WORD(0)',
+                             'MEAN_CHARACTERS_PER_WORD(1)',
+                             'PART_OF_SPEECH_COUNT(0)',
+                             'PART_OF_SPEECH_COUNT(1)',
+                             'POLARITY_SCORE(0)',
+                             'POLARITY_SCORE(1)'])
+    features = set([feat.get_name() for feat in tf.features])
+    assert expected_features == features
+    X_t = tf.transform(X)
+    assert len(X_t.columns) == 40
+    assert X_t.dtypes.all() == np.float64
