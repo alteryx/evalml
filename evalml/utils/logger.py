@@ -18,7 +18,7 @@ def get_logger(name):
 
         logger.addHandler(stdout_handler)
         logger.addHandler(log_handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
 
     return logger
 
