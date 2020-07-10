@@ -191,7 +191,6 @@ class AutoMLSearch:
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
-        self._current_iteration = None
         self._start = None
 
     @property
@@ -364,7 +363,6 @@ class AutoMLSearch:
             search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         self._start = time.time()
-        self._current_iteration = 1
 
         self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
 
@@ -388,8 +386,7 @@ class AutoMLSearch:
                 desc = desc[:self._MAX_NAME_LEN - 3] + "..."
             desc = desc.ljust(self._MAX_NAME_LEN)
 
-            update_pipeline(logger, desc, self._current_iteration, self.max_pipelines, self._start)
-            self._current_iteration += 1
+            update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
 
             evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
             score = evaluation_results['cv_score_mean']
@@ -471,8 +468,7 @@ class AutoMLSearch:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
 
-        update_pipeline(logger, desc, self._current_iteration, self.max_pipelines, self._start)
-        self._current_iteration += 1
+        update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
 
         baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
         self._add_result(trained_pipeline=baseline,

@@ -46,7 +46,7 @@ def time_elapsed(start_time):
         start_time (int): Time when search started.
 
     Returns:
-        str - elapsed time formatted as a string [H:]MM:SS
+        str: elapsed time formatted as a string [H:]MM:SS
     """
     return tqdm.std.tqdm.format_interval(time.time() - start_time)
 
@@ -62,7 +62,7 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_pipelines, sta
         start_time (int): Start time.
 
     Returns:
-        None - logs progress to logger at info level.
+        None: logs progress to logger at info level.
     """
     if max_pipelines:
         status_update_format = "({current_iteration}/{max_pipelines}) {pipeline_name} Elapsed:{time_elapsed}"
