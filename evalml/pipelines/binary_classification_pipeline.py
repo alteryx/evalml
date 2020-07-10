@@ -33,10 +33,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             return self._decode_targets(self.estimator.predict(X_t))
         ypred_proba = self.predict_proba(X)
         ypred_proba = ypred_proba.iloc[:, 1]
-
         if objective is None:
-            return self._decode_targets(ypred_proba > self.threshold)
-        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
+            return self._decode_targets((ypred_proba > self.threshold).astype(int))
+        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X).astype(int))
 
     @staticmethod
     def _score(X, y, predictions, objective):
