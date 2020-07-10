@@ -19,13 +19,16 @@ class ClassificationPipeline(PipelineBase):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+        self._encoder = LabelEncoder()
         y = self._encode_targets(y)
         self._fit(X, y)
         return self
 
     def _encode_targets(self, y):
-        self._encoder = LabelEncoder()
-        return self._encoder.fit_transform(y)
+        if isinstance(y, pd.Series):
+            return pd.Series(self._encoder.fit_transform(y), name=y.name)
+        else:
+            return pd.Series(self._encoder.fit_transform(y))
 
     def _decode_targets(self, y):
         return self._encoder.inverse_transform(y.astype(int))
@@ -75,6 +78,7 @@ class ClassificationPipeline(PipelineBase):
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         y = self._encode_targets(y)
         if y_predicted is not None:
+            # import pdb; pdb.set_trace()
             y_predicted = self._encode_targets(y_predicted)
         scores = OrderedDict()
         for objective in objectives:
