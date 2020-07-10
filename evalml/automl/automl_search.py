@@ -14,7 +14,6 @@ from sklearn.model_selection import (
 )
 
 from .pipeline_search_plots import PipelineSearchPlots
-from .progress_monitor import ProgressMonitor
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
@@ -32,7 +31,13 @@ from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.logger import get_logger, log_subtitle, log_title
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed,
+    update_pipeline
+)
 
 logger = get_logger(__file__)
 
@@ -186,6 +191,7 @@ class AutoMLSearch:
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
+        self._current_iteration = None
 
     @property
     def data_check_results(self):
@@ -356,12 +362,13 @@ class AutoMLSearch:
         if self.plot:
             search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
-        start = time.time()
-        progress_monitor = ProgressMonitor(self.max_pipelines, logger)
-        self._add_baseline_pipelines(X, y, progress_monitor, raise_errors=raise_errors)
+        self._start = time.time()
+        self._current_iteration = 1
+
+        self._add_baseline_pipelines(X, y, None, raise_errors=raise_errors)
 
         current_batch_pipelines = []
-        while self._check_stopping_condition(start):
+        while self._check_stopping_condition(self._start):
             if len(current_batch_pipelines) == 0:
                 try:
                     current_batch_pipelines = self._automl_algorithm.next_batch()
@@ -379,7 +386,9 @@ class AutoMLSearch:
             if len(desc) > self._MAX_NAME_LEN:
                 desc = desc[:self._MAX_NAME_LEN - 3] + "..."
             desc = desc.ljust(self._MAX_NAME_LEN)
-            progress_monitor.update(desc)
+
+            update_pipeline(logger, desc, self._current_iteration, self.max_pipelines, self._start)
+            self._current_iteration += 1
 
             evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
             score = evaluation_results['cv_score_mean']
@@ -389,7 +398,8 @@ class AutoMLSearch:
             if search_iteration_plot:
                 search_iteration_plot.update()
 
-        desc = f"\nSearch finished after {progress_monitor.time_elapsed}"
+        elapsed_time = time_elapsed(self._start)
+        desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         logger.info(desc)
 
@@ -459,7 +469,9 @@ class AutoMLSearch:
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
-        progress_monitor.update(desc)
+
+        update_pipeline(logger, desc, self._current_iteration, self.max_pipelines, self._start)
+        self._current_iteration += 1
 
         baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
         self._add_result(trained_pipeline=baseline,
