@@ -680,8 +680,11 @@ class AutoMLSearch:
 
     @property
     def results(self):
-        """Returns a dictionary containing 'pipeline_results', a dictionary with results from the various pipelines,
-           and 'search_order', a list describing the search order."""
+        """Class that allows access to a copy of the results from `automl_search`.
+
+           Returns: dict containing `pipeline_results`: a dict with results from each pipeline,
+                    and `search_order`: a list describing the order the pipelines were searched.
+           """
         return copy.deepcopy(self._results)
 
     @property

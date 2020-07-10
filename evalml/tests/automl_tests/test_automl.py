@@ -809,4 +809,4 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
         automl.results = 2.0
 
     automl.results['pipeline_results'][0]['score'] = 2.0
-    assert automl._results['pipeline_results'][0]['score'] == 1.0
+    assert automl.results['pipeline_results'][0]['score'] == 1.0
