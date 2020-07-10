@@ -29,21 +29,23 @@ def test_transform_without_fit(text_df):
 def test_featurization_only_text(text_df):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
-
     tf.fit(X)
-    expected_features = set(['DIVERSITY_SCORE(col_1)',
-                             'DIVERSITY_SCORE(col_2)',
-                             'LSA(col_1)',
-                             'LSA(col_2)',
-                             'MEAN_CHARACTERS_PER_WORD(col_1)',
-                             'MEAN_CHARACTERS_PER_WORD(col_2)',
-                             'PART_OF_SPEECH_COUNT(col_1)',
-                             'PART_OF_SPEECH_COUNT(col_2)',
-                             'POLARITY_SCORE(col_1)',
-                             'POLARITY_SCORE(col_2)'])
-    features = set([feat.get_name() for feat in tf.features])
-    assert expected_features == features
+
+    expected_col_names = set(['DIVERSITY_SCORE(col_1)',
+                              'DIVERSITY_SCORE(col_2)',
+                              'LSA(col_1)[0]',
+                              'LSA(col_1)[1]',
+                              'LSA(col_2)[0]',
+                              'LSA(col_2)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(col_1)',
+                              'MEAN_CHARACTERS_PER_WORD(col_2)',
+                              'POLARITY_SCORE(col_1)',
+                              'POLARITY_SCORE(col_2)'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 40
     assert X_t.dtypes.all() == np.float64
 
@@ -54,19 +56,22 @@ def test_featurization_with_nontext(text_df):
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
 
     tf.fit(X)
-    expected_features = set(['DIVERSITY_SCORE(col_1)',
-                             'DIVERSITY_SCORE(col_2)',
-                             'LSA(col_1)',
-                             'LSA(col_2)',
-                             'MEAN_CHARACTERS_PER_WORD(col_1)',
-                             'MEAN_CHARACTERS_PER_WORD(col_2)',
-                             'PART_OF_SPEECH_COUNT(col_1)',
-                             'PART_OF_SPEECH_COUNT(col_2)',
-                             'POLARITY_SCORE(col_1)',
-                             'POLARITY_SCORE(col_2)'])
-    features = set([feat.get_name() for feat in tf.features])
-    assert expected_features == features
+    expected_col_names = set(['DIVERSITY_SCORE(col_1)',
+                              'DIVERSITY_SCORE(col_2)',
+                              'LSA(col_1)[0]',
+                              'LSA(col_1)[1]',
+                              'LSA(col_2)[0]',
+                              'LSA(col_2)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(col_1)',
+                              'MEAN_CHARACTERS_PER_WORD(col_2)',
+                              'POLARITY_SCORE(col_1)',
+                              'POLARITY_SCORE(col_2)',
+                              'col_3'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 41
     assert X_t.dtypes.all() == np.float64
 
@@ -78,7 +83,6 @@ def test_featurization_no_text():
         tf = TextFeaturizer()
 
     tf.fit(X)
-    assert len(tf.features) == 0
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
 
@@ -90,19 +94,21 @@ def test_some_missing_col_names(text_df):
     with pytest.warns(RuntimeWarning, match="not found in the given DataFrame"):
         tf.fit(X)
 
-    expected_features = set(['DIVERSITY_SCORE(col_1)',
-                             'DIVERSITY_SCORE(col_2)',
-                             'LSA(col_1)',
-                             'LSA(col_2)',
-                             'MEAN_CHARACTERS_PER_WORD(col_1)',
-                             'MEAN_CHARACTERS_PER_WORD(col_2)',
-                             'PART_OF_SPEECH_COUNT(col_1)',
-                             'PART_OF_SPEECH_COUNT(col_2)',
-                             'POLARITY_SCORE(col_1)',
-                             'POLARITY_SCORE(col_2)'])
-    features = set([feat.get_name() for feat in tf.features])
-    assert expected_features == features
+    expected_col_names = set(['DIVERSITY_SCORE(col_1)',
+                              'DIVERSITY_SCORE(col_2)',
+                              'LSA(col_1)[0]',
+                              'LSA(col_1)[1]',
+                              'LSA(col_2)[0]',
+                              'LSA(col_2)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(col_1)',
+                              'MEAN_CHARACTERS_PER_WORD(col_2)',
+                              'POLARITY_SCORE(col_1)',
+                              'POLARITY_SCORE(col_2)'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 40
     assert X_t.dtypes.all() == np.float64
 
@@ -143,19 +149,21 @@ def test_index_col_names():
     tf = TextFeaturizer(text_columns=[0, 1])
 
     tf.fit(X)
-    expected_features = set(['DIVERSITY_SCORE(0)',
-                             'DIVERSITY_SCORE(1)',
-                             'LSA(0)',
-                             'LSA(1)',
-                             'MEAN_CHARACTERS_PER_WORD(0)',
-                             'MEAN_CHARACTERS_PER_WORD(1)',
-                             'PART_OF_SPEECH_COUNT(0)',
-                             'PART_OF_SPEECH_COUNT(1)',
-                             'POLARITY_SCORE(0)',
-                             'POLARITY_SCORE(1)'])
-    features = set([feat.get_name() for feat in tf.features])
-    assert expected_features == features
+    expected_col_names = set(['DIVERSITY_SCORE(0)',
+                              'DIVERSITY_SCORE(1)',
+                              'LSA(0)[0]',
+                              'LSA(0)[1]',
+                              'LSA(1)[0]',
+                              'LSA(1)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(0)',
+                              'MEAN_CHARACTERS_PER_WORD(1)',
+                              'POLARITY_SCORE(0)',
+                              'POLARITY_SCORE(1)'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(0)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(1)[{i}]')
     X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 40
     assert X_t.dtypes.all() == np.float64
 

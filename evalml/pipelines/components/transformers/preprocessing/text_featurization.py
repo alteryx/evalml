@@ -42,10 +42,6 @@ class TextFeaturizer(Transformer):
                          component_obj=None,
                          random_state=random_state)
 
-    @property
-    def features(self):
-        return self._features
-
     def _clean_text(self, X):
 
         def normalize(text):
