@@ -93,7 +93,7 @@ def test_early_stopping(caplog, linear_regression_pipeline_class):
         mock_results['pipeline_results'][id]['score'] = scores[id]
         mock_results['pipeline_results'][id]['pipeline_class'] = linear_regression_pipeline_class
 
-    automl.results = mock_results
+    automl._results = mock_results
     automl._check_stopping_condition(time.time())
     out = caplog.text
     assert "2 iterations without improvement. Stopping search early." in out
@@ -168,6 +168,7 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(X_y_regression):
 def test_automl_allowed_pipelines_specified_allowed_pipelines(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
     automl = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=None)
+    mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_regression_pipeline_class]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
@@ -229,6 +230,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
 def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression, assert_allowed_pipelines_equal_helper):
     X, y = X_y_regression
     automl = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_regression_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
