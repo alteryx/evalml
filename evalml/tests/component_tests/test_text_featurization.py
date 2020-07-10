@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines.components import TextFeaturization
+from evalml.pipelines.components import TextFeaturizer
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def text_df():
 
 def test_transform_without_fit(text_df):
     X = text_df
-    tf = TextFeaturization(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
 
     with pytest.raises(RuntimeError, match='You must fit'):
         tf.transform(X)
@@ -28,7 +28,7 @@ def test_transform_without_fit(text_df):
 
 def test_featurization_only_text(text_df):
     X = text_df
-    tf = TextFeaturization(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
 
     tf.fit(X)
     expected_features = set(['DIVERSITY_SCORE(col_1)',
@@ -51,7 +51,7 @@ def test_featurization_only_text(text_df):
 def test_featurization_with_nontext(text_df):
     X = text_df
     X['col_3'] = [73.7, 67.213, 92]
-    tf = TextFeaturization(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
 
     tf.fit(X)
     expected_features = set(['DIVERSITY_SCORE(col_1)',
@@ -73,9 +73,9 @@ def test_featurization_with_nontext(text_df):
 
 def test_featurization_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
-    warn_msg = "No text columns were given to TextFeaturization, component will have no effect"
+    warn_msg = "No text columns were given to TextFeaturizer, component will have no effect"
     with pytest.warns(RuntimeWarning, match=warn_msg):
-        tf = TextFeaturization()
+        tf = TextFeaturizer()
 
     tf.fit(X)
     assert len(tf.features) == 0
@@ -85,7 +85,7 @@ def test_featurization_no_text():
 
 def test_some_missing_col_names(text_df):
     X = text_df
-    tf = TextFeaturization(text_columns=['col_1', 'col_2', 'col_3'])
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2', 'col_3'])
 
     with pytest.warns(RuntimeWarning, match="not found in the given DataFrame"):
         tf.fit(X)
@@ -109,7 +109,7 @@ def test_some_missing_col_names(text_df):
 
 def test_all_missing_col_names(text_df):
     X = text_df
-    tf = TextFeaturization(text_columns=['col_3', 'col_4'])
+    tf = TextFeaturizer(text_columns=['col_3', 'col_4'])
 
     error_msg = "None of the provided text column names match the columns in the given DataFrame"
     with pytest.raises(RuntimeError, match=error_msg):
@@ -121,7 +121,7 @@ def test_all_missing_col_names(text_df):
 
 def test_invalid_text_column():
     X = pd.DataFrame({'col_1': []})
-    tf = TextFeaturization(text_columns=['col_1'])
+    tf = TextFeaturizer(text_columns=['col_1'])
     with pytest.raises(ValueError, match="not a text column"):
         tf.fit(X)
 
@@ -131,7 +131,7 @@ def test_invalid_text_column():
             'just singing in the rain.................. \n',
             325,
             'I\'m happy again!!! lalalalalalalalalalala']})
-    tf = TextFeaturization(text_columns=['col_1'])
+    tf = TextFeaturizer(text_columns=['col_1'])
     with pytest.raises(ValueError, match="not a text column"):
         tf.fit(X)
 
@@ -140,7 +140,7 @@ def test_index_col_names():
     X = np.array([['I\'m singing in the rain!$%^ do do do do do da do', 'do you hear the people sing?////////////////////////////////////'],
                   ['just singing in the rain.................. \n', 'singing the songs of angry men\n'],
                   ['\t\n\n\n\nWhat a glorious feelinggggggggggg, I\'m happy again!!! lalalalalalalalalalala', '\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!']])
-    tf = TextFeaturization(text_columns=[0, 1])
+    tf = TextFeaturizer(text_columns=[0, 1])
 
     tf.fit(X)
     expected_features = set(['DIVERSITY_SCORE(0)',

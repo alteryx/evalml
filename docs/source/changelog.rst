@@ -6,7 +6,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
-        * Added text processing and featurization component `TextFeaturization` :pr:`913`
+        * Added text processing and featurization component `TextFeaturizer` :pr:`913`
     * Fixes
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`

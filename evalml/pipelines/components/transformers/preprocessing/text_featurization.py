@@ -14,7 +14,7 @@ from nlp_primitives import (
 from evalml.pipelines.components.transformers import Transformer
 
 
-class TextFeaturization(Transformer):
+class TextFeaturizer(Transformer):
     """Transformer that can automatically featurize text columns."""
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
@@ -31,7 +31,7 @@ class TextFeaturization(Transformer):
         parameters.update(kwargs)
 
         if len(text_columns) == 0:
-            warnings.warn("No text columns were given to TextFeaturization, component will have no effect", RuntimeWarning)
+            warnings.warn("No text columns were given to TextFeaturizer, component will have no effect", RuntimeWarning)
         for i, col_name in enumerate(text_columns):
             if not isinstance(col_name, str):
                 text_columns[i] = str(col_name)
@@ -72,7 +72,7 @@ class TextFeaturization(Transformer):
         var_types = entity_set.entities[0].variable_types
         for col in self.text_col_names:
             if var_types[col] is not ft.variable_types.variable.Text:
-                raise ValueError("Column {} is not a text column, cannot apply TextFeaturization component".format(col))
+                raise ValueError("Column {} is not a text column, cannot apply TextFeaturizer component".format(col))
 
     def fit(self, X, y=None):
         if len(self.text_col_names) == 0:

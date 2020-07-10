@@ -5,4 +5,4 @@ from .feature_selection import FeatureSelector, RFClassifierSelectFromModel, RFR
 from .imputers import PerColumnImputer, SimpleImputer
 from .scalers import StandardScaler
 from .column_selectors import DropColumns, SelectColumns
-from .preprocessing import DateTimeFeaturization, DropNullColumns, TextFeaturization
+from .preprocessing import DateTimeFeaturization, DropNullColumns, TextFeaturizer
