@@ -19,7 +19,7 @@ class TextFeaturizer(Transformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=[], random_state=0, **kwargs):
+    def __init__(self, text_columns=None, random_state=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
@@ -27,7 +27,8 @@ class TextFeaturizer(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
-        parameters = {}
+        text_columns = text_columns or []
+        parameters = {'text_columns': text_columns}
         parameters.update(kwargs)
 
         if len(text_columns) == 0:
