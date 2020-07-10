@@ -30,5 +30,6 @@ from .transformers import (
     DropColumns,
     DropNullColumns,
     DateTimeFeaturization,
-    SelectColumns
+    SelectColumns,
+    TextFeaturizer
     )
