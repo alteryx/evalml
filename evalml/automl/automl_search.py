@@ -366,7 +366,7 @@ class AutoMLSearch:
         self._start = time.time()
         self._current_iteration = 1
 
-        self._add_baseline_pipelines(X, y, None, raise_errors=raise_errors)
+        self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
 
         current_batch_pipelines = []
         while self._check_stopping_condition(self._start):
@@ -452,7 +452,7 @@ class AutoMLSearch:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
-    def _add_baseline_pipelines(self, X, y, progress_monitor, raise_errors=True):
+    def _add_baseline_pipelines(self, X, y, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
