@@ -52,11 +52,6 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
-
-        if proba.shape[1] > 1 and not isinstance(proba, pd.DataFrame):
-            proba = pd.DataFrame(proba)
-        elif proba.shape[1] == 1 and not isinstance(proba, pd.Series):
-            proba = pd.Series(proba)
         proba.columns = self._decode_targets(proba.columns)
         return proba
 
