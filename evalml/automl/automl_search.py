@@ -192,6 +192,7 @@ class AutoMLSearch:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._current_iteration = None
+        self._start = None
 
     @property
     def data_check_results(self):
