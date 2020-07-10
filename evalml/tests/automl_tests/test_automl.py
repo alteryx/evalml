@@ -282,6 +282,8 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     }
 
     automl = AutoMLSearch(**search_params)
+    mock_score.return_value = {automl.objective.name: 1.0}
+    mock_optimize_threshold.return_value = 0.62
     str_rep = str(automl)
     for param, value in param_str_reps.items():
         if isinstance(value, list):
@@ -727,6 +729,7 @@ def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_bin
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    mock_score.return_value = {automl.objective.name: 1.0}
     assert not automl.has_searched
 
     automl.search(X, y)
@@ -767,14 +770,14 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('pipeline_class')
+    automl._results['pipeline_results'][0].pop('pipeline_class')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('parameters')
+    automl._results['pipeline_results'][0].pop('parameters')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
@@ -819,3 +822,23 @@ def test_string_targets():
 
     auto = AutoMLSearch(problem_type='binary')
     auto.search(X, y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+
+    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    automl.search(X, y)
+
+    assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+    with pytest.raises(AttributeError, match='set attribute'):
+        automl.results = 2.0
+
+    automl.results['pipeline_results'][0]['score'] = 2.0
+    assert automl.results['pipeline_results'][0]['score'] == 1.0

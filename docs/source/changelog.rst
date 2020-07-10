@@ -7,12 +7,16 @@ Changelog
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`917`
+        * Added text processing and featurization component `TextFeaturizer` :pr:`913`
     * Fixes
+        * Makes automl results a read-only property :pr:`919`
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`
         * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`
         * Updated `all_pipelines`, `all_estimators`, `all_components` to use the same mechanism for dynamically generating their elements :pr:`898`
         * Rename `master` branch to `main` :pr:`918`
+        * Add pypi release github action :pr:`923`
+        * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
     * Documentation Changes
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
