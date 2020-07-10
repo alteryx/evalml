@@ -6,7 +6,7 @@ Changelog
 **Future Releases**
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
-        * Added text processing and featurization component `TextFeaturizer` :pr:`913`
+        * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
