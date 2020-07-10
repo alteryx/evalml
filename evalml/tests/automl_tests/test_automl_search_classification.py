@@ -550,6 +550,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
 def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, assert_allowed_pipelines_equal_helper):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
@@ -566,6 +567,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, m
 def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi, assert_allowed_pipelines_equal_helper):
     X, y = X_y_multi
     automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=[dummy_multiclass_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_multiclass_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])

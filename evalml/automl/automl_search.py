@@ -2,7 +2,6 @@ import copy
 import time
 import warnings
 from collections import OrderedDict
-from sys import stdout
 
 import cloudpickle
 import numpy as np
@@ -13,7 +12,6 @@ from sklearn.model_selection import (
     StratifiedKFold,
     train_test_split
 )
-from tqdm import tqdm
 
 from .pipeline_search_plots import PipelineSearchPlots
 
@@ -33,7 +31,13 @@ from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.logger import get_logger, log_subtitle, log_title
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed,
+    update_pipeline
+)
 
 logger = get_logger(__file__)
 
@@ -187,6 +191,7 @@ class AutoMLSearch:
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
+        self._start = None
 
     @property
     def data_check_results(self):
@@ -353,22 +358,16 @@ class AutoMLSearch:
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
-
         search_iteration_plot = None
         if self.plot:
             search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
-        if self.max_pipelines is None:
-            pbar = tqdm(total=self.max_time, disable=not self.verbose, file=stdout, bar_format='{desc} |    Elapsed:{elapsed}')
-        else:
-            pbar = tqdm(range(self.max_pipelines), disable=not self.verbose, file=stdout, bar_format='{desc}   {percentage:3.0f}%|{bar}| Elapsed:{elapsed}')
-        pbar._instances.clear()
+        self._start = time.time()
 
-        start = time.time()
-        self._add_baseline_pipelines(X, y, pbar, raise_errors=raise_errors)
+        self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
 
         current_batch_pipelines = []
-        while self._check_stopping_condition(start):
+        while self._check_stopping_condition(self._start):
             if len(current_batch_pipelines) == 0:
                 try:
                     current_batch_pipelines = self._automl_algorithm.next_batch()
@@ -379,32 +378,33 @@ class AutoMLSearch:
             parameters = pipeline.parameters
             logger.debug('Evaluating pipeline {}'.format(pipeline.name))
             logger.debug('Pipeline parameters: {}'.format(parameters))
-            pbar.update(1)
+
             if self.start_iteration_callback:
                 self.start_iteration_callback(pipeline.__class__, parameters)
-            desc = "▹ {}: ".format(pipeline.name)
+            desc = f"{pipeline.name}"
             if len(desc) > self._MAX_NAME_LEN:
                 desc = desc[:self._MAX_NAME_LEN - 3] + "..."
             desc = desc.ljust(self._MAX_NAME_LEN)
-            pbar.set_description_str(desc=desc, refresh=True)
 
-            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+            update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+
+            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
             score = evaluation_results['cv_score_mean']
             score_to_minimize = -score if self.objective.greater_is_better else score
             self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
-            desc = "✔" + desc[1:]
-            pbar.set_description_str(desc=desc, refresh=True)
-            if self.verbose:  # To force new line between progress bar iterations
-                print('')
-
             if search_iteration_plot:
                 search_iteration_plot.update()
 
-        desc = "✔ Optimization finished"
+        elapsed_time = time_elapsed(self._start)
+        desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
-        pbar.set_description_str(desc=desc, refresh=True)
-        pbar.close()
+        logger.info(desc)
+
+        best_pipeline = self.rankings.iloc[0]
+        best_pipeline_name = best_pipeline["pipeline_name"]
+        logger.info(f"Best pipeline: {best_pipeline_name}")
+        logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
     def _check_stopping_condition(self, start):
         should_continue = True
@@ -449,7 +449,7 @@ class AutoMLSearch:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
-    def _add_baseline_pipelines(self, X, y, pbar, raise_errors=True):
+    def _add_baseline_pipelines(self, X, y, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
@@ -463,28 +463,26 @@ class AutoMLSearch:
         if self.start_iteration_callback:
             self.start_iteration_callback(baseline.__class__, baseline.parameters)
 
-        desc = "▹ {}: ".format(baseline.name)
+        desc = f"{baseline.name}"
         if len(desc) > self._MAX_NAME_LEN:
             desc = desc[:self._MAX_NAME_LEN - 3] + "..."
         desc = desc.ljust(self._MAX_NAME_LEN)
-        pbar.set_description_str(desc=desc, refresh=True)
 
-        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors, pbar=pbar)
+        update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+
+        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
         self._add_result(trained_pipeline=baseline,
                          parameters=baseline.parameters,
                          training_time=baseline_results['training_time'],
                          cv_data=baseline_results['cv_data'],
                          cv_scores=baseline_results['cv_scores'])
-        desc = "✔" + desc[1:]
-        pbar.set_description_str(desc=desc, refresh=True)
-        if self.verbose:  # To force new line between progress bar iterations
-            print('')
 
-    def _compute_cv_scores(self, pipeline, X, y, raise_errors=True, pbar=None):
+    def _compute_cv_scores(self, pipeline, X, y, raise_errors=True):
         start = time.time()
         cv_data = []
-
-        for train, test in self.data_split.split(X, y):
+        logger.info("\tStarting cross validation")
+        for i, (train, test) in enumerate(self.data_split.split(X, y)):
+            logger.debug(f"\t\tTraining and scoring on fold {i}")
             if isinstance(X, pd.DataFrame):
                 X_train, X_test = X.iloc[train], X.iloc[test]
             else:
@@ -502,24 +500,28 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone()
+                logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
+                logger.debug(f"\t\t\tFold {i}: finished training")
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     cv_pipeline.threshold = 0.5
                     if self.optimize_thresholds and self.objective.can_optimize_threshold:
+                        logger.debug(f"\t\t\tFold {i}: Optimizing threshold for {self.objective.name}")
                         y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
                         if isinstance(y_predict_proba, pd.DataFrame):
                             y_predict_proba = y_predict_proba.iloc[:, 1]
                         else:
                             y_predict_proba = y_predict_proba[:, 1]
                         cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+                logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
                 logger.error("Exception during automl search: {}".format(str(e)))
                 if raise_errors:
                     raise e
-                if pbar:
-                    pbar.write(str(e))
                 score = np.nan
                 scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
             ordered_scores = OrderedDict()
@@ -535,7 +537,9 @@ class AutoMLSearch:
 
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
-        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_scores.mean()}
+        cv_score_mean = cv_scores.mean()
+        logger.info(f"\tFinished cross validation - mean {self.objective.name}: {cv_score_mean:.3f}")
+        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
@@ -565,9 +569,9 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline)
 
-    def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
+    def _evaluate(self, pipeline, X, y, raise_errors=True):
         parameters = pipeline.parameters
-        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors, pbar=pbar)
+        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors)
         logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 
         self._add_result(trained_pipeline=pipeline,

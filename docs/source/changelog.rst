@@ -14,6 +14,7 @@ Changelog
         * Updated `all_pipelines`, `all_estimators`, `all_components` to use the same mechanism for dynamically generating their elements :pr:`898`
         * Rename `master` branch to `main` :pr:`918`
         * Add pypi release github action :pr:`923`
+        * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
     * Documentation Changes
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
