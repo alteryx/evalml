@@ -7,6 +7,7 @@ Changelog
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
     * Fixes
+        * Makes automl results a read-only property :pr:`919`
     * Changes
         * Deleted static pipelines and refactored tests involving static pipelines, removed `all_pipelines()` and `get_pipelines()` :pr:`904`
         * Moved `list_model_families` to `evalml.model_family.utils` :pr:`903`

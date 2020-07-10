@@ -1,3 +1,4 @@
+import copy
 import time
 import warnings
 from collections import OrderedDict
@@ -168,7 +169,7 @@ class AutoMLSearch:
 
         self.patience = patience
         self.tolerance = tolerance or 0.0
-        self.results = {
+        self._results = {
             'pipeline_results': {},
             'search_order': []
         }
@@ -407,7 +408,7 @@ class AutoMLSearch:
 
     def _check_stopping_condition(self, start):
         should_continue = True
-        num_pipelines = len(self.results['pipeline_results'])
+        num_pipelines = len(self._results['pipeline_results'])
         if num_pipelines == 0:
             return True
 
@@ -422,11 +423,11 @@ class AutoMLSearch:
         if self.patience is None:
             return True
 
-        first_id = self.results['search_order'][0]
-        best_score = self.results['pipeline_results'][first_id]['score']
+        first_id = self._results['search_order'][0]
+        best_score = self._results['pipeline_results'][first_id]['score']
         num_without_improvement = 0
-        for id in self.results['search_order'][1:]:
-            curr_score = self.results['pipeline_results'][id]['score']
+        for id in self._results['search_order'][1:]:
+            curr_score = self._results['pipeline_results'][id]['score']
             significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
             score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
             if score_improved and significant_change:
@@ -546,9 +547,9 @@ class AutoMLSearch:
 
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
-        pipeline_id = len(self.results['pipeline_results'])
+        pipeline_id = len(self._results['pipeline_results'])
 
-        self.results['pipeline_results'][pipeline_id] = {
+        self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
             "pipeline_class": type(trained_pipeline),
@@ -559,10 +560,10 @@ class AutoMLSearch:
             "training_time": training_time,
             "cv_data": cv_data,
         }
-        self.results['search_order'].append(pipeline_id)
+        self._results['search_order'].append(pipeline_id)
 
         if self.add_result_callback:
-            self.add_result_callback(self.results['pipeline_results'][pipeline_id], trained_pipeline)
+            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline)
 
     def _evaluate(self, pipeline, X, y, raise_errors=True, pbar=None):
         parameters = pipeline.parameters
@@ -610,11 +611,11 @@ class AutoMLSearch:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
-        if pipeline_id not in self.results['pipeline_results']:
+        if pipeline_id not in self._results['pipeline_results']:
             raise PipelineNotFoundError("Pipeline not found")
 
         pipeline = self.get_pipeline(pipeline_id)
-        pipeline_results = self.results['pipeline_results'][pipeline_id]
+        pipeline_results = self._results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
         log_subtitle(logger, "Training")
@@ -678,9 +679,18 @@ class AutoMLSearch:
         self._evaluate(pipeline, X, y, raise_errors=True)
 
     @property
+    def results(self):
+        """Class that allows access to a copy of the results from `automl_search`.
+
+           Returns: dict containing `pipeline_results`: a dict with results from each pipeline,
+                    and `search_order`: a list describing the order the pipelines were searched.
+           """
+        return copy.deepcopy(self._results)
+
+    @property
     def has_searched(self):
-        "Returns `True` if search has been ran and `False` if not"
-        searched = True if self.results['pipeline_results'] else False
+        """Returns `True` if search has been ran and `False` if not"""
+        searched = True if self._results['pipeline_results'] else False
         return searched
 
     @property
@@ -699,7 +709,7 @@ class AutoMLSearch:
         if not self.has_searched:
             return pd.DataFrame(columns=full_rankings_cols)
 
-        rankings_df = pd.DataFrame(self.results['pipeline_results'].values())
+        rankings_df = pd.DataFrame(self._results['pipeline_results'].values())
         rankings_df = rankings_df[full_rankings_cols]
         rankings_df.sort_values("score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)

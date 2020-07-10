@@ -750,14 +750,14 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('pipeline_class')
+    automl._results['pipeline_results'][0].pop('pipeline_class')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
-    automl.results['pipeline_results'][0].pop('parameters')
+    automl._results['pipeline_results'][0].pop('parameters')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
@@ -790,3 +790,23 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -         -" in out
     assert "std                    0.000          -         -" in out
     assert "coef of var            0.000          -         -" in out
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+
+    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    automl.search(X, y)
+
+    assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+    with pytest.raises(AttributeError, match='set attribute'):
+        automl.results = 2.0
+
+    automl.results['pipeline_results'][0]['score'] = 2.0
+    assert automl.results['pipeline_results'][0]['score'] == 1.0
