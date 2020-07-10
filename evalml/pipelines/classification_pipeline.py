@@ -11,7 +11,7 @@ class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
     def __init__(self, parameters, random_state=0):
-        self._encoder = None
+        self._encoder = LabelEncoder()
         super().__init__(parameters, random_state)
 
     def fit(self, X, y):
@@ -19,7 +19,6 @@ class ClassificationPipeline(PipelineBase):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        self._encoder = LabelEncoder()
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)
