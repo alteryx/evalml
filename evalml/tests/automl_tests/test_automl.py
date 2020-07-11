@@ -14,6 +14,7 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning
 )
+from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
@@ -812,18 +813,6 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "coef of var            0.000          -         -" in out
 
 
-def test_string_targets():
-    from sklearn.datasets import load_breast_cancer
-    data = load_breast_cancer()
-    X = pd.DataFrame(data["data"], columns=data["feature_names"])
-    y = pd.Series(data["target"])
-
-    y = y.map(lambda x: data["target_names"][x])
-
-    auto = AutoMLSearch(problem_type='binary')
-    auto.search(X, y)
-
-
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
@@ -842,3 +831,17 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("target_type", ["categorical", "string"])
+def test_categorical_targets(automl_type, target_type):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = load_breast_cancer()
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = load_wine()
+    if target_type == "categorical":
+        y = pd.Categorical(y)
+
+    auto = AutoMLSearch(problem_type=automl_type)
+    auto.search(X, y)
