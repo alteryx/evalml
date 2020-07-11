@@ -34,8 +34,19 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         ypred_proba = self.predict_proba(X)
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
-            return self._decode_targets((ypred_proba > self.threshold).astype(int))
-        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X).astype(int))
+            return self._decode_targets(ypred_proba > self.threshold)
+        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
+
+    def predict_proba(self, X):
+        """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
+
+        Arguments:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+
+        Returns:
+            pd.DataFrame : probability estimates
+        """
+        return super().predict_proba(X)
 
     @staticmethod
     def _score(X, y, predictions, objective):

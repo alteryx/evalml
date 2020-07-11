@@ -11,10 +11,32 @@ class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
     def __init__(self, parameters, random_state=0):
+        """Machine learning classification pipeline made out of transformers and a classifier.
+
+        Required Class Variables:
+            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
+
+        Arguments:
+            parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
+                 An empty dictionary {} implies using all default values for component parameters.
+            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+        """
         self._encoder = LabelEncoder()
         super().__init__(parameters, random_state)
 
     def fit(self, X, y):
+        """Build a model. For string and categorical targets, classes are sorted
+            by sorted(set(unique_values)) and then are mapped to values between 0 and n_classes-1.
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+
+            y (pd.Series): the target training labels of length [n_samples]
+
+        Returns:
+            self
+
+        """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
@@ -31,9 +53,18 @@ class ClassificationPipeline(PipelineBase):
             return pd.Series(self._encoder.transform(y))
 
     def _decode_targets(self, y):
-        return self._encoder.inverse_transform(y)
+        return self._encoder.inverse_transform(y.astype(int))
 
     def predict(self, X, objective=None):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to make predictions
+
+        Returns:
+            pd.Series : estimated labels
+        """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
