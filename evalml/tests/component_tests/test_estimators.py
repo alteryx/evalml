@@ -29,3 +29,20 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             predictions = clf.predict(X)
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
+
+
+def test_binary_classification_estimators_predict_proba_col_order():
+    X_first = pd.DataFrame(np.random.randint(-10, 0, size=(100, 100)))
+    X_second = pd.DataFrame(np.random.randint(0, 100, size=(100, 100)))
+    X = pd.concat([X_first, X_second], axis=0)
+    y = pd.Series([False] * 100 + [True] * 100)
+    for estimator_class in _all_estimators_used_in_search:
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if ProblemTypes.BINARY in supported_problem_types:
+            estimator = estimator_class()
+            estimator.fit(X, y)
+            predicted_proba = estimator.predict_proba(X)
+            for i in range(100):
+                assert predicted_proba.iloc[i,0] > predicted_proba.iloc[i, 1]
+            for i in range(100,200):
+                assert predicted_proba.iloc[i,0] < predicted_proba.iloc[i, 1]
