@@ -7,7 +7,7 @@ Changelog
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`917`
-        * Added text processing and featurization component `TextFeaturizer` :pr:`913`
+        * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
