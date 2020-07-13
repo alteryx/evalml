@@ -265,6 +265,25 @@ class AutoMLSearch:
         else:
             return DataChecks(data_checks)
 
+    def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
+
+        leading_char = "\n"
+        start_of_loop = time.time()
+        while True:
+            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
+            if choice == "y":
+                # pbar.clear()
+                # pbar.close()
+                logger.info("Exiting AutoMLSearch.")
+                return []
+            elif choice == "n":
+                # So that the time in this loop does not count towards the time budget (if set)
+                time_in_loop = time.time() - start_of_loop
+                self._start += time_in_loop
+                return [pipeline] + current_batch_pipelines
+            else:
+                leading_char = ""
+
     def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
         """Find best classifier
 
@@ -365,7 +384,9 @@ class AutoMLSearch:
 
         self._start = time.time()
 
-        self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
+        should_terminate = self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
+        if should_terminate:
+            return
 
         current_batch_pipelines = []
         while self._check_stopping_condition(self._start):
@@ -399,23 +420,9 @@ class AutoMLSearch:
                     search_iteration_plot.update()
 
             except KeyboardInterrupt:
-                leading_char = "\n"
-                start_of_loop = time.time()
-                while True:
-                    choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
-                    if choice == "y":
-                        #pbar.clear()
-                        #pbar.close()
-                        logger.info("Exiting AutoMLSearch.")
-                        return
-                    elif choice == "n":
-                        # So that the time in this loop does not count towards the time budget (if set)
-                        time_in_loop = time.time() - start_of_loop
-                        self._start += time_in_loop
-                        current_batch_pipelines = [pipeline] + current_batch_pipelines
-                        break
-                    else:
-                        leading_char = ""
+                current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_batch_pipelines)
+                if not current_batch_pipelines:
+                    return
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
@@ -481,22 +488,33 @@ class AutoMLSearch:
             strategy_dict = {"strategy": "mean"}
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
 
-        if self.start_iteration_callback:
-            self.start_iteration_callback(baseline.__class__, baseline.parameters)
+        pipelines = [baseline]
+        while pipelines:
+            try:
 
-        desc = f"{baseline.name}"
-        if len(desc) > self._MAX_NAME_LEN:
-            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-        desc = desc.ljust(self._MAX_NAME_LEN)
+                if self.start_iteration_callback:
+                    self.start_iteration_callback(baseline.__class__, baseline.parameters)
 
-        update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                baseline = pipelines.pop()
+                desc = f"{baseline.name}"
+                if len(desc) > self._MAX_NAME_LEN:
+                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                desc = desc.ljust(self._MAX_NAME_LEN)
 
-        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
-        self._add_result(trained_pipeline=baseline,
-                         parameters=baseline.parameters,
-                         training_time=baseline_results['training_time'],
-                         cv_data=baseline_results['cv_data'],
-                         cv_scores=baseline_results['cv_scores'])
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+
+                baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
+                self._add_result(trained_pipeline=baseline,
+                                 parameters=baseline.parameters,
+                                 training_time=baseline_results['training_time'],
+                                 cv_data=baseline_results['cv_data'],
+                                 cv_scores=baseline_results['cv_scores'])
+            except KeyboardInterrupt:
+                pipelines = self._handle_keyboard_interrupt(baseline, pipelines)
+                if not pipelines:
+                    return True
+
+        return False
 
     def _compute_cv_scores(self, pipeline, X, y, raise_errors=True):
         start = time.time()

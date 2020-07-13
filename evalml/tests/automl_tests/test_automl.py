@@ -806,53 +806,56 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
 
-# The next three functions test whether or not the search finishes after the program receives a keyboard interrupt
-# These will be called in a subprocess. The queue parameter is a connection from the subprocess to the main
-# process and is how we'll share data between them. We need to send the result we want to check to the main process
-# so that pytest can mark whether or not the test failed.
-def search_interrupt(X, y, queue):
-    with patch("builtins.input", return_value="y"):
-        automl = AutoMLSearch(problem_type="binary", max_pipelines=10)
-        automl.search(X, y)
-        queue.put(None)
+class KeyboardInterruptOnKthPipeline:
+    """Helps us time when the test will send a KeyboardInterrupt Exception to search."""
+
+    def __init__(self, k):
+        self.n_calls = 1
+        self.k = k
+
+    def __call__(self, pipeline_class, parameters):
+        if self.n_calls == self.k:
+            self.n_calls += 1
+            raise KeyboardInterrupt
+        else:
+            self.n_calls += 1
 
 
-def search_dont_interrupt(X, y, queue):
-    with patch("builtins.input", return_value="n"):
-        automl = AutoMLSearch(problem_type="binary", max_pipelines=10)
-        automl.search(X, y)
-        queue.put(automl.has_searched)
+interrupt = ["y"]
+interrupt_after_bad_message = ["No.", "Yes!", "y"]
+dont_interrupt = ["n"]
+dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
 
 
-def search_interrupt_bad_message(X, y, queue):
-    with patch("builtins.input", side_effect=["Yes", "yes.", "n"]):
-        automl = AutoMLSearch(problem_type="binary", max_pipelines=10)
-        automl.search(X, y)
-        queue.put(automl.has_searched)
+@pytest.mark.parametrize("when_to_interrupt,user_input,number_results",
+                         [(1, interrupt, 0),
+                          (1, interrupt_after_bad_message, 0),
+                          (1, dont_interrupt, 5),
+                          (1, dont_interrupt_after_bad_message, 5),
+                          (2, interrupt, 1),
+                          (2, interrupt_after_bad_message, 1),
+                          (2, dont_interrupt, 5),
+                          (2, dont_interrupt_after_bad_message, 5),
+                          (3, interrupt, 2),
+                          (3, interrupt_after_bad_message, 2),
+                          (3, dont_interrupt, 5),
+                          (3, dont_interrupt_after_bad_message, 5),
+                          (5, interrupt, 4),
+                          (5, interrupt_after_bad_message, 4),
+                          (5, dont_interrupt, 5),
+                          (5, dont_interrupt_after_bad_message, 5)])
+@patch("builtins.input")
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
+                                  when_to_interrupt, user_input, number_results,
+                                  X_y_binary):
 
-
-@pytest.mark.parametrize("search", [search_interrupt, search_dont_interrupt, search_interrupt_bad_message])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"score": 1.0})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit', return_value={"score": 1.0})
-def test_catch_keyboard_interrupt(mock_fit, mock_score, search, X_y_binary):
-
-    import multiprocessing
-    import signal
-    import os
-    import time
-
+    mock_input.side_effect = user_input
     X, y = X_y_binary
+    cb = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=5, start_iteration_callback=cb,
+                          objective="f1")
+    automl.search(X, y)
 
-    queue = multiprocessing.Queue()
-    process = multiprocessing.Process(target=search, args=(X, y, queue))
-    process.start()
-
-    # This is the minimum amount of time we need before we enter the search
-    time.sleep(8)
-    os.kill(process.pid, signal.SIGINT)
-
-    if not queue.empty():
-        result = queue.get()
-
-        if result is not None:
-            assert result
+    assert len(automl._results['pipeline_results']) == number_results
