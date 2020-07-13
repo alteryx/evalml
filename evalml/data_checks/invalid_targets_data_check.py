@@ -39,6 +39,6 @@ class InvalidTargetDataCheck(DataCheck):
         if len(value_counts) == 2 and y.dtype in numerics:
             unique_values = value_counts.index.tolist()
             if set(unique_values) != set([0, 1]):
-                messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(",".join(unique_values)), self.name))
+                messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(",".join([str(val) for val in unique_values])), self.name))
 
         return messages
