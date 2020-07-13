@@ -835,7 +835,7 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ["categorical", "string"])
-def test_categorical_targets(automl_type, target_type):
+def test_string_and_categorical_targets(automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
     elif automl_type == ProblemTypes.MULTICLASS:
@@ -843,5 +843,11 @@ def test_categorical_targets(automl_type, target_type):
     if target_type == "categorical":
         y = pd.Categorical(y)
 
-    auto = AutoMLSearch(problem_type=automl_type)
-    auto.search(X, y)
+    automl = AutoMLSearch(problem_type=automl_type)
+    automl.search(X, y)
+    for pipeline_result in automl.results['pipeline_results'].values():
+        cv_data = pipeline_result['cv_data']
+        for fold in cv_data:
+            all_objective_scores = fold["all_objective_scores"]
+            for score in all_objective_scores.values():
+                assert score is not None
