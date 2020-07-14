@@ -55,14 +55,12 @@ class ClassificationPipeline(PipelineBase):
     def _decode_targets(self, y):
         return self._encoder.inverse_transform(y.astype(int))
 
-
     def _predict(self, X, objective=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
         X_t = self._transform(X)
         return self.estimator.predict(X_t)
-
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
