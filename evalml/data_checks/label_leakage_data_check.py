@@ -54,7 +54,7 @@ class LabelLeakageDataCheck(DataCheck):
         if len(X.columns) == 0:
             return []
 
-        corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
-        highly_corr_cols = {key: value for key, value in corrs.items() if value >= self.pct_corr_threshold}
+        highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
+        # highly_corr_cols = {key: value for key, value in corrs.items() if value >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         return [DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name) for col_name in highly_corr_cols]
