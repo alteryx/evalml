@@ -266,14 +266,21 @@ class AutoMLSearch:
             return DataChecks(data_checks)
 
     def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
+        """Presents a prompt to the user asking if they want to stop the search.
 
+        Args:
+            pipeline (PipelineBase): Current pipeline in the search.
+            current_batch_pipelines (list): Other pipelines in the batch.
+
+        Returns:
+            list: Next pipelines to search in the batch. If the user decides to stop the search,
+                an empty list will be returned.
+        """
         leading_char = "\n"
         start_of_loop = time.time()
         while True:
             choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
             if choice == "y":
-                # pbar.clear()
-                # pbar.close()
                 logger.info("Exiting AutoMLSearch.")
                 return []
             elif choice == "n":
@@ -285,7 +292,7 @@ class AutoMLSearch:
                 leading_char = ""
 
     def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
-        """Find best classifier
+        """Find the best pipeline for the data set.
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
@@ -478,6 +485,18 @@ class AutoMLSearch:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
     def _add_baseline_pipelines(self, X, y, raise_errors=True):
+        """Fits a baseline pipeline to the data.
+
+        This is the first pipeline fit during search.
+
+        Arguments:
+            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+            y (pd.Series): the target training labels of length [n_samples]
+
+        Returns:
+            bool - If the user ends the search early, will return True and searching will immediately finish. Else,
+                will return False and more pipelines will be searched.
+        """
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "random_weighted"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
@@ -489,19 +508,20 @@ class AutoMLSearch:
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
 
         pipelines = [baseline]
+        # Using a while loop so that we can retry the pipeline after the user hits ctr-c
+        # but decides to not stop the search.
         while pipelines:
             try:
-
                 if self.start_iteration_callback:
                     self.start_iteration_callback(baseline.__class__, baseline.parameters)
-
                 baseline = pipelines.pop()
                 desc = f"{baseline.name}"
                 if len(desc) > self._MAX_NAME_LEN:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines,
+                                self._start)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
                 self._add_result(trained_pipeline=baseline,

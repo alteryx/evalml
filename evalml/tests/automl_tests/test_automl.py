@@ -814,6 +814,10 @@ class KeyboardInterruptOnKthPipeline:
         self.k = k
 
     def __call__(self, pipeline_class, parameters):
+        """Raises KeyboardInterrupt on the kth call.
+
+        Arguments are ignored but included to meet the call back API.
+        """
         if self.n_calls == self.k:
             self.n_calls += 1
             raise KeyboardInterrupt
@@ -821,6 +825,7 @@ class KeyboardInterruptOnKthPipeline:
             self.n_calls += 1
 
 
+# These are used to mock return values to the builtin "input" function.
 interrupt = ["y"]
 interrupt_after_bad_message = ["No.", "Yes!", "y"]
 dont_interrupt = ["n"]
@@ -853,9 +858,8 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
 
     mock_input.side_effect = user_input
     X, y = X_y_binary
-    cb = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
-    automl = AutoMLSearch(problem_type="binary", max_pipelines=5, start_iteration_callback=cb,
-                          objective="f1")
+    callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=5, start_iteration_callback=callback, objective="f1")
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
