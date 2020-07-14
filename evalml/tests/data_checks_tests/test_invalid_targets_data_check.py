@@ -18,6 +18,7 @@ def test_invalid_target_data_check_nan_error():
 def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck()
+    assert invalid_targets_check.validate(X, y=pd.Series([1, 5, 1, 5, 1, 1])) == [DataCheckError("Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead", "InvalidTargetDataCheck")]
     assert invalid_targets_check.validate(X, y=pd.Series([0, 5, np.nan, np.nan])) == [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck"),
                                                                                       DataCheckError("Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead", "InvalidTargetDataCheck")]
 
