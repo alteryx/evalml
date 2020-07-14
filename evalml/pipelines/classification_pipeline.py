@@ -26,7 +26,7 @@ class ClassificationPipeline(PipelineBase):
 
     def fit(self, X, y):
         """Build a model. For string and categorical targets, classes are sorted
-            by sorted(set(unique_values)) and then are mapped to values between 0 and n_classes-1.
+            by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
@@ -59,7 +59,7 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
         Returns:
@@ -76,7 +76,7 @@ class ClassificationPipeline(PipelineBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
 
         Returns:
             pd.DataFrame : probability estimates
@@ -93,8 +93,8 @@ class ClassificationPipeline(PipelineBase):
         """Evaluate model performance on objectives
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            y (pd.Series) : true labels of length [n_samples]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            y (pd.Series): true labels of length [n_samples]
             objectives (list): list of objectives to score
 
         Returns:

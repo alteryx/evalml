@@ -14,7 +14,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
         Returns:
