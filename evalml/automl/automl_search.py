@@ -153,6 +153,8 @@ class AutoMLSearch:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         self.additional_objectives = additional_objectives
 
+        self._validate_problem_type()
+
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
         elif isinstance(max_time, str):
@@ -339,7 +341,6 @@ class AutoMLSearch:
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        self._validate_problem_type()
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
@@ -445,7 +446,7 @@ class AutoMLSearch:
             if obj.problem_type != self.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
 
-        for pipeline in self.allowed_pipelines:
+        for pipeline in self.allowed_pipelines or []:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
