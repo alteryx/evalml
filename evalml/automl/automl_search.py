@@ -153,8 +153,6 @@ class AutoMLSearch:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         self.additional_objectives = additional_objectives
 
-        self._validate_problem_type()
-
         if max_time is None or isinstance(max_time, (int, float)):
             self.max_time = max_time
         elif isinstance(max_time, str):
@@ -194,6 +192,9 @@ class AutoMLSearch:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._start = None
+
+        self._validate_problem_type()
+
 
     @property
     def data_check_results(self):
