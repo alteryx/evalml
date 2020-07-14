@@ -32,13 +32,13 @@ class InvalidTargetDataCheck(DataCheck):
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
         valid_target_types = numerics + ['object', 'category']
 
-        if y.dtype not in valid_target_types:
-            messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ",".join(valid_target_types)), self.name))
+        if y.dtype.name not in valid_target_types:
+            messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
 
         value_counts = y.value_counts()
         if len(value_counts) == 2 and y.dtype in numerics:
             unique_values = value_counts.index.tolist()
             if set(unique_values) != set([0, 1]):
-                messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(",".join([str(val) for val in unique_values])), self.name))
+                messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])), self.name))
 
         return messages
