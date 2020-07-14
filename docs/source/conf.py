@@ -207,7 +207,7 @@ autosummary_generate = ["api_reference.rst"]
 templates_path = ["_templates"]
 
 html_show_sphinx = False
-nbsphinx_execute = 'always'
+nbsphinx_execute = 'auto'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
 inheritance_graph_attrs = dict(rankdir="LR", size='"1000, 333"',
