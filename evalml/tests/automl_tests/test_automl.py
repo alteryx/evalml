@@ -62,10 +62,6 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
                 assert isinstance(cv_result['binary_classification_threshold'], float)
             else:
                 assert cv_result['binary_classification_threshold'] is None
-            all_objective_scores = cv_result["all_objective_scores"]
-            for score in all_objective_scores.values():
-                assert score is not None
-
         assert automl.get_pipeline(pipeline_id).parameters == results['parameters']
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
@@ -135,6 +131,14 @@ def test_pipeline_limits(mock_fit_binary, mock_score_binary,
     assert "Will stop searching for new pipelines after 0 seconds" in out
     # search will always run at least one pipeline
     assert len(automl.results['pipeline_results']) >= 1
+
+
+def test_search_order(X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=3)
+    automl.search(X, y)
+    correct_order = [0, 1, 2]
+    assert automl.results['search_order'] == correct_order
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -839,7 +843,7 @@ def test_string_and_categorical_targets(automl_type, target_type):
     if target_type == "categorical":
         y = pd.Categorical(y)
 
-    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
+    automl = AutoMLSearch(problem_type=automl_type)
     automl.search(X, y)
     for pipeline_result in automl.results['pipeline_results'].values():
         cv_data = pipeline_result['cv_data']
@@ -847,5 +851,3 @@ def test_string_and_categorical_targets(automl_type, target_type):
             all_objective_scores = fold["all_objective_scores"]
             for score in all_objective_scores.values():
                 assert score is not None
-
-    assert len(automl.full_rankings) == 2

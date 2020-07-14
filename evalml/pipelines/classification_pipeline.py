@@ -47,17 +47,13 @@ class ClassificationPipeline(PipelineBase):
         return self
 
     def _encode_targets(self, y):
-        return pd.Series(self._encoder.transform(y), name=y.name)
+        if isinstance(y, pd.Series):
+            return pd.Series(self._encoder.transform(y), name=y.name)
+        else:
+            return pd.Series(self._encoder.transform(y))
 
     def _decode_targets(self, y):
         return self._encoder.inverse_transform(y.astype(int))
-
-    def _predict(self, X, objective=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        X_t = self._transform(X)
-        return self.estimator.predict(X_t)
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -69,7 +65,11 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series : estimated labels
         """
-        predictions = self._predict(X, objective)
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        X_t = self._transform(X)
+        predictions = self.estimator.predict(X_t)
         return self._decode_targets(predictions)
 
     def predict_proba(self, X):
@@ -108,6 +108,8 @@ class ClassificationPipeline(PipelineBase):
         objectives = [get_objective(o) for o in objectives]
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         y = self._encode_targets(y)
+        if y_predicted is not None:
+            y_predicted = self._encode_targets(y_predicted)
         scores = OrderedDict()
         for objective in objectives:
             score = self._score(X, y, y_predicted_proba if objective.score_needs_proba else y_predicted, objective)
@@ -122,5 +124,5 @@ class ClassificationPipeline(PipelineBase):
             if objective.score_needs_proba and y_predicted_proba is None:
                 y_predicted_proba = self.predict_proba(X)
             if not objective.score_needs_proba and y_predicted is None:
-                y_predicted = self._predict(X)
+                y_predicted = self.predict(X)
         return y_predicted, y_predicted_proba
