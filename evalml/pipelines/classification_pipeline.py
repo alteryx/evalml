@@ -122,7 +122,8 @@ class ClassificationPipeline(PipelineBase):
         objectives = [get_objective(o) for o in objectives]
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         y = self._encode_targets(y)
-        return self._score(X, y, y_predicted, y_predicted_proba, objectives)
+        is_objective_suitable = lambda objective: True
+        return self._score(X, y, y_predicted, y_predicted_proba, objectives, is_objective_suitable)
 
     def _compute_predictions(self, X, objectives):
         """Scan through the objectives list and precompute"""

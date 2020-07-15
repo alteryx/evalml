@@ -249,8 +249,7 @@ class PipelineBase(ABC):
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
             is_objective_suitable (callable): Function to check whether the objective function is suitable for the problem.
-                For example, AUC is not suitable for regression problems. Currently ignored for classification problems.
-        Will return `np.nan` if the objective errors.
+                For example, AUC is not suitable for regression problems.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()
