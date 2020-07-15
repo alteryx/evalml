@@ -236,23 +236,27 @@ class PipelineBase(ABC):
             dict: ordered dictionary of objective scores
         """
 
-    # @staticmethod
-    # def _score(X, y, predictions, predicted_probability, objective):
-    #     """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
-    #     Will return `np.nan` if the objective errors.
-    #     """
-    #     return objective.score(y, predictions, X)
-
     @staticmethod
-    def _score(X, y, predictions, predicted_probabilities, objectives):
+    def _score(X, y, predictions, predicted_probabilities, objectives, is_objective_suitable=None):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
+        Will raise a PipelineScoreError if any objectives fail.
+        Arguments:
+            X (pd.DataFrame): The feature matrix.
+            y (pd.Series): The labels.
+            predictions (pd.Series): The pipeline predictions.
+            predicted_probabilities (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
+                Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
+            objectives (list): List of objectives to score.
+            is_objective_suitable (callable): Function to check whether the objective function is suitable for the problem.
+                For example, AUC is not suitable for regression problems. Currently ignored for classification problems.
         Will return `np.nan` if the objective errors.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()
         for objective in objectives:
             try:
+                is_objective_suitable(objective)
                 score = objective.score(y, predicted_probabilities if objective.score_needs_proba else predictions, X)
                 scored_successfully.update({objective.name: score})
             except Exception as e:

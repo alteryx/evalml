@@ -60,8 +60,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
     def _compute_predictions(self, X, objectives):
         y_predicted, y_predicted_proba = super()._compute_predictions(X, objectives)
-        if y_predicted is not None and y_predicted.ndim > 1:
-            y_predicted = y_predicted.iloc[:, 1]
         if y_predicted_proba is not None and y_predicted_proba.ndim > 1:
             y_predicted_proba = y_predicted_proba.iloc[:, 1]
         return y_predicted, y_predicted_proba
