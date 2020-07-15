@@ -7,7 +7,6 @@ from .multiclass_classification_pipeline import (
 )
 from .regression_pipeline import RegressionPipeline
 
-from evalml.model_family import handle_model_family, list_model_families
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
@@ -19,12 +18,11 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler
 )
-from evalml.pipelines.components.utils import _all_estimators_used_in_search, get_estimators
+from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-
 
 
 def _get_preprocessing_components(X, y, problem_type, estimator_class):

@@ -14,7 +14,6 @@ from sklearn.model_selection import (
 )
 
 from .pipeline_search_plots import PipelineSearchPlots
-from evalml.model_family.utils import list_model_families
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit

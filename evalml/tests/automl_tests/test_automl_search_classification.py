@@ -19,8 +19,8 @@ from evalml.objectives import (
     get_objectives
 )
 from evalml.pipelines import ModeBaselineBinaryPipeline, PipelineBase
-from evalml.pipelines.utils import make_pipeline
 from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 
 

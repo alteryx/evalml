@@ -27,6 +27,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
+
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     expected_cv_data_keys = {'all_objective_scores', 'score', 'binary_classification_threshold'}

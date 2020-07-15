@@ -1,13 +1,13 @@
 # flake8:noqa
 import inspect
 
+import evalml.model_family.utils as model_family_utils
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import Estimator, Transformer
 from evalml.pipelines.components import ComponentBase
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
-from evalml.problem_types import ProblemTypes, handle_problem_types
-import evalml.model_family.utils as model_family_utils
 
 logger = get_logger(__file__)
 

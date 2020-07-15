@@ -9,9 +9,9 @@ from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import MeanBaselineRegressionPipeline, PipelineBase
+from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
-from evalml.pipelines.components.utils import get_estimators
 
 
 def test_init(X_y_regression):
