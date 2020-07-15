@@ -451,10 +451,10 @@ class AutoMLSearch:
 
     def _add_baseline_pipelines(self, X, y, raise_errors=True):
         if self.problem_type == ProblemTypes.BINARY:
-            strategy_dict = {"strategy": "random_weighted"}
+            strategy_dict = {"strategy": "mode"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
         elif self.problem_type == ProblemTypes.MULTICLASS:
-            strategy_dict = {"strategy": "random_weighted"}
+            strategy_dict = {"strategy": "mode"}
             baseline = ModeBaselineMulticlassPipeline(parameters={"Baseline Classifier": strategy_dict})
         elif self.problem_type == ProblemTypes.REGRESSION:
             strategy_dict = {"strategy": "mean"}
