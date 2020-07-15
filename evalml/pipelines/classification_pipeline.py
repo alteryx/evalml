@@ -47,10 +47,7 @@ class ClassificationPipeline(PipelineBase):
         return self
 
     def _encode_targets(self, y):
-        if isinstance(y, pd.Series):
-            return pd.Series(self._encoder.transform(y), name=y.name)
-        else:
-            return pd.Series(self._encoder.transform(y))
+        return pd.Series(self._encoder.transform(y))
 
     def _decode_targets(self, y):
         return self._encoder.inverse_transform(y.astype(int))
