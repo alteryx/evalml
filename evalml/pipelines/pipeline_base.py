@@ -2,16 +2,18 @@ import copy
 import inspect
 import os
 import re
+import sys
+import traceback
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 
 import cloudpickle
-import numpy as np
 import pandas as pd
 
 from .components import Estimator
 from .components.utils import handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
+from evalml.exceptions import IllFormattedClassNameError, MissingComponentError, PipelineScoreError
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -230,18 +232,34 @@ class PipelineBase(ABC):
             dict: ordered dictionary of objective scores
         """
 
+    # @staticmethod
+    # def _score(X, y, predictions, predicted_probability, objective):
+    #     """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
+    #     Will return `np.nan` if the objective errors.
+    #     """
+    #     return objective.score(y, predictions, X)
+
     @staticmethod
-    def _score(X, y, predictions, objective):
+    def _score(X, y, predictions, predicted_probabilities, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will return `np.nan` if the objective errors.
         """
-        score = np.nan
-        try:
-            score = objective.score(y, predictions, X)
-        except Exception as e:
-            logger.error('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
-        return score
+        scored_successfully = OrderedDict()
+        exceptions = OrderedDict()
+        for objective in objectives:
+            try:
+                score = objective.score(y, predicted_probabilities if objective.score_needs_proba else predictions, X)
+                scored_successfully.update({objective.name: score})
+            except Exception as e:
+                tb = traceback.format_tb(sys.exc_info()[2])
+                exceptions[objective.name] = (e, tb)
+        if exceptions:
+            # If any objective failed, throw an PipelineScoreError
+            raise PipelineScoreError(exceptions, scored_successfully)
+        else:
+            # No objectives failed, return the scores
+            return scored_successfully
 
     @classproperty
     def model_family(cls):

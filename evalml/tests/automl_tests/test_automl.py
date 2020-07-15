@@ -15,7 +15,7 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
-from evalml.exceptions import PipelineNotFoundError
+from evalml.exceptions import PipelineNotFoundError, PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
 from evalml.pipelines import (
@@ -185,8 +185,10 @@ def test_pipeline_score_raises(mock_score, X_y_binary, caplog):
     assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
-    assert np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+    cv_scores_all = pipeline_results[0]["cv_data"][0]["all_objective_scores"]
+    objective_scores = {o.name: cv_scores_all[o.name] for o in [automl.objective] + automl.additional_objectives}
+
+    assert np.isnan(list(objective_scores.values())).all()
 
 
 @patch('evalml.objectives.AUC.score')
@@ -195,29 +197,25 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
-    pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
-    scores = cv_scores_all[0]['all_objective_scores']
-    auc_score = scores.pop('AUC')
-    assert np.isnan(auc_score)
-    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+
+    with pytest.raises(PipelineScoreError) as e:
+        automl.search(X, y, raise_errors=True)
+        out = caplog.text
+
+        assert msg in out
+        assert not np.isnan(e.scored_successfully.values()).any()
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y, raise_errors=False)
     out = caplog.text
-    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
+    assert msg in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     scores = cv_scores_all[0]['all_objective_scores']
-    auc_score = scores.pop('AUC')
-    assert np.isnan(auc_score)
-    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+    objective_scores = {o.name: scores[o.name] for o in [automl.objective] + automl.additional_objectives}
+    assert np.isnan(list(objective_scores.values())).all()
 
 
 def test_rankings(X_y_binary, X_y_regression):
