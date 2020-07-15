@@ -28,7 +28,7 @@ from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_search_results(X_y_regression, X_y_binary, X_y_multi, data_type, automl_type):
+def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     expected_cv_data_keys = {'all_objective_scores', 'score', 'binary_classification_threshold'}
     automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
     if automl_type == ProblemTypes.REGRESSION:
