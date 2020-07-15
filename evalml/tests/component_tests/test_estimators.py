@@ -41,7 +41,5 @@ def test_binary_classification_estimators_predict_proba_col_order():
             estimator = estimator_class()
             estimator.fit(X, y)
             predicted_proba = estimator.predict_proba(X)
-            for i in range(100):
-                assert predicted_proba.iloc[i, 0] > predicted_proba.iloc[i, 1]
-            for i in range(100, 200):
-                assert predicted_proba.iloc[i, 0] < predicted_proba.iloc[i, 1]
+            expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
+            np.testing.assert_allclose(expected, np.round(predicted_proba).values)
