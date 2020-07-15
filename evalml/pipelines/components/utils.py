@@ -2,7 +2,7 @@
 import inspect
 
 from evalml.exceptions import MissingComponentError
-from evalml.model_family.utils import list_model_families, handle_model_family
+from evalml.model_family.utils import handle_model_family, list_model_families
 from evalml.pipelines import Estimator, Transformer
 from evalml.pipelines.components import ComponentBase
 from evalml.problem_types import ProblemTypes, handle_problem_types
