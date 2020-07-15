@@ -10,7 +10,10 @@ class BinaryClassificationPipeline(ClassificationPipeline):
     threshold = None
     problem_type = ProblemTypes.BINARY
 
-    def predict(self, X, objective=None):
+
+
+
+    def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Arguments:
@@ -30,12 +33,13 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:
-            return self._decode_targets(self.estimator.predict(X_t))
+            return self.estimator.predict(X_t)
         ypred_proba = self.predict_proba(X)
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
-            return self._decode_targets(ypred_proba > self.threshold)
-        return self._decode_targets(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
+            return ypred_proba > self.threshold
+        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+
 
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
