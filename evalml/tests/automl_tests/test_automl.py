@@ -607,14 +607,6 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline_class, X_y
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)
 
-    error_text = "in search, problem_type mismatches allowed_pipelines."
-    mock_search.side_effect = ValueError(error_text)
-
-    allowed_pipelines = [dummy_regression_pipeline_class]
-    error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
-    with pytest.raises(ValueError, match=error_text):
-        error_automl.search(X, y)
-
 
 def test_incompatible_additional_objectives():
     with pytest.raises(ValueError, match="is not compatible with a "):
