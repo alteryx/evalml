@@ -195,7 +195,6 @@ class AutoMLSearch:
 
         self._validate_problem_type()
 
-
     @property
     def data_check_results(self):
         return self._data_check_results
