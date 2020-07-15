@@ -16,6 +16,7 @@ Changelog
         * Rename `master` branch to `main` :pr:`918`
         * Add pypi release github action :pr:`923`
         * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
+        * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
     * Documentation Changes
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
@@ -25,6 +26,7 @@ Changelog
 
     **Breaking Changes**
         * ``list_model_families`` has been moved to ``evalml.model_family.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`903`
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase :pr:`904`
         * ``all_pipelines()`` and ``get_pipelines()`` utility methods have been removed :pr:`904`
 
