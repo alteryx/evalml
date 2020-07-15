@@ -567,26 +567,26 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                filename_message = f"Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stacktrace."
-                stacktrace_message = "Exception during automl search: {}".format(str(e))
-                hyperparameter_message = f"Hyperparameters:\n\t{json.dumps(pipeline.hyperparameters, indent=4)}"
+                filename_message = f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stacktrace."
+                stacktrace_message = f"\t\t\tFold {i}: Exception during automl search: {str(e)}"
+                hyperparameter_message = f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}"
                 if isinstance(e, PipelineScoreError):
-                    intro_message = f"Pipeline {pipeline.name} encountered an error scoring the following objectives: {', '.join(e.exceptions)}."
-                    score_message = "The scores for these objectives will be replaced with nan.\n"
+                    intro_message = f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}."
+                    score_message = f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan."
                     nan_scores = {objective: np.nan for objective in e.exceptions}
                     scores = {**nan_scores, **e.scored_successfully}
                     scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
                     score = scores[self.objective.name]
                 else:
-                    intro_message = f"Pipeline {pipeline.name} encountered an error."
-                    score_message = f"All scores will be replaced with nan."
+                    intro_message = f"\t\t\tFold {i}: Encountered an error."
+                    score_message = f"\t\t\tFold {i}: All scores will be replaced with nan."
                     score = np.nan
                     scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
                 logger.info(intro_message)
                 logger.info(score_message)
                 logger.info(filename_message)
-                logger.error(hyperparameter_message)
+                logger.debug(hyperparameter_message)
                 logger.debug(stacktrace_message)
 
             ordered_scores = OrderedDict()
