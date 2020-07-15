@@ -1,4 +1,5 @@
 import copy
+import json
 import time
 import warnings
 from collections import OrderedDict
@@ -19,7 +20,7 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
-from evalml.exceptions import PipelineNotFoundError
+from evalml.exceptions import PipelineNotFoundError, PipelineScoreError
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -292,8 +293,8 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
-        """Find the best pipeline for the data set.
+    def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
+        """Find best classifier
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
@@ -302,8 +303,6 @@ class AutoMLSearch:
 
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
-
-            raise_errors (boolean): If True, raise errors and exit search if a pipeline errors during fitting. If False, set scores for the errored pipeline to NaN and continue search. Defaults to True.
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
@@ -392,7 +391,7 @@ class AutoMLSearch:
 
         self._start = time.time()
 
-        should_terminate = self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
+        should_terminate = self._add_baseline_pipelines(X, y)
         if should_terminate:
             return
 
@@ -419,7 +418,7 @@ class AutoMLSearch:
 
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
 
-                evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
+                evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
                 score_to_minimize = -score if self.objective.greater_is_better else score
                 self._automl_algorithm.add_result(score_to_minimize, pipeline)
@@ -496,6 +495,7 @@ class AutoMLSearch:
             bool - If the user ends the search early, will return True and searching will immediately finish. Else,
                 will return False and more pipelines will be searched.
         """
+
         if self.problem_type == ProblemTypes.BINARY:
             baseline = ModeBaselineBinaryPipeline(parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
@@ -519,7 +519,7 @@ class AutoMLSearch:
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines,
                                 self._start)
 
-                baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
+                baseline_results = self._compute_cv_scores(baseline, X, y)
                 self._add_result(trained_pipeline=baseline,
                                  parameters=baseline.parameters,
                                  training_time=baseline_results['training_time'],
@@ -532,7 +532,7 @@ class AutoMLSearch:
 
         return False
 
-    def _compute_cv_scores(self, pipeline, X, y, raise_errors=True):
+    def _compute_cv_scores(self, pipeline, X, y):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
@@ -567,11 +567,28 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                logger.error("Exception during automl search: {}".format(str(e)))
-                if raise_errors:
-                    raise e
-                score = np.nan
-                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                filename_message = f"Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stacktrace."
+                stacktrace_message = "Exception during automl search: {}".format(str(e))
+                hyperparameter_message = f"Hyperparameters:\n\t{json.dumps(pipeline.hyperparameters, indent=4)}"
+                if isinstance(e, PipelineScoreError):
+                    intro_message = f"Pipeline {pipeline.name} encountered an error scoring the following objectives: {', '.join(e.exceptions)}."
+                    score_message = "The scores for these objectives will be replaced with nan.\n"
+                    nan_scores = {objective: np.nan for objective in e.exceptions}
+                    scores = {**nan_scores, **e.scored_successfully}
+                    scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
+                    score = scores[self.objective.name]
+                else:
+                    intro_message = f"Pipeline {pipeline.name} encountered an error."
+                    score_message = f"All scores will be replaced with nan."
+                    score = np.nan
+                    scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+
+                logger.info(intro_message)
+                logger.info(score_message)
+                logger.info(filename_message)
+                logger.error(hyperparameter_message)
+                logger.debug(stacktrace_message)
+
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
             ordered_scores.update(scores)
@@ -617,9 +634,9 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline)
 
-    def _evaluate(self, pipeline, X, y, raise_errors=True):
+    def _evaluate(self, pipeline, X, y):
         parameters = pipeline.parameters
-        evaluation_results = self._compute_cv_scores(pipeline, X, y, raise_errors=raise_errors)
+        evaluation_results = self._compute_cv_scores(pipeline, X, y)
         logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 
         self._add_result(trained_pipeline=pipeline,
@@ -728,7 +745,7 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-        self._evaluate(pipeline, X, y, raise_errors=True)
+        self._evaluate(pipeline, X, y)
 
     @property
     def results(self):

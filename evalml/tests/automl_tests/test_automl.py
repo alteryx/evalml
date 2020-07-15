@@ -142,15 +142,9 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    with pytest.raises(Exception, match=msg):
-        automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Exception during automl search' in out
 
-    caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
     assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
@@ -171,18 +165,11 @@ def test_pipeline_score_raises(mock_score, X_y_binary, caplog):
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    with pytest.raises(Exception, match=msg):
-        automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Exception during automl search' in out
-    pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 0
 
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
     assert 'Exception during automl search' in out
+    assert 'All scores will be replaced with nan.' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
     cv_scores_all = pipeline_results[0]["cv_data"][0]["all_objective_scores"]
@@ -199,7 +186,7 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
 
     with pytest.raises(PipelineScoreError) as e:
-        automl.search(X, y, raise_errors=True)
+        automl.search(X, y)
         out = caplog.text
 
         assert msg in out
@@ -207,15 +194,17 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
 
     caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
+
     assert msg in out
-    pipeline_results = automl.results.get('pipeline_results', {})
+    pipeline_results = automl.results.get('pipeline_results')
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    cv_scores_all = pipeline_results[0].get('cv_data')
     scores = cv_scores_all[0]['all_objective_scores']
-    objective_scores = {o.name: scores[o.name] for o in [automl.objective] + automl.additional_objectives}
-    assert np.isnan(list(objective_scores.values())).all()
+    auc_score = scores.pop('AUC')
+    assert np.isnan(auc_score)
+    assert not np.isnan(list(scores.values())).any()
 
 
 def test_rankings(X_y_binary, X_y_regression):

@@ -32,6 +32,7 @@ class PipelineScoreError(Exception):
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
             that did not error will be stored here.
     """
+
     def __init__(self, exceptions, scored_successfully):
         self.exceptions = exceptions
         self.scored_successfully = scored_successfully

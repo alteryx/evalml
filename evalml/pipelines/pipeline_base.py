@@ -13,7 +13,11 @@ import pandas as pd
 from .components import Estimator
 from .components.utils import handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, MissingComponentError, PipelineScoreError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    MissingComponentError,
+    PipelineScoreError
+)
 from evalml.utils import (
     classproperty,
     get_logger,
