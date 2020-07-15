@@ -1,8 +1,8 @@
 # flake8:noqa
 import inspect
 
-import evalml.model_family.utils as model_family_utils
 from evalml.exceptions import MissingComponentError
+from evalml.model_family.utils import list_model_families, handle_model_family
 from evalml.pipelines import Estimator, Transformer
 from evalml.pipelines.components import ComponentBase
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -33,10 +33,10 @@ def get_estimators(problem_type, model_families=None):
         raise TypeError("model_families parameter is not a list.")
     problem_type = handle_problem_types(problem_type)
     if model_families is None:
-        model_families = model_family_utils.list_model_families(problem_type)
+        model_families = list_model_families(problem_type)
 
-    model_families = [model_family_utils.handle_model_family(model_family) for model_family in model_families]
-    all_model_families = model_family_utils.list_model_families(problem_type)
+    model_families = [handle_model_family(model_family) for model_family in model_families]
+    all_model_families = list_model_families(problem_type)
     for model_family in model_families:
         if model_family not in all_model_families:
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
