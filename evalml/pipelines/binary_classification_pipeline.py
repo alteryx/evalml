@@ -10,9 +10,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
     threshold = None
     problem_type = ProblemTypes.BINARY
 
-
-
-
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
@@ -39,7 +36,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
-
 
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
