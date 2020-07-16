@@ -1,7 +1,7 @@
 .. _changelog:
 
-Changelog
----------
+Release Notes
+-------------
 
 **Future Releases**
     * Enhancements
