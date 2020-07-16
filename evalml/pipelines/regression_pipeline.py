@@ -32,5 +32,5 @@ class RegressionPipeline(PipelineBase):
 
         objectives = [get_objective(o) for o in objectives]
         y_predicted = self.predict(X)
-        return self._score(X, y, y_predicted, predicted_probabilities=None, objectives=objectives,
-                           is_objective_suitable=is_objective_suitable_for_regression)
+        return self._score_all_objectives(X, y, y_predicted, predicted_probabilities=None, objectives=objectives,
+                                          is_objective_suitable=is_objective_suitable_for_regression)

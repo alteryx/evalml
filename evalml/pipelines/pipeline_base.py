@@ -237,7 +237,10 @@ class PipelineBase(ABC):
         """
 
     @staticmethod
-    def _score(X, y, predictions, predicted_probabilities, objectives, is_objective_suitable=None):
+    def _score(X, y, predictions, objective):
+        return objective.score(y, predictions, X)
+
+    def _score_all_objectives(self, X, y, predictions, predicted_probabilities, objectives, is_objective_suitable=None):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will raise a PipelineScoreError if any objectives fail.
@@ -256,7 +259,7 @@ class PipelineBase(ABC):
         for objective in objectives:
             try:
                 is_objective_suitable(objective)
-                score = objective.score(y, predicted_probabilities if objective.score_needs_proba else predictions, X)
+                score = self._score(X, y, predicted_probabilities if objective.score_needs_proba else predictions, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:
                 tb = traceback.format_tb(sys.exc_info()[2])

@@ -566,7 +566,7 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                filename_message = f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stacktrace."
+                filename_message = f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace."
                 stacktrace_message = f"\t\t\tFold {i}: Exception during automl search: {str(e)}"
                 hyperparameter_message = f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}"
                 if isinstance(e, PipelineScoreError):

@@ -126,7 +126,7 @@ class ClassificationPipeline(PipelineBase):
         def always_suitable(objective):
             return True
 
-        return self._score(X, y, y_predicted, y_predicted_proba, objectives, always_suitable)
+        return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives, always_suitable)
 
     def _compute_predictions(self, X, objectives):
         """Scan through the objectives list and precompute"""

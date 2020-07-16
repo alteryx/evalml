@@ -48,18 +48,9 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """
         return super().predict_proba(X)
 
-    @staticmethod
     def _score(X, y, predictions, objective):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
-
-        Will return `np.nan` if the objective errors.
         """
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
         return ClassificationPipeline._score(X, y, predictions, objective)
-
-    def _compute_predictions(self, X, objectives):
-        y_predicted, y_predicted_proba = super()._compute_predictions(X, objectives)
-        if y_predicted_proba is not None and y_predicted_proba.ndim > 1:
-            y_predicted_proba = y_predicted_proba.iloc[:, 1]
-        return y_predicted, y_predicted_proba
