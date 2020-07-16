@@ -584,14 +584,15 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
 
 
-def test_allowed_pipelines_with_incorrect_problem_type(X_y_regression, dummy_binary_pipeline_class):
-    X, y = X_y_regression
-    auto = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
+def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
+    # checks that not setting allowed_pipelines does not error out
+    AutoMLSearch(problem_type='binary')
+
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
-        auto.search(X, y)
+        AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
 
 
-def test_obj_matches_problem_type():
+def test_main_objective_problem_type_mismatch():
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(problem_type='binary', objective='R2')
 
@@ -622,20 +623,10 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline_class, X_y
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)
 
-    error_text = "in search, problem_type mismatches allowed_pipelines."
-    mock_search.side_effect = ValueError(error_text)
 
-    allowed_pipelines = [dummy_regression_pipeline_class]
-    error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
-    with pytest.raises(ValueError, match=error_text):
-        error_automl.search(X, y)
-
-
-def test_objective_at_search_time(X_y_multi):
-    X, y = X_y_multi
-    error_automl = AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'],)
+def test_incompatible_additional_objectives():
     with pytest.raises(ValueError, match="is not compatible with a "):
-        error_automl.search(X, y)
+        AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'])
 
 
 def test_default_objective():

@@ -17,6 +17,7 @@ Changelog
         * Rename `master` branch to `main` :pr:`918`
         * Add pypi release github action :pr:`923`
         * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
+        * Moved automl config checks previously in `search()` to init :pr:`933`
     * Documentation Changes
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
