@@ -1,7 +1,7 @@
 .. _changelog:
 
-Changelog
----------
+Release Notes
+-------------
 
 **Future Releases**
     * Enhancements
@@ -19,6 +19,8 @@ Changelog
         * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
         * Moved automl config checks previously in `search()` to init :pr:`933`
     * Documentation Changes
+        * Reorganized and rewrote documentation :pr:`937`
+        * Updated to use pydata sphinx theme :pr:`937`
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
 
