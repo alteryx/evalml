@@ -5,6 +5,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.11.2 July 16, 2020**
+    * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
