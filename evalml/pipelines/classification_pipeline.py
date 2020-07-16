@@ -60,7 +60,6 @@ class ClassificationPipeline(PipelineBase):
             originally had integer targets."""
         return self._encoder.inverse_transform(y.astype(int))
 
-
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
