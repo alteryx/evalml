@@ -47,9 +47,14 @@ class ClassificationPipeline(PipelineBase):
         return self
 
     def _encode_targets(self, y):
+        """Converts target values from their original values to integer values that can be processed."""
         return pd.Series(self._encoder.transform(y))
 
     def _decode_targets(self, y):
+        """Converts encoded numerical values to their original target values.
+            Note: we cast y as ints first to address boolean values that may be returned from
+            calculating predictions which we would not be able to otherwise transform if we
+            originally had integer targets."""
         return self._encoder.inverse_transform(y.astype(int))
 
     def _predict(self, X, objective=None):

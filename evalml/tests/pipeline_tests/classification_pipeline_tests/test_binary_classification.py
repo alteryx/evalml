@@ -8,9 +8,8 @@ import pytest
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba')
 @patch('evalml.pipelines.components.Estimator.predict')
-@patch('evalml.pipelines.PipelineBase._transform')
 @patch('evalml.pipelines.ClassificationPipeline.fit')
-def test_binary_classification_pipeline_predict(mock_fit, mock_transform,
+def test_binary_classification_pipeline_predict(mock_fit,
                                                 mock_predict, mock_predict_proba,
                                                 mock_obj_decision, mock_decode,
                                                 X_y_binary, dummy_binary_pipeline_class):
