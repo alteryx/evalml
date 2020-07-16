@@ -194,6 +194,8 @@ class AutoMLSearch:
         self._automl_algorithm = None
         self._start = None
 
+        self._validate_problem_type()
+
     @property
     def data_check_results(self):
         return self._data_check_results
@@ -340,7 +342,6 @@ class AutoMLSearch:
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        self._validate_problem_type()
         self._automl_algorithm = IterativeAlgorithm(
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
@@ -446,7 +447,7 @@ class AutoMLSearch:
             if obj.problem_type != self.problem_type:
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
 
-        for pipeline in self.allowed_pipelines:
+        for pipeline in self.allowed_pipelines or []:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
@@ -484,15 +485,8 @@ class AutoMLSearch:
         logger.info("\tStarting cross validation")
         for i, (train, test) in enumerate(self.data_split.split(X, y)):
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            if isinstance(X, pd.DataFrame):
-                X_train, X_test = X.iloc[train], X.iloc[test]
-            else:
-                X_train, X_test = X[train], X[test]
-            if isinstance(y, pd.Series):
-                y_train, y_test = y.iloc[train], y.iloc[test]
-            else:
-                y_train, y_test = y[train], y[test]
-
+            X_train, X_test = X.iloc[train], X.iloc[test]
+            y_train, y_test = y.iloc[train], y.iloc[test]
             objectives_to_score = [self.objective] + self.additional_objectives
             try:
                 X_threshold_tuning = None
