@@ -15,6 +15,12 @@ def test_invalid_target_data_check_nan_error():
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == [DataCheckError("3 row(s) (100.0%) of target values are null", "InvalidTargetDataCheck")]
 
 
+def test_invalid_target_data_check_numeric_binary_classification_valid_float():
+    X = pd.DataFrame()
+    invalid_targets_check = InvalidTargetDataCheck()
+    assert invalid_targets_check.validate(X, y=pd.Series([0.0, 1.0, 0.0, 1.0])) == []
+
+
 def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck()
