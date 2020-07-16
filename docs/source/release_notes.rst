@@ -5,6 +5,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.11.2 July 16, 2020**
+    * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
         * Added additional checks to InvalidTargetDataCheck to handle invalid target data types :pr:`929`
