@@ -1,12 +1,13 @@
 .. _changelog:
 
-Changelog
----------
+Release Notes
+-------------
 
 **Future Releases**
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
+        * Added additional checks to InvalidTargetDataCheck to handle invalid target data types :pr:`929`
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
@@ -19,6 +20,8 @@ Changelog
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Moved automl config checks previously in `search()` to init :pr:`933`
     * Documentation Changes
+        * Reorganized and rewrote documentation :pr:`937`
+        * Updated to use pydata sphinx theme :pr:`937`
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
 
