@@ -58,10 +58,8 @@ class ClassificationPipeline(PipelineBase):
             Note: we cast y as ints first to address boolean values that may be returned from
             calculating predictions which we would not be able to otherwise transform if we
             originally had integer targets."""
-        try:
-            return self._encoder.inverse_transform(y.astype(int))
-        except ValueError as e:
-            raise ValueError(str(e))
+        return self._encoder.inverse_transform(y.astype(int))
+
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
