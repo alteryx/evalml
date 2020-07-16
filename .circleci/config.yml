@@ -184,7 +184,7 @@ jobs:
                 source test_python/bin/activate
                 codecov --required
 
-  changelog_updated:
+  release_notes_updated:
     working_directory: ~/evalml
     docker:
       - image: busybox:latest
@@ -206,7 +206,7 @@ jobs:
           elif [[ "${CIRCLE_BRANCH}" = "dep-update*" ]]; then
             exit 0;
           fi
-          cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
 
   build_docs:
     working_directory: ~/evalml/
@@ -251,10 +251,10 @@ jobs:
 
 workflows:
   version: 2
-  changelog_updated:
+  release_notes_updated:
     jobs:
-      - changelog_updated:
-          name: "changelog updated"
+      - release_notes_updated:
+          name: "release notes updated"
           filters:
             branches:
               ignore: /^main?/
