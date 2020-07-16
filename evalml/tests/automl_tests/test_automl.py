@@ -572,6 +572,9 @@ def test_large_dataset_regression(mock_score):
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
+    # checks that not setting allowed_pipelines does not error out
+    AutoMLSearch(problem_type='binary')
+
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
         AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
 
