@@ -820,16 +820,24 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ["categorical", "string"])
-def test_string_and_categorical_targets(automl_type, target_type):
+@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+def test_targets_data_types(automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
+        if target_type == "bool":
+            y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = load_wine()
     if target_type == "categorical":
         y = pd.Categorical(y)
+    elif target_type == "int":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
+    elif target_type == "float":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
-    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=2)
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=3)
     automl.search(X, y)
     for pipeline_result in automl.results['pipeline_results'].values():
         cv_data = pipeline_result['cv_data']
@@ -838,4 +846,4 @@ def test_string_and_categorical_targets(automl_type, target_type):
             for score in all_objective_scores.values():
                 assert score is not None
 
-    assert len(automl.full_rankings) == 2
+    assert len(automl.full_rankings) == 3

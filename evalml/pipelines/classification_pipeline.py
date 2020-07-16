@@ -48,14 +48,20 @@ class ClassificationPipeline(PipelineBase):
 
     def _encode_targets(self, y):
         """Converts target values from their original values to integer values that can be processed."""
-        return pd.Series(self._encoder.transform(y))
+        try:
+            return pd.Series(self._encoder.transform(y))
+        except ValueError as e:
+            raise ValueError(str(e))
 
     def _decode_targets(self, y):
         """Converts encoded numerical values to their original target values.
             Note: we cast y as ints first to address boolean values that may be returned from
             calculating predictions which we would not be able to otherwise transform if we
             originally had integer targets."""
-        return self._encoder.inverse_transform(y.astype(int))
+        try:
+            return self._encoder.inverse_transform(y.astype(int))
+        except ValueError as e:
+            raise ValueError(str(e))
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -99,7 +105,6 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
-        proba.columns = self._decode_targets(proba.columns)
         return proba
 
     def score(self, X, y, objectives):
