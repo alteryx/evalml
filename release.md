@@ -13,7 +13,7 @@ Please use the following pattern for the release PR branch name: "release_vX.X.X
 
 Create a release PR with the following changes:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
-* Move all entries in `docs/source/changelog.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
+* Move all entries in `docs/source/release_notes.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
 * Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
 * Populate the release PR body with a copy of this release's changelog, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
 * Confirm that all release items are in the changelog under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
