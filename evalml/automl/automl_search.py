@@ -444,8 +444,6 @@ class AutoMLSearch:
     def _check_stopping_condition(self, start):
         should_continue = True
         num_pipelines = len(self._results['pipeline_results'])
-        if num_pipelines == 0:
-            return True
 
         # check max_time and max_pipelines
         elapsed = time.time() - start
@@ -498,14 +496,11 @@ class AutoMLSearch:
                 will return False and more pipelines will be searched.
         """
         if self.problem_type == ProblemTypes.BINARY:
-            strategy_dict = {"strategy": "random_weighted"}
-            baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
+            baseline = ModeBaselineBinaryPipeline(parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
-            strategy_dict = {"strategy": "random_weighted"}
-            baseline = ModeBaselineMulticlassPipeline(parameters={"Baseline Classifier": strategy_dict})
+            baseline = ModeBaselineMulticlassPipeline(parameters={})
         elif self.problem_type == ProblemTypes.REGRESSION:
-            strategy_dict = {"strategy": "mean"}
-            baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
+            baseline = MeanBaselineRegressionPipeline(parameters={})
 
         pipelines = [baseline]
         # Using a while loop so that we can retry the pipeline after the user hits ctr-c
