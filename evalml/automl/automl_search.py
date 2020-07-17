@@ -444,8 +444,6 @@ class AutoMLSearch:
     def _check_stopping_condition(self, start):
         should_continue = True
         num_pipelines = len(self._results['pipeline_results'])
-        if num_pipelines == 0:
-            return True
 
         # check max_time and max_pipelines
         elapsed = time.time() - start
