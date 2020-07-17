@@ -804,3 +804,62 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+
+class KeyboardInterruptOnKthPipeline:
+    """Helps us time when the test will send a KeyboardInterrupt Exception to search."""
+
+    def __init__(self, k):
+        self.n_calls = 1
+        self.k = k
+
+    def __call__(self, pipeline_class, parameters):
+        """Raises KeyboardInterrupt on the kth call.
+
+        Arguments are ignored but included to meet the call back API.
+        """
+        if self.n_calls == self.k:
+            self.n_calls += 1
+            raise KeyboardInterrupt
+        else:
+            self.n_calls += 1
+
+
+# These are used to mock return values to the builtin "input" function.
+interrupt = ["y"]
+interrupt_after_bad_message = ["No.", "Yes!", "y"]
+dont_interrupt = ["n"]
+dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
+
+
+@pytest.mark.parametrize("when_to_interrupt,user_input,number_results",
+                         [(1, interrupt, 0),
+                          (1, interrupt_after_bad_message, 0),
+                          (1, dont_interrupt, 5),
+                          (1, dont_interrupt_after_bad_message, 5),
+                          (2, interrupt, 1),
+                          (2, interrupt_after_bad_message, 1),
+                          (2, dont_interrupt, 5),
+                          (2, dont_interrupt_after_bad_message, 5),
+                          (3, interrupt, 2),
+                          (3, interrupt_after_bad_message, 2),
+                          (3, dont_interrupt, 5),
+                          (3, dont_interrupt_after_bad_message, 5),
+                          (5, interrupt, 4),
+                          (5, interrupt_after_bad_message, 4),
+                          (5, dont_interrupt, 5),
+                          (5, dont_interrupt_after_bad_message, 5)])
+@patch("builtins.input")
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
+                                  when_to_interrupt, user_input, number_results,
+                                  X_y_binary):
+
+    mock_input.side_effect = user_input
+    X, y = X_y_binary
+    callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=5, start_iteration_callback=callback, objective="f1")
+    automl.search(X, y)
+
+    assert len(automl._results['pipeline_results']) == number_results
