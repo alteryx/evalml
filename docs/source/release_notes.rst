@@ -14,6 +14,7 @@ Release Notes
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
         * Added additional checks to InvalidTargetDataCheck to handle invalid target data types :pr:`929`
+        * AutoMLSearch will now handle KeyboardInterrupt and prompt user for confirmation :pr:`915`
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
