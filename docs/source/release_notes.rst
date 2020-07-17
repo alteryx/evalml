@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
@@ -14,7 +15,6 @@ Release Notes
 **v0.11.2 July 16, 2020**
     * Enhancements
         * Added `NoVarianceDataCheck` to `DefaultDataChecks` :pr:`893`
-        * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
         * Added additional checks to InvalidTargetDataCheck to handle invalid target data types :pr:`929`
         * AutoMLSearch will now handle KeyboardInterrupt and prompt user for confirmation :pr:`915`
