@@ -1,5 +1,3 @@
-.. _changelog:
-
 Release Notes
 -------------
 
