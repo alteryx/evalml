@@ -265,8 +265,34 @@ class AutoMLSearch:
         else:
             return DataChecks(data_checks)
 
+    def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
+        """Presents a prompt to the user asking if they want to stop the search.
+
+        Args:
+            pipeline (PipelineBase): Current pipeline in the search.
+            current_batch_pipelines (list): Other pipelines in the batch.
+
+        Returns:
+            list: Next pipelines to search in the batch. If the user decides to stop the search,
+                an empty list will be returned.
+        """
+        leading_char = "\n"
+        start_of_loop = time.time()
+        while True:
+            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
+            if choice == "y":
+                logger.info("Exiting AutoMLSearch.")
+                return []
+            elif choice == "n":
+                # So that the time in this loop does not count towards the time budget (if set)
+                time_in_loop = time.time() - start_of_loop
+                self._start += time_in_loop
+                return [pipeline] + current_batch_pipelines
+            else:
+                leading_char = ""
+
     def search(self, X, y, data_checks="auto", feature_types=None, raise_errors=True, show_iteration_plot=True):
-        """Find best classifier
+        """Find the best pipeline for the data set.
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
@@ -365,37 +391,45 @@ class AutoMLSearch:
 
         self._start = time.time()
 
-        self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
+        should_terminate = self._add_baseline_pipelines(X, y, raise_errors=raise_errors)
+        if should_terminate:
+            return
 
         current_batch_pipelines = []
         while self._check_stopping_condition(self._start):
-            if len(current_batch_pipelines) == 0:
-                try:
-                    current_batch_pipelines = self._automl_algorithm.next_batch()
-                except StopIteration:
-                    logger.info('AutoML Algorithm out of recommendations, ending')
-                    break
-            pipeline = current_batch_pipelines.pop(0)
-            parameters = pipeline.parameters
-            logger.debug('Evaluating pipeline {}'.format(pipeline.name))
-            logger.debug('Pipeline parameters: {}'.format(parameters))
+            try:
+                if len(current_batch_pipelines) == 0:
+                    try:
+                        current_batch_pipelines = self._automl_algorithm.next_batch()
+                    except StopIteration:
+                        logger.info('AutoML Algorithm out of recommendations, ending')
+                        break
+                pipeline = current_batch_pipelines.pop(0)
+                parameters = pipeline.parameters
+                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
+                logger.debug('Pipeline parameters: {}'.format(parameters))
 
-            if self.start_iteration_callback:
-                self.start_iteration_callback(pipeline.__class__, parameters)
-            desc = f"{pipeline.name}"
-            if len(desc) > self._MAX_NAME_LEN:
-                desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-            desc = desc.ljust(self._MAX_NAME_LEN)
+                if self.start_iteration_callback:
+                    self.start_iteration_callback(pipeline.__class__, parameters)
+                desc = f"{pipeline.name}"
+                if len(desc) > self._MAX_NAME_LEN:
+                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                desc = desc.ljust(self._MAX_NAME_LEN)
 
-            update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
 
-            evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
-            score = evaluation_results['cv_score_mean']
-            score_to_minimize = -score if self.objective.greater_is_better else score
-            self._automl_algorithm.add_result(score_to_minimize, pipeline)
+                evaluation_results = self._evaluate(pipeline, X, y, raise_errors=raise_errors)
+                score = evaluation_results['cv_score_mean']
+                score_to_minimize = -score if self.objective.greater_is_better else score
+                self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
-            if search_iteration_plot:
-                search_iteration_plot.update()
+                if search_iteration_plot:
+                    search_iteration_plot.update()
+
+            except KeyboardInterrupt:
+                current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_batch_pipelines)
+                if not current_batch_pipelines:
+                    return
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
@@ -451,6 +485,18 @@ class AutoMLSearch:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
     def _add_baseline_pipelines(self, X, y, raise_errors=True):
+        """Fits a baseline pipeline to the data.
+
+        This is the first pipeline fit during search.
+
+        Arguments:
+            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+            y (pd.Series): the target training labels of length [n_samples]
+
+        Returns:
+            bool - If the user ends the search early, will return True and searching will immediately finish. Else,
+                will return False and more pipelines will be searched.
+        """
         if self.problem_type == ProblemTypes.BINARY:
             strategy_dict = {"strategy": "mode"}
             baseline = ModeBaselineBinaryPipeline(parameters={"Baseline Classifier": strategy_dict})
@@ -461,22 +507,34 @@ class AutoMLSearch:
             strategy_dict = {"strategy": "mean"}
             baseline = MeanBaselineRegressionPipeline(parameters={"Baseline Regressor": strategy_dict})
 
-        if self.start_iteration_callback:
-            self.start_iteration_callback(baseline.__class__, baseline.parameters)
+        pipelines = [baseline]
+        # Using a while loop so that we can retry the pipeline after the user hits ctr-c
+        # but decides to not stop the search.
+        while pipelines:
+            try:
+                if self.start_iteration_callback:
+                    self.start_iteration_callback(baseline.__class__, baseline.parameters)
+                baseline = pipelines.pop()
+                desc = f"{baseline.name}"
+                if len(desc) > self._MAX_NAME_LEN:
+                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                desc = desc.ljust(self._MAX_NAME_LEN)
 
-        desc = f"{baseline.name}"
-        if len(desc) > self._MAX_NAME_LEN:
-            desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-        desc = desc.ljust(self._MAX_NAME_LEN)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines,
+                                self._start)
 
-        update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
+                self._add_result(trained_pipeline=baseline,
+                                 parameters=baseline.parameters,
+                                 training_time=baseline_results['training_time'],
+                                 cv_data=baseline_results['cv_data'],
+                                 cv_scores=baseline_results['cv_scores'])
+            except KeyboardInterrupt:
+                pipelines = self._handle_keyboard_interrupt(baseline, pipelines)
+                if not pipelines:
+                    return True
 
-        baseline_results = self._compute_cv_scores(baseline, X, y, raise_errors=raise_errors)
-        self._add_result(trained_pipeline=baseline,
-                         parameters=baseline.parameters,
-                         training_time=baseline_results['training_time'],
-                         cv_data=baseline_results['cv_data'],
-                         cv_scores=baseline_results['cv_scores'])
+        return False
 
     def _compute_cv_scores(self, pipeline, X, y, raise_errors=True):
         start = time.time()
