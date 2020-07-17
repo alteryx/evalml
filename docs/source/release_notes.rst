@@ -6,6 +6,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
     * Documentation Changes
     * Testing Changes

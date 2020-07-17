@@ -776,7 +776,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: Binary Classification" in out
     assert "Model Family: Baseline" in out
-    assert "* strategy : random_weighted" in out
+    assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Testing" in out
     assert "0                      1.000     66.000    34.000" in out
