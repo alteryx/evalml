@@ -821,7 +821,7 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
-def test_targets_data_types(automl_type, target_type):
+def test_targets_data_types_classification(automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
         if target_type == "bool":
@@ -847,6 +847,7 @@ def test_targets_data_types(automl_type, target_type):
                 assert score is not None
 
     assert len(automl.full_rankings) == 3
+    assert not automl.full_rankings['score'].isnull().values.any()
 
 
 class KeyboardInterruptOnKthPipeline:
