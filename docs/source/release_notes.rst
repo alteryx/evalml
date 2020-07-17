@@ -27,6 +27,7 @@ Release Notes
     * Documentation Changes
         * Reorganized and rewrote documentation :pr:`937`
         * Updated to use pydata sphinx theme :pr:`937`
+        * Updated docs to use `release_notes` instead of `changelog` :pr:`942`
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
 
