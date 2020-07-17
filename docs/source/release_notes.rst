@@ -6,6 +6,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
     * Changes
     * Documentation Changes
     * Testing Changes
