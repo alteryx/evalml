@@ -15,7 +15,7 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
-from evalml.exceptions import PipelineNotFoundError, PipelineScoreError
+from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
 from evalml.pipelines import (
@@ -191,7 +191,7 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
     assert msg in out
     pipeline_results = automl.results.get('pipeline_results')
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data')  # {})
+    cv_scores_all = pipeline_results[0].get('cv_data')
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
     assert np.isnan(auc_score)
