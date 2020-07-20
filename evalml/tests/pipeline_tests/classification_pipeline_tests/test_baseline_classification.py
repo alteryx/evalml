@@ -58,7 +58,7 @@ def test_baseline_binary_mode():
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     expected_predicted_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
-    pd.testing.assert_frame_equal(expected_predicted_proba, predicted_proba)
+    np.testing.assert_allclose(expected_predicted_proba.values, predicted_proba.values)
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
@@ -115,5 +115,5 @@ def test_baseline_multi_mode():
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     expected_predicted_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
-    pd.testing.assert_frame_equal(expected_predicted_proba, predicted_proba)
+    np.testing.assert_allclose(expected_predicted_proba.values, predicted_proba.values)
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
