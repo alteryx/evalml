@@ -107,4 +107,4 @@ class BaselineClassifier(Estimator):
         try:
             return self._classes
         except AttributeError:
-            raise RuntimeError("You must fit Baseline classifier before getting _classes!")
+            raise RuntimeError("You must fit Baseline classifier before getting classes_!")

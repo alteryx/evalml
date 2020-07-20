@@ -81,4 +81,4 @@ class Estimator(ComponentBase):
         try:
             return self._component_obj.classes_
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
+            raise MethodPropertyNotFoundError("Estimator requires a classes_ property or a component_obj that implements classes_")
