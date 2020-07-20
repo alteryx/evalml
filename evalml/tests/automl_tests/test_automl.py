@@ -185,22 +185,13 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
 
-    with pytest.raises(PipelineScoreError) as e:
-        automl.search(X, y)
-        out = caplog.text
-
-        assert msg in out
-        assert not np.isnan(e.scored_successfully.values()).any()
-
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
 
     assert msg in out
     pipeline_results = automl.results.get('pipeline_results')
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data')
+    cv_scores_all = pipeline_results[0].get('cv_data')  # {})
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
     assert np.isnan(auc_score)

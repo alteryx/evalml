@@ -120,8 +120,8 @@ class ClassificationPipeline(PipelineBase):
             y = pd.Series(y)
 
         objectives = [get_objective(o) for o in objectives]
-        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         y = self._encode_targets(y)
+        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
 
         def always_suitable(objective):
             return True

@@ -48,6 +48,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """
         return super().predict_proba(X)
 
+    @staticmethod
     def _score(X, y, predictions, objective):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
         """
