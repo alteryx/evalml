@@ -622,6 +622,9 @@ def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
     try:
         _ = clf.score(X, y, objective_names)
     except PipelineScoreError as e:
@@ -642,6 +645,9 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ['f1', 'precision']
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
     try:
         _ = clf.score(X, y, objective_names)
     except PipelineScoreError as e:
@@ -661,6 +667,9 @@ def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ['f1_micro', 'precision_micro']
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
     try:
         _ = clf.score(X, y, objective_names)
     except PipelineScoreError as e:
@@ -780,6 +789,9 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = np.array([1] * 100)
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
     try:
         dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
