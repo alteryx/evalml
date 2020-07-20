@@ -8,8 +8,15 @@ Release Notes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
+        * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
     * Documentation Changes
     * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
 
 
 **v0.11.2 July 16, 2020**
@@ -27,7 +34,6 @@ Release Notes
         * Rename `master` branch to `main` :pr:`918`
         * Add pypi release github action :pr:`923`
         * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
-        * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Moved automl config checks previously in `search()` to init :pr:`933`
     * Documentation Changes
         * Reorganized and rewrote documentation :pr:`937`
