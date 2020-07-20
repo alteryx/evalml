@@ -10,11 +10,11 @@ class BinaryClassificationPipeline(ClassificationPipeline):
     threshold = None
     problem_type = ProblemTypes.BINARY
 
-    def predict(self, X, objective=None):
+    def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
         Returns:
@@ -32,14 +32,21 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self.estimator.predict(X_t)
         ypred_proba = self.predict_proba(X)
-
-        if isinstance(ypred_proba, pd.DataFrame):
-            ypred_proba = ypred_proba.iloc[:, 1]
-        else:
-            ypred_proba = ypred_proba[:, 1]
+        ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
             return ypred_proba > self.threshold
         return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+
+    def predict_proba(self, X):
+        """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
+
+        Arguments:
+            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+
+        Returns:
+            pd.DataFrame : probability estimates
+        """
+        return super().predict_proba(X)
 
     @staticmethod
     def _score(X, y, predictions, objective):

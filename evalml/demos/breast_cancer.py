@@ -11,4 +11,5 @@ def load_breast_cancer():
     data = load_breast_cancer_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.Series(data.target)
+    y = y.map(lambda x: data["target_names"][x])
     return X, y
