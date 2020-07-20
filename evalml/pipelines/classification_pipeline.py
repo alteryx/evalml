@@ -103,7 +103,7 @@ class ClassificationPipeline(PipelineBase):
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
         try:
-            proba.columns = self.estimator.classes_
+            proba.columns = self._decode_targets(proba.columns)
         except AttributeError:
             raise RuntimeError("Could not access .classes_ attribute")
         return proba

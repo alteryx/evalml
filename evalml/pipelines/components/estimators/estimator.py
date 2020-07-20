@@ -56,6 +56,7 @@ class Estimator(ComponentBase):
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
         if not isinstance(pred_proba, pd.DataFrame):
             pred_proba = pd.DataFrame(pred_proba)
+            pred_proba.columns = self.classes_
         return pred_proba
 
     @property
