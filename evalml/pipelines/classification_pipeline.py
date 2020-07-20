@@ -102,9 +102,10 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
-        if not isinstance(X, pd.DataFrame):
-            raise ValueError("Should be dataframe returned from predict_proba")
-        proba.columns = self._decode_targets(proba.columns)
+        try:
+            proba.columns = self.estimator.classes_
+        except AttributeError:
+            raise RuntimeError("Could not access .classes_ attribute")
         return proba
 
     def score(self, X, y, objectives):
