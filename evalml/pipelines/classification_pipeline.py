@@ -102,6 +102,10 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+        if isinstance(proba, pd.DataFrame):
+            proba.columns = self._decode_targets(proba.columns)
+        else:
+            raise ValueError("Raising TODO: should always be dataframe")
         return proba
 
     def score(self, X, y, objectives):
