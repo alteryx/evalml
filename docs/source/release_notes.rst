@@ -1,11 +1,10 @@
-.. _changelog:
-
 Release Notes
 -------------
 
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
     * Documentation Changes
@@ -32,6 +31,7 @@ Release Notes
     * Documentation Changes
         * Reorganized and rewrote documentation :pr:`937`
         * Updated to use pydata sphinx theme :pr:`937`
+        * Updated docs to use `release_notes` instead of `changelog` :pr:`942`
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
 

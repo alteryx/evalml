@@ -5,25 +5,25 @@ Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
 * [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
-* The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [changelog](https://evalml.featurelabs.com/en/latest/changelog.html) includes the last change which was made on main.
+* The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [release notes](https://evalml.featurelabs.com/en/latest/release_notes.html) includes the last change which was made on main.
 * The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest main, and the team has reviewed the results.
 
-## 1. Create release PR to update version and changelog
-Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our changelog checkin test which requires all other PRs to add a changelog entry.
+## 1. Create release PR to update version and release notes
+Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 Create a release PR with the following changes:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
-* Move all entries in `docs/source/changelog.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
+* Move all entries in `docs/source/release_notes.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
 * Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
-* Populate the release PR body with a copy of this release's changelog, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
-* Confirm that all release items are in the changelog under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
+* Populate the release PR body with a copy of this release's release notes, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
+* Confirm that all release items are in the release notes under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
 
 An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
 
 Checklist before merging:
 * PR has been reviewed and approved.
 * All tests are currently green on checkin and on main.
-* The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected changelog.
+* The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected release notes.
 * Confirm with the team that `main` will be frozen until step 3 (github release) is complete.
 
 After merging, verify again that ReadtheDocs "latest" is correct.
@@ -33,7 +33,7 @@ After the release pull request has been merged into the main branch, it is time 
 * The target should be the main branch, which is the default value.
 * The tag should be the version number with a "v" prefix (e.g. "vX.X.X").
 * The release title is the same as the tag, "vX.X.X"
-* The release description should be the full changelog updates for the release, reformatted as GitHub markdown (from the release PR body in step 1).
+* The release description should be the full release notes updates for the release, reformatted as GitHub markdown (from the release PR body in step 1).
 
 Note that by targeting `main`, there must be no new merges to `main` from the moment we merge the release PR to when we publish the new GitHub release. Otherwise, the release will point at the wrong commit on `main`!
 
