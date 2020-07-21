@@ -153,6 +153,19 @@ Components represent a step in a pipeline.
     Transformer
     Estimator
 
+.. currentmodule:: evalml.pipelines.components.utils
+
+Component Utils
+~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    allowed_model_families
+
+
+.. currentmodule:: evalml.pipelines.components
+
 Transformers
 ~~~~~~~~~~~~
 Transformers are components that take in data as input and output transformed data.
