@@ -34,6 +34,7 @@ def make_test_pipeline(estimator, base_class):
 
     class Pipeline(base_class):
         component_graph = [estimator]
+        name = estimator.name
 
     return Pipeline
 
@@ -56,6 +57,11 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
 @patch("evalml.pipelines.explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
+
+    if "xgboost" in pipeline.name.lower():
+        pytest.importorskip("xgboost", "Skipping test because xgboost is not installed.")
+    if "catboost" in pipeline.name.lower():
+        pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
     with pytest.raises(exception, match=match):
         _ = _compute_shap_values(pipeline({}), pd.DataFrame(np.random.random((2, 16))))
