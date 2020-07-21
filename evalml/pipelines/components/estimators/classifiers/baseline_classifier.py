@@ -99,12 +99,9 @@ class BaselineClassifier(Estimator):
 
     @property
     def classes_(self):
-        """Returns classes associated with each feature.
+        """Returns class labels. Will return None before fitting.
 
         Returns:
-            list(float) : importance associated with each feature
+            list(str) or list(float) : class names
         """
-        try:
-            return self._classes
-        except AttributeError:
-            raise RuntimeError("You must fit Baseline classifier before getting classes_!")
+        return self._classes
