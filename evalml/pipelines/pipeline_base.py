@@ -240,19 +240,17 @@ class PipelineBase(ABC):
     def _score(X, y, predictions, objective):
         return objective.score(y, predictions, X)
 
-    def _score_all_objectives(self, X, y, predictions, predicted_probabilities, objectives):
+    def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will raise a PipelineScoreError if any objectives fail.
         Arguments:
             X (pd.DataFrame): The feature matrix.
             y (pd.Series): The labels.
-            predictions (pd.Series): The pipeline predictions.
-            predicted_probabilities (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
+            y_pred (pd.Series): The pipeline predictions.
+            y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
-            is_objective_suitable (callable): Function to check whether the objective function is suitable for the problem.
-                For example, AUC is not suitable for regression problems.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()
@@ -260,7 +258,7 @@ class PipelineBase(ABC):
             try:
                 if self.problem_type != objective.problem_type:
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
-                score = self._score(X, y, predicted_probabilities if objective.score_needs_proba else predictions, objective)
+                score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:
                 tb = traceback.format_tb(sys.exc_info()[2])
@@ -268,9 +266,8 @@ class PipelineBase(ABC):
         if exceptions:
             # If any objective failed, throw an PipelineScoreError
             raise PipelineScoreError(exceptions, scored_successfully)
-        else:
-            # No objectives failed, return the scores
-            return scored_successfully
+        # No objectives failed, return the scores
+        return scored_successfully
 
     @classproperty
     def model_family(cls):

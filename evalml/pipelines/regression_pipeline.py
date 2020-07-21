@@ -28,4 +28,4 @@ class RegressionPipeline(PipelineBase):
 
         objectives = [get_objective(o) for o in objectives]
         y_predicted = self.predict(X)
-        return self._score_all_objectives(X, y, y_predicted, predicted_probabilities=None, objectives=objectives)
+        return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)
