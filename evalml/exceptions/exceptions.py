@@ -40,7 +40,7 @@ class PipelineScoreError(Exception):
         # Format the traceback message
         exception_list = []
         for objective, (exception, tb) in exceptions.items():
-            tb = [f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n"] + tb
+            exception_list.append(f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n")
             exception_list.extend(tb)
         message = "\n".join(exception_list)
 
