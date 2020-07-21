@@ -1,8 +1,10 @@
 <p align="center">
 <img width=50% src="https://github.com/FeatureLabs/evalml/raw/main/docs/source/images/evalml_horizontal.svg" alt="EvalML" />
 </p>
+
+
 [![CircleCI](https://circleci.com/gh/FeatureLabs/evalml.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/FeatureLabs/evalml)
-[![codecov](https://codecov.io/gh/featurelabs/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/featurelabs/evalml)
+[![Coverage Status](https://codecov.io/gh/FeatureLabs/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/FeatureLabs/evalml)
 
 EvalML is an AutoML library to build optimized machine learning pipelines for domain-specific objective functions.
 
