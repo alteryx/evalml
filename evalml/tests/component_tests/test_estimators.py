@@ -1,7 +1,8 @@
 import string
-
+import pytest
 import numpy as np
 import pandas as pd
+from evalml.exceptions import MethodPropertyNotFoundError
 
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -43,3 +44,9 @@ def test_binary_classification_estimators_predict_proba_col_order():
             predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
+
+
+def test_estimator_with_no_classes_attribute(dummy_classifier_estimator_class):
+    mock_estimator = dummy_classifier_estimator_class()
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a classes_ property or a component_obj that implements classes_"):
+        mock_estimator.classes_
