@@ -5,6 +5,7 @@ from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
 from evalml.utils import get_random_state
+from evalml.utils.gen_utils import numerics
 
 
 class OutliersDataCheck(DataCheck):
@@ -44,8 +45,7 @@ class OutliersDataCheck(DataCheck):
             X = pd.DataFrame(X)
 
         # only select numeric
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-        X = X.select_dtypes(include=numerics)
+        X = X.select_dtypes(include=numerics[:-1])
 
         if len(X.columns) == 0:
             return []

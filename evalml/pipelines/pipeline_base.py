@@ -181,6 +181,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
+    @abstractmethod
     def fit(self, X, y):
         """Build a model
 
@@ -193,13 +194,6 @@ class PipelineBase(ABC):
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        self._fit(X, y)
-        return self
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.

@@ -10,6 +10,9 @@ from evalml.utils import get_logger
 logger = get_logger(__file__)
 
 
+numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
+
+
 def import_or_raise(library, error_msg=None):
     """Attempts to import the requested library by name.
     If the import fails, raises an ImportError.
