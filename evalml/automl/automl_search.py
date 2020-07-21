@@ -293,7 +293,7 @@ class AutoMLSearch:
                 leading_char = ""
 
     def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
-        """Find best classifier
+        """Find the best pipeline for the data set.
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
@@ -566,27 +566,24 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                filename_message = f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace."
-                stacktrace_message = f"\t\t\tFold {i}: Exception during automl search: {str(e)}"
-                hyperparameter_message = f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}"
                 if isinstance(e, PipelineScoreError):
-                    intro_message = f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}."
-                    score_message = f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan."
+                    logger.info(f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
+                    logger.info(f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan.")
+                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                    logger.info(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+                    logger.info(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     nan_scores = {objective: np.nan for objective in e.exceptions}
                     scores = {**nan_scores, **e.scored_successfully}
                     scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
                     score = scores[self.objective.name]
                 else:
-                    intro_message = f"\t\t\tFold {i}: Encountered an error."
-                    score_message = f"\t\t\tFold {i}: All scores will be replaced with nan."
+                    logger.info(f"\t\t\tFold {i}: Encountered an error.")
+                    logger.info(f"\t\t\tFold {i}: All scores will be replaced with nan.")
+                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                    logger.info(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+                    logger.info(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     score = np.nan
                     scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
-
-                logger.info(intro_message)
-                logger.info(score_message)
-                logger.info(filename_message)
-                logger.debug(hyperparameter_message)
-                logger.debug(stacktrace_message)
 
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})

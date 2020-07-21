@@ -26,11 +26,6 @@ class RegressionPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        def is_objective_suitable_for_regression(objective):
-            if objective.score_needs_proba:
-                raise ValueError(f"Objective `{objective.name}` is not suited for regression problems.")
-
         objectives = [get_objective(o) for o in objectives]
         y_predicted = self.predict(X)
-        return self._score_all_objectives(X, y, y_predicted, predicted_probabilities=None, objectives=objectives,
-                                          is_objective_suitable=is_objective_suitable_for_regression)
+        return self._score_all_objectives(X, y, y_predicted, predicted_probabilities=None, objectives=objectives)

@@ -240,7 +240,7 @@ class PipelineBase(ABC):
     def _score(X, y, predictions, objective):
         return objective.score(y, predictions, X)
 
-    def _score_all_objectives(self, X, y, predictions, predicted_probabilities, objectives, is_objective_suitable=None):
+    def _score_all_objectives(self, X, y, predictions, predicted_probabilities, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will raise a PipelineScoreError if any objectives fail.
@@ -258,7 +258,8 @@ class PipelineBase(ABC):
         exceptions = OrderedDict()
         for objective in objectives:
             try:
-                is_objective_suitable(objective)
+                if self.problem_type != objective.problem_type:
+                    raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
                 score = self._score(X, y, predicted_probabilities if objective.score_needs_proba else predictions, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:

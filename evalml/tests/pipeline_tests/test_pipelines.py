@@ -795,7 +795,8 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     try:
         dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
-        assert "Objective `AUC` is not suited for regression problems." in e.message
+        assert "Invalid objective AUC specified for problem type Regression" in e.message
+        assert "Invalid objective Precision specified for problem type Regression" in e.message
     mock_predict.assert_called()
 
 
