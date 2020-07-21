@@ -9,6 +9,7 @@ Release Notes
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
+        * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
     * Documentation Changes
     * Testing Changes
 
@@ -17,6 +18,7 @@ Release Notes
 
     **Breaking Changes**
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
+        * Removed the "raise_errors" flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
 
 
 **v0.11.2 July 16, 2020**
@@ -25,8 +27,6 @@ Release Notes
         * Added text processing and featurization component `TextFeaturizer` :pr:`913`, :pr:`924`
         * Added additional checks to InvalidTargetDataCheck to handle invalid target data types :pr:`929`
         * AutoMLSearch will now handle KeyboardInterrupt and prompt user for confirmation :pr:`915`
-        * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
-        * Changed AutoML to log hyperparameters and stacktraces for pipelines that encounter an error during search :pr:`936`
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
@@ -52,7 +52,6 @@ Release Notes
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase :pr:`904`
         * ``all_pipelines()`` and ``get_pipelines()`` utility methods have been removed :pr:`904`
-        * Removed the "raise_errors" flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
 
 
 **v0.11.0 June 30, 2020**
