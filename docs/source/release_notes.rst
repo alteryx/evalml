@@ -19,7 +19,8 @@ Release Notes
 
     **Breaking Changes**
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
-        * Removed the "raise_errors" flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
+        * Removed the ``raise_errors`` flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
+        * ``evalml.model_families.list_model_families`` has been moved to `evalml.pipelines.components.allowed_model_families` :pr:`959`
 
 
 **v0.11.2 July 16, 2020**
