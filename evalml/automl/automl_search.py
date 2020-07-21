@@ -102,7 +102,7 @@ class AutoMLSearch:
                 allowed_model_families to be ignored.
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.pipelines.components.allowed_model_families("binary") to see options. Change `binary`
+                model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
