@@ -155,7 +155,7 @@ Components represent a step in a pipeline.
 .. currentmodule:: evalml.pipelines.components.utils
 
 Component Utils
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
