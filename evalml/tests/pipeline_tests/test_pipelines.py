@@ -28,10 +28,12 @@ from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     SimpleImputer,
     StandardScaler,
-    Transformer,
+    Transformer
+)
+from evalml.pipelines.components.utils import (
+    _all_estimators_used_in_search,
     allowed_model_families
 )
-from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
