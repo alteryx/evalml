@@ -1,4 +1,3 @@
-from collections import OrderedDict
 
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
@@ -121,13 +120,10 @@ class ClassificationPipeline(PipelineBase):
             y = pd.Series(y)
 
         objectives = [get_objective(o) for o in objectives]
-        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         y = self._encode_targets(y)
-        scores = OrderedDict()
-        for objective in objectives:
-            score = self._score(X, y, y_predicted_proba if objective.score_needs_proba else y_predicted, objective)
-            scores.update({objective.name: score})
-        return scores
+        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
+
+        return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
     def _compute_predictions(self, X, objectives):
         """Scan through the objectives list and precompute"""

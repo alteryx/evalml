@@ -21,3 +21,28 @@ class IllFormattedClassNameError(Exception):
 class MissingComponentError(Exception):
     """An exception raised when a component is not found in all_components()"""
     pass
+
+
+class PipelineScoreError(Exception):
+    """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
+
+    Arguments:
+        exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
+        All of the objectives that errored will be stored here.
+        scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
+            that did not error will be stored here.
+    """
+
+    def __init__(self, exceptions, scored_successfully):
+        self.exceptions = exceptions
+        self.scored_successfully = scored_successfully
+
+        # Format the traceback message
+        exception_list = []
+        for objective, (exception, tb) in exceptions.items():
+            exception_list.append(f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n")
+            exception_list.extend(tb)
+        message = "\n".join(exception_list)
+
+        self.message = message
+        super().__init__(message)

@@ -6,7 +6,11 @@ import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
-from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    MissingComponentError,
+    PipelineScoreError
+)
 from evalml.model_family import ModelFamily, list_model_families
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
@@ -618,9 +622,15 @@ def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
-    scores = clf.score(X, y, objective_names)
-    mock_predict.assert_called()
-    assert scores == {'R2': np.nan, 'MSE': 0.0}
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
+    try:
+        _ = clf.score(X, y, objective_names)
+    except PipelineScoreError as e:
+        assert e.scored_successfully == {"MSE": 0.0}
+        assert 'finna kabooom 💣' in e.message
+        assert "R2" in e.exceptions
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
@@ -635,12 +645,14 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ['f1', 'precision']
-    scores = clf.score(X, y, objective_names)
-    mock_predict.assert_called()
-    mock_fit.assert_called()
-    mock_objective_score.assert_called()
-    mock_encode.assert_called()
-    assert scores == {'F1': np.nan, 'Precision': 1.0}
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
+    try:
+        _ = clf.score(X, y, objective_names)
+    except PipelineScoreError as e:
+        assert e.scored_successfully == {"Precision": 1.0}
+        assert 'finna kabooom 💣' in e.message
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
@@ -655,12 +667,15 @@ def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ['f1_micro', 'precision_micro']
-    scores = clf.score(X, y, objective_names)
-    mock_predict.assert_called()
-    mock_fit.assert_called()
-    mock_objective_score.assert_called()
-    mock_encode.assert_called()
-    assert scores == {'F1 Micro': np.nan, 'Precision Micro': 1.0}
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
+    try:
+        _ = clf.score(X, y, objective_names)
+    except PipelineScoreError as e:
+        assert e.scored_successfully == {"Precision Micro": 1.0}
+        assert 'finna kabooom 💣' in e.message
+        assert "F1 Micro" in e.exceptions
 
 
 def test_no_default_parameters():
@@ -774,8 +789,14 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = np.array([1] * 100)
-    with pytest.raises(ValueError, match="Objective `AUC` does not support score_needs_proba"):
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
         dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+    try:
+        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+    except PipelineScoreError as e:
+        assert "Invalid objective AUC specified for problem type Regression" in e.message
+        assert "Invalid objective Precision specified for problem type Regression" in e.message
     mock_predict.assert_called()
 
 

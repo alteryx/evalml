@@ -1,4 +1,3 @@
-from collections import OrderedDict
 
 import pandas as pd
 
@@ -53,12 +52,5 @@ class RegressionPipeline(PipelineBase):
             y = pd.Series(y)
 
         objectives = [get_objective(o) for o in objectives]
-        scores = OrderedDict()
-
         y_predicted = self.predict(X)
-        for objective in objectives:
-            if objective.score_needs_proba:
-                raise ValueError("Objective `{}` does not support score_needs_proba".format(objective.name))
-            score = self._score(X, y, y_predicted, objective)
-            scores.update({objective.name: score})
-        return scores
+        return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)
