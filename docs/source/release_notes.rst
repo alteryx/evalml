@@ -10,6 +10,7 @@ Release Notes
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
+        * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
     * Documentation Changes
     * Testing Changes
 
@@ -18,6 +19,7 @@ Release Notes
 
     **Breaking Changes**
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
+        * Removed the "raise_errors" flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
 
 
 **v0.11.2 July 16, 2020**

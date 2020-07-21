@@ -51,8 +51,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
     @staticmethod
     def _score(X, y, predictions, objective):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
-
-        Will return `np.nan` if the objective errors.
         """
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
