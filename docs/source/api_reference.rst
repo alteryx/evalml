@@ -131,7 +131,6 @@ Pipeline Utils
     :nosignatures:
 
     get_estimators
-    allowed_model_families
     make_pipeline
 
 
