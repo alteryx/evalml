@@ -130,7 +130,6 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
-    get_estimators
     make_pipeline
 
 
@@ -161,6 +160,7 @@ Component Utils
     :nosignatures:
 
     allowed_model_families
+    get_estimators
 
 
 .. currentmodule:: evalml.pipelines.components
