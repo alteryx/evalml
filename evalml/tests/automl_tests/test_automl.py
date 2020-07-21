@@ -838,14 +838,22 @@ def test_targets_data_types_classification(automl_type, target_type):
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
+    unique_vals = y.unique()
+
     automl = AutoMLSearch(problem_type=automl_type, max_pipelines=3)
     automl.search(X, y)
-    for pipeline_result in automl.results['pipeline_results'].values():
+    for pipeline_id, pipeline_result in automl.results['pipeline_results'].items():
         cv_data = pipeline_result['cv_data']
         for fold in cv_data:
             all_objective_scores = fold["all_objective_scores"]
             for score in all_objective_scores.values():
                 assert score is not None
+        pipeline = automl.get_pipeline(pipeline_id)
+        pipeline.fit(X, y)
+        predictions = pipeline.predict(X, automl.objective)
+        assert set(predictions.unique()).issubset(unique_vals)
+        predict_proba = pipeline.predict_proba(X)
+        assert set(predict_proba.columns.unique()).issubset(unique_vals)
 
     assert len(automl.full_rankings) == 3
     assert not automl.full_rankings['score'].isnull().values.any()

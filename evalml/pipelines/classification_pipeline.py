@@ -86,7 +86,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series : estimated labels
         """
         predictions = self._predict(X, objective)
-        return self._decode_targets(predictions)
+        return pd.Series(self._decode_targets(predictions))
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
