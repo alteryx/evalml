@@ -2,16 +2,22 @@ import copy
 import inspect
 import os
 import re
+import sys
+import traceback
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 
 import cloudpickle
-import numpy as np
 import pandas as pd
 
 from .components import Estimator
 from .components.utils import handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    MissingComponentError,
+    PipelineScoreError
+)
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -232,16 +238,36 @@ class PipelineBase(ABC):
 
     @staticmethod
     def _score(X, y, predictions, objective):
+        return objective.score(y, predictions, X)
+
+    def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
-        Will return `np.nan` if the objective errors.
+        Will raise a PipelineScoreError if any objectives fail.
+        Arguments:
+            X (pd.DataFrame): The feature matrix.
+            y (pd.Series): The labels.
+            y_pred (pd.Series): The pipeline predictions.
+            y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
+                Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
+            objectives (list): List of objectives to score.
         """
-        score = np.nan
-        try:
-            score = objective.score(y, predictions, X)
-        except Exception as e:
-            logger.error('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
-        return score
+        scored_successfully = OrderedDict()
+        exceptions = OrderedDict()
+        for objective in objectives:
+            try:
+                if self.problem_type != objective.problem_type:
+                    raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
+                score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
+                scored_successfully.update({objective.name: score})
+            except Exception as e:
+                tb = traceback.format_tb(sys.exc_info()[2])
+                exceptions[objective.name] = (e, tb)
+        if exceptions:
+            # If any objective failed, throw an PipelineScoreError
+            raise PipelineScoreError(exceptions, scored_successfully)
+        # No objectives failed, return the scores
+        return scored_successfully
 
     @classproperty
     def model_family(cls):
