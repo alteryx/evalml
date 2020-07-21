@@ -481,7 +481,7 @@ class AutoMLSearch:
             if not pipeline.problem_type == self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
-    def _add_baseline_pipelines(self, X, y, raise_errors=True):
+    def _add_baseline_pipelines(self, X, y):
         """Fits a baseline pipeline to the data.
 
         This is the first pipeline fit during search.
