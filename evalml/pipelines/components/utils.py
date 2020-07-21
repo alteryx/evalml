@@ -28,7 +28,6 @@ def allowed_model_families(problem_type):
 
     estimators = []
     problem_type = handle_problem_types(problem_type)
-    from evalml.pipelines.components.utils import _all_estimators_used_in_search
     for estimator in _all_estimators_used_in_search:
         if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
             estimators.append(estimator)
