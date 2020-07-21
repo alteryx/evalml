@@ -3,3 +3,4 @@ plotly>=4.2.1
 ipywidgets>=7.5
 xgboost>=0.82
 catboost>=0.20
+shap>=0.35.0
