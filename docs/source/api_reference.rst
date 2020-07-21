@@ -131,6 +131,7 @@ Pipeline Utils
     :nosignatures:
 
     get_estimators
+    allowed_model_families
     make_pipeline
 
 
@@ -335,7 +336,6 @@ Model Family
     :nosignatures:
 
     handle_model_family
-    list_model_families
 
 
 .. currentmodule:: evalml.tuners

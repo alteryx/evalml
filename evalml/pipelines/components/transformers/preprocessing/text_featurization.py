@@ -1,8 +1,9 @@
 import string
 import warnings
 
-import featuretools as ft
 import pandas as pd
+
+import featuretools as ft
 from nlp_primitives import (
     LSA,
     DiversityScore,
