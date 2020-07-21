@@ -1,9 +1,10 @@
 import string
-import pytest
+
 import numpy as np
 import pandas as pd
-from evalml.exceptions import MethodPropertyNotFoundError
+import pytest
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 

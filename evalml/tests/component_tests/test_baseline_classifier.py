@@ -13,6 +13,7 @@ def test_baseline_init():
     assert baseline.model_family == ModelFamily.BASELINE
     assert baseline.classes_ is None
 
+
 def test_baseline_invalid_strategy():
     with pytest.raises(ValueError):
         BaselineClassifier(strategy="unfortunately invalid strategy")
