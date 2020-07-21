@@ -10,6 +10,7 @@ Release Notes
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
+        * Moved `evalml.model_families.list_model_families` to `evalml.pipelines.components.allowed_model_families` :pr:`959`
     * Documentation Changes
     * Testing Changes
 
