@@ -27,7 +27,8 @@ from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline
 )
-from evalml.pipelines.utils import get_estimators, make_pipeline
+from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state

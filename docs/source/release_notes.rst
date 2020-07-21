@@ -8,8 +8,15 @@ Release Notes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
     * Changes
+        * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
     * Documentation Changes
     * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
 
 
 **v0.11.2 July 16, 2020**
@@ -40,6 +47,7 @@ Release Notes
 
     **Breaking Changes**
         * ``list_model_families`` has been moved to ``evalml.model_family.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`903`
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase :pr:`904`
         * ``all_pipelines()`` and ``get_pipelines()`` utility methods have been removed :pr:`904`
 

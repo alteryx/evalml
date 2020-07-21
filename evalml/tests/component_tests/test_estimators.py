@@ -3,7 +3,7 @@ import string
 import numpy as np
 import pandas as pd
 
-from evalml.pipelines.utils import _all_estimators_used_in_search
+from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
