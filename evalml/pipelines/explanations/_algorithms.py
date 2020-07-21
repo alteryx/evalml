@@ -2,9 +2,8 @@ import math
 import warnings
 
 import numpy as np
-from sklearn.utils import check_array
-
 import shap
+from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
