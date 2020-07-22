@@ -101,7 +101,7 @@ class ClassificationPipeline(PipelineBase):
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
-        proba.columns = self._decode_targets(proba.columns)
+        proba.columns = self._decode_targets(self._encoder.classes_)
         return proba
 
     def score(self, X, y, objectives):

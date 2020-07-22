@@ -55,7 +55,7 @@ class Estimator(ComponentBase):
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
         if not isinstance(pred_proba, pd.DataFrame):
-            pred_proba = pd.DataFrame(pred_proba, columns=self.classes_)
+            pred_proba = pd.DataFrame(pred_proba)
         return pred_proba
 
     @property
@@ -69,15 +69,3 @@ class Estimator(ComponentBase):
             return self._component_obj.feature_importances_
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
-
-    @property
-    def classes_(self):
-        """Returns class labels. Only available after fitting.
-
-        Returns:
-            list(str) or list(float) : class names
-        """
-        try:
-            return self._component_obj.classes_
-        except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a classes_ property or a component_obj that implements classes_")
