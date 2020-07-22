@@ -2,9 +2,8 @@
 import inspect
 
 from evalml.exceptions import MissingComponentError
-from evalml.model_family.utils import handle_model_family, list_model_families
-from evalml.pipelines import Estimator, Transformer
-from evalml.pipelines.components import ComponentBase
+from evalml.model_family.utils import handle_model_family
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
@@ -15,6 +14,25 @@ _all_estimators = get_importable_subclasses(Estimator, used_in_automl=False)
 _all_estimators_used_in_search = get_importable_subclasses(Estimator, used_in_automl=True)
 _all_transformers = get_importable_subclasses(Transformer, used_in_automl=False)
 all_components = _all_estimators + _all_transformers
+
+
+def allowed_model_families(problem_type):
+    """List the model types allowed for a particular problem type.
+
+    Arguments:
+        problem_types (ProblemTypes or str): binary, multiclass, or regression
+
+    Returns:
+        list[ModelFamily]: a list of model families
+    """
+
+    estimators = []
+    problem_type = handle_problem_types(problem_type)
+    for estimator in _all_estimators_used_in_search:
+        if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
+            estimators.append(estimator)
+
+    return list(set([e.model_family for e in estimators]))
 
 
 def get_estimators(problem_type, model_families=None):
@@ -33,10 +51,10 @@ def get_estimators(problem_type, model_families=None):
         raise TypeError("model_families parameter is not a list.")
     problem_type = handle_problem_types(problem_type)
     if model_families is None:
-        model_families = list_model_families(problem_type)
+        model_families = allowed_model_families(problem_type)
 
     model_families = [handle_model_family(model_family) for model_family in model_families]
-    all_model_families = list_model_families(problem_type)
+    all_model_families = allowed_model_families(problem_type)
     for model_family in model_families:
         if model_family not in all_model_families:
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
