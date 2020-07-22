@@ -42,7 +42,7 @@ pipeline.predict(X_test)
 
 ## Next Steps
 
-Read more about EvalML in our [documentation](https://evalml.alteryx.com/):
+Read more about EvalML on our [documentation page](https://evalml.alteryx.com/):
 
 * [Installation](https://evalml.alteryx.com/en/stable/install.html) and [getting started](https://evalml.alteryx.com/en/stable/start.html).
 * [Tutorials](https://evalml.alteryx.com/en/stable/tutorials.html) on how to use EvalML.
