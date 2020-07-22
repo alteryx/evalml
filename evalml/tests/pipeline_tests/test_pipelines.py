@@ -11,7 +11,7 @@ from evalml.exceptions import (
     MissingComponentError,
     PipelineScoreError
 )
-from evalml.model_family import ModelFamily, list_model_families
+from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -34,12 +34,15 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
-from evalml.pipelines.components.utils import _all_estimators_used_in_search
+from evalml.pipelines.components.utils import (
+    _all_estimators_used_in_search,
+    allowed_model_families
+)
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
-def test_list_model_families(has_minimal_dependencies):
+def test_allowed_model_families(has_minimal_dependencies):
     families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL]
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
@@ -48,8 +51,8 @@ def test_list_model_families(has_minimal_dependencies):
         expected_model_families_binary.add(ModelFamily.CATBOOST)
         expected_model_families_regression.add(ModelFamily.CATBOOST)
         expected_model_families_regression.add(ModelFamily.XGBOOST)
-    assert set(list_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
-    assert set(list_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
+    assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
+    assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
 def test_all_estimators(has_minimal_dependencies):

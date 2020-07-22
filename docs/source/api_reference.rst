@@ -130,7 +130,6 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
-    get_estimators
     make_pipeline
 
 
@@ -151,6 +150,20 @@ Components represent a step in a pipeline.
     ComponentBase
     Transformer
     Estimator
+
+.. currentmodule:: evalml.pipelines.components.utils
+
+Component Utils
+~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    allowed_model_families
+    get_estimators
+
+
+.. currentmodule:: evalml.pipelines.components
 
 Transformers
 ~~~~~~~~~~~~
@@ -335,7 +348,6 @@ Model Family
     :nosignatures:
 
     handle_model_family
-    list_model_families
 
 
 .. currentmodule:: evalml.tuners
