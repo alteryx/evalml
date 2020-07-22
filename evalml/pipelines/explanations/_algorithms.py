@@ -1,4 +1,3 @@
-import math
 import warnings
 
 import numpy as np
@@ -102,24 +101,22 @@ def _compute_shap_values(pipeline, features, training_data=None):
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 
 
-def _normalize_values_dict(values, new_min=-1, new_max=1):
+def _normalize_values_dict(values):
 
     sorted_feature_names = sorted(values)
-    all_values = np.vstack([values[feature_name] for feature_name in sorted_feature_names])
+    # Store in matrix of shape (len(values), n_features)
+    all_values = np.stack([values[feature_name] for feature_name in sorted_feature_names]).T
 
     if not all_values.any():
         return values
 
-    curr_min, curr_max = all_values.min(), all_values.max()
-    if math.isclose(curr_min, curr_max, abs_tol=1e-3):
-        raise ValueError(f"Cannot normalize values where curr_min and curr_max are almost equal ({round(curr_min, 3)}, {round(curr_max, 3)})")
-    scaled_values = (new_max - new_min) / (curr_max - curr_min) * (all_values - curr_min) + new_min
+    scaled_values = all_values / np.abs(all_values).sum(axis=1)[:, np.newaxis]
 
-    return {feature_name: scaled_values[i, :].tolist() for i, feature_name in enumerate(sorted_feature_names)}
+    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(sorted_feature_names)}
 
 
-def _normalize_values(values, new_min=-1, new_max=1):
-    """Scales values to the range [new_min, new_max].
+def _normalize_shap_values(values):
+    """Normalizes the SHAP values by the absolute value of their sum for each data point.
 
     Arguments:
         values (dict or list(dict)): Dictionary mapping feature name to list of values,
@@ -131,8 +128,8 @@ def _normalize_values(values, new_min=-1, new_max=1):
         dict or list(dict)
     """
     if isinstance(values, dict):
-        return _normalize_values_dict(values, new_min, new_max)
+        return _normalize_values_dict(values)
     elif isinstance(values, list):
-        return [_normalize_values_dict(class_values, new_min, new_max) for class_values in values]
+        return [_normalize_values_dict(class_values) for class_values in values]
     else:
         raise ValueError(f"Unsupported data type for _normalize_values: {str(type(values))}.")

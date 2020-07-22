@@ -24,7 +24,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.explanations._algorithms import (
     _compute_shap_values,
-    _normalize_values
+    _normalize_shap_values
 )
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
@@ -144,25 +144,21 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         check_regression(shap_values, n_points_to_explain)
 
 
-@pytest.mark.parametrize("values,match", [(1, "^Unsupported data type for _normalize_values"),
-                                          ({"a": [10.00001, 9.9999], "b": [10.00001, 9.9999]},
-                                           "^Cannot normalize values where curr_min and curr_max are almost equal"),
-                                          ([{"a": [5, 5, 5], "b": [5, 5, 5]}] * 2,
-                                           "^Cannot normalize values where curr_min and curr_max are almost equal")])
-def test_normalize_values_exceptions(values, match):
+def test_normalize_values_exceptions():
 
-    with pytest.raises(ValueError, match=match):
-        _normalize_values(values)
+    with pytest.raises(ValueError, match="^Unsupported data type for _normalize_values"):
+        _normalize_shap_values(1)
 
 
 @pytest.mark.parametrize("values,answer", [({"a": [-0.5, 0, 0.5], "b": [0.1, -0.6, 0.2]},
-                                            {"a": [-0.8181, 0.0909, 1.0], "b": [0.2727, -1.0, 0.4545]}),
+                                            {"a": [-0.5 / 0.6, 0, 0.5 / 0.7], "b": [0.1 / 0.6, -1.0, 0.2 / 0.7]}),
                                            ([{"a": [-0.5, 0, 0.5], "b": [0.1, -0.6, 0.2]}] * 2,
-                                            [{"a": [-0.8181, 0.0909, 1.0], "b": [0.2727, -1.0, 0.4545]}] * 2),
+                                            [{"a": [-0.5 / 0.6, 0, 0.5 / 0.7], "b": [0.1 / 0.6, -1.0, 0.2 / 0.7]}] * 2),
                                            ({"a": [0, 0]}, {"a": [0, 0]}),
                                            ([{"a": [0]}] * 10, [{"a": [0]}] * 10),
-                                           ({"a": [5], "b": [20], "c": [22]},
-                                            {"a": [-1], "b": [0.7647], "c": [1.0]})])
+                                           ({"a": [5], "b": [20], "c": [-22]},
+                                            {"a": [5 / 47], "b": [20 / 47], "c": [-22 / 47]}),
+                                           ({"a": [5], "b": [-5]}, {"a": [0.5], "b": [-0.5]})])
 def test_normalize_values(values, answer):
 
     def check_equal_dicts(normalized, answer):
@@ -170,7 +166,7 @@ def test_normalize_values(values, answer):
         for key in normalized:
             np.testing.assert_almost_equal(normalized[key], answer[key], decimal=4)
 
-    normalized = _normalize_values(values)
+    normalized = _normalize_shap_values(values)
     if isinstance(normalized, dict):
         check_equal_dicts(normalized, answer)
 
