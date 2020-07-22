@@ -132,4 +132,4 @@ def _normalize_shap_values(values):
     elif isinstance(values, list):
         return [_normalize_values_dict(class_values) for class_values in values]
     else:
-        raise ValueError(f"Unsupported data type for _normalize_values: {str(type(values))}.")
+        raise ValueError(f"Unsupported data type for _normalize_shap_values: {str(type(values))}.")

@@ -31,6 +31,11 @@ from evalml.problem_types.problem_types import ProblemTypes
 
 
 def make_test_pipeline(estimator, base_class):
+    """Make an estimator-only pipeline.
+
+    This is helps test the exceptions raised in _compute_shap_values without having to use make_pipeline
+    (which needs training data to be passed in).
+    """
 
     class Pipeline(base_class):
         component_graph = [estimator]
@@ -42,7 +47,7 @@ def make_test_pipeline(estimator, base_class):
 baseline_message = "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
 xg_boost_message = "SHAP values cannot currently be computed for xgboost models."
 catboost_message = "SHAP values cannot currently be computed for catboost models for multiclass problems."
-datatype_message = "Unknown shap_values datatype <class 'unittest.mock.MagicMock'>!"
+datatype_message = "^Unknown shap_values datatype"
 data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
@@ -146,7 +151,7 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
 def test_normalize_values_exceptions():
 
-    with pytest.raises(ValueError, match="^Unsupported data type for _normalize_values"):
+    with pytest.raises(ValueError, match="^Unsupported data type for _normalize_shap_values"):
         _normalize_shap_values(1)
 
 
