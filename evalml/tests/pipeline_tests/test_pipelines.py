@@ -968,15 +968,15 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
     if problem_type == ProblemTypes.BINARY:
         objective = "log_loss_binary"
-        pipelines = all_binary_pipeline_classes
+        pipeline_classes = all_binary_pipeline_classes
         X, y = load_breast_cancer()
         if target_type == "bool":
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
-        pipelines = all_multiclass_pipeline_classes
         objective = "log_loss_multi"
-
+        pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
+
     if target_type == "categorical":
         y = pd.Categorical(y)
     elif target_type == "int":
@@ -987,8 +987,7 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     unique_vals = y.unique()
-
-    for pipeline_class in pipelines:
+    for pipeline_class in pipeline_classes:
         pipeline = pipeline_class(parameters={})
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective)
