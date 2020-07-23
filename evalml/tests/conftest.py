@@ -13,7 +13,42 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes
+
+
+def create_mock_pipeline(estimator, problem_type):
+    if problem_type == ProblemTypes.BINARY:
+        class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
+            component_graph = [estimator]
+        return MockBinaryPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.MULTICLASS:
+        class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
+            component_graph = [estimator]
+        return MockMulticlassPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.REGRESSION:
+        class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
+            component_graph = [estimator]
+        return MockRegressionPipelineWithOnlyEstimator
+
+
+@pytest.fixture
+def get_all_pipeline_classes():
+    get_all_possible_pipeline_classes = []
+    for estimator in _all_estimators:
+        for problem_type in estimator.supported_problem_types:
+            get_all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
+    return get_all_possible_pipeline_classes
+
+
+@pytest.fixture
+def get_all_binary_pipeline_classes(get_all_pipeline_classes):
+    return [pipeline_class for pipeline_class in get_all_pipeline_classes if issubclass(pipeline_class, BinaryClassificationPipeline)]
+
+
+@pytest.fixture
+def get_all_multiclass_pipeline_classes(get_all_pipeline_classes):
+    return [pipeline_class for pipeline_class in get_all_pipeline_classes if issubclass(pipeline_class, MulticlassClassificationPipeline)]
 
 
 def pytest_addoption(parser):
