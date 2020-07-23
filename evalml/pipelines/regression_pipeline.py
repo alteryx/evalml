@@ -28,7 +28,7 @@ class RegressionPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        valid_target_data_types = numerics[:-1]
+        valid_target_data_types = numerics
         if y.dtype not in valid_target_data_types:
             raise ValueError(f"Regression pipeline cannot handle targets with dtype: {y.dtype}")
         self._fit(X, y)
