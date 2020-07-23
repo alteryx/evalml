@@ -3,6 +3,8 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
 
+from evalml.utils.gen_utils import numerics_and_boolean
+
 
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target labels contain missing or invalid data."""
@@ -11,8 +13,8 @@ class InvalidTargetDataCheck(DataCheck):
         """Checks if the target labels contain missing or invalid data.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.array, list) : Features. Ignored.
-            y : Target labels to check for invalid data.
+            X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
+            y: Target labels to check for invalid data.
 
         Returns:
             list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.
@@ -29,14 +31,13 @@ class InvalidTargetDataCheck(DataCheck):
         null_rows = y.isnull()
         if null_rows.any():
             messages.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
-        valid_target_types = numerics + ['object', 'category']
+        valid_target_types = numerics_and_boolean + ['object', 'category']
 
         if y.dtype.name not in valid_target_types:
             messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
 
         value_counts = y.value_counts()
-        if len(value_counts) == 2 and y.dtype in numerics:
+        if len(value_counts) == 2 and y.dtype in numerics_and_boolean:
             unique_values = value_counts.index.tolist()
             if set(unique_values) != set([0, 1]):
                 messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])), self.name))

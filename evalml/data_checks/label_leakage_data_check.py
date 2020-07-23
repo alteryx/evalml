@@ -3,6 +3,8 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
+from evalml.utils.gen_utils import numerics_and_boolean
+
 
 class LabelLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target."""
@@ -47,10 +49,9 @@ class LabelLeakageDataCheck(DataCheck):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
-        if y.dtype not in numerics:
+        if y.dtype not in numerics_and_boolean:
             return []
-        X = X.select_dtypes(include=numerics)
+        X = X.select_dtypes(include=numerics_and_boolean)
         if len(X.columns) == 0:
             return []
 
