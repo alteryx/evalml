@@ -33,6 +33,7 @@ def test_binary_classification_pipeline_predict(mock_fit,
     # test custom threshold set but no objective passed
     mock_predict_proba.return_value = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
     binary_pipeline.threshold = 0.6
+    binary_pipeline._encoder.classes_ = [0, 1]
     binary_pipeline.predict(X)
     for mock_obj in mock_objs:
         mock_obj.assert_called()

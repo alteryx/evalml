@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
+        * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
