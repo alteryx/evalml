@@ -96,3 +96,12 @@ class BaselineClassifier(Estimator):
         if self._num_unique is None:
             raise RuntimeError("You must fit Baseline classifier before getting feature_importance!")
         return np.zeros(self._num_features)
+
+    @property
+    def classes_(self):
+        """Returns class labels. Will return None before fitting.
+
+        Returns:
+            list(str) or list(float) : class names
+        """
+        return self._classes
