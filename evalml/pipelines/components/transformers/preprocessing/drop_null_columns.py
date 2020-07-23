@@ -48,6 +48,7 @@ class DropNullColumns(Transformer):
         """
         if self._cols_to_drop is None:
             raise RuntimeError("You must fit Drop Null Columns transformer before calling transform!")
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         return X.drop(columns=self._cols_to_drop, axis=1)

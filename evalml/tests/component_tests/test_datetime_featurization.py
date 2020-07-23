@@ -18,7 +18,7 @@ def test_datetime_featurization_init():
 
 def test_datetime_featurization_transform_without_fit():
     datetime_transformer = DateTimeFeaturization()
-    with pytest.raises(RuntimeError, match="You must fit DateTime Featurization Component before calling transform!"):
+    with pytest.raises(RuntimeError, match="You must fit"):
         datetime_transformer.transform(pd.DataFrame())
 
 

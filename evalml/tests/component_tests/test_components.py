@@ -306,6 +306,7 @@ def test_regressor_call_predict_proba(test_classes):
     X = np.array([])
     _, MockEstimator, _ = test_classes
     component = MockEstimator()
+    component._has_fit = True
     with pytest.raises(MethodPropertyNotFoundError):
         component.predict_proba(X)
 
@@ -368,7 +369,7 @@ def test_clone_fitted(X_y_binary):
 
     clf_clone = clf.clone()
     assert clf_clone.random_state.randint(2**30) == random_state_first_val
-    with pytest.raises(RuntimeError, match='Cannot call predict before fit'):
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
         clf_clone.predict(X)
     assert clf.parameters == clf_clone.parameters
 
@@ -523,9 +524,9 @@ def test_estimator_check_for_fit(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimator()
-    with pytest.raises(RuntimeError, match='Cannot call'):
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
         est.predict(X)
-    with pytest.raises(RuntimeError, match='Cannot call'):
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
         est.predict_proba(X)
 
     est.fit(X, y)
@@ -552,7 +553,7 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimatorWithOverrides()
-    with pytest.raises(RuntimeError, match='Cannot call'):
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
         est.predict(X)
 
     est.fit(X, y)
@@ -581,7 +582,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
     X, y = X_y_binary
     trans = MockTransformer()
-    with pytest.raises(RuntimeError, match='Cannot call'):
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
         trans.transform(X)
 
     trans.fit(X, y)
@@ -602,8 +603,8 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
 
     X, y = X_y_binary
     trans = MockTransformerWithOverride()
-    with pytest.raises(RuntimeError, match='Cannot call'):
-            trans.transform(X)
+    with pytest.raises(RuntimeError, match='You must fit before calling'):
+        trans.transform(X)
 
     trans.fit(X, y)
     assert trans._has_fit is True

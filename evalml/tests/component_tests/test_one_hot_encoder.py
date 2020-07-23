@@ -30,7 +30,7 @@ def test_parameters():
 
 def test_fit_first():
     encoder = OneHotEncoder()
-    with pytest.raises(RuntimeError, match="You must fit one hot encoder before calling transform!"):
+    with pytest.raises(RuntimeError, match="You must fit"):
         encoder.transform(pd.DataFrame())
 
 

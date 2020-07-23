@@ -138,7 +138,7 @@ def test_transform_drop_all_nan_columns_empty():
 
 
 def test_transform_before_fit():
-    with pytest.raises(RuntimeError, match="Must fit transformer before calling transform!"):
+    with pytest.raises(RuntimeError, match="You must fit"):
         SimpleImputer(impute_strategy='most_frequent').transform(pd.DataFrame())
 
 
