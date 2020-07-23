@@ -12,8 +12,7 @@ class RegressionPipeline(PipelineBase):
     problem_type = ProblemTypes.REGRESSION
 
     def fit(self, X, y):
-        """Build a model. For string and categorical targets, classes are sorted
-            by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
+        """Build a regression model.
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]

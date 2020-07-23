@@ -24,7 +24,7 @@ class ClassificationPipeline(PipelineBase):
         super().__init__(parameters, random_state)
 
     def fit(self, X, y):
-        """Build a model. For string and categorical targets, classes are sorted
+        """Build a classification model. For string and categorical targets, classes are sorted
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:

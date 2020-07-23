@@ -44,7 +44,7 @@ class OutliersDataCheck(DataCheck):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        # only select numeric
+        # only select numeric but don't include bool
         X = X.select_dtypes(include=numerics[:-1])
 
         if len(X.columns) == 0:
