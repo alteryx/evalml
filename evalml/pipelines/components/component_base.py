@@ -1,7 +1,8 @@
 import copy
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.pipelines.components.wrappers import check_for_fit, set_fit
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -12,7 +13,18 @@ from evalml.utils import (
 logger = get_logger(__file__)
 
 
-class ComponentBase(ABC):
+class BaseMeta(ABCMeta):
+    def __new__(cls, name, bases, dct):
+        if 'predict' in dct:
+            dct['predict'] = check_for_fit(dct['predict'])
+        if 'predict_proba' in dct:
+            dct['predict_proba'] = check_for_fit(dct['predict_proba'])
+        if 'fit' in dct:
+            dct['fit'] = set_fit(dct['fit'])
+        return super().__new__(cls, name, bases, dct)
+
+
+class ComponentBase(ABC, metaclass=BaseMeta):
     """Base class for all components."""
     _default_parameters = None
 
@@ -20,6 +32,7 @@ class ComponentBase(ABC):
         self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
         self._parameters = parameters or {}
+        self._has_fit = False
 
     @property
     @classmethod
@@ -79,6 +92,8 @@ class ComponentBase(ABC):
             return self
         except AttributeError:
             raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
+
+        self._has_fit = True
 
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters

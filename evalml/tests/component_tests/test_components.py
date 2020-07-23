@@ -170,6 +170,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         component.fit(X)
 
     estimator = MockEstimator()
+    estimator._has_fit = True
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
@@ -177,6 +178,10 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
 
     transformer = MockTransformer()
     transformer_with_fit = MockTransformerWithFit()
+
+    transformer._has_fit = True
+    transformer._has_fit = True
+
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -363,7 +368,7 @@ def test_clone_fitted(X_y_binary):
 
     clf_clone = clf.clone()
     assert clf_clone.random_state.randint(2**30) == random_state_first_val
-    with pytest.raises(ValueError, match='Component is not fit'):
+    with pytest.raises(RuntimeError, match='Cannot call predict before fit'):
         clf_clone.predict(X)
     assert clf.parameters == clf_clone.parameters
 
@@ -491,3 +496,66 @@ def test_estimator_predict_output_type(X_y_binary):
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
+
+
+def test_estimator_check_for_fit(X_y_binary):
+    class MockEstimatorObj():
+        def __init__(self):
+            pass
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def __init__(self, parameters=None, component_obj=None, random_state=0):
+            est = MockEstimatorObj()
+            super().__init__(parameters=parameters, component_obj=est, random_state=random_state)
+
+    X, y = X_y_binary
+    est = MockEstimator()
+    with pytest.raises(Exception, match='Cannot call predict before fit'):
+        est.predict(X)
+    with pytest.raises(Exception, match='Cannot call predict before fit'):
+        est.predict_proba(X)
+
+    est.fit(X, y)
+    assert est._has_fit is True
+
+    est.predict(X)
+    est.predict_proba(X)
+
+
+def test_estimator_check_for_fit_with_overrides(X_y_binary):
+    class MockEstimatorWithOverrides(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
+
+    X, y = X_y_binary
+    est = MockEstimatorWithOverrides()
+    with pytest.raises(Exception, match='Cannot call predict before fit'):
+        est.predict(X)
+
+    est.fit(X, y)
+    assert est._has_fit is True
+
+    est.predict(X)
