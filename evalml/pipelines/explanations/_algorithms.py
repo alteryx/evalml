@@ -114,7 +114,7 @@ def _normalize_values_dict(values):
 
     Examples:
         >>> values = {"a": [1, -1, 3], "b": [3, -2, 0], "c": [-1, 3, 4]}
-        >>> normalized_values = _normalize_values_dict(values=)
+        >>> normalized_values = _normalize_values_dict(values)
         >>> assert normalized_values == {"a": [1/5, -1/6, 3/7], "b": [3/5, -2/6, 0/7], "c": [-1/5, 3/6, 4/7]}
     """
 

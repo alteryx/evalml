@@ -24,8 +24,8 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.explanations._algorithms import (
     _compute_shap_values,
-    _normalize_shap_values,
-    _create_dictionary
+    _create_dictionary,
+    _normalize_shap_values
 )
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
@@ -75,7 +75,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
 def test_create_dictionary_exception():
     with pytest.raises(ValueError, match="SHAP values must be stored in a numpy array!"):
-        _create_dictionary([1, 2 , 3], ["a", "b", "c"])
+        _create_dictionary([1, 2, 3], ["a", "b", "c"])
 
 
 N_CLASSES_BINARY = 2
