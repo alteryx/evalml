@@ -8,12 +8,6 @@ from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
 
 
-def _is_tree_estimator(model_family):
-    """Checks whether the estimator's model family uses tree ensembles."""
-    tree_estimators = {ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES, ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST}
-    return model_family in tree_estimators
-
-
 def _create_dictionary(shap_values, feature_names):
     """Creates a mapping from a feature name to a list of SHAP values for all points that were queried.
 
@@ -56,7 +50,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     # Sklearn components do this under-the-hood so we're not changing the data the model was trained on.
     pipeline_features = check_array(pipeline_features.values)
 
-    if _is_tree_estimator(estimator.model_family):
+    if ModelFamily.is_tree_estimator(estimator.model_family):
         # Because of this issue: https://github.com/slundberg/shap/issues/1215
         if estimator.model_family == ModelFamily.XGBOOST:
             raise NotImplementedError("SHAP values cannot currently be computed for xgboost models.")
