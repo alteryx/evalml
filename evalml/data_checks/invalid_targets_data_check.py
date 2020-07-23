@@ -13,8 +13,8 @@ class InvalidTargetDataCheck(DataCheck):
         """Checks if the target labels contain missing or invalid data.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.array, list) : Features. Ignored.
-            y : Target labels to check for invalid data.
+            X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
+            y: Target labels to check for invalid data.
 
         Returns:
             list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.

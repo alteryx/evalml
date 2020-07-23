@@ -67,7 +67,7 @@ class ClassificationPipeline(PipelineBase):
             objective (Object or string): the objective to use to make predictions
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series: estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -94,7 +94,7 @@ class ClassificationPipeline(PipelineBase):
             X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame : probability estimates
+            pd.DataFrame: probability estimates
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

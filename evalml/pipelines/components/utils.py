@@ -77,7 +77,7 @@ def handle_component_class(component_class):
     without modification.
 
     Arguments:
-        component (str, ComponentBase) : input to be standardized
+        component (str, ComponentBase): input to be standardized
 
     Returns:
         ComponentBase
