@@ -965,15 +965,15 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
-def test_targets_data_types_classification_pipelines(problem_type, target_type, get_all_binary_pipeline_classes, get_all_multiclass_pipeline_classes):
+def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
     if problem_type == ProblemTypes.BINARY:
         objective = "log_loss_binary"
-        pipelines = get_all_binary_pipeline_classes
+        pipelines = all_binary_pipeline_classes
         X, y = load_breast_cancer()
         if target_type == "bool":
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
-        pipelines = get_all_multiclass_pipeline_classes
+        pipelines = all_multiclass_pipeline_classes
         objective = "log_loss_multi"
 
         X, y = load_wine()
