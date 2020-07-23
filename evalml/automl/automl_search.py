@@ -797,7 +797,7 @@ class AutoMLSearch:
         """Saves AutoML object at file path
 
         Arguments:
-            file_path (str) : location to save file
+            file_path (str): location to save file
 
         Returns:
             None
@@ -810,7 +810,7 @@ class AutoMLSearch:
         """Loads AutoML object at file path
 
         Arguments:
-            file_path (str) : location to find file to load
+            file_path (str): location to find file to load
 
         Returns:
             AutoSearchBase object

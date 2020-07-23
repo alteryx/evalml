@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
+        * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
