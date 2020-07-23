@@ -19,6 +19,8 @@ class BaseMeta(ABCMeta):
             dct['predict'] = check_for_fit(dct['predict'])
         if 'predict_proba' in dct:
             dct['predict_proba'] = check_for_fit(dct['predict_proba'])
+        if 'transform' in dct:
+            dct['transform'] = check_for_fit(dct['transform'])
         if 'fit' in dct:
             dct['fit'] = set_fit(dct['fit'])
         return super().__new__(cls, name, bases, dct)

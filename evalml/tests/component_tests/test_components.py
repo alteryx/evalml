@@ -523,9 +523,9 @@ def test_estimator_check_for_fit(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimator()
-    with pytest.raises(Exception, match='Cannot call predict before fit'):
+    with pytest.raises(RuntimeError, match='Cannot call'):
         est.predict(X)
-    with pytest.raises(Exception, match='Cannot call predict before fit'):
+    with pytest.raises(RuntimeError, match='Cannot call'):
         est.predict_proba(X)
 
     est.fit(X, y)
@@ -552,10 +552,60 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimatorWithOverrides()
-    with pytest.raises(Exception, match='Cannot call predict before fit'):
+    with pytest.raises(RuntimeError, match='Cannot call'):
         est.predict(X)
 
     est.fit(X, y)
     assert est._has_fit is True
 
     est.predict(X)
+
+
+def test_transformer_check_for_fit(X_y_binary):
+    class MockTransformerObj():
+        def __init__(self):
+            pass
+
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    class MockTransformer(Transformer):
+        name = "Mock Transformer"
+
+        def __init__(self, parameters=None, component_obj=None, random_state=0):
+            transformer = MockTransformerObj()
+            super().__init__(parameters=parameters, component_obj=transformer, random_state=random_state)
+
+    X, y = X_y_binary
+    trans = MockTransformer()
+    with pytest.raises(RuntimeError, match='Cannot call'):
+        trans.transform(X)
+
+    trans.fit(X, y)
+    assert trans._has_fit is True
+
+    trans.transform(X)
+
+
+def test_transformer_check_for_fit_with_overrides(X_y_binary):
+    class MockTransformerWithOverride(Transformer):
+        name = "Mock Transformer"
+
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    X, y = X_y_binary
+    trans = MockTransformerWithOverride()
+    with pytest.raises(RuntimeError, match='Cannot call'):
+            trans.transform(X)
+
+    trans.fit(X, y)
+    assert trans._has_fit is True
+
+    trans.transform(X)

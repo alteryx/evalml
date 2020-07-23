@@ -5,7 +5,7 @@ def check_for_fit(method):
     @wraps(method)
     def wrapped(self, X):
         if self._has_fit is False:
-            raise RuntimeError('Cannot call predict before fit')
+            raise RuntimeError('Cannot call predict/predict_proba/transform before fit')
         return method(self, X)
     return wrapped
 
