@@ -25,7 +25,20 @@ class InvalidTargetDataCheck(DataCheck):
         """
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
+        messages = []
         null_rows = y.isnull()
-        if not null_rows.any():
-            return []
-        return [DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name)]
+        if null_rows.any():
+            messages.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
+        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
+        valid_target_types = numerics + ['object', 'category']
+
+        if y.dtype.name not in valid_target_types:
+            messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
+
+        value_counts = y.value_counts()
+        if len(value_counts) == 2 and y.dtype in numerics:
+            unique_values = value_counts.index.tolist()
+            if set(unique_values) != set([0, 1]):
+                messages.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])), self.name))
+
+        return messages

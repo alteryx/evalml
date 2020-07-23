@@ -2,8 +2,9 @@
 import inspect
 
 from evalml.exceptions import MissingComponentError
-from evalml.pipelines import Estimator, Transformer
-from evalml.pipelines.components import ComponentBase
+from evalml.model_family.utils import handle_model_family
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
@@ -13,6 +14,59 @@ _all_estimators = get_importable_subclasses(Estimator, used_in_automl=False)
 _all_estimators_used_in_search = get_importable_subclasses(Estimator, used_in_automl=True)
 _all_transformers = get_importable_subclasses(Transformer, used_in_automl=False)
 all_components = _all_estimators + _all_transformers
+
+
+def allowed_model_families(problem_type):
+    """List the model types allowed for a particular problem type.
+
+    Arguments:
+        problem_types (ProblemTypes or str): binary, multiclass, or regression
+
+    Returns:
+        list[ModelFamily]: a list of model families
+    """
+
+    estimators = []
+    problem_type = handle_problem_types(problem_type)
+    for estimator in _all_estimators_used_in_search:
+        if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
+            estimators.append(estimator)
+
+    return list(set([e.model_family for e in estimators]))
+
+
+def get_estimators(problem_type, model_families=None):
+    """Returns the estimators allowed for a particular problem type.
+
+    Can also optionally filter by a list of model types.
+
+    Arguments:
+        problem_type (ProblemTypes or str): problem type to filter for
+        model_families (list[ModelFamily] or list[str]): model families to filter for
+
+    Returns:
+        list[class]: a list of estimator subclasses
+    """
+    if model_families is not None and not isinstance(model_families, list):
+        raise TypeError("model_families parameter is not a list.")
+    problem_type = handle_problem_types(problem_type)
+    if model_families is None:
+        model_families = allowed_model_families(problem_type)
+
+    model_families = [handle_model_family(model_family) for model_family in model_families]
+    all_model_families = allowed_model_families(problem_type)
+    for model_family in model_families:
+        if model_family not in all_model_families:
+            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
+
+    estimator_classes = []
+    for estimator_class in _all_estimators_used_in_search:
+        if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
+            continue
+        if estimator_class.model_family not in model_families:
+            continue
+        estimator_classes.append(estimator_class)
+    return estimator_classes
 
 
 def handle_component_class(component_class):

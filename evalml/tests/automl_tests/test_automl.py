@@ -14,6 +14,7 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning
 )
+from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
@@ -22,7 +23,8 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.utils import get_estimators, make_pipeline
+from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -61,6 +63,9 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
                 assert isinstance(cv_result['binary_classification_threshold'], float)
             else:
                 assert cv_result['binary_classification_threshold'] is None
+            all_objective_scores = cv_result["all_objective_scores"]
+            for score in all_objective_scores.values():
+                assert score is not None
         assert automl.get_pipeline(pipeline_id).parameters == results['parameters']
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
@@ -72,35 +77,44 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
 
 
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipeline_limits(mock_fit, mock_score, caplog, X_y_binary):
-    X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
+def test_pipeline_limits(mock_fit_binary, mock_score_binary,
+                         mock_fit_multi, mock_score_multi,
+                         mock_fit_regression, mock_score_regression,
+                         automl_type, caplog,
+                         X_y_binary, X_y_multi, X_y_regression):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
 
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
+    mock_score_binary.return_value = {'Log Loss Binary': 1.0}
+    mock_score_multi.return_value = {'Log Loss Multiclass': 1.0}
+    mock_score_regression.return_value = {'R2': 1.0}
+
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=1)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 1 pipelines. " in out
     assert len(automl.results['pipeline_results']) == 1
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_time=1)
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1)
     automl.search(X, y)
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
     assert len(automl.results['pipeline_results']) >= 1
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='multiclass', max_time=1e-16)
-    automl.search(X, y)
-    out = caplog.text
-    assert "Will stop searching for new pipelines after 0 seconds" in out
-    # search will always run at least one pipeline
-    assert len(automl.results['pipeline_results']) >= 1
-
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_time=1, max_pipelines=5)
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1, max_pipelines=5)
     automl.search(X, y)
     out = caplog.text
     assert "Searching up to 5 pipelines. " in out
@@ -108,19 +122,19 @@ def test_pipeline_limits(mock_fit, mock_score, caplog, X_y_binary):
     assert len(automl.results['pipeline_results']) <= 5
 
     caplog.clear()
-    automl = AutoMLSearch(problem_type='binary')
+    automl = AutoMLSearch(problem_type=automl_type)
     automl.search(X, y)
     out = caplog.text
     assert "Using default limit of max_pipelines=5." in out
     assert len(automl.results['pipeline_results']) <= 5
 
-
-def test_search_order(X_y_binary):
-    X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=3)
+    caplog.clear()
+    automl = AutoMLSearch(problem_type=automl_type, max_time=1e-16)
     automl.search(X, y)
-    correct_order = [0, 1, 2]
-    assert automl.results['search_order'] == correct_order
+    out = caplog.text
+    assert "Will stop searching for new pipelines after 0 seconds" in out
+    # search will always run at least one pipeline
+    assert len(automl.results['pipeline_results']) >= 1
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -128,15 +142,9 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    with pytest.raises(Exception, match=msg):
-        automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Exception during automl search' in out
 
-    caplog.clear()
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
     assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
@@ -157,22 +165,17 @@ def test_pipeline_score_raises(mock_score, X_y_binary, caplog):
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    with pytest.raises(Exception, match=msg):
-        automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Exception during automl search' in out
-    pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 0
 
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
     assert 'Exception during automl search' in out
+    assert 'All scores will be replaced with nan.' in out
     pipeline_results = automl.results.get('pipeline_results', {})
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
-    assert np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+    cv_scores_all = pipeline_results[0]["cv_data"][0]["all_objective_scores"]
+    objective_scores = {o.name: cv_scores_all[o.name] for o in [automl.objective] + automl.additional_objectives}
+
+    assert np.isnan(list(objective_scores.values())).all()
 
 
 @patch('evalml.objectives.AUC.score')
@@ -181,29 +184,18 @@ def test_objective_score_raises(mock_score, X_y_binary, caplog):
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=True)
-    out = caplog.text
-    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
-    pipeline_results = automl.results.get('pipeline_results', {})
-    assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
-    scores = cv_scores_all[0]['all_objective_scores']
-    auc_score = scores.pop('AUC')
-    assert np.isnan(auc_score)
-    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
 
-    caplog.clear()
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=1)
-    automl.search(X, y, raise_errors=False)
+    automl.search(X, y)
     out = caplog.text
-    assert 'Error in PipelineBase.score while scoring objective AUC: all your model are belong to us' in out
-    pipeline_results = automl.results.get('pipeline_results', {})
+
+    assert msg in out
+    pipeline_results = automl.results.get('pipeline_results')
     assert len(pipeline_results) == 1
-    cv_scores_all = pipeline_results[0].get('cv_data', {})
+    cv_scores_all = pipeline_results[0].get('cv_data')
     scores = cv_scores_all[0]['all_objective_scores']
     auc_score = scores.pop('AUC')
     assert np.isnan(auc_score)
-    assert not np.isnan(list(cv_scores_all[0]['all_objective_scores'].values())).any()
+    assert not np.isnan(list(scores.values())).any()
 
 
 def test_rankings(X_y_binary, X_y_regression):
@@ -571,14 +563,15 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
 
 
-def test_allowed_pipelines_with_incorrect_problem_type(X_y_regression, dummy_binary_pipeline_class):
-    X, y = X_y_regression
-    auto = AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
+def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
+    # checks that not setting allowed_pipelines does not error out
+    AutoMLSearch(problem_type='binary')
+
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
-        auto.search(X, y)
+        AutoMLSearch(problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
 
 
-def test_obj_matches_problem_type():
+def test_main_objective_problem_type_mismatch():
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(problem_type='binary', objective='R2')
 
@@ -609,20 +602,10 @@ def test_checks_at_search_time(mock_search, dummy_regression_pipeline_class, X_y
     with pytest.raises(ValueError, match=error_text):
         error_automl.search(X, y)
 
-    error_text = "in search, problem_type mismatches allowed_pipelines."
-    mock_search.side_effect = ValueError(error_text)
 
-    allowed_pipelines = [dummy_regression_pipeline_class]
-    error_automl = AutoMLSearch(problem_type='binary', allowed_pipelines=allowed_pipelines)
-    with pytest.raises(ValueError, match=error_text):
-        error_automl.search(X, y)
-
-
-def test_objective_at_search_time(X_y_multi):
-    X, y = X_y_multi
-    error_automl = AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'],)
+def test_incompatible_additional_objectives():
     with pytest.raises(ValueError, match="is not compatible with a "):
-        error_automl.search(X, y)
+        AutoMLSearch(problem_type='multiclass', additional_objectives=['Precision', 'AUC'])
 
 
 def test_default_objective():
@@ -784,7 +767,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: Binary Classification" in out
     assert "Model Family: Baseline" in out
-    assert "* strategy : random_weighted" in out
+    assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Testing" in out
     assert "0                      1.000     66.000    34.000" in out
@@ -813,3 +796,93 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+def test_targets_data_types_classification(automl_type, target_type):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = load_breast_cancer()
+        if target_type == "bool":
+            y = y.map({"malignant": False, "benign": True})
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = load_wine()
+    if target_type == "categorical":
+        y = pd.Categorical(y)
+    elif target_type == "int":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
+    elif target_type == "float":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
+
+    automl = AutoMLSearch(problem_type=automl_type, max_pipelines=3)
+    automl.search(X, y)
+    for pipeline_result in automl.results['pipeline_results'].values():
+        cv_data = pipeline_result['cv_data']
+        for fold in cv_data:
+            all_objective_scores = fold["all_objective_scores"]
+            for score in all_objective_scores.values():
+                assert score is not None
+
+    assert len(automl.full_rankings) == 3
+    assert not automl.full_rankings['score'].isnull().values.any()
+
+
+class KeyboardInterruptOnKthPipeline:
+    """Helps us time when the test will send a KeyboardInterrupt Exception to search."""
+
+    def __init__(self, k):
+        self.n_calls = 1
+        self.k = k
+
+    def __call__(self, pipeline_class, parameters):
+        """Raises KeyboardInterrupt on the kth call.
+
+        Arguments are ignored but included to meet the call back API.
+        """
+        if self.n_calls == self.k:
+            self.n_calls += 1
+            raise KeyboardInterrupt
+        else:
+            self.n_calls += 1
+
+
+# These are used to mock return values to the builtin "input" function.
+interrupt = ["y"]
+interrupt_after_bad_message = ["No.", "Yes!", "y"]
+dont_interrupt = ["n"]
+dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
+
+
+@pytest.mark.parametrize("when_to_interrupt,user_input,number_results",
+                         [(1, interrupt, 0),
+                          (1, interrupt_after_bad_message, 0),
+                          (1, dont_interrupt, 5),
+                          (1, dont_interrupt_after_bad_message, 5),
+                          (2, interrupt, 1),
+                          (2, interrupt_after_bad_message, 1),
+                          (2, dont_interrupt, 5),
+                          (2, dont_interrupt_after_bad_message, 5),
+                          (3, interrupt, 2),
+                          (3, interrupt_after_bad_message, 2),
+                          (3, dont_interrupt, 5),
+                          (3, dont_interrupt_after_bad_message, 5),
+                          (5, interrupt, 4),
+                          (5, interrupt_after_bad_message, 4),
+                          (5, dont_interrupt, 5),
+                          (5, dont_interrupt_after_bad_message, 5)])
+@patch("builtins.input")
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
+                                  when_to_interrupt, user_input, number_results,
+                                  X_y_binary):
+
+    mock_input.side_effect = user_input
+    X, y = X_y_binary
+    callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=5, start_iteration_callback=callback, objective="f1")
+    automl.search(X, y)
+
+    assert len(automl._results['pipeline_results']) == number_results

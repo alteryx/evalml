@@ -61,7 +61,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     * API changes - if you change the API update `docs/source/api_reference.rst`
     * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
 
-* Update the "Future Release" section at the top of the changelog (`docs/source/changelog.rst`) to include an entry for your pull request. Write your entry in past tense, i.e. "added fizzbuzz impl."
+* Update the "Future Release" section at the top of the release notes (`docs/source/release_notes.rst`) to include an entry for your pull request. Write your entry in past tense, i.e. "added fizzbuzz impl."
 
 Add a description of your PR to the subsection that most closely matches your contribution:
     * Enhancements: new features or additions to EvalML.
@@ -70,7 +70,7 @@ Add a description of your PR to the subsection that most closely matches your co
     * Documentation Changes
     * Testing Changes
 
-If your work includes a [breaking change](https://en.wiktionary.org/wiki/breaking_change), please add a description of what has been affected in the "Breaking Changes" section below the latest changelog. If no "Breaking Changes" section yet exists, please create one as follows. See past changelogs for examples of this.
+If your work includes a [breaking change](https://en.wiktionary.org/wiki/breaking_change), please add a description of what has been affected in the "Breaking Changes" section below the latest release notes. If no "Breaking Changes" section yet exists, please create one as follows. See past release notes for examples of this.
 ```
 .. warning::
 
