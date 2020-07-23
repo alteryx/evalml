@@ -24,7 +24,8 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.explanations._algorithms import (
     _compute_shap_values,
-    _normalize_shap_values
+    _normalize_shap_values,
+    _create_dictionary
 )
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
@@ -72,6 +73,11 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
         _ = _compute_shap_values(pipeline({}), pd.DataFrame(np.random.random((2, 16))))
 
 
+def test_create_dictionary_exception():
+    with pytest.raises(ValueError, match="SHAP values must be stored in a numpy array!"):
+        _create_dictionary([1, 2 , 3], ["a", "b", "c"])
+
+
 N_CLASSES_BINARY = 2
 N_CLASSES_MULTICLASS = 3
 N_FEATURES = 20
@@ -99,11 +105,6 @@ def check_regression(shap_values, n_points_to_explain):
     assert all(len(v) == n_points_to_explain for v in shap_values.values()), "A SHAP value must be computed for every data point to explain!"
 
 
-def not_xgboost_or_baseline(estimator):
-    """Filter out xgboost and baselines for next test since they are not supported."""
-    return estimator.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}
-
-
 def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
     pipeline = pipeline_class({}, random_state=0)
@@ -112,12 +113,12 @@ def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explai
     return _compute_shap_values(pipeline, points_to_explain, training_data)
 
 
-interpretable_estimators = filter(not_xgboost_or_baseline, _all_estimators_used_in_search)
+interpretable_estimators = [e for e in _all_estimators_used_in_search if e.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}]
 all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 all_n_points_to_explain = [1, 5]
 
 
-@pytest.mark.parametrize("estimator, problem_type,n_points_to_explain",
+@pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
                          product(interpretable_estimators, all_problems, all_n_points_to_explain))
 def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression):
 

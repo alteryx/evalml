@@ -6,6 +6,9 @@ from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
+from evalml.utils import get_logger
+
+logger = get_logger(__file__)
 
 
 def _create_dictionary(shap_values, feature_names):
@@ -18,7 +21,8 @@ def _create_dictionary(shap_values, feature_names):
     Returns:
         dictionary
     """
-    assert isinstance(shap_values, np.ndarray), "SHAP values must be stored in a numpy array!"
+    if not isinstance(shap_values, np.ndarray):
+        raise ValueError("SHAP values must be stored in a numpy array!")
     shap_values = np.atleast_2d(shap_values)
     mapping = {}
     for feature_name, column_index in zip(feature_names, range(shap_values.shape[1])):
@@ -58,8 +62,10 @@ def _compute_shap_values(pipeline, features, training_data=None):
             # Will randomly segfault
             raise NotImplementedError("SHAP values cannot currently be computed for catboost models for multiclass problems.")
         # Use tree_path_dependent to avoid linear runtime with dataset size
-        with warnings.catch_warnings(record=True):
+        with warnings.catch_warnings(record=True) as ws:
             explainer = shap.TreeExplainer(estimator._component_obj, feature_perturbation="tree_path_dependent")
+        if ws:
+            logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(pipeline_features, check_additivity=False)
     else:
         if training_data is None:
@@ -78,9 +84,11 @@ def _compute_shap_values(pipeline, features, training_data=None):
         else:
             link_function = "logit"
             decision_function = estimator._component_obj.predict_proba
-        with warnings.catch_warnings(record=True):
+        with warnings.catch_warnings(record=True) as ws:
             explainer = shap.KernelExplainer(decision_function, sampled_training_data_features, link_function)
             shap_values = explainer.shap_values(pipeline_features)
+        if ws:
+            logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
 
     # classification problem
     if isinstance(shap_values, list):
@@ -96,6 +104,19 @@ def _compute_shap_values(pipeline, features, training_data=None):
 
 
 def _normalize_values_dict(values):
+    """Normalizes SHAP values by dividing by the sum of absolute values for each feature.
+
+    Arguments:
+        values (dict): A mapping of feature names to a list of SHAP values for each data point.
+
+    Returns:
+        dict
+
+    Examples:
+        >>> values = {"a": [1, -1, 3], "b": [3, -2, 0], "c": [-1, 3, 4]}
+        >>> normalized_values = _normalize_values_dict(values=)
+        >>> assert normalized_values == {"a": [1/5, -1/6, 3/7], "b": [3/5, -2/6, 0/7], "c": [-1/5, 3/6, 4/7]}
+    """
 
     sorted_feature_names = sorted(values)
     # Store in matrix of shape (len(values), n_features)
@@ -115,8 +136,6 @@ def _normalize_shap_values(values):
     Arguments:
         values (dict or list(dict)): Dictionary mapping feature name to list of values,
             or a list of dictionaries (each mapping a feature name to a list of values).
-        new_min (float): New minimum value.
-        new_max (float): New maximum value.
 
     Returns:
         dict or list(dict)
