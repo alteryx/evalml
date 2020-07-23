@@ -28,10 +28,10 @@ class Estimator(ComponentBase):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame) : features
+            X (pd.DataFrame): features
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series: estimated labels
         """
         try:
             predictions = self._component_obj.predict(X)
@@ -45,10 +45,10 @@ class Estimator(ComponentBase):
         """Make probability estimates for labels.
 
         Args:
-            X (pd.DataFrame) : features
+            X (pd.DataFrame): features
 
         Returns:
-            pd.DataFrame : probability estimates
+            pd.DataFrame: probability estimates
         """
         try:
             pred_proba = self._component_obj.predict_proba(X)
@@ -63,7 +63,7 @@ class Estimator(ComponentBase):
         """Returns importance associated with each feature.
 
         Returns:
-            list(float) : importance associated with each feature
+            list(float): importance associated with each feature
         """
         try:
             return self._component_obj.feature_importances_

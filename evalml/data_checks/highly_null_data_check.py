@@ -23,8 +23,8 @@ class HighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.array, list) : features
-            y : Ignored.
+            X (pd.DataFrame, pd.Series, np.array, list): features
+            y: Ignored.
 
         Returns:
             list (DataCheckWarning): list with a DataCheckWarning if there are any highly-null columns.

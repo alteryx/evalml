@@ -90,7 +90,7 @@ class BaselineClassifier(Estimator):
         """Returns importance associated with each feature. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.array (float) : an array of zeroes
+            np.array (float): an array of zeroes
 
         """
         if self._num_unique is None:
