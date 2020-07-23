@@ -33,22 +33,22 @@ def create_mock_pipeline(estimator, problem_type):
 
 
 @pytest.fixture
-def get_all_pipeline_classes():
-    get_all_possible_pipeline_classes = []
+def all_pipeline_classes():
+    all_possible_pipeline_classes = []
     for estimator in _all_estimators:
         for problem_type in estimator.supported_problem_types:
-            get_all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
-    return get_all_possible_pipeline_classes
+            all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
+    return all_possible_pipeline_classes
 
 
 @pytest.fixture
-def get_all_binary_pipeline_classes(get_all_pipeline_classes):
-    return [pipeline_class for pipeline_class in get_all_pipeline_classes if issubclass(pipeline_class, BinaryClassificationPipeline)]
+def all_binary_pipeline_classes(all_pipeline_classes):
+    return [pipeline_class for pipeline_class in all_pipeline_classes if issubclass(pipeline_class, BinaryClassificationPipeline)]
 
 
 @pytest.fixture
-def get_all_multiclass_pipeline_classes(get_all_pipeline_classes):
-    return [pipeline_class for pipeline_class in get_all_pipeline_classes if issubclass(pipeline_class, MulticlassClassificationPipeline)]
+def all_multiclass_pipeline_classes(all_pipeline_classes):
+    return [pipeline_class for pipeline_class in all_pipeline_classes if issubclass(pipeline_class, MulticlassClassificationPipeline)]
 
 
 def pytest_addoption(parser):
