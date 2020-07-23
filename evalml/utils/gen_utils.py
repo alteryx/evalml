@@ -10,7 +10,7 @@ from evalml.utils import get_logger
 logger = get_logger(__file__)
 
 
-numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
+numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
 numerics_and_boolean = numerics + boolean
 
