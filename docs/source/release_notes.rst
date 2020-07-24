@@ -15,6 +15,7 @@ Release Notes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
         * Moved `evalml.model_families.list_model_families` to `evalml.pipelines.components.allowed_model_families` :pr:`959`
+        * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
     * Documentation Changes
         * Update README.md :pr:`963`
     * Testing Changes
@@ -27,6 +28,7 @@ Release Notes
         * Removed the ``raise_errors`` flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
         * ``evalml.model_families.list_model_families`` has been moved to `evalml.pipelines.components.allowed_model_families` :pr:`959`
         * ``TextFeaturizer``: the ``featuretools`` and ``nlp_primitives`` packages must be installed after installing evalml in order to use this component :pr:`976`
+        * Renamed ``DateTimeFeaturization`` to ``DateTimeFeaturizer`` :pr:`977`
 
 
 **v0.11.2 July 16, 2020**

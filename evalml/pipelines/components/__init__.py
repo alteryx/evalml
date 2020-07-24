@@ -29,7 +29,7 @@ from .transformers import (
     CategoricalEncoder,
     DropColumns,
     DropNullColumns,
-    DateTimeFeaturization,
+    DateTimeFeaturizer,
     SelectColumns,
     TextFeaturizer
     )
