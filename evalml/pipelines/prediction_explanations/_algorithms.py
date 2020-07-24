@@ -54,7 +54,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     # Sklearn components do this under-the-hood so we're not changing the data the model was trained on.
     pipeline_features = check_array(pipeline_features.values)
 
-    if ModelFamily.is_tree_estimator(estimator.model_family):
+    if estimator.model_family.is_tree_estimator():
         # Because of this issue: https://github.com/slundberg/shap/issues/1215
         if estimator.model_family == ModelFamily.XGBOOST:
             raise NotImplementedError("SHAP values cannot currently be computed for xgboost models.")
@@ -67,6 +67,12 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(pipeline_features, check_additivity=False)
+        # shap only outputs values for positive class for Catboost binary estimators.
+        # this modifies the output to match the output format of other binary estimators.
+        # Ok to fill values of negative class with zeros since the negative class will get dropped
+        # in the UI anyways.
+        if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
+            shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:
             raise ValueError("You must pass in a value for parameter 'training_data' when the pipeline "

@@ -22,7 +22,7 @@ from evalml.pipelines.components import (
     XGBoostRegressor
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
-from evalml.pipelines.explanations._algorithms import (
+from evalml.pipelines.prediction_explanations._algorithms import (
     _compute_shap_values,
     _create_dictionary,
     _normalize_shap_values
@@ -61,7 +61,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
-@patch("evalml.pipelines.explanations._algorithms.shap.TreeExplainer")
+@patch("evalml.pipelines.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
     if "xgboost" in pipeline.name.lower():
@@ -81,28 +81,6 @@ def test_create_dictionary_exception():
 N_CLASSES_BINARY = 2
 N_CLASSES_MULTICLASS = 3
 N_FEATURES = 20
-
-
-def check_classification(shap_values, is_binary, n_points_to_explain):
-    """Checks whether the SHAP values computed for a classifier match our expectations."""
-    assert isinstance(shap_values, list), "For binary classification, returned values must be a list"
-    assert all(isinstance(class_values, dict) for class_values in shap_values), "Not all list elements are lists!"
-    if is_binary:
-        assert len(shap_values) == N_CLASSES_BINARY, "A dictionary should be returned for each class!"
-    else:
-        assert len(shap_values) == N_CLASSES_MULTICLASS, "A dictionary should be returned for each class!"
-    assert all(len(values) == N_FEATURES for values in shap_values), "A SHAP value must be computed for every feature!"
-    for class_values in shap_values:
-        assert all(isinstance(feature, list) for feature in class_values.values()), "Every value in the dict must be a list!"
-        assert all(len(v) == n_points_to_explain for v in class_values.values()), "A SHAP value must be computed for every data point to explain!"
-
-
-def check_regression(shap_values, n_points_to_explain):
-    """Checks whether the SHAP values computed for a regressor match our expectations."""
-    assert isinstance(shap_values, dict), "For regression, returned values must be a dictionary!"
-    assert len(shap_values) == N_FEATURES, "A SHAP value should be computed for every feature!"
-    assert all(isinstance(feature, list) for feature in shap_values.values()), "Every value in the dict must be a list!"
-    assert all(len(v) == n_points_to_explain for v in shap_values.values()), "A SHAP value must be computed for every data point to explain!"
 
 
 def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain):
@@ -130,24 +108,36 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
     if problem_type == ProblemTypes.BINARY:
         training_data, y = X_y_binary
-        pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-        shap_values = calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain)
-
-        # CatBoostClassifiers on binary problems only output one value
-        if isinstance(shap_values, dict):
-            check_regression(shap_values, n_points_to_explain=n_points_to_explain)
-        else:
-            check_classification(shap_values, True, n_points_to_explain=n_points_to_explain)
+        is_binary = True
     elif problem_type == ProblemTypes.MULTICLASS:
         training_data, y = X_y_multi
-        pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-        shap_values = calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain)
-        check_classification(shap_values, False, n_points_to_explain)
+        is_binary = False
     else:
         training_data, y = X_y_regression
-        pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-        shap_values = calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain)
-        check_regression(shap_values, n_points_to_explain)
+
+    pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
+    shap_values = calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain)
+
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        assert isinstance(shap_values, list), "For binary classification, returned values must be a list"
+        assert all(isinstance(class_values, dict) for class_values in shap_values), "Not all list elements are lists!"
+        if is_binary:
+            assert len(shap_values) == N_CLASSES_BINARY, "A dictionary should be returned for each class!"
+        else:
+            assert len(shap_values) == N_CLASSES_MULTICLASS, "A dictionary should be returned for each class!"
+        assert all(
+            len(values) == N_FEATURES for values in shap_values), "A SHAP value must be computed for every feature!"
+        for class_values in shap_values:
+            assert all(isinstance(feature, list) for feature in
+                       class_values.values()), "Every value in the dict must be a list!"
+            assert all(len(v) == n_points_to_explain for v in
+                       class_values.values()), "A SHAP value must be computed for every data point to explain!"
+    elif problem_type == ProblemTypes.REGRESSION:
+        assert isinstance(shap_values, dict), "For regression, returned values must be a dictionary!"
+        assert len(shap_values) == N_FEATURES, "A SHAP value should be computed for every feature!"
+        assert all(isinstance(feature, list) for feature in shap_values.values()), "Every value in the dict must be a list!"
+        assert all(len(v) == n_points_to_explain for v in
+                   shap_values.values()), "A SHAP value must be computed for every data point to explain!"
 
 
 def test_normalize_values_exceptions():
