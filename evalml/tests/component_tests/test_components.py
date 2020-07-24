@@ -61,18 +61,15 @@ class MockFitComponent(ComponentBase):
     name = 'Mock Fit Component'
 
     def __init__(self, param_a=2, param_b=10, random_state=0):
-        self.is_fitted = False
         parameters = {'param_a': param_a, 'param_b': param_b}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=0)
 
     def fit(self, X, y=None):
-        self.is_fitted = True
+        pass
 
     def predict(self, X):
-        if not self.is_fitted:
-            raise ValueError('Component is not fit')
         return np.array([self.parameters['param_a'] * 2, self.parameters['param_b'] * 10])
 
 
