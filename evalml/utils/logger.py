@@ -1,7 +1,10 @@
 import logging
+import os
 import sys
 import time
+import traceback
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import tqdm
 
@@ -9,20 +12,27 @@ import tqdm
 def get_logger(name):
     logger = logging.getLogger(name)
     if not len(logger.handlers):
-        date_fmt = "%m/%d/%Y %I:%M:%S %p"
-        fmt = "%(asctime)s - %(levelname)s - %(filename)s: %(message)s"
-        log_handler = RotatingFileHandler(filename="evalml_debug.log")
-        log_handler.setLevel(logging.DEBUG)
-        log_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
-
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
         stdout_handler.setFormatter(logging.Formatter('%(message)s'))
-
         logger.addHandler(stdout_handler)
-        logger.addHandler(log_handler)
         logger.setLevel(logging.DEBUG)
 
+        evalml_log_path_str = os.environ.get('EVALML_LOG_FILE', 'evalml_debug.log')
+        evalml_log_path = Path(evalml_log_path_str)
+        if not evalml_log_path.is_dir() and os.access(evalml_log_path.parent, os.W_OK):
+            try:
+                date_fmt = "%m/%d/%Y %I:%M:%S %p"
+                fmt = "%(asctime)s - %(levelname)s - %(filename)s: %(message)s"
+                log_handler = RotatingFileHandler(filename=evalml_log_path)
+                log_handler.setLevel(logging.DEBUG)
+                log_handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=date_fmt))
+                logger.addHandler(log_handler)
+            except Exception as e:
+                logger.warning(f'Exception encountered while setting up logging RotatingFileHandler at path {evalml_log_path}: {str(e)}')
+                logger.warning(''.join(traceback.format_tb(sys.exc_info()[2])))
+                logger.warning('Continuing without logging to file')
+        logger.setLevel(logging.DEBUG)
     return logger
 
 
