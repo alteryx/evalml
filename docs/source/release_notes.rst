@@ -7,6 +7,7 @@ Release Notes
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
+        * Added universal error for calling predict/predict_proba_/transform/feature_importances before fitting :pr:`969`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`

@@ -10,7 +10,7 @@ def check_for_fit(method):
     def _check_for_fit(self, X=None, y=None):
         klass = type(self).__name__
         if self._has_fit is False and klass not in NO_FITTING_REQUIRED:
-            raise UnfitComponentError('You must fit before calling {}.'.format(method.__name__))
+            raise UnfitComponentError('You must fit {} before calling {}.'.format(klass, method.__name__))
         if y is None and X is None:
             return method(self)
         elif y is None:
@@ -25,7 +25,7 @@ def check_for_fit_properties(method):
     def _check_for_fit_properties(self, *args, **kwargs):
         klass = type(self).__name__
         if self._has_fit is False and klass not in NO_FITTING_REQUIRED:
-            raise UnfitComponentError('You must fit before calling {}.'.format(method.__name__))
+            raise UnfitComponentError('You must fit {} before calling {}.'.format(klass, method.__name__))
         return method(self, *args, **kwargs)
     return _check_for_fit_properties
 

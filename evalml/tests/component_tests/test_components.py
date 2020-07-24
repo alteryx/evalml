@@ -369,7 +369,7 @@ def test_clone_fitted(X_y_binary):
 
     clf_clone = clf.clone()
     assert clf_clone.random_state.randint(2**30) == random_state_first_val
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         clf_clone.predict(X)
     assert clf.parameters == clf_clone.parameters
 
@@ -524,9 +524,9 @@ def test_estimator_check_for_fit(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimator()
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         est.predict(X)
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         est.predict_proba(X)
 
     est.fit(X, y)
@@ -553,7 +553,7 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
     X, y = X_y_binary
     est = MockEstimatorWithOverrides()
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         est.predict(X)
 
     est.fit(X, y)
@@ -582,7 +582,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
     X, y = X_y_binary
     trans = MockTransformer()
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         trans.transform(X)
 
     trans.fit(X, y)
@@ -603,7 +603,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
 
     X, y = X_y_binary
     trans = MockTransformerWithOverride()
-    with pytest.raises(UnfitComponentError, match='You must fit before calling'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         trans.transform(X)
 
     trans.fit(X, y)

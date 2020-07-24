@@ -31,6 +31,8 @@ class BaseMeta(ABCMeta):
             dct['feature_importance'] = new_fi
         if 'fit' in dct:
             dct['fit'] = set_fit(dct['fit'])
+        if 'fit_transform' in dct:
+            dct['fit_transform'] = set_fit(dct['fit_transform'])
         return super().__new__(cls, name, bases, dct)
 
 
