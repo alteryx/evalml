@@ -46,13 +46,13 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     pp_components.append(SimpleImputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
-    add_datetime_featurization = len(datetime_cols.columns) > 0
-    if add_datetime_featurization:
+    add_datetime_featurizer = len(datetime_cols.columns) > 0
+    if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
     # DateTimeFeaturizer can create categorical columns
     categorical_cols = X.select_dtypes(include=['category', 'object'])
-    if (add_datetime_featurization or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
+    if (add_datetime_featurizer or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
     if estimator_class in {LinearRegressor, LogisticRegressionClassifier}:
