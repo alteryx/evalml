@@ -30,10 +30,12 @@ from evalml.pipelines.components import (
     XGBoostClassifier
 )
 from evalml.pipelines.components.utils import (
+    _all_estimators,
     _all_estimators_used_in_search,
     _all_transformers,
     all_components
 )
+from evalml.pipelines.components.wrappers import NO_FITTING_REQUIRED
 from evalml.problem_types import ProblemTypes
 
 
@@ -610,3 +612,40 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     assert trans._has_fit is True
 
     trans.transform(X)
+
+
+def test_all_components_check_fit(X_y_binary):
+    X, y = X_y_binary
+
+    for component_class in _all_transformers:
+        if component_class.__name__ in NO_FITTING_REQUIRED:
+            continue
+
+        component = component_class()
+        with pytest.raises(UnfitComponentError, match='You must fit'):
+            component.transform(X)
+
+        component.fit(X, y)
+        assert component._has_fit is True
+        component.transform(X)
+
+    for component_class in _all_estimators:
+        component = component_class()
+        with pytest.raises(UnfitComponentError, match='You must fit'):
+            component.predict(X)
+
+        if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
+            with pytest.raises(UnfitComponentError, match='You must fit'):
+                component.predict_proba(X)
+
+        with pytest.raises(UnfitComponentError, match='You must fit'):
+            component.feature_importance
+
+        component.fit(X, y)
+        assert component._has_fit is True
+
+        if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
+            component.predict_proba(X)
+
+        component.predict(X)
+        component.feature_importance
