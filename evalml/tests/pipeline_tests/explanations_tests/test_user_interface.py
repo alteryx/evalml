@@ -116,6 +116,5 @@ def test_make_single_prediction_table(values, normalized_values, include_shap, a
     table = _make_single_prediction_table(values, normalized_values, include_shap_values=include_shap)
 
     # Making sure the content is the same, regardless of formatting.
-    # Tricky to get the formatting right.
     for row_table, row_answer in zip(table.splitlines(), answer):
         assert row_table.strip().split() == row_answer.strip().split()
