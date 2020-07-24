@@ -13,8 +13,8 @@ class LeadScoring(BinaryClassificationObjective):
         """Create instance.
 
         Arguments:
-            true_positives (int) : reward for a true positive
-            false_positives (int) : cost for a false positive. Should be negative.
+            true_positives (int): reward for a true positive
+            false_positives (int): cost for a false positive. Should be negative.
         """
         self.true_positives = true_positives
         self.false_positives = false_positives

@@ -172,6 +172,14 @@ class PipelineBase(ABC):
             component.describe(print_name=False)
 
     def _transform(self, X):
+        """Transforms the data by applying all pre-processing components.
+
+        Arguments:
+            X (pd.DataFrame): Input data to the pipeline to transform.
+
+        Returns:
+            pd.DataFrame - New dataframe.
+        """
         X_t = X
         for component in self.component_graph[:-1]:
             X_t = component.transform(X_t)
@@ -187,6 +195,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
+    @abstractmethod
     def fit(self, X, y):
         """Build a model
 
@@ -199,23 +208,16 @@ class PipelineBase(ABC):
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        self._fit(X, y)
-        return self
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series: estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -228,8 +230,8 @@ class PipelineBase(ABC):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            y (pd.Series) : true labels of length [n_samples]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            y (pd.Series): true labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
@@ -324,7 +326,7 @@ class PipelineBase(ABC):
         """Generate an image representing the pipeline graph
 
         Arguments:
-            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+            filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
@@ -430,7 +432,7 @@ class PipelineBase(ABC):
         """Saves pipeline at file path
 
         Arguments:
-            file_path (str) : location to save file
+            file_path (str): location to save file
 
         Returns:
             None
@@ -443,7 +445,7 @@ class PipelineBase(ABC):
         """Loads pipeline at file path
 
         Arguments:
-            file_path (str) : location to load file
+            file_path (str): location to load file
 
         Returns:
             PipelineBase object

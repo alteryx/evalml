@@ -31,9 +31,9 @@ class ObjectiveBase(ABC):
     def objective_function(cls, y_true, y_predicted, X=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
          Arguments:
-            y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : actual class labels of length [n_samples]
-            X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
+            X (pd.DataFrame or np.array): extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
             numerical value used to calculate score
@@ -43,9 +43,9 @@ class ObjectiveBase(ABC):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:
-            y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : actual class labels of length [n_samples]
-            X (pd.DataFrame or np.array) : extra data of shape [n_samples, n_features] necessary to calculate score
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
+            X (pd.DataFrame or np.array): extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
             score
@@ -73,8 +73,8 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (pd.Series) : predicted values of length [n_samples]
-            y_true (pd.Series) : actual class labels of length [n_samples]
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
 
         Returns:
             None

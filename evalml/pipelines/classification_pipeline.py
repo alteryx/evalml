@@ -24,7 +24,7 @@ class ClassificationPipeline(PipelineBase):
         super().__init__(parameters, random_state)
 
     def fit(self, X, y):
-        """Build a model. For string and categorical targets, classes are sorted
+        """Build a classification model. For string and categorical targets, classes are sorted
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
@@ -67,7 +67,7 @@ class ClassificationPipeline(PipelineBase):
             objective (Object or string): the objective to use to make predictions
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series: estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -85,7 +85,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series : estimated labels
         """
         predictions = self._predict(X, objective)
-        return self._decode_targets(predictions)
+        return pd.Series(self._decode_targets(predictions))
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -94,13 +94,14 @@ class ClassificationPipeline(PipelineBase):
             X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame : probability estimates
+            pd.DataFrame: probability estimates
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
         X = self._transform(X)
         proba = self.estimator.predict_proba(X)
+        proba.columns = self._encoder.classes_
         return proba
 
     def score(self, X, y, objectives):

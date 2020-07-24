@@ -39,7 +39,7 @@ def get_objective(objective):
     """Returns the Objective object of the given objective name
 
     Args:
-        objective (str) : name of the objective
+        objective (str): name of the objective
 
     Returns:
         Objective
@@ -60,7 +60,7 @@ def get_objectives(problem_type):
     """Returns all objectives associated with the given problem type
 
     Args:
-        problem_type (str/ProblemTypes) : type of problem
+        problem_type (str/ProblemTypes): type of problem
 
     Returns:
         List of Objectives
