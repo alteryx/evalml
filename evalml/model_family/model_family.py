@@ -20,3 +20,9 @@ class ModelFamily(Enum):
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
+
+    def is_tree_estimator(self):
+        """Checks whether the estimator's model family uses tree ensembles."""
+        tree_estimators = {self.CATBOOST, self.EXTRA_TREES, self.RANDOM_FOREST,
+                           self.XGBOOST}
+        return self in tree_estimators
