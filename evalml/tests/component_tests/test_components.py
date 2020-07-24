@@ -563,6 +563,7 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
     assert est._has_fit is True
 
     est.predict(X)
+    est.predict_proba(X)
 
 
 def test_transformer_check_for_fit(X_y_binary):

@@ -105,8 +105,6 @@ class ComponentBase(ABC, metaclass=BaseMeta):
         except AttributeError:
             raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
 
-        self._has_fit = True
-
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters
 
