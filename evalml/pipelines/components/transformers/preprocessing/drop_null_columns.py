@@ -1,6 +1,5 @@
 import pandas as pd
 
-from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components.transformers import Transformer
 
 
@@ -47,8 +46,6 @@ class DropNullColumns(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._cols_to_drop is None:
-            raise UnfitComponentError("You must fit Drop Null Columns transformer before calling transform!")
 
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

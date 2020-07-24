@@ -5,8 +5,6 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from .encoder import CategoricalEncoder
 
-from evalml.exceptions import UnfitComponentError
-
 
 class OneHotEncoder(CategoricalEncoder):
 
@@ -118,8 +116,7 @@ class OneHotEncoder(CategoricalEncoder):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        if self._encoder is None:
-            raise UnfitComponentError("You must fit one hot encoder before calling transform!")
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         cat_cols = self._get_cat_cols(X)

@@ -33,6 +33,10 @@ def check_for_fit_properties(method):
 def set_fit(method):
     @wraps(method)
     def _set_fit(self, X, y=None):
+        try:
+            return_value = method(self, X, y)
+        except Exception as e:
+            raise e
         self._has_fit = True
-        return method(self, X, y)
+        return return_value
     return _set_fit
