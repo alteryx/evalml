@@ -12,6 +12,7 @@ from nlp_primitives import (
 )
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils import import_or_raise
 
 
 class TextFeaturizer(Transformer):
@@ -27,6 +28,9 @@ class TextFeaturizer(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
+        ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
+        import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
+
         text_columns = text_columns or []
         parameters = {'text_columns': text_columns}
         parameters.update(kwargs)
