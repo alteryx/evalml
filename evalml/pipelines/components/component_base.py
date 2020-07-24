@@ -2,7 +2,11 @@ import copy
 from abc import ABC, ABCMeta, abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.pipelines.components.wrappers import check_for_fit, set_fit
+from evalml.pipelines.components.wrappers import (
+    check_for_fit,
+    check_for_fit_properties,
+    set_fit
+)
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -21,6 +25,10 @@ class BaseMeta(ABCMeta):
             dct['predict_proba'] = check_for_fit(dct['predict_proba'])
         if 'transform' in dct:
             dct['transform'] = check_for_fit(dct['transform'])
+        if 'feature_importance' in dct:
+            fi = dct['feature_importance']
+            new_fi = property(check_for_fit_properties(fi.__get__), fi.__set__, fi.__delattr__)
+            dct['feature_importance'] = new_fi
         if 'fit' in dct:
             dct['fit'] = set_fit(dct['fit'])
         return super().__new__(cls, name, bases, dct)

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
 
-from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.exceptions import UnfitComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import ExtraTreesRegressor
 from evalml.problem_types import ProblemTypes
@@ -49,7 +49,7 @@ def test_feature_importance(X_y_regression):
 
     # testing that feature importance can't be called before fit
     clf = ExtraTreesRegressor()
-    with pytest.raises(MethodPropertyNotFoundError):
+    with pytest.raises(UnfitComponentError):
         feature_importance = clf.feature_importance
 
     sk_clf = SKExtraTreesRegressor(max_depth=6, random_state=0)

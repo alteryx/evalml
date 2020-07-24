@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 
-from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.exceptions import UnfitComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import ExtraTreesClassifier
 from evalml.problem_types import ProblemTypes
@@ -70,7 +70,7 @@ def test_feature_importance(X_y_binary):
 
     # testing that feature_importance can't be called before fit
     clf = ExtraTreesClassifier()
-    with pytest.raises(MethodPropertyNotFoundError):
+    with pytest.raises(UnfitComponentError):
         feature_importance = clf.feature_importance
 
     sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
