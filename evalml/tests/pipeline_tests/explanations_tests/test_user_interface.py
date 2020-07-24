@@ -3,7 +3,7 @@ from itertools import product
 
 import pytest
 
-from evalml.pipelines.explanations._user_interface import (
+from evalml.pipelines.prediction_explanations._user_interface import (
     _make_rows,
     _make_single_prediction_table,
     _make_table

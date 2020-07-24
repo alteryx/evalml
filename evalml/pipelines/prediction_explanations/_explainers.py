@@ -1,10 +1,10 @@
 import pandas as pd
 
-from evalml.pipelines.explanations._algorithms import (
+from evalml.pipelines.prediction_explanations._algorithms import (
     _compute_shap_values,
     _normalize_shap_values
 )
-from evalml.pipelines.explanations._user_interface import (
+from evalml.pipelines.prediction_explanations._user_interface import (
     _make_single_prediction_table
 )
 
