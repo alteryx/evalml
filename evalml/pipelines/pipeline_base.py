@@ -172,6 +172,14 @@ class PipelineBase(ABC):
             component.describe(print_name=False)
 
     def _transform(self, X):
+        """Transforms the data by applying all pre-processing components.
+
+        Arguments:
+            X (pd.DataFrame): Input data to the pipeline to transform.
+
+        Returns:
+            pd.DataFrame - New dataframe.
+        """
         X_t = X
         for component in self.component_graph[:-1]:
             X_t = component.transform(X_t)
