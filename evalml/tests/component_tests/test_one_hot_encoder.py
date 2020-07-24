@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import get_random_state
 
@@ -30,7 +31,7 @@ def test_parameters():
 
 def test_fit_first():
     encoder = OneHotEncoder()
-    with pytest.raises(RuntimeError, match="You must fit"):
+    with pytest.raises(UnfitComponentError, match="You must fit"):
         encoder.transform(pd.DataFrame())
 
 

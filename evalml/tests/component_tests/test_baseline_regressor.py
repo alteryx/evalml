@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from evalml.exceptions import UnfitComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineRegressor
 
@@ -19,9 +20,9 @@ def test_baseline_invalid_strategy():
 def test_baseline_access_without_fit(X_y_regression):
     X, _ = X_y_regression
     clf = BaselineRegressor()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         clf.predict(X)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         clf.feature_importance
 
 

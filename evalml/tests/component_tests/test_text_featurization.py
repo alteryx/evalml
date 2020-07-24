@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import TextFeaturizer
 
 
@@ -22,7 +23,7 @@ def test_transform_without_fit(text_df):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
 
-    with pytest.raises(RuntimeError, match='You must fit'):
+    with pytest.raises(UnfitComponentError, match='You must fit'):
         tf.transform(X)
 
 
@@ -121,7 +122,7 @@ def test_all_missing_col_names(text_df):
     with pytest.raises(RuntimeError, match=error_msg):
         tf.fit(X)
 
-    with pytest.raises(RuntimeError, match="You must fit"):
+    with pytest.raises(UnfitComponentError, match="You must fit"):
         tf.transform(X)
 
 

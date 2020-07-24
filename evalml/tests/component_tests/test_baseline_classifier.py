@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import UnfitComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineClassifier
 from evalml.utils import get_random_state
@@ -21,11 +22,11 @@ def test_baseline_invalid_strategy():
 def test_baseline_access_without_fit(X_y_binary):
     X, _ = X_y_binary
     clf = BaselineClassifier()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         clf.predict(X)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         clf.predict_proba(X)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         clf.feature_importance
 
 

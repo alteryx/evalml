@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from evalml.exceptions import UnfitComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
@@ -51,7 +52,7 @@ class BaselineRegressor(Estimator):
 
     def _check_fitted(self):
         if self._prediction_value is None:
-            raise RuntimeError("You must fit Baseline classifier before calling predict!")
+            raise UnfitComponentError("You must fit Baseline classifier before calling predict!")
 
     def predict(self, X):
         self._check_fitted()
@@ -66,5 +67,5 @@ class BaselineRegressor(Estimator):
 
         """
         if self._num_features is None:
-            raise RuntimeError("You must fit Baseline regressor before accessing feature_importance!")
+            raise UnfitComponentError("You must fit Baseline regressor before accessing feature_importance!")
         return np.zeros(self._num_features)

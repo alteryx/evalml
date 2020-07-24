@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import SimpleImputer
 
 
@@ -138,7 +139,7 @@ def test_transform_drop_all_nan_columns_empty():
 
 
 def test_transform_before_fit():
-    with pytest.raises(RuntimeError, match="You must fit"):
+    with pytest.raises(UnfitComponentError, match="You must fit"):
         SimpleImputer(impute_strategy='most_frequent').transform(pd.DataFrame())
 
 

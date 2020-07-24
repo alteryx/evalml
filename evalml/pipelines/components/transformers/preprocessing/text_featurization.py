@@ -11,6 +11,7 @@ from nlp_primitives import (
     PolarityScore
 )
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components.transformers import Transformer
 
 
@@ -108,7 +109,7 @@ class TextFeaturizer(Transformer):
             pd.DataFrame: Transformed X
         """
         if self._features is None:
-            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+            raise UnfitComponentError(f"You must fit {self.name} before calling transform!")
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if len(self._features) == 0:

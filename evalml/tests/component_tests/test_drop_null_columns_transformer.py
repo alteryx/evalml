@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import DropNullColumns
 
 
@@ -27,7 +28,7 @@ def test_drop_null_transformer_init():
 
 def test_drop_null_transformer_without_fit():
     drop_null_transformer = DropNullColumns()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(UnfitComponentError):
         drop_null_transformer.transform(pd.DataFrame())
 
 

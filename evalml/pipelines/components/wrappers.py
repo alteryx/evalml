@@ -1,5 +1,7 @@
 from functools import wraps
 
+from evalml.exceptions import UnfitComponentError
+
 NO_FITTING_REQUIRED = ['DropColumns', 'SelectColumns']
 
 
@@ -8,7 +10,7 @@ def check_for_fit(method):
     def _check_for_fit(self, X, y=None):
         klass = type(self).__name__
         if self._has_fit is False and klass not in NO_FITTING_REQUIRED:
-            raise RuntimeError('You must fit before calling predict/predict_proba/transform.')
+            raise UnfitComponentError('You must fit before calling predict/predict_proba/transform.')
         if y is None:
             return method(self, X)
         else:

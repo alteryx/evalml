@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components.transformers import Transformer
 
 
@@ -67,7 +68,7 @@ class DateTimeFeaturization(Transformer):
             pd.DataFrame: Transformed X
         """
         if self._date_time_col_names is None:
-            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+            raise UnfitComponentError(f"You must fit {self.name} before calling transform!")
         X_t = X
         if not isinstance(X_t, pd.DataFrame):
             X_t = pd.DataFrame(X_t)
