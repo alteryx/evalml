@@ -177,11 +177,12 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         estimator.predict(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
+        estimator.feature_importance
 
     transformer = MockTransformer()
     transformer_with_fit = MockTransformerWithFit()
 
-    transformer._has_fit = True
     transformer._has_fit = True
 
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
