@@ -19,6 +19,7 @@ Release Notes
     * Documentation Changes
         * Update README.md :pr:`963`
     * Testing Changes
+        * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
 
 
 .. warning::
