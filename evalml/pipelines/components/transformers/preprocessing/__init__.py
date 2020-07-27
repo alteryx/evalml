@@ -1,4 +1,4 @@
 # flake8:noqa
-from .datetime_featurization import DateTimeFeaturization
+from .datetime_featurizer import DateTimeFeaturizer
 from .drop_null_columns import DropNullColumns
-from .text_featurization import TextFeaturizer
+from .text_featurizer import TextFeaturizer

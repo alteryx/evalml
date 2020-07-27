@@ -4,6 +4,9 @@ import pytest
 
 from evalml.pipelines.components import TextFeaturizer
 
+pytest.importorskip('featuretools', reason='Skipping test because featuretools not installed')
+pytest.importorskip('nlp_primitives', reason='Skipping test because nlp_primitives not installed')
+
 
 @pytest.fixture()
 def text_df():
@@ -26,7 +29,7 @@ def test_transform_without_fit(text_df):
         tf.transform(X)
 
 
-def test_featurization_only_text(text_df):
+def test_featurizer_only_text(text_df):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
     tf.fit(X)
@@ -50,7 +53,7 @@ def test_featurization_only_text(text_df):
     assert X_t.dtypes.all() == np.float64
 
 
-def test_featurization_with_nontext(text_df):
+def test_featurizer_with_nontext(text_df):
     X = text_df
     X['col_3'] = [73.7, 67.213, 92]
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
@@ -76,7 +79,7 @@ def test_featurization_with_nontext(text_df):
     assert X_t.dtypes.all() == np.float64
 
 
-def test_featurization_no_text():
+def test_featurizer_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
     warn_msg = "No text columns were given to TextFeaturizer, component will have no effect"
     with pytest.warns(RuntimeWarning, match=warn_msg):
