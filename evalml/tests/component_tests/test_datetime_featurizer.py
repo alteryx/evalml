@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import DateTimeFeaturizer
 
 
@@ -15,12 +14,6 @@ def test_datetime_featurizer_init():
 
     with pytest.raises(ValueError, match="not valid options for features_to_extract"):
         DateTimeFeaturizer(features_to_extract=["invalid", "parameters"])
-
-
-def test_datetime_featurizer_transform_without_fit():
-    datetime_transformer = DateTimeFeaturizer()
-    with pytest.raises(UnfitComponentError, match="You must fit"):
-        datetime_transformer.transform(pd.DataFrame())
 
 
 def test_datetime_featurizer_transform():

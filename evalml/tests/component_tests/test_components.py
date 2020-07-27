@@ -179,9 +179,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
 
     transformer = MockTransformer()
     transformer_with_fit = MockTransformerWithFit()
-
     transformer._has_fit = True
-
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -530,8 +528,6 @@ def test_estimator_check_for_fit(X_y_binary):
         est.predict_proba(X)
 
     est.fit(X, y)
-    assert est._has_fit is True
-
     est.predict(X)
     est.predict_proba(X)
 
@@ -557,8 +553,6 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
         est.predict(X)
 
     est.fit(X, y)
-    assert est._has_fit is True
-
     est.predict(X)
     est.predict_proba(X)
 
@@ -587,8 +581,6 @@ def test_transformer_check_for_fit(X_y_binary):
         trans.transform(X)
 
     trans.fit(X, y)
-    assert trans._has_fit is True
-
     trans.transform(X)
 
 
@@ -608,8 +600,6 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         trans.transform(X)
 
     trans.fit(X, y)
-    assert trans._has_fit is True
-
     trans.transform(X)
 
 
@@ -625,7 +615,6 @@ def test_all_components_check_fit(X_y_binary):
             component.transform(X)
 
         component.fit(X, y)
-        assert component._has_fit is True
         component.transform(X)
 
     for component_class in _all_estimators:
@@ -641,8 +630,6 @@ def test_all_components_check_fit(X_y_binary):
             component.feature_importance
 
         component.fit(X, y)
-        assert component._has_fit is True
-
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
             component.predict_proba(X)
 

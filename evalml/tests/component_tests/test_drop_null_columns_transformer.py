@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import UnfitComponentError
 from evalml.pipelines.components import DropNullColumns
 
 
@@ -24,12 +23,6 @@ def test_drop_null_transformer_init():
 
     with pytest.raises(ValueError, match="pct_null_threshold must be a float between 0 and 1, inclusive."):
         DropNullColumns(pct_null_threshold=1.01)
-
-
-def test_drop_null_transformer_without_fit():
-    drop_null_transformer = DropNullColumns()
-    with pytest.raises(UnfitComponentError):
-        drop_null_transformer.transform(pd.DataFrame())
 
 
 def test_drop_null_transformer_transform_default_pct_null_threshold():

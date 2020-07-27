@@ -11,8 +11,6 @@ def check_for_fit(method):
         klass = type(self).__name__
         if self._has_fit is False and klass not in NO_FITTING_REQUIRED:
             raise UnfitComponentError('You must fit {} before calling {}.'.format(klass, method.__name__))
-        if y is None and X is None:
-            return method(self)
         elif y is None:
             return method(self, X)
         else:
@@ -33,10 +31,7 @@ def check_for_fit_properties(method):
 def set_fit(method):
     @wraps(method)
     def _set_fit(self, X, y=None):
-        try:
-            return_value = method(self, X, y)
-        except Exception as e:
-            raise e
+        return_value = method(self, X, y)
         self._has_fit = True
         return return_value
     return _set_fit
