@@ -973,6 +973,8 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
         if target_type == "bool":
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
+        if target_type == "bool":
+            pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "log_loss_multi"
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
