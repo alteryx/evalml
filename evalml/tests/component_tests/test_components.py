@@ -549,15 +549,37 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
         def predict_proba(self, X):
             pass
+    
+    class MockEstimatorWithOverridesSubclass(Estimator):
+        name = "Mock Estimator Subclass"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
 
     X, y = X_y_binary
     est = MockEstimatorWithOverrides()
+    est_subclass = MockEstimatorWithOverridesSubclass()
+
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         est.predict(X)
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        est_subclass.predict(X)
 
     est.fit(X, y)
     est.predict(X)
     est.predict_proba(X)
+
+    est_subclass.fit(X, y)
+    est_subclass.predict(X)
+    est_subclass.predict_proba(X)
 
 
 def test_transformer_check_for_fit(X_y_binary):
@@ -597,13 +619,29 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         def transform(self, X):
             pass
 
-    X, y = X_y_binary
-    trans = MockTransformerWithOverride()
-    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
-        trans.transform(X)
+    class MockTransformerWithOverrideSubclass(Transformer):
+        name = "Mock Transformer Subclass"
 
-    trans.fit(X, y)
-    trans.transform(X)
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    X, y = X_y_binary
+    transformer = MockTransformerWithOverride()
+    transformer_subclass = MockTransformerWithOverrideSubclass()
+
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        transformer.transform(X)
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        transformer_subclass.transform(X)
+
+    transformer.fit(X, y)
+    transformer.transform(X)
+    transformer_subclass.fit(X, y)
+    transformer_subclass.transform(X)
+    
 
 
 def test_all_transformers_check_fit(X_y_binary):
