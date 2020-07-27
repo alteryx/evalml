@@ -6,10 +6,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import MethodPropertyNotFoundError, ComponentNotYetFittedError
+from evalml.exceptions import (
+    ComponentNotYetFittedError,
+    MethodPropertyNotFoundError
+)
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
+    ComponentBaseMeta,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -35,7 +39,6 @@ from evalml.pipelines.components.utils import (
     _all_transformers,
     all_components
 )
-from evalml.pipelines.components.wrappers import NO_FITTING_REQUIRED
 from evalml.problem_types import ProblemTypes
 
 
@@ -606,7 +609,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
 def test_all_transformers_check_fit(X_y_binary):
     X, y = X_y_binary
     for component_class in _all_transformers:
-        if component_class.__name__ in NO_FITTING_REQUIRED:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
             continue
 
         component = component_class()

@@ -7,10 +7,10 @@ import pytest
 from skopt.space import Integer, Real
 
 from evalml.exceptions import (
+    ComponentNotYetFittedError,
     IllFormattedClassNameError,
     MissingComponentError,
-    PipelineScoreError,
-    ComponentNotYetFittedError
+    PipelineScoreError
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
