@@ -23,7 +23,7 @@ class MissingComponentError(Exception):
     pass
 
 
-class UnfitComponentError(Exception):
+class ComponentNotYetFittedError(Exception):
     """An exception to be raised when predict/predict_proba/transform is called on a component without fitting first."""
     pass
 

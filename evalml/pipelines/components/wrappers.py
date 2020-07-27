@@ -1,6 +1,6 @@
 from functools import wraps
 
-from evalml.exceptions import UnfitComponentError
+from evalml.exceptions import ComponentNotYetFittedError
 
 NO_FITTING_REQUIRED = ['DropColumns', 'SelectColumns']
 
@@ -10,7 +10,7 @@ def check_for_fit(method):
     def _check_for_fit(self, X=None, y=None):
         klass = type(self).__name__
         if not self._has_fit and klass not in NO_FITTING_REQUIRED:
-            raise UnfitComponentError('You must fit {} before calling {}.'.format(klass, method.__name__))
+            raise ComponentNotYetFittedError('You must fit {} before calling {}.'.format(klass, method.__name__))
         elif y is None:
             return method(self, X)
         else:
@@ -23,7 +23,7 @@ def check_for_fit_properties(method):
     def _check_for_fit_properties(self, *args, **kwargs):
         klass = type(self).__name__
         if not self._has_fit and klass not in NO_FITTING_REQUIRED:
-            raise UnfitComponentError('You must fit {} before calling {}.'.format(klass, method.__name__))
+            raise ComponentNotYetFittedError('You must fit {} before calling {}.'.format(klass, method.__name__))
         return method(self, *args, **kwargs)
     return _check_for_fit_properties
 
