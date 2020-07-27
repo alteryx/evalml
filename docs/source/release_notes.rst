@@ -19,6 +19,7 @@ Release Notes
         * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
     * Documentation Changes
         * Update README.md :pr:`963`
+        * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
     * Testing Changes
 
 
