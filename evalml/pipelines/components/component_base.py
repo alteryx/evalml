@@ -17,7 +17,8 @@ from evalml.utils import (
 logger = get_logger(__file__)
 
 
-class BaseMeta(ABCMeta):
+class ComponentBaseMeta(ABCMeta):
+    """Metaclass that overrides creating a new component by wrapping method with validators and setters"""
     def __new__(cls, name, bases, dct):
         if 'predict' in dct:
             dct['predict'] = check_for_fit(dct['predict'])
@@ -36,7 +37,7 @@ class BaseMeta(ABCMeta):
         return super().__new__(cls, name, bases, dct)
 
 
-class ComponentBase(ABC, metaclass=BaseMeta):
+class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
     _default_parameters = None
 

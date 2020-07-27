@@ -603,9 +603,8 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     trans.transform(X)
 
 
-def test_all_components_check_fit(X_y_binary):
+def test_all_transformers_check_fit(X_y_binary):
     X, y = X_y_binary
-
     for component_class in _all_transformers:
         if component_class.__name__ in NO_FITTING_REQUIRED:
             continue
@@ -617,6 +616,13 @@ def test_all_components_check_fit(X_y_binary):
         component.fit(X, y)
         component.transform(X)
 
+        component = component_class()
+        component.fit_transform(X, y)
+        component.transform(X)
+
+
+def test_all_estimators_check_fit(X_y_binary):
+    X, y = X_y_binary
     for component_class in _all_estimators:
         component = component_class()
         with pytest.raises(UnfitComponentError, match='You must fit'):
