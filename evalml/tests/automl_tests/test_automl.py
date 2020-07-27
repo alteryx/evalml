@@ -826,12 +826,6 @@ def test_targets_data_types_classification(automl_type, target_type):
             all_objective_scores = fold["all_objective_scores"]
             for score in all_objective_scores.values():
                 assert score is not None
-        pipeline = automl.get_pipeline(pipeline_id)
-        pipeline.fit(X, y)
-        predictions = pipeline.predict(X, automl.objective)
-        assert set(predictions.unique()).issubset(unique_vals)
-        predict_proba = pipeline.predict_proba(X)
-        assert set(predict_proba.columns) == set(unique_vals)
 
     assert len(automl.full_rankings) == 3
     assert not automl.full_rankings['score'].isnull().values.any()
