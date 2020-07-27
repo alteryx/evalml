@@ -10,11 +10,16 @@ Release Notes
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
+<<<<<<< HEAD
         * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`
+=======
+        * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
+>>>>>>> f172ff5e4fa509715bc83e4ef840edc202efb6c0
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
         * Moved `evalml.model_families.list_model_families` to `evalml.pipelines.components.allowed_model_families` :pr:`959`
+        * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
     * Documentation Changes
         * Update README.md :pr:`963`
     * Testing Changes
@@ -26,6 +31,8 @@ Release Notes
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Removed the ``raise_errors`` flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
         * ``evalml.model_families.list_model_families`` has been moved to `evalml.pipelines.components.allowed_model_families` :pr:`959`
+        * ``TextFeaturizer``: the ``featuretools`` and ``nlp_primitives`` packages must be installed after installing evalml in order to use this component :pr:`976`
+        * Renamed ``DateTimeFeaturization`` to ``DateTimeFeaturizer`` :pr:`977`
 
 
 **v0.11.2 July 16, 2020**
