@@ -172,7 +172,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         component.fit(X)
 
     estimator = MockEstimator()
-    estimator._has_fit = True
+    estimator._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
@@ -182,7 +182,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
 
     transformer = MockTransformer()
     transformer_with_fit = MockTransformerWithFit()
-    transformer._has_fit = True
+    transformer._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -307,7 +307,7 @@ def test_regressor_call_predict_proba(test_classes):
     X = np.array([])
     _, MockEstimator, _ = test_classes
     component = MockEstimator()
-    component._has_fit = True
+    component._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError):
         component.predict_proba(X)
 
@@ -679,6 +679,7 @@ def test_all_estimators_check_fit(X_y_binary):
             component.feature_importance
 
         component.fit(X, y)
+
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
             component.predict_proba(X)
 

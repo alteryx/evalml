@@ -27,19 +27,19 @@ class ComponentBaseMeta(ABCMeta):
         @wraps(method)
         def _set_fit(self, X, y=None):
             return_value = method(self, X, y)
-            self._has_fit = True
+            self._is_fitted = True
             return return_value
         return _set_fit
 
     @classmethod
     def check_for_fit(cls, method):
-        """`check_for_fit` wraps a method that validates if `self._has_fit` is `True`.
+        """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
             It raises an exception if `False` and calls and returns the wrapped method if `True`.
         """
         @wraps(method)
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
-            if not self._has_fit and klass not in cls.NO_FITTING_REQUIRED:
+            if not self._is_fitted and klass not in cls.NO_FITTING_REQUIRED:
                 raise ComponentNotYetFittedError('You must fit {} before calling {}.'.format(klass, method.__name__))
             elif X is None and y is None:
                 return method(self)
@@ -75,7 +75,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         self.random_state = get_random_state(random_state)
         self._component_obj = component_obj
         self._parameters = parameters or {}
-        self._has_fit = False
+        self._is_fitted = False
 
     @property
     @classmethod
