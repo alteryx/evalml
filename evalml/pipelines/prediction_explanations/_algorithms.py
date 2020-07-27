@@ -52,7 +52,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
 
     # This is to make sure all dtypes are numeric - SHAP algorithms will complain otherwise.
     # Sklearn components do this under-the-hood so we're not changing the data the model was trained on.
-    # Catboost can naturally handle string-enconded categorical features so we don't need to convert to numeric.
+    # Catboost can naturally handle string-encoded categorical features so we don't need to convert to numeric.
     if estimator.model_family != ModelFamily.CATBOOST:
         pipeline_features = check_array(pipeline_features.values)
 

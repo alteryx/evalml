@@ -53,12 +53,23 @@ regression_normalized = {'a': [0.6214], 'b': [0.1692], 'bar': [-0.0019],
                          'c': [0.0544], 'd': [-0.0086], 'e': [-0.0277],
                          'f': [-0.1156], 'foo': [0.0001]}
 
-regression_table = ['Feature Name Contribution to Prediction', '=========================================',
-                    'a ++++', 'b +', 'c +', 'd -', 'e -', 'f -']
+regression_table = """Feature Name  Contribution to Prediction
+                      =========================================
+                      a ++++
+                      b +
+                      c +
+                      d -
+                      e -
+                      f -""".splitlines()
 
-regression_table_shap = ['Feature Name Contribution to Prediction SHAP Value',
-                         '======================================================', 'a ++++ 6.500', 'b + 1.770',
-                         'c + 0.570', 'd - -0.090', 'e - -0.290', 'f - -1.210']
+regression_table_shap = """Feature Name Contribution to Prediction SHAP Value
+                         ======================================================
+                         a ++++ 6.500
+                         b + 1.770
+                         c + 0.570
+                         d - -0.090
+                         e - -0.290
+                         f - -1.210""".splitlines()
 
 binary = [{"a": [0], "b": [0], "c": [0],
            "d": [0], "e": [0], "f": [0], "foo": [-1]},
@@ -69,12 +80,27 @@ binary_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [0.0]
                      {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.225],
                       'e': [-0.2422], 'f': [-0.251], 'foo': [-0.087]}]
 
-binary_table = ['Positive Label', '', 'Feature Name Contribution to Prediction',
-                '=========================================', 'a +', 'b +', 'c +', 'd --', 'e --', 'f --']
+binary_table = """Positive Label
 
-binary_table_shap = ['Positive Label', '', 'Feature Name Contribution to Prediction SHAP Value',
-                     '======================================================', 'a + 1.180', 'b + 1.120',
-                     'c + 0.000', 'd -- -2.560', 'e -- -2.800', 'f -- -2.900']
+                Feature Name Contribution to Prediction
+                =========================================
+                a +
+                b +
+                c +
+                d --
+                e --
+                f --""".splitlines()
+
+binary_table_shap = """Positive Label
+
+                     Feature Name Contribution to Prediction SHAP Value
+                     ======================================================
+                     a + 1.180
+                     b + 1.120
+                     c + 0.000
+                     d -- -2.560
+                     e -- -2.800
+                     f -- -2.900""".splitlines()
 
 multiclass = [{"a": [0], "b": [0], "c": [0],
                "d": [0], "e": [0], "f": [0], "foo": [-1]},
@@ -87,22 +113,75 @@ multiclass_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [
                          {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.221], 'e': [-0.242], 'f': [-0.251], 'foo': [-0.0865]},
                          {'a': [0.0825], 'b': [0.0], 'c': [0.0], 'd': [-0.223], 'e': [-0.247], 'f': [-0.325], 'foo': [-0.121]}]
 
-multiclass_table = ['Class 0', '', 'Feature Name Contribution to Prediction', '=========================================',
-                    'f +', 'e +', 'd +', 'b +', 'a +', 'foo -----', '', '', 'Class 1', '',
-                    'Feature Name Contribution to Prediction', '=========================================', 'a +',
-                    'b +', 'c +', 'd --', ' e --', 'f --', '', '', 'Class 2', '',
-                    'Feature Name Contribution to Prediction', '=========================================',
-                    'a +', 'c +', 'b +', 'd --', 'e --', 'f --', '']
+multiclass_table = """Class 0
 
-multiclass_table_shap = ['Class 0', '', 'Feature Name Contribution to Prediction SHAP Value',
-                         '======================================================', 'f + 0.000', 'e + 0.000',
-                         'd + 0.000', 'b + 0.000', 'a + 0.000', 'foo ----- -1.000', '', '', 'Class 1', '',
-                         'Feature Name Contribution to Prediction SHAP Value',
-                         '======================================================', 'a + 1.180', 'b + 1.120',
-                         'c + 0.000', 'd -- -2.560', 'e -- -2.800', 'f -- -2.900', '', '', 'Class 2', '',
-                         'Feature Name Contribution to Prediction SHAP Value',
-                         '======================================================', 'a + 0.680', 'c + 0.000',
-                         'b + 0.000', 'd -- -1.840', 'e -- -2.040', 'f -- -2.680', '']
+                    Feature Name Contribution to Prediction
+                    =========================================
+                    f +
+                    e +
+                    d +
+                    b +
+                    a +
+                    foo -----
+
+
+                    Class 1
+
+                    Feature Name Contribution to Prediction
+                    =========================================
+                    a +
+                    b +
+                    c +
+                    d --
+                    e --
+                    f --
+
+
+                    Class 2
+
+                    Feature Name Contribution to Prediction
+                    =========================================
+                    a +
+                    c +
+                    b +
+                    d --
+                    e --
+                    f --""".splitlines()
+
+multiclass_table_shap = """Class 0
+
+                         Feature Name Contribution to Prediction SHAP Value
+                         ======================================================
+                         f + 0.000
+                         e + 0.000
+                         d + 0.000
+                         b + 0.000
+                         a + 0.000
+                         foo ----- -1.000
+
+
+                         Class 1
+
+                         Feature Name Contribution to Prediction SHAP Value
+                         ======================================================
+                         a + 1.180
+                         b + 1.120
+                         c + 0.000
+                         d -- -2.560
+                         e -- -2.800
+                         f -- -2.900
+
+
+                         Class 2
+
+                         Feature Name Contribution to Prediction SHAP Value
+                         ======================================================
+                         a + 0.680
+                         c + 0.000
+                         b + 0.000
+                         d -- -1.840
+                         e -- -2.040
+                         f -- -2.680""".splitlines()
 
 
 @pytest.mark.parametrize("values,normalized_values,include_shap,answer",
