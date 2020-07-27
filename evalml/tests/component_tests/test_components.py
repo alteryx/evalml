@@ -549,7 +549,7 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
         def predict_proba(self, X):
             pass
-    
+
     class MockEstimatorWithOverridesSubclass(Estimator):
         name = "Mock Estimator Subclass"
         model_family = ModelFamily.LINEAR_MODEL
@@ -641,7 +641,6 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer.transform(X)
     transformer_subclass.fit(X, y)
     transformer_subclass.transform(X)
-    
 
 
 def test_all_transformers_check_fit(X_y_binary):
@@ -665,6 +664,9 @@ def test_all_transformers_check_fit(X_y_binary):
 def test_all_estimators_check_fit(X_y_binary):
     X, y = X_y_binary
     for component_class in _all_estimators:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+            continue
+
         component = component_class()
         with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
             component.predict(X)
@@ -682,3 +684,14 @@ def test_all_estimators_check_fit(X_y_binary):
 
         component.predict(X)
         component.feature_importance
+
+
+def test_no_fitting_required_components(X_y_binary):
+    X, y = X_y_binary
+    for component_class in all_components:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+            component = component_class()
+            if issubclass(component_class, Estimator):
+                component.predict(X)
+            else:
+                component.transform(X)
