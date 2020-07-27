@@ -21,6 +21,7 @@ Release Notes
         * Update README.md :pr:`963`
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
     * Testing Changes
+        * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
 
 
 .. warning::
