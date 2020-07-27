@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
+from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     ComponentNotYetFittedError,
     IllFormattedClassNameError,
@@ -961,3 +962,38 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         }
     }
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+    if problem_type == ProblemTypes.BINARY:
+        objective = "log_loss_binary"
+        pipeline_classes = all_binary_pipeline_classes
+        X, y = load_breast_cancer()
+        if target_type == "bool":
+            y = y.map({"malignant": False, "benign": True})
+    elif problem_type == ProblemTypes.MULTICLASS:
+        if target_type == "bool":
+            pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
+        objective = "log_loss_multi"
+        pipeline_classes = all_multiclass_pipeline_classes
+        X, y = load_wine()
+
+    if target_type == "categorical":
+        y = pd.Categorical(y)
+    elif target_type == "int":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
+    elif target_type == "float":
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
+
+    unique_vals = y.unique()
+    for pipeline_class in pipeline_classes:
+        pipeline = pipeline_class(parameters={})
+        pipeline.fit(X, y)
+        predictions = pipeline.predict(X, objective)
+        assert set(predictions.unique()).issubset(unique_vals)
+        predict_proba = pipeline.predict_proba(X)
+        assert set(predict_proba.columns) == set(unique_vals)
