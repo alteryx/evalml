@@ -226,6 +226,18 @@ Regressors are components that output a predicted target value.
     BaselineRegressor
 
 
+.. currentmodule:: evalml.pipelines.prediction_explanations
+
+Prediction Explanations
+========================
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    explain_prediction
+
+
 .. currentmodule:: evalml.objectives
 
 Objective Functions
