@@ -20,6 +20,7 @@ Release Notes
         * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
     * Documentation Changes
         * Update README.md :pr:`963`
+        * Reworded message when errors are returned from data checks in search :pr:`982`
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`

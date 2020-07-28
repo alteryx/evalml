@@ -350,7 +350,7 @@ class AutoMLSearch:
                 elif message.message_type == DataCheckMessageType.ERROR:
                     logger.error(message)
             if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
-                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks=EmptyDataChecks() to search() to disable data checking.")
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
