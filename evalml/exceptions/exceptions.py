@@ -23,6 +23,11 @@ class MissingComponentError(Exception):
     pass
 
 
+class ComponentNotYetFittedError(Exception):
+    """An exception to be raised when predict/predict_proba/transform is called on a component without fitting first."""
+    pass
+
+
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 

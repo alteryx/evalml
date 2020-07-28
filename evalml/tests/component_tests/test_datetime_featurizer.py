@@ -16,12 +16,6 @@ def test_datetime_featurizer_init():
         DateTimeFeaturizer(features_to_extract=["invalid", "parameters"])
 
 
-def test_datetime_featurizer_transform_without_fit():
-    datetime_transformer = DateTimeFeaturizer()
-    with pytest.raises(RuntimeError, match="You must fit DateTime Featurization Component before calling transform!"):
-        datetime_transformer.transform(pd.DataFrame())
-
-
 def test_datetime_featurizer_transform():
     datetime_transformer = DateTimeFeaturizer(features_to_extract=["year"])
     X = pd.DataFrame({'Numerical 1': range(20),
