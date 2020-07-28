@@ -1,17 +1,20 @@
-import warnings
-
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import numerics
 
 
-class SimpleImputer(Transformer):
+class TypedImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
-    name = 'Simple Imputer'
-    hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
+    name = "Typed Imputer"
+    hyperparameter_ranges = {"categorical_impute_strategy": ["most_frequent"],
+                             "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+                            }
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0, **kwargs):
+    def __init__(self, categorical_impute_strategy="most_frequent",
+                 numeric_impute_strategy="mean",
+                 fill_value=None, random_state=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -20,17 +23,21 @@ class SimpleImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
-        warnings.warn("SimpleImputer is deprecated in v0.12.0 and will be removed in 0.13.0 in favor of TypedImputer", DeprecationWarning)
-
-        parameters = {"impute_strategy": impute_strategy,
+        parameters = {"categorical_impute_strategy": categorical_impute_strategy,
+                      "numeric_impute_strategy": numeric_impute_strategy,
                       "fill_value": fill_value}
         parameters.update(kwargs)
-        imputer = SkImputer(strategy=impute_strategy,
-                            fill_value=fill_value,
-                            **kwargs)
+        self._categorical_imputer = SkImputer(strategy=categorical_impute_strategy,
+                                              fill_value=fill_value,
+                                              **kwargs)
+        self._numeric_imputer = SkImputer(strategy=numeric_impute_strategy,
+                                          fill_value=fill_value,
+                                          **kwargs)
         self._all_null_cols = None
+        self._numeric_cols = None
+        self._categorical_cols = None
         super().__init__(parameters=parameters,
-                         component_obj=imputer,
+                         component_obj=None,
                          random_state=random_state)
 
     def fit(self, X, y=None):
@@ -45,7 +52,14 @@ class SimpleImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._component_obj.fit(X, y)
+
+        X_numerics = X.select_dtypes(include=numerics)
+        if len(X_numerics.columns) > 0:
+            self._numeric_imputer.fit(X_numerics, y)
+
+        X_categorical = X.select_dtypes(exclude=numerics)
+        if len(X_categorical.columns) > 0:
+            self._categorical_imputer.fit(X_categorical, y)
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
 
@@ -58,9 +72,25 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._all_null_cols is None:
+        if self._all_null_cols is None:  # TODO: can delete after Jeremy's PR?
             raise RuntimeError("Must fit transformer before calling transform!")
-        X_t = self._component_obj.transform(X)
+
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        # Note: what if different columns, triggers these? Need a way to connect to fit()
+        X_numerics = X.select_dtypes(include=numerics)
+        if len(X_numerics.columns) > 0:
+            X_numerics_t = pd.DataFrame(self._numeric_imputer.transform(X_numerics))
+        else:
+            X_numerics_t = pd.DataFrame()
+        X_categorical = X.select_dtypes(exclude=numerics)
+        if len(X_categorical.columns) > 0:
+            X_categorical_t = pd.DataFrame(self._categorical_imputer.transform(X_categorical))
+        else:
+            X_categorical_t = pd.DataFrame()
+
+        X_t = pd.concat([X_numerics_t, X_categorical_t], axis=1)
+
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_null_dropped = X.drop(self._all_null_cols, axis=1)

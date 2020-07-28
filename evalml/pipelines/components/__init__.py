@@ -24,6 +24,7 @@ from .transformers import (
     RFRegressorSelectFromModel,
     PerColumnImputer,
     SimpleImputer,
+    TypedImputer,
     StandardScaler,
     FeatureSelector,
     CategoricalEncoder,
@@ -31,5 +32,5 @@ from .transformers import (
     DropNullColumns,
     DateTimeFeaturizer,
     SelectColumns,
-    TextFeaturizer
+    TextFeaturizer,
     )
