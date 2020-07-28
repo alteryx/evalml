@@ -6,10 +6,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.exceptions import (
+    ComponentNotYetFittedError,
+    MethodPropertyNotFoundError
+)
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
+    ComponentBaseMeta,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -30,6 +34,7 @@ from evalml.pipelines.components import (
     XGBoostClassifier
 )
 from evalml.pipelines.components.utils import (
+    _all_estimators,
     _all_estimators_used_in_search,
     _all_transformers,
     all_components
@@ -59,18 +64,15 @@ class MockFitComponent(ComponentBase):
     name = 'Mock Fit Component'
 
     def __init__(self, param_a=2, param_b=10, random_state=0):
-        self.is_fitted = False
         parameters = {'param_a': param_a, 'param_b': param_b}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=0)
 
     def fit(self, X, y=None):
-        self.is_fitted = True
+        pass
 
     def predict(self, X):
-        if not self.is_fitted:
-            raise ValueError('Component is not fit')
         return np.array([self.parameters['param_a'] * 2, self.parameters['param_b'] * 10])
 
 
@@ -170,13 +172,17 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         component.fit(X)
 
     estimator = MockEstimator()
+    estimator._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict method or a component_obj that implements predict"):
         estimator.predict(X)
     with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a predict_proba method or a component_obj that implements predict_proba"):
         estimator.predict_proba(X)
+    with pytest.raises(MethodPropertyNotFoundError, match="Estimator requires a feature_importance property or a component_obj that implements feature_importances_"):
+        estimator.feature_importance
 
     transformer = MockTransformer()
     transformer_with_fit = MockTransformerWithFit()
+    transformer._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
         transformer.fit(X, y)
     with pytest.raises(MethodPropertyNotFoundError, match="Transformer requires a transform method or a component_obj that implements transform"):
@@ -301,6 +307,7 @@ def test_regressor_call_predict_proba(test_classes):
     X = np.array([])
     _, MockEstimator, _ = test_classes
     component = MockEstimator()
+    component._is_fitted = True
     with pytest.raises(MethodPropertyNotFoundError):
         component.predict_proba(X)
 
@@ -363,7 +370,7 @@ def test_clone_fitted(X_y_binary):
 
     clf_clone = clf.clone()
     assert clf_clone.random_state.randint(2**30) == random_state_first_val
-    with pytest.raises(ValueError, match='Component is not fit'):
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         clf_clone.predict(X)
     assert clf.parameters == clf_clone.parameters
 
@@ -491,3 +498,201 @@ def test_estimator_predict_output_type(X_y_binary):
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
+
+
+def test_estimator_check_for_fit(X_y_binary):
+    class MockEstimatorObj():
+        def __init__(self):
+            pass
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def __init__(self, parameters=None, component_obj=None, random_state=0):
+            est = MockEstimatorObj()
+            super().__init__(parameters=parameters, component_obj=est, random_state=random_state)
+
+    X, y = X_y_binary
+    est = MockEstimator()
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        est.predict(X)
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        est.predict_proba(X)
+
+    est.fit(X, y)
+    est.predict(X)
+    est.predict_proba(X)
+
+
+def test_estimator_check_for_fit_with_overrides(X_y_binary):
+    class MockEstimatorWithOverrides(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
+
+    class MockEstimatorWithOverridesSubclass(Estimator):
+        name = "Mock Estimator Subclass"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+        def fit(self, X, y):
+            pass
+
+        def predict(self, X):
+            pass
+
+        def predict_proba(self, X):
+            pass
+
+    X, y = X_y_binary
+    est = MockEstimatorWithOverrides()
+    est_subclass = MockEstimatorWithOverridesSubclass()
+
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        est.predict(X)
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        est_subclass.predict(X)
+
+    est.fit(X, y)
+    est.predict(X)
+    est.predict_proba(X)
+
+    est_subclass.fit(X, y)
+    est_subclass.predict(X)
+    est_subclass.predict_proba(X)
+
+
+def test_transformer_check_for_fit(X_y_binary):
+    class MockTransformerObj():
+        def __init__(self):
+            pass
+
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    class MockTransformer(Transformer):
+        name = "Mock Transformer"
+
+        def __init__(self, parameters=None, component_obj=None, random_state=0):
+            transformer = MockTransformerObj()
+            super().__init__(parameters=parameters, component_obj=transformer, random_state=random_state)
+
+    X, y = X_y_binary
+    trans = MockTransformer()
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        trans.transform(X)
+
+    trans.fit(X, y)
+    trans.transform(X)
+
+
+def test_transformer_check_for_fit_with_overrides(X_y_binary):
+    class MockTransformerWithOverride(Transformer):
+        name = "Mock Transformer"
+
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    class MockTransformerWithOverrideSubclass(Transformer):
+        name = "Mock Transformer Subclass"
+
+        def fit(self, X, y):
+            pass
+
+        def transform(self, X):
+            pass
+
+    X, y = X_y_binary
+    transformer = MockTransformerWithOverride()
+    transformer_subclass = MockTransformerWithOverrideSubclass()
+
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        transformer.transform(X)
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        transformer_subclass.transform(X)
+
+    transformer.fit(X, y)
+    transformer.transform(X)
+    transformer_subclass.fit(X, y)
+    transformer_subclass.transform(X)
+
+
+def test_all_transformers_check_fit(X_y_binary):
+    X, y = X_y_binary
+    for component_class in _all_transformers:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+            continue
+
+        component = component_class()
+        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+            component.transform(X)
+
+        component.fit(X, y)
+        component.transform(X)
+
+        component = component_class()
+        component.fit_transform(X, y)
+        component.transform(X)
+
+
+def test_all_estimators_check_fit(X_y_binary):
+    X, y = X_y_binary
+    for component_class in _all_estimators:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+            continue
+
+        component = component_class()
+        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+            component.predict(X)
+
+        if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
+            with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+                component.predict_proba(X)
+
+        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+            component.feature_importance
+
+        component.fit(X, y)
+
+        if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
+            component.predict_proba(X)
+
+        component.predict(X)
+        component.feature_importance
+
+
+def test_no_fitting_required_components(X_y_binary):
+    X, y = X_y_binary
+    for component_class in all_components:
+        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+            component = component_class()
+            if issubclass(component_class, Estimator):
+                component.predict(X)
+            else:
+                component.transform(X)

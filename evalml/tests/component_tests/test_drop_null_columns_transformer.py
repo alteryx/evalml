@@ -25,12 +25,6 @@ def test_drop_null_transformer_init():
         DropNullColumns(pct_null_threshold=1.01)
 
 
-def test_drop_null_transformer_without_fit():
-    drop_null_transformer = DropNullColumns()
-    with pytest.raises(RuntimeError):
-        drop_null_transformer.transform(pd.DataFrame())
-
-
 def test_drop_null_transformer_transform_default_pct_null_threshold():
     drop_null_transformer = DropNullColumns()
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],

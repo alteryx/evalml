@@ -57,12 +57,7 @@ class BaselineClassifier(Estimator):
             self._mode = y.mode()[0]
         return self
 
-    def _check_fitted(self):
-        if self._mode is None and self._classes is None:
-            raise RuntimeError("You must fit Baseline classifier before calling predict!")
-
     def predict(self, X):
-        self._check_fitted()
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             return pd.Series([self._mode] * len(X))
@@ -72,7 +67,6 @@ class BaselineClassifier(Estimator):
             return self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
 
     def predict_proba(self, X):
-        self._check_fitted()
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
@@ -93,8 +87,6 @@ class BaselineClassifier(Estimator):
             np.array (float): an array of zeroes
 
         """
-        if self._num_unique is None:
-            raise RuntimeError("You must fit Baseline classifier before getting feature_importance!")
         return np.zeros(self._num_features)
 
     @property
