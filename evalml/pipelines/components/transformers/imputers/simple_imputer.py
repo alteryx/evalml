@@ -58,8 +58,7 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._all_null_cols is None:
-            raise RuntimeError("Must fit transformer before calling transform!")
+
         X_t = self._component_obj.transform(X)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
