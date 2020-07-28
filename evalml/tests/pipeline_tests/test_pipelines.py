@@ -8,6 +8,7 @@ from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
+    ComponentNotYetFittedError,
     IllFormattedClassNameError,
     MissingComponentError,
     PipelineScoreError
@@ -901,7 +902,7 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     pipeline_clone = pipeline.clone(random_state=42)
     assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ComponentNotYetFittedError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)

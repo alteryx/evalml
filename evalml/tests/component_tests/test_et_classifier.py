@@ -1,8 +1,6 @@
 import numpy as np
-import pytest
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import ExtraTreesClassifier
 from evalml.problem_types import ProblemTypes
@@ -68,11 +66,7 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    # testing that feature_importance can't be called before fit
     clf = ExtraTreesClassifier()
-    with pytest.raises(MethodPropertyNotFoundError):
-        feature_importance = clf.feature_importance
-
     sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
