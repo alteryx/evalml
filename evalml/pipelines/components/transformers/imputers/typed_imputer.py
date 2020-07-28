@@ -52,7 +52,7 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
+        # TODO: check bools, even if they're not explicitly included here :)
         X_numerics = X.select_dtypes(include=numerics)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)

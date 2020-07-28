@@ -8,6 +8,7 @@ Release Notes
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
         * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
+        * Added TypedImputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
