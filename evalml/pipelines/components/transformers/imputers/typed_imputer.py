@@ -27,6 +27,7 @@ class TypedImputer(Transformer):
                       "numeric_impute_strategy": numeric_impute_strategy,
                       "fill_value": fill_value}
         parameters.update(kwargs)
+        # TODO: validate parameters.
         self._categorical_imputer = SkImputer(strategy=categorical_impute_strategy,
                                               fill_value=fill_value,
                                               **kwargs)
