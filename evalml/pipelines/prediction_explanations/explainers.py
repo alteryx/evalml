@@ -9,8 +9,10 @@ from evalml.pipelines.prediction_explanations._user_interface import (
 )
 
 
-def _explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False):
+def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
+
+    XGBoost models and CatBoost multiclass classifiers are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
