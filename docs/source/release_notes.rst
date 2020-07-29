@@ -12,6 +12,7 @@ Release Notes
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
+        * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
@@ -21,6 +22,7 @@ Release Notes
     * Documentation Changes
         * Update README.md :pr:`963`
         * Reworded message when errors are returned from data checks in search :pr:`982`
+        * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
 

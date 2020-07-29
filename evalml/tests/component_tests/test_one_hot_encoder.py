@@ -28,12 +28,6 @@ def test_parameters():
     assert encoder.parameters == expected_parameters
 
 
-def test_fit_first():
-    encoder = OneHotEncoder()
-    with pytest.raises(RuntimeError, match="You must fit one hot encoder before calling transform!"):
-        encoder.transform(pd.DataFrame())
-
-
 def test_invalid_inputs():
     error_msg = "Invalid input {} for handle_missing".format("peanut butter")
     with pytest.raises(ValueError, match=error_msg):

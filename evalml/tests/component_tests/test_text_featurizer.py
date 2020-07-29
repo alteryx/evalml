@@ -21,14 +21,6 @@ def text_df():
     yield df
 
 
-def test_transform_without_fit(text_df):
-    X = text_df
-    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
-
-    with pytest.raises(RuntimeError, match='You must fit'):
-        tf.transform(X)
-
-
 def test_featurizer_only_text(text_df):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
@@ -123,9 +115,6 @@ def test_all_missing_col_names(text_df):
     error_msg = "None of the provided text column names match the columns in the given DataFrame"
     with pytest.raises(RuntimeError, match=error_msg):
         tf.fit(X)
-
-    with pytest.raises(RuntimeError, match="You must fit"):
-        tf.transform(X)
 
 
 def test_invalid_text_column():

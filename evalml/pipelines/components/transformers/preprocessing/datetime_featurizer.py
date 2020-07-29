@@ -66,8 +66,7 @@ class DateTimeFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._date_time_col_names is None:
-            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+
         X_t = X
         if not isinstance(X_t, pd.DataFrame):
             X_t = pd.DataFrame(X_t)
