@@ -8,9 +8,10 @@ from evalml.utils.gen_utils import numerics
 class TypedImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
     name = "Typed Imputer"
-    hyperparameter_ranges = {"categorical_impute_strategy": ["most_frequent"],
-                             "numeric_impute_strategy": ["mean", "median", "most_frequent"]
-                            }
+    hyperparameter_ranges = {
+        "categorical_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+    }
 
     def __init__(self, categorical_impute_strategy="most_frequent",
                  numeric_impute_strategy="mean",

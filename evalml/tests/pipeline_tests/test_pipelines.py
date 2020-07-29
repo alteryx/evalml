@@ -138,11 +138,12 @@ def test_make_pipelines_catboost(has_minimal_dependencies):
         catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
         assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
         assert catboost_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, CatBoostClassifier]
-        assert catboost_pipeline.custom_hyperparameters == None
+        assert catboost_pipeline.custom_hyperparameters is None
+
         catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
         assert isinstance(catboost_pipeline, type(RegressionPipeline))
         assert catboost_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, CatBoostRegressor]
-        assert catboost_pipeline.custom_hyperparameters == None
+        assert catboost_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_no_nulls():
@@ -185,7 +186,7 @@ def test_make_pipeline_no_datetimes():
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, RandomForestRegressor]
-    assert regression_pipeline.custom_hyperparameters == None
+    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_no_column_names():
@@ -284,7 +285,8 @@ def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
 
     parameters = {
         'Typed Imputer': {
-            'impute_strategy': 'mean'
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
         },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
@@ -352,13 +354,12 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
         assert component.name in out
 
 
-def test_parameters(X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
+def test_parameters(logistic_regression_binary_pipeline_class):
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": "most_frequent",
+            "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median"
-            },
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
@@ -407,13 +408,12 @@ def test_name():
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
 
 
-def test_estimator_not_last(X_y_binary):
-    X, y = X_y_binary
-
+def test_estimator_not_last():
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"]            },
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
@@ -437,8 +437,9 @@ def test_multi_format_creation(X_y_binary):
 
         hyperparameters = {
             'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]                },
+                "categorical_impute_strategy": ["most_frequent"],
+                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+            },
             'Logistic Regression Classifier': {
                 "penalty": ["l2"],
                 "C": Real(.01, 10)
@@ -447,9 +448,9 @@ def test_multi_format_creation(X_y_binary):
 
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean",           
-            },
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
@@ -475,8 +476,9 @@ def test_multiple_feature_selectors(X_y_binary):
 
         hyperparameters = {
             'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]                },
+                "categorical_impute_strategy": ["most_frequent"],
+                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+            },
             'Logistic Regression Classifier': {
                 "penalty": ["l2"],
                 "C": Real(.01, 10)
@@ -719,9 +721,9 @@ def test_init_components_invalid_parameters():
 def test_correct_parameters(logistic_regression_binary_pipeline_class):
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean"
-                   },
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'mean'
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
@@ -731,7 +733,7 @@ def test_correct_parameters(logistic_regression_binary_pipeline_class):
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Typed Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
-    assert lr_pipeline['Typed Imputer'].parameters['categorical_impute_strategy'] == 'mean'
+    assert lr_pipeline['Typed Imputer'].parameters['numeric_impute_strategy'] == 'mean'
 
 
 def test_hyperparameters():
@@ -740,8 +742,9 @@ def test_hyperparameters():
 
     hyperparameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"]         },
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        },
         'Random Forest Classifier': {
             "n_estimators": Integer(10, 1000),
             "max_depth": Integer(1, 10)
@@ -758,8 +761,9 @@ def test_hyperparameters_override():
 
         custom_hyperparameters = {
             'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]             },
+                "categorical_impute_strategy": ["most_frequent"],
+                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+            },
             'Random Forest Classifier': {
                 "n_estimators": [1, 100, 200],
                 "max_depth": [5]
@@ -768,8 +772,9 @@ def test_hyperparameters_override():
 
     hyperparameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-                                    "numeric_impute_strategy": ["mean", "median", "most_frequent"]         },
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        },
         'Random Forest Classifier': {
             "n_estimators": [1, 100, 200],
             "max_depth": [5]
@@ -843,9 +848,9 @@ def test_drop_columns_in_pipeline():
             'columns': ["column to drop"]
         },
         'Typed Imputer': {
-"categorical_impute_strategy": "most_frequent",
-"numeric_impute_strategy": "mean"
-       },
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
+        },
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
@@ -862,8 +867,9 @@ def test_drop_columns_in_pipeline():
 def test_clone_init(linear_regression_pipeline_class):
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": ["most_frequent"],
-                                    "numeric_impute_strategy": ["mean", "median", "most_frequent"]         },
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
+        },
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
@@ -877,7 +883,8 @@ def test_clone_init(linear_regression_pipeline_class):
 def test_clone_random_state(linear_regression_pipeline_class):
     parameters = {
         'Typed Imputer': {
-            'impute_strategy': 'most_frequent'
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
         },
         'Linear Regressor': {
             'fit_intercept': True,
@@ -916,8 +923,9 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
     X = pd.DataFrame(X, columns=col_names)
     parameters = {
         'Typed Imputer': {
-"categorical_impute_strategy": "most_frequent",
-                                    "numeric_impute_strategy": "mean"},
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
+        },
         'RF Classifier Select From Model': {
             "percent_features": 1.0,
             "number_features": len(X.columns),
@@ -946,9 +954,9 @@ def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_cla
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
         'Typed Imputer': {
-'categorical_impute_strategy': 'most_frequent',
-                                    'numeric_impute_strategy': 'mean',             
-                                    'fill_value': None
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'mean',
+            'fill_value': None
         },
         'One Hot Encoder': {
             'top_n': 10,
