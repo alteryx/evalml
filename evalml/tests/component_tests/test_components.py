@@ -650,7 +650,7 @@ def test_all_transformers_check_fit(X_y_binary):
             continue
 
         component = component_class()
-        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.transform(X)
 
         component.fit(X, y)
@@ -668,14 +668,14 @@ def test_all_estimators_check_fit(X_y_binary):
             continue
 
         component = component_class()
-        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
 
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
-            with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+            with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
                 component.predict_proba(X)
 
-        with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.feature_importance
 
         component.fit(X, y)

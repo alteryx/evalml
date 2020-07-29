@@ -40,7 +40,7 @@ class ComponentBaseMeta(ABCMeta):
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
             if not self._is_fitted and klass not in cls.NO_FITTING_REQUIRED:
-                raise ComponentNotYetFittedError('This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
+                raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
             elif X is None and y is None:
                 return method(self)
             elif y is None:
