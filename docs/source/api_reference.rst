@@ -231,8 +231,6 @@ Regressors are components that output a predicted target value.
 Prediction Explanations
 ========================
 
-XGBoost models and CatBoost multiclass classifiers are not currently supported.
-
 .. autosummary::
     :toctree: generated
     :nosignatures:
