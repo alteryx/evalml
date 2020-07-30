@@ -35,8 +35,7 @@ def test_numeric_only_input():
         "int col": [0, 1, 2, 0, 3],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "int with nan": [np.nan, 1, 2, 1, 0],
-        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
-        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
+        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.]
     })
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = TypedImputer(numeric_impute_strategy="median")
