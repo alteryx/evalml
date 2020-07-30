@@ -66,7 +66,7 @@ def test_logger_critical(caplog):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_default(mock_RotatingFileHandler, logger_env_cleanup):
+def test_get_logger_default(mock_RotatingFileHandler):
     assert os.environ.get('EVALML_LOG_FILE') is None
     logger = get_logger(TEST_LOGGER_NAME)
     assert len(logger.handlers) == 2
@@ -76,7 +76,7 @@ def test_get_logger_default(mock_RotatingFileHandler, logger_env_cleanup):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
+def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch):
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -92,7 +92,7 @@ def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch, logger_env
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
+def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch):
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
