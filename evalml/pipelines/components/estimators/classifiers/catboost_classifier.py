@@ -20,9 +20,9 @@ class CatBoostClassifier(Estimator):
     """
     name = "CatBoost Classifier"
     hyperparameter_ranges = {
-        "n_estimators": Integer(4, 100, prior='log-uniform'),
+        "n_estimators": Integer(4, 100, prior='uniform'),
         "eta": Real(0.000001, 1),
-        "max_depth": Integer(4, 10, prior='log-uniform'),
+        "max_depth": Integer(4, 10, prior='uniform'),
     }
     model_family = ModelFamily.CATBOOST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
