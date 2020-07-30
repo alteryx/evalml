@@ -35,7 +35,9 @@ def test_numeric_only_input():
         "int col": [0, 1, 2, 0, 3],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "int with nan": [np.nan, 1, 2, 1, 0],
-        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.]
+        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
+        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
+
     })
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = TypedImputer(numeric_impute_strategy="median")
@@ -112,6 +114,23 @@ def test_categorical_and_numeric_input():
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
     })
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = TypedImputer()
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_drop_all_columns():
+    X = pd.DataFrame({
+        "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category'),
+        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
+    })
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = TypedImputer()
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = X.drop(["all nan cat", "all nan"], axis=1)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
     imputer = TypedImputer()
