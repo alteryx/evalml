@@ -540,6 +540,7 @@ class AutoMLSearch:
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
             objectives_to_score = [self.objective] + self.additional_objectives
+            cv_pipeline = None
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
