@@ -190,7 +190,6 @@ def test_get_logger_exception(mock_RotatingFileHandler, capsys, caplog, logger_e
     assert len(mock_RotatingFileHandler.mock_calls) == 1
     assert mock_RotatingFileHandler.call_count == 1
 
-
     stdouterr = capsys.readouterr()
     assert "Warning: cannot write debug logs" not in caplog.text
     assert "Exception encountered while setting up debug log file" in caplog.text
