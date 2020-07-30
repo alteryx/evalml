@@ -22,8 +22,6 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.components import (
-    CatBoostClassifier,
-    CatBoostRegressor,
     DateTimeFeaturizer,
     DropNullColumns,
     LinearRegressor,
