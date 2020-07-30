@@ -64,7 +64,8 @@ def _make_table(dtypes, alignment, shap_values, normalized_values, top_k, includ
     return table.draw()
 
 
-def _make_single_prediction_table(shap_values, normalized_values, top_k=3, include_shap_values=False):
+def _make_single_prediction_table(shap_values, normalized_values, top_k=3, include_shap_values=False,
+                                  class_names=None):
     """Makes a table from the SHAP values for a single prediction.
 
     Arguments:
@@ -91,15 +92,12 @@ def _make_single_prediction_table(shap_values, normalized_values, top_k=3, inclu
     if isinstance(shap_values, list):
         # Binary Classification
         if len(shap_values) == 2:
-            strings = ["Positive Label\n"]
-            table = _make_table(dtypes, alignment, shap_values[1], normalized_values[1], top_k, include_shap_values)
-            strings += table.splitlines()
-            return "\n".join(strings)
+            return _make_table(dtypes, alignment, shap_values[1], normalized_values[1], top_k, include_shap_values)
         # Multiclass
         else:
             strings = []
-            for class_index, (class_values, normalized_class_values) in enumerate(zip(shap_values, normalized_values)):
-                strings.append(f"Class {class_index}\n")
+            for class_name, class_values, normalized_class_values in zip(class_names, shap_values, normalized_values):
+                strings.append(f"Class: {class_name}\n")
                 table = _make_table(dtypes, alignment, class_values, normalized_class_values, top_k, include_shap_values)
                 strings += table.splitlines()
                 strings.append("\n")

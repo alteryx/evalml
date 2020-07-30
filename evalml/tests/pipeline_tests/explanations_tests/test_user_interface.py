@@ -80,9 +80,7 @@ binary_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [0.0]
                      {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.225],
                       'e': [-0.2422], 'f': [-0.251], 'foo': [-0.087]}]
 
-binary_table = """Positive Label
-
-                Feature Name Contribution to Prediction
+binary_table = """Feature Name Contribution to Prediction
                 =========================================
                 a +
                 b +
@@ -91,9 +89,7 @@ binary_table = """Positive Label
                 e --
                 f --""".splitlines()
 
-binary_table_shap = """Positive Label
-
-                     Feature Name Contribution to Prediction SHAP Value
+binary_table_shap = """Feature Name Contribution to Prediction SHAP Value
                      ======================================================
                      a + 1.180
                      b + 1.120
@@ -113,7 +109,7 @@ multiclass_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [
                          {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.221], 'e': [-0.242], 'f': [-0.251], 'foo': [-0.0865]},
                          {'a': [0.0825], 'b': [0.0], 'c': [0.0], 'd': [-0.223], 'e': [-0.247], 'f': [-0.325], 'foo': [-0.121]}]
 
-multiclass_table = """Class 0
+multiclass_table = """Class: 0
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -125,7 +121,7 @@ multiclass_table = """Class 0
                     foo -----
 
 
-                    Class 1
+                    Class: 1
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -137,7 +133,7 @@ multiclass_table = """Class 0
                     f --
 
 
-                    Class 2
+                    Class: 2
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -148,7 +144,7 @@ multiclass_table = """Class 0
                     e --
                     f --""".splitlines()
 
-multiclass_table_shap = """Class 0
+multiclass_table_shap = """Class: 0
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -160,7 +156,7 @@ multiclass_table_shap = """Class 0
                          foo ----- -1.000
 
 
-                         Class 1
+                         Class: 1
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -172,7 +168,7 @@ multiclass_table_shap = """Class 0
                          f -- -2.900
 
 
-                         Class 2
+                         Class: 2
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -192,7 +188,8 @@ multiclass_table_shap = """Class 0
                           (multiclass, multiclass_normalized, False, multiclass_table),
                           (multiclass, multiclass_normalized, True, multiclass_table_shap)])
 def test_make_single_prediction_table(values, normalized_values, include_shap, answer):
-    table = _make_single_prediction_table(values, normalized_values, include_shap_values=include_shap)
+    table = _make_single_prediction_table(values, normalized_values, include_shap_values=include_shap,
+                                          class_names=["0", "1", "2"])
 
     # Making sure the content is the same, regardless of formatting.
     for row_table, row_answer in zip(table.splitlines(), answer):

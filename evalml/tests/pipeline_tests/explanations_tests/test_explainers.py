@@ -4,9 +4,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import PipelineScoreError
 from evalml.pipelines.prediction_explanations.explainers import (
-    explain_prediction
+    explain_prediction,
+    explain_predictions,
+    explain_predictions_best_worst
 )
+from evalml.problem_types import ProblemTypes
+
+
+def compare_two_tables(table_1, table_2):
+    assert len(table_1) == len(table_2)
+    for row, row_answer in zip(table_1, table_2):
+        assert row.strip().split() == row_answer.strip().split()
+
 
 test_features = [5, [1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
                  pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
@@ -39,6 +50,203 @@ def test_explain_prediction_runs(mock_normalize_shap_values, mock_compute_shap_v
     features = pd.DataFrame({"a": [1], "b": [2]})
     table = explain_prediction(pipeline, features).splitlines()
 
-    assert len(table) == len(answer)
-    for row, row_answer in zip(table, answer):
-        assert row.strip().split() == row_answer.strip().split()
+    compare_two_tables(table, answer)
+
+
+input_features_and_y_true = [([1], None, "^Input features must be a dataframe with more than 10 rows!"),
+                             (pd.DataFrame({"a": [1]}), None, "^Input features must be a dataframe with more than 10 rows!"),
+                             (pd.DataFrame({"a": range(15)}), [1], "^Parameter y_true must be a pd.Series."),
+                             (pd.DataFrame({"a": range(15)}), pd.Series(range(12)), "^Parameters y_true and input_features must have the same number of data points.")
+                             ]
+
+
+@pytest.mark.parametrize("input_features,y_true,error_message", input_features_and_y_true)
+def test_explain_predictions_best_worst_value_errors(input_features, y_true, error_message):
+    with pytest.raises(ValueError, match=error_message):
+        explain_predictions_best_worst(None, input_features, y_true)
+
+
+def test_explain_predictions_raises_pipeline_score_error():
+    with pytest.raises(PipelineScoreError, match="Division by zero!"):
+
+        def raise_zero_division(input_features):
+            raise ZeroDivisionError("Division by zero!")
+
+        pipeline = MagicMock()
+        pipeline.problem_type = ProblemTypes.BINARY
+        pipeline.predict_proba.side_effect = raise_zero_division
+        explain_predictions_best_worst(pipeline, pd.DataFrame({"a": range(15)}), pd.Series(range(15)))
+
+
+@pytest.mark.parametrize("input_features", [1, [1], "foo", pd.DataFrame()])
+def test_explain_predictions_value_errors(input_features):
+    with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
+        explain_predictions(None, input_features)
+
+
+regression_best_worst_answer = """Test Pipeline Name
+
+        Parameters go here
+
+            Best 1 of 1
+
+                Predicted Value: 1
+                Target Value: 2
+                abs_error: 1
+
+                table goes here
+
+
+            Worst 1 of 1
+
+                Predicted Value: 2
+                Target Value: 3
+                abs_error: 4
+
+                table goes here
+
+
+"""
+
+no_best_worst_answer = """Test Pipeline Name
+
+        Parameters go here
+
+            1 of 2
+
+                table goes here
+
+
+            2 of 2
+
+                table goes here
+
+
+"""
+
+
+binary_best_worst_answer = """Test Pipeline Name
+
+        Parameters go here
+
+            Best 1 of 1
+
+                Predicted Probabilities: [benign: 0.05, malignant: 0.95]
+                Target Value: malignant
+                cross_entropy: 0.2
+
+                table goes here
+
+
+            Worst 1 of 1
+
+                Predicted Probabilities: [benign: 0.1, malignant: 0.9]
+                Target Value: benign
+                cross_entropy: 0.78
+
+                table goes here
+
+
+"""
+
+multiclass_table = """Class: setosa
+
+        table goes here
+
+
+        Class: versicolor
+
+        table goes here
+
+
+        Class: virginica
+
+        table goes here"""
+
+multiclass_best_worst_answer = """Test Pipeline Name
+
+        Parameters go here
+
+            Best 1 of 1
+
+                Predicted Probabilities: [setosa: 0.8, versicolor: 0.1, virginica: 0.1]
+                Target Value: setosa
+                cross_entropy: 0.15
+
+                {multiclass_table}
+
+
+            Worst 1 of 1
+
+                Predicted Probabilities: [setosa: 0.2, versicolor: 0.75, virginica: 0.05]
+                Target Value: versicolor
+                cross_entropy: 0.34
+
+                {multiclass_table}
+
+
+""".format(multiclass_table=multiclass_table)
+
+multiclass_no_best_worst_answer = """Test Pipeline Name
+
+    Parameters go here
+
+        1 of 2
+
+            {multiclass_table}
+
+
+        2 of 2
+
+            {multiclass_table}
+
+
+""".format(multiclass_table=multiclass_table)
+
+
+@pytest.mark.parametrize("problem_type,answer,explain_predictions_answer",
+                         [(ProblemTypes.REGRESSION, regression_best_worst_answer, no_best_worst_answer),
+                          (ProblemTypes.BINARY, binary_best_worst_answer, no_best_worst_answer),
+                          (ProblemTypes.MULTICLASS, multiclass_best_worst_answer, multiclass_no_best_worst_answer)])
+@patch("evalml.pipelines.prediction_explanations.explainers._DEFAULT_METRICS")
+@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
+def test_explain_predictions_best_worst_and_explain_predictions(explain_prediction_mock, mock_default_metrics,
+                                                                problem_type, answer, explain_predictions_answer):
+
+    explain_prediction_mock.return_value = "table goes here"
+    pipeline = MagicMock()
+    pipeline.parameters = "Parameters go here"
+    input_features = pd.DataFrame({"a": [3, 4]})
+    pipeline.problem_type = problem_type
+    pipeline.name = "Test Pipeline Name"
+
+    if problem_type == ProblemTypes.REGRESSION:
+        abs_error_mock = MagicMock(__name__="abs_error")
+        abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
+        mock_default_metrics.__getitem__.return_value = abs_error_mock
+        pipeline.predict.return_value = pd.Series([2, 1])
+        y_true = pd.Series([3, 2])
+    elif problem_type == ProblemTypes.BINARY:
+        pipeline._classes.return_value = ["benign", "malignant"]
+        cross_entropy_mock = MagicMock(__name__="cross_entropy")
+        mock_default_metrics.__getitem__.return_value = cross_entropy_mock
+        cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
+        pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
+        y_true = pd.Series(["malignant", "benign"])
+    else:
+        explain_prediction_mock.return_value = multiclass_table
+        pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
+        cross_entropy_mock = MagicMock(__name__="cross_entropy")
+        mock_default_metrics.__getitem__.return_value = cross_entropy_mock
+        cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
+        pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
+                                                            "virginica": [0.1, 0.05]})
+        y_true = pd.Series(["setosa", "versicolor"])
+
+    best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
+                                                       num_to_explain=1)
+
+    compare_two_tables(best_worst_report.splitlines(), answer.splitlines())
+
+    report = explain_predictions(pipeline, input_features)
+    compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
