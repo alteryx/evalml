@@ -12,7 +12,7 @@ TEST_LOGGER_NAME = 'my_logger'
 
 
 @pytest.fixture()
-def logger_env_cleanup(monkeypatch, autouse=True):
+def logger_env_cleanup(monkeypatch):
     # need to clear out the logger so logger state isn't shared across the unit tests
     if TEST_LOGGER_NAME in logging.Logger.manager.loggerDict:
         del logging.Logger.manager.loggerDict[TEST_LOGGER_NAME]
@@ -22,12 +22,12 @@ def logger_env_cleanup(monkeypatch, autouse=True):
     monkeypatch.delenv('EVALML_LOG_FILE', raising=False)
 
 
-def test_get_logger():
+def test_get_logger(logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     assert isinstance(logger, logging.Logger)
 
 
-def test_logger_title(caplog):
+def test_logger_title(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     log_title(logger, "Log title")
     assert "Log title" in caplog.text
@@ -37,28 +37,28 @@ def test_logger_title(caplog):
     assert "Log subtitle" in caplog.text
 
 
-def test_logger_info(caplog):
+def test_logger_info(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     logger.info("Test info")
     assert "Test info" in caplog.text
     assert "INFO" in caplog.text
 
 
-def test_logger_warn(caplog):
+def test_logger_warn(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     logger.warn("Test warning")
     assert "Test warning" in caplog.text
     assert "WARN" in caplog.text
 
 
-def test_logger_error(caplog):
+def test_logger_error(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     logger.error("Test error")
     assert "Test error" in caplog.text
     assert "ERROR" in caplog.text
 
 
-def test_logger_critical(caplog):
+def test_logger_critical(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     logger.critical("Test critical")
     assert "Test critical" in caplog.text
@@ -66,7 +66,8 @@ def test_logger_critical(caplog):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_default(mock_RotatingFileHandler):
+def test_get_logger_default(mock_RotatingFileHandler, logger_env_cleanup):
+    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
     logger = get_logger(TEST_LOGGER_NAME)
     assert len(logger.handlers) == 2
@@ -76,7 +77,8 @@ def test_get_logger_default(mock_RotatingFileHandler):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch):
+def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
+    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -92,7 +94,8 @@ def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch):
+def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
+    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -107,7 +110,8 @@ def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch):
+def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
+    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     monkeypatch.setenv('EVALML_LOG_FILE', '')
@@ -120,7 +124,8 @@ def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
-def test_get_logger_exception(mock_RotatingFileHandler):
+def test_get_logger_exception(mock_RotatingFileHandler, logger_env_cleanup):
+    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     mock_RotatingFileHandler.side_effect = Exception('all your log are belong to us')
     assert os.environ.get('EVALML_LOG_FILE') is None
     logger = get_logger(TEST_LOGGER_NAME)
