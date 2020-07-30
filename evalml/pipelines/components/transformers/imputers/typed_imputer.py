@@ -60,6 +60,7 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
+
         X_numerics = X.select_dtypes(include=numerics)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
@@ -67,8 +68,40 @@ class TypedImputer(Transformer):
         X_categorical = X.select_dtypes(exclude=numerics)
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
+
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
+
+    def _transform_helper(self, X, y=None, calculate_numerics=False):
+        """Helper method to transform data X by imputing missing values
+
+        Arguments:
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Input Labels
+            calculate_numerics (bool): If True, computes transformation for numeric columns,
+                otherwise computes transformation for all other columns.
+
+        Returns:
+            pd.DataFrame: Transformed X for input type or empty DataFrame if
+                input does not contain selected datatypes.
+
+        """
+        if calculate_numerics:
+            X_to_transform = X.select_dtypes(include=numerics)
+            if len(X_to_transform.columns) == 0:
+                return pd.DataFrame()
+            X_t = self._numeric_imputer.transform(X_to_transform)
+        else:
+            X_to_transform = X.select_dtypes(exclude=numerics)
+            if len(X_to_transform.columns) == 0:
+                return pd.DataFrame()
+            X_t = self._categorical_imputer.transform(X_to_transform)
+
+        if not isinstance(X_t, pd.DataFrame):
+            X_null_dropped = X_to_transform.drop(self._all_null_cols, axis=1, errors='ignore')
+            if X_null_dropped.empty:
+                return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
 
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values
@@ -81,33 +114,8 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        # skLearn's SimpleImputer loses track of column type, so we need to restore
-        X_numerics = X.select_dtypes(include=numerics)
-        if len(X_numerics.columns) > 0:
-            X_numerics_t = self._numeric_imputer.transform(X_numerics)
-            if not isinstance(X_numerics_t, pd.DataFrame):
-                X_numerics_null_dropped = X_numerics.drop(self._all_null_cols, axis=1, errors='ignore')
-                if X_numerics_null_dropped.empty:
-                    X_numerics_t = pd.DataFrame(X_numerics_t, columns=X_numerics_null_dropped.columns)
-                else:
-                    X_numerics_t = pd.DataFrame(X_numerics_t, columns=X_numerics_null_dropped.columns).astype(X_numerics_null_dropped.dtypes.to_dict())
-        else:
-            X_numerics_t = pd.DataFrame()
-
-        X_categorical = X.select_dtypes(exclude=numerics)
-        if len(X_categorical.columns) > 0:
-            X_categorical_t = self._categorical_imputer.transform(X_categorical)
-            if not isinstance(X_categorical_t, pd.DataFrame):
-                X_categorical_null_dropped = X_categorical.drop(self._all_null_cols, axis=1, errors='ignore')
-                if X_categorical_null_dropped.empty:
-                    X_categorical_t = pd.DataFrame(X_categorical_t, columns=X_categorical_null_dropped.columns)
-                X_categorical_t = pd.DataFrame(X_categorical_t, columns=X_categorical_null_dropped.columns).astype(X_categorical_null_dropped.dtypes.to_dict())
-            else:
-                X_categorical_t = pd.DataFrame(X_categorical_t)
-        else:
-            X_categorical_t = pd.DataFrame()
-        X_t = pd.concat([X_numerics_t, X_categorical_t], axis=1)
-        return X_t
+        return pd.concat([self._transform_helper(X, y, calculate_numerics=True),
+                          self._transform_helper(X, y, calculate_numerics=False)], axis=1)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
