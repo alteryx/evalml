@@ -409,24 +409,13 @@ def test_name():
 
 
 def test_estimator_not_last():
-    parameters = {
-        'Typed Imputer': {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
-        },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 1.0,
-        }
-    }
-
     class MockBinaryClassificationPipelineWithoutEstimator(BinaryClassificationPipeline):
         name = "Mock Binary Classification Pipeline Without Estimator"
         component_graph = ['One Hot Encoder', 'Typed Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
-        MockBinaryClassificationPipelineWithoutEstimator(parameters=parameters)
+        MockBinaryClassificationPipelineWithoutEstimator(parameters={})
 
 
 def test_multi_format_creation(X_y_binary):

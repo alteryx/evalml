@@ -27,9 +27,9 @@ class TypedImputer(Transformer):
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
-            raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid numeric impute strategies are {','.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
-            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid numeric impute strategies are {','.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid numerical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
 
         parameters = {"categorical_impute_strategy": categorical_impute_strategy,
                       "numeric_impute_strategy": numeric_impute_strategy,
@@ -60,7 +60,6 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        # TODO: check bools, even if they're not explicitly included here :)
         X_numerics = X.select_dtypes(include=numerics)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
@@ -82,8 +81,6 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        # TODO: what if different columns, triggers these? Need a way to connect to fit()
-
         # skLearn's SimpleImputer loses track of column type, so we need to restore
         X_numerics = X.select_dtypes(include=numerics)
         if len(X_numerics.columns) > 0:
@@ -99,8 +96,7 @@ class TypedImputer(Transformer):
 
         X_categorical = X.select_dtypes(exclude=numerics)
         if len(X_categorical.columns) > 0:
-            X_categorical_t = pd.DataFrame(self._categorical_imputer.transform(X_categorical))
-
+            X_categorical_t = self._categorical_imputer.transform(X_categorical)
             if not isinstance(X_categorical_t, pd.DataFrame):
                 X_categorical_null_dropped = X_categorical.drop(self._all_null_cols, axis=1, errors='ignore')
                 if X_categorical_null_dropped.empty:

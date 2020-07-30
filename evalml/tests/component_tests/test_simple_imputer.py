@@ -153,13 +153,10 @@ def test_numpy_input():
                                                 [np.nan, 2, 3, 0]]))
 
 
-def test_deprecation_warning():
+def test_simple_imputer_deprecation_warning():
     with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
-        # Trigger a warning.
         SimpleImputer(impute_strategy='mean')
-        # Verify some things
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
         assert "deprecated" in str(w[-1].message)
