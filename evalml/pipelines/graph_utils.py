@@ -282,7 +282,7 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
         X (pd.DataFrame): The input data used to score and compute permutation importance
         y (pd.Series): The target labels
         objective (str, ObjectiveBase): Objective to score on
-        show_all_features (bool, optional) : If True, graph features with a permutation importance value of zero. Defaults to False.
+        show_all_features (bool, optional): If True, graph features with a permutation importance value of zero. Defaults to False.
 
     Returns:
         plotly.Figure, a bar graph showing features and their respective permutation importance.

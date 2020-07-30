@@ -1,15 +1,40 @@
-.. _changelog:
-
 Release Notes
 -------------
 
 **Future Releases**
     * Enhancements
+        * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
+        * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
+        * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
+        * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
+        * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
     * Fixes
+        * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
+        * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`, :pr:`994`
+        * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
     * Changes
+        * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
+        * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
+        * Moved `evalml.model_families.list_model_families` to `evalml.pipelines.components.allowed_model_families` :pr:`959`
+        * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
     * Documentation Changes
+        * Update README.md :pr:`963`
+        * Reworded message when errors are returned from data checks in search :pr:`982`
+        * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
+        * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
     * Testing Changes
+        * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
+        * Removed the ``raise_errors`` flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
+        * ``evalml.model_families.list_model_families`` has been moved to `evalml.pipelines.components.allowed_model_families` :pr:`959`
+        * ``TextFeaturizer``: the ``featuretools`` and ``nlp_primitives`` packages must be installed after installing evalml in order to use this component :pr:`976`
+        * Renamed ``DateTimeFeaturization`` to ``DateTimeFeaturizer`` :pr:`977`
 
 
 **v0.11.2 July 16, 2020**
@@ -31,6 +56,7 @@ Release Notes
     * Documentation Changes
         * Reorganized and rewrote documentation :pr:`937`
         * Updated to use pydata sphinx theme :pr:`937`
+        * Updated docs to use `release_notes` instead of `changelog` :pr:`942`
     * Testing Changes
         * Cleaned up fixture names and usages in tests :pr:`895`
 
@@ -39,6 +65,7 @@ Release Notes
 
     **Breaking Changes**
         * ``list_model_families`` has been moved to ``evalml.model_family.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`903`
+        * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Static pipeline definitions have been removed, but similar pipelines can still be constructed via creating an instance of PipelineBase :pr:`904`
         * ``all_pipelines()`` and ``get_pipelines()`` utility methods have been removed :pr:`904`
 

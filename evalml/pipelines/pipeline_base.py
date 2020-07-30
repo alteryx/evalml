@@ -2,16 +2,22 @@ import copy
 import inspect
 import os
 import re
+import sys
+import traceback
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 
 import cloudpickle
-import numpy as np
 import pandas as pd
 
 from .components import Estimator
 from .components.utils import handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, MissingComponentError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    MissingComponentError,
+    PipelineScoreError
+)
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -166,6 +172,14 @@ class PipelineBase(ABC):
             component.describe(print_name=False)
 
     def _transform(self, X):
+        """Transforms the data by applying all pre-processing components.
+
+        Arguments:
+            X (pd.DataFrame): Input data to the pipeline to transform.
+
+        Returns:
+            pd.DataFrame - New dataframe.
+        """
         X_t = X
         for component in self.component_graph[:-1]:
             X_t = component.transform(X_t)
@@ -181,6 +195,7 @@ class PipelineBase(ABC):
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
         self.estimator.fit(X_t, y_t)
 
+    @abstractmethod
     def fit(self, X, y):
         """Build a model
 
@@ -193,23 +208,16 @@ class PipelineBase(ABC):
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        self._fit(X, y)
-        return self
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
             objective (Object or string): the objective to use to make predictions
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series: estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -222,8 +230,8 @@ class PipelineBase(ABC):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array) : data of shape [n_samples, n_features]
-            y (pd.Series) : true labels of length [n_samples]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            y (pd.Series): true labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
@@ -232,16 +240,36 @@ class PipelineBase(ABC):
 
     @staticmethod
     def _score(X, y, predictions, objective):
+        return objective.score(y, predictions, X)
+
+    def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
-        Will return `np.nan` if the objective errors.
+        Will raise a PipelineScoreError if any objectives fail.
+        Arguments:
+            X (pd.DataFrame): The feature matrix.
+            y (pd.Series): The labels.
+            y_pred (pd.Series): The pipeline predictions.
+            y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
+                Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
+            objectives (list): List of objectives to score.
         """
-        score = np.nan
-        try:
-            score = objective.score(y, predictions, X)
-        except Exception as e:
-            logger.error('Error in PipelineBase.score while scoring objective {}: {}'.format(objective.name, str(e)))
-        return score
+        scored_successfully = OrderedDict()
+        exceptions = OrderedDict()
+        for objective in objectives:
+            try:
+                if self.problem_type != objective.problem_type:
+                    raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
+                score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
+                scored_successfully.update({objective.name: score})
+            except Exception as e:
+                tb = traceback.format_tb(sys.exc_info()[2])
+                exceptions[objective.name] = (e, tb)
+        if exceptions:
+            # If any objective failed, throw an PipelineScoreError
+            raise PipelineScoreError(exceptions, scored_successfully)
+        # No objectives failed, return the scores
+        return scored_successfully
 
     @classproperty
     def model_family(cls):
@@ -298,7 +326,7 @@ class PipelineBase(ABC):
         """Generate an image representing the pipeline graph
 
         Arguments:
-            filepath (str, optional) : Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+            filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
@@ -404,7 +432,7 @@ class PipelineBase(ABC):
         """Saves pipeline at file path
 
         Arguments:
-            file_path (str) : location to save file
+            file_path (str): location to save file
 
         Returns:
             None
@@ -417,7 +445,7 @@ class PipelineBase(ABC):
         """Loads pipeline at file path
 
         Arguments:
-            file_path (str) : location to load file
+            file_path (str): location to load file
 
         Returns:
             PipelineBase object

@@ -20,7 +20,7 @@ def _extract_hour(col):
     return col.dt.hour
 
 
-class DateTimeFeaturization(Transformer):
+class DateTimeFeaturizer(Transformer):
     """Transformer that can automatically featurize DateTime columns."""
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
@@ -66,8 +66,7 @@ class DateTimeFeaturization(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._date_time_col_names is None:
-            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+
         X_t = X
         if not isinstance(X_t, pd.DataFrame):
             X_t = pd.DataFrame(X_t)

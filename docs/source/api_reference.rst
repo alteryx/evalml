@@ -130,7 +130,6 @@ Pipeline Utils
     :toctree: generated
     :nosignatures:
 
-    get_estimators
     make_pipeline
 
 
@@ -152,6 +151,20 @@ Components represent a step in a pipeline.
     Transformer
     Estimator
 
+.. currentmodule:: evalml.pipelines.components.utils
+
+Component Utils
+~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    allowed_model_families
+    get_estimators
+
+
+.. currentmodule:: evalml.pipelines.components
+
 Transformers
 ~~~~~~~~~~~~
 Transformers are components that take in data as input and output transformed data.
@@ -170,7 +183,7 @@ Transformers are components that take in data as input and output transformed da
     RFRegressorSelectFromModel
     RFClassifierSelectFromModel
     DropNullColumns
-    DateTimeFeaturization
+    DateTimeFeaturizer
     TextFeaturizer
 
 Estimators
@@ -211,6 +224,18 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
+
+
+.. currentmodule:: evalml.pipelines.prediction_explanations
+
+Prediction Explanations
+========================
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    explain_prediction
 
 
 .. currentmodule:: evalml.objectives
@@ -335,7 +360,6 @@ Model Family
     :nosignatures:
 
     handle_model_family
-    list_model_families
 
 
 .. currentmodule:: evalml.tuners

@@ -1,17 +1,10 @@
 import string
 import warnings
 
-import featuretools as ft
 import pandas as pd
-from nlp_primitives import (
-    LSA,
-    DiversityScore,
-    MeanCharactersPerWord,
-    PartOfSpeechCount,
-    PolarityScore
-)
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils import import_or_raise
 
 
 class TextFeaturizer(Transformer):
@@ -27,6 +20,9 @@ class TextFeaturizer(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
+        self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
+        self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
+
         text_columns = text_columns or []
         parameters = {'text_columns': text_columns}
         parameters.update(kwargs)
@@ -68,7 +64,7 @@ class TextFeaturizer(Transformer):
     def _verify_col_types(self, entity_set):
         var_types = entity_set.entities[0].variable_types
         for col in self.text_col_names:
-            if var_types[col] is not ft.variable_types.variable.Text:
+            if var_types[col] is not self._ft.variable_types.variable.Text:
                 raise ValueError("Column {} is not a text column, cannot apply TextFeaturizer component".format(col))
 
     def fit(self, X, y=None):
@@ -81,21 +77,21 @@ class TextFeaturizer(Transformer):
         X_text = X[self.text_col_names]
         X_text['index'] = range(len(X_text))
 
-        es = ft.EntitySet()
+        es = self._ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
         self._verify_col_types(es)
         es.df = self._clean_text(X)
 
-        trans = [DiversityScore,
-                 LSA,
-                 MeanCharactersPerWord,
-                 PartOfSpeechCount,
-                 PolarityScore]
+        trans = [self._nlp_primitives.DiversityScore,
+                 self._nlp_primitives.LSA,
+                 self._nlp_primitives.MeanCharactersPerWord,
+                 self._nlp_primitives.PartOfSpeechCount,
+                 self._nlp_primitives.PolarityScore]
 
-        self._features = ft.dfs(entityset=es,
-                                target_entity='X',
-                                trans_primitives=trans,
-                                features_only=True)
+        self._features = self._ft.dfs(entityset=es,
+                                      target_entity='X',
+                                      trans_primitives=trans,
+                                      features_only=True)
         return self
 
     def transform(self, X, y=None):
@@ -107,11 +103,10 @@ class TextFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if self._features is None:
-            raise RuntimeError(f"You must fit {self.name} before calling transform!")
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        if len(self._features) == 0:
+        if self._features is None or len(self._features) == 0:
             return X
         X = X.rename(columns=str)
         self._verify_col_names(X.columns)
@@ -120,13 +115,13 @@ class TextFeaturizer(Transformer):
         X_text['index'] = range(len(X_text))
         X_t = X.drop(self.text_col_names, axis=1)
 
-        es = ft.EntitySet()
+        es = self._ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
         self._verify_col_types(es)
         es.df = self._clean_text(X)
 
-        feature_matrix = ft.calculate_feature_matrix(features=self._features,
-                                                     entityset=es,
-                                                     verbose=True)
+        feature_matrix = self._ft.calculate_feature_matrix(features=self._features,
+                                                           entityset=es,
+                                                           verbose=True)
         X_t = pd.concat([X_t, feature_matrix.reindex(X.index)], axis=1)
         return X_t

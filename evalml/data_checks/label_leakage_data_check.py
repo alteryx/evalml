@@ -3,6 +3,8 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
+from evalml.utils.gen_utils import numerics_and_boolean
+
 
 class LabelLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target."""
@@ -46,14 +48,13 @@ class LabelLeakageDataCheck(DataCheck):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        # only select numeric
-        numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool']
-        X = X.select_dtypes(include=numerics)
 
+        if y.dtype not in numerics_and_boolean:
+            return []
+        X = X.select_dtypes(include=numerics_and_boolean)
         if len(X.columns) == 0:
             return []
-        corrs = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
 
-        highly_corr_cols = {key: value for key, value in corrs.items() if value >= self.pct_corr_threshold}
+        highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         return [DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name) for col_name in highly_corr_cols]

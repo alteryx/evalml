@@ -137,11 +137,6 @@ def test_transform_drop_all_nan_columns_empty():
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
 
-def test_transform_before_fit():
-    with pytest.raises(RuntimeError, match="Must fit transformer before calling transform!"):
-        SimpleImputer(impute_strategy='most_frequent').transform(pd.DataFrame())
-
-
 def test_numpy_input():
     X = np.array([[np.nan, 0, 1, np.nan],
                   [np.nan, 2, 3, 2],
