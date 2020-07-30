@@ -16,7 +16,6 @@ def get_logger(name):
         stdout_handler.setLevel(logging.INFO)
         stdout_handler.setFormatter(logging.Formatter('%(message)s'))
         logger.addHandler(stdout_handler)
-        logger.setLevel(logging.DEBUG)
 
         evalml_log_path_str = os.environ.get('EVALML_LOG_FILE', 'evalml_debug.log')
         evalml_log_path = Path(evalml_log_path_str)
