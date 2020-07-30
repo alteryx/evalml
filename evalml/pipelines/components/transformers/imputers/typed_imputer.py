@@ -100,12 +100,10 @@ class TypedImputer(Transformer):
             return pd.DataFrame()
 
         X_t = imputer_to_use.transform(X_to_transform)
-
-        if not isinstance(X_t, pd.DataFrame):
-            X_null_dropped = X_to_transform.drop(self._all_null_cols, axis=1, errors='ignore')
-            if X_null_dropped.empty:
-                return pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
+        X_null_dropped = X_to_transform.drop(self._all_null_cols, axis=1, errors='ignore')
+        if X_null_dropped.empty:
+            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+        return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
 
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values
