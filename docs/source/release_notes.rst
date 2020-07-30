@@ -24,6 +24,7 @@ Release Notes
         * Reworded message when errors are returned from data checks in search :pr:`982`
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
         * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
+        * Update FAQ section formatting :pr:`997`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
 
