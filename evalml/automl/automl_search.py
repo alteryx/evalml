@@ -395,10 +395,13 @@ class AutoMLSearch:
             return
 
         current_batch_pipelines = []
+        current_batch_pipeline_scores = []
         while self._check_stopping_condition(self._start):
             try:
                 if len(current_batch_pipelines) == 0:
                     try:
+                        if (current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores)).all()):
+                            raise RuntimeError(f"All pipelines produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
@@ -420,6 +423,7 @@ class AutoMLSearch:
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
                 score_to_minimize = -score if self.objective.greater_is_better else score
+                current_batch_pipeline_scores.append(score_to_minimize)
                 self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
                 if search_iteration_plot:
@@ -582,8 +586,8 @@ class AutoMLSearch:
                     logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
                     logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
                     logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
-                    score = np.nan
                     scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+                    score = np.nan
 
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})

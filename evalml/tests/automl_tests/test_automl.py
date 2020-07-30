@@ -888,3 +888,12 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
+
+
+@patch('evalml.automl.AutoMLSearch._evaluate')
+def test_all_pipelines_in_batch_return_nan(mock_evaluate, X_y_binary):
+    X, y = X_y_binary
+    mock_evaluate.return_value = {'cv_score_mean': np.nan}
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=2)
+    with pytest.raises(RuntimeError, match="All pipelines produced a score of np.nan on the primary objective"):
+        automl.search(X, y)
