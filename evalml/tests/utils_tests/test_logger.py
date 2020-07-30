@@ -67,7 +67,6 @@ def test_logger_critical(caplog, logger_env_cleanup):
 
 @patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_default(mock_RotatingFileHandler, logger_env_cleanup):
-    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
     logger = get_logger(TEST_LOGGER_NAME)
     assert len(logger.handlers) == 2
@@ -78,7 +77,6 @@ def test_get_logger_default(mock_RotatingFileHandler, logger_env_cleanup):
 
 @patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
-    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -95,7 +93,6 @@ def test_get_logger_path_valid(mock_RotatingFileHandler, monkeypatch, logger_env
 
 @patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
-    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -111,7 +108,6 @@ def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch, logger_e
 
 @patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch, logger_env_cleanup):
-    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     assert os.environ.get('EVALML_LOG_FILE') is None
 
     monkeypatch.setenv('EVALML_LOG_FILE', '')
@@ -125,7 +121,6 @@ def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch, logger_env
 
 @patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_exception(mock_RotatingFileHandler, logger_env_cleanup):
-    assert not TEST_LOGGER_NAME in logging.Logger.manager.loggerDict
     mock_RotatingFileHandler.side_effect = Exception('all your log are belong to us')
     assert os.environ.get('EVALML_LOG_FILE') is None
     logger = get_logger(TEST_LOGGER_NAME)
