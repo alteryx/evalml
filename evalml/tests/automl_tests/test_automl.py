@@ -899,4 +899,5 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
     mock_train_test_split.side_effect = RuntimeError()
     automl = AutoMLSearch(problem_type='binary', objective='accuracy_binary', max_pipelines=2, optimize_thresholds=True)
     automl.search(X, y)
-    assert len(automl.results['pipeline_results']) == 2
+    for pipeline in automl.results['pipeline_results'].values():
+        assert np.isnan(pipeline['score'])
