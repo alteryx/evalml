@@ -42,8 +42,6 @@ class TypedImputer(Transformer):
                                           fill_value=fill_value,
                                           **kwargs)
         self._all_null_cols = None
-        self._numeric_cols = None
-        self._categorical_cols = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -86,16 +84,18 @@ class TypedImputer(Transformer):
                 input does not contain selected datatypes.
 
         """
+        imputer_to_use = None
         if calculate_numerics:
             X_to_transform = X.select_dtypes(include=numerics)
-            if len(X_to_transform.columns) == 0:
-                return pd.DataFrame()
-            X_t = self._numeric_imputer.transform(X_to_transform)
+            imputer_to_use = self._numeric_imputer
         else:
             X_to_transform = X.select_dtypes(exclude=numerics)
-            if len(X_to_transform.columns) == 0:
-                return pd.DataFrame()
-            X_t = self._categorical_imputer.transform(X_to_transform)
+            imputer_to_use = self._categorical_imputer
+
+        if len(X_to_transform.columns) == 0:
+            return pd.DataFrame()
+
+        X_t = imputer_to_use.transform(X_to_transform)
 
         if not isinstance(X_t, pd.DataFrame):
             X_null_dropped = X_to_transform.drop(self._all_null_cols, axis=1, errors='ignore')
