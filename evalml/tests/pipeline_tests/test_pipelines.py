@@ -129,23 +129,6 @@ def test_make_pipeline():
     assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LinearRegressor]
 
 
-def test_make_pipelines_catboost(has_minimal_dependencies):
-    if not has_minimal_dependencies:
-        X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
-                          "categorical": ["a", "b", "a", "c", "c"],
-                          "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
-        y = pd.Series([0, 0, 1, 2, 0])
-        catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, ProblemTypes.MULTICLASS)
-        assert isinstance(catboost_pipeline, type(MulticlassClassificationPipeline))
-        assert catboost_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, CatBoostClassifier]
-        assert catboost_pipeline.custom_hyperparameters is None
-
-        catboost_pipeline = make_pipeline(X, y, CatBoostRegressor, ProblemTypes.REGRESSION)
-        assert isinstance(catboost_pipeline, type(RegressionPipeline))
-        assert catboost_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, CatBoostRegressor]
-        assert catboost_pipeline.custom_hyperparameters is None
-
-
 def test_make_pipeline_no_nulls():
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
