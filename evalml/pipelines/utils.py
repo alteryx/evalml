@@ -12,11 +12,11 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     DateTimeFeaturizer,
     DropNullColumns,
+    Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    StandardScaler,
-    TypedImputer
+    StandardScaler
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -44,7 +44,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
 
-    pp_components.append(TypedImputer)
+    pp_components.append(Imputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
     add_datetime_featurizer = len(datetime_cols.columns) > 0

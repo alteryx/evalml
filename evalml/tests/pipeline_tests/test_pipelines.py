@@ -24,6 +24,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DropNullColumns,
+    Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -31,8 +32,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     StandardScaler,
-    Transformer,
-    TypedImputer
+    Transformer
 )
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
@@ -93,11 +93,11 @@ def test_make_pipeline_all_nan_no_categoricals():
     y = pd.Series([0, 0, 1, 1, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, LogisticRegressionClassifier]
 
     binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, RandomForestClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, RandomForestClassifier]
 
 
 def test_make_pipeline():
@@ -107,24 +107,24 @@ def test_make_pipeline():
     y = pd.Series([0, 0, 1, 0, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
 
     binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, RandomForestClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, RandomForestClassifier]
 
     y = pd.Series([0, 2, 1, 2, 0])
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, RandomForestRegressor]
 
     regression_pipeline = make_pipeline(X, y, LinearRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LinearRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LinearRegressor]
 
 
 def test_make_pipeline_no_nulls():
@@ -134,18 +134,18 @@ def test_make_pipeline_no_nulls():
     y = pd.Series([0, 1, 1, 0, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert binary_pipeline.custom_hyperparameters is None
 
     y = pd.Series([0, 2, 1, 2, 0])
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [TypedImputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [TypedImputer, DateTimeFeaturizer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, RandomForestRegressor]
     assert regression_pipeline.custom_hyperparameters is None
 
 
@@ -156,17 +156,17 @@ def test_make_pipeline_no_datetimes():
     y = pd.Series([0, 0, 1, 2, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, RandomForestRegressor]
     assert regression_pipeline.custom_hyperparameters is None
 
 
@@ -175,17 +175,17 @@ def test_make_pipeline_no_column_names():
     y = pd.Series([0, 0, 1])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, OneHotEncoder, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, RandomForestRegressor]
     assert regression_pipeline.custom_hyperparameters is None
 
 
@@ -194,17 +194,17 @@ def test_make_pipeline_numpy_input():
     y = np.array([0, 0, 1, 0])
     binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [DropNullColumns, TypedImputer, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, LogisticRegressionClassifier]
     assert binary_pipeline.custom_hyperparameters is None
 
     multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS)
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [DropNullColumns, TypedImputer, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, LogisticRegressionClassifier]
     assert multiclass_pipeline.custom_hyperparameters is None
 
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [DropNullColumns, TypedImputer, RandomForestRegressor]
+    assert regression_pipeline.component_graph == [DropNullColumns, Imputer, RandomForestRegressor]
     assert regression_pipeline.custom_hyperparameters is None
 
 
@@ -265,7 +265,7 @@ def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline_class):
     )
 
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
         },
@@ -290,7 +290,7 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     clf.fit(X, y)
 
     assert isinstance(clf[1], OneHotEncoder)
-    assert isinstance(clf['Typed Imputer'], TypedImputer)
+    assert isinstance(clf['Imputer'], Imputer)
 
     setting_err_msg = 'Setting pipeline components is not supported.'
     with pytest.raises(NotImplementedError, match=setting_err_msg):
@@ -337,7 +337,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
 
 def test_parameters(logistic_regression_binary_pipeline_class):
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median"
         },
@@ -348,7 +348,7 @@ def test_parameters(logistic_regression_binary_pipeline_class):
     }
     lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
     expected_parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
             'fill_value': None
@@ -392,7 +392,7 @@ def test_name():
 def test_estimator_not_last():
     class MockBinaryClassificationPipelineWithoutEstimator(BinaryClassificationPipeline):
         name = "Mock Binary Classification Pipeline Without Estimator"
-        component_graph = ['One Hot Encoder', 'Typed Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
+        component_graph = ['One Hot Encoder', 'Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
 
     err_msg = "A pipeline must have an Estimator as the last component in component_graph."
     with pytest.raises(ValueError, match=err_msg):
@@ -403,10 +403,10 @@ def test_multi_format_creation(X_y_binary):
     X, y = X_y_binary
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = component_graph = ['Typed Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
+        component_graph = component_graph = ['Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
 
         hyperparameters = {
-            'Typed Imputer': {
+            'Imputer': {
                 "categorical_impute_strategy": ["most_frequent"],
                 "numeric_impute_strategy": ["mean", "median", "most_frequent"]
             },
@@ -417,7 +417,7 @@ def test_multi_format_creation(X_y_binary):
         }
 
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
         },
@@ -428,7 +428,7 @@ def test_multi_format_creation(X_y_binary):
     }
 
     clf = TestPipeline(parameters=parameters)
-    correct_components = [TypedImputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    correct_components = [Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
@@ -442,10 +442,10 @@ def test_multiple_feature_selectors(X_y_binary):
     X, y = X_y_binary
 
     class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Typed Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+        component_graph = ['Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         hyperparameters = {
-            'Typed Imputer': {
+            'Imputer': {
                 "categorical_impute_strategy": ["most_frequent"],
                 "numeric_impute_strategy": ["mean", "median", "most_frequent"]
             },
@@ -456,7 +456,7 @@ def test_multiple_feature_selectors(X_y_binary):
         }
 
     clf = TestPipeline(parameters={})
-    correct_components = [TypedImputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
+    correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf.component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
@@ -690,7 +690,7 @@ def test_init_components_invalid_parameters():
 
 def test_correct_parameters(logistic_regression_binary_pipeline_class):
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             'categorical_impute_strategy': 'most_frequent',
             'numeric_impute_strategy': 'mean'
         },
@@ -702,16 +702,16 @@ def test_correct_parameters(logistic_regression_binary_pipeline_class):
     lr_pipeline = logistic_regression_binary_pipeline_class(parameters=parameters)
     assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
     assert lr_pipeline.estimator.parameters['C'] == 3.0
-    assert lr_pipeline['Typed Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
-    assert lr_pipeline['Typed Imputer'].parameters['numeric_impute_strategy'] == 'mean'
+    assert lr_pipeline['Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
+    assert lr_pipeline['Imputer'].parameters['numeric_impute_strategy'] == 'mean'
 
 
 def test_hyperparameters():
     class MockPipeline(BinaryClassificationPipeline):
-        component_graph = ['Typed Imputer', 'Random Forest Classifier']
+        component_graph = ['Imputer', 'Random Forest Classifier']
 
     hyperparameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
             "numeric_impute_strategy": ["mean", "median", "most_frequent"]
         },
@@ -727,10 +727,10 @@ def test_hyperparameters():
 
 def test_hyperparameters_override():
     class MockPipelineOverRide(BinaryClassificationPipeline):
-        component_graph = ['Typed Imputer', 'Random Forest Classifier']
+        component_graph = ['Imputer', 'Random Forest Classifier']
 
         custom_hyperparameters = {
-            'Typed Imputer': {
+            'Imputer': {
                 "categorical_impute_strategy": ["most_frequent"],
                 "numeric_impute_strategy": ["median", "most_frequent"]
             },
@@ -741,7 +741,7 @@ def test_hyperparameters_override():
         }
 
     hyperparameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
             "numeric_impute_strategy": ["median", "most_frequent"]
         },
@@ -789,12 +789,12 @@ def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
 
 def test_pipeline_summary():
     class MockPipelineWithoutEstimator(PipelineBase):
-        component_graph = ["Typed Imputer", "One Hot Encoder"]
-    assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Typed Imputer + One Hot Encoder"
+        component_graph = ["Imputer", "One Hot Encoder"]
+    assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Imputer + One Hot Encoder"
 
     class MockPipelineWithSingleComponent(PipelineBase):
-        component_graph = ["Typed Imputer"]
-    assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Typed Imputer"
+        component_graph = ["Imputer"]
+    assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Imputer"
 
     class MockPipelineWithOnlyAnEstimator(PipelineBase):
         component_graph = ["Random Forest Classifier"]
@@ -805,19 +805,19 @@ def test_pipeline_summary():
     assert MockPipelineWithNoComponents.summary == "Empty Pipeline"
 
     class MockPipeline(PipelineBase):
-        component_graph = ["Typed Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    assert MockPipeline.summary == "Random Forest Classifier w/ Typed Imputer + One Hot Encoder"
+        component_graph = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
+    assert MockPipeline.summary == "Random Forest Classifier w/ Imputer + One Hot Encoder"
 
 
 def test_drop_columns_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
-        component_graph = ['Drop Columns Transformer', 'Typed Imputer', 'Logistic Regression Classifier']
+        component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
 
     parameters = {
         'Drop Columns Transformer': {
             'columns': ["column to drop"]
         },
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean"
         },
@@ -836,7 +836,7 @@ def test_drop_columns_in_pipeline():
 
 def test_clone_init(linear_regression_pipeline_class):
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
         },
@@ -852,7 +852,7 @@ def test_clone_init(linear_regression_pipeline_class):
 
 def test_clone_random_state(linear_regression_pipeline_class):
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean"
         },
@@ -892,7 +892,7 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     parameters = {
-        'Typed Imputer': {
+        'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean"
         },
@@ -916,14 +916,14 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
 
 def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
     class FakePipeline(BinaryClassificationPipeline):
-        component_graph = ['Typed Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
+        component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
     with pytest.raises(MissingComponentError, match="Error recieved when retrieving class for component 'This Component Does Not Exist'"):
         FakePipeline(parameters={})
 
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
-        'Typed Imputer': {
+        'Imputer': {
             'categorical_impute_strategy': 'most_frequent',
             'numeric_impute_strategy': 'mean',
             'fill_value': None

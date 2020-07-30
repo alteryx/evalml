@@ -3,19 +3,19 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from evalml.pipelines.components import TypedImputer
+from evalml.pipelines.components import Imputer
 
 
 def test_invalid_strategy_parameters():
-    with pytest.raises(ValueError, match="Valid numerical impute strategies are"):
-        TypedImputer(numeric_impute_strategy="not a valid strategy")
+    with pytest.raises(ValueError, match="Valid  impute strategies are"):
+        Imputer(numeric_impute_strategy="not a valid strategy")
     with pytest.raises(ValueError, match="Valid categorical impute strategies are"):
-        TypedImputer(categorical_impute_strategy="mean")
+        Imputer(categorical_impute_strategy="mean")
 
 
 def test_typed_imputer_init():
-    imputer = TypedImputer(categorical_impute_strategy="most_frequent",
-                           numeric_impute_strategy="median")
+    imputer = Imputer(categorical_impute_strategy="most_frequent",
+                      numeric_impute_strategy="median")
     expected_parameters = {
         'categorical_impute_strategy': 'most_frequent',
         'numeric_impute_strategy': 'median',
@@ -25,7 +25,7 @@ def test_typed_imputer_init():
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"]
     }
-    assert imputer.name == "Typed Imputer"
+    assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
     assert imputer.hyperparameter_ranges == expected_hyperparameters
 
@@ -40,7 +40,7 @@ def test_numeric_only_input():
 
     })
     y = pd.Series([0, 0, 1, 0, 1])
-    imputer = TypedImputer(numeric_impute_strategy="median")
+    imputer = Imputer(numeric_impute_strategy="median")
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
@@ -51,7 +51,7 @@ def test_numeric_only_input():
     })
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = TypedImputer()
+    imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -67,7 +67,7 @@ def test_categorical_only_input():
         "all nan": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category')
     })
     y = pd.Series([0, 0, 1, 0, 1])
-    imputer = TypedImputer()
+    imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
@@ -79,7 +79,7 @@ def test_categorical_only_input():
         "bool col with nan": [True, True, False, True, True]
     })
 
-    imputer = TypedImputer()
+    imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -99,7 +99,7 @@ def test_categorical_and_numeric_input():
         "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
     })
     y = pd.Series([0, 0, 1, 0, 1])
-    imputer = TypedImputer()
+    imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
@@ -116,25 +116,24 @@ def test_categorical_and_numeric_input():
     })
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = TypedImputer()
+    imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
 def test_drop_all_columns():
-
     X = pd.DataFrame({
         "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category'),
         "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
     })
     y = pd.Series([0, 0, 1, 0, 1])
-    imputer = TypedImputer()
+    imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = X.drop(["all nan cat", "all nan"], axis=1)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = TypedImputer()
+    imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
@@ -144,7 +143,7 @@ def test_typed_imputer_numpy_input():
                   [np.nan, 0, 0, 0],
                   [1, np.nan, np.nan, np.nan]])
     y = pd.Series([0, 0, 1])
-    imputer = TypedImputer()
+    imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame(np.array([[1, 2, 2, 0],
@@ -152,6 +151,24 @@ def test_typed_imputer_numpy_input():
                                       [1, 1, 1, 0]]))
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = TypedImputer()
+    imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_imputer_empty_data(data_type):
+    if data_type == 'pd':
+        X = pd.DataFrame()
+        y = pd.Series()
+    else:
+        X = np.array([[]])
+        y = np.array([])
+    imputer = Imputer()
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    assert_frame_equal(transformed, pd.DataFrame(), check_dtype=False)
+
+    imputer = Imputer()
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, pd.DataFrame(), check_dtype=False)

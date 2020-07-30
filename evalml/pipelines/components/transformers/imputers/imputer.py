@@ -2,18 +2,18 @@ import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import numerics
+from evalml.utils.gen_utils import numeric_dtypes
 
 
-class TypedImputer(Transformer):
+class Imputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
-    name = "Typed Imputer"
+    name = "Imputer"
     hyperparameter_ranges = {
-        "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        "categorical_impute_strategy": ["most_frequent", "constant"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "constant"]
     }
-    _valid_categorical_impute_strategies = set(["most_frequent"])
-    _valid_numeric_impute_strategies = set(["mean", "median", "most_frequent"])
+    _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
+    _valid_numeric_impute_strategies = set(["mean", "median", "most_frequent", "constant"])
 
     def __init__(self, categorical_impute_strategy="most_frequent",
                  numeric_impute_strategy="mean",
@@ -22,14 +22,14 @@ class TypedImputer(Transformer):
 
         Arguments:
             impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
-               numerical data, and "most_frequent", "constant" for object data types.
+                data, and "most_frequent", "constant" for object data types.
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
-               Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+               Defaults to 0 when imputing  data and "missing_value" for strings or object data types.
         """
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
-            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid numerical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid  impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
 
         parameters = {"categorical_impute_strategy": categorical_impute_strategy,
                       "numeric_impute_strategy": numeric_impute_strategy,
@@ -61,12 +61,12 @@ class TypedImputer(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X_numerics = X.select_dtypes(include=numerics)
+        X_numerics = X.select_dtypes(include=numeric_dtypes)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X.select_dtypes(exclude=numerics)
+        X_categorical = X.select_dtypes(exclude=numeric_dtypes)
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
@@ -74,12 +74,11 @@ class TypedImputer(Transformer):
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
 
-    def _transform_helper(self, X, y=None, calculate_numerics=False):
+    def _transform_helper(self, X, calculate_numerics=False):
         """Helper method to transform data X by imputing missing values
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
             calculate_numerics (bool): If True, computes transformation for numeric columns,
                 otherwise computes transformation for all other columns.
 
@@ -116,16 +115,5 @@ class TypedImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        return pd.concat([self._transform_helper(X, y, calculate_numerics=True),
-                          self._transform_helper(X, y, calculate_numerics=False)], axis=1)
-
-    def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
-
-        Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Labels to fit and transform
-        Returns:
-            pd.DataFrame: Transformed X
-        """
-        return self.fit(X, y).transform(X, y)
+        return pd.concat([self._transform_helper(X, calculate_numerics=True),
+                          self._transform_helper(X, calculate_numerics=False)], axis=1)
