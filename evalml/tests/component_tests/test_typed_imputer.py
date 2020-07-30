@@ -122,6 +122,7 @@ def test_categorical_and_numeric_input():
 
 
 def test_drop_all_columns():
+
     X = pd.DataFrame({
         "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category'),
         "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]

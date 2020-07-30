@@ -42,6 +42,8 @@ class TypedImputer(Transformer):
                                           fill_value=fill_value,
                                           **kwargs)
         self._all_null_cols = None
+        self._numeric_cols = None
+        self._categorical_cols = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -62,10 +64,12 @@ class TypedImputer(Transformer):
         X_numerics = X.select_dtypes(include=numerics)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
+            self._numeric_cols = X_numerics.columns
 
         X_categorical = X.select_dtypes(exclude=numerics)
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
+            self._categorical_cols = X_categorical.columns
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
@@ -86,10 +90,10 @@ class TypedImputer(Transformer):
         """
         imputer_to_use = None
         if calculate_numerics:
-            X_to_transform = X.select_dtypes(include=numerics)
+            X_to_transform = X[self._numeric_cols if self._numeric_cols is not None else []]
             imputer_to_use = self._numeric_imputer
         else:
-            X_to_transform = X.select_dtypes(exclude=numerics)
+            X_to_transform = X[self._categorical_cols if self._categorical_cols is not None else []]
             imputer_to_use = self._categorical_imputer
 
         if len(X_to_transform.columns) == 0:
