@@ -12,6 +12,7 @@ import tqdm
 def get_logger(name):
     logger = logging.getLogger(name)
     if not len(logger.handlers):
+        logger.setLevel(logging.DEBUG)
         stdout_handler = logging.StreamHandler(sys.stdout)
         stdout_handler.setLevel(logging.INFO)
         stdout_handler.setFormatter(logging.Formatter('%(message)s'))
@@ -31,7 +32,6 @@ def get_logger(name):
                 logger.warning(f'Exception encountered while setting up logging RotatingFileHandler at path {evalml_log_path}: {str(e)}')
                 logger.warning(''.join(traceback.format_tb(sys.exc_info()[2])))
                 logger.warning('Continuing without logging to file')
-        logger.setLevel(logging.DEBUG)
     return logger
 
 
