@@ -107,6 +107,19 @@ def test_get_logger_path_invalid(mock_RotatingFileHandler, monkeypatch):
 
 
 @patch('evalml.utils.logger.RotatingFileHandler')
+def test_get_logger_path_empty(mock_RotatingFileHandler, monkeypatch):
+    assert os.environ.get('EVALML_LOG_FILE') is None
+
+    monkeypatch.setenv('EVALML_LOG_FILE', '')
+    assert os.environ.get('EVALML_LOG_FILE') == ''
+
+    logger = get_logger(TEST_LOGGER_NAME)
+    assert len(logger.handlers) == 1
+    assert len(mock_RotatingFileHandler.mock_calls) == 0
+    assert mock_RotatingFileHandler.call_count == 0
+
+
+@patch('evalml.utils.logger.RotatingFileHandler')
 def test_get_logger_exception(mock_RotatingFileHandler):
     mock_RotatingFileHandler.side_effect = Exception('all your log are belong to us')
     assert os.environ.get('EVALML_LOG_FILE') is None
