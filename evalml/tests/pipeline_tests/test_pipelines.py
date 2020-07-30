@@ -751,7 +751,7 @@ def test_hyperparameters_override():
         custom_hyperparameters = {
             'Typed Imputer': {
                 "categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+                "numeric_impute_strategy": ["median", "most_frequent"]
             },
             'Random Forest Classifier': {
                 "n_estimators": [1, 100, 200],
@@ -762,7 +762,7 @@ def test_hyperparameters_override():
     hyperparameters = {
         'Typed Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+            "numeric_impute_strategy": ["median", "most_frequent"]
         },
         'Random Forest Classifier': {
             "n_estimators": [1, 100, 200],
