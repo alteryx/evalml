@@ -4,7 +4,7 @@ import pandas as pd
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import numeric_dtypes
+from evalml.utils.gen_utils import numerics
 
 
 class RegressionPipeline(PipelineBase):
@@ -28,7 +28,7 @@ class RegressionPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        valid_target_data_types = numeric_dtypes
+        valid_target_data_types = numerics
         if y.dtype not in valid_target_data_types:
             raise ValueError(f"Regression pipeline cannot handle targets with dtype: {y.dtype}")
         self._fit(X, y)

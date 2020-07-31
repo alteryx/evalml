@@ -5,7 +5,7 @@ from evalml.data_checks import DataCheckError
 from evalml.data_checks.invalid_targets_data_check import (
     InvalidTargetDataCheck
 )
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes
+from evalml.utils.gen_utils import numerics_and_boolean
 
 
 def test_invalid_target_data_check_nan_error():
@@ -33,7 +33,7 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
 def test_invalid_target_data_check_invalid_data_types_error():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck()
-    valid_data_types = numeric_and_boolean_dtypes + ['object', 'category']
+    valid_data_types = numerics_and_boolean + ['object', 'category']
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
     for data_type in valid_data_types:
         y = y.astype(data_type)

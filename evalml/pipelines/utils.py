@@ -12,10 +12,10 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     DateTimeFeaturizer,
     DropNullColumns,
-    Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
+    SimpleImputer,
     StandardScaler
 )
 from evalml.pipelines.components.utils import get_estimators
@@ -43,8 +43,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-
-    pp_components.append(Imputer)
+    pp_components.append(SimpleImputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
@@ -85,6 +84,15 @@ def make_pipeline(X, y, estimator, problem_type):
     hyperparameters = None
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
+    categorical_cols = X.select_dtypes(include=['category', 'object'])
+    if estimator in {CatBoostClassifier, CatBoostRegressor} or len(categorical_cols.columns) > 0:
+        # a workaround to avoid choosing an impute_strategy which won't work with categorical inputs
+        logger.debug("Limiting SimpleImputer to use 'most_frequent' strategy to avoid choosing an impute strategy that won't work with categorical inputs.")
+        hyperparameters = {
+            'Simple Imputer': {
+                "impute_strategy": ["most_frequent"]
+            }
+        }
 
     def get_pipeline_base_class(problem_type):
         """Returns pipeline base class for problem_type"""

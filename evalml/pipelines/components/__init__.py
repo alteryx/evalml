@@ -24,7 +24,6 @@ from .transformers import (
     RFRegressorSelectFromModel,
     PerColumnImputer,
     SimpleImputer,
-    Imputer,
     StandardScaler,
     FeatureSelector,
     CategoricalEncoder,

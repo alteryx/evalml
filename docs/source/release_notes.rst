@@ -8,7 +8,6 @@ Release Notes
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
         * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
-        * Added Imputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
         * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
     * Fixes
@@ -16,7 +15,6 @@ Release Notes
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
         * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`, :pr:`994`
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
-        * Updated imputation strategy in automl to no longer limit impute strategy to `most_frequent` for all features if there are any categorical columns :pr:`991`
         * Fixed UnboundLocalError for`cv_pipeline` when automl search errors :pr:`996`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
