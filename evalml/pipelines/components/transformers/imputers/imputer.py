@@ -29,7 +29,7 @@ class Imputer(Transformer):
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
-            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid  impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
 
         parameters = {"categorical_impute_strategy": categorical_impute_strategy,
                       "numeric_impute_strategy": numeric_impute_strategy,
