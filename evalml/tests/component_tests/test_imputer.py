@@ -202,15 +202,22 @@ def test_imputer_empty_data(data_type):
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
-def test_imputer_respects_index():
+def test_imputer_resets_index():
     X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
+    X.loc[5, 'input_val'] = np.nan
     assert X.index.tolist() == list(range(10))
 
     X.drop(0, inplace=True)
     y = X.pop('target')
-    assert X.index.tolist() == list(range(1, 10))
+    pd.testing.assert_frame_equal(X,
+                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, np.nan, 6, 7, 8, 9]},
+                                               dtype=float,
+                                               index=list(range(1, 10))))
 
     imputer = Imputer()
     imputer.fit(X, y=y)
     transformed = imputer.transform(X)
-    assert transformed.index.tolist() == list(range(1, 10))
+    pd.testing.assert_frame_equal(transformed,
+                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
+                                               dtype=float,
+                                               index=list(range(0, 9))))

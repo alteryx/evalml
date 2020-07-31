@@ -98,5 +98,7 @@ class Imputer(Transformer):
             X_categorical = X_null_dropped[self._categorical_cols]
             X_null_dropped[X_categorical.columns] = self._categorical_imputer.transform(X_categorical)
         if X_null_dropped.empty:
-            return pd.DataFrame(X_null_dropped, columns=X_null_dropped.columns)
-        return X_null_dropped.astype(dtypes)
+            transformed = pd.DataFrame(X_null_dropped, columns=X_null_dropped.columns)
+        transformed = X_null_dropped.astype(dtypes)
+        transformed.reset_index(inplace=True, drop=True)
+        return transformed
