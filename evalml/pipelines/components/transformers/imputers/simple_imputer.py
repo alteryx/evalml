@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
@@ -18,6 +20,8 @@ class SimpleImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
+        warnings.warn("SimpleImputer is deprecated in v0.12.0 and will be removed in 0.13.0 in favor of Imputer", DeprecationWarning)
+
         parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
         parameters.update(kwargs)

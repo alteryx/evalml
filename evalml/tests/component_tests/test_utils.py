@@ -12,9 +12,9 @@ from evalml.pipelines.components.utils import (
 
 def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_components) == 21
+        assert len(all_components) == 22
     else:
-        assert len(all_components) == 25
+        assert len(all_components) == 26
 
 
 def test_handle_component_class_names():

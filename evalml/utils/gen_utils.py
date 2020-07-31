@@ -10,9 +10,10 @@ from evalml.utils import get_logger
 logger = get_logger(__file__)
 
 
-numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
-numerics_and_boolean = numerics + boolean
+numeric_and_boolean_dtypes = numeric_dtypes + boolean
+categorical_dtypes = ['object', 'category']
 
 
 def import_or_raise(library, error_msg=None):
