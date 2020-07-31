@@ -712,8 +712,8 @@ def test_hyperparameters():
 
     hyperparameters = {
         'Imputer': {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+            "categorical_impute_strategy": ["most_frequent", "constant"],
+            "numeric_impute_strategy": ["mean", "median", "most_frequent", "constant"]
         },
         'Random Forest Classifier': {
             "n_estimators": Integer(10, 1000),
