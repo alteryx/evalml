@@ -15,6 +15,7 @@ Release Notes
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
         * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`, :pr:`994`
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
+        * Fixed UnboundLocalError for`cv_pipeline` when automl search errors :pr:`996`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
@@ -27,6 +28,7 @@ Release Notes
         * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
         * Added custom components section in user guide :pr:`993`
         * Update FAQ section formatting :pr:`997`
+        * Update release process documentation :pr:`1003`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
         * Fix dependency update bot by updating python version to 3.7 to avoid frequent github version updates :pr:`1002`
