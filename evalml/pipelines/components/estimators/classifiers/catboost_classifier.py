@@ -20,7 +20,7 @@ class CatBoostClassifier(Estimator):
     """
     name = "CatBoost Classifier"
     hyperparameter_ranges = {
-        "n_estimators": Integer(10, 1000),
+        "n_estimators": Integer(4, 100),
         "eta": Real(0.000001, 1),
         "max_depth": Integer(4, 10),
     }
@@ -30,7 +30,7 @@ class CatBoostClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, n_estimators=1000, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0, **kwargs):
+    def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,

@@ -9,6 +9,7 @@ Release Notes
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
         * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
+        * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
