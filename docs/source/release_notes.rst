@@ -36,6 +36,7 @@ Release Notes
         * Reworded message when errors are returned from data checks in search :pr:`982`
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
         * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
+        * Added custom components section in user guide :pr:`993`
         * Update FAQ section formatting :pr:`997`
         * Update release process documentation :pr:`1003`
     * Testing Changes
