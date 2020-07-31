@@ -17,6 +17,7 @@ Release Notes
         * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`, :pr:`994`
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
         * Updated imputation strategy in automl such that we no longer strategy to `most_frequent` for all features if there are any categorical columns :pr:`991`
+        * Fixed UnboundLocalError for`cv_pipeline` when automl search errors :pr:`996`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
@@ -30,6 +31,7 @@ Release Notes
         * Update FAQ section formatting :pr:`997`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
+        * Fix dependency update bot by updating python version to 3.7 to avoid frequent github version updates :pr:`1002`
 
 
 .. warning::
