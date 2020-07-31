@@ -178,6 +178,7 @@ Transformers are components that take in data as input and output transformed da
     SelectColumns
     OneHotEncoder
     PerColumnImputer
+    Imputer
     SimpleImputer
     StandardScaler
     RFRegressorSelectFromModel
