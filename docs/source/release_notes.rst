@@ -28,6 +28,7 @@ Release Notes
         * Update FAQ section formatting :pr:`997`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
+        * Fix dependency update bot by updating python version to 3.7 to avoid frequent github version updates :pr:`1002`
 
 
 .. warning::
