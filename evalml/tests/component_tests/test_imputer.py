@@ -200,3 +200,17 @@ def test_imputer_empty_data(data_type):
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_respects_index():
+    X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
+    assert X.index.tolist() == list(range(10))
+
+    X.drop(0, inplace=True)
+    y = X.pop('target')
+    assert X.index.tolist() == list(range(1, 10))
+
+    imputer = Imputer()
+    imputer.fit(X, y=y)
+    transformed = imputer.transform(X)
+    assert transformed.index.tolist() == list(range(1, 10))

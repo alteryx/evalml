@@ -342,3 +342,18 @@ def test_data_types(data_type):
     X_t = encoder.transform(X)
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
+
+
+def test_ohe_respects_index():
+    import pdb; pdb.set_trace()
+    X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
+    assert X.index.tolist() == list(range(10))
+
+    X.drop(0, inplace=True)
+    y = X.pop('target')
+    assert X.index.tolist() == list(range(1, 10))
+
+    encoder = OneHotEncoder()
+    encoder.fit(X, y=y)
+    transformed = encoder.transform(X)
+    assert transformed.index.tolist() == list(range(1, 10))
