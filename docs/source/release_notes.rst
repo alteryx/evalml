@@ -16,6 +16,7 @@ Release Notes
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
         * Added universal error for calling `predict`, `predict_proba`, `transform`, and `feature_importances` before fitting :pr:`969`, :pr:`994`
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
+        * Updated imputation strategy in automl such that we no longer strategy to `most_frequent` for all features if there are any categorical columns :pr:`991`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`

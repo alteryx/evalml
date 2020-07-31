@@ -13,7 +13,17 @@ def test_invalid_strategy_parameters():
         Imputer(categorical_impute_strategy="mean")
 
 
-def test_typed_imputer_init():
+def test_imputer_default_parameters():
+    imputer = Imputer()
+    expected_parameters = {
+        'categorical_impute_strategy': 'most_frequent',
+        'numeric_impute_strategy': 'mean',
+        'fill_value': None
+    }
+    assert imputer.parameters == expected_parameters
+
+
+def test_imputer_init():
     imputer = Imputer(categorical_impute_strategy="most_frequent",
                       numeric_impute_strategy="median")
     expected_parameters = {
@@ -22,8 +32,8 @@ def test_typed_imputer_init():
         'fill_value': None
     }
     expected_hyperparameters = {
-        "categorical_impute_strategy": ["most_frequent", "constant"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent", "constant"]
+        "categorical_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
@@ -153,6 +163,23 @@ def test_typed_imputer_numpy_input():
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_datetime_input():
+    X = pd.DataFrame({'dates': ['20190902', '20200519', '20190607', np.nan],
+                      'more dates': ['20190902', '20201010', '20190921', np.nan]})
+    X['dates'] = pd.to_datetime(X['dates'], format='%Y%m%d')
+    X['more dates'] = pd.to_datetime(X['more dates'], format='%Y%m%d')
+    y = pd.Series()
+
+    imputer = Imputer()
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    assert_frame_equal(transformed, X, check_dtype=False)
+
+    imputer = Imputer()
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, X, check_dtype=False)
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])

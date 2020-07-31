@@ -2,15 +2,15 @@ import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import numeric_dtypes
+from evalml.utils.gen_utils import boolean, categorical_dtypes, numeric_dtypes
 
 
 class Imputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
     name = "Imputer"
     hyperparameter_ranges = {
-        "categorical_impute_strategy": ["most_frequent", "constant"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent", "constant"]
+        "categorical_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
     }
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(["mean", "median", "most_frequent", "constant"])
@@ -21,8 +21,8 @@ class Imputer(Transformer):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
-            impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
-                data, and "most_frequent", "constant" for object data types.
+            categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
+            numeric_impute_strategy (string): Impute strategy to use for numeric dtypes. Valid values include "mean", "median", "most_frequent", and "constant".
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing  data and "missing_value" for strings or object data types.
         """
@@ -70,7 +70,7 @@ class Imputer(Transformer):
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X_null_dropped.select_dtypes(exclude=numeric_dtypes)
+        X_categorical = X_null_dropped.select_dtypes(include=categorical_dtypes + boolean)
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns

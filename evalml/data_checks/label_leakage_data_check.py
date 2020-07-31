@@ -3,7 +3,7 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 
-from evalml.utils.gen_utils import numeric_dtypes_and_boolean
+from evalml.utils.gen_utils import numeric_and_boolean_dtypes
 
 
 class LabelLeakageDataCheck(DataCheck):
@@ -49,9 +49,9 @@ class LabelLeakageDataCheck(DataCheck):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if y.dtype not in numeric_dtypes_and_boolean:
+        if y.dtype not in numeric_and_boolean_dtypes:
             return []
-        X = X.select_dtypes(include=numeric_dtypes_and_boolean)
+        X = X.select_dtypes(include=numeric_and_boolean_dtypes)
         if len(X.columns) == 0:
             return []
 
