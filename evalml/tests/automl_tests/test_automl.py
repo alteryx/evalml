@@ -888,3 +888,16 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
+
+
+@patch('evalml.automl.automl_search.train_test_split')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_split, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    mock_train_test_split.side_effect = RuntimeError()
+    automl = AutoMLSearch(problem_type='binary', objective='accuracy_binary', max_pipelines=2, optimize_thresholds=True)
+    automl.search(X, y)
+    for pipeline in automl.results['pipeline_results'].values():
+        assert np.isnan(pipeline['score'])
