@@ -61,48 +61,20 @@ class Imputer(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X_numerics = X.select_dtypes(include=numeric_dtypes)
+        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
+        X_copy = X.copy()
+        X_null_dropped = X_copy.drop(self._all_null_cols, axis=1, errors='ignore')
+
+        X_numerics = X_null_dropped.select_dtypes(include=numeric_dtypes)
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X.select_dtypes(exclude=numeric_dtypes)
+        X_categorical = X_null_dropped.select_dtypes(exclude=numeric_dtypes)
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
-
-        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
-
-    def _transform_helper(self, X, calculate_numerics=False):
-        """Helper method to transform data X by imputing missing values
-
-        Arguments:
-            X (pd.DataFrame): Data to transform
-            calculate_numerics (bool): If True, computes transformation for numeric columns,
-                otherwise computes transformation for all other columns.
-
-        Returns:
-            pd.DataFrame: Transformed X for input type or empty DataFrame if
-                input does not contain selected datatypes.
-
-        """
-        imputer_to_use = None
-        if calculate_numerics:
-            X_to_transform = X[self._numeric_cols if self._numeric_cols is not None else []]
-            imputer_to_use = self._numeric_imputer
-        else:
-            X_to_transform = X[self._categorical_cols if self._categorical_cols is not None else []]
-            imputer_to_use = self._categorical_imputer
-
-        if len(X_to_transform.columns) == 0:
-            return pd.DataFrame()
-
-        X_t = imputer_to_use.transform(X_to_transform)
-        X_null_dropped = X_to_transform.drop(self._all_null_cols, axis=1, errors='ignore')
-        if X_null_dropped.empty:
-            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        return pd.DataFrame(X_t, columns=X_null_dropped.columns).astype(X_null_dropped.dtypes.to_dict())
 
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values
@@ -115,5 +87,16 @@ class Imputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        return pd.concat([self._transform_helper(X, calculate_numerics=True),
-                          self._transform_helper(X, calculate_numerics=False)], axis=1)
+
+        X_copy = X.copy()
+        X_null_dropped = X_copy.drop(self._all_null_cols, axis=1, errors='ignore')
+        dtypes = X_null_dropped.dtypes.to_dict()
+        if self._numeric_cols is not None and len(self._numeric_cols) > 0:
+            X_numeric = X_null_dropped[self._numeric_cols]
+            X_null_dropped[X_numeric.columns] = self._numeric_imputer.transform(X_numeric)
+        if self._categorical_cols is not None and len(self._categorical_cols) > 0:
+            X_categorical = X_null_dropped[self._categorical_cols]
+            X_null_dropped[X_categorical.columns] = self._categorical_imputer.transform(X_categorical)
+        if X_null_dropped.empty:
+            return pd.DataFrame(X_null_dropped, columns=X_null_dropped.columns)
+        return X_null_dropped.astype(dtypes)

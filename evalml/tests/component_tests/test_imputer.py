@@ -22,8 +22,8 @@ def test_typed_imputer_init():
         'fill_value': None
     }
     expected_hyperparameters = {
-        "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        "categorical_impute_strategy": ["most_frequent", "constant"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent", "constant"]
     }
     assert imputer.name == "Imputer"
     assert imputer.parameters == expected_parameters
@@ -37,7 +37,6 @@ def test_numeric_only_input():
         "int with nan": [np.nan, 1, 2, 1, 0],
         "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
         "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
-
     })
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = Imputer(numeric_impute_strategy="median")
@@ -103,14 +102,14 @@ def test_categorical_and_numeric_input():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "int col": [0, 1, 2, 0, 3],
-        "float col": [0.0, 1.0, 0.0, -2.0, 5.],
-        "int with nan": [1, 1, 2, 1, 0],
-        "float with nan": [0.0, 1.0, 0, -1.0, 0.],
         "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "int col": [0, 1, 2, 0, 3],
         "object col": ["b", "b", "a", "c", "d"],
+        "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "bool col": [True, False, False, True, True],
+        "int with nan": [1, 1, 2, 1, 0],
         "categorical with nan": pd.Series([0, 1, 0, 0, 3], dtype='category'),
+        "float with nan": [0.0, 1.0, 0, -1.0, 0.],
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
     })
@@ -161,14 +160,16 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
+        expected = pd.DataFrame()
     else:
         X = np.array([[]])
         y = np.array([])
+        expected = pd.DataFrame(np.array([[]]))
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
-    assert_frame_equal(transformed, pd.DataFrame(), check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=False)
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, pd.DataFrame(), check_dtype=False)
+    assert_frame_equal(transformed, expected, check_dtype=False)
