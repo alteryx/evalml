@@ -27,6 +27,7 @@ Release Notes
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
         * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
         * Update FAQ section formatting :pr:`997`
+        * Update release process documentation :pr:`1003`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
         * Fix dependency update bot by updating python version to 3.7 to avoid frequent github version updates :pr:`1002`
