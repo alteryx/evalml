@@ -8,6 +8,7 @@ Release Notes
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
         * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
+        * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
@@ -24,6 +25,7 @@ Release Notes
         * Added section on understanding model predictions with `explain_prediction` to User Guide :pr:`981`
         * Added a section to the user guide and api reference about how XGBoost and CatBoost are not fully supported. :pr:`992`
         * Added custom components section in user guide :pr:`993`
+        * Update FAQ section formatting :pr:`997`
     * Testing Changes
         * Moved `predict_proba` and `predict` tests regarding string / categorical targets to `test_pipelines.py` :pr:`972`
 
