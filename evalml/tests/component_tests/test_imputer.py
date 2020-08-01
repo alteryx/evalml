@@ -187,11 +187,11 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame()
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
-        expected = pd.DataFrame(np.array([[]]))
+        expected = pd.DataFrame(index=pd.Index([0]), columns=pd.Int64Index([]))
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
