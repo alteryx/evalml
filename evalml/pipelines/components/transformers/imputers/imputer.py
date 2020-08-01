@@ -92,16 +92,15 @@ class Imputer(Transformer):
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
             return X_null_dropped
-
         dtypes = X_null_dropped.dtypes.to_dict()
+
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
             X_null_dropped[X_numeric.columns] = self._numeric_imputer.transform(X_numeric)
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
             X_null_dropped[X_categorical.columns] = self._categorical_imputer.transform(X_categorical)
-        if X_null_dropped.empty:
-            transformed = pd.DataFrame(X_null_dropped, columns=X_null_dropped.columns)
+
         transformed = X_null_dropped.astype(dtypes)
         transformed.reset_index(inplace=True, drop=True)
         return transformed
