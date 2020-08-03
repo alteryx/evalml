@@ -6,7 +6,7 @@ Before starting the release process, verify the following:
 * [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [release notes](https://evalml.featurelabs.com/en/latest/release_notes.html) includes the last change which was made on main.
-* The [performance tests](https://github.com/FeatureLabs/evalml-performance-tests) have passed on latest main, and the team has reviewed the results.
+* The [performance tests](https://github.com/FeatureLabs/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
 
 ## 1. Create release PR to update version and release notes
 Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
@@ -39,10 +39,10 @@ Note that by targeting `main`, there must be no new merges to `main` from the mo
 
 Save the release as a draft and make sure it looks correct. You could start the draft while waiting for the release PR to be ready to merge.
 
-When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version.
+When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version. This will also deploy the release [to pypi](https://pypi.org/project/evalml/), making it publicly accessible!
 
-## 3. Update Public Documentation
-Creating the GitHub release should have updated the default `stable` docs branch to point at the new version. You'll now need to activate the new release version on ReadtheDocs so its publicly visible in the list of versions.
+## 3. Make Documentation Public for Release Version
+Creating the GitHub release should have updated the default `stable` docs branch to point at the new version. You'll now need to activate the new release version on ReadtheDocs so its publicly visible in the list of versions. This is important so users can view old documentation versions which match their installed version.
 
 Please do the following:
 * Log in to our ReadtheDocs account and go [here](https://readthedocs.com/projects/feature-labs-inc-evalml/versions/) to view the version list.
@@ -51,43 +51,19 @@ Please do the following:
 * Verify "vX.X.X" is now visible as a version on our ReadtheDocs page. You may have to do an "empty cache and hard reset" in your browser to see updates.
 * Verify "stable" corresponds with the new version, which should've been done in step 2.
 
-## 4. Release using Release-tools
-Now that the release has been made in the repo and in our documentation, the final step is deploying the code to make it pip-installable.
-
-#### Deploy the release package
-First, make sure you have [release-tools](https://github.com/FeatureLabs/release-tools) installed.
-
-Open a terminal and navigate to the top directory in the evalml repo. Rewind your repo to the release tag "vX.X.X" for your version.
-```shell
-cd {your_workspace}/evalml
-git checkout main
-git fetch
-git reset --hard vX.X.X
-```
-
-Next, you'll need to configure a licenses file to include any emails you'd like to make the new release available to.
-
-Create a folder called `licenses`, and create a file called `admin.json` file in that folder which contains the following:
-```json
-{"email": "admin@featurelabs.com"}
-```
-
-Run the following command to build a release tarball and make it pip-installable to the specified licenses:
-```shell
-flrelease upload-package --url install.featurelabs.com --license licenses/admin.json
-```
-
-This will print out the license key associated with the email in `licenses/admin.json`.
-
-#### Verify the release package has been deployed
-The final step is to verify that the release was successful.
-Log into the S3 console and navigate to [the install.featurelabs.com bucket](https://s3.console.aws.amazon.com/s3/buckets/install.featurelabs.com/?region=us-east-1). Find and open the folder corresponding to the license key from the `flrelease` command. The `evalml` folder should contain a release tarball with the appropriate version, i.e. `evalml-X.X.X.tar.gz`, and an `index.html` package index.
-
-Open the `index.html` file and verify it lists the new version.
+## 4. Verify the release package has been deployed
+Now that the release has been made in the repo, to pypi and in our documentation, the final step is making sure the new release is publicly pip-installable via pypi.
 
 In a fresh virtualenv, install evalml via pip and ensure it installs successfully:
 ```shell
-pip install evalml --index-url https://install.featurelabs.com/<key>
+# should come back empty
+pip freeze | grep evalml
+
+pip install evalml
 python --version
+# should now list the correct version
 python -c "import evalml; print(evalml.__version__)"
+pip freeze | grep evalml
 ```
+
+Note: make sure when you do this that you're in a virtualenv, your current working directory isn't in the evalml repo, and that you haven't added your repo to the `PYTHONPATH`, because in both cases python could pick up the repo instead, even in a virtualenv.
