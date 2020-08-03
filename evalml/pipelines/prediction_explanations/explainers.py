@@ -132,6 +132,9 @@ class _ClassificationPredictedValuesMaker:
     """Makes the predicted values section for classification problem best/worst reports."""
 
     def __init__(self, error_name):
+        # Replace the default name with something more user-friendly
+        if error_name == "_cross_entropy":
+            error_name = "Cross Entropy"
         self.error_name = error_name
 
     def __call__(self, index, y_pred, y_true, scores):
@@ -150,6 +153,9 @@ class _RegressionPredictedValuesMaker:
     """Makes the predicted values section for regression problem best/worst reports."""
 
     def __init__(self, error_name):
+        # Replace the default name with something more user-friendly
+        if error_name == "_abs_error":
+            error_name = "Absolute Difference"
         self.error_name = error_name
 
     def __call__(self, index, y_pred, y_true, scores):

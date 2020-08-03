@@ -151,7 +151,7 @@ regression_best_worst_answer = """Test Pipeline Name
 
                 Predicted Value: 1
                 Target Value: 2
-                abs_error: 1
+                Absolute Difference: 1
 
                 table goes here
 
@@ -160,7 +160,7 @@ regression_best_worst_answer = """Test Pipeline Name
 
                 Predicted Value: 2
                 Target Value: 3
-                abs_error: 4
+                Absolute Difference: 4
 
                 table goes here
 
@@ -192,7 +192,7 @@ binary_best_worst_answer = """Test Pipeline Name
 
                 Predicted Probabilities: [benign: 0.05, malignant: 0.95]
                 Target Value: malignant
-                cross_entropy: 0.2
+                Cross Entropy: 0.2
 
                 table goes here
 
@@ -201,7 +201,7 @@ binary_best_worst_answer = """Test Pipeline Name
 
                 Predicted Probabilities: [benign: 0.1, malignant: 0.9]
                 Target Value: benign
-                cross_entropy: 0.78
+                Cross Entropy: 0.78
 
                 table goes here
 
@@ -230,7 +230,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
 
                 Predicted Probabilities: [setosa: 0.8, versicolor: 0.1, virginica: 0.1]
                 Target Value: setosa
-                cross_entropy: 0.15
+                Cross Entropy: 0.15
 
                 {multiclass_table}
 
@@ -239,7 +239,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
 
                 Predicted Probabilities: [setosa: 0.2, versicolor: 0.75, virginica: 0.05]
                 Target Value: versicolor
-                cross_entropy: 0.34
+                Cross Entropy: 0.34
 
                 {multiclass_table}
 
@@ -280,14 +280,14 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
     pipeline.name = "Test Pipeline Name"
 
     if problem_type == ProblemTypes.REGRESSION:
-        abs_error_mock = MagicMock(__name__="abs_error")
+        abs_error_mock = MagicMock(__name__="_abs_error")
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = pd.Series([2, 1])
         y_true = pd.Series([3, 2])
     elif problem_type == ProblemTypes.BINARY:
         pipeline._classes.return_value = ["benign", "malignant"]
-        cross_entropy_mock = MagicMock(__name__="cross_entropy")
+        cross_entropy_mock = MagicMock(__name__="_cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
@@ -295,7 +295,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
     else:
         explain_prediction_mock.return_value = multiclass_table
         pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
-        cross_entropy_mock = MagicMock(__name__="cross_entropy")
+        cross_entropy_mock = MagicMock(__name__="_cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
@@ -341,3 +341,50 @@ def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_
     report = explain_predictions(pipeline, input_features, training_data=input_features)
 
     compare_two_tables(report.splitlines(), answer.splitlines())
+
+
+regression_custom_metric_answer = """Test Pipeline Name
+
+        Parameters go here
+
+            Best 1 of 1
+
+                Predicted Value: 1
+                Target Value: 2
+                sum: 3
+
+                table goes here
+
+
+            Worst 1 of 1
+
+                Predicted Value: 2
+                Target Value: 3
+                sum: 5
+
+                table goes here
+
+
+"""
+
+
+@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
+def test_explain_predictions_best_worst_custom_metric(explain_prediction_mock):
+
+    explain_prediction_mock.return_value = "table goes here"
+    pipeline = MagicMock()
+    pipeline.parameters = "Parameters go here"
+    input_features = pd.DataFrame({"a": [5, 6]})
+    pipeline.problem_type = ProblemTypes.REGRESSION
+    pipeline.name = "Test Pipeline Name"
+
+    pipeline.predict.return_value = pd.Series([2, 1])
+    y_true = pd.Series([3, 2])
+
+    def sum(y_true, y_pred):
+        return y_pred + y_true
+
+    best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
+                                                       num_to_explain=1, metric=sum)
+
+    compare_two_tables(best_worst_report.splitlines(), regression_custom_metric_answer.splitlines())
