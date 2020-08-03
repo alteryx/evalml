@@ -15,7 +15,7 @@ Release Notes
         * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
-        * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
+        * Added `explain_prediction` feature which explains single predictions with SHAP :pr:`974`
         * Added Imputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
         * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
