@@ -61,6 +61,7 @@ class ClassificationPipeline(PipelineBase):
 
     @property
     def _classes(self):
+        """Gets the class names for the problem."""
         return self._encoder.classes_
 
     def _predict(self, X, objective=None):
