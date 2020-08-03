@@ -5,8 +5,10 @@ import pytest
 
 from evalml.pipelines.prediction_explanations._user_interface import (
     _make_rows,
-    _make_single_prediction_table,
-    _make_table
+    _make_table,
+    _SHAPBinaryTableMaker,
+    _SHAPMultiClassTableMaker,
+    _SHAPRegressionTableMaker
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "++"], ["b", "+"]]),
@@ -38,7 +40,7 @@ def test_make_rows_and_make_table(test_case, include_shap_values):
         dtypes.append("f")
         alignment.append("c")
 
-    table = _make_table(dtypes, alignment, values, values, top_k, include_shap_values).splitlines()
+    table = _make_table(values, values, top_k, include_shap_values).splitlines()
     if include_shap_values:
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
@@ -188,8 +190,14 @@ multiclass_table_shap = """Class: 0
                           (multiclass, multiclass_normalized, False, multiclass_table),
                           (multiclass, multiclass_normalized, True, multiclass_table_shap)])
 def test_make_single_prediction_table(values, normalized_values, include_shap, answer):
-    table = _make_single_prediction_table(values, normalized_values, include_shap_values=include_shap,
-                                          class_names=["0", "1", "2"])
+    if isinstance(values, list):
+        if len(values) > 2:
+            table_maker = _SHAPMultiClassTableMaker(class_names=["0", "1", "2"])
+        else:
+            table_maker = _SHAPBinaryTableMaker()
+    else:
+        table_maker = _SHAPRegressionTableMaker()
+    table = table_maker(values, normalized_values, top_k=3, include_shap_values=include_shap)
 
     # Making sure the content is the same, regardless of formatting.
     for row_table, row_answer in zip(table.splitlines(), answer):

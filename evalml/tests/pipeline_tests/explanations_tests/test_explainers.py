@@ -47,8 +47,9 @@ def test_explain_prediction_runs(mock_normalize_shap_values, mock_compute_shap_v
          b                    ----""".splitlines()
 
     pipeline = MagicMock()
+    pipeline.problem_type = ProblemTypes.REGRESSION
     features = pd.DataFrame({"a": [1], "b": [2]})
-    table = explain_prediction(pipeline, features).splitlines()
+    table = explain_prediction(pipeline, features, top_k=2).splitlines()
 
     compare_two_tables(table, answer)
 
@@ -250,3 +251,35 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
 
     report = explain_predictions(pipeline, input_features)
     compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
+
+
+@pytest.mark.parametrize("problem_type,answer",
+                         [(ProblemTypes.REGRESSION, no_best_worst_answer),
+                          (ProblemTypes.BINARY, no_best_worst_answer),
+                          (ProblemTypes.MULTICLASS, multiclass_no_best_worst_answer)])
+@patch("evalml.pipelines.prediction_explanations.explainers._DEFAULT_METRICS")
+@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
+def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_metrics,
+                                          problem_type, answer):
+
+    explain_prediction_mock.return_value = "table goes here"
+    pipeline = MagicMock()
+    pipeline.parameters = "Parameters go here"
+    input_features = pd.DataFrame({"a": [3, 4]}, index=["first", "second"])
+    pipeline.problem_type = problem_type
+    pipeline.name = "Test Pipeline Name"
+
+    if problem_type == ProblemTypes.REGRESSION:
+        pipeline.predict.return_value = pd.Series([2, 1])
+    elif problem_type == ProblemTypes.BINARY:
+        pipeline._classes.return_value = ["benign", "malignant"]
+        pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
+    else:
+        explain_prediction_mock.return_value = multiclass_table
+        pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
+        pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
+                                                            "virginica": [0.1, 0.05]})
+
+    report = explain_predictions(pipeline, input_features, training_data=input_features)
+
+    compare_two_tables(report.splitlines(), answer.splitlines())
