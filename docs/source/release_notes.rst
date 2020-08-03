@@ -26,6 +26,7 @@ Release Notes
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
         * Updated imputation strategy in automl to no longer limit impute strategy to `most_frequent` for all features if there are any categorical columns :pr:`991`
         * Fixed UnboundLocalError for`cv_pipeline` when automl search errors :pr:`996`
+        * Fixed `Imputer` to reset dataframe index to preserve behavior expected from  `SimpleImputer` :pr:`1009`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
