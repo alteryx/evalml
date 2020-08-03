@@ -9,7 +9,7 @@ Release Notes
     * Testing Changes
 
 
-**v0.12.0 July 31, 2020**
+**v0.12.0 Aug. 3, 2020**
     * Enhancements
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
         * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
