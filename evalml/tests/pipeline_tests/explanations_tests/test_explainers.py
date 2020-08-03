@@ -8,7 +8,8 @@ from evalml.exceptions import PipelineScoreError
 from evalml.pipelines.prediction_explanations.explainers import (
     explain_prediction,
     explain_predictions,
-    explain_predictions_best_worst
+    explain_predictions_best_worst,
+    _cross_entropy, _abs_error
 )
 from evalml.problem_types import ProblemTypes
 
@@ -31,27 +32,83 @@ def test_explain_prediction_value_error(mock_normalize_shap_values, mock_compute
         explain_prediction(None, input_features=test_features, training_data=None)
 
 
-@patch("evalml.pipelines.prediction_explanations.explainers._compute_shap_values", return_value={"a": [1], "b": [-2],
-                                                                                                 "c": [-0.25], "d": [2]})
-@patch("evalml.pipelines.prediction_explanations.explainers._normalize_shap_values", return_value={"a": [0.5],
-                                                                                                   "b": [-0.75],
-                                                                                                   "c": [-0.25],
-                                                                                                   "d": [0.75]})
-def test_explain_prediction_runs(mock_normalize_shap_values, mock_compute_shap_values):
+explain_prediction_answer = """Feature Name   Contribution to Prediction
+                                =========================================
+                                 d                    ++++
+                                 a                    +++
+                                 c                     --
+                                 b                    ----""".splitlines()
 
-    answer = """Feature Name   Contribution to Prediction
-        =========================================
-         d                    ++++
-         a                    +++
-         c                     --
-         b                    ----""".splitlines()
 
+explain_prediction_multiclass_answer = """Class: class_0
+
+        Feature Name    Contribution to Prediction
+        ========================================= 
+            a                           +
+            b                           +
+            c                           -
+            d                           -
+
+
+        Class: class_1
+
+        Feature Name       Contribution to Prediction
+        ========================================= 
+            a                          +++
+            b                          ++
+            c                           -
+            d                          --
+
+
+        Class: class_2
+
+        Feature Name    Contribution to Prediction
+        ========================================= 
+            a                      +
+            b                      +
+            c                     ---
+            d                     ---
+            """.splitlines()
+
+
+@pytest.mark.parametrize("problem_type,shap_values,normalized_shap_values,answer",
+                         [(ProblemTypes.REGRESSION,
+                           {"a": [1], "b": [-2], "c": [-0.25], "d": [2]},
+                           {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]},
+                           explain_prediction_answer),
+                          (ProblemTypes.BINARY,
+                           [{}, {"a": [1], "b": [-2], "c": [-0.25], "d": [2]}],
+                           [{}, {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]}],
+                           explain_prediction_answer),
+                          (ProblemTypes.MULTICLASS,
+                           [{}, {}, {}],
+                           [{"a": [0.1], "b": [0.09], "c": [-0.04], "d": [-0.06]},
+                            {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
+                            {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
+                           explain_prediction_multiclass_answer)
+                          ])
+@patch("evalml.pipelines.prediction_explanations.explainers._compute_shap_values")
+@patch("evalml.pipelines.prediction_explanations.explainers._normalize_shap_values")
+def test_explain_prediction(mock_normalize_shap_values,
+                            mock_compute_shap_values,
+                            problem_type, shap_values, normalized_shap_values, answer):
+    mock_compute_shap_values.return_value = shap_values
+    mock_normalize_shap_values.return_value = normalized_shap_values
     pipeline = MagicMock()
-    pipeline.problem_type = ProblemTypes.REGRESSION
+    pipeline.problem_type = problem_type
+    pipeline._classes = ["class_0", "class_1", "class_2"]
     features = pd.DataFrame({"a": [1], "b": [2]})
     table = explain_prediction(pipeline, features, top_k=2).splitlines()
 
     compare_two_tables(table, answer)
+
+
+def test_error_metrics():
+
+    pd.testing.assert_series_equal(_abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
+    pd.testing.assert_series_equal(_cross_entropy(pd.Series([1, 0]),
+                                                  pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
+                                   pd.Series([-np.log(0.9), -np.log(0.2)]))
 
 
 input_features_and_y_true = [([1], None, "^Input features must be a dataframe with more than 10 rows!"),

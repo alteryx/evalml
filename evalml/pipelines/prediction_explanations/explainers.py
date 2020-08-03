@@ -66,7 +66,7 @@ def _cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
     Arguments:
-        y_true (pd.Series): True labels. Not one-hot-encoded.
+        y_true (pd.Series): True labels as ints but not one-hot-encoded.
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 
     Returns:
