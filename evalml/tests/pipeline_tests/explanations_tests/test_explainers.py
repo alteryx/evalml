@@ -6,10 +6,11 @@ import pytest
 
 from evalml.exceptions import PipelineScoreError
 from evalml.pipelines.prediction_explanations.explainers import (
+    _abs_error,
+    _cross_entropy,
     explain_prediction,
     explain_predictions,
-    explain_predictions_best_worst,
-    _cross_entropy, _abs_error
+    explain_predictions_best_worst
 )
 from evalml.problem_types import ProblemTypes
 
@@ -43,7 +44,7 @@ explain_prediction_answer = """Feature Name   Contribution to Prediction
 explain_prediction_multiclass_answer = """Class: class_0
 
         Feature Name    Contribution to Prediction
-        ========================================= 
+        =========================================
             a                           +
             b                           +
             c                           -
@@ -53,7 +54,7 @@ explain_prediction_multiclass_answer = """Class: class_0
         Class: class_1
 
         Feature Name       Contribution to Prediction
-        ========================================= 
+        =========================================
             a                          +++
             b                          ++
             c                           -
@@ -63,7 +64,7 @@ explain_prediction_multiclass_answer = """Class: class_0
         Class: class_2
 
         Feature Name    Contribution to Prediction
-        ========================================= 
+        =========================================
             a                      +
             b                      +
             c                     ---
