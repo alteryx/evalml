@@ -15,6 +15,7 @@ Release Notes
     * Enhancements
         * Add save/load method to components :pr:`1023`
         * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
+        * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
@@ -34,7 +35,6 @@ Release Notes
         * Added Imputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
         * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
-        * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
         * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines` :pr:`941`
