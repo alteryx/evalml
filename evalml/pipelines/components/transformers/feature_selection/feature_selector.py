@@ -29,10 +29,7 @@ class FeatureSelector(Transformer):
         else:
             self.input_feature_names = range(X.shape[1])
 
-        try:
-            X_t = self._component_obj.transform(X)
-        except AttributeError:
-            raise RuntimeError("Transformer requires a transform method or a component_obj that implements transform")
+        X_t = self._component_obj.transform(X)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             X_dtypes = X.dtypes.to_dict()
             selected_col_names = self.get_names()
@@ -55,10 +52,7 @@ class FeatureSelector(Transformer):
         else:
             self.input_feature_names = range(X.shape[1])
 
-        try:
-            X_t = self._component_obj.fit_transform(X, y)
-        except AttributeError:
-            raise RuntimeError("Transformer requires a fit_transform method or a component_obj that implements fit_transform")
+        X_t = self._component_obj.fit_transform(X, y)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             X_dtypes = X.dtypes.to_dict()
             selected_col_names = self.get_names()
