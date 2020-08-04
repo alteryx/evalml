@@ -181,8 +181,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         include_shap_values (bool): Whether SHAP values should be included in the table.
         metric (callable): The metric used to identify the best and worst points in the dataset. Function must accept
             the true labels and predicted value or probabilities as the only arguments and lower values
-             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
-             for classification problems.
+            must be better. By default, this will be the absolute error for regression problems and cross entropy loss
+            for classification problems.
 
     Returns:
         str
