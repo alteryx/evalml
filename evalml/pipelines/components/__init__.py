@@ -23,7 +23,6 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
-    SimpleImputer,
     Imputer,
     StandardScaler,
     FeatureSelector,

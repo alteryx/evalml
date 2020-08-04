@@ -2,7 +2,6 @@
 from .components import (
     Estimator,
     OneHotEncoder,
-    SimpleImputer,
     PerColumnImputer,
     StandardScaler,
     Transformer,

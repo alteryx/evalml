@@ -61,7 +61,6 @@ class SimpleImputer(Transformer):
 
         X_t = self._component_obj.transform(X)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_null_dropped = X.drop(self._all_null_cols, axis=1)
             if X_null_dropped.empty:
                 return pd.DataFrame(X_t, columns=X_null_dropped.columns)
