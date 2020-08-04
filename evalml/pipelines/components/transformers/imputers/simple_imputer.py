@@ -18,7 +18,7 @@ class SimpleImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
-    parameters = {"impute_strategy": impute_strategy,
+        parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy,
