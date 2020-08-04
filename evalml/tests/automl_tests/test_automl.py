@@ -901,9 +901,9 @@ def test_pipelines_in_batch_return_nan(mock_evaluate, mock_next_batch, X_y_binar
 
     mock_evaluate.reset_mock()
     mock_next_batch.reset_mock()
-    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': 0},
-                                 {'cv_score_mean': 0}, {'cv_score_mean': np.nan},
-                                 {'cv_score_mean': np.nan}, {'cv_score_mean': np.nan}]
+    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': 0},  # first batch
+                                 {'cv_score_mean': 0}, {'cv_score_mean': np.nan},  # second batch
+                                 {'cv_score_mean': np.nan}, {'cv_score_mean': np.nan}]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(RuntimeError, match="All pipelines produced a score of np.nan on the primary objective"):
