@@ -3,11 +3,19 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.12.0 Aug. 3, 2020**
+    * Enhancements
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for `DetectLabelLeakage` data check :pr:`932`
         * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
         * Added target column names and class labels in `predict` and `predict_proba` output for pipelines :pr:`951`
         * Added `_compute_shap_values` and `normalize_values` to `pipelines/explanations` module :pr:`958`
-        * Added `_explain_prediction` feature which explains single predictions with SHAP :pr:`974`
+        * Added `explain_prediction` feature which explains single predictions with SHAP :pr:`974`
         * Added Imputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
         * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
@@ -18,6 +26,7 @@ Release Notes
         * Made `TextFeaturizer` component and pip dependencies `featuretools` and `nlp_primitives` optional :pr:`976`
         * Updated imputation strategy in automl to no longer limit impute strategy to `most_frequent` for all features if there are any categorical columns :pr:`991`
         * Fixed UnboundLocalError for`cv_pipeline` when automl search errors :pr:`996`
+        * Fixed `Imputer` to reset dataframe index to preserve behavior expected from  `SimpleImputer` :pr:`1009`
     * Changes
         * Moved `get_estimators ` to `evalml.pipelines.components.utils` :pr:`934`
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
