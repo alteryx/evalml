@@ -18,7 +18,8 @@ def test_imputer_default_parameters():
     expected_parameters = {
         'categorical_impute_strategy': 'most_frequent',
         'numeric_impute_strategy': 'mean',
-        'fill_value': None
+        'categorical_fill_value': None,
+        'numeric_fill_value': None
     }
     assert imputer.parameters == expected_parameters
 
@@ -29,7 +30,8 @@ def test_imputer_init():
     expected_parameters = {
         'categorical_impute_strategy': 'most_frequent',
         'numeric_impute_strategy': 'median',
-        'fill_value': None
+        'categorical_fill_value': 'str_fill_value',
+        'numeric_fill_value': -1
     }
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
@@ -221,3 +223,31 @@ def test_imputer_resets_index():
                                   pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
                                                dtype=float,
                                                index=list(range(0, 9))))
+
+
+def test_imputer_fill_value():
+    X = pd.DataFrame({
+        "int with nan": [np.nan, 1, 2, 1, 0],
+        "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
+        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
+        "object with nan": ["b", "b", np.nan, "c", np.nan],
+        "bool col with nan": [True, np.nan, False, np.nan, True],
+    })
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({
+        "int with nan": [-1, 1, 2, 1, 0],
+        "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
+        "float with nan": [0.0, 1.0, -1, -1.0, 0.],
+        "object with nan": ["b", "b", "fill", "c", "fill"],
+        "bool col with nan": [True, "fill", False, "fill", True]
+    })
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
