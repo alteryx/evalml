@@ -403,6 +403,7 @@ class AutoMLSearch:
                         if (current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores)).all()):
                             raise RuntimeError(f"All pipelines produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
+                        current_batch_pipeline_scores = []
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
                         break
