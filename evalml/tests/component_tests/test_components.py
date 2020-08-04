@@ -20,7 +20,6 @@ from evalml.pipelines.components import (
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
-    Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -29,6 +28,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     SelectColumns,
+    SimpleImputer,
     StandardScaler,
     Transformer,
     XGBoostClassifier
@@ -96,17 +96,17 @@ def test_describe(test_classes):
 
 def test_describe_component():
     enc = OneHotEncoder()
-    imputer = Imputer(categorical_impute_strategy='constant', numeric_impute_strategy='median')
+    imputer = SimpleImputer("mean")
     column_imputer = PerColumnImputer({"a": "mean", "b": ("constant", 100)})
     scaler = StandardScaler()
     feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
-    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'categories': None,
                                                                                         'drop': None,
                                                                                         'handle_unknown': 'ignore',
                                                                                         'handle_missing': 'error'}}
-    assert imputer.describe(return_dict=True) == {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'constant', 'numeric_impute_strategy': 'median', 'fill_value': None}}
+    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
+    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert column_imputer.describe(return_dict=True) == {'name': 'Per Column Imputer', 'parameters': {'impute_strategies': {'a': 'mean', 'b': ('constant', 100)}, 'default_impute_strategy': 'most_frequent'}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
     assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}

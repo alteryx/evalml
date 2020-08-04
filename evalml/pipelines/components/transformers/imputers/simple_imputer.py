@@ -1,5 +1,3 @@
-import warnings
-
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
@@ -20,9 +18,7 @@ class SimpleImputer(Transformer):
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
         """
-        warnings.warn("SimpleImputer is deprecated in v0.12.0 and will be removed in 0.13.0 in favor of Imputer", DeprecationWarning)
-
-        parameters = {"impute_strategy": impute_strategy,
+    parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy,
@@ -61,6 +57,7 @@ class SimpleImputer(Transformer):
 
         X_t = self._component_obj.transform(X)
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
+            # skLearn's SimpleImputer loses track of column type, so we need to restore
             X_null_dropped = X.drop(self._all_null_cols, axis=1)
             if X_null_dropped.empty:
                 return pd.DataFrame(X_t, columns=X_null_dropped.columns)
