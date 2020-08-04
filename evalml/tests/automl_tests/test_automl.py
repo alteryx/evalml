@@ -890,11 +890,22 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     assert len(automl._results['pipeline_results']) == number_results
 
 
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
 @patch('evalml.automl.AutoMLSearch._evaluate')
-def test_all_pipelines_in_batch_return_nan(mock_evaluate, X_y_binary):
+def test_pipelines_in_batch_return_nan(mock_evaluate, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
-    mock_evaluate.return_value = {'cv_score_mean': np.nan}
-    automl = AutoMLSearch(problem_type='binary', max_pipelines=2)
+    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': np.nan}]
+    mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})]]
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
+    automl.search(X, y)
+
+    mock_evaluate.reset_mock()
+    mock_next_batch.reset_mock()
+    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': 0},
+                                 {'cv_score_mean': 0}, {'cv_score_mean': np.nan},
+                                 {'cv_score_mean': np.nan}, {'cv_score_mean': np.nan}]
+    mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
+    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(RuntimeError, match="All pipelines produced a score of np.nan on the primary objective"):
         automl.search(X, y)
 
