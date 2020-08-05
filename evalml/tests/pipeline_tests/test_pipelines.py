@@ -1,6 +1,7 @@
 import os
 from unittest.mock import patch
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
@@ -232,6 +233,30 @@ def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline_c
     pipeline.fit(X, y)
     pipeline.save(path)
     assert pipeline.score(X, y, ['precision']) == PipelineBase.load(path).score(X, y, ['precision'])
+
+
+@patch('cloudpickle.load')
+@patch('cloudpickle.dump')
+def test_serialization_protocol(mock_cloudpickle_dump, mock_cloudpickle_load, tmpdir, logistic_regression_binary_pipeline_class):
+    path = os.path.join(str(tmpdir), 'pipe.pkl')
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+
+    pipeline.save(path)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == cloudpickle.DEFAULT_PROTOCOL
+    PipelineBase.load(path)
+    assert len(mock_cloudpickle_load.call_args_list) == 1
+    assert mock_cloudpickle_load.call_args_list[0][1]['protocol'] == cloudpickle.DEFAULT_PROTOCOL
+
+    mock_cloudpickle_dump.reset_mock()
+    mock_cloudpickle_load.reset_mock()
+
+    pipeline.save(path, cloudpickle_protocol=42)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
+    PipelineBase.load(path, cloudpickle_protocol=42)
+    assert len(mock_cloudpickle_load.call_args_list) == 1
+    assert mock_cloudpickle_load.call_args_list[0][1]['protocol'] == 42
 
 
 @pytest.fixture

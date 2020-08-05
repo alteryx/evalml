@@ -428,7 +428,7 @@ class PipelineBase(ABC):
         fig = go.Figure(data=data, layout=layout)
         return fig
 
-    def save(self, file_path):
+    def save(self, file_path, cloudpickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Saves pipeline at file path
 
         Arguments:
@@ -438,10 +438,10 @@ class PipelineBase(ABC):
             None
         """
         with open(file_path, 'wb') as f:
-            cloudpickle.dump(self, f)
+            cloudpickle.dump(self, f, protocol=cloudpickle_protocol)
 
     @staticmethod
-    def load(file_path):
+    def load(file_path, cloudpickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Loads pipeline at file path
 
         Arguments:
@@ -451,7 +451,7 @@ class PipelineBase(ABC):
             PipelineBase object
         """
         with open(file_path, 'rb') as f:
-            return cloudpickle.load(f)
+            return cloudpickle.load(f, protocol=cloudpickle_protocol)
 
     def clone(self, random_state=0):
         """Constructs a new pipeline with the same parameters and components.
