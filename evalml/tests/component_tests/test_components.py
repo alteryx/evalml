@@ -1,7 +1,9 @@
 import importlib
 import inspect
+import os
 from unittest.mock import patch
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
@@ -696,3 +698,31 @@ def test_no_fitting_required_components(X_y_binary):
                 component.predict(X)
             else:
                 component.transform(X)
+
+
+def test_serialization(X_y_binary, tmpdir):
+    X, y = X_y_binary
+    path = os.path.join(str(tmpdir), 'component.pkl')
+    component = LogisticRegressionClassifier()
+    component.fit(X, y)
+    component.save(path)
+    loaded_component = ComponentBase.load(path)
+    assert component.parameters == loaded_component.parameters
+    assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
+    assert (component.feature_importance == loaded_component.feature_importance).all()
+
+
+@patch('cloudpickle.dump')
+def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
+    path = os.path.join(str(tmpdir), 'pipe.pkl')
+    component = LogisticRegressionClassifier()
+
+    component.save(path)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == cloudpickle.DEFAULT_PROTOCOL
+
+    mock_cloudpickle_dump.reset_mock()
+
+    component.save(path, pickle_protocol=42)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
