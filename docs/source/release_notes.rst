@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed DeprecationWarning for SimpleImputer :pr:`1018`
     * Documentation Changes
     * Testing Changes
 

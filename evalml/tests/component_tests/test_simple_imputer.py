@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -151,12 +149,3 @@ def test_numpy_input():
     np.testing.assert_almost_equal(X, np.array([[np.nan, 0, 1, np.nan],
                                                 [np.nan, 2, 3, 2],
                                                 [np.nan, 2, 3, 0]]))
-
-
-def test_simple_imputer_deprecation_warning():
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        SimpleImputer(impute_strategy='mean')
-        assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
-        assert "deprecated" in str(w[-1].message)
