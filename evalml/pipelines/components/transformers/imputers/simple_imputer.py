@@ -58,13 +58,14 @@ class SimpleImputer(Transformer):
             X = pd.DataFrame(X)
 
         X_null_dropped = X.copy()
-        dtypes = X_null_dropped.dtypes.to_dict()
         category_cols = [col for col in X_null_dropped.select_dtypes(include=['category'])]
         X_t = self._component_obj.transform(X)
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
             # skLearn's SimpleImputer loses track of column type, so we need to restore
-            X_null_dropped = X.drop(self._all_null_cols, axis=1)
+            X_null_dropped = X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore')
+            dtypes = X_null_dropped.dtypes.to_dict()
+
             if X_null_dropped.empty:
                 transformed = pd.DataFrame(X_t, columns=X_null_dropped.columns)
             else:
@@ -74,3 +75,13 @@ class SimpleImputer(Transformer):
                     dtypes.pop(c)
                 transformed = X_t.astype(dtypes)
         return transformed
+
+    def fit_transform(self, X, y=None):
+        """Fits on X and transforms X
+        Arguments:
+            X (pd.DataFrame): Data to fit and transform
+            y (pd. DataFrame): Labels to fit and transform
+        Returns:
+            pd.DataFrame: Transformed X
+        """
+        return self.fit(X, y).transform(X, y)

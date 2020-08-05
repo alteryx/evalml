@@ -26,7 +26,9 @@ def test_imputer_default_parameters():
 
 def test_imputer_init():
     imputer = Imputer(categorical_impute_strategy="most_frequent",
-                      numeric_impute_strategy="median")
+                      numeric_impute_strategy="median",
+                      categorical_fill_value="str_fill_value",
+                      numeric_fill_value=-1)
     expected_parameters = {
         'categorical_impute_strategy': 'most_frequent',
         'numeric_impute_strategy': 'median',
@@ -72,7 +74,7 @@ def test_categorical_only_input():
         "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
-        "categorical with nan": pd.Series([np.nan, 1, np.nan, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
         "object with nan": ["b", "b", np.nan, "c", np.nan],
         "bool col with nan": [True, np.nan, False, np.nan, True],
         "all nan": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category')
@@ -85,7 +87,7 @@ def test_categorical_only_input():
         "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
-        "categorical with nan": pd.Series([0, 1, 0, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
     })
@@ -103,7 +105,7 @@ def test_categorical_and_numeric_input():
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "bool col": [True, False, False, True, True],
         "int with nan": [np.nan, 1, 2, 1, 0],
-        "categorical with nan": pd.Series([np.nan, 1, np.nan, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
         "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
         "object with nan": ["b", "b", np.nan, "c", np.nan],
         "bool col with nan": [True, np.nan, False, np.nan, True],
@@ -120,7 +122,7 @@ def test_categorical_and_numeric_input():
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "bool col": [True, False, False, True, True],
         "int with nan": [1, 1, 2, 1, 0],
-        "categorical with nan": pd.Series([0, 1, 0, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
         "float with nan": [0.0, 1.0, 0, -1.0, 0.],
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
@@ -244,6 +246,30 @@ def test_imputer_fill_value():
         "float with nan": [0.0, 1.0, -1, -1.0, 0.],
         "object with nan": ["b", "b", "fill", "c", "fill"],
         "bool col with nan": [True, "fill", False, "fill", True]
+    })
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_no_nans():
+    X = pd.DataFrame({
+        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "object col": ["b", "b", "a", "c", "d"],
+        "bool col": [True, False, False, True, True],
+    })
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({
+        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "object col": ["b", "b", "a", "c", "d"],
+        "bool col": [True, False, False, True, True],
     })
     assert_frame_equal(transformed, expected, check_dtype=False)
 
