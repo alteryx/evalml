@@ -19,7 +19,11 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
-from evalml.exceptions import PipelineNotFoundError, PipelineScoreError
+from evalml.exceptions import (
+    AutoMLSearchException,
+    PipelineNotFoundError,
+    PipelineScoreError
+)
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -400,8 +404,8 @@ class AutoMLSearch:
             try:
                 if len(current_batch_pipelines) == 0:
                     try:
-                        if (current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores)).all()):
-                            raise RuntimeError(f"All pipelines produced a score of np.nan on the primary objective {self.objective}.")
+                        if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
+                            raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
                         current_batch_pipeline_scores = []
                     except StopIteration:
@@ -588,8 +592,8 @@ class AutoMLSearch:
                     logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
                     logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
                     logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
-                    scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
                     score = np.nan
+                    scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
