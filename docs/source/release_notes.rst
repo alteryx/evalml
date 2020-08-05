@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`

@@ -351,7 +351,8 @@ def test_parameters(logistic_regression_binary_pipeline_class):
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
-            'fill_value': None
+            'categorical_fill_value': None,
+            'numeric_fill_value': None
         },
         'One Hot Encoder': {
             'top_n': 10,
@@ -926,7 +927,8 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         'Imputer': {
             'categorical_impute_strategy': 'most_frequent',
             'numeric_impute_strategy': 'mean',
-            'fill_value': None
+            'categorical_fill_value': None,
+            'numeric_fill_value': None
         },
         'One Hot Encoder': {
             'top_n': 10,
