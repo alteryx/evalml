@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='evalml',
-    version='0.12.0',
+    version='0.12.0.dev0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
@@ -21,5 +21,6 @@ setup(
           'evalml = evalml.__main__:cli'
         ]
     },
-    data_files=[('evalml/demos/data', ['evalml/demos/data/fraud_transactions.csv.tar.gz'])]
+    data_files=[('evalml/demos/data', ['evalml/demos/data/fraud_transactions.csv.tar.gz']),
+                ("evalml/tests/data", ["evalml/tests/data/tips.csv", "evalml/tests/data/titanic.csv"])]
 )
