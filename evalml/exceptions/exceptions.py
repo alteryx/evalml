@@ -28,6 +28,11 @@ class ComponentNotYetFittedError(Exception):
     pass
 
 
+class AutoMLSearchException(Exception):
+    """Exception raised when all pipelines in an automl batch return a score of NaN for the primary objective."""
+    pass
+
+
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
