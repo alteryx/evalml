@@ -3,7 +3,10 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added new LSA component for text featurization :pr:`1022`
     * Fixes
+        * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
+        * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
     * Changes
     * Documentation Changes
     * Testing Changes
