@@ -191,6 +191,7 @@ binary_best_worst_answer = """Test Pipeline Name
             Best 1 of 1
 
                 Predicted Probabilities: [benign: 0.05, malignant: 0.95]
+                Predicted Value: malignant
                 Target Value: malignant
                 Cross Entropy: 0.2
 
@@ -200,6 +201,7 @@ binary_best_worst_answer = """Test Pipeline Name
             Worst 1 of 1
 
                 Predicted Probabilities: [benign: 0.1, malignant: 0.9]
+                Predicted Value: malignant
                 Target Value: benign
                 Cross Entropy: 0.78
 
@@ -229,6 +231,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
             Best 1 of 1
 
                 Predicted Probabilities: [setosa: 0.8, versicolor: 0.1, virginica: 0.1]
+                Predicted Value: setosa
                 Target Value: setosa
                 Cross Entropy: 0.15
 
@@ -238,6 +241,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
             Worst 1 of 1
 
                 Predicted Probabilities: [setosa: 0.2, versicolor: 0.75, virginica: 0.05]
+                Predicted Value: versicolor
                 Target Value: versicolor
                 Cross Entropy: 0.34
 
@@ -291,6 +295,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
+        pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         y_true = pd.Series(["malignant", "benign"])
     else:
         explain_prediction_mock.return_value = multiclass_table
@@ -300,6 +305,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
         cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
                                                             "virginica": [0.1, 0.05]})
+        pipeline.predict.return_value = ["setosa", "versicolor"]
         y_true = pd.Series(["setosa", "versicolor"])
 
     best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
@@ -331,10 +337,12 @@ def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_
         pipeline.predict.return_value = pd.Series([2, 1])
     elif problem_type == ProblemTypes.BINARY:
         pipeline._classes.return_value = ["benign", "malignant"]
+        pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
     else:
         explain_prediction_mock.return_value = multiclass_table
         pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
+        pipeline.predict.return_value = pd.Series(["setosa", "versicolor"])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
                                                             "virginica": [0.1, 0.05]})
 

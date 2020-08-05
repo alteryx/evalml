@@ -34,12 +34,6 @@ def test_make_rows_and_make_table(test_case, include_shap_values):
 
     assert _make_rows(values, values, top_k, include_shap_values) == new_answer
 
-    dtypes = ["t", "t"]
-    alignment = ["c", "c"]
-    if include_shap_values:
-        dtypes.append("f")
-        alignment.append("c")
-
     table = _make_table(values, values, top_k, include_shap_values).splitlines()
     if include_shap_values:
         assert "SHAP Value" in table[0]

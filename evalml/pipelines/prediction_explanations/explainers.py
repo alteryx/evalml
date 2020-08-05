@@ -66,7 +66,7 @@ def _cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
     Arguments:
-        y_true (pd.Series): True labels as ints but not one-hot-encoded.
+        y_true (pd.Series): True labels encoded as ints.
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 
     Returns:
@@ -131,20 +131,21 @@ class _EmptyPredictedValuesMaker:
 class _ClassificationPredictedValuesMaker:
     """Makes the predicted values section for classification problem best/worst reports."""
 
-    def __init__(self, error_name):
+    def __init__(self, error_name, y_pred_values):
         # Replace the default name with something more user-friendly
         if error_name == "_cross_entropy":
             error_name = "Cross Entropy"
         self.error_name = error_name
+        self.predicted_values = y_pred_values
 
     def __call__(self, index, y_pred, y_true, scores):
         pred_value = [f"{col_name}: {pred}" for col_name, pred in
                       zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
         pred_value = "[" + ", ".join(pred_value) + "]"
         true_value = y_true[index]
-        prediction_name = "Predicted Probabilities"
 
-        return [f"\t\t{prediction_name}: {pred_value}\n",
+        return [f"\t\tPredicted Probabilities: {pred_value}\n",
+                f"\t\tPredicted Value: {self.predicted_values[index]}\n",
                 f"\t\tTarget Value: {true_value}\n",
                 f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
 
@@ -208,8 +209,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             prediction_results_maker = _RegressionPredictedValuesMaker(metric.__name__)
         else:
             y_pred = pipeline.predict_proba(input_features)
+            y_pred_values = pipeline.predict(input_features)
             errors = metric(pipeline._encode_targets(y_true), y_pred)
-            prediction_results_maker = _ClassificationPredictedValuesMaker(metric.__name__)
+            prediction_results_maker = _ClassificationPredictedValuesMaker(metric.__name__, y_pred_values)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(exceptions={metric.__name__: (e, tb)}, scored_successfully={})

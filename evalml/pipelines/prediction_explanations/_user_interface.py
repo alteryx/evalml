@@ -47,12 +47,8 @@ def _make_table(shap_values, normalized_values, top_k, include_shap_values=False
     Returns:
         str
     """
-    dtypes = ["t", "t"]
-    alignment = ["c", "c"]
-
-    if include_shap_values:
-        dtypes.append("f")
-        alignment.append("c")
+    dtypes = ["t", "t", "f"] if include_shap_values else ["t", "t"]
+    alignment = ["c", "c", "c"] if include_shap_values else ["c", "c"]
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
