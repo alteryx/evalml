@@ -19,7 +19,11 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
-from evalml.exceptions import PipelineNotFoundError, PipelineScoreError
+from evalml.exceptions import (
+    AutoMLSearchException,
+    PipelineNotFoundError,
+    PipelineScoreError
+)
 from evalml.objectives import get_objective, get_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -395,11 +399,15 @@ class AutoMLSearch:
             return
 
         current_batch_pipelines = []
+        current_batch_pipeline_scores = []
         while self._check_stopping_condition(self._start):
             try:
                 if len(current_batch_pipelines) == 0:
                     try:
+                        if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
+                            raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
+                        current_batch_pipeline_scores = []
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
                         break
@@ -420,6 +428,7 @@ class AutoMLSearch:
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
                 score_to_minimize = -score if self.objective.greater_is_better else score
+                current_batch_pipeline_scores.append(score_to_minimize)
                 self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
                 if search_iteration_plot:
