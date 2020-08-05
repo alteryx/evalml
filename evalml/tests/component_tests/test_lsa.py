@@ -50,7 +50,7 @@ def test_lsa_with_nontext(text_df):
     assert X_t.dtypes.all() == np.float64
 
 
-def test_featurizer_no_text():
+def test_lsa_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
     warn_msg = "No text columns were given to LSA, component will have no effect"
     with pytest.warns(RuntimeWarning, match=warn_msg):

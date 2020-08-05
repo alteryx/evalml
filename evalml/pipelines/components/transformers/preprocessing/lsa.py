@@ -14,14 +14,11 @@ class LSA(Transformer):
     hyperparameter_ranges = {}
 
     def __init__(self, text_columns=None, random_state=0, **kwargs):
-        """Initalizes an transformer to perform TF-IDF transformation and Singular Value Decomposition.
+        """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            training_corpus(iterable): The collection of documents to fit this component on. Any iterable
-            that yields str or unicode objects can be passed in, the simplest format being a 1-dimensional
-            list, numpy array, or pandas Series. If no document is passed in, the component will be trained
-            on (nltk's brown sentence corpus.)[https://www.nltk.org/book/ch02.html#brown-corpus].
-            random_state(int): A seed for the random state.
+            text_colums (list): list of `pd.DataFrame` column names that contain text.
+            random_state (int, np.random.RandomState): Seed for the random number generator.
         """
         text_columns = text_columns or []
         parameters = {'text_columns': text_columns}
