@@ -33,6 +33,7 @@ Release Notes
         * Modified Pipelines to raise `PipelineScoreError` when they encounter an error during scoring :pr:`936`
         * Moved `evalml.model_families.list_model_families` to `evalml.pipelines.components.allowed_model_families` :pr:`959`
         * Renamed `DateTimeFeaturization` to `DateTimeFeaturizer` :pr:`977`
+        * Added check to stop search and raise an error if all pipelines in a batch return NaN scores :pr:`1015`
     * Documentation Changes
         * Update README.md :pr:`963`
         * Reworded message when errors are returned from data checks in search :pr:`982`
