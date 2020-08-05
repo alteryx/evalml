@@ -1,6 +1,7 @@
 import os
 from unittest.mock import MagicMock, patch
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
@@ -497,6 +498,21 @@ def test_automl_serialization(X_y_binary, tmpdir):
         assert automl.get_pipeline(i).parameters == loaded_automl.get_pipeline(i).parameters
         assert automl.results == loaded_automl.results
         pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
+
+
+@patch('cloudpickle.dump')
+def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir):
+    path = os.path.join(str(tmpdir), 'automl.pkl')
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=5)
+
+    automl.save(path)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == cloudpickle.DEFAULT_PROTOCOL
+
+    mock_cloudpickle_dump.reset_mock()
+    automl.save(path, pickle_protocol=42)
+    assert len(mock_cloudpickle_dump.call_args_list) == 1
+    assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
 
 
 def test_invalid_data_splitter():
