@@ -3,6 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Add save/load method to components :pr:`1023`
+        * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
