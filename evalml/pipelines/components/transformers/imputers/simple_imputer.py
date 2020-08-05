@@ -73,7 +73,4 @@ class SimpleImputer(Transformer):
                     X_t[c] = pd.Series(X_t[c], dtype="category")
                     dtypes.pop(c)
                 transformed = X_t.astype(dtypes)
-            # print (transformed.index)
-            transformed.reset_index(inplace=True, drop=True)
-
         return transformed
