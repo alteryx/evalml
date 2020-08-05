@@ -74,12 +74,16 @@ class LSA(Transformer):
             pd.DataFrame: Transformed X
         """
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X).rename(columns=str)
+            X = pd.DataFrame(X)
         X_t = X
 
         for col in self.text_col_names:
-            transformed = self.lsa_pipeline.transform(X[col])
-            X_t = X_t.drop(labels=col, axis=1)
+            try:
+                transformed = self.lsa_pipeline.transform(X[col])
+                X_t = X_t.drop(labels=col, axis=1)
+            except KeyError:
+                transformed = self.lsa_pipeline.transform(X[int(col)])
+                X_t = X_t.drop(labels=int(col), axis=1)
 
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0])
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1])
