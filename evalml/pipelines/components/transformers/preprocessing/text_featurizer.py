@@ -4,6 +4,7 @@ import warnings
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.transformers.preprocessing import LSA
 from evalml.utils import import_or_raise
 
 
@@ -34,6 +35,7 @@ class TextFeaturizer(Transformer):
                 text_columns[i] = str(col_name)
         self.text_col_names = text_columns
         self._features = None
+        self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -83,11 +85,11 @@ class TextFeaturizer(Transformer):
         es.df = self._clean_text(X)
 
         trans = [self._nlp_primitives.DiversityScore,
-                 self._nlp_primitives.LSA,
                  self._nlp_primitives.MeanCharactersPerWord,
                  self._nlp_primitives.PartOfSpeechCount,
                  self._nlp_primitives.PolarityScore]
 
+        self._lsa.fit(X)
         self._features = self._ft.dfs(entityset=es,
                                       target_entity='X',
                                       trans_primitives=trans,
@@ -112,6 +114,8 @@ class TextFeaturizer(Transformer):
         self._verify_col_names(X.columns)
 
         X_text = X[self.text_col_names]
+        X_lsa = self._lsa.transform(X_text)
+
         X_text['index'] = range(len(X_text))
         X_t = X.drop(self.text_col_names, axis=1)
 
@@ -123,5 +127,5 @@ class TextFeaturizer(Transformer):
         feature_matrix = self._ft.calculate_feature_matrix(features=self._features,
                                                            entityset=es,
                                                            verbose=True)
-        X_t = pd.concat([X_t, feature_matrix.reindex(X.index)], axis=1)
+        X_t = pd.concat([X_t, feature_matrix.reindex(X.index), X_lsa], axis=1)
         return X_t

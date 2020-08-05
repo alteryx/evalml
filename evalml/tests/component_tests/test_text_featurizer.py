@@ -182,9 +182,9 @@ def test_lsa_primitive_output():
     tf = TextFeaturizer(text_columns=['lsa'])
     tf.fit(X)
 
-    expected_features = [[0.0200961, 0.002976],
-                         [0.0223392, 0.0058817],
-                         [0.0186072, -0.0006121]]
+    expected_features = [[0.832, 0.],
+                         [0., 1.],
+                         [0.832, 0.]]
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]
