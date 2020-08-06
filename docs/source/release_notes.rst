@@ -10,6 +10,7 @@ Release Notes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
     * Documentation Changes
     * Testing Changes
+        * Test files are now included in the evalml package :pr:`1029`
 
 
 **v0.12.0 Aug. 3, 2020**
