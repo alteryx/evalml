@@ -71,7 +71,7 @@ def test_numeric_only_input():
 
 def test_categorical_only_input():
     X = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
         "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
@@ -84,7 +84,7 @@ def test_categorical_only_input():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
         "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
@@ -116,7 +116,7 @@ def test_categorical_and_numeric_input():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
         "int col": [0, 1, 2, 0, 3],
         "object col": ["b", "b", "a", "c", "d"],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
@@ -257,7 +257,7 @@ def test_imputer_fill_value():
 
 def test_imputer_no_nans():
     X = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
     })
@@ -267,7 +267,7 @@ def test_imputer_no_nans():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
     })
