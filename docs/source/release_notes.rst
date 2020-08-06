@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.13.0 Aug. 6, 2020**
+    * Enhancements
         * Add save/load method to components :pr:`1023`
         * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
     * Fixes
