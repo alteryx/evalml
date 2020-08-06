@@ -428,17 +428,18 @@ class PipelineBase(ABC):
         fig = go.Figure(data=data, layout=layout)
         return fig
 
-    def save(self, file_path):
+    def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Saves pipeline at file path
 
         Arguments:
             file_path (str): location to save file
+            pickle_protocol (int): the pickle data stream format.
 
         Returns:
             None
         """
         with open(file_path, 'wb') as f:
-            cloudpickle.dump(self, f)
+            cloudpickle.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
     def load(file_path):
