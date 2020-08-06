@@ -32,7 +32,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
 
 
 def test_binary_classification_estimators_predict_proba_col_order():
-    X = pd.DataFrame({'input': np.concatenate([np.array([-1]*100), np.array([1]*100)])})
+    X = pd.DataFrame({'input': np.concatenate([np.array([-1] * 100), np.array([1] * 100)])})
     data = np.concatenate([np.zeros(100), np.ones(100)])
     y = pd.Series(data)
     for estimator_class in _all_estimators_used_in_search:
