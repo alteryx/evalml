@@ -73,11 +73,11 @@ def test_featurizer_with_nontext(text_df):
 
 def test_featurizer_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
-    warn_msg = "No text columns were given to TextFeaturizer, component will have no effect"
-    with pytest.warns(RuntimeWarning, match=warn_msg):
-        tf = TextFeaturizer()
+    warn_msg = "No text columns were given to TextFeaturizer, component has no effect"
+    tf = TextFeaturizer()
 
-    tf.fit(X)
+    with pytest.warns(RuntimeWarning, match=warn_msg):
+        tf.fit(X)
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
 

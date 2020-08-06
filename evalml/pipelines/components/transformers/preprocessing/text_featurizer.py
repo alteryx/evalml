@@ -28,8 +28,6 @@ class TextFeaturizer(Transformer):
         parameters = {'text_columns': text_columns}
         parameters.update(kwargs)
 
-        if len(text_columns) == 0:
-            warnings.warn("No text columns were given to TextFeaturizer, component will have no effect", RuntimeWarning)
         for i, col_name in enumerate(text_columns):
             if not isinstance(col_name, str):
                 text_columns[i] = str(col_name)
@@ -71,6 +69,7 @@ class TextFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         if len(self.text_col_names) == 0:
+            warnings.warn("No text columns were given to TextFeaturizer, component has no effect", RuntimeWarning)
             self._features = []
             return self
         if not isinstance(X, pd.DataFrame):
