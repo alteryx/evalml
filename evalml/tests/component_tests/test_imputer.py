@@ -191,7 +191,7 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
