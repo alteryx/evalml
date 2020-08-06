@@ -24,14 +24,11 @@ class TextFeaturizer(Transformer):
         self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
 
-        text_columns = text_columns or []
         parameters = {'text_columns': text_columns}
+        text_columns = text_columns or []
         parameters.update(kwargs)
 
-        for i, col_name in enumerate(text_columns):
-            if not isinstance(col_name, str):
-                text_columns[i] = str(col_name)
-        self.text_col_names = text_columns
+        self.text_col_names = [str(col_name) for col_name in text_columns]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         super().__init__(parameters=parameters,
@@ -49,10 +46,7 @@ class TextFeaturizer(Transformer):
         return X
 
     def _verify_col_names(self, col_names):
-        missing_cols = []
-        for col in self.text_col_names:
-            if col not in col_names:
-                missing_cols.append(col)
+        missing_cols = [col for col in self.text_col_names if col not in col_names]
 
         if len(missing_cols) > 0:
             if len(missing_cols) == len(self.text_col_names):

@@ -20,24 +20,18 @@ class LSA(Transformer):
             text_colums (list): list of `pd.DataFrame` column names that contain text.
             random_state (int, np.random.RandomState): Seed for the random number generator.
         """
-        text_columns = text_columns or []
         parameters = {'text_columns': text_columns}
+        text_columns = text_columns or []
         parameters.update(kwargs)
 
-        for i, col_name in enumerate(text_columns):
-            if not isinstance(col_name, str):
-                text_columns[i] = str(col_name)
-        self.text_col_names = text_columns
-        self.lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
+        self.text_col_names = [str(col_name) for col_name in text_columns]
+        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
     def _verify_col_names(self, col_names):
-        missing_cols = []
-        for col in self.text_col_names:
-            if col not in col_names:
-                missing_cols.append(col)
+        missing_cols = [col for col in self.text_col_names if col not in col_names]
 
         if len(missing_cols) > 0:
             if len(missing_cols) == len(self.text_col_names):
@@ -58,7 +52,7 @@ class LSA(Transformer):
         for col in self.text_col_names:
             corpus.extend(X[col].values.tolist())
 
-        self.lsa_pipeline.fit(corpus)
+        self._lsa_pipeline.fit(corpus)
         return self
 
     def transform(self, X, y=None):
@@ -75,10 +69,10 @@ class LSA(Transformer):
 
         for col in self.text_col_names:
             try:
-                transformed = self.lsa_pipeline.transform(X[col])
+                transformed = self._lsa_pipeline.transform(X[col])
                 X_t = X_t.drop(labels=col, axis=1)
             except KeyError:
-                transformed = self.lsa_pipeline.transform(X[int(col)])
+                transformed = self._lsa_pipeline.transform(X[int(col)])
                 X_t = X_t.drop(labels=int(col), axis=1)
 
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0])
