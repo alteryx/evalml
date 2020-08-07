@@ -6,13 +6,12 @@ from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
 from evalml.utils.gen_utils import confusion_matrix, normalize_confusion_matrix
 
-
-def test_cost_benefit_matrix_objective(X_y_binary):
+@pytest.mark.parametrize("optimize_thresholds", [True, False])
+def test_cost_benefit_matrix_objective(optimize_thresholds, X_y_binary):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
-
-    automl = AutoMLSearch(problem_type='binary', objective=cbm, max_pipelines=1)
+    automl = AutoMLSearch(problem_type='binary', objective=cbm, max_pipelines=2, optimize_thresholds=optimize_thresholds)
     automl.search(X, y)
 
     pipeline = automl.best_pipeline
@@ -20,7 +19,6 @@ def test_cost_benefit_matrix_objective(X_y_binary):
     pipeline.predict(X, cbm)
     pipeline.predict_proba(X)
     pipeline.score(X, y, [cbm])
-
 
 def test_cbm_objective_function():
     y_true = pd.Series([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])

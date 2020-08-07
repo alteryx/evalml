@@ -26,8 +26,8 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X=None):
         """
             Arguments:
-                y_predicted (pd.Series): predicted labels
-                y_true (pd.Series): true labels
+                y_predicted (pd.Series): Predicted labels
+                y_true (pd.Series): True labels
                 X (pd.DataFrame): Ignored.
             Returns:
                 float: score
