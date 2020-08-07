@@ -5,17 +5,21 @@ import pytest
 from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
 from evalml.utils.gen_utils import confusion_matrix, normalize_confusion_matrix
-# def test_cost_benefit_matrix_objective(X_y_binary):
-#     X, y = X_y_binary
 
-#     automl = AutoMLSearch(problem_type='binary', objective=objective, max_pipelines=1)
-#     automl.search(X, y)
 
-#     pipeline = automl.best_pipeline
-#     pipeline.fit(X, y)
-#     pipeline.predict(X, objective)
-#     pipeline.predict_proba(X)
-#     pipeline.score(X, y, [objective])
+def test_cost_benefit_matrix_objective(X_y_binary):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
+
+    automl = AutoMLSearch(problem_type='binary', objective=cbm, max_pipelines=1)
+    automl.search(X, y)
+
+    pipeline = automl.best_pipeline
+    pipeline.fit(X, y)
+    pipeline.predict(X, cbm)
+    pipeline.predict_proba(X)
+    pipeline.score(X, y, [cbm])
 
 
 def test_cbm_objective_function():
