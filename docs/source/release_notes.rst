@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
 
 
