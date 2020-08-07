@@ -6,8 +6,8 @@ import pytest
 
 from evalml.exceptions import PipelineScoreError
 from evalml.pipelines.prediction_explanations.explainers import (
-    _abs_error,
-    _cross_entropy,
+    abs_error,
+    cross_entropy,
     explain_prediction,
     explain_predictions,
     explain_predictions_best_worst
@@ -106,9 +106,9 @@ def test_explain_prediction(mock_normalize_shap_values,
 
 def test_error_metrics():
 
-    pd.testing.assert_series_equal(_abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
-    pd.testing.assert_series_equal(_cross_entropy(pd.Series([1, 0]),
-                                                  pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
+    pd.testing.assert_series_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
+    pd.testing.assert_series_equal(cross_entropy(pd.Series([1, 0]),
+                                                 pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
                                    pd.Series([-np.log(0.9), -np.log(0.2)]))
 
 
@@ -271,7 +271,7 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                          [(ProblemTypes.REGRESSION, regression_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.BINARY, binary_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_best_worst_answer, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations.explainers._DEFAULT_METRICS")
+@patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
 def test_explain_predictions_best_worst_and_explain_predictions(explain_prediction_mock, mock_default_metrics,
                                                                 problem_type, answer, explain_predictions_answer):
@@ -284,14 +284,14 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
     pipeline.name = "Test Pipeline Name"
 
     if problem_type == ProblemTypes.REGRESSION:
-        abs_error_mock = MagicMock(__name__="_abs_error")
+        abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = pd.Series([2, 1])
         y_true = pd.Series([3, 2])
     elif problem_type == ProblemTypes.BINARY:
         pipeline._classes.return_value = ["benign", "malignant"]
-        cross_entropy_mock = MagicMock(__name__="_cross_entropy")
+        cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
@@ -300,7 +300,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
     else:
         explain_prediction_mock.return_value = multiclass_table
         pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
-        cross_entropy_mock = MagicMock(__name__="_cross_entropy")
+        cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
@@ -321,7 +321,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
                          [(ProblemTypes.REGRESSION, no_best_worst_answer),
                           (ProblemTypes.BINARY, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations.explainers._DEFAULT_METRICS")
+@patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
 def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_metrics,
                                           problem_type, answer):

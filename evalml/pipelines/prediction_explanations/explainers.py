@@ -30,6 +30,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
+            Default is False.
 
     Returns:
         str: Table
@@ -49,7 +50,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     return table_maker(shap_values, normalized_shap_values, top_k, include_shap_values)
 
 
-def _abs_error(y_true, y_pred):
+def abs_error(y_true, y_pred):
     """Computes the absolute error per data point for regression problems.
 
     Arguments:
@@ -62,7 +63,7 @@ def _abs_error(y_true, y_pred):
     return np.abs(y_true - y_pred)
 
 
-def _cross_entropy(y_true, y_pred_proba):
+def cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
     Arguments:
@@ -77,9 +78,9 @@ def _cross_entropy(y_true, y_pred_proba):
     return pd.Series(log_likelihood)
 
 
-_DEFAULT_METRICS = {ProblemTypes.BINARY: _cross_entropy,
-                    ProblemTypes.MULTICLASS: _cross_entropy,
-                    ProblemTypes.REGRESSION: _abs_error}
+DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
+                   ProblemTypes.MULTICLASS: cross_entropy,
+                   ProblemTypes.REGRESSION: abs_error}
 
 
 class _HeadingMaker:
@@ -133,7 +134,7 @@ class _ClassificationPredictedValuesMaker:
 
     def __init__(self, error_name, y_pred_values):
         # Replace the default name with something more user-friendly
-        if error_name == "_cross_entropy":
+        if error_name == "cross_entropy":
             error_name = "Cross Entropy"
         self.error_name = error_name
         self.predicted_values = y_pred_values
@@ -155,7 +156,7 @@ class _RegressionPredictedValuesMaker:
 
     def __init__(self, error_name):
         # Replace the default name with something more user-friendly
-        if error_name == "_abs_error":
+        if error_name == "abs_error":
             error_name = "Absolute Difference"
         self.error_name = error_name
 
@@ -164,6 +165,37 @@ class _RegressionPredictedValuesMaker:
         return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
                 f"\t\tTarget Value: {round(y_true[index], 3)}\n",
                 f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
+
+
+def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False):
+    """Creates a report summarizing the top contributing features for each data point in the input features.
+
+    XGBoost models and CatBoost multiclass classifiers are not currently supported.
+
+    Arguments:
+        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
+        input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        training_data (pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
+            with tree-based estimators.
+        top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
+            data point.
+        include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
+
+    Returns:
+        str - A report with the pipeline name and parameters and a table for each row of input_features.
+            The table will have the following columns: Feature Name, Contribution to Prediction, SHAP Value (optional),
+            and each row of the table will be a feature.
+    """
+    if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
+        raise ValueError("Parameter input_features must be a non-empty dataframe.")
+    report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
+    header_maker = _HeadingMaker(prefix="", n_indices=input_features.shape[0])
+    prediction_results_maker = _EmptyPredictedValuesMaker()
+    table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=training_data)
+    section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
+    report.extend(section_maker.make_report_section(pipeline, input_features, indices=range(input_features.shape[0]),
+                                                    y_true=None, y_pred=None, errors=None))
+    return "".join(report)
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
@@ -179,14 +211,17 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
-        include_shap_values (bool): Whether SHAP values should be included in the table.
+        include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
         metric (callable): The metric used to identify the best and worst points in the dataset. Function must accept
             the true labels and predicted value or probabilities as the only arguments and lower values
             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
             for classification problems.
 
     Returns:
-        str
+        str - A report with the pipeline name and parameters. For each of the best/worst rows of input_features, the
+            predicted values, true labels, and metric value will be listed along with a table. The table will have the
+            following columns: Feature Name, Contribution to Prediction, SHAP Value (optional), and each row of the
+            table will correspond to a feature.
     """
     if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "
@@ -198,7 +233,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         raise ValueError("Parameters y_true and input_features must have the same number of data points. Received: "
                          f"true labels: {y_true.shape[0]} and {input_features.shape[0]}")
     if not metric:
-        metric = _DEFAULT_METRICS[pipeline.problem_type]
+        metric = DEFAULT_METRICS[pipeline.problem_type]
 
     table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=input_features)
 
@@ -229,33 +264,4 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         section = report_section_maker.make_report_section(pipeline, input_features, index_list, y_pred,
                                                            y_true, errors)
         report.extend(section)
-    return "".join(report)
-
-
-def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False):
-    """Creates a report summarizing the top contributing features for each data point in the input features.
-
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
-
-    Arguments:
-        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        training_data (pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
-            with tree-based estimators.
-        top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
-            data point.
-        include_shap_values (bool): Whether SHAP values should be included in the table.
-
-    Returns:
-        str
-    """
-    if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
-        raise ValueError("Parameter input_features must be a non-empty dataframe.")
-    report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
-    header_maker = _HeadingMaker(prefix="", n_indices=input_features.shape[0])
-    prediction_results_maker = _EmptyPredictedValuesMaker()
-    table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=training_data)
-    section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
-    report.extend(section_maker.make_report_section(pipeline, input_features, indices=range(input_features.shape[0]),
-                                                    y_true=None, y_pred=None, errors=None))
     return "".join(report)
