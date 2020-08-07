@@ -74,7 +74,7 @@ def _make_table(shap_values, normalized_values, top_k, include_shap_values=False
     return table.draw()
 
 
-class TableMaker(abc.ABC):
+class _TableMaker(abc.ABC):
     """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
 
     @abc.abstractmethod
@@ -82,14 +82,14 @@ class TableMaker(abc.ABC):
         """Creates a table given shap values."""
 
 
-class _SHAPRegressionTableMaker(TableMaker):
+class _SHAPRegressionTableMaker(_TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
     def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
         return _make_table(shap_values, normalized_values, top_k, include_shap_values)
 
 
-class _SHAPBinaryTableMaker(TableMaker):
+class _SHAPBinaryTableMaker(_TableMaker):
     """Makes a SHAP table explaining a prediction for a binary classification problem."""
 
     def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
@@ -98,7 +98,7 @@ class _SHAPBinaryTableMaker(TableMaker):
         return _make_table(shap_values[1], normalized_values[1], top_k, include_shap_values)
 
 
-class _SHAPMultiClassTableMaker(TableMaker):
+class _SHAPMultiClassTableMaker(_TableMaker):
     """Makes a SHAP table explaining a prediction for a multiclass classification problem."""
 
     def __init__(self, class_names):
