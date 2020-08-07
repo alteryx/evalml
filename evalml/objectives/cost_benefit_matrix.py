@@ -1,7 +1,10 @@
+
+import numpy as np
 import pandas as pd
 
 from .binary_classification_objective import BinaryClassificationObjective
 
+from evalml.utils.gen_utils import confusion_matrix
 
 class CostBenefitMatrix(BinaryClassificationObjective):
     """Score using a cost-benefit matrix"""
@@ -29,3 +32,9 @@ class CostBenefitMatrix(BinaryClassificationObjective):
             Returns:
                 float: score
         """
+        conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
+        cost_matrix = np.array([[self.true_negative, self.false_positive],
+                                [self.false_negative, self.true_positive]])
+
+        total_cost = np.multiply(conf_mat, cost_matrix).sum().sum()
+        return total_cost
