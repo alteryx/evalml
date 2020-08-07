@@ -17,41 +17,37 @@ class LSA(Transformer):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            text_colums (list): list of `pd.DataFrame` column names that contain text.
+            text_columns (list): list of feature names which should be treated as text features.
             random_state (int, np.random.RandomState): Seed for the random number generator.
         """
         parameters = {'text_columns': text_columns}
         text_columns = text_columns or []
         parameters.update(kwargs)
 
-        self.text_col_names = [str(col_name) for col_name in text_columns]
+        self._text_col_names = [str(col_name) for col_name in text_columns]
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
     def _verify_col_names(self, col_names):
-        missing_cols = [col for col in self.text_col_names if col not in col_names]
+        missing_cols = [col for col in self._text_col_names if col not in col_names]
 
         if len(missing_cols) > 0:
-            if len(missing_cols) == len(self.text_col_names):
+            if len(missing_cols) == len(self._text_col_names):
                 raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
             for col in missing_cols:
-                self.text_col_names.remove(col)
+                self._text_col_names.remove(col)
             warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
 
     def fit(self, X, y=None):
-        if len(self.text_col_names) == 0:
-            warnings.warn("No text columns were given to LSA, component has no effect", RuntimeWarning)
+        if len(self._text_col_names) == 0:
             return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X).rename(columns=str)
         self._verify_col_names(X.columns)
 
-        corpus = []
-        for col in self.text_col_names:
-            corpus.extend(X[col].values.tolist())
-
+        corpus = X[self._text_col_names].values.flatten()
         self._lsa_pipeline.fit(corpus)
         return self
 
@@ -67,7 +63,7 @@ class LSA(Transformer):
             X = pd.DataFrame(X)
         X_t = X
 
-        for col in self.text_col_names:
+        for col in self._text_col_names:
             try:
                 transformed = self._lsa_pipeline.transform(X[col])
                 X_t = X_t.drop(labels=col, axis=1)

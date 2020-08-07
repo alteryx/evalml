@@ -17,7 +17,7 @@ class TextFeaturizer(Transformer):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
-            text_colums (list): list of `pd.DataFrame` column names that contain text.
+            text_columns (list): list of feature names which should be treated as text features.
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
@@ -28,7 +28,7 @@ class TextFeaturizer(Transformer):
         text_columns = text_columns or []
         parameters.update(kwargs)
 
-        self.text_col_names = [str(col_name) for col_name in text_columns]
+        self._text_col_names = [str(col_name) for col_name in text_columns]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         super().__init__(parameters=parameters,
@@ -41,35 +41,34 @@ class TextFeaturizer(Transformer):
             text = text.translate(str.maketrans('', '', string.punctuation))
             return text.lower()
 
-        for text_col in self.text_col_names:
+        for text_col in self._text_col_names:
             X[text_col] = X[text_col].apply(normalize)
         return X
 
     def _verify_col_names(self, col_names):
-        missing_cols = [col for col in self.text_col_names if col not in col_names]
+        missing_cols = [col for col in self._text_col_names if col not in col_names]
 
         if len(missing_cols) > 0:
-            if len(missing_cols) == len(self.text_col_names):
+            if len(missing_cols) == len(self._text_col_names):
                 raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
             for col in missing_cols:
-                self.text_col_names.remove(col)
+                self._text_col_names.remove(col)
             warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
 
     def _verify_col_types(self, entity_set):
         var_types = entity_set.entities[0].variable_types
-        for col in self.text_col_names:
+        for col in self._text_col_names:
             if var_types[col] is not self._ft.variable_types.variable.Text:
                 raise ValueError("Column {} is not a text column, cannot apply TextFeaturizer component".format(col))
 
     def fit(self, X, y=None):
-        if len(self.text_col_names) == 0:
-            warnings.warn("No text columns were given to TextFeaturizer, component has no effect", RuntimeWarning)
+        if len(self._text_col_names) == 0:
             self._features = []
             return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X).rename(columns=str)
         self._verify_col_names(X.columns)
-        X_text = X[self.text_col_names]
+        X_text = X[self._text_col_names]
         X_text['index'] = range(len(X_text))
 
         es = self._ft.EntitySet()
@@ -106,11 +105,11 @@ class TextFeaturizer(Transformer):
         X = X.rename(columns=str)
         self._verify_col_names(X.columns)
 
-        X_text = X[self.text_col_names]
+        X_text = X[self._text_col_names]
         X_lsa = self._lsa.transform(X_text)
 
         X_text['index'] = range(len(X_text))
-        X_t = X.drop(self.text_col_names, axis=1)
+        X_t = X.drop(self._text_col_names, axis=1)
 
         es = self._ft.EntitySet()
         es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')

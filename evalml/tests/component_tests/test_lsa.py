@@ -52,11 +52,8 @@ def test_lsa_with_nontext(text_df):
 
 def test_lsa_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
-    warn_msg = "No text columns were given to LSA, component has no effect"
     lsa = LSA()
-
-    with pytest.warns(RuntimeWarning, match=warn_msg):
-        lsa.fit(X)
+    lsa.fit(X)
     X_t = lsa.transform(X)
     assert len(X_t.columns) == 2
 
