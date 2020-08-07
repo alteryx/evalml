@@ -26,9 +26,7 @@ test_features = [5, [1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1
 
 
 @pytest.mark.parametrize("test_features", test_features)
-@patch("evalml.pipelines.prediction_explanations.explainers._compute_shap_values")
-@patch("evalml.pipelines.prediction_explanations.explainers._normalize_shap_values")
-def test_explain_prediction_value_error(mock_normalize_shap_values, mock_compute_shap_values, test_features):
+def test_explain_prediction_value_error(test_features):
     with pytest.raises(ValueError, match="features must be stored in a dataframe of one row."):
         explain_prediction(None, input_features=test_features, training_data=None)
 
