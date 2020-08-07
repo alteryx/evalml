@@ -32,5 +32,8 @@ def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class
         pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
         answer = ["class_0", "class_1", "class_2"]
 
+    with pytest.raises(AttributeError, match="Cannot access class names before fitting the pipeline."):
+        pipeline._classes
+
     pipeline.fit(X, y)
     pd.testing.assert_series_equal(pd.Series(pipeline._classes), pd.Series(answer))
