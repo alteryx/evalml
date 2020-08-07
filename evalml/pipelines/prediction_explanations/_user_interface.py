@@ -1,4 +1,13 @@
+import abc
+
+import pandas as pd
 from texttable import Texttable
+
+from evalml.pipelines.prediction_explanations._algorithms import (
+    _compute_shap_values,
+    _normalize_shap_values
+)
+from evalml.problem_types import ProblemTypes
 
 
 def _make_rows(shap_values, normalized_values, top_k, include_shap_values=False):
@@ -65,14 +74,22 @@ def _make_table(shap_values, normalized_values, top_k, include_shap_values=False
     return table.draw()
 
 
-class _SHAPRegressionTableMaker:
+class TableMaker(abc.ABC):
+    """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
+
+    @abc.abstractmethod
+    def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
+        """Creates a table given shap values."""
+
+
+class _SHAPRegressionTableMaker(TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
     def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
         return _make_table(shap_values, normalized_values, top_k, include_shap_values)
 
 
-class _SHAPBinaryTableMaker:
+class _SHAPBinaryTableMaker(TableMaker):
     """Makes a SHAP table explaining a prediction for a binary classification problem."""
 
     def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
@@ -81,7 +98,7 @@ class _SHAPBinaryTableMaker:
         return _make_table(shap_values[1], normalized_values[1], top_k, include_shap_values)
 
 
-class _SHAPMultiClassTableMaker:
+class _SHAPMultiClassTableMaker(TableMaker):
     """Makes a SHAP table explaining a prediction for a multiclass classification problem."""
 
     def __init__(self, class_names):
@@ -95,6 +112,24 @@ class _SHAPMultiClassTableMaker:
             strings += table.splitlines()
             strings.append("\n")
         return "\n".join(strings)
+
+
+def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, training_data=None,
+                                       include_shap_values=False):
+    if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] == 1):
+        raise ValueError("features must be stored in a dataframe of one row.")
+
+    shap_values = _compute_shap_values(pipeline, input_features, training_data)
+    normalized_shap_values = _normalize_shap_values(shap_values)
+
+    if pipeline.problem_type == ProblemTypes.REGRESSION:
+        table_maker = _SHAPRegressionTableMaker()
+    elif pipeline.problem_type == ProblemTypes.BINARY:
+        table_maker = _SHAPBinaryTableMaker()
+    else:
+        table_maker = _SHAPMultiClassTableMaker(pipeline._classes)
+
+    return table_maker(shap_values, normalized_shap_values, top_k, include_shap_values)
 
 
 class _ReportSectionMaker:
@@ -139,3 +174,104 @@ class _ReportSectionMaker:
             report.extend(self.make_predicted_values_maker(index, y_pred, y_true, errors))
             report.extend(self.table_maker(index, pipeline, input_features))
         return report
+
+
+class _SectionMaker(abc.ABC):
+    """Makes a section for a prediction explanations report.
+
+    A report is made up of three parts: the header, the predicted values (if any), and the table.
+
+    Each subclass of this class will be responsible for creating one of these sections.
+    """
+
+    @abc.abstractmethod
+    def __call__(self, *args, **kwargs):
+        """Makes the report section.
+
+        Returns:
+            list(str): A list containing the lines of report section.
+        """
+
+
+class _HeadingMaker(_SectionMaker):
+    """Makes the heading section for reports.
+
+    Differences between best/worst reports and reports where user manually specifies the input features subset
+    are handled by formatting the value of the prefix parameter in the initialization.
+    """
+
+    def __init__(self, prefix, n_indices):
+        self.prefix = prefix
+        self.n_indices = n_indices
+
+    def __call__(self, rank, index):
+        return [f"\t{self.prefix}{rank + 1} of {self.n_indices}\n\n"]
+
+
+class _EmptyPredictedValuesMaker(_SectionMaker):
+    """Omits the predicted values section for reports where the user specifies the subset of the input features."""
+
+    def __call__(self, index, y_pred, y_true, scores):
+        return [""]
+
+
+class _ClassificationPredictedValuesMaker(_SectionMaker):
+    """Makes the predicted values section for classification problem best/worst reports."""
+
+    def __init__(self, error_name, y_pred_values):
+        # Replace the default name with something more user-friendly
+        if error_name == "cross_entropy":
+            error_name = "Cross Entropy"
+        self.error_name = error_name
+        self.predicted_values = y_pred_values
+
+    def __call__(self, index, y_pred, y_true, scores):
+        pred_value = [f"{col_name}: {pred}" for col_name, pred in
+                      zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
+        pred_value = "[" + ", ".join(pred_value) + "]"
+        true_value = y_true[index]
+
+        return [f"\t\tPredicted Probabilities: {pred_value}\n",
+                f"\t\tPredicted Value: {self.predicted_values[index]}\n",
+                f"\t\tTarget Value: {true_value}\n",
+                f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
+
+
+class _RegressionPredictedValuesMaker(_SectionMaker):
+    """Makes the predicted values section for regression problem best/worst reports."""
+
+    def __init__(self, error_name):
+        # Replace the default name with something more user-friendly
+        if error_name == "abs_error":
+            error_name = "Absolute Difference"
+        self.error_name = error_name
+
+    def __call__(self, index, y_pred, y_true, scores):
+
+        return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
+                f"\t\tTarget Value: {round(y_true[index], 3)}\n",
+                f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
+
+
+class _SHAPTableMaker(_SectionMaker):
+    """Makes the SHAP table section for reports.
+
+    The table is the same whether the user requests a best/worst report or they manually specified the
+    subset of the input features.
+
+    Handling the differences in how the table is formatted between regression and classification problems
+    is delegated to the explain_prediction function.
+    """
+
+    def __init__(self, top_k_features, include_shap_values, training_data):
+        self.top_k_features = top_k_features
+        self.include_shap_values = include_shap_values
+        self.training_data = training_data
+
+    def __call__(self, index, pipeline, input_features):
+        table = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
+                                                   training_data=self.training_data, top_k=self.top_k_features,
+                                                   include_shap_values=self.include_shap_values)
+        table = table.splitlines()
+        # Indent the rows of the table to match the indentation of the entire report.
+        return ["\t\t" + line + "\n" for line in table] + ["\n\n"]

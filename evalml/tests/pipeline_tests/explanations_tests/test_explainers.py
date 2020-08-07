@@ -88,8 +88,8 @@ explain_prediction_multiclass_answer = """Class: class_0
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_answer)
                           ])
-@patch("evalml.pipelines.prediction_explanations.explainers._compute_shap_values")
-@patch("evalml.pipelines.prediction_explanations.explainers._normalize_shap_values")
+@patch("evalml.pipelines.prediction_explanations._user_interface._compute_shap_values")
+@patch("evalml.pipelines.prediction_explanations._user_interface._normalize_shap_values")
 def test_explain_prediction(mock_normalize_shap_values,
                             mock_compute_shap_values,
                             problem_type, shap_values, normalized_shap_values, answer):
@@ -272,11 +272,11 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                           (ProblemTypes.BINARY, binary_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_best_worst_answer, multiclass_no_best_worst_answer)])
 @patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
-@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
-def test_explain_predictions_best_worst_and_explain_predictions(explain_prediction_mock, mock_default_metrics,
+@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table, mock_default_metrics,
                                                                 problem_type, answer, explain_predictions_answer):
 
-    explain_prediction_mock.return_value = "table goes here"
+    mock_make_table.return_value = "table goes here"
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]})
@@ -298,7 +298,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         y_true = pd.Series(["malignant", "benign"])
     else:
-        explain_prediction_mock.return_value = multiclass_table
+        mock_make_table.return_value = multiclass_table
         pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
@@ -321,12 +321,10 @@ def test_explain_predictions_best_worst_and_explain_predictions(explain_predicti
                          [(ProblemTypes.REGRESSION, no_best_worst_answer),
                           (ProblemTypes.BINARY, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
-@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
-def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_metrics,
-                                          problem_type, answer):
+@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+def test_explain_predictions_custom_index(mock_make_table, problem_type, answer):
 
-    explain_prediction_mock.return_value = "table goes here"
+    mock_make_table.return_value = "table goes here"
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]}, index=["first", "second"])
@@ -340,7 +338,7 @@ def test_explain_predictions_custom_index(explain_prediction_mock, mock_default_
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
     else:
-        explain_prediction_mock.return_value = multiclass_table
+        mock_make_table.return_value = multiclass_table
         pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
         pipeline.predict.return_value = pd.Series(["setosa", "versicolor"])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
@@ -376,10 +374,10 @@ regression_custom_metric_answer = """Test Pipeline Name
 """
 
 
-@patch("evalml.pipelines.prediction_explanations.explainers.explain_prediction")
-def test_explain_predictions_best_worst_custom_metric(explain_prediction_mock):
+@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+def test_explain_predictions_best_worst_custom_metric(mock_make_table):
 
-    explain_prediction_mock.return_value = "table goes here"
+    mock_make_table.return_value = "table goes here"
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [5, 6]})
