@@ -2,6 +2,8 @@ import copy
 from abc import ABC, ABCMeta, abstractmethod
 from functools import wraps
 
+import cloudpickle
+
 from evalml.exceptions import (
     ComponentNotYetFittedError,
     MethodPropertyNotFoundError
@@ -156,3 +158,29 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             component_dict = {"name": self.name}
             component_dict.update({"parameters": self.parameters})
             return component_dict
+
+    def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
+        """Saves component at file path
+
+        Arguments:
+            file_path (str): location to save file
+            pickle_protocol (int): the pickle data stream format.
+
+        Returns:
+            None
+        """
+        with open(file_path, 'wb') as f:
+            cloudpickle.dump(self, f, protocol=pickle_protocol)
+
+    @staticmethod
+    def load(file_path):
+        """Loads component at file path
+
+        Arguments:
+            file_path (str): location to load file
+
+        Returns:
+            ComponentBase object
+        """
+        with open(file_path, 'rb') as f:
+            return cloudpickle.load(f)

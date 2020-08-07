@@ -8,9 +8,20 @@ Release Notes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
     * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.12.2 Aug. 6, 2020**
+    * Enhancements
+        * Add save/load method to components :pr:`1023`
+        * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
+    * Fixes
+    * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
     * Documentation Changes
     * Testing Changes
+        * Test files are now included in the evalml package :pr:`1029`
 
 
 **v0.12.0 Aug. 3, 2020**
