@@ -9,7 +9,7 @@ from evalml.pipelines.components import Imputer
 @pytest.fixture
 def imputer_test_data():
     return pd.DataFrame({
-        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "int col": [0, 1, 2, 0, 3],
         "object col": ["b", "b", "a", "c", "d"],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
@@ -31,28 +31,28 @@ def test_invalid_strategy_parameters():
         Imputer(categorical_impute_strategy="mean")
 
 
-@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
-@pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"])
-def test_imputer_default_parameters(categorical_impute_strategy, numeric_impute_strategy):
-    imputer = Imputer(categorical_impute_strategy=categorical_impute_strategy,
-                      numeric_impute_strategy=numeric_impute_strategy)
+def test_imputer_default_parameters():
+    imputer = Imputer()
     expected_parameters = {
-        'categorical_impute_strategy': categorical_impute_strategy,
-        'numeric_impute_strategy': numeric_impute_strategy,
+        'categorical_impute_strategy': 'mean',
+        'numeric_impute_strategy': 'most_frequent',
         'categorical_fill_value': None,
         'numeric_fill_value': None
     }
     assert imputer.parameters == expected_parameters
 
 
-def test_imputer_init():
-    imputer = Imputer(categorical_impute_strategy="most_frequent",
-                      numeric_impute_strategy="median",
+@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
+@pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"])
+def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy):
+
+    imputer = Imputer(categorical_impute_strategy=categorical_impute_strategy,
+                      numeric_impute_strategy=numeric_impute_strategy,
                       categorical_fill_value="str_fill_value",
                       numeric_fill_value=-1)
     expected_parameters = {
-        'categorical_impute_strategy': 'most_frequent',
-        'numeric_impute_strategy': 'median',
+        'categorical_impute_strategy': categorical_impute_strategy,
+        'numeric_impute_strategy': numeric_impute_strategy,
         'categorical_fill_value': 'str_fill_value',
         'numeric_fill_value': -1
     }
@@ -94,7 +94,7 @@ def test_categorical_only_input(imputer_test_data):
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
         "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
@@ -114,7 +114,7 @@ def test_categorical_and_numeric_input(imputer_test_data):
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "int col": [0, 1, 2, 0, 3],
         "object col": ["b", "b", "a", "c", "d"],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
@@ -253,7 +253,7 @@ def test_imputer_no_nans(imputer_test_data):
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series(["0", "1", "2", "0", "3"], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
     })

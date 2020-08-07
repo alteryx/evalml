@@ -16,16 +16,17 @@ class Imputer(Transformer):
     _valid_numeric_impute_strategies = set(["mean", "median", "most_frequent", "constant"])
 
     def __init__(self, categorical_impute_strategy="most_frequent",
+                 categorical_fill_value=None,
                  numeric_impute_strategy="mean",
-                 categorical_fill_value=None, numeric_fill_value=None,
+                 numeric_fill_value=None,
                  random_state=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
             categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
             numeric_impute_strategy (string): Impute strategy to use for numeric dtypes. Valid values include "mean", "median", "most_frequent", and "constant".
-            categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. Defaults to "missing_value".
-            numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. Defaults to 0.
+            categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
+            numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with 0.
         """
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")

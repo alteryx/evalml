@@ -151,22 +151,35 @@ def test_numpy_input():
                                                 [np.nan, 2, 3, 0]]))
 
 
-def test_simple_imputer_fill_value():
-    X = pd.DataFrame({
-        "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
-        "object with nan": ["b", "b", np.nan, "c", np.nan],
-    })
+@pytest.mark.parametrize("data_type", ["numeric", "categorical"])
+def test_simple_imputer_fill_value(data_type):
+    if data_type == "numeric":
+        X = pd.DataFrame({
+            "some numeric": [np.nan, 1, 0],
+            "another numeric": [0, np.nan, 2]
+        })
+        fill_value = -1
+        expected = pd.DataFrame({
+            "some numeric": [-1, 1, 0],
+            "another numeric": [0, -1, 2]
+        })
+    else:
+        X = pd.DataFrame({
+            "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
+            "object with nan": ["b", "b", np.nan, "c", np.nan]
+        })
+        fill_value = "fill"
+        expected = pd.DataFrame({
+            "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
+            "object with nan": ["b", "b", "fill", "c", "fill"],
+        })
     y = pd.Series([0, 0, 1, 0, 1])
-    imputer = SimpleImputer(impute_strategy="constant", fill_value="fill")
+    imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
-    expected = pd.DataFrame({
-        "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
-        "object with nan": ["b", "b", "fill", "c", "fill"],
-    })
     assert_frame_equal(transformed, expected, check_dtype=False)
 
-    imputer = SimpleImputer(impute_strategy="constant", fill_value="fill")
+    imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
 
