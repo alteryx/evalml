@@ -4,13 +4,23 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
-        * Addded save/load method to components :pr:`1023`
-        * Exposed pickle `protocol` as optional arg to save/load :pr:`1023`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.12.2 Aug. 6, 2020**
+    * Enhancements
+        * Add save/load method to components :pr:`1023`
+        * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
     * Documentation Changes
+        * Add note about version numbers to release process docs :pr:`1034`
     * Testing Changes
+        * Test files are now included in the evalml package :pr:`1029`
 
 
 **v0.12.0 Aug. 3, 2020**
