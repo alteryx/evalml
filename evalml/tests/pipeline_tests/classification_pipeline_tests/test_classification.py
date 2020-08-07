@@ -1,8 +1,9 @@
+from itertools import product
+
 import pandas as pd
 import pytest
 
 from evalml.demos import load_breast_cancer, load_wine
-from itertools import product
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
@@ -37,7 +38,7 @@ def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class
         pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
         if use_ints:
             y = y.map({"class_0": 0, "class_1": 1, "class_2": 2})
-            answer = [0, 1 ,2]
+            answer = [0, 1, 2]
         else:
             answer = ["class_0", "class_1", "class_2"]
 
