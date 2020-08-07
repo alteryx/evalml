@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
 
 
@@ -17,6 +18,7 @@ Release Notes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
     * Documentation Changes
+        * Add note about version numbers to release process docs :pr:`1034`
     * Testing Changes
         * Test files are now included in the evalml package :pr:`1029`
 
