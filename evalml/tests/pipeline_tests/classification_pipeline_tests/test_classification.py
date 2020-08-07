@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from evalml.demos import load_breast_cancer, load_wine
+from itertools import product
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
@@ -20,17 +21,25 @@ def test_new_unique_targets_in_score(X_y_binary, logistic_regression_binary_pipe
         pipeline.score(X, pd.Series([4] * len(y)), [objective])
 
 
-@pytest.mark.parametrize("problem_type", ["binary", "multi"])
+@pytest.mark.parametrize("problem_type,use_ints", product(["binary", "multi"], [True, False]))
 def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class,
-                                       logistic_regression_multiclass_pipeline_class, problem_type):
+                                       logistic_regression_multiclass_pipeline_class, problem_type, use_ints):
     if problem_type == "binary":
         X, y = load_breast_cancer()
         pipeline = logistic_regression_binary_pipeline_class(parameters={})
-        answer = ["benign", "malignant"]
+        if use_ints:
+            y = y.map({'malignant': 0, 'benign': 1})
+            answer = [0, 1]
+        else:
+            answer = ["benign", "malignant"]
     elif problem_type == "multi":
         X, y = load_wine()
         pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
-        answer = ["class_0", "class_1", "class_2"]
+        if use_ints:
+            y = y.map({"class_0": 0, "class_1": 1, "class_2": 2})
+            answer = [0, 1 ,2]
+        else:
+            answer = ["class_0", "class_1", "class_2"]
 
     with pytest.raises(AttributeError, match="Cannot access class names before fitting the pipeline."):
         pipeline._classes
