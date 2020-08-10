@@ -34,8 +34,8 @@ def test_invalid_strategy_parameters():
 def test_imputer_default_parameters():
     imputer = Imputer()
     expected_parameters = {
-        'categorical_impute_strategy': 'mean',
-        'numeric_impute_strategy': 'most_frequent',
+        'categorical_impute_strategy': 'most_frequent',
+        'numeric_impute_strategy': 'mean',
         'categorical_fill_value': None,
         'numeric_fill_value': None
     }
