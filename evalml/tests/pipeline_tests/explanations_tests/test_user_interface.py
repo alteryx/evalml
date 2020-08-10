@@ -5,8 +5,10 @@ import pytest
 
 from evalml.pipelines.prediction_explanations._user_interface import (
     _make_rows,
-    _make_single_prediction_table,
-    _make_table
+    _make_table,
+    _SHAPBinaryTableMaker,
+    _SHAPMultiClassTableMaker,
+    _SHAPRegressionTableMaker
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "++"], ["b", "+"]]),
@@ -32,13 +34,7 @@ def test_make_rows_and_make_table(test_case, include_shap_values):
 
     assert _make_rows(values, values, top_k, include_shap_values) == new_answer
 
-    dtypes = ["t", "t"]
-    alignment = ["c", "c"]
-    if include_shap_values:
-        dtypes.append("f")
-        alignment.append("c")
-
-    table = _make_table(dtypes, alignment, values, values, top_k, include_shap_values).splitlines()
+    table = _make_table(values, values, top_k, include_shap_values).splitlines()
     if include_shap_values:
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
@@ -80,9 +76,7 @@ binary_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [0.0]
                      {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.225],
                       'e': [-0.2422], 'f': [-0.251], 'foo': [-0.087]}]
 
-binary_table = """Positive Label
-
-                Feature Name Contribution to Prediction
+binary_table = """Feature Name Contribution to Prediction
                 =========================================
                 a +
                 b +
@@ -91,9 +85,7 @@ binary_table = """Positive Label
                 e --
                 f --""".splitlines()
 
-binary_table_shap = """Positive Label
-
-                     Feature Name Contribution to Prediction SHAP Value
+binary_table_shap = """Feature Name Contribution to Prediction SHAP Value
                      ======================================================
                      a + 1.180
                      b + 1.120
@@ -113,7 +105,7 @@ multiclass_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [
                          {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.221], 'e': [-0.242], 'f': [-0.251], 'foo': [-0.0865]},
                          {'a': [0.0825], 'b': [0.0], 'c': [0.0], 'd': [-0.223], 'e': [-0.247], 'f': [-0.325], 'foo': [-0.121]}]
 
-multiclass_table = """Class 0
+multiclass_table = """Class: 0
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -125,7 +117,7 @@ multiclass_table = """Class 0
                     foo -----
 
 
-                    Class 1
+                    Class: 1
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -137,7 +129,7 @@ multiclass_table = """Class 0
                     f --
 
 
-                    Class 2
+                    Class: 2
 
                     Feature Name Contribution to Prediction
                     =========================================
@@ -148,7 +140,7 @@ multiclass_table = """Class 0
                     e --
                     f --""".splitlines()
 
-multiclass_table_shap = """Class 0
+multiclass_table_shap = """Class: 0
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -160,7 +152,7 @@ multiclass_table_shap = """Class 0
                          foo ----- -1.000
 
 
-                         Class 1
+                         Class: 1
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -172,7 +164,7 @@ multiclass_table_shap = """Class 0
                          f -- -2.900
 
 
-                         Class 2
+                         Class: 2
 
                          Feature Name Contribution to Prediction SHAP Value
                          ======================================================
@@ -192,7 +184,14 @@ multiclass_table_shap = """Class 0
                           (multiclass, multiclass_normalized, False, multiclass_table),
                           (multiclass, multiclass_normalized, True, multiclass_table_shap)])
 def test_make_single_prediction_table(values, normalized_values, include_shap, answer):
-    table = _make_single_prediction_table(values, normalized_values, include_shap_values=include_shap)
+    if isinstance(values, list):
+        if len(values) > 2:
+            table_maker = _SHAPMultiClassTableMaker(class_names=["0", "1", "2"])
+        else:
+            table_maker = _SHAPBinaryTableMaker()
+    else:
+        table_maker = _SHAPRegressionTableMaker()
+    table = table_maker(values, normalized_values, top_k=3, include_shap_values=include_shap)
 
     # Making sure the content is the same, regardless of formatting.
     for row_table, row_answer in zip(table.splitlines(), answer):

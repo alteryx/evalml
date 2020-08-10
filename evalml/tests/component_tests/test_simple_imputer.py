@@ -149,3 +149,57 @@ def test_numpy_input():
     np.testing.assert_almost_equal(X, np.array([[np.nan, 0, 1, np.nan],
                                                 [np.nan, 2, 3, 2],
                                                 [np.nan, 2, 3, 0]]))
+
+
+@pytest.mark.parametrize("data_type", ["numeric", "categorical"])
+def test_simple_imputer_fill_value(data_type):
+    if data_type == "numeric":
+        X = pd.DataFrame({
+            "some numeric": [np.nan, 1, 0],
+            "another numeric": [0, np.nan, 2]
+        })
+        fill_value = -1
+        expected = pd.DataFrame({
+            "some numeric": [-1, 1, 0],
+            "another numeric": [0, -1, 2]
+        })
+    else:
+        X = pd.DataFrame({
+            "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
+            "object with nan": ["b", "b", np.nan, "c", np.nan]
+        })
+        fill_value = "fill"
+        expected = pd.DataFrame({
+            "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
+            "object with nan": ["b", "b", "fill", "c", "fill"],
+        })
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_simple_imputer_resets_index():
+    X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
+    X.loc[5, 'input_val'] = np.nan
+    assert X.index.tolist() == list(range(10))
+
+    X.drop(0, inplace=True)
+    y = X.pop('target')
+    pd.testing.assert_frame_equal(X,
+                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, np.nan, 6, 7, 8, 9]},
+                                               dtype=float,
+                                               index=list(range(1, 10))))
+
+    imputer = SimpleImputer(impute_strategy="mean")
+    imputer.fit(X, y=y)
+    transformed = imputer.transform(X)
+    pd.testing.assert_frame_equal(transformed,
+                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
+                                               dtype=float,
+                                               index=list(range(0, 9))))
