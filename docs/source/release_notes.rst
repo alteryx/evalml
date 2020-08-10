@@ -13,6 +13,12 @@ Release Notes
     * Testing Changes
 
 
+.. warning::
+
+    **Breaking Changes**
+        *``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to ``evalml.utils``
+
+
 **v0.12.2 Aug. 6, 2020**
     * Enhancements
         * Add save/load method to components :pr:`1023`
