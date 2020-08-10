@@ -58,18 +58,16 @@ class SimpleImputer(Transformer):
             X = pd.DataFrame(X)
 
         X_null_dropped = X.copy()
-        category_cols = X_null_dropped.select_dtypes(include=['category']).columns.tolist()
+        category_cols = X_null_dropped.select_dtypes(include=['category'])
         X_t = self._component_obj.transform(X)
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
-        dtypes = X_null_dropped.dtypes.to_dict()
         if X_null_dropped.empty:
             return pd.DataFrame(X_t, columns=X_null_dropped.columns)
-
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        for category_col in category_cols:
-            X_t[category_col] = pd.Series(X_t[category_col], dtype="category")
-            dtypes.pop(category_col)
-        return X_t.astype(dtypes)
+        if len(category_cols.columns) > 0:
+            X_t[category_cols.columns] = X_t[category_cols.columns].astype('category')
+        return X_t
+
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
