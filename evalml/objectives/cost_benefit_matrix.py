@@ -13,10 +13,13 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     score_needs_proba = False
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
-        """Create instance of CostBenefitMatrix
+        """Create instance of CostBenefitMatrix.
 
         Arguments:
-
+            true_positive (float): Cost associated with true positive predictions
+            true_negative (float): Cost associated with true negative predictions
+            false_positive (float): Cost associated with false positive predictions
+            false_negative (float): Cost associated with false negative predictions
         """
         self.true_positive = true_positive
         self.true_negative = true_negative
@@ -24,13 +27,15 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         self.false_negative = false_negative
 
     def objective_function(self, y_true, y_predicted, X=None):
-        """
-            Arguments:
-                y_predicted (pd.Series): Predicted labels
-                y_true (pd.Series): True labels
-                X (pd.DataFrame): Ignored.
-            Returns:
-                float: score
+        """Calculates cost-benefit of the using the predicted and true values.
+
+        Arguments:
+            y_predicted (pd.Series): Predicted labels
+            y_true (pd.Series): True labels
+            X (pd.DataFrame): Ignored.
+
+        Returns:
+            float: score
         """
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
         cost_matrix = np.array([[self.true_negative, self.false_positive],

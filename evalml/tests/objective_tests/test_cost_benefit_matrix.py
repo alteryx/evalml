@@ -16,18 +16,15 @@ def test_cost_benefit_matrix_objective(optimize_thresholds, X_y_binary):
 
     pipeline = automl.best_pipeline
     pipeline.fit(X, y)
-    pipeline.predict(X, cbm)
-    pipeline.predict_proba(X)
-    pipeline.score(X, y, [cbm])
+    assert not np.isnan(pipeline.predict(X, cbm)).values.any()
+    assert not np.isnan(pipeline.predict_proba(X)).values.any()
+    assert not np.isnan(pipeline.score(X, y, [cbm])['Cost Benefit Matrix'])
+    assert not np.isnan(list(pipeline.predict(X, cbm))).any()
 
 
 def test_cbm_objective_function():
     y_true = pd.Series([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
-    # 3 true positive
-    # 2 true negative
-    # 1 false positive
-    # 4 false negative
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     assert cbm.objective_function(y_true, y_predicted) == (3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)

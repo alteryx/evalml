@@ -115,8 +115,6 @@ Pipeline Graph Utils
     graph_precision_recall_curve
     roc_curve
     graph_roc_curve
-    confusion_matrix
-    normalize_confusion_matrix
     graph_confusion_matrix
     calculate_permutation_importance
     graph_permutation_importance
@@ -271,6 +269,7 @@ Domain-Specific Objectives
 
     FraudCost
     LeadScoring
+    CostBenefitMatrix
 
 
 Classification Objectives
@@ -447,4 +446,5 @@ Utils
     convert_to_seconds
     get_random_state
     get_random_seed
-
+    confusion_matrix
+    normalize_confusion_matrix
