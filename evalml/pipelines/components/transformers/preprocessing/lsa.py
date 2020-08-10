@@ -1,4 +1,4 @@
-import warnings
+import logging
 
 import pandas as pd
 from sklearn.decomposition import TruncatedSVD
@@ -6,6 +6,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 
 from evalml.pipelines.components.transformers import Transformer
+
+logger = logging.getLogger()
 
 
 class LSA(Transformer):
@@ -38,7 +40,7 @@ class LSA(Transformer):
                 raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
             for col in missing_cols:
                 self._text_col_names.remove(col)
-            warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
+            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
 
     def fit(self, X, y=None):
         if len(self._text_col_names) == 0:
@@ -57,7 +59,8 @@ class LSA(Transformer):
             X (pd.DataFrame): Data to transform
             y (pd.Series, optional): Targets
         Returns:
-            pd.DataFrame: Transformed X
+            pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
+                          format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

@@ -1,11 +1,13 @@
+import logging
 import string
-import warnings
 
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.preprocessing import LSA
 from evalml.utils import import_or_raise
+
+logger = logging.getLogger()
 
 
 class TextFeaturizer(Transformer):
@@ -53,7 +55,7 @@ class TextFeaturizer(Transformer):
                 raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
             for col in missing_cols:
                 self._text_col_names.remove(col)
-            warnings.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols), RuntimeWarning)
+            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
 
     def _verify_col_types(self, entity_set):
         var_types = entity_set.entities[0].variable_types

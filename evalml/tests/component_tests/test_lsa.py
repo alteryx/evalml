@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -58,12 +60,13 @@ def test_lsa_no_text():
     assert len(X_t.columns) == 2
 
 
-def test_some_missing_col_names(text_df):
+def test_some_missing_col_names(text_df, caplog):
     X = text_df
     lsa = LSA(text_columns=['col_1', 'col_2', 'col_3'])
 
-    with pytest.warns(RuntimeWarning, match="not found in the given DataFrame"):
+    with caplog.at_level(logging.WARNING):
         lsa.fit(X)
+    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
 
     expected_col_names = set(['LSA(col_1)[0]',
                               'LSA(col_1)[1]',
