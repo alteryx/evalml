@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
+from evalml.utils.gen_utils import numeric_and_boolean_dtypes, categorical_dtypes
 
 from evalml import AutoMLSearch
 from evalml.automl import TrainingValidationSplit
@@ -815,7 +816,7 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
 def test_targets_data_types_classification(automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
