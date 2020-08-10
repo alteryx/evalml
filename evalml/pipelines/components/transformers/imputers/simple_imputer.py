@@ -68,7 +68,6 @@ class SimpleImputer(Transformer):
             X_t[category_cols] = X_t[category_cols].astype('category')
         return X_t
 
-
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
         Arguments:
