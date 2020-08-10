@@ -3,9 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
     * Fixes
     * Changes
     * Documentation Changes
+        * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
 
 
