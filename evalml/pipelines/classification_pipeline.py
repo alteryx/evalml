@@ -59,6 +59,13 @@ class ClassificationPipeline(PipelineBase):
             originally had integer targets."""
         return self._encoder.inverse_transform(y.astype(int))
 
+    @property
+    def _classes(self):
+        """Gets the class names for the problem."""
+        if not hasattr(self._encoder, "classes_"):
+            raise AttributeError("Cannot access class names before fitting the pipeline.")
+        return self._encoder.classes_
+
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 

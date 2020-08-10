@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
+        * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
     * Fixes
     * Changes
     * Documentation Changes
