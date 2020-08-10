@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +11,7 @@ from evalml.pipelines.graph_utils import (
     precision_recall_curve,
     roc_curve
 )
+from evalml.utils.gen_utils import confusion_matrix
 
 
 @pytest.fixture

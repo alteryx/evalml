@@ -1,20 +1,22 @@
 import inspect
+import warnings
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     classproperty,
+    confusion_matrix,
     convert_to_seconds,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
     import_or_raise,
-    normalize_confusion_matrix,
-    confusion_matrix
+    normalize_confusion_matrix
 )
 
 
@@ -176,7 +178,6 @@ def test_get_importable_subclasses_wont_get_custom_classes():
     assert ChildClass not in get_importable_subclasses(ComponentBase)
 
 
-
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_confusion_matrix(data_type):
     y_true = [2, 0, 2, 2, 0, 1]
@@ -252,4 +253,3 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'pred')
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')
-

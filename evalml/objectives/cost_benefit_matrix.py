@@ -1,10 +1,10 @@
 
 import numpy as np
-import pandas as pd
 
 from .binary_classification_objective import BinaryClassificationObjective
 
 from evalml.utils.gen_utils import confusion_matrix
+
 
 class CostBenefitMatrix(BinaryClassificationObjective):
     """Score using a cost-benefit matrix"""

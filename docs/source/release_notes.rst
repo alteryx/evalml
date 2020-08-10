@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
     * Fixes
     * Changes
     * Documentation Changes
