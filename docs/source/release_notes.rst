@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
+        * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
     * Fixes
     * Changes
     * Documentation Changes
