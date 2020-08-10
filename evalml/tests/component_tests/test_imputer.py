@@ -6,6 +6,24 @@ from pandas.testing import assert_frame_equal
 from evalml.pipelines.components import Imputer
 
 
+@pytest.fixture
+def imputer_test_data():
+    return pd.DataFrame({
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
+        "int col": [0, 1, 2, 0, 3],
+        "object col": ["b", "b", "a", "c", "d"],
+        "float col": [0.0, 1.0, 0.0, -2.0, 5.],
+        "bool col": [True, False, False, True, True],
+        "categorical with nan": pd.Series([np.nan, "1", np.nan, "0", "3"], dtype='category'),
+        "int with nan": [np.nan, 1, 0, 0, 1],
+        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
+        "object with nan": ["b", "b", np.nan, "c", np.nan],
+        "bool col with nan": [True, np.nan, False, np.nan, True],
+        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan],
+        "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category')
+    })
+
+
 def test_invalid_strategy_parameters():
     with pytest.raises(ValueError, match="Valid impute strategies are"):
         Imputer(numeric_impute_strategy="not a valid strategy")
@@ -18,18 +36,25 @@ def test_imputer_default_parameters():
     expected_parameters = {
         'categorical_impute_strategy': 'most_frequent',
         'numeric_impute_strategy': 'mean',
-        'fill_value': None
+        'categorical_fill_value': None,
+        'numeric_fill_value': None
     }
     assert imputer.parameters == expected_parameters
 
 
-def test_imputer_init():
-    imputer = Imputer(categorical_impute_strategy="most_frequent",
-                      numeric_impute_strategy="median")
+@pytest.mark.parametrize("categorical_impute_strategy", ["most_frequent", "constant"])
+@pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"])
+def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy):
+
+    imputer = Imputer(categorical_impute_strategy=categorical_impute_strategy,
+                      numeric_impute_strategy=numeric_impute_strategy,
+                      categorical_fill_value="str_fill_value",
+                      numeric_fill_value=-1)
     expected_parameters = {
-        'categorical_impute_strategy': 'most_frequent',
-        'numeric_impute_strategy': 'median',
-        'fill_value': None
+        'categorical_impute_strategy': categorical_impute_strategy,
+        'numeric_impute_strategy': numeric_impute_strategy,
+        'categorical_fill_value': 'str_fill_value',
+        'numeric_fill_value': -1
     }
     expected_hyperparameters = {
         "categorical_impute_strategy": ["most_frequent"],
@@ -40,14 +65,9 @@ def test_imputer_init():
     assert imputer.hyperparameter_ranges == expected_hyperparameters
 
 
-def test_numeric_only_input():
-    X = pd.DataFrame({
-        "int col": [0, 1, 2, 0, 3],
-        "float col": [0.0, 1.0, 0.0, -2.0, 5.],
-        "int with nan": [np.nan, 1, 2, 1, 0],
-        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
-        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
-    })
+def test_numeric_only_input(imputer_test_data):
+    X = imputer_test_data[["int col", "float col",
+                           "int with nan", "float with nan", "all nan"]]
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = Imputer(numeric_impute_strategy="median")
     imputer.fit(X, y)
@@ -55,7 +75,7 @@ def test_numeric_only_input():
     expected = pd.DataFrame({
         "int col": [0, 1, 2, 0, 3],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
-        "int with nan": [1, 1, 2, 1, 0],
+        "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0],
         "float with nan": [0.0, 1.0, 0, -1.0, 0.]
     })
     assert_frame_equal(transformed, expected, check_dtype=False)
@@ -65,25 +85,19 @@ def test_numeric_only_input():
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
-def test_categorical_only_input():
-    X = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
-        "object col": ["b", "b", "a", "c", "d"],
-        "bool col": [True, False, False, True, True],
-        "categorical with nan": pd.Series([np.nan, 1, np.nan, 0, 3], dtype='category'),
-        "object with nan": ["b", "b", np.nan, "c", np.nan],
-        "bool col with nan": [True, np.nan, False, np.nan, True],
-        "all nan": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category')
-    })
+def test_categorical_only_input(imputer_test_data):
+    X = imputer_test_data[["categorical col", "object col", "bool col",
+                           "categorical with nan", "object with nan",
+                           "bool col with nan", "all nan cat"]]
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "object col": ["b", "b", "a", "c", "d"],
         "bool col": [True, False, False, True, True],
-        "categorical with nan": pd.Series([0, 1, 0, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
     })
@@ -93,32 +107,20 @@ def test_categorical_only_input():
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
-def test_categorical_and_numeric_input():
-    X = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
-        "int col": [0, 1, 2, 0, 3],
-        "object col": ["b", "b", "a", "c", "d"],
-        "float col": [0.0, 1.0, 0.0, -2.0, 5.],
-        "bool col": [True, False, False, True, True],
-        "int with nan": [np.nan, 1, 2, 1, 0],
-        "categorical with nan": pd.Series([np.nan, 1, np.nan, 0, 3], dtype='category'),
-        "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
-        "object with nan": ["b", "b", np.nan, "c", np.nan],
-        "bool col with nan": [True, np.nan, False, np.nan, True],
-        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
-    })
+def test_categorical_and_numeric_input(imputer_test_data):
+    X = imputer_test_data
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({
-        "categorical col": pd.Series([0, 1, 2, 0, 3], dtype='category'),
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
         "int col": [0, 1, 2, 0, 3],
         "object col": ["b", "b", "a", "c", "d"],
         "float col": [0.0, 1.0, 0.0, -2.0, 5.],
         "bool col": [True, False, False, True, True],
-        "int with nan": [1, 1, 2, 1, 0],
-        "categorical with nan": pd.Series([0, 1, 0, 0, 3], dtype='category'),
+        "categorical with nan": pd.Series(["0", "1", "0", "0", "3"], dtype='category'),
+        "int with nan": [0.5, 1.0, 0.0, 0.0, 1.0],
         "float with nan": [0.0, 1.0, 0, -1.0, 0.],
         "object with nan": ["b", "b", "b", "c", "b"],
         "bool col with nan": [True, True, False, True, True]
@@ -130,11 +132,8 @@ def test_categorical_and_numeric_input():
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
-def test_drop_all_columns():
-    X = pd.DataFrame({
-        "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category'),
-        "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan]
-    })
+def test_drop_all_columns(imputer_test_data):
+    X = imputer_test_data[["all nan cat", "all nan"]]
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = Imputer()
     imputer.fit(X, y)
@@ -187,7 +186,7 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
@@ -221,3 +220,46 @@ def test_imputer_resets_index():
                                   pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
                                                dtype=float,
                                                index=list(range(0, 9))))
+
+
+def test_imputer_fill_value(imputer_test_data):
+    X = imputer_test_data[["int with nan", "categorical with nan",
+                           "float with nan", "object with nan", "bool col with nan"]]
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({
+        "int with nan": [-1, 1, 0, 0, 1],
+        "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
+        "float with nan": [0.0, 1.0, -1, -1.0, 0.],
+        "object with nan": ["b", "b", "fill", "c", "fill"],
+        "bool col with nan": [True, "fill", False, "fill", True]
+    })
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_no_nans(imputer_test_data):
+    X = imputer_test_data[["categorical col", "object col", "bool col"]]
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({
+        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
+        "object col": ["b", "b", "a", "c", "d"],
+        "bool col": [True, False, False, True, True],
+    })
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
+                      categorical_fill_value="fill", numeric_fill_value=-1)
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)
