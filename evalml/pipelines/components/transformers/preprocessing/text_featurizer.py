@@ -30,9 +30,9 @@ class TextFeaturizer(Transformer):
         text_columns = text_columns or []
         parameters.update(kwargs)
 
-        self._text_col_names = [str(col_name) for col_name in text_columns]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
+        self._text_col_names = text_columns
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -60,7 +60,7 @@ class TextFeaturizer(Transformer):
     def _verify_col_types(self, entity_set):
         var_types = entity_set.entities[0].variable_types
         for col in self._text_col_names:
-            if var_types[col] is not self._ft.variable_types.variable.Text:
+            if var_types[str(col)] is not self._ft.variable_types.variable.Text:
                 raise ValueError("Column {} is not a text column, cannot apply TextFeaturizer component".format(col))
 
     def fit(self, X, y=None):
@@ -68,13 +68,13 @@ class TextFeaturizer(Transformer):
             self._features = []
             return self
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X).rename(columns=str)
+            X = pd.DataFrame(X)
         self._verify_col_names(X.columns)
         X_text = X[self._text_col_names]
         X_text['index'] = range(len(X_text))
 
         es = self._ft.EntitySet()
-        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
+        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text.rename(columns=str), index='index')
         self._verify_col_types(es)
         es.df = self._clean_text(X)
 
@@ -104,7 +104,6 @@ class TextFeaturizer(Transformer):
             X = pd.DataFrame(X)
         if self._features is None or len(self._features) == 0:
             return X
-        X = X.rename(columns=str)
         self._verify_col_names(X.columns)
 
         X_text = X[self._text_col_names]
@@ -114,7 +113,7 @@ class TextFeaturizer(Transformer):
         X_t = X.drop(self._text_col_names, axis=1)
 
         es = self._ft.EntitySet()
-        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index')
+        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text.rename(columns=str), index='index')
         self._verify_col_types(es)
         es.df = self._clean_text(X)
 

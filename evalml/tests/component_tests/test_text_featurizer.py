@@ -160,6 +160,36 @@ def test_index_col_names():
     assert X_t.dtypes.all() == np.float64
 
 
+def test_int_col_names():
+    X = pd.DataFrame(
+        {475: ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+               'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+               'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+         -1: ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+              'I dreamed a dream in days gone by, when hope was high and life worth living',
+              'Red, the blood of angry men - black, the dark of ages past']
+         })
+    tf = TextFeaturizer(text_columns=[475, -1])
+    tf.fit(X)
+    expected_col_names = set(['DIVERSITY_SCORE(475)',
+                              'DIVERSITY_SCORE(-1)',
+                              'LSA(475)[0]',
+                              'LSA(475)[1]',
+                              'LSA(-1)[0]',
+                              'LSA(-1)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(475)',
+                              'MEAN_CHARACTERS_PER_WORD(-1)',
+                              'POLARITY_SCORE(475)',
+                              'POLARITY_SCORE(-1)'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(475)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(-1)[{i}]')
+    X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
+    assert len(X_t.columns) == 40
+    assert X_t.dtypes.all() == np.float64
+
+
 def test_diversity_primitive_output():
     X = pd.DataFrame(
         {'diverse': ['This is a very diverse string which does not contain any repeated words at all',

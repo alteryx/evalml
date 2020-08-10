@@ -26,7 +26,7 @@ class LSA(Transformer):
         text_columns = text_columns or []
         parameters.update(kwargs)
 
-        self._text_col_names = [str(col_name) for col_name in text_columns]
+        self._text_col_names = text_columns
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -46,7 +46,7 @@ class LSA(Transformer):
         if len(self._text_col_names) == 0:
             return self
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X).rename(columns=str)
+            X = pd.DataFrame(X)
         self._verify_col_names(X.columns)
 
         corpus = X[self._text_col_names].values.flatten()
@@ -67,13 +67,9 @@ class LSA(Transformer):
         X_t = X
 
         for col in self._text_col_names:
-            try:
-                transformed = self._lsa_pipeline.transform(X[col])
-                X_t = X_t.drop(labels=col, axis=1)
-            except KeyError:
-                transformed = self._lsa_pipeline.transform(X[int(col)])
-                X_t = X_t.drop(labels=int(col), axis=1)
+            transformed = self._lsa_pipeline.transform(X[col])
 
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0])
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1])
+        X_t = X_t.drop(columns=self._text_col_names)
         return X_t
