@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelBinarizer
 
 from evalml.objectives import get_objective
 from evalml.utils import import_or_raise
-from evalml.utils.gen_utils import confusion_matrix
+from evalml.utils.graph_utils import confusion_matrix
 
 
 def precision_recall_curve(y_true, y_pred_proba):

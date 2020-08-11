@@ -11,7 +11,7 @@ from evalml.pipelines.graph_utils import (
     precision_recall_curve,
     roc_curve
 )
-from evalml.utils.gen_utils import confusion_matrix
+from evalml.utils.graph_utils import confusion_matrix
 
 
 @pytest.fixture

@@ -438,6 +438,9 @@ Data Check Message Types
 Utils
 =====
 
+General Utils
+~~~~~~~~~~~~~
+
 .. autosummary::
     :toctree: generated
     :nosignatures:
@@ -446,5 +449,13 @@ Utils
     convert_to_seconds
     get_random_state
     get_random_seed
+
+
+Graph Utils
+~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
     confusion_matrix
     normalize_confusion_matrix
