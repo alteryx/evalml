@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -73,21 +75,19 @@ def test_featurizer_with_nontext(text_df):
 
 def test_featurizer_no_text():
     X = pd.DataFrame({'col_1': [1, 2, 3], 'col_2': [4, 5, 6]})
-    warn_msg = "No text columns were given to TextFeaturizer, component will have no effect"
-    with pytest.warns(RuntimeWarning, match=warn_msg):
-        tf = TextFeaturizer()
-
+    tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
 
 
-def test_some_missing_col_names(text_df):
+def test_some_missing_col_names(text_df, caplog):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2', 'col_3'])
 
-    with pytest.warns(RuntimeWarning, match="not found in the given DataFrame"):
+    with caplog.at_level(logging.WARNING):
         tf.fit(X)
+    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
 
     expected_col_names = set(['DIVERSITY_SCORE(col_1)',
                               'DIVERSITY_SCORE(col_2)',
@@ -160,6 +160,36 @@ def test_index_col_names():
     assert X_t.dtypes.all() == np.float64
 
 
+def test_int_col_names():
+    X = pd.DataFrame(
+        {475: ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+               'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+               'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+         -1: ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+              'I dreamed a dream in days gone by, when hope was high and life worth living',
+              'Red, the blood of angry men - black, the dark of ages past']
+         })
+    tf = TextFeaturizer(text_columns=[475, -1])
+    tf.fit(X)
+    expected_col_names = set(['DIVERSITY_SCORE(475)',
+                              'DIVERSITY_SCORE(-1)',
+                              'LSA(475)[0]',
+                              'LSA(475)[1]',
+                              'LSA(-1)[0]',
+                              'LSA(-1)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(475)',
+                              'MEAN_CHARACTERS_PER_WORD(-1)',
+                              'POLARITY_SCORE(475)',
+                              'POLARITY_SCORE(-1)'])
+    for i in range(15):
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(475)[{i}]')
+        expected_col_names.add(f'PART_OF_SPEECH_COUNT(-1)[{i}]')
+    X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
+    assert len(X_t.columns) == 40
+    assert X_t.dtypes.all() == np.float64
+
+
 def test_diversity_primitive_output():
     X = pd.DataFrame(
         {'diverse': ['This is a very diverse string which does not contain any repeated words at all',
@@ -182,9 +212,9 @@ def test_lsa_primitive_output():
     tf = TextFeaturizer(text_columns=['lsa'])
     tf.fit(X)
 
-    expected_features = [[0.0200961, 0.002976],
-                         [0.0223392, 0.0058817],
-                         [0.0186072, -0.0006121]]
+    expected_features = [[0.832, 0.],
+                         [0., 1.],
+                         [0.832, 0.]]
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]

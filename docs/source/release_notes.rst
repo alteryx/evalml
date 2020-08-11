@@ -5,7 +5,10 @@ Release Notes
     * Enhancements
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
+        * Added new LSA component for text featurization :pr:`1022`
     * Fixes
+        * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
+        * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
     * Changes
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
