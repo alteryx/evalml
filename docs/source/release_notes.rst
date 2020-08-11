@@ -16,7 +16,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        *``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to `evalml.utils` :pr:`1038`
+        * ``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to `evalml.utils` :pr:`1038`
 
 
 
