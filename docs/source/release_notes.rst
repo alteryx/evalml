@@ -7,7 +7,7 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
     * Fixes
     * Changes
-        * Update references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
+        * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
