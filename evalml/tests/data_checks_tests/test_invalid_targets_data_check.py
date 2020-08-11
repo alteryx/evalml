@@ -5,7 +5,10 @@ from evalml.data_checks import DataCheckError
 from evalml.data_checks.invalid_targets_data_check import (
     InvalidTargetDataCheck
 )
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes, categorical_dtypes
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 def test_invalid_target_data_check_nan_error():

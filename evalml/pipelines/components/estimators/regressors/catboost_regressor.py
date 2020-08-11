@@ -9,6 +9,7 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
 from evalml.utils.gen_utils import categorical_dtypes
 
+
 class CatBoostRegressor(Estimator):
     """
     CatBoost Regressor, a regressor that uses gradient-boosting on decision trees.

@@ -23,7 +23,6 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import categorical_dtypes
 
-
 logger = get_logger(__file__)
 
 

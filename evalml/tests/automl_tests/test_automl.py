@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes, categorical_dtypes
 
 from evalml import AutoMLSearch
 from evalml.automl import TrainingValidationSplit
@@ -29,6 +28,10 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

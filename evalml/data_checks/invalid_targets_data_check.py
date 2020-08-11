@@ -3,7 +3,10 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
 
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes, categorical_dtypes
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 class InvalidTargetDataCheck(DataCheck):

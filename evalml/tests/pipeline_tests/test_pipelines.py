@@ -41,7 +41,10 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes, categorical_dtypes
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
