@@ -16,7 +16,8 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    StandardScaler
+    StandardScaler,
+    TextFeaturizer
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -25,13 +26,14 @@ from evalml.utils import get_logger
 logger = get_logger(__file__)
 
 
-def _get_preprocessing_components(X, y, problem_type, estimator_class):
+def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_class):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
         X (pd.DataFrame): the input data of shape [n_samples, n_features]
         y (pd.Series): the target labels of length [n_samples]
         problem_type (ProblemTypes or str): problem type
+        text_columns (list): feature names which should be treated as text features
         estimator_class (class):A class which subclasses Estimator estimator for pipeline
 
     Returns:
@@ -45,6 +47,9 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
         pp_components.append(DropNullColumns)
 
     pp_components.append(Imputer)
+
+    if text_columns:
+        pp_components.append(TextFeaturizer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
@@ -61,7 +66,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     return pp_components
 
 
-def make_pipeline(X, y, estimator, problem_type):
+def make_pipeline(X, y, estimator, text_columns, problem_type):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -70,6 +75,7 @@ def make_pipeline(X, y, estimator, problem_type):
         X (pd.DataFrame): the input data of shape [n_samples, n_features]
         y (pd.Series): the target labels of length [n_samples]
         estimator (Estimator): estimator for pipeline
+        text_columns (list): feature names which should be treated as text features
         problem_type (ProblemTypes or str): problem type for pipeline to generate
 
     Returns:
@@ -79,7 +85,7 @@ def make_pipeline(X, y, estimator, problem_type):
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
+    preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
     hyperparameters = None

@@ -296,7 +296,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
+    def search(self, X, y, data_checks="auto", text_columns=None, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
@@ -304,8 +304,8 @@ class AutoMLSearch:
 
             y (pd.Series): the target training labels of length [n_samples]
 
-            feature_types (list, optional): list of feature types, either numerical or categorical.
-                Categorical features will automatically be encoded
+            text_columns (list, optional): list of feature names which should be treated as text features.
+                Text columns will be automatically converted into a set of numerical features.
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
@@ -360,7 +360,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(X, y, estimator, self.problem_type) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(X, y, estimator, text_columns, self.problem_type) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -374,6 +374,7 @@ class AutoMLSearch:
             max_pipelines=self.max_pipelines,
             allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
+            text_columns=text_columns,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             number_features=X.shape[1]
