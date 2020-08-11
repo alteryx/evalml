@@ -22,8 +22,6 @@ class ComponentBaseMeta(ABCMeta):
     """Metaclass that overrides creating a new component by wrapping method with validators and setters"""
     from evalml.exceptions import ComponentNotYetFittedError
 
-    NO_FITTING_REQUIRED = ['DropColumns', 'SelectColumns']
-
     @classmethod
     def set_fit(cls, method):
         @wraps(method)
@@ -41,7 +39,7 @@ class ComponentBaseMeta(ABCMeta):
         @wraps(method)
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
-            if not self._is_fitted and klass not in cls.NO_FITTING_REQUIRED:
+            if not self._is_fitted and self.needs_fitting:
                 raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
             elif X is None and y is None:
                 return method(self)
@@ -90,6 +88,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @abstractmethod
     def model_family(cls):
         """Returns ModelFamily of this component"""
+
+    @classproperty
+    def needs_fitting(self):
+        """Returns boolean determining if component needs fitting before making predictions"""
+        return True
 
     @property
     def parameters(self):
