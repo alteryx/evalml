@@ -282,9 +282,9 @@ workflows:
         - unit_tests:
             matrix:
               parameters:
-                python_version: ["3.8", "3.7", "3.6"]
+                python_version: ["3.7", "3.6"]
                 core_dependencies: [false]
-            name: "linux python << matrix.python_version >> unit tests"
+            name: "linux python << matrix.python_version >> unit tests" core dependencies << matrix.core_dependencies >>"
         - unit_tests:
             matrix:
               parameters:
