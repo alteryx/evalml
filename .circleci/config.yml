@@ -291,7 +291,9 @@ workflows:
                 core_dependencies: [false]
             name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov false"
         - unit_tests:
-            name: "linux python 3.8 unit tests, core dependencies true, codecov true"
-            core_dependencies: true
-            python_version: "3.8"
-            codecov: true
+            matrix:
+              parameters:
+                python_version: ["3.8"]
+                core_dependencies: [false, true]
+                codecov: [true]
+            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
