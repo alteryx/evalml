@@ -91,7 +91,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     @classproperty
     def needs_fitting(self):
-        """Returns boolean determining if component needs fitting before making predictions"""
+        """Returns boolean determining if component needs fitting before calling predict, predict_proba, transform, or feature_importances."""
         return True
 
     @property
