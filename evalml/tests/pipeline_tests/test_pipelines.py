@@ -41,6 +41,10 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import get_estimators, make_pipeline
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -964,7 +968,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
 def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
     if problem_type == ProblemTypes.BINARY:
         objective = "log_loss_binary"
@@ -979,12 +983,12 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
 
-    if target_type == "categorical":
+    if target_type == "category":
         y = pd.Categorical(y)
-    elif target_type == "int":
+    elif "int" in target_type:
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif target_type == "float":
+    elif "float" in target_type:
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 

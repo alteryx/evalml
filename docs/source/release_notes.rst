@@ -10,6 +10,7 @@ Release Notes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
     * Changes
+        * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
