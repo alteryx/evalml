@@ -13,7 +13,7 @@ Release Notes
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
-        * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1043`)
+        * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
 
 
 **v0.12.2 Aug. 6, 2020**
