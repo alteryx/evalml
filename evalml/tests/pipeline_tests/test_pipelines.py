@@ -12,6 +12,7 @@ from evalml.exceptions import (
     ComponentNotYetFittedError,
     IllFormattedClassNameError,
     MissingComponentError,
+    PipelineNotYetFittedError,
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
@@ -519,8 +520,8 @@ def make_mock_multiclass_pipeline():
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
-def test_score_regression_single(mock_predict, mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
+    X, y = X_y_regression
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
@@ -1000,3 +1001,29 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
         assert set(predictions.unique()).issubset(unique_vals)
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)
+
+
+@patch('evalml.pipelines.PipelineBase.fit')
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                   logistic_regression_binary_pipeline_class,
+                                   logistic_regression_multiclass_pipeline_class,
+                                   linear_regression_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = logistic_regression_binary_pipeline_class(parameters={})
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = logistic_regression_multiclass_pipeline_class(parameters={})
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = linear_regression_pipeline_class(parameters={})
+
+    with pytest.raises(ComponentNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(ComponentNotYetFittedError):
+        clf.feature_importance
+
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with pytest.raises(ComponentNotYetFittedError):
+            clf.feature_importance

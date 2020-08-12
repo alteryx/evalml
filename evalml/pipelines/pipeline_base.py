@@ -18,6 +18,7 @@ from evalml.exceptions import (
     MissingComponentError,
     PipelineScoreError
 )
+from evalml.pipelines.components import ComponentBaseMeta
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -30,7 +31,7 @@ from evalml.utils import (
 logger = get_logger(__file__)
 
 
-class PipelineBase(ABC):
+class PipelineBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all pipelines."""
 
     @property
@@ -67,6 +68,7 @@ class PipelineBase(ABC):
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
 
         self._validate_estimator_problem_type()
+        self._is_fitted = False
 
     @classproperty
     def name(cls):
