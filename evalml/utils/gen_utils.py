@@ -14,6 +14,7 @@ numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
 numeric_and_boolean_dtypes = numeric_dtypes + boolean
 categorical_dtypes = ['object', 'category']
+datetime_dtypes = [np.datetime64]
 
 
 def import_or_raise(library, error_msg=None):

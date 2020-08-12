@@ -28,6 +28,10 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 from evalml.tuners import NoParamsException, RandomSearchTuner
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -815,7 +819,7 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ["categorical", "string", "bool", "float", "int"])
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
 def test_targets_data_types_classification(automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
@@ -823,12 +827,12 @@ def test_targets_data_types_classification(automl_type, target_type):
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = load_wine()
-    if target_type == "categorical":
+    if target_type == "category":
         y = pd.Categorical(y)
-    elif target_type == "int":
+    elif "int" in target_type:
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif target_type == "float":
+    elif "float" in target_type:
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
