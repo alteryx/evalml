@@ -118,6 +118,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
     ```
 13. Push updated branch to the forked feedstock repo
 14. Make a PR on conda-forge/evalml-core-feedstock from the forked repo and let CI tests run - add "[DO NOT MERGE]" to the PR name to indicate this PR should not be merged in
+15. Close the PR without merging after the tests pass.
 
 Congratulations! If the test on the PR pass, then we can build a conda package from our latest release and we
 can now upload our package to PyPI instead of TestPyPI. The next steps will cover how to do this. 
