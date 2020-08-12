@@ -42,7 +42,8 @@ We need to upload an evalml package to test with the conda recipe
 4. The new release will be uploaded to [TestPyPI](https://test.pypi.org/project/evalml/) automatically.
 
 #### Set up fork of our conda-forge repo
-Branches on the conda-forge evalml repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
+Branches on the conda-forge evalml repo are automatically built and the packages are uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
+
 5. Fork conda-forge/evalml-core-feedstock: visit https://github.com/conda-forge/evalml-core-feedstock and click fork
 6. Clone forked repo locally
 7. Add conda-forge repo as the 'upstream' repository
