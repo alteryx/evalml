@@ -8,6 +8,7 @@ executors:
     parameters:
       python_version:
         type: string
+        default: "3.8"
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
@@ -52,6 +53,7 @@ jobs:
       parameters:
         python_version:
           type: string
+          default: "3.8"
       executor:
         name: python
         python_version: << parameters.python_version >>
@@ -66,6 +68,7 @@ jobs:
     parameters:
       python_version:
         type: string
+        default: "3.8"
       miniconda_pkg_name:
         type: string
         default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
@@ -133,9 +136,8 @@ jobs:
     parameters:
       python_version:
         type: string
+        default: "3.8"
       core_dependencies:
-        type: boolean
-      codecov:
         type: boolean
         default: false
     executor:
@@ -173,10 +175,7 @@ jobs:
       - store_artifacts:
           path: test-reports
       - when:
-          condition:
-            and:
-              - equal: [ "3.8", << parameters.python_version >> ]
-              - << parameters.core_dependencies >>
+          condition: << parameters.core_dependencies >>
           steps:
             - run: |
                 source test_python/bin/activate
@@ -280,17 +279,15 @@ workflows:
         - lint_test:
             matrix:
               parameters:
-                python_version: ["3.8", "3.7", "3.6"]
+                python_version: ["3.6", "3.7", "3.8"]
             name: "python << matrix.python_version >> lint test"
         - unit_tests:
             matrix:
               parameters:
-                python_version: ["3.7", "3.6"]
+                python_version: ["3.6", "3.7", "3.8"]
                 core_dependencies: [false]
             name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>"
         - unit_tests:
-            matrix:
-              parameters:
-                python_version: ["3.8"]
-                core_dependencies: [false, true]
-            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>"
+            name: "linux python 3.8 unit tests, core dependencies true, "
+            core_dependencies: true
+            python_version: "3.8"
