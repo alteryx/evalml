@@ -10,17 +10,22 @@ from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
+
 def _all_estimators():
     return get_importable_subclasses(Estimator, used_in_automl=False)
+
 
 def _all_estimators_used_in_search():
     return get_importable_subclasses(Estimator, used_in_automl=True)
 
+
 def _all_transformers():
     return get_importable_subclasses(Transformer, used_in_automl=False)
 
+
 def all_components():
     return _all_estimators() + _all_transformers()
+
 
 def allowed_model_families(problem_type):
     """List the model types allowed for a particular problem type.

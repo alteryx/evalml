@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import os
+import warnings
 from unittest.mock import patch
 
 import cloudpickle
@@ -500,6 +501,14 @@ def test_estimator_predict_output_type(X_y_binary):
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
+
+
+@pytest.mark.parametrize("cls", all_components())
+def test_default_parameters_raise_no_warnings(cls):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        cls()
+        assert len(w) == 0
 
 
 def test_estimator_check_for_fit(X_y_binary):
