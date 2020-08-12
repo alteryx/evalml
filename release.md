@@ -16,7 +16,12 @@ EvalML uses [semantic versioning](https://semver.org/). Every release has a majo
 If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, *not* `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/evalml/) instead of to [pypi.org](https://pypi.org/project/evalml).
 
 ## 1. Test conda version before releasing on PyPI
-Conda releases of evalml rely on PyPI's hosted evalml packages. Once a version is uploaded to PyPI we cannot update it, so it is important that the version we upload to PyPI will work for conda.  We can test if an evalml release will run on conda by uploading a test release to PyPI's test server and building a conda version of evalml using the test release.
+Evalml has two conda packages: `evalml` and `evalml-core`. These packages are created according to the [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml) listed in our conda [feedstock](https://github.com/conda-forge/evalml-core-feedstock) repo.
+
+The `source` field in the recipe points to the latest release of `evalml` on PyPI. Whenever a new version of `evalml` is uploaded to PyPI, a bot will automatically update the recipe in our feedstock and create new conda packages.
+
+There is a risk that even though our CI tests pass, conda will fail to build our packages. This can happen when a new dependency is not listed in conda, for example.
+To mitigate this risk, we will test if conda can build our latest release by first uploading a test release to PyPI and telling conda to build from this test release. 
 
 #### Upload evalml release to PyPI's test server
 We need to upload an evalml package to test with the conda recipe
@@ -34,24 +39,24 @@ We need to upload an evalml package to test with the conda recipe
     6. For the release description, write "Development release for testing purposes"
     7. Check the "This is a pre-release" box
     8. Publish the release
-4. The new release will be uploaded to TestPyPI automatically
+4. The new release will be uploaded to [TestPyPI](https://test.pypi.org/project/evalml/) automatically.
 
 #### Set up fork of our conda-forge repo
 Branches on the conda-forge evalml repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
-1. Fork conda-forge/evalml-core-feedstock: visit https://github.com/conda-forge/evalml-core-feedstock and click fork
-2. Clone forked repo locally
-3. Add conda-forge repo as the 'upstream' repository
+5. Fork conda-forge/evalml-core-feedstock: visit https://github.com/conda-forge/evalml-core-feedstock and click fork
+6. Clone forked repo locally
+7. Add conda-forge repo as the 'upstream' repository
     ```bash
     git remote add upstream https://github.com/conda-forge/evalml-core-feedstock.git 
     ```
-4. If you made the fork previously and its master branch is missing commits, update it with any changes from upstream
+8. If you made the fork previously and its master branch is missing commits, update it with any changes from upstream
     ```bash
     git fetch upstream
     git checkout master
     git merge upstream/master
     git push origin master
     ```
-5. Make a branch with the version you want to release
+9. Make a branch with the version you want to release
     ```bash
     git checkout -b new-evalml-version
     ```
@@ -73,6 +78,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
        ```
 * Update if dependencies have changed.
     * Update the run requirements section for evalml-core if core dependencies have changed.
+    For example, if numpy got updated to version `1.16.4` and we wanted to use the latest version:
         ```
         requirements:
           host:
@@ -84,6 +90,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
         ```
     * Update the run requirements section for evalml if non-core dependencies have changed.
     * Update the test requirements section for evalml-core and evalml if test dependencies have changed.
+       For example, if we wanted to use version `0.9.3` of nbval.
         ```
         test:
           imports:
@@ -96,21 +103,23 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
         ```
 
 #### Test with conda-forge CI
-1. Install conda
+10. Install conda
     1. If using pyenv, `pyenv install miniconda3-latest`
     2. Otherwise follow instructions in [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
-2. Install conda-smithy (conda-forge tool to update boilerplate in repo)
+11. Install conda-smithy (conda-forge tool to update boilerplate in repo)
     ```bash
     conda install -n root -c conda-forge conda-smithy
     ```
-3. Run conda-smithy on feedstock
+12. Run conda-smithy on feedstock
     ```bash
     cd /path/to/feedstock/repo
     conda-smithy rerender --commit auto
     ```
-4. Push updated branch to the forked feedstock repo
-3. Make a PR on conda-forge/evalml-core-feedstock from the forked repo and let CI tests run - add "[DO NOT MERGE]" to the PR name to indicate this is PR should not be merged in
-4. After the tests pass, close the PR without merging
+13. Push updated branch to the forked feedstock repo
+14. Make a PR on conda-forge/evalml-core-feedstock from the forked repo and let CI tests run - add "[DO NOT MERGE]" to the PR name to indicate this PR should not be merged in
+
+Congratulations! If the test on the PR pass, then we can build a conda package from our latest release and we
+can now upload our package to PyPI instead of TestPyPI. The next steps will cover how to do this. 
 
 ## 2. Create release PR to update version and release notes
 Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
