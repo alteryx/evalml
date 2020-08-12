@@ -288,6 +288,6 @@ workflows:
                 core_dependencies: [false]
             name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>"
         - unit_tests:
-            name: "linux python 3.8 unit tests, core dependencies true, "
+            name: "linux python 3.8 unit tests, core dependencies true"
             core_dependencies: true
             python_version: "3.8"
