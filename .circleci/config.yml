@@ -264,7 +264,7 @@ workflows:
         - win_unit_tests:
             matrix:
               parameters:
-                python_version: ["3.8", "3.7", "3.6"]
+                python_version: ["3.6", "3.7", "3.8"]
             name: "windows python << matrix.python_version >> unit tests"
   check_dependencies_updated_linux:
     jobs:
