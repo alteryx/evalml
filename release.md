@@ -22,13 +22,13 @@ Conda releases of evalml rely on PyPI's hosted evalml packages. Once a version i
 We need to upload an evalml package to test with the conda recipe
 1. Make a new development release branch on evalml (in this example we'll be testing the 0.12.2 release)
     ```bash
-    git checkout -b release_v0.12.2.dev
+    git checkout -b release_v0.12.2.dev0
     ```
-2. Update version number in `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version. to v0.12.2.dev0 and push branch to repo.
+2. Update version number in `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version and push your changes. 
 3. Publish a new release of evalml on Github.
     1. Go to the [releases page](https://github.com/FeatureLabs/evalml/releases) on Github
     2. Click "Draft a new release"
-    3. For the target, choose the new branch (v0.12.2.dev)
+    3. For the target, choose the new branch (v0.12.2.dev0)
     4. For the tag, use the new version number (v0.12.2.dev0)
     5. For the release title, use the new version number (v0.12.2.dev0)
     6. For the release description, write "Development release for testing purposes"
