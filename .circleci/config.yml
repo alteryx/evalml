@@ -265,14 +265,10 @@ workflows:
   windows_test_all_python_versions:
     jobs:
         - win_unit_tests:
-            name: "windows python 3.6 unit tests"
-            python_version: "3.6"
-        - win_unit_tests:
-            name: "windows python 3.7 unit tests"
-            python_version: "3.7"
-        - win_unit_tests:
-            name: "windows python 3.8 unit tests"
-            python_version: "3.8"
+            matrix:
+              parameters:
+                python_version: ["3.6", "3.7", "3.8"]
+            name: "windows python << matrix.python_version >> unit tests"
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
@@ -284,29 +280,21 @@ workflows:
   test_all_python_versions:
     jobs:
         - lint_test:
-            name: "python 3.6 lint test"
-            python_version: "3.6"
-        - lint_test:
-            name: "python 3.7 lint test"
-            python_version: "3.7"
-        - lint_test:
-            name: "python 3.8 lint test"
-            python_version: "3.8"
+            matrix:
+              parameters:
+                python_version: ["3.6", "3.7", "3.8"]
+            name: "python << matrix.python_version >> lint test"
         - unit_tests:
-            name: "linux python 3.6 unit tests"
-            python_version: "3.6"
-            core_dependencies: false
+            matrix:
+              parameters:
+                python_version: ["3.6", "3.7"]
+                core_dependencies: [false]
+                codecov: [false]
+            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
         - unit_tests:
-            name: "linux python 3.7 unit tests"
-            python_version: "3.7"
-            core_dependencies: false
-        - unit_tests:
-            name: "linux python 3.8 unit tests"
-            python_version: "3.8"
-            core_dependencies: false
-            codecov: true
-        - unit_tests:
-            name: "linux python 3.8 unit tests, core dependencies"
-            python_version: "3.8"
-            codecov: true
-            core_dependencies: true
+            matrix:
+              parameters:
+                python_version: ["3.8"]
+                core_dependencies: [false, true]
+                codecov: [true]
+            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
