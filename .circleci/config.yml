@@ -140,6 +140,9 @@ jobs:
       core_dependencies:
         type: boolean
         default: false
+      codecov:
+        type: boolean
+        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
@@ -286,7 +289,7 @@ workflows:
               parameters:
                 python_version: ["3.6", "3.7", "3.8"]
                 core_dependencies: [false]
-            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>"
+            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov false"
         - unit_tests:
             name: "linux python 3.8 unit tests, core dependencies true, codecov true"
             core_dependencies: true
