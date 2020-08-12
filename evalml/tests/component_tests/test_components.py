@@ -644,6 +644,14 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer_subclass.transform(X)
 
 
+def test_all_transformers_needs_fitting():
+    for component_class in _all_transformers + _all_estimators:
+        if component_class.__name__ in ['DropColumns', 'SelectColumns']:
+            assert not component_class.needs_fitting
+        else:
+            assert component_class.needs_fitting
+
+
 def test_all_transformers_check_fit(X_y_binary):
     X, y = X_y_binary
     for component_class in _all_transformers:
