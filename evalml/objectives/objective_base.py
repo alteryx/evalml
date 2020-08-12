@@ -26,6 +26,18 @@ class ObjectiveBase(ABC):
         """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation.
         """
 
+    @property
+    @classmethod
+    @abstractmethod
+    def perfect_score(cls):
+        """Returns a perfect score on this objective."""
+
+    @property
+    @classmethod
+    @abstractmethod
+    def is_percentage(cls):
+        """Returns whether this objective should be interpreted as a percentage."""
+
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None):
@@ -89,3 +101,33 @@ class ObjectiveBase(ABC):
             raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+
+    @classmethod
+    def calculate_percent_difference(cls, score, reference_score):
+        """Calculate the percent difference between scores.
+
+        Arguments:
+            score (float): A score. Output of the score method of this objective.
+            reference_score (float): A score. Output of the score method of this objective. In practice,
+                this is the score achieved on this objective with a baseline estimator.
+
+        Returns:
+            float: The percent difference between the scores. Note that for objectives that can be interpreted
+                as percentages, this will be the difference between the reference score and score. For all other
+                objectives, the difference will be normalized by the reference score.
+        """
+
+        if pd.isna(score) or pd.isna(reference_score):
+            return None
+
+        difference = (reference_score - score)
+
+        if cls.is_percentage:
+            return 100 * (-1) ** (cls.greater_is_better) * difference
+
+        else:
+            if reference_score == 0:
+                return None
+            else:
+                change = difference / reference_score
+                return 100 * (-1) ** (cls.greater_is_better) * change
