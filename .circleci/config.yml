@@ -135,6 +135,9 @@ jobs:
         type: string
       core_dependencies:
         type: boolean
+      codecov:
+        type: boolean
+        default: false
     executor:
         name: python
         python_version: << parameters.python_version >>
