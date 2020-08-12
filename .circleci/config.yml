@@ -178,7 +178,7 @@ jobs:
       - store_artifacts:
           path: test-reports
       - when:
-          condition: << parameters.core_dependencies >>
+          condition: << parameters.codecov >>
           steps:
             - run: |
                 source test_python/bin/activate
