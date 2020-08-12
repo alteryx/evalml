@@ -137,10 +137,10 @@ jobs:
       python_version:
         type: string
         default: "3.8"
-      core_dependencies:
+      codecov:
         type: boolean
         default: false
-      codecov:
+      core_dependencies:
         type: boolean
         default: false
     executor:
