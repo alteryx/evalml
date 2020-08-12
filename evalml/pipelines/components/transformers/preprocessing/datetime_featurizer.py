@@ -1,7 +1,7 @@
-import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import datetime_dtypes
 
 
 def _extract_year(col):
@@ -54,7 +54,7 @@ class DateTimeFeaturizer(Transformer):
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._date_time_col_names = X.select_dtypes(include=[np.datetime64]).columns
+        self._date_time_col_names = X.select_dtypes(include=datetime_dtypes).columns
         return self
 
     def transform(self, X, y=None):
