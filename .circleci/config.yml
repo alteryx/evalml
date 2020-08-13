@@ -250,20 +250,6 @@ jobs:
       - store_artifacts:
           path: /tmp/dependencies_updated_artifacts
 
-  check_all_test_dirs_included:
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-    executor:
-      name: python
-      python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies_dev
-      - run: |
-          source test_python/bin/activate
-          make check-all-test-dirs-included
 
 workflows:
   version: 2
@@ -274,10 +260,6 @@ workflows:
           filters:
             branches:
               ignore: /^main?/
-  check_all_test_dirs_included:
-    jobs:
-      - check_all_test_dirs_included:
-          name: "check all test directories are included in package."
   build_docs:
     jobs:
       - build_docs:
