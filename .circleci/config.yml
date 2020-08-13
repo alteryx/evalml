@@ -221,7 +221,6 @@ jobs:
           source test_python/bin/activate
           make -C docs/ html
       - run: ls docs/build/html
-
   check_dependencies_updated_linux:
     parameters:
       python_version:
@@ -249,7 +248,6 @@ jobs:
           when: on_fail
       - store_artifacts:
           path: /tmp/dependencies_updated_artifacts
-
 
 workflows:
   version: 2

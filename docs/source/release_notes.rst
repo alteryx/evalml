@@ -20,7 +20,7 @@ Release Notes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
         * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
-        * Added CI job to check that all test directories are included in package :pr:`1054`
+        * Added a test to check that all test directories are included in evalml package :pr:`1054`
 
 
 .. warning::
