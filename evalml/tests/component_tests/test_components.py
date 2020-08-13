@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import os
+import warnings
 from unittest.mock import patch
 
 import cloudpickle
@@ -15,7 +16,6 @@ from evalml.exceptions import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
-    ComponentBaseMeta,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -331,7 +331,7 @@ def test_component_parameters_getter(test_classes):
 
 
 def test_component_parameters_init():
-    for component_class in all_components:
+    for component_class in all_components():
         print('Testing component {}'.format(component_class.name))
         component = component_class()
         parameters = component.parameters
@@ -382,7 +382,7 @@ def test_clone_fitted(X_y_binary):
 
 
 def test_components_init_kwargs():
-    for component_class in all_components:
+    for component_class in all_components():
         component = component_class()
         if component._component_obj is None:
             continue
@@ -403,7 +403,7 @@ def test_components_init_kwargs():
 
 
 def test_component_has_random_state():
-    for component_class in all_components:
+    for component_class in all_components():
         params = inspect.signature(component_class.__init__).parameters
         assert "random_state" in params
 
@@ -423,7 +423,7 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
-    for component_class in _all_transformers:
+    for component_class in _all_transformers():
         print('Testing transformer {}'.format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
             print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
@@ -470,7 +470,7 @@ def test_estimator_predict_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
 
-    for component_class in _all_estimators_used_in_search:
+    for component_class in _all_estimators_used_in_search():
         for X, y, X_cols_expected, y_cols_expected in datatype_combos:
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
@@ -496,10 +496,18 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", all_components)
+@pytest.mark.parametrize("cls", all_components())
 def test_default_parameters(cls):
 
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
+
+
+@pytest.mark.parametrize("cls", all_components())
+def test_default_parameters_raise_no_warnings(cls):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        cls()
+        assert len(w) == 0
 
 
 def test_estimator_check_for_fit(X_y_binary):
@@ -645,10 +653,18 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer_subclass.transform(X)
 
 
+def test_all_transformers_needs_fitting():
+    for component_class in _all_transformers() + _all_estimators():
+        if component_class.__name__ in ['DropColumns', 'SelectColumns']:
+            assert not component_class.needs_fitting
+        else:
+            assert component_class.needs_fitting
+
+
 def test_all_transformers_check_fit(X_y_binary):
     X, y = X_y_binary
-    for component_class in _all_transformers:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+    for component_class in _all_transformers():
+        if not component_class.needs_fitting:
             continue
 
         component = component_class()
@@ -665,8 +681,8 @@ def test_all_transformers_check_fit(X_y_binary):
 
 def test_all_estimators_check_fit(X_y_binary):
     X, y = X_y_binary
-    for component_class in _all_estimators:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+    for component_class in _all_estimators():
+        if not component_class.needs_fitting:
             continue
 
         component = component_class()
@@ -691,8 +707,8 @@ def test_all_estimators_check_fit(X_y_binary):
 
 def test_no_fitting_required_components(X_y_binary):
     X, y = X_y_binary
-    for component_class in all_components:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+    for component_class in all_components():
+        if not component_class.needs_fitting:
             component = component_class()
             if issubclass(component_class, Estimator):
                 component.predict(X)
@@ -704,7 +720,7 @@ def test_serialization(X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
 
-    for component_class in all_components:
+    for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
 
         component = component_class()

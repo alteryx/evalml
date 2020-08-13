@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression):
-    for estimator_class in _all_estimators_used_in_search:
+    for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = estimator_class()
@@ -35,7 +35,7 @@ def test_binary_classification_estimators_predict_proba_col_order():
     X = pd.DataFrame({'input': np.concatenate([np.array([-1] * 100), np.array([1] * 100)])})
     data = np.concatenate([np.zeros(100), np.ones(100)])
     y = pd.Series(data)
-    for estimator_class in _all_estimators_used_in_search:
+    for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         if ProblemTypes.BINARY in supported_problem_types:
             estimator = estimator_class()

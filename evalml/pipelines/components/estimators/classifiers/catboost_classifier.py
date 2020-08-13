@@ -9,6 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
+from evalml.utils.gen_utils import categorical_dtypes
 
 
 class CatBoostClassifier(Estimator):
@@ -58,7 +59,7 @@ class CatBoostClassifier(Estimator):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        cat_cols = X.select_dtypes(['category', 'object'])
+        cat_cols = X.select_dtypes(categorical_dtypes)
 
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
