@@ -11,6 +11,8 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     name = "Cost Benefit Matrix"
     greater_is_better = True
     score_needs_proba = False
+    perfect_score = np.inf
+    is_percentage = False
 
     def __init__(self, true_positive_cost, true_negative_cost, false_positive_cost, false_negative_cost):
         """Create instance of CostBenefitMatrix.
