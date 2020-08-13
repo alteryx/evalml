@@ -43,10 +43,6 @@ installdeps-test:
 installdeps-dev:
 	pip install -r dev-requirements.txt -q
 
-.PHONY: check-all-test-dirs-included
-check-all-test-dirs-included:
-	python .check_all_test_dirs_included.py
-
 .PHONY: dependenciesfile
 dependenciesfile:
 		$(eval allow_list='pandas|numpy|scikit|xgboost|catboost|cloudpickle|distributed|pyzmq')
