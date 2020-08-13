@@ -24,6 +24,7 @@ Release Notes
     * Enhancements
         * Add save/load method to components :pr:`1023`
         * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
+        * Updated estimators used in AutoML to include ExtraTrees and ElasticNet estimators :pr:`1030`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
