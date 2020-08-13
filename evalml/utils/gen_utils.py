@@ -145,13 +145,9 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'ExtraTreesClassifier', 'ExtraTreesRegressor',
-                       'ElasticNetClassifier', 'ElasticNetRegressor', 'ENBinaryPipeline',
-                       'ETBinaryClassificationPipeline',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ETRegressionPipeline', 'ENRegressionPipeline',
-                       'ModeBaselineMulticlassPipeline', 'ETMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'ENMulticlassPipeline', 'ETMulticlassClassificationPipeline'}
+                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
