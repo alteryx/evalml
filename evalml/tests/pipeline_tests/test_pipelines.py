@@ -1019,11 +1019,11 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
         X, y = X_y_regression
         clf = linear_regression_pipeline_class(parameters={})
 
-    with pytest.raises(ComponentNotYetFittedError):
+    with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X)
-    with pytest.raises(ComponentNotYetFittedError):
+    with pytest.raises(PipelineNotYetFittedError):
         clf.feature_importance
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        with pytest.raises(ComponentNotYetFittedError):
+        with pytest.raises(PipelineNotYetFittedError):
             clf.feature_importance

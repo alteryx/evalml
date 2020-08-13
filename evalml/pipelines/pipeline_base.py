@@ -18,7 +18,7 @@ from evalml.exceptions import (
     MissingComponentError,
     PipelineScoreError
 )
-from evalml.pipelines.components import ComponentBaseMeta
+from evalml.pipelines.base_meta import PipelineBaseMeta
 from evalml.utils import (
     classproperty,
     get_logger,
@@ -31,7 +31,7 @@ from evalml.utils import (
 logger = get_logger(__file__)
 
 
-class PipelineBase(ABC, metaclass=ComponentBaseMeta):
+class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """Base class for all pipelines."""
 
     @property
