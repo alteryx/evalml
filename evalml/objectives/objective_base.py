@@ -118,7 +118,7 @@ class ObjectiveBase(ABC):
         """
 
         if pd.isna(score) or pd.isna(reference_score):
-            return None
+            return np.nan
 
         difference = (reference_score - score)
 
@@ -127,7 +127,7 @@ class ObjectiveBase(ABC):
 
         else:
             if reference_score == 0:
-                return None
+                return np.nan
             else:
                 change = difference / reference_score
                 return 100 * (-1) ** (cls.greater_is_better) * change

@@ -36,7 +36,7 @@ from evalml.utils.gen_utils import _get_subclasses
 
 EPS = 1e-5
 
-all_metrics = _get_subclasses(ObjectiveBase)
+all_objectives = _get_subclasses(ObjectiveBase)
 
 
 def test_input_contains_nan():
@@ -412,7 +412,7 @@ def test_mcc_catches_warnings():
         assert len(record) == 0
 
 
-@pytest.mark.parametrize("objective", all_metrics)
+@pytest.mark.parametrize("objective", all_objectives)
 def test_calculate_percent_difference(objective):
 
     if objective.is_percentage:
@@ -431,7 +431,7 @@ def test_calculate_percent_difference(objective):
     assert objective.perfect_score is not None
 
 
-@pytest.mark.parametrize("objective,nan_value", product(all_metrics, [None, np.nan]))
+@pytest.mark.parametrize("objective,nan_value", product(all_objectives, [None, np.nan]))
 def test_calculate_percent_difference_with_nan(objective, nan_value):
 
     assert pd.isna(objective.calculate_percent_difference(nan_value, 2))
