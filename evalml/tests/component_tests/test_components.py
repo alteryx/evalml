@@ -15,7 +15,6 @@ from evalml.exceptions import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ComponentBase,
-    ComponentBaseMeta,
     DropColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -645,10 +644,18 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
     transformer_subclass.transform(X)
 
 
+def test_all_transformers_needs_fitting():
+    for component_class in _all_transformers + _all_estimators:
+        if component_class.__name__ in ['DropColumns', 'SelectColumns']:
+            assert not component_class.needs_fitting
+        else:
+            assert component_class.needs_fitting
+
+
 def test_all_transformers_check_fit(X_y_binary):
     X, y = X_y_binary
     for component_class in _all_transformers:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+        if not component_class.needs_fitting:
             continue
 
         component = component_class()
@@ -666,7 +673,7 @@ def test_all_transformers_check_fit(X_y_binary):
 def test_all_estimators_check_fit(X_y_binary):
     X, y = X_y_binary
     for component_class in _all_estimators:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+        if not component_class.needs_fitting:
             continue
 
         component = component_class()
@@ -692,7 +699,7 @@ def test_all_estimators_check_fit(X_y_binary):
 def test_no_fitting_required_components(X_y_binary):
     X, y = X_y_binary
     for component_class in all_components:
-        if component_class.__name__ in ComponentBaseMeta.NO_FITTING_REQUIRED:
+        if not component_class.needs_fitting:
             component = component_class()
             if issubclass(component_class, Estimator):
                 component.predict(X)
