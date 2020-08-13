@@ -14,6 +14,7 @@ Release Notes
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
+        * Moved `all_components` and other component importers into runtime methods :pr:`1045`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
