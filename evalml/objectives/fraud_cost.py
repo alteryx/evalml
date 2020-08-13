@@ -33,13 +33,13 @@ class FraudCost(BinaryClassificationObjective):
     def decision_function(self, ypred_proba, threshold=0.0, X=None):
         """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount.
 
-            Arguments:
-                ypred_proba (pd.Series): Predicted probablities
-                X (pd.DataFrame): Dataframe containing transaction amount
-                threshold (float): Dollar threshold to determine if transaction is fraud
+        Arguments:
+            ypred_proba (pd.Series): Predicted probablities
+            X (pd.DataFrame): Dataframe containing transaction amount
+            threshold (float): Dollar threshold to determine if transaction is fraud
 
-            Returns:
-                pd.Series: Series of predicted fraud labels using X and threshold
+        Returns:
+            pd.Series: Series of predicted fraud labels using X and threshold
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -53,13 +53,13 @@ class FraudCost(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
-            Arguments:
-                y_predicted (pd.Series): predicted fraud labels
-                y_true (pd.Series): true fraud labels
-                X (pd.DataFrame): dataframe with transaction amounts
+        Arguments:
+            y_predicted (pd.Series): predicted fraud labels
+             y_true (pd.Series): true fraud labels
+            X (pd.DataFrame): dataframe with transaction amounts
 
-            Returns:
-                float: amount lost to fraud per transaction
+        Returns:
+            float: amount lost to fraud per transaction
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
