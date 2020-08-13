@@ -62,9 +62,9 @@ def test_allowed_model_families(has_minimal_dependencies):
 
 def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len((_all_estimators_used_in_search)) == 8
+        assert len((_all_estimators_used_in_search())) == 8
     else:
-        assert len(_all_estimators_used_in_search) == 12
+        assert len(_all_estimators_used_in_search()) == 12
 
 
 def test_get_estimators(has_minimal_dependencies):
