@@ -6,7 +6,6 @@ from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
 
 
-
 def test_cost_benefit_matrix_init():
     with pytest.raises(ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."):
         CostBenefitMatrix(true_positive_cost=None, true_negative_cost=-1,
