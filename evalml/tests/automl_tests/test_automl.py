@@ -55,7 +55,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
-        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time', 'cv_data'}
+        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time',
+                                  'cv_data', 'percent_better_than_baseline'}
         assert results['id'] == pipeline_id
         assert isinstance(results['pipeline_name'], str)
         assert issubclass(results['pipeline_class'], expected_pipeline_class)
@@ -77,11 +78,11 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert np.all(automl.rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
     assert np.all(automl.full_rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -729,7 +730,8 @@ def test_no_search():
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
 
-    df_columns = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+    df_columns = ["id", "pipeline_name", "score", "percent_better_than_baseline",
+                  "high_variance_cv", "parameters"]
     assert (automl.rankings.columns == df_columns).all()
     assert (automl.full_rankings.columns == df_columns).all()
 
