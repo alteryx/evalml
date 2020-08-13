@@ -11,7 +11,6 @@ from evalml.exceptions import (
 
 class BaseMeta(ABCMeta):
     """Metaclass that overrides creating a new component by wrapping method with validators and setters"""
-    error_to_throw = None
 
     @classmethod
     def set_fit(cls, method):
@@ -41,7 +40,7 @@ class BaseMeta(ABCMeta):
 
 
 class ComponentBaseMeta(BaseMeta):
-    error_to_throw = ComponentNotYetFittedError
+
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
@@ -51,7 +50,7 @@ class ComponentBaseMeta(BaseMeta):
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
             if not self._is_fitted and klass and self.needs_fitting:
-                raise cls.error_to_throw(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
+                raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
             elif X is None and y is None:
                 return method(self)
             elif y is None:
@@ -62,7 +61,7 @@ class ComponentBaseMeta(BaseMeta):
 
 
 class PipelineBaseMeta(BaseMeta):
-    error_to_throw = PipelineNotYetFittedError
+
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
@@ -72,7 +71,7 @@ class PipelineBaseMeta(BaseMeta):
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
             if not self._is_fitted:
-                raise cls.error_to_throw(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
+                raise PipelineNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
             elif X is None and y is None:
                 return method(self)
             elif y is None:
