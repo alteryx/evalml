@@ -66,7 +66,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     return pp_components
 
 
-def make_pipeline(X, y, estimator, text_columns, problem_type):
+def make_pipeline(X, y, estimator, problem_type, text_columns=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -75,8 +75,8 @@ def make_pipeline(X, y, estimator, text_columns, problem_type):
         X (pd.DataFrame): the input data of shape [n_samples, n_features]
         y (pd.Series): the target labels of length [n_samples]
         estimator (Estimator): estimator for pipeline
-        text_columns (list): feature names which should be treated as text features
         problem_type (ProblemTypes or str): problem type for pipeline to generate
+        text_columns (list): feature names which should be treated as text features. Defaults to None.
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator

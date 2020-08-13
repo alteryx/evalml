@@ -360,7 +360,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(X, y, estimator, text_columns, self.problem_type) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(X, y, estimator, self.problem_type, text_columns=text_columns) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
