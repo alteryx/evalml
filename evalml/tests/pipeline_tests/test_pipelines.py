@@ -9,7 +9,6 @@ from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
-    ComponentNotYetFittedError,
     IllFormattedClassNameError,
     MissingComponentError,
     PipelineNotYetFittedError,
@@ -794,9 +793,13 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.return_value = np.array([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
-        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+        clf = dummy_regression_pipeline_class(parameters={})
+        clf.fit(X, y)
+        clf.score(X, y, ['precision', 'auc'])
     try:
-        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+        clf = dummy_regression_pipeline_class(parameters={})
+        clf.fit(X, y)
+        clf.score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
         assert "Invalid objective AUC specified for problem type Regression" in e.message
         assert "Invalid objective Precision specified for problem type Regression" in e.message
@@ -903,7 +906,7 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     pipeline_clone = pipeline.clone(random_state=42)
     assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(ComponentNotYetFittedError):
+    with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)

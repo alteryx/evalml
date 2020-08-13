@@ -37,6 +37,14 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def model_family(cls):
         """Returns ModelFamily of this component"""
 
+    @classproperty
+    def needs_fitting(self):
+        """Returns boolean determining if component needs fitting before
+            calling predict, predict_proba, transform, or feature_importances.
+            This can be overridden to False for components that do not need to be fit
+            or whose fit methods do nothing."""
+        return True
+
     @property
     def parameters(self):
         """Returns the parameters which were used to initialize the component"""

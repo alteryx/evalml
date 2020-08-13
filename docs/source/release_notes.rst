@@ -7,10 +7,12 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
+        * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
     * Changes
+        * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
