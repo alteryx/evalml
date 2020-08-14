@@ -91,15 +91,11 @@ def test_normalize_confusion_matrix_error():
 
 def test_graph_cost_benefit_thresholds(X_y_binary):
     X, y = X_y_binary
-    o = 'log_loss_binary'
     automl = AutoMLSearch(problem_type='binary', max_pipelines=2)
     automl.search(X, y)
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
     pipeline = automl.get_pipeline(1)
     pipeline.fit(X, y)
-    pipeline.predict(X, o)
-    predict_proba = pipeline.predict_proba(X).iloc[:,1]
-    print (predict_proba)
-    pipeline.score(X, y, [o])
-    graph_cost_benefit_thresholds(predict_proba, y, X, cbm)
+
+    graph_cost_benefit_thresholds(pipeline, X, y, cbm)

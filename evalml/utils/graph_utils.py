@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.utils.multiclass import unique_labels
+from evalml.utils import import_or_raise
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -55,11 +56,28 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     return conf_mat
 
 
-def graph_cost_benefit_thresholds(ypred_proba, y_true, X, cbm_objective):
-    """Generates cost benefit graph
+def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective):
+    """Generates cost benefit 
+    
+    todo: add stepping
     """
-    for threshold in np.linspace(0, 1, 11):
-        obj = cbm_objective
-        y_predicted = obj.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
-        cost = obj.objective_function(y_true, y_predicted, X=X)
-        print(threshold, cost)
+    ypred_proba = pipeline.predict_proba(X).iloc[:, 1]
+    thresholds = np.linspace(0, 1, 101)
+    costs = []
+    for threshold in thresholds:
+        y_predicted = cbm_objective.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+        cost = cbm_objective.objective_function(y, y_predicted, X=X)
+        costs.append(cost)
+    df = pd.DataFrame({"thresholds": thresholds, "costs": costs})
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    title = 'Cost-Benefit Matrix vs Thresholds'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Thresholds', 'range': [-0.05, 1.05]},
+                        yaxis={'title': 'Cost-Benefit Score', 'range': [df["costs"].min() - 20, df["costs"].max() + 20]})
+    data = []
+    data.append(_go.Scatter(x=df['thresholds'], y=df['costs'],
+                            name='costs',
+                            line=dict(width=3)))
+    ## todo: mark the max point!!
+    return _go.Figure(layout=layout, data=data)
