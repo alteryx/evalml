@@ -33,8 +33,8 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     StandardScaler,
-    Transformer,
-    TextFeaturizer
+    TextFeaturizer,
+    Transformer
 )
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,

@@ -205,7 +205,6 @@ def test_output_null():
     assert not X_t.isnull().any().any()
 
 
-
 def test_diversity_primitive_output():
     X = pd.DataFrame(
         {'diverse': ['This is a very diverse string which does not contain any repeated words at all',
