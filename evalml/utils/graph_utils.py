@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.utils.multiclass import unique_labels
+
 from evalml.utils import import_or_raise
 
 

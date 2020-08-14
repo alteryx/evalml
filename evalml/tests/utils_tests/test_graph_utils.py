@@ -4,13 +4,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.utils.graph_utils import (
-    confusion_matrix,
-    normalize_confusion_matrix,
-    graph_cost_benefit_thresholds
-)
 from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
+from evalml.utils.graph_utils import (
+    confusion_matrix,
+    graph_cost_benefit_thresholds,
+    normalize_confusion_matrix
+)
+
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_confusion_matrix(data_type):
