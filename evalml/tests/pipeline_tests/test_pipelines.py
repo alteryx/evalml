@@ -1029,4 +1029,18 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         with pytest.raises(PipelineNotYetFittedError):
-            clf.feature_importance
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with patch('evalml.pipelines.ClassificationPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+        with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
+            clf.predict_proba(X)
+            mock_predict_proba.assert_called()
+    else:
+        with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+    clf.feature_importance
