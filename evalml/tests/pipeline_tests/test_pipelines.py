@@ -33,7 +33,8 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     StandardScaler,
-    Transformer
+    Transformer,
+    TextFeaturizer
 )
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
@@ -206,6 +207,27 @@ def test_make_pipeline_numpy_input():
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, Imputer, RandomForestRegressor]
+    assert regression_pipeline.custom_hyperparameters is None
+
+
+def test_make_pipeline_text_columns():
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "text": ["string one", "another", "text for a column", "text string", "hello world"]})
+    y = pd.Series([0, 0, 1, 1, 0])
+    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY, text_columns=['text'])
+    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
+    assert binary_pipeline.component_graph == [TextFeaturizer, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert binary_pipeline.custom_hyperparameters is None
+
+    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS, text_columns=['text'])
+    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert multiclass_pipeline.component_graph == [TextFeaturizer, Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
+    assert multiclass_pipeline.custom_hyperparameters is None
+
+    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION, text_columns=['text'])
+    assert isinstance(regression_pipeline, type(RegressionPipeline))
+    assert regression_pipeline.component_graph == [TextFeaturizer, Imputer, OneHotEncoder, RandomForestRegressor]
     assert regression_pipeline.custom_hyperparameters is None
 
 

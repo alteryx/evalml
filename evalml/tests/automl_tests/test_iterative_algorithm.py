@@ -8,6 +8,7 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
 
 
@@ -30,16 +31,18 @@ def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeli
     assert algo.allowed_pipelines == allowed_pipelines
 
 
+class MockEstimator(Estimator):
+    name = "Mock Classifier"
+    model_family = ModelFamily.NONE
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
+
+    def __init__(self, dummy_parameter='default', random_state=0):
+        super().__init__(parameters={'dummy_parameter': dummy_parameter}, component_obj=None, random_state=random_state)
+
+
 @pytest.fixture
 def dummy_binary_pipeline_classes():
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-        hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
-
-        def __init__(self, dummy_parameter='default', random_state=0):
-            super().__init__(parameters={'dummy_parameter': dummy_parameter}, component_obj=None, random_state=random_state)
 
     class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
         estimator = MockEstimator
@@ -110,3 +113,16 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline)
     assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
+
+
+def test_iterative_algorithm_instantiates_text():
+    class MockTextClassificationPipeline(BinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [TextFeaturizer, MockEstimator]
+
+    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline], text_columns=['text_col_1', 'text_col_2'])
+    pipeline = algo.next_batch()[0]
+    expected_params = {'text_columns': ['text_col_1', 'text_col_2']}
+    assert pipeline.parameters['Text Featurization Component'] == expected_params
+    assert isinstance(pipeline.component_graph[0], TextFeaturizer)
+    assert pipeline.component_graph[0]._text_col_names == ['text_col_1', 'text_col_2']
