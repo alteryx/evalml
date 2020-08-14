@@ -6,9 +6,11 @@ import pytest
 
 from evalml.utils.graph_utils import (
     confusion_matrix,
-    normalize_confusion_matrix
+    normalize_confusion_matrix,
+    graph_cost_benefit_thresholds
 )
-
+from evalml import AutoMLSearch
+from evalml.objectives import CostBenefitMatrix
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_confusion_matrix(data_type):
@@ -85,3 +87,19 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'pred')
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')
+
+
+def test_graph_cost_benefit_thresholds(X_y_binary):
+    X, y = X_y_binary
+    o = 'log_loss_binary'
+    automl = AutoMLSearch(problem_type='binary', max_pipelines=2)
+    automl.search(X, y)
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+    pipeline = automl.get_pipeline(1)
+    pipeline.fit(X, y)
+    pipeline.predict(X, o)
+    predict_proba = pipeline.predict_proba(X).iloc[:,1]
+    print (predict_proba)
+    pipeline.score(X, y, [o])
+    graph_cost_benefit_thresholds(predict_proba, y, X, cbm)

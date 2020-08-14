@@ -53,3 +53,13 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
     return conf_mat
+
+
+def graph_cost_benefit_thresholds(ypred_proba, y_true, X, cbm_objective):
+    """Generates cost benefit graph
+    """
+    for threshold in np.linspace(0, 1, 11):
+        obj = cbm_objective
+        y_predicted = obj.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+        cost = obj.objective_function(y_true, y_predicted, X=X)
+        print(threshold, cost)
