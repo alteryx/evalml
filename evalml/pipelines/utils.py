@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -22,6 +21,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
+from evalml.utils.gen_utils import categorical_dtypes, datetime_dtypes
 
 logger = get_logger(__file__)
 
@@ -51,13 +51,13 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if text_columns:
         pp_components.append(TextFeaturizer)
 
-    datetime_cols = X.select_dtypes(include=[np.datetime64])
+    datetime_cols = X.select_dtypes(include=datetime_dtypes)
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
     # DateTimeFeaturizer can create categorical columns
-    categorical_cols = X.select_dtypes(include=['category', 'object'])
+    categorical_cols = X.select_dtypes(include=categorical_dtypes)
     if (add_datetime_featurizer or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 

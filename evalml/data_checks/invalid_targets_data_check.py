@@ -3,7 +3,10 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
 
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes
+from evalml.utils.gen_utils import (
+    categorical_dtypes,
+    numeric_and_boolean_dtypes
+)
 
 
 class InvalidTargetDataCheck(DataCheck):
@@ -31,7 +34,7 @@ class InvalidTargetDataCheck(DataCheck):
         null_rows = y.isnull()
         if null_rows.any():
             messages.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
-        valid_target_types = numeric_and_boolean_dtypes + ['object', 'category']
+        valid_target_types = numeric_and_boolean_dtypes + categorical_dtypes
 
         if y.dtype.name not in valid_target_types:
             messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))

@@ -14,6 +14,7 @@ numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
 numeric_and_boolean_dtypes = numeric_dtypes + boolean
 categorical_dtypes = ['object', 'category']
+datetime_dtypes = [np.datetime64]
 
 
 def import_or_raise(library, error_msg=None):
@@ -144,13 +145,9 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'ExtraTreesClassifier', 'ExtraTreesRegressor',
-                       'ElasticNetClassifier', 'ElasticNetRegressor', 'ENBinaryPipeline',
-                       'ETBinaryClassificationPipeline',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ETRegressionPipeline', 'ENRegressionPipeline',
-                       'ModeBaselineMulticlassPipeline', 'ETMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'ENMulticlassPipeline', 'ETMulticlassClassificationPipeline'}
+                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):

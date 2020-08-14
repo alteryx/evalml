@@ -7,6 +7,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
+from evalml.utils.gen_utils import categorical_dtypes
 
 
 class CatBoostRegressor(Estimator):
@@ -64,7 +65,7 @@ class CatBoostRegressor(Estimator):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        cat_cols = X.select_dtypes(['object', 'category'])
+        cat_cols = X.select_dtypes(categorical_dtypes)
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return model
 

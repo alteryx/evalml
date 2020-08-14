@@ -10,10 +10,21 @@ from evalml.utils.gen_utils import get_importable_subclasses
 
 logger = get_logger(__file__)
 
-_all_estimators = get_importable_subclasses(Estimator, used_in_automl=False)
-_all_estimators_used_in_search = get_importable_subclasses(Estimator, used_in_automl=True)
-_all_transformers = get_importable_subclasses(Transformer, used_in_automl=False)
-all_components = _all_estimators + _all_transformers
+
+def _all_estimators():
+    return get_importable_subclasses(Estimator, used_in_automl=False)
+
+
+def _all_estimators_used_in_search():
+    return get_importable_subclasses(Estimator, used_in_automl=True)
+
+
+def _all_transformers():
+    return get_importable_subclasses(Transformer, used_in_automl=False)
+
+
+def all_components():
+    return _all_estimators() + _all_transformers()
 
 
 def allowed_model_families(problem_type):
@@ -28,7 +39,7 @@ def allowed_model_families(problem_type):
 
     estimators = []
     problem_type = handle_problem_types(problem_type)
-    for estimator in _all_estimators_used_in_search:
+    for estimator in _all_estimators_used_in_search():
         if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
             estimators.append(estimator)
 
@@ -60,7 +71,7 @@ def get_estimators(problem_type, model_families=None):
             raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
 
     estimator_classes = []
-    for estimator_class in _all_estimators_used_in_search:
+    for estimator_class in _all_estimators_used_in_search():
         if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
             continue
         if estimator_class.model_family not in model_families:
@@ -87,7 +98,7 @@ def handle_component_class(component_class):
     if not isinstance(component_class, str):
         raise ValueError(("component_graph may only contain str or ComponentBase subclasses, not '{}'")
                          .format(type(component_class)))
-    component_classes = {component.name: component for component in all_components}
+    component_classes = {component.name: component for component in all_components()}
     if component_class not in component_classes:
         raise MissingComponentError('Component "{}" was not found'.format(component_class))
     component_class = component_classes[component_class]

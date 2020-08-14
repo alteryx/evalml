@@ -3,24 +3,40 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
+        * Added guide on installing with conda :pr:`1041`
         * Included TextFeaturizer in options for automl search :pr:`1062`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Updated TextFeaturizer to no longer output NaNs :pr:`1062`
     * Changes
+        * Added `needs_fitting` property to ComponentBase :pr:`1044`
+        * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
+        * Remove maximum version limit for SciPy dependency :pr:`1051`
+        * Moved `all_components` and other component importers into runtime methods :pr:`1045`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
+        * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
+        * Added a test to check that all test directories are included in evalml package :pr:`1054`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * ``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to `evalml.utils` :pr:`1038`
+
 
 
 **v0.12.2 Aug. 6, 2020**
     * Enhancements
         * Add save/load method to components :pr:`1023`
         * Expose pickle `protocol` as optional arg to save/load :pr:`1023`
+        * Updated estimators used in AutoML to include ExtraTrees and ElasticNet estimators :pr:`1030`
     * Fixes
     * Changes
         * Removed DeprecationWarning for SimpleImputer :pr:`1018`
