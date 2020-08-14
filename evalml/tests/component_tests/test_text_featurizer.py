@@ -190,6 +190,22 @@ def test_int_col_names():
     assert X_t.dtypes.all() == np.float64
 
 
+def test_output_null():
+    X = pd.DataFrame(
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past',
+                   ':)']
+         })
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf.fit(X)
+    X_t = tf.transform(X)
+    assert not X_t.isnull().any().any()
+
+
+
 def test_diversity_primitive_output():
     X = pd.DataFrame(
         {'diverse': ['This is a very diverse string which does not contain any repeated words at all',

@@ -46,10 +46,10 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
 
+    pp_components.append(Imputer)
+
     if text_columns:
         pp_components.append(TextFeaturizer)
-
-    pp_components.append(Imputer)
 
     datetime_cols = X.select_dtypes(include=[np.datetime64])
     add_datetime_featurizer = len(datetime_cols.columns) > 0

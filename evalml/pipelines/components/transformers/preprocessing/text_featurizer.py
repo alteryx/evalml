@@ -120,5 +120,7 @@ class TextFeaturizer(Transformer):
         feature_matrix = self._ft.calculate_feature_matrix(features=self._features,
                                                            entityset=es,
                                                            verbose=True)
+        if feature_matrix.isnull().any().any():
+            feature_matrix.fillna(0, inplace=True)
         X_t = pd.concat([X_t, feature_matrix.reindex(X.index), X_lsa], axis=1)
         return X_t
