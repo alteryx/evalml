@@ -1,5 +1,6 @@
 import abc
 
+import numpy as np
 import pandas as pd
 from texttable import Texttable
 
@@ -10,7 +11,7 @@ from evalml.pipelines.prediction_explanations._algorithms import (
 from evalml.problem_types import ProblemTypes
 
 
-def _make_rows(shap_values, normalized_values, top_k, include_shap_values=False):
+def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
     """Makes the rows (one row for each feature) for the SHAP table.
 
     Arguments:
@@ -35,15 +36,20 @@ def _make_rows(shap_values, normalized_values, top_k, include_shap_values=False)
     for value, feature_name in features_to_display:
         symbol = "+" if value >= 0 else "-"
         display_text = symbol * min(int(abs(value) // 0.2) + 1, 5)
-        row = [feature_name, display_text]
+        feature_value = pipeline_features[feature_name]
+        if pd.api.types.is_number(feature_value):
+            feature_value = np.round(feature_value, 2)
+        else:
+            feature_value = str(feature_value)
+        row = [feature_name, feature_value, display_text]
         if include_shap_values:
-            row.append(round(shap_values[feature_name][0], 2))
+            row.append(np.round(shap_values[feature_name][0], 2))
         rows.append(row)
 
     return rows
 
 
-def _make_table(shap_values, normalized_values, top_k, include_shap_values=False):
+def _make_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
     """Make a table displaying the SHAP values for a prediction.
 
     Arguments:
@@ -56,20 +62,20 @@ def _make_table(shap_values, normalized_values, top_k, include_shap_values=False
     Returns:
         str
     """
-    dtypes = ["t", "t", "f"] if include_shap_values else ["t", "t"]
-    alignment = ["c", "c", "c"] if include_shap_values else ["c", "c"]
+    dtypes = ["t", "f", "t", "f"] if include_shap_values else ["t", "t", "t"]
+    alignment = ["c", "c", "c", "c"] if include_shap_values else ["c", "c", "c"]
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
     table.set_cols_dtype(dtypes)
     table.set_cols_align(alignment)
 
-    header = ["Feature Name", "Contribution to Prediction"]
+    header = ["Feature Name", "Feature Value", "Contribution to Prediction"]
     if include_shap_values:
         header.append("SHAP Value")
 
     rows = [header]
-    rows += _make_rows(shap_values, normalized_values, top_k, include_shap_values)
+    rows += _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
     table.add_rows(rows)
     return table.draw()
 
@@ -78,24 +84,24 @@ class _TableMaker(abc.ABC):
     """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
 
     @abc.abstractmethod
-    def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
+    def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         """Creates a table given shap values."""
 
 
 class _SHAPRegressionTableMaker(_TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
-    def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
-        return _make_table(shap_values, normalized_values, top_k, include_shap_values)
+    def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+        return _make_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
 
 
 class _SHAPBinaryTableMaker(_TableMaker):
     """Makes a SHAP table explaining a prediction for a binary classification problem."""
 
-    def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
+    def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         # The SHAP algorithm will return a two-element list for binary problems.
         # By convention, we display the explanation for the dominant class.
-        return _make_table(shap_values[1], normalized_values[1], top_k, include_shap_values)
+        return _make_table(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values)
 
 
 class _SHAPMultiClassTableMaker(_TableMaker):
@@ -104,11 +110,11 @@ class _SHAPMultiClassTableMaker(_TableMaker):
     def __init__(self, class_names):
         self.class_names = class_names
 
-    def __call__(self, shap_values, normalized_values, top_k, include_shap_values=False):
+    def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         strings = []
         for class_name, class_values, normalized_class_values in zip(self.class_names, shap_values, normalized_values):
             strings.append(f"Class: {class_name}\n")
-            table = _make_table(class_values, normalized_class_values, top_k, include_shap_values)
+            table = _make_table(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values)
             strings += table.splitlines()
             strings.append("\n")
         return "\n".join(strings)
@@ -136,6 +142,10 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     shap_values = _compute_shap_values(pipeline, input_features, training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
+    # We need a dict of type {column_name: feature value}
+    pipeline_features = pipeline._transform(input_features)
+    features_dict = dict(zip(pipeline_features.columns, *pipeline_features.values))
+
     if pipeline.problem_type == ProblemTypes.REGRESSION:
         table_maker = _SHAPRegressionTableMaker()
     elif pipeline.problem_type == ProblemTypes.BINARY:
@@ -143,7 +153,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     else:
         table_maker = _SHAPMultiClassTableMaker(pipeline._classes)
 
-    return table_maker(shap_values, normalized_shap_values, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, features_dict, top_k, include_shap_values)
 
 
 class _ReportSectionMaker:

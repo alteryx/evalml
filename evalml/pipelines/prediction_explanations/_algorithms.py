@@ -47,14 +47,13 @@ def _compute_shap_values(pipeline, features, training_data=None):
     if estimator.model_family == ModelFamily.BASELINE:
         raise ValueError("You passed in a baseline pipeline. These are simple enough that SHAP values are not needed.")
 
-    pipeline_features = pipeline._transform(features)
-    feature_names = pipeline_features.columns
+    feature_names = features.columns
 
     # This is to make sure all dtypes are numeric - SHAP algorithms will complain otherwise.
     # Sklearn components do this under-the-hood so we're not changing the data the model was trained on.
     # Catboost can naturally handle string-encoded categorical features so we don't need to convert to numeric.
     if estimator.model_family != ModelFamily.CATBOOST:
-        pipeline_features = check_array(pipeline_features.values)
+        features = check_array(features.values)
 
     if estimator.model_family.is_tree_estimator():
         # Because of this issue: https://github.com/slundberg/shap/issues/1215
@@ -68,7 +67,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
             explainer = shap.TreeExplainer(estimator._component_obj, feature_perturbation="tree_path_dependent")
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
-        shap_values = explainer.shap_values(pipeline_features, check_additivity=False)
+        shap_values = explainer.shap_values(features, check_additivity=False)
         # shap only outputs values for positive class for Catboost binary estimators.
         # this modifies the output to match the output format of other binary estimators.
         # Ok to fill values of negative class with zeros since the negative class will get dropped
@@ -94,7 +93,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
             decision_function = estimator._component_obj.predict_proba
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.KernelExplainer(decision_function, sampled_training_data_features, link_function)
-            shap_values = explainer.shap_values(pipeline_features)
+            shap_values = explainer.shap_values(features)
         if ws:
             logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
 
