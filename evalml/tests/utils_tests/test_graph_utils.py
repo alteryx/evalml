@@ -446,7 +446,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     assert np.array_equal(fig_dict['data'][0]['y'][::-1], perm_importance_data['feature'])
 
 
-@patch('evalml.pipelines.graph_utils.calculate_permutation_importance')
+@patch('evalml.utils.graph_utils.calculate_permutation_importance')
 def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})

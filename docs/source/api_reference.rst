@@ -105,21 +105,6 @@ Regression Pipelines
     MeanBaselineRegressionPipeline
 
 
-Pipeline Graph Utils
-~~~~~~~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    precision_recall_curve
-    graph_precision_recall_curve
-    roc_curve
-    graph_roc_curve
-    graph_confusion_matrix
-    calculate_permutation_importance
-    graph_permutation_importance
-
-
 .. currentmodule:: evalml.pipelines.utils
 
 Pipeline Utils
@@ -459,3 +444,10 @@ Graph Utils
 
     confusion_matrix
     normalize_confusion_matrix
+    precision_recall_curve
+    graph_precision_recall_curve
+    roc_curve
+    graph_roc_curve
+    graph_confusion_matrix
+    calculate_permutation_importance
+    graph_permutation_importance
