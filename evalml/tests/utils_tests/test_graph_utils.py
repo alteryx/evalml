@@ -38,14 +38,6 @@ def test_pipeline():
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
 
-        @property
-        def feature_importance(self):
-            importance = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
-            feature_names = range(len(importance))
-            f_i = list(zip(feature_names, importance))
-            df = pd.DataFrame(f_i, columns=["feature", "importance"])
-            return df
-
     return TestPipeline(parameters={})
 
 
