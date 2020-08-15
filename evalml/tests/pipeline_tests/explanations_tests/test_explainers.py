@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from evalml.exceptions import PipelineScoreError
-from evalml.pipelines.prediction_explanations.explainers import (
+from evalml.model_understanding.prediction_explanations.explainers import (
     abs_error,
     cross_entropy,
     explain_prediction,

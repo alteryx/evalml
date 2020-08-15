@@ -1,3 +1,4 @@
+# flake8:noqa
 from .graphs import (
     precision_recall_curve,
     graph_precision_recall_curve,
@@ -9,3 +10,4 @@ from .graphs import (
     confusion_matrix,
     normalize_confusion_matrix
 )
+from .prediction_explanations import explain_prediction, explain_predictions_best_worst, explain_predictions

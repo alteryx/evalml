@@ -8,9 +8,6 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
-from evalml.objectives import get_objectives
-from evalml.pipelines import BinaryClassificationPipeline
-from evalml.problem_types import ProblemTypes
 from evalml.model_understanding.graphs import (
     calculate_permutation_importance,
     confusion_matrix,
@@ -22,6 +19,9 @@ from evalml.model_understanding.graphs import (
     precision_recall_curve,
     roc_curve
 )
+from evalml.objectives import get_objectives
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture
@@ -438,7 +438,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     assert np.array_equal(fig_dict['data'][0]['y'][::-1], perm_importance_data['feature'])
 
 
-@patch('evalml.utils.graph_utils.calculate_permutation_importance')
+@patch('evalml.model_understanding.graphs.calculate_permutation_importance')
 def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
