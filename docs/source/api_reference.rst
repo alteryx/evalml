@@ -210,7 +210,7 @@ Regressors are components that output a predicted target value.
     BaselineRegressor
 
 
-.. currentmodule:: evalml.model_understanding
+.. currentmodule:: evalml.model_understanding.prediction_explanations
 
 
 Model Understanding
@@ -228,6 +228,8 @@ Prediction Explanations
     explain_predictions
     explain_predictions_best_worst
 
+
+.. currentmodule:: evalml.model_understanding
 
 Graph Utils
 ~~~~~~~~~~~
