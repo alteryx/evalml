@@ -61,7 +61,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
-@patch("evalml.pipelines.prediction_explanations._algorithms.shap.TreeExplainer")
+@patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
     if "xgboost" in pipeline.name.lower():

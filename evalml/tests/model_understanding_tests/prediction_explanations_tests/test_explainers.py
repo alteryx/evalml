@@ -86,8 +86,8 @@ explain_prediction_multiclass_answer = """Class: class_0
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_answer)
                           ])
-@patch("evalml.pipelines.prediction_explanations._user_interface._compute_shap_values")
-@patch("evalml.pipelines.prediction_explanations._user_interface._normalize_shap_values")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._normalize_shap_values")
 def test_explain_prediction(mock_normalize_shap_values,
                             mock_compute_shap_values,
                             problem_type, shap_values, normalized_shap_values, answer):
@@ -269,8 +269,8 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                          [(ProblemTypes.REGRESSION, regression_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.BINARY, binary_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_best_worst_answer, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table, mock_default_metrics,
                                                                 problem_type, answer, explain_predictions_answer):
 
@@ -319,7 +319,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
                          [(ProblemTypes.REGRESSION, no_best_worst_answer),
                           (ProblemTypes.BINARY, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_custom_index(mock_make_table, problem_type, answer):
 
     mock_make_table.return_value = "table goes here"
@@ -372,7 +372,7 @@ regression_custom_metric_answer = """Test Pipeline Name
 """
 
 
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_custom_metric(mock_make_table):
 
     mock_make_table.return_value = "table goes here"

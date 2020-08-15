@@ -210,10 +210,15 @@ Regressors are components that output a predicted target value.
     BaselineRegressor
 
 
-.. currentmodule:: evalml.pipelines.prediction_explanations
+.. currentmodule:: evalml.model_understanding
+
+
+Model Understanding
+===================
 
 Prediction Explanations
-========================
+~~~~~~~~~~~~~~~~~~~~~~~
+
 
 .. autosummary::
     :toctree: generated
@@ -222,6 +227,23 @@ Prediction Explanations
     explain_prediction
     explain_predictions
     explain_predictions_best_worst
+
+
+Graph Utils
+~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    confusion_matrix
+    normalize_confusion_matrix
+    precision_recall_curve
+    graph_precision_recall_curve
+    roc_curve
+    graph_roc_curve
+    graph_confusion_matrix
+    calculate_permutation_importance
+    graph_permutation_importance
 
 
 .. currentmodule:: evalml.objectives
@@ -435,19 +457,3 @@ General Utils
     get_random_state
     get_random_seed
 
-
-Graph Utils
-~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    confusion_matrix
-    normalize_confusion_matrix
-    precision_recall_curve
-    graph_precision_recall_curve
-    roc_curve
-    graph_roc_curve
-    graph_confusion_matrix
-    calculate_permutation_importance
-    graph_permutation_importance
