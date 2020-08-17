@@ -57,11 +57,9 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     return conf_mat
 
 
-def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
-    """Generates cost-benefit matrix score vs. threshold graph for a fitted pipeline.
+def cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
     """
-    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-
+    """
     ypred_proba = pipeline.predict_proba(X).iloc[:, 1]
     thresholds = np.linspace(0, 1, steps + 1)
     costs = []
@@ -70,7 +68,14 @@ def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
         cost = cbm_objective.objective_function(y, y_predicted, X=X)
         costs.append(cost)
     df = pd.DataFrame({"thresholds": thresholds, "costs": costs})
+    return df
 
+
+def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
+    """Generates cost-benefit matrix score vs. threshold graph for a fitted pipeline.
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    df = cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps)
     max_costs = df["costs"].max()
     min_costs = df["costs"].min()
     margins = abs(max_costs - min_costs) * 0.05
