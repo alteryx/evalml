@@ -30,7 +30,7 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def perfect_score(cls):
-        """Returns a perfect score on this objective."""
+        """Returns the score obtained by evaluating this objective on a perfect model."""
 
     @classmethod
     @abstractmethod
@@ -97,26 +97,25 @@ class ObjectiveBase(ABC):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
 
     @classmethod
-    def calculate_percent_difference(cls, score, reference_score):
+    def calculate_percent_difference(cls, score, baseline_score):
         """Calculate the percent difference between scores.
 
         Arguments:
             score (float): A score. Output of the score method of this objective.
-            reference_score (float): A score. Output of the score method of this objective. In practice,
+            baseline_score (float): A score. Output of the score method of this objective. In practice,
                 this is the score achieved on this objective with a baseline estimator.
 
         Returns:
-            float: The percent difference between the scores. Note that for objectives that can be interpreted
-                as percentages, this will be the difference between the reference score and score. For all other
-                objectives, the difference will be normalized by the reference score.
+            float: The percent difference between the scores. This will be the difference between the
+            baseline score and score normalized by the baseline score.
         """
 
-        if pd.isna(score) or pd.isna(reference_score):
+        if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
-        if reference_score == 0:
+        if baseline_score == 0:
             return np.nan
 
-        difference = (reference_score - score)
-        change = difference / reference_score
+        difference = (baseline_score - score)
+        change = difference / baseline_score
         return 100 * (-1) ** (cls.greater_is_better) * change

@@ -412,23 +412,23 @@ def test_mcc_catches_warnings():
         assert len(record) == 0
 
 
-@pytest.mark.parametrize("objective", all_objectives)
-def test_calculate_percent_difference(objective):
+@pytest.mark.parametrize("objective_class", all_objectives)
+def test_calculate_percent_difference(objective_class):
     score = 5
     reference_score = 10
 
-    change = ((-1)**(not objective.greater_is_better) * (score - reference_score)) / reference_score
+    change = ((-1) ** (not objective_class.greater_is_better) * (score - reference_score)) / reference_score
     answer = 100 * change
 
-    assert objective.calculate_percent_difference(score, reference_score) == answer
-    assert objective.perfect_score is not None
+    assert objective_class.calculate_percent_difference(score, reference_score) == answer
+    assert objective_class.perfect_score is not None
 
 
-@pytest.mark.parametrize("objective,nan_value", product(all_objectives, [None, np.nan]))
-def test_calculate_percent_difference_with_nan(objective, nan_value):
+@pytest.mark.parametrize("objective_class,nan_value", product(all_objectives, [None, np.nan]))
+def test_calculate_percent_difference_with_nan(objective_class, nan_value):
 
-    assert pd.isna(objective.calculate_percent_difference(nan_value, 2))
-    assert pd.isna(objective.calculate_percent_difference(-1, nan_value))
-    assert pd.isna(objective.calculate_percent_difference(nan_value, nan_value))
+    assert pd.isna(objective_class.calculate_percent_difference(nan_value, 2))
+    assert pd.isna(objective_class.calculate_percent_difference(-1, nan_value))
+    assert pd.isna(objective_class.calculate_percent_difference(nan_value, nan_value))
 
-    assert pd.isna(objective.calculate_percent_difference(2, 0))
+    assert pd.isna(objective_class.calculate_percent_difference(2, 0))
