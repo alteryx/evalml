@@ -209,27 +209,10 @@ Regressors are components that output a predicted target value.
     XGBoostRegressor
     BaselineRegressor
 
-
-.. currentmodule:: evalml.model_understanding.prediction_explanations
-
+.. currentmodule:: evalml.model_understanding
 
 Model Understanding
 ===================
-
-Prediction Explanations
-~~~~~~~~~~~~~~~~~~~~~~~
-
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    explain_prediction
-    explain_predictions
-    explain_predictions_best_worst
-
-
-.. currentmodule:: evalml.model_understanding
 
 Graph Utils
 ~~~~~~~~~~~
@@ -246,6 +229,21 @@ Graph Utils
     graph_confusion_matrix
     calculate_permutation_importance
     graph_permutation_importance
+
+
+.. currentmodule:: evalml.model_understanding.prediction_explanations
+
+Prediction Explanations
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    explain_prediction
+    explain_predictions
+    explain_predictions_best_worst
 
 
 .. currentmodule:: evalml.objectives
@@ -265,7 +263,6 @@ Objective Base Classes
     BinaryClassificationObjective
     MulticlassClassificationObjective
     RegressionObjective
-
 
 
 Domain-Specific Objectives
