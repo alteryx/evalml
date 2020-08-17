@@ -105,21 +105,6 @@ Regression Pipelines
     MeanBaselineRegressionPipeline
 
 
-Pipeline Graph Utils
-~~~~~~~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    precision_recall_curve
-    graph_precision_recall_curve
-    roc_curve
-    graph_roc_curve
-    graph_confusion_matrix
-    calculate_permutation_importance
-    graph_permutation_importance
-
-
 .. currentmodule:: evalml.pipelines.utils
 
 Pipeline Utils
@@ -224,11 +209,33 @@ Regressors are components that output a predicted target value.
     XGBoostRegressor
     BaselineRegressor
 
+.. currentmodule:: evalml.model_understanding
 
-.. currentmodule:: evalml.pipelines.prediction_explanations
+Model Understanding
+===================
+
+Graph Utils
+~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    confusion_matrix
+    normalize_confusion_matrix
+    precision_recall_curve
+    graph_precision_recall_curve
+    roc_curve
+    graph_roc_curve
+    graph_confusion_matrix
+    calculate_permutation_importance
+    graph_permutation_importance
+
+
+.. currentmodule:: evalml.model_understanding.prediction_explanations
 
 Prediction Explanations
-========================
+~~~~~~~~~~~~~~~~~~~~~~~
+
 
 .. autosummary::
     :toctree: generated
@@ -256,7 +263,6 @@ Objective Base Classes
     BinaryClassificationObjective
     MulticlassClassificationObjective
     RegressionObjective
-
 
 
 Domain-Specific Objectives
@@ -450,12 +456,3 @@ General Utils
     get_random_state
     get_random_seed
 
-
-Graph Utils
-~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
-    confusion_matrix
-    normalize_confusion_matrix
