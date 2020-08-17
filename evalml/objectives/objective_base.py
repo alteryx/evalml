@@ -106,8 +106,8 @@ class ObjectiveBase(ABC):
                 this is the score achieved on this objective with a baseline estimator.
 
         Returns:
-            float: The percent difference between the scores. This will be the difference between the
-            baseline score and score normalized by the baseline score.
+            float: The percent difference between the scores. This will be the difference normalized by the
+                baseline score.
         """
 
         if pd.isna(score) or pd.isna(baseline_score):
