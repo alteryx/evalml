@@ -11,17 +11,17 @@ from skopt.space import Real
 from evalml.model_understanding.graphs import (
     calculate_permutation_importance,
     confusion_matrix,
+    cost_benefit_thresholds,
     graph_confusion_matrix,
+    graph_cost_benefit_thresholds,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_roc_curve,
     normalize_confusion_matrix,
     precision_recall_curve,
-    roc_curve,
-    cost_benefit_thresholds,
-    graph_cost_benefit_thresholds
+    roc_curve
 )
-from evalml.objectives import get_objectives
+from evalml.objectives import CostBenefitMatrix, get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -453,6 +453,7 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
 
 def test_cost_benefit_thresholds(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
