@@ -414,17 +414,10 @@ def test_mcc_catches_warnings():
 
 @pytest.mark.parametrize("objective", all_objectives)
 def test_calculate_percent_difference(objective):
+    score = 5
+    reference_score = 10
 
-    if objective.is_percentage:
-        score = 0.8
-        reference_score = 0.6
-        denominator = 1
-    else:
-        score = 5
-        reference_score = 10
-        denominator = reference_score
-
-    change = ((-1)**(not objective.greater_is_better) * (score - reference_score)) / denominator
+    change = ((-1)**(not objective.greater_is_better) * (score - reference_score)) / reference_score
     answer = 100 * change
 
     assert objective.calculate_percent_difference(score, reference_score) == answer
@@ -438,7 +431,4 @@ def test_calculate_percent_difference_with_nan(objective, nan_value):
     assert pd.isna(objective.calculate_percent_difference(-1, nan_value))
     assert pd.isna(objective.calculate_percent_difference(nan_value, nan_value))
 
-    if objective.is_percentage:
-        assert objective.calculate_percent_difference(0.25, 0) == (-1) ** (not objective.greater_is_better) * 25
-    else:
-        assert pd.isna(objective.calculate_percent_difference(2, 0))
+    assert pd.isna(objective.calculate_percent_difference(2, 0))

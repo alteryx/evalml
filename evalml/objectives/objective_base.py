@@ -32,12 +32,6 @@ class ObjectiveBase(ABC):
     def perfect_score(cls):
         """Returns a perfect score on this objective."""
 
-    @property
-    @classmethod
-    @abstractmethod
-    def is_percentage(cls):
-        """Returns whether this objective should be interpreted as a percentage."""
-
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None):
@@ -120,14 +114,9 @@ class ObjectiveBase(ABC):
         if pd.isna(score) or pd.isna(reference_score):
             return np.nan
 
+        if reference_score == 0:
+            return np.nan
+
         difference = (reference_score - score)
-
-        if cls.is_percentage:
-            return 100 * (-1) ** (cls.greater_is_better) * difference
-
-        else:
-            if reference_score == 0:
-                return np.nan
-            else:
-                change = difference / reference_score
-                return 100 * (-1) ** (cls.greater_is_better) * change
+        change = difference / reference_score
+        return 100 * (-1) ** (cls.greater_is_better) * change

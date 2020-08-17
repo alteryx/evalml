@@ -10,7 +10,6 @@ class LeadScoring(BinaryClassificationObjective):
     name = "Lead Scoring"
     greater_is_better = True
     score_needs_proba = False
-    is_percentage = False
     perfect_score = math.inf
 
     def __init__(self, true_positives=1, false_positives=-1):
