@@ -483,7 +483,7 @@ def test_cost_benefit_thresholds_steps(mock_obj_function, mock_decision_function
     assert cost_benefit_df.shape == (235, 2)
 
 
-@patch('evalml.utils.graph_utils.cost_benefit_thresholds')
+@patch('evalml.model_understanding.graphs.cost_benefit_thresholds')
 def test_graph_cost_benefit_thresholds(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
