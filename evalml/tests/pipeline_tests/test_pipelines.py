@@ -25,6 +25,8 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DropNullColumns,
+    ElasticNetClassifier,
+    ElasticNetRegressor,
     Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -114,6 +116,11 @@ def test_make_pipeline():
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
 
+    en_binary_pipeline = make_pipeline(X, y, ElasticNetClassifier, ProblemTypes.BINARY)
+    assert isinstance(en_binary_pipeline, type(BinaryClassificationPipeline))
+    assert en_binary_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder,
+                                                  StandardScaler, ElasticNetClassifier]
+
     binary_pipeline = make_pipeline(X, y, RandomForestClassifier, ProblemTypes.BINARY)
     assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
     assert binary_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, RandomForestClassifier]
@@ -123,6 +130,11 @@ def test_make_pipeline():
     assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
     assert multiclass_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
 
+    en_multiclass_pipeline = make_pipeline(X, y, ElasticNetClassifier, ProblemTypes.MULTICLASS)
+    assert isinstance(en_multiclass_pipeline, type(MulticlassClassificationPipeline))
+    assert en_multiclass_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder,
+                                                      StandardScaler, ElasticNetClassifier]
+
     regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, RandomForestRegressor]
@@ -130,6 +142,11 @@ def test_make_pipeline():
     regression_pipeline = make_pipeline(X, y, LinearRegressor, ProblemTypes.REGRESSION)
     assert isinstance(regression_pipeline, type(RegressionPipeline))
     assert regression_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, LinearRegressor]
+
+    en_multiclass_pipeline = make_pipeline(X, y, ElasticNetRegressor, ProblemTypes.REGRESSION)
+    assert isinstance(en_multiclass_pipeline, type(RegressionPipeline))
+    assert en_multiclass_pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder,
+                                                      StandardScaler, ElasticNetRegressor]
 
 
 def test_make_pipeline_no_nulls():
