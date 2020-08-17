@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import cloudpickle
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.pipelines.base_meta import ComponentBaseMeta
+from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     classproperty,
     get_logger,

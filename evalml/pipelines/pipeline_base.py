@@ -18,7 +18,7 @@ from evalml.exceptions import (
     MissingComponentError,
     PipelineScoreError
 )
-from evalml.pipelines.base_meta import PipelineBaseMeta
+from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
     classproperty,
     get_logger,
