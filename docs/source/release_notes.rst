@@ -19,6 +19,7 @@ Release Notes
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
         * Remove maximum version limit for SciPy dependency :pr:`1051`
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
+        * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
@@ -30,7 +31,7 @@ Release Notes
 
     **Breaking Changes**
         * ``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to `evalml.utils` :pr:`1038`
-
+        * All graph utility methods previously under ``evalml.pipelines.graph_utils`` have been moved to ``evalml.utils.graph_utils`` :pr:`1060`
 
 
 **v0.12.2 Aug. 6, 2020**

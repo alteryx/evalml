@@ -3,7 +3,7 @@ import numpy as np
 
 from .binary_classification_objective import BinaryClassificationObjective
 
-from evalml.utils.graph_utils import confusion_matrix
+from evalml.model_understanding.graphs import confusion_matrix
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):
