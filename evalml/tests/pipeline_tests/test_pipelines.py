@@ -9,9 +9,9 @@ from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
-    ComponentNotYetFittedError,
     IllFormattedClassNameError,
     MissingComponentError,
+    PipelineNotYetFittedError,
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
@@ -536,8 +536,8 @@ def make_mock_multiclass_pipeline():
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.predict')
-def test_score_regression_single(mock_predict, mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
+    X, y = X_y_regression
     mock_predict.return_value = y
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
@@ -810,9 +810,13 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
     mock_predict.return_value = np.array([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
-        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+        clf = dummy_regression_pipeline_class(parameters={})
+        clf.fit(X, y)
+        clf.score(X, y, ['precision', 'auc'])
     try:
-        dummy_regression_pipeline_class(parameters={}).score(X, y, ['precision', 'auc'])
+        clf = dummy_regression_pipeline_class(parameters={})
+        clf.fit(X, y)
+        clf.score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
         assert "Invalid objective AUC specified for problem type Regression" in e.message
         assert "Invalid objective Precision specified for problem type Regression" in e.message
@@ -919,7 +923,7 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     pipeline_clone = pipeline.clone(random_state=42)
     assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(ComponentNotYetFittedError):
+    with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
@@ -1017,3 +1021,43 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
         assert set(predictions.unique()).issubset(unique_vals)
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)
+
+
+@patch('evalml.pipelines.PipelineBase.fit')
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                   logistic_regression_binary_pipeline_class,
+                                   logistic_regression_multiclass_pipeline_class,
+                                   linear_regression_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = logistic_regression_binary_pipeline_class(parameters={})
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = logistic_regression_multiclass_pipeline_class(parameters={})
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = linear_regression_pipeline_class(parameters={})
+
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.feature_importance
+
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with pytest.raises(PipelineNotYetFittedError):
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with patch('evalml.pipelines.ClassificationPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+        with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
+            clf.predict_proba(X)
+            mock_predict_proba.assert_called()
+    else:
+        with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+    clf.feature_importance
