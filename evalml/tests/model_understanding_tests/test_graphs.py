@@ -17,7 +17,9 @@ from evalml.model_understanding.graphs import (
     graph_roc_curve,
     normalize_confusion_matrix,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    cost_benefit_thresholds,
+    graph_cost_benefit_thresholds
 )
 from evalml.objectives import get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
@@ -451,3 +453,48 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+def test_cost_benefit_thresholds(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    cost_benefit_df = cost_benefit_thresholds(pipeline, X, y, cbm)
+    assert list(cost_benefit_df.columns) == ['thresholds', 'costs']
+    assert cost_benefit_df.shape == (101, 2)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.objectives.CostBenefitMatrix.decision_function')
+@patch('evalml.objectives.CostBenefitMatrix.objective_function')
+def test_cost_benefit_thresholds_steps(mock_obj_function, mock_decision_function, mock_predict_proba,
+                                       X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    mock_obj_function.return_value = 0.2
+    cost_benefit_df = cost_benefit_thresholds(pipeline, X, y, cbm, steps=234)
+    mock_predict_proba.assert_called()
+    mock_decision_function.assert_called()
+    assert list(cost_benefit_df.columns) == ['thresholds', 'costs']
+    assert cost_benefit_df.shape == (235, 2)
+
+
+@patch('evalml.utils.graph_utils.cost_benefit_thresholds')
+def test_graph_cost_benefit_thresholds(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+
+    mock_cb_thresholds.return_value = pd.DataFrame({'thresholds': [0, 0.5, 1.0],
+                                                    'costs': [100, -20, 5]})
+
+    figure = graph_cost_benefit_thresholds(pipeline, X, y, cbm)
+    assert isinstance(figure, go.Figure)
+    data = figure.data[0]
+    assert not np.any(np.isnan(data['x']))
+    assert not np.any(np.isnan(data['y']))
