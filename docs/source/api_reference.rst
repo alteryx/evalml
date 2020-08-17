@@ -459,3 +459,6 @@ Graph Utils
 
     confusion_matrix
     normalize_confusion_matrix
+    cost_benefit_thresholds
+    graph_cost_benefit_thresholds
+
