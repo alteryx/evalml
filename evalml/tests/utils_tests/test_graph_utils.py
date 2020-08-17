@@ -1,11 +1,10 @@
 import warnings
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import   patch
 
-from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
 from evalml.utils.graph_utils import (
     confusion_matrix,
@@ -129,7 +128,7 @@ def test_graph_cost_benefit_thresholds(mock_cb_thresholds, X_y_binary, logistic_
                             false_positive_cost=-7, false_negative_cost=-2)
 
     mock_cb_thresholds.return_value = pd.DataFrame({'thresholds': [0, 0.5, 1.0],
-    'costs': [100, -20, 5]})
+                                                    'costs': [100, -20, 5]})
 
     figure = graph_cost_benefit_thresholds(pipeline, X, y, cbm)
     assert isinstance(figure, go.Figure)

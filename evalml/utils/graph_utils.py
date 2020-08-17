@@ -58,7 +58,18 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
 
 
 def cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
-    """
+    """Gets cost-benefit matrix score vs. thresholds for a fitted pipeline.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): fitted pipeline
+        X (pd.DataFrame): the input data used to score and compute cost-benefit matrix
+        y (pd.Series): the target labels
+        cbm_objective (CostBenefitMatrix obj): cost-benefit matrix objective
+        steps (int): Number of intervals to divide and calculate cost-benefit matrix at
+
+    Returns:
+        pd.DataFrame: DataFrame with thresholds and their corresponding cost-benefit matrix cost.
+
     """
     ypred_proba = pipeline.predict_proba(X).iloc[:, 1]
     thresholds = np.linspace(0, 1, steps + 1)
@@ -73,6 +84,17 @@ def cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
 
 def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
     """Generates cost-benefit matrix score vs. threshold graph for a fitted pipeline.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): fitted pipeline
+        X (pd.DataFrame): the input data used to score and compute cost-benefit matrix
+        y (pd.Series): the target labels
+        cbm_objective (CostBenefitMatrix obj): cost-benefit matrix objective
+        steps (int): Number of intervals to divide and calculate cost-benefit matrix at
+
+    Returns:
+        plotly.Figure representing the cost-benefit matrix plot generated
+
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     df = cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps)
