@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
-from evalml.pipelines.prediction_explanations._user_interface import (
+from evalml.model_understanding.prediction_explanations._user_interface import (
     _ClassificationPredictedValuesMaker,
     _EmptyPredictedValuesMaker,
     _HeadingMaker,

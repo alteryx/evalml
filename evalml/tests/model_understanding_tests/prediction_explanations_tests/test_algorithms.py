@@ -88,7 +88,7 @@ def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explai
     pipeline = pipeline_class({}, random_state=0)
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
-    return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
+    return _compute_shap_values(pipeline, points_to_explain, training_data)
 
 
 interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}]
