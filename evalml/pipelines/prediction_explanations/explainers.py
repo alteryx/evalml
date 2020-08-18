@@ -12,12 +12,19 @@ from evalml.pipelines.prediction_explanations._user_interface import (
     _make_single_prediction_shap_table,
     _RegressionPredictedValuesMaker,
     _ReportSectionMaker,
-    _SHAPTableMaker
+    _SHAPTableMaker,
+    _EmptyJSONPredictedValuesMaker,
+    _JSONSHAPTableMaker,
+    _JSONHeadingMaker,
+    _JSONReportMaker,
+    _RegressionJSONPredictedValuesMaker,
+    _ClassificationJSONPredictedValuesMaker
 )
 from evalml.problem_types import ProblemTypes
 
 
-def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False):
+def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
+                       output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -34,7 +41,8 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     Returns:
         str: Table
     """
-    return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values)
+    return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
+                                              output_format=output_format)
 
 
 def abs_error(y_true, y_pred):
@@ -70,7 +78,8 @@ DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
                    ProblemTypes.REGRESSION: abs_error}
 
 
-def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False):
+def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False,
+                        output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -91,18 +100,26 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     """
     if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
-    report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
-    header_maker = _HeadingMaker(prefix="", n_indices=input_features.shape[0])
-    prediction_results_maker = _EmptyPredictedValuesMaker()
-    table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data)
-    section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
-    report.extend(section_maker.make_report_section(pipeline, input_features, indices=range(input_features.shape[0]),
-                                                    y_true=None, y_pred=None, errors=None))
-    return "".join(report)
+    if output_format == "text":
+        report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
+        header_maker = _HeadingMaker(prefix="", n_indices=input_features.shape[0])
+        prediction_results_maker = _EmptyPredictedValuesMaker()
+        table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data)
+        section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
+        report.extend(section_maker.make_report_section(pipeline, input_features, indices=range(input_features.shape[0]),
+                                                        y_true=None, y_pred=None, errors=None))
+        return "".join(report)
+    else:
+        header_maker = _JSONHeadingMaker(prefix=None, n_indices=input_features.shape[0])
+        prediction_results_maker = _EmptyJSONPredictedValuesMaker()
+        table_maker = _JSONSHAPTableMaker(top_k_features, include_shap_values, training_data)
+        section_maker = _JSONReportMaker(header_maker, prediction_results_maker, table_maker)
+        return section_maker.make_report_section(pipeline, input_features, indices=range(input_features.shape[0]),
+                                                 y_true=None, y_pred=None, errors=None)
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
-                                   include_shap_values=False, metric=None):
+                                   include_shap_values=False, metric=None, output_format="json"):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -138,18 +155,14 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
 
-    table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=input_features)
-
     try:
         if pipeline.problem_type == ProblemTypes.REGRESSION:
             y_pred = pipeline.predict(input_features)
             errors = metric(y_true, y_pred)
-            prediction_results_maker = _RegressionPredictedValuesMaker(metric.__name__)
         else:
             y_pred = pipeline.predict_proba(input_features)
             y_pred_values = pipeline.predict(input_features)
             errors = metric(pipeline._encode_targets(y_true), y_pred)
-            prediction_results_maker = _ClassificationPredictedValuesMaker(metric.__name__, y_pred_values)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(exceptions={metric.__name__: (e, tb)}, scored_successfully={})
@@ -157,14 +170,41 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     sorted_scores = errors.sort_values()
     best = sorted_scores.index[:num_to_explain]
     worst = sorted_scores.index[-num_to_explain:]
-    report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
 
-    # The trailing space after Best and Worst is intentional. It makes sure there is a space
-    # between the prefix and rank for the _HeadingMaker
-    for index_list, prefix in zip([best, worst], ["Best ", "Worst "]):
-        header_maker = _HeadingMaker(prefix, n_indices=num_to_explain)
-        report_section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
-        section = report_section_maker.make_report_section(pipeline, input_features, index_list, y_pred,
-                                                           y_true, errors)
-        report.extend(section)
-    return "".join(report)
+    if output_format == "text":
+        table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=input_features)
+
+        if pipeline.problem_type == ProblemTypes.REGRESSION:
+            prediction_results_maker = _RegressionPredictedValuesMaker(metric.__name__)
+        else:
+            prediction_results_maker = _ClassificationPredictedValuesMaker(metric.__name__, y_pred_values)
+
+        report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
+
+        # The trailing space after Best and Worst is intentional. It makes sure there is a space
+        # between the prefix and rank for the _HeadingMaker
+        for index_list, prefix in zip([best, worst], ["Best ", "Worst "]):
+            header_maker = _HeadingMaker(prefix, n_indices=num_to_explain)
+            report_section_maker = _ReportSectionMaker(header_maker, prediction_results_maker, table_maker)
+            section = report_section_maker.make_report_section(pipeline, input_features, index_list, y_pred,
+                                                               y_true, errors)
+            report.extend(section)
+        return "".join(report)
+    else:
+        report = []
+
+        table_maker = _JSONSHAPTableMaker(top_k_features, include_shap_values, training_data=input_features)
+
+        if pipeline.problem_type == ProblemTypes.REGRESSION:
+            prediction_results_maker = _RegressionJSONPredictedValuesMaker(metric.__name__)
+        else:
+            prediction_results_maker = _ClassificationJSONPredictedValuesMaker(metric.__name__, y_pred_values)
+
+        for index_list, prefix in zip([best, worst], ["best", "worst"]):
+            header_maker = _JSONHeadingMaker(prefix, n_indices=num_to_explain)
+            report_section_maker = _JSONReportMaker(header_maker, prediction_results_maker, table_maker)
+            section = report_section_maker.make_report_section(pipeline, input_features, index_list, y_pred,
+                                                               y_true, errors)
+            report.extend(section["explanations"])
+
+        return {"explanations": report}
