@@ -1,4 +1,5 @@
 import os
+from itertools import product
 from unittest.mock import MagicMock, patch
 
 import cloudpickle
@@ -19,6 +20,7 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
+from evalml.objectives.utils import OPTIONS
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -53,7 +55,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
-        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time', 'cv_data'}
+        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time',
+                                  'cv_data', 'percent_better_than_baseline'}
         assert results['id'] == pipeline_id
         assert isinstance(results['pipeline_name'], str)
         assert issubclass(results['pipeline_class'], expected_pipeline_class)
@@ -75,11 +78,11 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert np.all(automl.rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
     assert np.all(automl.full_rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', 'score', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', 'score', 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -727,7 +730,8 @@ def test_no_search():
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
 
-    df_columns = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+    df_columns = ["id", "pipeline_name", "score", "percent_better_than_baseline",
+                  "high_variance_cv", "parameters"]
     assert (automl.rankings.columns == df_columns).all()
     assert (automl.full_rankings.columns == df_columns).all()
 
@@ -954,3 +958,56 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
     automl.search(X, y)
     for pipeline in automl.results['pipeline_results'].values():
         assert np.isnan(pipeline['score'])
+
+
+@pytest.mark.parametrize("objective_tuple,pipeline_scores,baseline_score",
+                         product(OPTIONS.items(),
+                                 [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
+                                 [0.1, np.nan]))
+def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scores, baseline_score,
+                                                  dummy_binary_pipeline_class, dummy_multiclass_pipeline_class,
+                                                  dummy_regression_pipeline_class,
+                                                  X_y_binary):
+
+    # Ok to only use binary labels since score and fit methods are mocked
+    X, y = X_y_binary
+
+    name, objective = objective_tuple
+
+    pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
+                      ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
+                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[objective.problem_type]
+    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
+                               ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
+                               ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
+                               }[objective.problem_type]
+
+    class DummyPipeline(pipeline_class):
+        problem_type = objective.problem_type
+
+        def fit(self, *args, **kwargs):
+            """Mocking fit"""
+
+    class Pipeline1(DummyPipeline):
+        name = "Pipeline1"
+
+    class Pipeline2(DummyPipeline):
+        name = "Pipeline2"
+
+    mock_score_1 = MagicMock(return_value={objective.name: pipeline_scores[0]})
+    mock_score_2 = MagicMock(return_value={objective.name: pipeline_scores[1]})
+    Pipeline1.score = mock_score_1
+    Pipeline2.score = mock_score_2
+
+    automl = AutoMLSearch(problem_type=objective.problem_type, max_pipelines=3,
+                          allowed_pipelines=[Pipeline1, Pipeline2], objective=name)
+
+    with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
+        automl.search(X, y, data_checks=None)
+        scores = dict(zip(automl.rankings.pipeline_name, automl.rankings.percent_better_than_baseline))
+        baseline_name = next(name for name in automl.rankings.pipeline_name if name not in {"Pipeline1", "Pipeline2"})
+        answers = {"Pipeline1": round(objective.calculate_percent_difference(pipeline_scores[0], baseline_score), 2),
+                   "Pipeline2": round(objective.calculate_percent_difference(pipeline_scores[1], baseline_score), 2),
+                   baseline_name: round(objective.calculate_percent_difference(baseline_score, baseline_score), 2)}
+        for name in answers:
+            np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)

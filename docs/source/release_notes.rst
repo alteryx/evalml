@@ -8,15 +8,19 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
+        * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
+        * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
+        * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
         * Remove maximum version limit for SciPy dependency :pr:`1051`
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
+        * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
@@ -28,7 +32,7 @@ Release Notes
 
     **Breaking Changes**
         * ``confusion_matrix`` and ``normalize_confusion_matrix`` have been moved to `evalml.utils` :pr:`1038`
-
+        * All graph utility methods previously under ``evalml.pipelines.graph_utils`` have been moved to ``evalml.utils.graph_utils`` :pr:`1060`
 
 
 **v0.12.2 Aug. 6, 2020**

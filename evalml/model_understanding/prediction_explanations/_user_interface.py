@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from texttable import Texttable
 
-from evalml.pipelines.prediction_explanations._algorithms import (
+from evalml.model_understanding.prediction_explanations._algorithms import (
     _compute_shap_values,
     _normalize_shap_values
 )

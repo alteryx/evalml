@@ -28,6 +28,11 @@ class ComponentNotYetFittedError(Exception):
     pass
 
 
+class PipelineNotYetFittedError(Exception):
+    """An exception to be raised when predict/predict_proba/transform is called on a pipeline without fitting first."""
+    pass
+
+
 class AutoMLSearchException(Exception):
     """Exception raised when all pipelines in an automl batch return a score of NaN for the primary objective."""
     pass
