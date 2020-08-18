@@ -26,6 +26,12 @@ class ObjectiveBase(ABC):
         """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation.
         """
 
+    @property
+    @classmethod
+    @abstractmethod
+    def perfect_score(cls):
+        """Returns the score obtained by evaluating this objective on a perfect model."""
+
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None):
@@ -89,3 +95,27 @@ class ObjectiveBase(ABC):
             raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+
+    @classmethod
+    def calculate_percent_difference(cls, score, baseline_score):
+        """Calculate the percent difference between scores.
+
+        Arguments:
+            score (float): A score. Output of the score method of this objective.
+            baseline_score (float): A score. Output of the score method of this objective. In practice,
+                this is the score achieved on this objective with a baseline estimator.
+
+        Returns:
+            float: The percent difference between the scores. This will be the difference normalized by the
+                baseline score.
+        """
+
+        if pd.isna(score) or pd.isna(baseline_score):
+            return np.nan
+
+        if baseline_score == 0:
+            return np.nan
+
+        difference = (baseline_score - score)
+        change = difference / baseline_score
+        return 100 * (-1) ** (cls.greater_is_better) * change
