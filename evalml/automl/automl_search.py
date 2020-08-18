@@ -197,6 +197,7 @@ class AutoMLSearch:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._start = None
+        self._baseline_cv_score = None
 
         self._validate_problem_type()
 
@@ -529,6 +530,7 @@ class AutoMLSearch:
                                 self._start)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)
+                self._baseline_cv_score = baseline_results["cv_score_mean"]
                 self._add_result(trained_pipeline=baseline,
                                  parameters=baseline.parameters,
                                  training_time=baseline_results['training_time'],
@@ -615,6 +617,7 @@ class AutoMLSearch:
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
+        percent_better = self.objective.calculate_percent_difference(cv_score, self._baseline_cv_score)
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         with warnings.catch_warnings():
@@ -635,6 +638,7 @@ class AutoMLSearch:
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
+            "percent_better_than_baseline": percent_better
         }
         self._results['search_order'].append(pipeline_id)
 
@@ -781,7 +785,8 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "score", "high_variance_cv", "parameters"]
+        full_rankings_cols = ["id", "pipeline_name", "score", "percent_better_than_baseline",
+                              "high_variance_cv", "parameters"]
         if not self.has_searched:
             return pd.DataFrame(columns=full_rankings_cols)
 

@@ -1,4 +1,7 @@
+from itertools import product
+
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
@@ -16,6 +19,7 @@ from evalml.objectives import (
     MCCBinary,
     MCCMulticlass,
     MeanSquaredLogError,
+    ObjectiveBase,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -28,8 +32,11 @@ from evalml.objectives import (
     RootMeanSquaredLogError
 )
 from evalml.objectives.utils import OPTIONS
+from evalml.utils.gen_utils import _get_subclasses
 
 EPS = 1e-5
+
+all_objectives = _get_subclasses(ObjectiveBase)
 
 
 def test_input_contains_nan():
@@ -403,3 +410,25 @@ def test_mcc_catches_warnings():
         MCCBinary().objective_function(y_true, y_predicted)
         MCCMulticlass().objective_function(y_true, y_predicted)
         assert len(record) == 0
+
+
+@pytest.mark.parametrize("objective_class", all_objectives)
+def test_calculate_percent_difference(objective_class):
+    score = 5
+    reference_score = 10
+
+    change = ((-1) ** (not objective_class.greater_is_better) * (score - reference_score)) / reference_score
+    answer = 100 * change
+
+    assert objective_class.calculate_percent_difference(score, reference_score) == answer
+    assert objective_class.perfect_score is not None
+
+
+@pytest.mark.parametrize("objective_class,nan_value", product(all_objectives, [None, np.nan]))
+def test_calculate_percent_difference_with_nan(objective_class, nan_value):
+
+    assert pd.isna(objective_class.calculate_percent_difference(nan_value, 2))
+    assert pd.isna(objective_class.calculate_percent_difference(-1, nan_value))
+    assert pd.isna(objective_class.calculate_percent_difference(nan_value, nan_value))
+
+    assert pd.isna(objective_class.calculate_percent_difference(2, 0))

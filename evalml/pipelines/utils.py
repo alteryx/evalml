@@ -6,14 +6,13 @@ from .multiclass_classification_pipeline import (
 )
 from .regression_pipeline import RegressionPipeline
 
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
     DateTimeFeaturizer,
     DropNullColumns,
     Imputer,
-    LinearRegressor,
-    LogisticRegressionClassifier,
     OneHotEncoder,
     StandardScaler,
     TextFeaturizer
@@ -61,7 +60,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if (add_datetime_featurizer or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
-    if estimator_class in {LinearRegressor, LogisticRegressionClassifier}:
+    if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
     return pp_components
 
