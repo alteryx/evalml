@@ -10,6 +10,7 @@ Release Notes
         * Added guide on installing with conda :pr:`1041`
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
+        * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
