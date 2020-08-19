@@ -1,9 +1,11 @@
 import numpy as np
-from lightgbm.sklearn import LGBMClassifier
+from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
+
+lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
 
 
 def test_model_family():
@@ -30,7 +32,7 @@ def test_et_parameters():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = LGBMClassifier(random_state=0)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -47,7 +49,7 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = LGBMClassifier(random_state=0)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -65,7 +67,7 @@ def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
     clf = LightGBMClassifier()
-    sk_clf = LGBMClassifier(random_state=0)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
