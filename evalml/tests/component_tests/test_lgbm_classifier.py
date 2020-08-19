@@ -32,7 +32,7 @@ def test_et_parameters():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -49,7 +49,7 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -67,7 +67,7 @@ def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
     clf = LightGBMClassifier()
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=2)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
@@ -75,3 +75,12 @@ def test_feature_importance(X_y_binary):
     feature_importance = clf.feature_importance
 
     np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=5)
+
+
+def test_random_state(X_y_binary):
+    X, y = X_y_binary
+
+    clf = LightGBMClassifier(random_state=0)
+    clf.fit(X, y)
+    clf = LightGBMClassifier(random_state=np.random.RandomState(0))
+    clf.fit(X, y)
