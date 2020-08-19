@@ -1,9 +1,10 @@
-from lightgbm.sklearn import LGBMClassifier
+# from lightgbm.sklearn import LGBMClassifier
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import get_random_seed, import_or_raise
 
 
 class LightGBMClassifier(Estimator):
@@ -24,7 +25,10 @@ class LightGBMClassifier(Estimator):
                       "n_jobs": n_jobs}
         parameters.update(kwargs)
 
-        lgbm_classifier = LGBMClassifier(random_state=random_state, **parameters)
+        lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
+        lgbm = import_or_raise("lightgbm", error_msp=lgbm_error_msg)
+
+        lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_state, **parameters)
 
         super().__init__(parameters=parameters,
                          component_obj=lgbm_classifier,
