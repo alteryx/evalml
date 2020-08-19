@@ -1,6 +1,5 @@
 import abc
 
-import numpy as np
 import pandas as pd
 from texttable import Texttable
 
@@ -36,14 +35,14 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
     for value, feature_name in features_to_display:
         symbol = "+" if value >= 0 else "-"
         display_text = symbol * min(int(abs(value) // 0.2) + 1, 5)
-        feature_value = pipeline_features[feature_name]
-        if pd.api.types.is_number(feature_value):
-            feature_value = np.round(feature_value, 2)
+        feature_value = pipeline_features[feature_name].iloc[0]
+        if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(feature_value):
+            feature_value = "{:.2f}".format(feature_value)
         else:
             feature_value = str(feature_value)
         row = [feature_name, feature_value, display_text]
         if include_shap_values:
-            row.append(np.round(shap_values[feature_name][0], 2))
+            row.append("{:.2f}".format(shap_values[feature_name][0]))
         rows.append(row)
 
     return rows
@@ -62,8 +61,9 @@ def _make_table(shap_values, normalized_values, pipeline_features, top_k, includ
     Returns:
         str
     """
-    dtypes = ["t", "f", "t", "f"] if include_shap_values else ["t", "t", "t"]
-    alignment = ["c", "c", "c", "c"] if include_shap_values else ["c", "c", "c"]
+    n_cols = 4 if include_shap_values else 3
+    dtypes = ["t"] * n_cols
+    alignment = ["c"] * n_cols
 
     table = Texttable()
     table.set_deco(Texttable.HEADER)
@@ -138,13 +138,10 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     """
     if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe of one row.")
-
-    shap_values = _compute_shap_values(pipeline, input_features, training_data)
-    normalized_shap_values = _normalize_shap_values(shap_values)
-
-    # We need a dict of type {column_name: feature value}
     pipeline_features = pipeline._transform(input_features)
-    features_dict = dict(zip(pipeline_features.columns, *pipeline_features.values))
+
+    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
+    normalized_shap_values = _normalize_shap_values(shap_values)
 
     if pipeline.problem_type == ProblemTypes.REGRESSION:
         table_maker = _SHAPRegressionTableMaker()
@@ -153,7 +150,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     else:
         table_maker = _SHAPMultiClassTableMaker(pipeline._classes)
 
-    return table_maker(shap_values, normalized_shap_values, features_dict, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
 
 
 class _ReportSectionMaker:

@@ -18,11 +18,7 @@ from evalml.problem_types import ProblemTypes
 def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
     for row, row_answer in zip(table_1, table_2):
-        # To make it easier to compare header underline
-        if "=" in row:
-            assert set(row.strip()) == set(row_answer.strip())
-        else:
-            assert row.strip().split() == row_answer.strip().split()
+        assert row.strip().split() == row_answer.strip().split()
 
 
 test_features = [5, [1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
@@ -36,41 +32,41 @@ def test_explain_prediction_value_error(test_features):
 
 
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
-                                =========================================
-                                 d           40          ++++
-                                 a           10          +++
-                                 c           30          --
-                                 b           20          ----""".splitlines()
+                               =========================================================
+                                 d           40.00          ++++
+                                 a           10.00          +++
+                                 c           30.00          --
+                                 b           20.00          ----""".splitlines()
 
 
 explain_prediction_multiclass_answer = """Class: class_0
 
         Feature Name Feature Value Contribution to Prediction
-        =========================================
-            a           10                +
-            b           20                +
-            c           30                -
-            d           40                -
+       =========================================================
+            a           10.00                +
+            b           20.00                +
+            c           30.00                -
+            d           40.00                -
 
 
         Class: class_1
 
         Feature Name Feature Value Contribution to Prediction
-        =========================================
-            a           10               +++
-            b           20               ++
-            c           30               -
-            d           40               --
+       =========================================================
+            a           10.00               +++
+            b           20.00               ++
+            c           30.00               -
+            d           40.00               --
 
 
         Class: class_2
 
         Feature Name Feature Value Contribution to Prediction
-        =========================================
-            a          10            +
-            b          20            +
-            c          30           ---
-            d          40           ---
+        =========================================================
+            a          10.00            +
+            b          20.00            +
+            c          30.00           ---
+            d          40.00           ---
             """.splitlines()
 
 
