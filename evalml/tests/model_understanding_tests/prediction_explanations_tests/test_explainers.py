@@ -96,6 +96,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     pipeline = MagicMock()
     pipeline.problem_type = problem_type
     pipeline._classes = ["class_0", "class_1", "class_2"]
+    # By the time we call transform, we are looking at only one row of the input data.
     pipeline._transform.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
     table = explain_prediction(pipeline, features, top_k=2).splitlines()
