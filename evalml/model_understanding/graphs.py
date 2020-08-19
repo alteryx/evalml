@@ -15,7 +15,7 @@ from sklearn.utils.multiclass import unique_labels
 
 from evalml.objectives.utils import get_objective
 from evalml.utils import import_or_raise
-from sklearn.inspection import partial_dependence
+from sklearn.inspection import partial_dependence as sk_partial_dependence
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -323,35 +323,55 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
 
 
-def partial_dependence(estimator, X, features, grid_resolution=100):
+def partial_dependence(pipeline, X, feature, grid_resolution=100):
     """Get information necessary to create a partial dependence plot.
     
     Arguments:
-        estimator (Estimator or PipelineBase or subclass): Fitted estimator or pipeline
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, np.array): The input data used to score and compute permutation importance
+        feature (int, string): The target features for which to create the PDPs.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+
+    """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    pipeline._estimator_type = "classifier"
+    pipeline.estimator_type_ = "classifier"
+    avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+    return pd.DataFrame({"average prediction": avg_pred[0],
+                         "values": values[0]})
+
+def graph_partial_dependence(estimator, X, feature, grid_resolution=100):
+    """Create an one-way partial dependence plot.
+      
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute permutation importance
-        features (list of {int, str, pair of int, pair of str}): The target features for which to create the PDPs. 
-            If features[i] is an int or a string, a one-way PDP is created; 
-            if features[i] is a tuple, a two-way PDP is created. Each tuple must be of size 2.
-
-    Note: for now, limit to list of either one or two features.
+        feature (int, string): The target features for which to create the PDPs.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
     """
-    if len(features) == 0:
-        raise ValueError("Features list cannot be empty")
-    if len(features) > 2:
-        raise ValueError("Partial dependence plots only can be calculated for one or two features.")
-    pad = partial_dependence(estimator, X=X, features=features, grid_resolution=grid_resolution)
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    part_dep = partial_dependence(estimator, X, feature=feature, grid_resolution=grid_resolution)
+    feature_name = str(feature)
+    title = f'Partial Dependence for {feature_name}'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['average prediction'])},
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['values'])})
+    data = []
+    data.append(_go.Scatter(x=part_dep['average prediction'],
+                            y=part_dep['values'],
+                            name='Partial Dependence',
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
 
 
-def graph_partial_dependence(estimator, X, features, grid_resolution=100, method='auto'):
-    """Create a partial dependence plot.
-    features (list of {int, str, pair of int, pair of str}): The target features for which to create the PDPs. 
-        If features[i] is an int or a string, a one-way PDP is created; 
-        if features[i] is a tuple, a two-way PDP is created. Each tuple must be of size 2.
-
-    
-    Can take in str/int/tuple.
-    """
-    for feature in features:
-        pad = partial_dependence(estimator, X, features=features, grid_resolution=grid_resolution)
-
-
+def _calculate_axis_range(arr):
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    max_value = arr.max()
+    min_value = arr.min()
+    margins = abs(max_value - min_value) * 0.05
+    return [min_value - margins, max_value + margins]

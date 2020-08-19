@@ -17,7 +17,9 @@ from evalml.model_understanding.graphs import (
     graph_roc_curve,
     normalize_confusion_matrix,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    partial_dependence,
+    graph_partial_dependence
 )
 from evalml.objectives import get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
@@ -451,3 +453,43 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+
+
+@pytest.fixture
+def catboost_pipeline_class():
+    class CBPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', "CatBoost Classifier"]
+    return CBPipeline
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression, 
+    logistic_regression_binary_pipeline_class,
+    logistic_regression_multiclass_pipeline_class,
+    linear_regression_pipeline_class    
+    ):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline_class(parameters={})
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+    assert list(part_dep.columns) == ["average prediction", "values"]
+    assert not part_dep.isnull().all().all()
+
+
+from evalml.pipelines.components import CatBoostClassifier
+
+def test_partial_dependence_string_feature(X_y_binary, catboost_pipeline_class):
+    X, y = X_y_binary
+    clf = catboost_pipeline_class({})
+    clf.fit(X, y)
+    part_dep = partial_dependence(clf, X, feature=0, grid_resolution=20)
