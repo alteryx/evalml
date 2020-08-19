@@ -571,7 +571,8 @@ class AutoMLSearch:
                             y_predict_proba = y_predict_proba.iloc[:, 1]
                         else:
                             y_predict_proba = y_predict_proba[:, 1]
-                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                        true_labels_as_strings = cv_pipeline._encode_targets(y_threshold_tuning)
+                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, true_labels_as_strings, X=X_threshold_tuning)
                         logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
