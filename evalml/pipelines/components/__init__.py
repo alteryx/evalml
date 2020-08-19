@@ -3,6 +3,7 @@ from .component_base import ComponentBase, ComponentBaseMeta
 from .estimators import (
     Estimator,
     LinearRegressor,
+    LightGBMClassifier,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
