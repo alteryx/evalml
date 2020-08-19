@@ -1,5 +1,5 @@
-from lightgbm.sklearn import LGBMClassifier
 import numpy as np
+from lightgbm.sklearn import LGBMClassifier
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
