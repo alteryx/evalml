@@ -322,10 +322,10 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
 
 def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
-    """Gets objective score vs. thresholds for a fitted pipeline.
+    """Gets objective score vs. thresholds for a fitted binary classification pipeline.
 
     Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
+        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
         X (pd.DataFrame): the input data used to compute objective score
         y (pd.Series): the target labels
         objective (ObjectiveBase obj): objective
@@ -335,17 +335,20 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score at
 
     """
+    original_threshold = pipeline.threshold
     objective = get_objective(objective)
     if objective.score_needs_proba:
         raise ValueError("Objective `score_needs_proba` must be False")
-    ypred_proba = pipeline.predict_proba(X).iloc[:, 1]
     thresholds = np.linspace(0, 1, steps + 1)
     costs = []
     for threshold in thresholds:
-        y_predicted = objective.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
-        cost = objective.objective_function(y, y_predicted, X=X)
-        costs.append(cost)
-    df = pd.DataFrame({"thresholds": thresholds, "costs": costs})
+        pipeline.threshold = threshold
+        scores = pipeline.score(X, y, [objective])
+        costs.append(scores[objective.name])
+
+    # reassign original threshold
+    pipeline.threshold = original_threshold
+    df = pd.DataFrame({"thresholds": thresholds, "score": costs})
     return df
 
 
@@ -365,15 +368,15 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
-    max_costs = df["costs"].max()
-    min_costs = df["costs"].min()
+    max_costs = df['score'].max()
+    min_costs = df['score'].min()
     margins = abs(max_costs - min_costs) * 0.05
-    title = 'Objective Scores vs. Thresholds'
+    title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'Thresholds', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'Objective Score', 'range': [min_costs - margins, max_costs + margins]})
     data = []
-    data.append(_go.Scatter(x=df['thresholds'], y=df['costs'],
+    data.append(_go.Scatter(x=df['thresholds'], y=df['score'],
                             name='Scores vs. Thresholds',
                             line=dict(width=3)))
     return _go.Figure(layout=layout, data=data)

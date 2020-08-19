@@ -9,11 +9,11 @@ from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
 from evalml.model_understanding.graphs import (
+    binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
-    binary_objective_vs_threshold,
-    graph_confusion_matrix,
     graph_binary_objective_vs_threshold,
+    graph_confusion_matrix,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_roc_curve,
@@ -478,7 +478,7 @@ def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pi
 @patch('evalml.objectives.CostBenefitMatrix.decision_function')
 @patch('evalml.objectives.CostBenefitMatrix.objective_function')
 def test_binary_objective_vs_threshold_steps(mock_obj_function, mock_decision_function, mock_predict_proba,
-                                       X_y_binary, logistic_regression_binary_pipeline_class):
+                                             X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
