@@ -15,6 +15,7 @@ from sklearn.utils.multiclass import unique_labels
 
 from evalml.objectives.utils import get_objective
 from evalml.utils import import_or_raise
+from sklearn.inspection import partial_dependence
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -319,3 +320,38 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
     fig = go.Figure(data=data, layout=layout)
     return fig
+
+
+
+def partial_dependence(estimator, X, features, grid_resolution=100):
+    """Get information necessary to create a partial dependence plot.
+    
+    Arguments:
+        estimator (Estimator or PipelineBase or subclass): Fitted estimator or pipeline
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        features (list of {int, str, pair of int, pair of str}): The target features for which to create the PDPs. 
+            If features[i] is an int or a string, a one-way PDP is created; 
+            if features[i] is a tuple, a two-way PDP is created. Each tuple must be of size 2.
+
+    Note: for now, limit to list of either one or two features.
+    """
+    if len(features) == 0:
+        raise ValueError("Features list cannot be empty")
+    if len(features) > 2:
+        raise ValueError("Partial dependence plots only can be calculated for one or two features.")
+    pad = partial_dependence(estimator, X=X, features=features, grid_resolution=grid_resolution)
+
+
+def graph_partial_dependence(estimator, X, features, grid_resolution=100, method='auto'):
+    """Create a partial dependence plot.
+    features (list of {int, str, pair of int, pair of str}): The target features for which to create the PDPs. 
+        If features[i] is an int or a string, a one-way PDP is created; 
+        if features[i] is a tuple, a two-way PDP is created. Each tuple must be of size 2.
+
+    
+    Can take in str/int/tuple.
+    """
+    for feature in features:
+        pad = partial_dependence(estimator, X, features=features, grid_resolution=grid_resolution)
+
+
