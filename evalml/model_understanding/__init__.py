@@ -9,7 +9,7 @@ from .graphs import (
     graph_permutation_importance,
     confusion_matrix,
     normalize_confusion_matrix,
-    cost_benefit_thresholds,
-    graph_cost_benefit_thresholds
+    binary_objective_vs_threshold,
+    graph_binary_objective_vs_threshold
 )
 from .prediction_explanations import explain_prediction, explain_predictions_best_worst, explain_predictions

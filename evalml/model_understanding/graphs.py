@@ -321,54 +321,57 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
     return fig
 
 
-def cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
-    """Gets cost-benefit matrix score vs. thresholds for a fitted pipeline.
+def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Gets objective score vs. thresholds for a fitted pipeline.
 
     Arguments:
         pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute cost-benefit matrix
+        X (pd.DataFrame): the input data used to compute objective score
         y (pd.Series): the target labels
-        cbm_objective (CostBenefitMatrix obj): cost-benefit matrix objective
-        steps (int): Number of intervals to divide and calculate cost-benefit matrix at
+        objective (ObjectiveBase obj): objective
+        steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
-        pd.DataFrame: DataFrame with thresholds and their corresponding cost-benefit matrix cost.
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score at
 
     """
+    objective = get_objective(objective)
+    if objective.score_needs_proba:
+        raise ValueError("Objective `score_needs_proba` must be False")
     ypred_proba = pipeline.predict_proba(X).iloc[:, 1]
     thresholds = np.linspace(0, 1, steps + 1)
     costs = []
     for threshold in thresholds:
-        y_predicted = cbm_objective.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
-        cost = cbm_objective.objective_function(y, y_predicted, X=X)
+        y_predicted = objective.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+        cost = objective.objective_function(y, y_predicted, X=X)
         costs.append(cost)
     df = pd.DataFrame({"thresholds": thresholds, "costs": costs})
     return df
 
 
-def graph_cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps=100):
-    """Generates cost-benefit matrix score vs. threshold graph for a fitted pipeline.
+def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Generates objective score vs. threshold graph for a fitted pipeline.
 
     Arguments:
         pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute cost-benefit matrix
+        X (pd.DataFrame): the input data used to score and compute scores
         y (pd.Series): the target labels
-        cbm_objective (CostBenefitMatrix obj): cost-benefit matrix objective
-        steps (int): Number of intervals to divide and calculate cost-benefit matrix at
+        objective (ObjectiveBase obj): objective
+        steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
-        plotly.Figure representing the cost-benefit matrix plot generated
+        plotly.Figure representing the cost vs. threshold graph generated
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    df = cost_benefit_thresholds(pipeline, X, y, cbm_objective, steps)
+    df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     max_costs = df["costs"].max()
     min_costs = df["costs"].min()
     margins = abs(max_costs - min_costs) * 0.05
-    title = 'Cost-Benefit Matrix Scores vs. Thresholds'
+    title = 'Objective Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'Thresholds', 'range': [-0.05, 1.05]},
-                        yaxis={'title': 'Cost-Benefit Score', 'range': [min_costs - margins, max_costs + margins]})
+                        yaxis={'title': 'Objective Score', 'range': [min_costs - margins, max_costs + margins]})
     data = []
     data.append(_go.Scatter(x=df['thresholds'], y=df['costs'],
                             name='Scores vs. Thresholds',
