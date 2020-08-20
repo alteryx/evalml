@@ -13,17 +13,18 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert ProblemTypes.BINARY in LightGBMClassifier.supported_problem_types
-    assert ProblemTypes.MULTICLASS in LightGBMClassifier.supported_problem_types
-    assert len(LightGBMClassifier.supported_problem_types) == 2
+    assert set(LightGBMClassifier.supported_problem_types) == {ProblemTypes.MULTICLASS, ProblemTypes.BINARY}
 
 
 def test_et_parameters():
-    clf = LightGBMClassifier(boosting_type="dart", learning_rate=0.5, n_estimators=20)
+    clf = LightGBMClassifier(boosting_type="dart", learning_rate=0.5, n_estimators=20, max_depth=2, num_leaves=10, min_child_samples=10)
     expected_parameters = {
         "boosting_type": "dart",
         "learning_rate": 0.5,
         "n_estimators": 20,
+        "max_depth": 2,
+        "num_leaves": 10,
+        "min_child_samples": 10,
         "n_jobs": -1
     }
     assert clf.parameters == expected_parameters
