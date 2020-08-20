@@ -204,7 +204,7 @@ class AutoMLSearch:
             raise ValueError("Parameter max batches must be None or non-negative. Received {max_batches}.")
         self._max_batches = max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
-        # the behavior of max_batches does not break if IterativeAlgorithm is set.
+        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
         self._pipelines_per_batch = 5
 
         self._validate_problem_type()
