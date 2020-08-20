@@ -94,6 +94,23 @@ def test_empty_text_column():
         lsa.fit(X)
 
 
+def test_invalid_text_column():
+    X = pd.DataFrame({'col_1': []})
+    lsa = LSA(text_columns=['col_1'])
+    with pytest.raises(ValueError, match="not a text column"):
+        lsa.fit(X)
+
+    X = pd.DataFrame(
+        {'col_1': [
+            'I\'m singing in the rain!$%^ do do do do do da do',
+            'just singing in the rain.................. \n',
+            325,
+            'I\'m happy again!!! lalalalalalalalalalala']})
+    lsa = LSA(text_columns=['col_1'])
+    with pytest.raises(ValueError, match="not a text column"):
+        lsa.fit(X)
+
+
 def test_index_col_names():
     X = np.array([['I\'m singing in the rain!$%^ do do do do do da do', 'do you hear the people sing?////////////////////////////////////'],
                   ['just singing in the rain.................. \n', 'singing the songs of angry men\n'],
