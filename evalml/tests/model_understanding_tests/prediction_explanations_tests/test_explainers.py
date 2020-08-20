@@ -31,42 +31,42 @@ def test_explain_prediction_value_error(test_features):
         explain_prediction(None, input_features=test_features, training_data=None)
 
 
-explain_prediction_answer = """Feature Name   Contribution to Prediction
-                                =========================================
-                                 d                    ++++
-                                 a                    +++
-                                 c                     --
-                                 b                    ----""".splitlines()
+explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
+                               =========================================================
+                                 d           40.00          ++++
+                                 a           10.00          +++
+                                 c           30.00          --
+                                 b           20.00          ----""".splitlines()
 
 
 explain_prediction_multiclass_answer = """Class: class_0
 
-        Feature Name    Contribution to Prediction
-        =========================================
-            a                           +
-            b                           +
-            c                           -
-            d                           -
+        Feature Name Feature Value Contribution to Prediction
+       =========================================================
+            a           10.00                +
+            b           20.00                +
+            c           30.00                -
+            d           40.00                -
 
 
         Class: class_1
 
-        Feature Name       Contribution to Prediction
-        =========================================
-            a                          +++
-            b                          ++
-            c                           -
-            d                          --
+        Feature Name Feature Value Contribution to Prediction
+       =========================================================
+            a           10.00               +++
+            b           20.00               ++
+            c           30.00               -
+            d           40.00               --
 
 
         Class: class_2
 
-        Feature Name    Contribution to Prediction
-        =========================================
-            a                      +
-            b                      +
-            c                     ---
-            d                     ---
+        Feature Name Feature Value Contribution to Prediction
+        =========================================================
+            a          10.00            +
+            b          20.00            +
+            c          30.00           ---
+            d          40.00           ---
             """.splitlines()
 
 
@@ -96,6 +96,8 @@ def test_explain_prediction(mock_normalize_shap_values,
     pipeline = MagicMock()
     pipeline.problem_type = problem_type
     pipeline._classes = ["class_0", "class_1", "class_2"]
+    # By the time we call transform, we are looking at only one row of the input data.
+    pipeline._transform.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
     table = explain_prediction(pipeline, features, top_k=2).splitlines()
 
