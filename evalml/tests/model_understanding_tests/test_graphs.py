@@ -8,18 +8,19 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
+from evalml.demos import load_breast_cancer
 from evalml.model_understanding.graphs import (
     calculate_permutation_importance,
     confusion_matrix,
     graph_confusion_matrix,
+    graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_roc_curve,
     normalize_confusion_matrix,
-    precision_recall_curve,
-    roc_curve,
     partial_dependence,
-    graph_partial_dependence
+    precision_recall_curve,
+    roc_curve
 )
 from evalml.objectives import get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
@@ -455,22 +456,14 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     assert (np.any(data['x'] == 0.0))
 
 
-
-@pytest.fixture
-def catboost_pipeline_class():
-    class CBPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', "CatBoost Classifier"]
-    return CBPipeline
-
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression, 
-    logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
-    linear_regression_pipeline_class    
-    ):
+def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                          logistic_regression_binary_pipeline_class,
+                                          logistic_regression_multiclass_pipeline_class,
+                                          linear_regression_pipeline_class):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+        pipeline = logistic_regression_binary_pipeline_class(parameters={})
 
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
@@ -482,14 +475,54 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
 
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
-    assert list(part_dep.columns) == ["average prediction", "values"]
+    assert list(part_dep.columns) == ["average predictions", "values"]
+    assert len(part_dep["average predictions"]) == 20
+    assert len(part_dep["values"]) == 20
     assert not part_dep.isnull().all().all()
 
 
-from evalml.pipelines.components import CatBoostClassifier
+def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_class):
+    X, y = load_breast_cancer()
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
+    assert list(part_dep.columns) == ["average predictions", "values"]
+    assert len(part_dep["average predictions"]) == 20
+    assert len(part_dep["values"]) == 20
+    assert not part_dep.isnull().all().all()
 
-def test_partial_dependence_string_feature(X_y_binary, catboost_pipeline_class):
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_partial_dependence_catboost_baseline(mock_fit, X_y_binary):
     X, y = X_y_binary
-    clf = catboost_pipeline_class({})
+
+    class CatBoostTestPipeline(BinaryClassificationPipeline):
+        component_graph = ["CatBoost Classifier"]
+    pipeline = CatBoostTestPipeline({})
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Partial dependence plots are not supported for CatBoost and Baseline estimators"):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+    class BaselineTestPipeline(BinaryClassificationPipeline):
+        component_graph = ["Baseline Classifier"]
+    pipeline = BaselineTestPipeline({})
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Partial dependence plots are not supported for CatBoost and Baseline estimators"):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
+def test_graph_partial_dependence(test_pipeline):
+    X, y = load_breast_cancer()
+
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    clf = test_pipeline
     clf.fit(X, y)
-    part_dep = partial_dependence(clf, X, feature=0, grid_resolution=20)
+    fig = graph_partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence for 'mean radius'"
+    assert len(fig_dict['data']) == 1
+
+    part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['average predictions'].values)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['values'])

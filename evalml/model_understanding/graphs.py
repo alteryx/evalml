@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
 from sklearn.metrics import auc as sklearn_auc
@@ -13,9 +14,9 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
+from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.utils import import_or_raise
-from sklearn.inspection import partial_dependence as sk_partial_dependence
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -322,47 +323,56 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
     return fig
 
 
-
 def partial_dependence(pipeline, X, feature, grid_resolution=100):
-    """Get information necessary to create a partial dependence plot.
-    
+    """Calculates partial dependence.
+
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, np.array): The input data used to score and compute permutation importance
-        feature (int, string): The target features for which to create the PDPs.
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
 
     Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
 
     """
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
-    pipeline._estimator_type = "classifier"
-    pipeline.estimator_type_ = "classifier"
-    avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
-    return pd.DataFrame({"average prediction": avg_pred[0],
+
+    estimator = pipeline.estimator
+    if pipeline.model_family == ModelFamily.CATBOOST or pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for CatBoost and Baseline estimators")
+    avg_pred, values = sk_partial_dependence(estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    return pd.DataFrame({"average predictions": avg_pred[0],
                          "values": values[0]})
+
 
 def graph_partial_dependence(estimator, X, feature, grid_resolution=100):
     """Create an one-way partial dependence plot.
-      
+
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        feature (int, string): The target features for which to create the PDPs.
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     part_dep = partial_dependence(estimator, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
-    title = f'Partial Dependence for {feature_name}'
+    title = f"Partial Dependence for '{feature_name}'"
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['average prediction'])},
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['average predictions'])},
                         yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['values'])})
     data = []
-    data.append(_go.Scatter(x=part_dep['average prediction'],
+    data.append(_go.Scatter(x=part_dep['average predictions'],
                             y=part_dep['values'],
                             name='Partial Dependence',
                             line=dict(width=3)))
