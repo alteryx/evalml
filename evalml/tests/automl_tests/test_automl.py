@@ -1049,6 +1049,11 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     automl.search(X, y, data_checks=None)
     assert len(automl._results["pipeline_results"]) == 6
 
+    # Don't change max_pipelines when only max_pipelines is set
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=4)
+    automl.search(X, y, data_checks=None)
+    assert len(automl._results["pipeline_results"]) == 4
+
 
 @pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
