@@ -1,17 +1,121 @@
+import warnings
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
+from skopt.space import Real
 
-from evalml.pipelines.graph_utils import (
+from evalml.model_understanding.graphs import (
+    calculate_permutation_importance,
+    confusion_matrix,
     graph_confusion_matrix,
+    graph_permutation_importance,
     graph_precision_recall_curve,
     graph_roc_curve,
+    normalize_confusion_matrix,
     precision_recall_curve,
     roc_curve
 )
-from evalml.utils.graph_utils import confusion_matrix
+from evalml.objectives import get_objectives
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.problem_types import ProblemTypes
+
+
+@pytest.fixture
+def test_pipeline():
+    class TestPipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+
+        hyperparameters = {
+            "penalty": ["l2"],
+            "C": Real(.01, 10),
+            "impute_strategy": ["mean", "median", "most_frequent"],
+        }
+
+        def __init__(self, parameters):
+            super().__init__(parameters=parameters)
+
+    return TestPipeline(parameters={})
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_confusion_matrix(data_type):
+    y_true = [2, 0, 2, 2, 0, 1]
+    y_predicted = [0, 0, 2, 2, 0, 2]
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_predicted = pd.Series(y_predicted)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
+    conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, pd.DataFrame)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
+    conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, pd.DataFrame)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
+    conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
+    assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
+    assert isinstance(conf_mat, pd.DataFrame)
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
+    conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
+    assert np.array_equal(conf_mat_expected, conf_mat)
+    assert isinstance(conf_mat, pd.DataFrame)
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_normalize_confusion_matrix(data_type):
+    conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
+    if data_type == 'pd':
+        conf_mat = pd.DataFrame(conf_mat)
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat)
+    assert all(conf_mat_normalized.sum(axis=1) == 1.0)
+    assert isinstance(conf_mat_normalized, type(conf_mat))
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
+    for col_sum in conf_mat_normalized.sum(axis=0):
+        assert col_sum == 1.0 or col_sum == 0.0
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
+    assert conf_mat_normalized.sum().sum() == 1.0
+
+    # testing with pd.DataFrames
+    conf_mat_df = pd.DataFrame()
+    conf_mat_df["col_1"] = [0, 1, 2]
+    conf_mat_df["col_2"] = [0, 0, 3]
+    conf_mat_df["col_3"] = [2, 0, 0]
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df)
+    assert all(conf_mat_normalized.sum(axis=1) == 1.0)
+    assert list(conf_mat_normalized.columns) == ['col_1', 'col_2', 'col_3']
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'pred')
+    for col_sum in conf_mat_normalized.sum(axis=0):
+        assert col_sum == 1.0 or col_sum == 0.0
+
+    conf_mat_normalized = normalize_confusion_matrix(conf_mat_df, 'all')
+    assert conf_mat_normalized.sum().sum() == 1.0
+
+
+def test_normalize_confusion_matrix_error():
+    conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    warnings.simplefilter('default', category=RuntimeWarning)
+
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        normalize_confusion_matrix(conf_mat, normalize_method='invalid option')
+    with pytest.raises(ValueError, match='Invalid value provided'):
+        normalize_confusion_matrix(conf_mat, normalize_method=None)
+
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'true')
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'pred')
+    with pytest.raises(ValueError, match="Sum of given axis is 0"):
+        normalize_confusion_matrix(conf_mat, 'all')
 
 
 @pytest.fixture
@@ -256,3 +360,94 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Confusion matrix with added title text, normalized using method "true"'
+
+
+def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
+    X, y = X_y_regression
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
+        calculate_permutation_importance(pipeline, X, y, "mcc_multi")
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    if data_type == 'pd':
+        X = pd.DataFrame(X)
+        y = pd.Series(y)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.BINARY):
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()
+
+
+def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class):
+    X, y = X_y_multi
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.MULTICLASS):
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()
+
+
+def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class):
+    X, y = X_y_regression
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.REGRESSION):
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()
+
+
+def test_get_permutation_importance_correlated_features(logistic_regression_binary_pipeline_class):
+    y = pd.Series([1, 0, 1, 1])
+    X = pd.DataFrame()
+    X["correlated"] = y * 2
+    X["not correlated"] = [-1, -1, -1, 0]
+    y = y.astype(bool)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline.fit(X, y)
+    importance = calculate_permutation_importance(pipeline, X, y, objective="log_loss_binary", random_state=0)
+    assert list(importance.columns) == ["feature", "importance"]
+    assert not importance.isnull().all().all()
+    correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
+    not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
+    assert correlated_importance_val > not_correlated_importance_val
+
+
+def test_graph_permutation_importance(X_y_binary, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    clf = test_pipeline
+    clf.fit(X, y)
+    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", show_all_features=True)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
+                                                  "The relative importance of each input feature's overall "\
+                                                  "influence on the pipelines' predictions, computed using the "\
+                                                  "permutation importance algorithm.</sub>"
+    assert len(fig_dict['data']) == 1
+
+    perm_importance_data = calculate_permutation_importance(clf, X, y, "log_loss_binary")
+    assert np.array_equal(fig_dict['data'][0]['x'][::-1], perm_importance_data['importance'].values)
+    assert np.array_equal(fig_dict['data'][0]['y'][::-1], perm_importance_data['feature'])
+
+
+@patch('evalml.model_understanding.graphs.calculate_permutation_importance')
+def test_graph_permutation_importance_show_all_features(mock_perm_importance):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
+    assert isinstance(figure, go.Figure)
+
+    data = figure.data[0]
+    assert (np.all(data['x']))
+
+    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
+    data = figure.data[0]
+    assert (np.any(data['x'] == 0.0))

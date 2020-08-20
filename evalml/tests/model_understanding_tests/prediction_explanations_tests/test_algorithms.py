@@ -6,6 +6,11 @@ import pandas as pd
 import pytest
 
 from evalml.model_family.model_family import ModelFamily
+from evalml.model_understanding.prediction_explanations._algorithms import (
+    _compute_shap_values,
+    _create_dictionary,
+    _normalize_shap_values
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
@@ -22,11 +27,6 @@ from evalml.pipelines.components import (
     XGBoostRegressor
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
-from evalml.pipelines.prediction_explanations._algorithms import (
-    _compute_shap_values,
-    _create_dictionary,
-    _normalize_shap_values
-)
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
 
@@ -61,7 +61,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
-@patch("evalml.pipelines.prediction_explanations._algorithms.shap.TreeExplainer")
+@patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
     if "xgboost" in pipeline.name.lower():
@@ -88,7 +88,7 @@ def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explai
     pipeline = pipeline_class({}, random_state=0)
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
-    return _compute_shap_values(pipeline, points_to_explain, training_data)
+    return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
 
 
 interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}]

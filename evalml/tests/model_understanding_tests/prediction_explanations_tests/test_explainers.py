@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from evalml.exceptions import PipelineScoreError
-from evalml.pipelines.prediction_explanations.explainers import (
+from evalml.model_understanding.prediction_explanations.explainers import (
     abs_error,
     cross_entropy,
     explain_prediction,
@@ -31,42 +31,42 @@ def test_explain_prediction_value_error(test_features):
         explain_prediction(None, input_features=test_features, training_data=None)
 
 
-explain_prediction_answer = """Feature Name   Contribution to Prediction
-                                =========================================
-                                 d                    ++++
-                                 a                    +++
-                                 c                     --
-                                 b                    ----""".splitlines()
+explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
+                               =========================================================
+                                 d           40.00          ++++
+                                 a           10.00          +++
+                                 c           30.00          --
+                                 b           20.00          ----""".splitlines()
 
 
 explain_prediction_multiclass_answer = """Class: class_0
 
-        Feature Name    Contribution to Prediction
-        =========================================
-            a                           +
-            b                           +
-            c                           -
-            d                           -
+        Feature Name Feature Value Contribution to Prediction
+       =========================================================
+            a           10.00                +
+            b           20.00                +
+            c           30.00                -
+            d           40.00                -
 
 
         Class: class_1
 
-        Feature Name       Contribution to Prediction
-        =========================================
-            a                          +++
-            b                          ++
-            c                           -
-            d                          --
+        Feature Name Feature Value Contribution to Prediction
+       =========================================================
+            a           10.00               +++
+            b           20.00               ++
+            c           30.00               -
+            d           40.00               --
 
 
         Class: class_2
 
-        Feature Name    Contribution to Prediction
-        =========================================
-            a                      +
-            b                      +
-            c                     ---
-            d                     ---
+        Feature Name Feature Value Contribution to Prediction
+        =========================================================
+            a          10.00            +
+            b          20.00            +
+            c          30.00           ---
+            d          40.00           ---
             """.splitlines()
 
 
@@ -86,8 +86,8 @@ explain_prediction_multiclass_answer = """Class: class_0
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_answer)
                           ])
-@patch("evalml.pipelines.prediction_explanations._user_interface._compute_shap_values")
-@patch("evalml.pipelines.prediction_explanations._user_interface._normalize_shap_values")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._normalize_shap_values")
 def test_explain_prediction(mock_normalize_shap_values,
                             mock_compute_shap_values,
                             problem_type, shap_values, normalized_shap_values, answer):
@@ -96,6 +96,8 @@ def test_explain_prediction(mock_normalize_shap_values,
     pipeline = MagicMock()
     pipeline.problem_type = problem_type
     pipeline._classes = ["class_0", "class_1", "class_2"]
+    # By the time we call transform, we are looking at only one row of the input data.
+    pipeline._transform.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
     table = explain_prediction(pipeline, features, top_k=2).splitlines()
 
@@ -269,8 +271,8 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                          [(ProblemTypes.REGRESSION, regression_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.BINARY, binary_best_worst_answer, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_best_worst_answer, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations.explainers.DEFAULT_METRICS")
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table, mock_default_metrics,
                                                                 problem_type, answer, explain_predictions_answer):
 
@@ -319,7 +321,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
                          [(ProblemTypes.REGRESSION, no_best_worst_answer),
                           (ProblemTypes.BINARY, no_best_worst_answer),
                           (ProblemTypes.MULTICLASS, multiclass_no_best_worst_answer)])
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_custom_index(mock_make_table, problem_type, answer):
 
     mock_make_table.return_value = "table goes here"
@@ -372,7 +374,7 @@ regression_custom_metric_answer = """Test Pipeline Name
 """
 
 
-@patch("evalml.pipelines.prediction_explanations._user_interface._make_single_prediction_shap_table")
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_custom_metric(mock_make_table):
 
     mock_make_table.return_value = "table goes here"
