@@ -139,7 +139,7 @@ def test_describe_component():
         pass
     try:
         lg_classifier = LightGBMClassifier()
-        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': -1, 'num_leaves'=31, 'min_child_samples'=20, 'n_jobs': -1}}
+        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': -1, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1}}
     except ImportError:
         pass
 
