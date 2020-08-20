@@ -348,7 +348,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     # reassign original threshold
     pipeline.threshold = original_threshold
-    df = pd.DataFrame({"thresholds": thresholds, "score": costs})
+    df = pd.DataFrame({"threshold": thresholds, "score": costs})
     return df
 
 
@@ -373,10 +373,10 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     margins = abs(max_costs - min_costs) * 0.05
     title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Thresholds', 'range': [-0.05, 1.05]},
+                        xaxis={'title': 'Threshold', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'Objective Score', 'range': [min_costs - margins, max_costs + margins]})
     data = []
-    data.append(_go.Scatter(x=df['thresholds'], y=df['score'],
+    data.append(_go.Scatter(x=df['threshold'], y=df['score'],
                             name='Scores vs. Thresholds',
                             line=dict(width=3)))
     return _go.Figure(layout=layout, data=data)

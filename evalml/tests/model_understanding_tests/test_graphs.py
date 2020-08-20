@@ -470,7 +470,7 @@ def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pi
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
-    assert list(cost_benefit_df.columns) == ['thresholds', 'costs']
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
     assert cost_benefit_df.shape == (101, 2)
 
 
@@ -487,7 +487,7 @@ def test_binary_objective_vs_threshold_steps(mock_obj_function, mock_decision_fu
     cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
     mock_predict_proba.assert_called()
     mock_decision_function.assert_called()
-    assert list(cost_benefit_df.columns) == ['thresholds', 'costs']
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
     assert cost_benefit_df.shape == (235, 2)
 
 
@@ -499,8 +499,8 @@ def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, log
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
 
-    mock_cb_thresholds.return_value = pd.DataFrame({'thresholds': [0, 0.5, 1.0],
-                                                    'costs': [100, -20, 5]})
+    mock_cb_thresholds.return_value = pd.DataFrame({'threshold': [0, 0.5, 1.0],
+                                                    'score': [100, -20, 5]})
 
     figure = graph_binary_objective_vs_threshold(pipeline, X, y, cbm)
     assert isinstance(figure, go.Figure)
