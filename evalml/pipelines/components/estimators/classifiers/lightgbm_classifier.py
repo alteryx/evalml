@@ -29,6 +29,8 @@ class LightGBMClassifier(Estimator):
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
+        
+        # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
         rand_state = get_random_seed(random_state) if isinstance(random_state, np.random.RandomState) else random_state
 
         lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=rand_state, **parameters)
