@@ -25,12 +25,16 @@ class TextFeaturizer(Transformer):
         """
         self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
+        self._trans = [self._nlp_primitives.DiversityScore,
+                       self._nlp_primitives.MeanCharactersPerWord,
+                       self._nlp_primitives.PartOfSpeechCount,
+                       self._nlp_primitives.PolarityScore]
 
         parameters = {'text_columns': text_columns}
-        text_columns = text_columns or []
         parameters.update(kwargs)
 
         self._features = None
+        text_columns = text_columns or []
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         self._text_col_names = text_columns
         super().__init__(parameters=parameters,
@@ -38,6 +42,7 @@ class TextFeaturizer(Transformer):
                          random_state=random_state)
 
     def _clean_text(self, X):
+        """Remove all non-alphanum chars other than spaces, and make lowercase"""
 
         def normalize(text):
             text = text.translate(str.maketrans('', '', string.punctuation))
@@ -57,36 +62,42 @@ class TextFeaturizer(Transformer):
                 self._text_col_names.remove(col)
             logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
 
-    def _verify_col_types(self, entity_set):
-        var_types = entity_set.entities[0].variable_types
+    def _make_entity_set(self, X):
+        self._verify_col_names(X.columns)
+        X_text = X[self._text_col_names]
+        X_text = self._clean_text(X_text)
+        X_text.rename(columns=str, inplace=True)
+
+        variable_types = entity_set.entities[0].variable_types
         for col in self._text_col_names:
-            if var_types[str(col)] is not self._ft.variable_types.variable.Text:
-                raise ValueError("Column {} is not a text column, cannot apply TextFeaturizer component".format(col))
+            if variable_types[str(col)] is not self._ft.variable_types.variable.Text:
+                raise ValueError("Column '{}' is not a text column, cannot apply TextFeaturizer component".format(col))
+
+        es = self._ft.EntitySet()
+        return es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
+                                        variable_types=variable_types)
 
     def fit(self, X, y=None):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training labels of length [n_samples]
+
+        Returns:
+            self
+        """
         if len(self._text_col_names) == 0:
-            self._features = []
             return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._verify_col_names(X.columns)
-        X_text = X[self._text_col_names]
-        X_text['index'] = range(len(X_text))
-
-        es = self._ft.EntitySet()
-        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text.rename(columns=str), index='index')
-        self._verify_col_types(es)
-        es.df = self._clean_text(X)
-
-        trans = [self._nlp_primitives.DiversityScore,
-                 self._nlp_primitives.MeanCharactersPerWord,
-                 self._nlp_primitives.PartOfSpeechCount,
-                 self._nlp_primitives.PolarityScore]
 
         self._lsa.fit(X)
+
+        es = self._make_entity_set(X)
         self._features = self._ft.dfs(entityset=es,
                                       target_entity='X',
-                                      trans_primitives=trans,
+                                      trans_primitives=self._trans,
                                       features_only=True)
         return self
 
@@ -99,26 +110,17 @@ class TextFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if self._features is None or len(self._features) == 0:
             return X
-        self._verify_col_names(X.columns)
 
-        X_text = X[self._text_col_names]
-        X_lsa = self._lsa.transform(X_text)
+        es = self._make_entity_set(X)
+        X_nlp_primitives = self._ft.calculate_feature_matrix(features=self._features, entityset=es)
+        if X_nlp_primitives.isnull().any().any():
+            X_nlp_primitives.fillna(0, inplace=True)
+        X_nlp_primitives.reindex(X.index)
 
-        X_text['index'] = range(len(X_text))
-        X_t = X.drop(self._text_col_names, axis=1)
+        X_lsa = self._lsa.transform(X[self._text_col_names])
 
-        es = self._ft.EntitySet()
-        es = es.entity_from_dataframe(entity_id='X', dataframe=X_text.rename(columns=str), index='index')
-        self._verify_col_types(es)
-        es.df = self._clean_text(X)
-
-        feature_matrix = self._ft.calculate_feature_matrix(features=self._features,
-                                                           entityset=es,
-                                                           verbose=True)
-        X_t = pd.concat([X_t, feature_matrix.reindex(X.index), X_lsa], axis=1)
-        return X_t
+        return pd.concat([X.drop(self._text_col_names, axis=1), X_nlp_primitives, X_lsa], axis=1)
