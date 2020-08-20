@@ -328,7 +328,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
         X (pd.DataFrame): the input data used to compute objective score
         y (pd.Series): the target labels
-        objective (ObjectiveBase obj): objective
+        objective (ObjectiveBase obj, str): objective
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -359,7 +359,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pipeline (PipelineBase or subclass): fitted pipeline
         X (pd.DataFrame): the input data used to score and compute scores
         y (pd.Series): the target labels
-        objective (ObjectiveBase obj): objective
+        objective (ObjectiveBase obj, str): objective
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -367,6 +367,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    objective = get_objective(objective)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     max_costs = df['score'].max()
     min_costs = df['score'].min()

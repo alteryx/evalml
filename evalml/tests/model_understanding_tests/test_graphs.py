@@ -455,15 +455,7 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     assert (np.any(data['x'] == 0.0))
 
 
-def test_binary_objective_vs_threshold_score_needs_proba(X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
-        binary_objective_vs_threshold(pipeline, X, y, 'log_loss_binary')
-
-
-def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
@@ -472,21 +464,34 @@ def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pi
     cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
     assert list(cost_benefit_df.columns) == ['threshold', 'score']
     assert cost_benefit_df.shape == (101, 2)
+    assert not cost_benefit_df.isnull().all().all()
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
-@patch('evalml.objectives.CostBenefitMatrix.decision_function')
-@patch('evalml.objectives.CostBenefitMatrix.objective_function')
-def test_binary_objective_vs_threshold_steps(mock_obj_function, mock_decision_function, mock_predict_proba,
+def test_binary_objective_vs_threshold_standard_metrics(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    for objective in get_objectives(ProblemTypes.BINARY):
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
+                binary_objective_vs_threshold(pipeline, X, y, objective)
+        else:
+            results_df = binary_objective_vs_threshold(pipeline, X, y, objective)
+            assert list(results_df.columns) == ['threshold', 'score']
+            assert results_df.shape == (101, 2)
+            assert not results_df.isnull().all().all()
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_binary_objective_vs_threshold_steps(mock_score,
                                              X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    mock_obj_function.return_value = 0.2
+    pipeline.fit(X, y)
+    mock_score.return_value = {"Cost Benefit Matrix": 0.2}
     cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
-    mock_predict_proba.assert_called()
-    mock_decision_function.assert_called()
+    mock_score.assert_called()
     assert list(cost_benefit_df.columns) == ['threshold', 'score']
     assert cost_benefit_df.shape == (235, 2)
 
@@ -507,3 +512,5 @@ def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, log
     data = figure.data[0]
     assert not np.any(np.isnan(data['x']))
     assert not np.any(np.isnan(data['y']))
+    assert np.array_equal(data['x'], mock_cb_thresholds.return_value['threshold'])
+    assert np.array_equal(data['y'], mock_cb_thresholds.return_value['score'])
