@@ -160,6 +160,10 @@ def dummy_classifier_estimator_class():
 
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
+
+        def fit(self, X, y):
+            return self
+
     return MockEstimator
 
 
@@ -195,6 +199,9 @@ def dummy_regressor_estimator_class():
 
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
+
+        def fit(self, X, y):
+            return self
 
     return MockRegressor
 
