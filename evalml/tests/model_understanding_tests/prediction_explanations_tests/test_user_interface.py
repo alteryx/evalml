@@ -133,7 +133,7 @@ multiclass_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [
                          {'a': [0.0825], 'b': [0.0], 'c': [0.0], 'd': [-0.223], 'e': [-0.247], 'f': [-0.325], 'foo': [-0.121]}]
 
 multiclass_pipeline_features = pd.DataFrame({"a": 2.18, "b": 2.12, "c": 1.0, "d": -1.56, "e": -1.8, "f": -1.9,
-                                            "foo": 30}, index=[10])
+                                             "foo": 30}, index=[10])
 
 multiclass_table = """Class: 0
 

@@ -481,6 +481,7 @@ def test_binary_objective_vs_threshold_standard_metrics(X_y_binary, logistic_reg
             assert results_df.shape == (101, 2)
             assert not results_df.isnull().all().all()
 
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 def test_binary_objective_vs_threshold_steps(mock_score,
                                              X_y_binary, logistic_regression_binary_pipeline_class):
