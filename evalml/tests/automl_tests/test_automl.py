@@ -1027,7 +1027,8 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         n_results = 5
         max_batches = 1
     else:
-        n_results = 1 + 6 + (5 * (max_batches - 1))
+        # So that the test does not break when new estimator classes are added
+        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
 
     assert automl._automl_algorithm._batch_number == max_batches
     assert len(automl._results["pipeline_results"]) == n_results
