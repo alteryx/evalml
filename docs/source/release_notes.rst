@@ -8,6 +8,7 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
+        * Added LightGBM classification estimator :pr:`1082`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
