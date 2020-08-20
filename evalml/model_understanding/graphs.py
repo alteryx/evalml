@@ -340,15 +340,14 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     """
 
-    estimator = pipeline.estimator
     if pipeline.model_family == ModelFamily.CATBOOST or pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for CatBoost and Baseline estimators")
-    avg_pred, values = sk_partial_dependence(estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
     return pd.DataFrame({"average predictions": avg_pred[0],
                          "values": values[0]})
 
 
-def graph_partial_dependence(estimator, X, feature, grid_resolution=100):
+def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     """Create an one-way partial dependence plot.
 
     Arguments:
@@ -365,7 +364,7 @@ def graph_partial_dependence(estimator, X, feature, grid_resolution=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    part_dep = partial_dependence(estimator, X, feature=feature, grid_resolution=grid_resolution)
+    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
     title = f"Partial Dependence for '{feature_name}'"
     layout = _go.Layout(title={'text': title},
