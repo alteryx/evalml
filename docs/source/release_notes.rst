@@ -8,7 +8,7 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
-        * Added a “cost-benefit curve” util method to graph cost-benefit matrix scores vs. binary classification thresholds :pr:`1066`
+        * Added a “cost-benefit curve” util method to graph cost-benefit matrix scores vs. binary classification thresholds :pr:`1081`
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
