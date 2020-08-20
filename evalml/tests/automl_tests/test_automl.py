@@ -1011,3 +1011,47 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
                    baseline_name: round(objective.calculate_percent_difference(baseline_score, baseline_score), 2)}
         for name in answers:
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
+
+
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 10])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=None,
+                          max_batches=max_batches, objective="log_loss_binary")
+    automl.search(X, y, data_checks=None)
+
+    if max_batches is None:
+        n_results = 5
+        max_batches = 1
+    else:
+        n_results = 1 + 6 + (5 * (max_batches - 1))
+
+    assert automl._automl_algorithm._batch_number == max_batches
+    assert len(automl._results["pipeline_results"]) == n_results
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+
+    # Use the old default when all are None
+    automl = AutoMLSearch(problem_type="binary", objective="log_loss_binary")
+    automl.search(X, y, data_checks=None)
+    assert len(automl._results["pipeline_results"]) == 5
+
+    # Use max_pipelines when both max_pipelines and max_batches are set
+    automl = AutoMLSearch(problem_type="binary", objective="log_loss_binary", max_batches=10,
+                          max_pipelines=6)
+    automl.search(X, y, data_checks=None)
+    assert len(automl._results["pipeline_results"]) == 6
+
+
+@pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
+def test_max_batches_must_be_non_negative(max_batches):
+
+    with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
+        AutoMLSearch(problem_type="binary", max_batches=max_batches)
