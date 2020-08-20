@@ -61,7 +61,6 @@ def test_classes():
     return MockComponent, MockEstimator, MockTransformer
 
 
-
 @pytest.fixture(scope="module")
 def test_estimator_needs_fitting_false():
     class MockEstimatorNeedsFittingFalse(Estimator):

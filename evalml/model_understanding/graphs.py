@@ -332,7 +332,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
-        pd.DataFrame: DataFrame with thresholds and the corresponding objective score at
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
     original_threshold = pipeline.threshold
@@ -363,7 +363,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
-        plotly.Figure representing the cost vs. threshold graph generated
+        plotly.Figure representing the objective score vs. threshold graph generated
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
@@ -375,7 +375,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'Threshold', 'range': [-0.05, 1.05]},
-                        yaxis={'title': 'Objective Score', 'range': [min_costs - margins, max_costs + margins]})
+                        yaxis={'title': f'{objective.name} Score', 'range': [min_costs - margins, max_costs + margins]})
     data = []
     data.append(_go.Scatter(x=df['threshold'], y=df['score'],
                             name='Scores vs. Thresholds',
