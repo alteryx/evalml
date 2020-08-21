@@ -1,16 +1,15 @@
-import logging
 import string
 
 import pandas as pd
 
-from evalml.pipelines.components.transformers import Transformer
-from evalml.pipelines.components.transformers.preprocessing import LSA
+from evalml.pipelines.components.transformers.preprocessing import (
+    LSA,
+    TextTransformer
+)
 from evalml.utils import import_or_raise
 
-logger = logging.getLogger()
 
-
-class TextFeaturizer(Transformer):
+class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns."""
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
@@ -23,22 +22,17 @@ class TextFeaturizer(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
-        parameters = {'text_columns': text_columns}
-        parameters.update(kwargs)
-
         self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._trans = [self._nlp_primitives.DiversityScore,
                        self._nlp_primitives.MeanCharactersPerWord,
                        self._nlp_primitives.PartOfSpeechCount,
                        self._nlp_primitives.PolarityScore]
-
-        self._all_text_columns = text_columns or []
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_state=random_state)
+        super().__init__(text_columns=text_columns,
+                         random_state=random_state,
+                         **kwargs)
 
     def _clean_text(self, X):
         """Remove all non-alphanum chars other than spaces, and make lowercase"""
@@ -52,21 +46,6 @@ class TextFeaturizer(Transformer):
             col = X[col_name].astype(str)
             X[col_name] = col.apply(normalize)
         return X
-
-    def _get_text_columns(self, X):
-        """Returns the ordered list of columns names in the input which have been designated as text columns."""
-        columns = []
-        missing_columns = []
-        for col_name in self._all_text_columns:
-            if col_name in X.columns:
-                columns.append(col_name)
-            else:
-                missing_columns.append(col_name)
-        if len(columns) == 0:
-            raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
-        if len(columns) < len(self._all_text_columns):
-            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_columns))
-        return columns
 
     def _make_entity_set(self, X, text_columns):
         X_text = X[text_columns]

@@ -1,16 +1,14 @@
-import logging
-
 import pandas as pd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 
-from evalml.pipelines.components.transformers import Transformer
+from evalml.pipelines.components.transformers.preprocessing import (
+    TextTransformer
+)
 
-logger = logging.getLogger()
 
-
-class LSA(Transformer):
+class LSA(TextTransformer):
     """Transformer to calculate the Latent Semantic Analysis Values of text input"""
     name = "LSA Transformer"
     hyperparameter_ranges = {}
@@ -22,29 +20,10 @@ class LSA(Transformer):
             text_columns (list): list of feature names which should be treated as text features.
             random_state (int, np.random.RandomState): Seed for the random number generator.
         """
-        parameters = {'text_columns': text_columns}
-        parameters.update(kwargs)
-
-        self._all_text_columns = text_columns or []
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_state=random_state)
-
-    def _get_text_columns(self, X):
-        """Returns the ordered list of columns names in the input which have been designated as text columns."""
-        columns = []
-        missing_columns = []
-        for col_name in self._all_text_columns:
-            if col_name in X.columns:
-                columns.append(col_name)
-            else:
-                missing_columns.append(col_name)
-        if len(columns) == 0:
-            raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
-        if len(columns) < len(self._all_text_columns):
-            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_columns))
-        return columns
+        super().__init__(text_columns=text_columns,
+                         random_state=random_state,
+                         **kwargs)
 
     def fit(self, X, y=None):
         if len(self._all_text_columns) == 0:
