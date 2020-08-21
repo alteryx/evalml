@@ -23,33 +23,36 @@ class LSA(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
         """
         parameters = {'text_columns': text_columns}
-        text_columns = text_columns or []
         parameters.update(kwargs)
 
-        self._text_col_names = text_columns
+        self._all_text_columns = text_columns or []
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
-    def _verify_col_names(self, col_names):
-        missing_cols = [col for col in self._text_col_names if col not in col_names]
-
-        if len(missing_cols) > 0:
-            if len(missing_cols) == len(self._text_col_names):
-                raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
-            for col in missing_cols:
-                self._text_col_names.remove(col)
-            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
+    def _get_text_columns(self, X):
+        """Returns the ordered list of columns names in the input which have been designated as text columns."""
+        columns = []
+        missing_columns = []
+        for col_name in self._all_text_columns:
+            if col_name in X.columns:
+                columns.append(col_name)
+            else:
+                missing_columns.append(col_name)
+        if len(columns) == 0:
+            raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
+        if len(columns) < len(self._all_text_columns):
+            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_columns))
+        return columns
 
     def fit(self, X, y=None):
-        if len(self._text_col_names) == 0:
+        if len(self._all_text_columns) == 0:
             return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        self._verify_col_names(X.columns)
-
-        corpus = X[self._text_col_names].values.flatten()
+        text_columns = self._get_text_columns(X)
+        corpus = X[text_columns].values.flatten()
         # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
         corpus = corpus.astype(str)
         self._lsa_pipeline.fit(corpus)
@@ -66,12 +69,15 @@ class LSA(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X_t = X
+        if len(self._all_text_columns) == 0:
+            return X
 
-        for col in self._text_col_names:
+        X_t = X.copy()
+        text_columns = self._get_text_columns(X)
+        for col in text_columns:
             transformed = self._lsa_pipeline.transform(X[col])
 
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0])
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1])
-        X_t = X_t.drop(columns=self._text_col_names)
+        X_t = X_t.drop(columns=text_columns)
         return X_t

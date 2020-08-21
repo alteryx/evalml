@@ -83,7 +83,7 @@ def test_all_missing_col_names(text_df):
     lsa = LSA(text_columns=['col_3', 'col_4'])
 
     error_msg = "None of the provided text column names match the columns in the given DataFrame"
-    with pytest.raises(RuntimeError, match=error_msg):
+    with pytest.raises(AttributeError, match=error_msg):
         lsa.fit(X)
 
 
