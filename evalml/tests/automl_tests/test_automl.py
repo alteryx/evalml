@@ -1013,25 +1013,34 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
 
 
-@pytest.mark.parametrize("max_batches", [None, 1, 5, 10])
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type="binary", max_pipelines=None,
-                          max_batches=max_batches, objective="log_loss_binary")
+                          _max_batches=max_batches, objective="log_loss_binary")
     automl.search(X, y, data_checks=None)
 
     if max_batches is None:
         n_results = 5
         max_batches = 1
+        # _automl_algorithm will include all allowed_pipelines in the first batch even
+        # if they are not searched over. That is why n_automl_pipelines does not equal
+        # n_results when max_pipelines and max_batches are None
+        n_automl_pipelines = 1 + len(automl.allowed_pipelines)
     else:
         # So that the test does not break when new estimator classes are added
         n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
+        n_automl_pipelines = n_results
 
-    assert automl._automl_algorithm._batch_number == max_batches
-    assert len(automl._results["pipeline_results"]) == n_results
+    assert automl._automl_algorithm.batch_number == max_batches
+    # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
+    assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
+    assert len(automl.results["pipeline_results"]) == n_results
+    assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)
+    assert automl.full_rankings.shape[0] == n_results
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1042,22 +1051,22 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     # Use the old default when all are None
     automl = AutoMLSearch(problem_type="binary", objective="log_loss_binary")
     automl.search(X, y, data_checks=None)
-    assert len(automl._results["pipeline_results"]) == 5
+    assert len(automl.results["pipeline_results"]) == 5
 
     # Use max_pipelines when both max_pipelines and max_batches are set
-    automl = AutoMLSearch(problem_type="binary", objective="log_loss_binary", max_batches=10,
+    automl = AutoMLSearch(problem_type="binary", objective="log_loss_binary", _max_batches=10,
                           max_pipelines=6)
     automl.search(X, y, data_checks=None)
-    assert len(automl._results["pipeline_results"]) == 6
+    assert len(automl.results["pipeline_results"]) == 6
 
     # Don't change max_pipelines when only max_pipelines is set
     automl = AutoMLSearch(problem_type="binary", max_pipelines=4)
     automl.search(X, y, data_checks=None)
-    assert len(automl._results["pipeline_results"]) == 4
+    assert len(automl.results["pipeline_results"]) == 4
 
 
 @pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
 
     with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
-        AutoMLSearch(problem_type="binary", max_batches=max_batches)
+        AutoMLSearch(problem_type="binary", _max_batches=max_batches)
