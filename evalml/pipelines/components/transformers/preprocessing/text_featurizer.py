@@ -70,7 +70,7 @@ class TextFeaturizer(Transformer):
         X_text = self._clean_text(X_text)
         X_text.rename(columns=str, inplace=True)
 
-        all_text_variable_types = {col_name: 'text' for col_name in self._text_col_names}
+        all_text_variable_types = {col_name: 'text' for col_name in X_text.columns}
         es = self._ft.EntitySet()
         es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
                                  variable_types=all_text_variable_types)
