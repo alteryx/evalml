@@ -131,7 +131,8 @@ class AutoMLSearch:
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
 
-            _max_batches (int): The maximum number of batches of pipelines to search.
+            _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+                max_pipelines have precedence over stopping the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
