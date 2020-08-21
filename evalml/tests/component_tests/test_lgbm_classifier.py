@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -84,4 +85,13 @@ def test_random_state(X_y_binary):
     clf = LightGBMClassifier(random_state=0)
     clf.fit(X, y)
     clf = LightGBMClassifier(random_state=np.random.RandomState(0))
+    clf.fit(X, y)
+
+
+def test_fit_string_features(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X['string_col'] = 'abc'
+
+    clf = LightGBMClassifier()
     clf.fit(X, y)

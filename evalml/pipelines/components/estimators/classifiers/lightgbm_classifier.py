@@ -46,9 +46,16 @@ class LightGBMClassifier(Estimator):
                          random_state=rand_state)
 
     def fit(self, X, y=None):
-        # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
+        # check for whether the columns have string info, and change to type 'category' for LightGBM
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        for c in X.columns:
+            col_type = X[c].dtype
+            if col_type == 'object' or col_type.name == 'category':
+                X[c] = X[c].astype('category')
+                X[c] = X[c].cat.codes
+        # rename columns in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
+        X.columns = np.arange(X.shape[1])
         return super().fit(X, y)
 
     def predict(self, X):
