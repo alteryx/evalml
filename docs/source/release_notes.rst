@@ -21,6 +21,7 @@ Release Notes
         * Remove maximum version limit for SciPy dependency :pr:`1051`
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
+        * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
