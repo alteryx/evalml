@@ -9,7 +9,15 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
 
-lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
+lgbm = importorskip('lightgbm')
+
+# try:
+#     __import__(modname)
+# except ImportError as exc:
+#     if reason is None:
+#         reason = "could not import {!r}: {}".format(modname, exc)
+#     raise Skipped(reason, allow_module_level=True) from None
+# lgbm = sys.modules['lightgbm']
 
 
 def test_model_family():
@@ -132,9 +140,9 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     assert_frame_equal(X2, arg_X)
 
     clf.predict(X)
-    arg_X = mock_predict.call_args_list[0].args[0]
+    arg_X = mock_predict.call_args[0][0]
     assert_frame_equal(X2, arg_X)
 
     clf.predict_proba(X)
-    arg_X = mock_predict_proba.call_args_list[0].args[0]
+    arg_X = mock_predict_proba.call_args[0][0]
     assert_frame_equal(X2, arg_X)
