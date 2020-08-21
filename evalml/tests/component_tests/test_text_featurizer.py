@@ -120,18 +120,21 @@ def test_all_missing_col_names(text_df):
 def test_invalid_text_column():
     X = pd.DataFrame({'col_1': []})
     tf = TextFeaturizer(text_columns=['col_1'])
-    with pytest.raises(ValueError, match="not a text column"):
+    with pytest.raises(ValueError, match="empty vocabulary; perhaps the documents only contain stop words"):
         tf.fit(X)
 
+    # we assume this sort of data would fail to validate as text data up the stack
+    # but just in case, make sure our component will convert non-str values to str
     X = pd.DataFrame(
         {'col_1': [
             'I\'m singing in the rain!$%^ do do do do do da do',
             'just singing in the rain.................. \n',
             325,
+            np.nan,
+            None,
             'I\'m happy again!!! lalalalalalalalalalala']})
     tf = TextFeaturizer(text_columns=['col_1'])
-    with pytest.raises(ValueError, match="not a text column"):
-        tf.fit(X)
+    tf.fit(X)
 
 
 def test_index_col_names():

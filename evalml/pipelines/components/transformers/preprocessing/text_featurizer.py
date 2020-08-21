@@ -49,7 +49,9 @@ class TextFeaturizer(Transformer):
             return text.lower()
 
         for text_col in self._text_col_names:
-            X[text_col] = X[text_col].apply(normalize)
+            # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
+            col = X[text_col].astype(str)
+            X[text_col] = col.apply(normalize)
         return X
 
     def _verify_col_names(self, col_names):
@@ -68,14 +70,16 @@ class TextFeaturizer(Transformer):
         X_text = self._clean_text(X_text)
         X_text.rename(columns=str, inplace=True)
 
-        variable_types = entity_set.entities[0].variable_types
+        all_text_variable_types = {col_name: 'text' for col_name in self._text_col_names}
+        es = self._ft.EntitySet()
+        es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
+                                 variable_types=all_text_variable_types)
+
+        variable_types = es.entities[0].variable_types
         for col in self._text_col_names:
             if variable_types[str(col)] is not self._ft.variable_types.variable.Text:
                 raise ValueError("Column '{}' is not a text column, cannot apply TextFeaturizer component".format(col))
-
-        es = self._ft.EntitySet()
-        return es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
-                                        variable_types=variable_types)
+        return es
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -92,13 +96,12 @@ class TextFeaturizer(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        self._lsa.fit(X)
-
         es = self._make_entity_set(X)
         self._features = self._ft.dfs(entityset=es,
                                       target_entity='X',
                                       trans_primitives=self._trans,
                                       features_only=True)
+        self._lsa.fit(X)
         return self
 
     def transform(self, X, y=None):
