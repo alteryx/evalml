@@ -59,7 +59,7 @@ class TextFeaturizer(Transformer):
 
         if len(missing_cols) > 0:
             if len(missing_cols) == len(self._text_col_names):
-                raise RuntimeError("None of the provided text column names match the columns in the given DataFrame")
+                raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
             for col in missing_cols:
                 self._text_col_names.remove(col)
             logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
