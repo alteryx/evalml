@@ -9,15 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
 
-lgbm = importorskip('lightgbm')
-
-# try:
-#     __import__(modname)
-# except ImportError as exc:
-#     if reason is None:
-#         reason = "could not import {!r}: {}".format(modname, exc)
-#     raise Skipped(reason, allow_module_level=True) from None
-# lgbm = sys.modules['lightgbm']
+lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
 
 
 def test_model_family():
