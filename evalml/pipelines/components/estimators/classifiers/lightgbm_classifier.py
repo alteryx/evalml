@@ -45,25 +45,29 @@ class LightGBMClassifier(Estimator):
                          component_obj=lgbm_classifier,
                          random_state=rand_state)
 
-    def fit(self, X, y=None):
-        # check for whether the columns have string info, and change to type 'category' for LightGBM
+    def __check_input(self, X):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
+        # rename columns in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
+        X.columns = np.arange(X.shape[1])
+
+        # check for whether the columns have string info, and change to type 'category' for LightGBM
         for c in X.columns:
             col_type = X[c].dtype
             if col_type == 'object' or col_type.name == 'category':
+                X[c] = X[c].astype('category').cat.codes
                 X[c] = X[c].astype('category')
-                X[c] = X[c].cat.codes
-        # rename columns in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
-        X.columns = np.arange(X.shape[1])
-        return super().fit(X, y)
+
+        return X
+
+    def fit(self, X, y=None):
+        X2 = self.__check_input(X)
+        return super().fit(X2, y)
 
     def predict(self, X):
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict(X)
+        X2 = self.__check_input(X)
+        return super().predict(X2)
 
     def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict_proba(X)
+        X2 = self.__check_input(X)
+        return super().predict_proba(X2)

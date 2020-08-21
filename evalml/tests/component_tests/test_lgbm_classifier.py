@@ -1,5 +1,8 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
+from pandas._testing import assert_frame_equal
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -95,3 +98,43 @@ def test_fit_string_features(X_y_binary):
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
+    clf.predict(X)
+    clf.predict_proba(X)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+
+    # add object (string) and categorical data.
+    X['string_col'] = 'abc'
+    X['string_col'].iloc[len(X) // 2:] = 'cba'
+    X['categorical_data'] = 'square'
+    X['categorical_data'].iloc[len(X) // 2:] = 'circle'
+    X['categorical_data'] = X['categorical_data'].astype('category')
+
+    # create the expected result, which is a dataframe with int values in the categorical column and dtype=category
+    X2 = X
+    X2 = X2.replace(["abc", "cba"], [0, 1])
+    X2 = X2.replace(["square", "circle"], [1, 0])
+    X2['string_col'] = X2['string_col'].astype('category')
+    X2['categorical_data'] = X2['categorical_data'].astype('category')
+
+    # rename the columns to be the indices
+    X2.columns = np.arange(X2.shape[1])
+
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    arg_X = mock_fit.call_args_list[0].args[0]
+    assert_frame_equal(X2, arg_X)
+
+    clf.predict(X)
+    arg_X = mock_predict.call_args_list[0].args[0]
+    assert_frame_equal(X2, arg_X)
+
+    clf.predict_proba(X)
+    arg_X = mock_predict_proba.call_args_list[0].args[0]
+    assert_frame_equal(X2, arg_X)
