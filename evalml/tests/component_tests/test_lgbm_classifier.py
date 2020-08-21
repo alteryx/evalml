@@ -136,7 +136,7 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
-    arg_X = mock_fit.call_args_list[0].args[0]
+    arg_X = mock_fit.call_args[0][0]
     assert_frame_equal(X2, arg_X)
 
     clf.predict(X)
