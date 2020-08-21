@@ -80,7 +80,6 @@ class TextFeaturizer(Transformer):
 
         trans = [self._nlp_primitives.DiversityScore,
                  self._nlp_primitives.MeanCharactersPerWord,
-                 self._nlp_primitives.PartOfSpeechCount,
                  self._nlp_primitives.PolarityScore]
 
         self._lsa.fit(X)
