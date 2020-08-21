@@ -23,6 +23,9 @@ class TextFeaturizer(Transformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
+        parameters = {'text_columns': text_columns}
+        parameters.update(kwargs)
+
         self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._trans = [self._nlp_primitives.DiversityScore,
@@ -30,13 +33,9 @@ class TextFeaturizer(Transformer):
                        self._nlp_primitives.PartOfSpeechCount,
                        self._nlp_primitives.PolarityScore]
 
-        parameters = {'text_columns': text_columns}
-        parameters.update(kwargs)
-
+        self._all_text_columns = text_columns or []
         self._features = None
-        text_columns = text_columns or []
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
-        self._text_col_names = text_columns
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -48,35 +47,41 @@ class TextFeaturizer(Transformer):
             text = text.translate(str.maketrans('', '', string.punctuation))
             return text.lower()
 
-        for text_col in self._text_col_names:
+        for col_name in X.columns:
             # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
-            col = X[text_col].astype(str)
-            X[text_col] = col.apply(normalize)
+            col = X[col_name].astype(str)
+            X[col_name] = col.apply(normalize)
         return X
 
-    def _verify_col_names(self, col_names):
-        missing_cols = [col for col in self._text_col_names if col not in col_names]
+    def _get_text_columns(self, X):
+        """Returns the ordered list of columns names in the input which have been designated as text columns."""
+        columns = []
+        missing_columns = []
+        for col_name in self._all_text_columns:
+            if col_name in X.columns:
+                columns.append(col_name)
+            else:
+                missing_columns.append(col_name)
+        if len(columns) == 0:
+            raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
+        if len(columns) < len(self._all_text_columns):
+            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_columns))
+        return columns
 
-        if len(missing_cols) > 0:
-            if len(missing_cols) == len(self._text_col_names):
-                raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
-            for col in missing_cols:
-                self._text_col_names.remove(col)
-            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_cols))
-
-    def _make_entity_set(self, X):
-        self._verify_col_names(X.columns)
-        X_text = X[self._text_col_names]
+    def _make_entity_set(self, X, text_columns):
+        X_text = X[text_columns]
         X_text = self._clean_text(X_text)
-        X_text.rename(columns=str, inplace=True)
 
+        # featuretools expects str-type column names
+        X_text.rename(columns=str, inplace=True)
         all_text_variable_types = {col_name: 'text' for col_name in X_text.columns}
+
         es = self._ft.EntitySet()
         es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
                                  variable_types=all_text_variable_types)
 
         variable_types = es.entities[0].variable_types
-        for col in self._text_col_names:
+        for col in text_columns:
             if variable_types[str(col)] is not self._ft.variable_types.variable.Text:
                 raise ValueError("Column '{}' is not a text column, cannot apply TextFeaturizer component".format(col))
         return es
@@ -91,12 +96,13 @@ class TextFeaturizer(Transformer):
         Returns:
             self
         """
-        if len(self._text_col_names) == 0:
+        if len(self._all_text_columns) == 0:
             return self
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        es = self._make_entity_set(X)
+        text_columns = self._get_text_columns(X)
+        es = self._make_entity_set(X, text_columns)
         self._features = self._ft.dfs(entityset=es,
                                       target_entity='X',
                                       trans_primitives=self._trans,
@@ -118,12 +124,13 @@ class TextFeaturizer(Transformer):
         if self._features is None or len(self._features) == 0:
             return X
 
-        es = self._make_entity_set(X)
+        text_columns = self._get_text_columns(X)
+        es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = self._ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
         X_nlp_primitives.reindex(X.index)
 
-        X_lsa = self._lsa.transform(X[self._text_col_names])
+        X_lsa = self._lsa.transform(X[text_columns])
 
-        return pd.concat([X.drop(self._text_col_names, axis=1), X_nlp_primitives, X_lsa], axis=1)
+        return pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
