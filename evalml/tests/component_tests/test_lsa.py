@@ -97,18 +97,21 @@ def test_empty_text_column():
 def test_invalid_text_column():
     X = pd.DataFrame({'col_1': []})
     lsa = LSA(text_columns=['col_1'])
-    with pytest.raises(ValueError, match="not a text column"):
+    with pytest.raises(ValueError, match="empty vocabulary; perhaps the documents only contain stop words"):
         lsa.fit(X)
 
+    # we assume this sort of data would fail to validate as text data up the stack
+    # but just in case, make sure our component will convert non-str values to str
     X = pd.DataFrame(
         {'col_1': [
             'I\'m singing in the rain!$%^ do do do do do da do',
             'just singing in the rain.................. \n',
             325,
+            np.nan,
+            None,
             'I\'m happy again!!! lalalalalalalalalalala']})
     lsa = LSA(text_columns=['col_1'])
-    with pytest.raises(ValueError, match="not a text column"):
-        lsa.fit(X)
+    lsa.fit(X)
 
 
 def test_index_col_names():

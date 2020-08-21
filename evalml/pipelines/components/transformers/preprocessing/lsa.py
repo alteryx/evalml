@@ -50,6 +50,8 @@ class LSA(Transformer):
         self._verify_col_names(X.columns)
 
         corpus = X[self._text_col_names].values.flatten()
+        # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
+        corpus = corpus.astype(str)
         self._lsa_pipeline.fit(corpus)
         return self
 
