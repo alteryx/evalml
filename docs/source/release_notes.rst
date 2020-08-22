@@ -12,6 +12,7 @@ Release Notes
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
+        * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
@@ -22,6 +23,7 @@ Release Notes
         * Remove maximum version limit for SciPy dependency :pr:`1051`
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
+        * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
     * Testing Changes
