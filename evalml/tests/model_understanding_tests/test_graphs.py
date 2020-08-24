@@ -505,7 +505,7 @@ def test_partial_dependence_baseline(mock_fit, X_y_binary):
 
 
 def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
-    if has_minimal_dependencies:
+    if not has_minimal_dependencies:
         X, y = X_y_binary
 
         class CatBoostTestPipeline(BinaryClassificationPipeline):
