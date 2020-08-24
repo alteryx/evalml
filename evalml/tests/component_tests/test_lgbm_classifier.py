@@ -164,32 +164,96 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     # rename the columns to be the indices
     X_expected.columns = np.arange(X_expected.shape[1])
 
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    arg_X = mock_fit.call_args[0][0]
+    assert_frame_equal(X_expected, arg_X)
+
+    clf.predict(X)
+    arg_X = mock_predict.call_args[0][0]
+    assert_frame_equal(X_expected, arg_X)
+
+    clf.predict_proba(X)
+    arg_X = mock_predict_proba.call_args[0][0]
+    assert_frame_equal(X_expected, arg_X)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_categorical_data_shuffle(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+
+    # add object (string) and categorical data.
+    X['string_col'] = 'abc'
+    X['string_col'].iloc[len(X) // 2:] = 'cba'
+
+    # create the expected result, which is a dataframe with int values in the categorical column and dtype=category
+    X_expected = X.copy()
+    X_expected = X_expected.replace(["abc", "cba"], [0.0, 1.0])
+    X_expected['string_col'] = X_expected['string_col'].astype('category')
+
+    # rename the columns to be the indices
+    X_expected.columns = np.arange(X_expected.shape[1])
+
     # predict on shuffled X to determine if categorical encodings when shuffled
     X_shuffle = X.copy()
     X_expected_shuffle = X_expected.copy()
     X_shuffle = X_shuffle.sample(frac=1, random_state=0).reset_index(drop=True)
     X_expected_shuffle = X_expected_shuffle.sample(frac=1, random_state=0).reset_index(drop=True)
 
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    arg_X = mock_fit.call_args[0][0]
+    assert_frame_equal(X_expected, arg_X)
+
+    # try predict and predict_proba with shuffled data
+    clf.predict(X_shuffle)
+    arg_X = mock_predict.call_args[0][0]
+    assert_frame_equal(X_expected_shuffle, arg_X)
+
+    clf.predict_proba(X_shuffle)
+    arg_X = mock_predict_proba.call_args[0][0]
+    assert_frame_equal(X_expected_shuffle, arg_X)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+
+    # add object (string) and categorical data.
+    X['string_col'] = 'abc'
+    X['string_col'].iloc[len(X) // 2:] = 'cba'
+
+    # create the expected result, which is a dataframe with int values in the categorical column and dtype=category
+    X_expected = X.copy()
+    X_expected = X_expected.replace(["abc", "cba"], [0.0, 1.0])
+    X_expected['string_col'] = X_expected['string_col'].astype('category')
+
+    # rename the columns to be the indices
+    X_expected.columns = np.arange(X_expected.shape[1])
+
     # predict on subset of X to determine if categorical encodings will still work with a subset of categories
     X_subset = X.copy()
     X_expected_subset = X_expected.copy()
     X_subset['string_col'] = 'cba'
-    X_expected_subset.iloc[:, -2] = 1.0
-    X_expected_subset[X_expected_subset.columns[-2]] = X_expected_subset[X_expected_subset.columns[-2]].astype('category')
-
-    X_categorical_expected = [X_expected, X_expected_shuffle, X_expected_subset]
+    X_expected_subset.iloc[:, -1] = 1.0
+    X_expected_subset[X_expected_subset.columns[-1]] = X_expected_subset[X_expected_subset.columns[-1]].astype('category')
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
     arg_X = mock_fit.call_args[0][0]
     assert_frame_equal(X_expected, arg_X)
 
-    # determine whether predict and predict_proba perform as expected with the different X inputs
-    for (idx, X_df) in enumerate([X, X_shuffle, X_subset]):
-        clf.predict(X_df)
-        arg_X = mock_predict.call_args[0][0]
-        assert_frame_equal(X_categorical_expected[idx], arg_X)
+    # determine whether predict and predict_proba perform as expected with the subset of categorical data
+    clf.predict(X_subset)
+    arg_X = mock_predict.call_args[0][0]
+    assert_frame_equal(X_expected_subset, arg_X)
 
-        clf.predict_proba(X_df)
-        arg_X = mock_predict_proba.call_args[0][0]
-        assert_frame_equal(X_categorical_expected[idx], arg_X)
+    clf.predict_proba(X_subset)
+    arg_X = mock_predict_proba.call_args[0][0]
+    assert_frame_equal(X_expected_subset, arg_X)

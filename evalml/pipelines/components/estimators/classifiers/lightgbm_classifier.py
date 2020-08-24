@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -42,7 +42,6 @@ class LightGBMClassifier(Estimator):
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
-        self._label_encoder = None
         self._ordinal_encoder = None
 
         lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **parameters)
@@ -70,23 +69,11 @@ class LightGBMClassifier(Estimator):
 
     def fit(self, X, y=None):
         X2 = self._encode_categories(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-
-        # For binary classification, lightgbm expects numeric values, so encoding before.
-        if y.nunique() <= 2:
-            self._label_encoder = LabelEncoder()
-            y = pd.Series(self._label_encoder.fit_transform(y))
         return super().fit(X2, y)
 
     def predict(self, X):
         X2 = self._encode_categories(X)
-        predictions = super().predict(X2)
-        if self._label_encoder:
-            predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
-        if not isinstance(predictions, pd.Series):
-            predictions = pd.Series(predictions)
-        return predictions
+        return super().predict(X2)
 
     def predict_proba(self, X):
         X2 = self._encode_categories(X)
