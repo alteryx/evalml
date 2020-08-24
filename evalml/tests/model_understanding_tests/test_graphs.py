@@ -515,6 +515,13 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
 
+def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    with pytest.raises(ValueError, match="Pipeline to calculate partial dependence for must be fitted"):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
 def test_graph_partial_dependence(test_pipeline):
     X, y = load_breast_cancer()
 

@@ -339,6 +339,8 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
+    if not pipeline._is_fitted:
+        raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
     if pipeline.model_family == ModelFamily.CATBOOST:
@@ -355,7 +357,7 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target features for which to create the partial dependence plot for.
+        feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
 
