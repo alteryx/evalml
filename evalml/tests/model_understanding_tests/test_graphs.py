@@ -469,7 +469,7 @@ def test_graph_permutation_importance_feature_threshold(X_y_binary, test_pipelin
     data = fig.data[0]
     assert (np.all(data['x'] >= 0.5))
 
-    
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
@@ -551,4 +551,3 @@ def test_graph_partial_dependence(test_pipeline):
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
-    
