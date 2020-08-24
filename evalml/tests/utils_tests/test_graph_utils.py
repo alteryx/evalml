@@ -424,7 +424,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", show_all_features=True)
+    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", feature_threshold=0)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
@@ -442,12 +442,25 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
 def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
-    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
+    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", feature_threshold=0.001)
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
     assert (np.all(data['x']))
 
-    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
+    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", feature_threshold=0)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+
+def test_graph_permutation_importance_feature_threshold(X_y_binary, test_pipeline):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting tesgt because plotly not installed')
+    X, y = X_y_binary
+    clf = test_pipeline
+    clf.fit(X, y)
+    with pytest.raises(ValueError):
+        fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", feature_threshold=-1)
+    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", feature_threshold=0.5)
+    assert isinstance(fig, go.Figure)
+    data = fig.data[0]
+    assert (np.all(data['x'] >= 0.5))
