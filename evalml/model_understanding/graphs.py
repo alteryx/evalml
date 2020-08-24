@@ -328,6 +328,7 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Computes objective score as a function of potential binary classification
         decision thresholds for a fitted binary classification pipeline.
+
     Arguments:
         pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
         X (pd.DataFrame): the input data used to compute objective score
