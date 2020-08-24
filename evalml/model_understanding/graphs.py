@@ -339,8 +339,10 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
-    if pipeline.model_family == ModelFamily.BASELINE or pipeline.model_family == ModelFamily.CATBOOST:
-        raise ValueError("Partial dependence plots are not supported for CatBoost and Baseline estimators")
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if pipeline.model_family == ModelFamily.CATBOOST:
+        pipeline.estimator._component_obj._fitted_ = True
     avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})

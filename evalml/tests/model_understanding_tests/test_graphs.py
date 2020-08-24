@@ -493,23 +493,25 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_partial_dependence_catboost_baseline(mock_fit, X_y_binary, has_minimal_dependencies):
+def test_partial_dependence_catboost_baseline(mock_fit, X_y_binary):
     X, y = X_y_binary
-
-    if not has_minimal_dependencies:
-        class CatBoostTestPipeline(BinaryClassificationPipeline):
-            component_graph = ["CatBoost Classifier"]
-        pipeline = CatBoostTestPipeline({})
-        pipeline.fit(X, y)
-        with pytest.raises(ValueError, match="Partial dependence plots are not supported for CatBoost and Baseline estimators"):
-            partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
         component_graph = ["Baseline Classifier"]
     pipeline = BaselineTestPipeline({})
     pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Partial dependence plots are not supported for CatBoost and Baseline estimators"):
+    with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
+def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
+    X, y = X_y_binary
+
+    class CatBoostTestPipeline(BinaryClassificationPipeline):
+        component_graph = ["CatBoost Classifier"]
+    pipeline = CatBoostTestPipeline({})
+    pipeline.fit(X, y)
+    partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
 
 def test_graph_partial_dependence(test_pipeline):
