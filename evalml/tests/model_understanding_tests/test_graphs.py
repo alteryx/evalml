@@ -475,8 +475,8 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
 
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
-    assert list(part_dep.columns) == ["average predictions", "values"]
-    assert len(part_dep["average predictions"]) == 20
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["values"]) == 20
     assert not part_dep.isnull().all().all()
 
@@ -486,8 +486,8 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
-    assert list(part_dep.columns) == ["average predictions", "values"]
-    assert len(part_dep["average predictions"]) == 20
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["values"]) == 20
     assert not part_dep.isnull().all().all()
 
@@ -521,9 +521,9 @@ def test_graph_partial_dependence(test_pipeline):
     fig = graph_partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
-    assert fig_dict['layout']['title']['text'] == "Partial Dependence for 'mean radius'"
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius'"
     assert len(fig_dict['data']) == 1
 
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
-    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['average predictions'].values)
-    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['values'])
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['partial_dependence'].values)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['feature_values'])

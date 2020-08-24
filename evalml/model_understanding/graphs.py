@@ -339,12 +339,11 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
-
-    if pipeline.model_family == ModelFamily.CATBOOST or pipeline.model_family == ModelFamily.BASELINE:
+    if pipeline.model_family == ModelFamily.BASELINE or pipeline.model_family == ModelFamily.CATBOOST:
         raise ValueError("Partial dependence plots are not supported for CatBoost and Baseline estimators")
     avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
-    return pd.DataFrame({"average predictions": avg_pred[0],
-                         "values": values[0]})
+    return pd.DataFrame({"feature_values": values[0],
+                         "partial_dependence": avg_pred[0]})
 
 
 def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
@@ -366,13 +365,13 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
-    title = f"Partial Dependence for '{feature_name}'"
+    title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['average predictions'])},
-                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['values'])})
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
     data = []
-    data.append(_go.Scatter(x=part_dep['average predictions'],
-                            y=part_dep['values'],
+    data.append(_go.Scatter(x=part_dep['feature_values'],
+                            y=part_dep['partial_dependence'],
                             name='Partial Dependence',
                             line=dict(width=3)))
     return _go.Figure(layout=layout, data=data)
