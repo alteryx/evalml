@@ -8,6 +8,7 @@ from pytest import importorskip
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
+from evalml.utils import SEED_BOUNDS
 
 lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
 
@@ -34,13 +35,48 @@ def test_et_parameters():
     assert clf.parameters == expected_parameters
 
 
+def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):
+    """ensure lightgbm's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    y = pd.Series(y)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
+    clf.fit(X, y)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
+    clf.fit(X, y)
+
+
+def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
+    """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for lightgbm is in lightgbm's supported range"""
+
+    def make_mock_random_state(return_value):
+
+        class MockRandomState(np.random.RandomState):
+
+            def randint(self, min_bound, max_bound):
+                return return_value
+        return MockRandomState()
+
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    y = pd.Series(y)
+    rng = make_mock_random_state(LightGBMClassifier.SEED_MIN)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng)
+    clf.fit(X, y)
+    rng = make_mock_random_state(LightGBMClassifier.SEED_MAX)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng)
+    clf.fit(X, y)
+
+
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
-    sk_clf.fit(X, y)
-    y_pred_sk = sk_clf.predict(X)
-    y_pred_proba_sk = sk_clf.predict_proba(X)
+    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    clf.fit(X, y)
+    y_pred_sk = clf.predict(X)
+    y_pred_proba_sk = clf.predict_proba(X)
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
@@ -54,10 +90,10 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
-    sk_clf.fit(X, y)
-    y_pred_sk = sk_clf.predict(X)
-    y_pred_proba_sk = sk_clf.predict_proba(X)
+    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    clf.fit(X, y)
+    y_pred_sk = clf.predict(X)
+    y_pred_proba_sk = clf.predict_proba(X)
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
@@ -82,24 +118,27 @@ def test_feature_importance(X_y_binary):
     np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=5)
 
 
-def test_random_state(X_y_binary):
-    X, y = X_y_binary
-
-    clf = LightGBMClassifier(random_state=0)
-    clf.fit(X, y)
-    clf = LightGBMClassifier(random_state=np.random.RandomState(0))
-    clf.fit(X, y)
-
-
 def test_fit_string_features(X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['string_col'] = 'abc'
 
+    # lightGBM requires input args to be int, float, or bool, not string
+    X_expected = X.copy()
+    X_expected['string_col'] = 0.0
+
+    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    clf.fit(X_expected, y, categorical_feature=['string_col'])
+    y_pred_sk = clf.predict(X_expected)
+    y_pred_proba_sk = clf.predict_proba(X_expected)
+
     clf = LightGBMClassifier()
     clf.fit(X, y)
-    clf.predict(X)
-    clf.predict_proba(X)
+    y_pred = clf.predict(X)
+    y_pred_proba = clf.predict_proba(X)
+
+    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
@@ -117,24 +156,40 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X['categorical_data'] = X['categorical_data'].astype('category')
 
     # create the expected result, which is a dataframe with int values in the categorical column and dtype=category
-    X2 = X
-    X2 = X2.replace(["abc", "cba"], [0, 1])
-    X2 = X2.replace(["square", "circle"], [1, 0])
-    X2['string_col'] = X2['string_col'].astype('category')
-    X2['categorical_data'] = X2['categorical_data'].astype('category')
+    X_expected = X.copy()
+    X_expected = X_expected.replace(["abc", "cba"], [0.0, 1.0])
+    X_expected = X_expected.replace(["square", "circle"], [1.0, 0.0])
+    X_expected[['string_col', 'categorical_data']] = X_expected[['string_col', 'categorical_data']].astype('category')
 
     # rename the columns to be the indices
-    X2.columns = np.arange(X2.shape[1])
+    X_expected.columns = np.arange(X_expected.shape[1])
+
+    # predict on shuffled X to determine if categorical encodings when shuffled
+    X_shuffle = X.copy()
+    X_expected_shuffle = X_expected.copy()
+    X_shuffle = X_shuffle.sample(frac=1, random_state=0).reset_index(drop=True)
+    X_expected_shuffle = X_expected_shuffle.sample(frac=1, random_state=0).reset_index(drop=True)
+
+    # predict on subset of X to determine if categorical encodings will still work with a subset of categories
+    X_subset = X.copy()
+    X_expected_subset = X_expected.copy()
+    X_subset['string_col'] = 'cba'
+    X_expected_subset.iloc[:, -2] = 1.0
+    X_expected_subset[X_expected_subset.columns[-2]] = X_expected_subset[X_expected_subset.columns[-2]].astype('category')
+
+    X_categorical_expected = [X_expected, X_expected_shuffle, X_expected_subset]
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
     arg_X = mock_fit.call_args[0][0]
-    assert_frame_equal(X2, arg_X)
+    assert_frame_equal(X_expected, arg_X)
 
-    clf.predict(X)
-    arg_X = mock_predict.call_args[0][0]
-    assert_frame_equal(X2, arg_X)
+    # determine whether predict and predict_proba perform as expected with the different X inputs
+    for (idx, X_df) in enumerate([X, X_shuffle, X_subset]):
+        clf.predict(X_df)
+        arg_X = mock_predict.call_args[0][0]
+        assert_frame_equal(X_categorical_expected[idx], arg_X)
 
-    clf.predict_proba(X)
-    arg_X = mock_predict_proba.call_args[0][0]
-    assert_frame_equal(X2, arg_X)
+        clf.predict_proba(X_df)
+        arg_X = mock_predict_proba.call_args[0][0]
+        assert_frame_equal(X_categorical_expected[idx], arg_X)

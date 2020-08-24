@@ -137,11 +137,9 @@ def test_describe_component():
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
     except ImportError:
         pass
-    try:
+    with pytest.raises(ImportError):
         lg_classifier = LightGBMClassifier()
-        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': -1, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1}}
-    except ImportError:
-        pass
+        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 0, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1}}
 
 
 def test_missing_attributes(X_y_binary):
