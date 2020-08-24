@@ -12,6 +12,7 @@ Release Notes
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
         * Added LightGBM classification estimator :pr:`1082`
+        * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
