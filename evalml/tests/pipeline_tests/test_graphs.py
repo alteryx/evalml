@@ -108,7 +108,7 @@ def test_graph_feature_importance_feature_threshold(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Feature threshold of -0.0001 must be greater than or equal to 0"):
         figure = clf.graph_feature_importance(feature_threshold=-0.0001)
     figure = clf.graph_feature_importance(feature_threshold=0.5)
     assert isinstance(figure, go.Figure)

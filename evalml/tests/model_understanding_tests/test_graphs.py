@@ -458,7 +458,7 @@ def test_graph_permutation_importance_feature_threshold(X_y_binary, test_pipelin
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Feature threshold of -0.1 must be greater than or equal to 0"):
         fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", feature_threshold=-0.1)
     fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", feature_threshold=0.5)
     assert isinstance(fig, go.Figure)
