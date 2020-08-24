@@ -472,19 +472,24 @@ def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary
     assert pipeline.threshold == original_pipeline_threshold
 
 
-def test_binary_objective_vs_threshold_standard_metrics(X_y_binary, logistic_regression_binary_pipeline_class):
+def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
-    for objective in get_objectives(ProblemTypes.BINARY):
-        if objective.score_needs_proba:
-            with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
-                binary_objective_vs_threshold(pipeline, X, y, objective)
-        else:
-            results_df = binary_objective_vs_threshold(pipeline, X, y, objective)
-            assert list(results_df.columns) == ['threshold', 'score']
-            assert results_df.shape == (101, 2)
-            assert not results_df.isnull().all().all()
+
+    # test objective with score_needs_proba == True
+    with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
+        binary_objective_vs_threshold(pipeline, X, y, 'log_loss_binary')
+
+    # test with non-binary objective
+    with pytest.raises(ValueError, match="can only be calculated for binary classification objectives"):
+        binary_objective_vs_threshold(pipeline, X, y, 'f1_micro')
+
+    # test objective with score_needs_proba == False
+    results_df = binary_objective_vs_threshold(pipeline, X, y, 'f1')
+    assert list(results_df.columns) == ['threshold', 'score']
+    assert results_df.shape == (101, 2)
+    assert not results_df.isnull().all().all()
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')

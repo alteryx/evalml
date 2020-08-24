@@ -17,6 +17,7 @@ from sklearn.utils.multiclass import unique_labels
 
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
+from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
 
 
@@ -338,10 +339,13 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
-    pipeline_tmp = copy.copy(pipeline)
     objective = get_objective(objective)
+    if objective.problem_type != ProblemTypes.BINARY:
+        raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
     if objective.score_needs_proba:
         raise ValueError("Objective `score_needs_proba` must be False")
+
+    pipeline_tmp = copy.copy(pipeline)
     thresholds = np.linspace(0, 1, steps + 1)
     costs = []
     for threshold in thresholds:
@@ -353,7 +357,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
 
 def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
-    """Generates objective score vs. threshold graph for a fitted pipeline.
+    """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
         pipeline (PipelineBase or subclass): fitted pipeline
@@ -371,8 +375,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Threshold', 'range': [-0.05, 1.05]},
-                        yaxis={'title': f"{objective.name} Scores vs. Binary Classification Decision Threshold", 'range': [_calculate_axis_range(df['score'])]})
+                        xaxis={'title': 'Threshold', 'range': _calculate_axis_range(df['threshold'])},
+                        yaxis={'title': f"{objective.name} Scores vs. Binary Classification Decision Threshold", 'range': _calculate_axis_range(df['score'])})
     data = []
     data.append(_go.Scatter(x=df['threshold'],
                             y=df['score'],
