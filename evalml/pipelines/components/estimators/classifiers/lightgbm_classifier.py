@@ -82,8 +82,6 @@ class LightGBMClassifier(Estimator):
     def predict(self, X):
         X2 = self._encode_categories(X)
         predictions = super().predict(X2)
-        if predictions.ndim == 2 and predictions.shape[1] == 1:
-            predictions = predictions.flatten()
         if self._label_encoder:
             predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
         if not isinstance(predictions, pd.Series):
