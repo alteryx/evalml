@@ -493,7 +493,7 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_partial_dependence_catboost_baseline(mock_fit, X_y_binary):
+def test_partial_dependence_baseline(mock_fit, X_y_binary):
     X, y = X_y_binary
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
@@ -505,13 +505,14 @@ def test_partial_dependence_catboost_baseline(mock_fit, X_y_binary):
 
 
 def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
-    X, y = X_y_binary
+    if has_minimal_dependencies:
+        X, y = X_y_binary
 
-    class CatBoostTestPipeline(BinaryClassificationPipeline):
-        component_graph = ["CatBoost Classifier"]
-    pipeline = CatBoostTestPipeline({})
-    pipeline.fit(X, y)
-    partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        class CatBoostTestPipeline(BinaryClassificationPipeline):
+            component_graph = ["CatBoost Classifier"]
+        pipeline = CatBoostTestPipeline({})
+        pipeline.fit(X, y)
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
 
 def test_graph_partial_dependence(test_pipeline):
