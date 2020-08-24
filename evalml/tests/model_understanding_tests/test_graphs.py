@@ -477,7 +477,7 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
-    assert len(part_dep["values"]) == 20
+    assert len(part_dep["feature_values"]) == 20
     assert not part_dep.isnull().all().all()
 
 
@@ -488,7 +488,7 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
     part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
-    assert len(part_dep["values"]) == 20
+    assert len(part_dep["feature_values"]) == 20
     assert not part_dep.isnull().all().all()
 
 
@@ -527,5 +527,5 @@ def test_graph_partial_dependence(test_pipeline):
     assert len(fig_dict['data']) == 1
 
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
-    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['partial_dependence'].values)
-    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['feature_values'])
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
