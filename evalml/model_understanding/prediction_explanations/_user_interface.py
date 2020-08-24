@@ -199,9 +199,9 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     table_makers = {("table", ProblemTypes.REGRESSION): _SHAPRegressionTableMaker(),
                     ("table", ProblemTypes.BINARY): _SHAPBinaryTableMaker(),
                     ("table", ProblemTypes.MULTICLASS): _SHAPMultiClassTableMaker(pipeline._classes),
-                    ("json", ProblemTypes.REGRESSION): _SHAPRegressionJSONMaker(),
-                    ("json", ProblemTypes.BINARY): _SHAPBinaryJSONMaker(),
-                    ("json", ProblemTypes.MULTICLASS): _SHAPMultiClassJSONMaker(pipeline._classes)}
+                    ("dict", ProblemTypes.REGRESSION): _SHAPRegressionJSONMaker(),
+                    ("dict", ProblemTypes.BINARY): _SHAPBinaryJSONMaker(),
+                    ("dict", ProblemTypes.MULTICLASS): _SHAPMultiClassJSONMaker(pipeline._classes)}
 
     table_maker = table_makers[(output_format, pipeline.problem_type)]
     return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
