@@ -11,6 +11,7 @@ Release Notes
         * Added a “cost-benefit curve” util method to graph cost-benefit matrix scores vs. binary classification thresholds :pr:`1081`
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
+        * Added one-way partial dependence and partial dependence plots :pr:`1079`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
         * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
