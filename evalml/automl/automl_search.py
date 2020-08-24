@@ -76,7 +76,8 @@ class AutoMLSearch:
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=False):
+                 optimize_thresholds=False,
+                 _max_batches=None):
         """Automated pipeline search
 
         Arguments:
@@ -129,6 +130,9 @@ class AutoMLSearch:
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
+
+            _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+                max_pipelines have precedence over stopping the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -166,7 +170,7 @@ class AutoMLSearch:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
         self.max_pipelines = max_pipelines
-        if self.max_pipelines is None and self.max_time is None:
+        if self.max_pipelines is None and self.max_time is None and _max_batches is None:
             self.max_pipelines = 5
             logger.info("Using default limit of max_pipelines=5.\n")
 
@@ -198,6 +202,13 @@ class AutoMLSearch:
         self._automl_algorithm = None
         self._start = None
         self._baseline_cv_score = None
+
+        if _max_batches is not None and _max_batches <= 0:
+            raise ValueError("Parameter max batches must be None or non-negative. Received {max_batches}.")
+        self._max_batches = _max_batches
+        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
+        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
+        self._pipelines_per_batch = 5
 
         self._validate_problem_type()
 
@@ -365,6 +376,8 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        if self._max_batches and self.max_pipelines is None:
+            self.max_pipelines = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -377,7 +390,8 @@ class AutoMLSearch:
             tuner_class=self.tuner_class,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
-            number_features=X.shape[1]
+            number_features=X.shape[1],
+            pipelines_per_batch=self._pipelines_per_batch
         )
 
         log_title(logger, "Beginning pipeline search")
@@ -555,7 +569,6 @@ class AutoMLSearch:
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-
                 if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone()
