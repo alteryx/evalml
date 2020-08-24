@@ -24,7 +24,7 @@ from evalml.problem_types import ProblemTypes
 
 
 def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
-                       output_format="text"):
+                       output_format="table"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -79,7 +79,7 @@ DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
 
 
 def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False,
-                        output_format="text"):
+                        output_format="table"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -100,7 +100,7 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     """
     if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
-    if output_format == "text":
+    if output_format == "table":
         report = [pipeline.name + "\n\n", str(pipeline.parameters) + "\n\n"]
         header_maker = _HeadingMaker(prefix="", n_indices=input_features.shape[0])
         prediction_results_maker = _EmptyPredictedValuesMaker()
@@ -119,7 +119,7 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
-                                   include_shap_values=False, metric=None, output_format="json"):
+                                   include_shap_values=False, metric=None, output_format="table"):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -171,7 +171,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     best = sorted_scores.index[:num_to_explain]
     worst = sorted_scores.index[-num_to_explain:]
 
-    if output_format == "text":
+    if output_format == "table":
         table_maker = _SHAPTableMaker(top_k_features, include_shap_values, training_data=input_features)
 
         if pipeline.problem_type == ProblemTypes.REGRESSION:
