@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
 from sklearn.metrics import auc as sklearn_auc
@@ -13,6 +14,7 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
+from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.utils import import_or_raise
 
@@ -319,3 +321,69 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
     fig = go.Figure(data=data, layout=layout)
     return fig
+
+
+def partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Calculates partial dependence.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target features for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if not pipeline._is_fitted:
+        raise ValueError("Pipeline to calculate partial dependence for must be fitted")
+    if pipeline.model_family == ModelFamily.CATBOOST:
+        pipeline.estimator._component_obj._fitted_ = True
+    avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    return pd.DataFrame({"feature_values": values[0],
+                         "partial_dependence": avg_pred[0]})
+
+
+def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Create an one-way partial dependence plot.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target feature for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
+    feature_name = str(feature)
+    title = f"Partial Dependence of '{feature_name}'"
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
+    data = []
+    data.append(_go.Scatter(x=part_dep['feature_values'],
+                            y=part_dep['partial_dependence'],
+                            name='Partial Dependence',
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
+
+
+def _calculate_axis_range(arr):
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    max_value = arr.max()
+    min_value = arr.min()
+    margins = abs(max_value - min_value) * 0.05
+    return [min_value - margins, max_value + margins]
