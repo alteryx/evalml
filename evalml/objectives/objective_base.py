@@ -119,10 +119,10 @@ class ObjectiveBase(ABC):
         if baseline_score == score:
             return 0
 
-        increase = True
+        decrease = False
         if (baseline_score > score and cls.greater_is_better) or (baseline_score < score and not cls.greater_is_better):
-            increase = False
+            decrease = True
 
         difference = (baseline_score - score)
         change = difference / baseline_score
-        return 100 * (-1) ** (not increase) * np.abs(change)
+        return 100 * (-1) ** (decrease) * np.abs(change)
