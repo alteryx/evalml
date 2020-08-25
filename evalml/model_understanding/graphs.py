@@ -1,4 +1,5 @@
 
+import copy
 import warnings
 
 import numpy as np
@@ -16,6 +17,7 @@ from sklearn.utils.multiclass import unique_labels
 
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
+from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
 
 
@@ -321,6 +323,66 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
     fig = go.Figure(data=data, layout=layout)
     return fig
+
+
+def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Computes objective score as a function of potential binary classification
+        decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
+        X (pd.DataFrame): the input data used to compute objective score
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
+
+    """
+    objective = get_objective(objective)
+    if objective.problem_type != ProblemTypes.BINARY:
+        raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
+    if objective.score_needs_proba:
+        raise ValueError("Objective `score_needs_proba` must be False")
+
+    pipeline_tmp = copy.copy(pipeline)
+    thresholds = np.linspace(0, 1, steps + 1)
+    costs = []
+    for threshold in thresholds:
+        pipeline_tmp.threshold = threshold
+        scores = pipeline_tmp.score(X, y, [objective])
+        costs.append(scores[objective.name])
+    df = pd.DataFrame({"threshold": thresholds, "score": costs})
+    return df
+
+
+def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): fitted pipeline
+        X (pd.DataFrame): the input data used to score and compute scores
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score, shown on the y-axis of the graph
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        plotly.Figure representing the objective score vs. threshold graph generated
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    objective = get_objective(objective)
+    df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
+    title = f'{objective.name} Scores vs. Thresholds'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Threshold', 'range': _calculate_axis_range(df['threshold'])},
+                        yaxis={'title': f"{objective.name} Scores vs. Binary Classification Decision Threshold", 'range': _calculate_axis_range(df['score'])})
+    data = []
+    data.append(_go.Scatter(x=df['threshold'],
+                            y=df['score'],
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
 
 
 def partial_dependence(pipeline, X, feature, grid_resolution=100):
