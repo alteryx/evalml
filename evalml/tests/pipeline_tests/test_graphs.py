@@ -1,5 +1,5 @@
 import os
-from unittest.mock import PropertyMock, patch
+from unittest.mock import patch
 
 import graphviz
 import numpy as np
