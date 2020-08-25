@@ -429,7 +429,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", show_all_features=True)
+    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
@@ -447,15 +447,26 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
 def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
-    assert (np.all(data['x']))
-
-    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
-    data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+
+@patch('evalml.model_understanding.graphs.calculate_permutation_importance')
+def test_graph_permutation_importance_threshold(mock_perm_importance):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+
+    with pytest.raises(ValueError, match="Provided importance threshold of -0.1 must be greater than or equal to 0"):
+        fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=-0.1)
+    fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=0.5)
+    assert isinstance(fig, go.Figure)
+
+    data = fig.data[0]
+    assert (np.all(data['x'] >= 0.5))
 
 
 def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
