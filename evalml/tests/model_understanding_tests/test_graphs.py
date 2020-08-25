@@ -471,8 +471,8 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
 
 def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
-                            false_positive_cost=-7, false_negative_cost=-2)
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     original_pipeline_threshold = pipeline.threshold
@@ -507,8 +507,8 @@ def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pi
 def test_binary_objective_vs_threshold_steps(mock_score,
                                              X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
-                            false_positive_cost=-7, false_negative_cost=-2)
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     mock_score.return_value = {"Cost Benefit Matrix": 0.2}
@@ -523,8 +523,8 @@ def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, log
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
-                            false_positive_cost=-7, false_negative_cost=-2)
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
 
     mock_cb_thresholds.return_value = pd.DataFrame({'threshold': [0, 0.5, 1.0],
                                                     'score': [100, -20, 5]})
