@@ -8,8 +8,10 @@ Release Notes
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
+        * Added a “cost-benefit curve” util method to graph cost-benefit matrix scores vs. binary classification thresholds :pr:`1081`
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
+        * Added one-way partial dependence and partial dependence plots :pr:`1079`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
 <<<<<<< HEAD
 =======
@@ -19,6 +21,8 @@ Release Notes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
+        * Updated cost-benefit matrix to normalize score :pr:`1099`
+        * Fixed logic in `calculate_percent_difference` so that it can handle negative values :pr:`1100`
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
@@ -26,8 +30,10 @@ Release Notes
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
         * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
+        * Changed `show_all_features` parameter into `feature_threshold`, which allows for thresholding feature importance :pr:`1097`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
+        * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
     * Testing Changes
         * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
         * Added a test to check that all test directories are included in evalml package :pr:`1054`

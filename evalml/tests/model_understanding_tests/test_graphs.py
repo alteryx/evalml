@@ -8,18 +8,23 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
+from evalml.demos import load_breast_cancer
 from evalml.model_understanding.graphs import (
+    binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
+    graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_roc_curve,
     normalize_confusion_matrix,
+    partial_dependence,
     precision_recall_curve,
     roc_curve
 )
-from evalml.objectives import get_objectives
+from evalml.objectives import CostBenefitMatrix, get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -424,7 +429,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary", show_all_features=True)
+    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
@@ -442,12 +447,175 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
 def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
-    assert (np.all(data['x']))
-
-    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
-    data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+
+@patch('evalml.model_understanding.graphs.calculate_permutation_importance')
+def test_graph_permutation_importance_threshold(mock_perm_importance):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
+
+    with pytest.raises(ValueError, match="Provided importance threshold of -0.1 must be greater than or equal to 0"):
+        fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=-0.1)
+    fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=0.5)
+    assert isinstance(fig, go.Figure)
+
+    data = fig.data[0]
+    assert (np.all(data['x'] >= 0.5))
+
+
+def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    original_pipeline_threshold = pipeline.threshold
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
+    assert cost_benefit_df.shape == (101, 2)
+    assert not cost_benefit_df.isnull().all().all()
+    assert pipeline.threshold == original_pipeline_threshold
+
+
+def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    # test objective with score_needs_proba == True
+    with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
+        binary_objective_vs_threshold(pipeline, X, y, 'log_loss_binary')
+
+    # test with non-binary objective
+    with pytest.raises(ValueError, match="can only be calculated for binary classification objectives"):
+        binary_objective_vs_threshold(pipeline, X, y, 'f1_micro')
+
+    # test objective with score_needs_proba == False
+    results_df = binary_objective_vs_threshold(pipeline, X, y, 'f1')
+    assert list(results_df.columns) == ['threshold', 'score']
+    assert results_df.shape == (101, 2)
+    assert not results_df.isnull().all().all()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_binary_objective_vs_threshold_steps(mock_score,
+                                             X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    mock_score.return_value = {"Cost Benefit Matrix": 0.2}
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
+    mock_score.assert_called()
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
+    assert cost_benefit_df.shape == (235, 2)
+
+
+@patch('evalml.model_understanding.graphs.binary_objective_vs_threshold')
+def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
+                            false_positive=-7, false_negative=-2)
+
+    mock_cb_thresholds.return_value = pd.DataFrame({'threshold': [0, 0.5, 1.0],
+                                                    'score': [100, -20, 5]})
+
+    figure = graph_binary_objective_vs_threshold(pipeline, X, y, cbm)
+    assert isinstance(figure, go.Figure)
+    data = figure.data[0]
+    assert not np.any(np.isnan(data['x']))
+    assert not np.any(np.isnan(data['y']))
+    assert np.array_equal(data['x'], mock_cb_thresholds.return_value['threshold'])
+    assert np.array_equal(data['y'], mock_cb_thresholds.return_value['score'])
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                          logistic_regression_binary_pipeline_class,
+                                          logistic_regression_multiclass_pipeline_class,
+                                          linear_regression_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        pipeline = logistic_regression_binary_pipeline_class(parameters={})
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline_class(parameters={})
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
+    assert len(part_dep["feature_values"]) == 20
+    assert not part_dep.isnull().all().all()
+
+
+def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_class):
+    X, y = load_breast_cancer()
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
+    assert len(part_dep["feature_values"]) == 20
+    assert not part_dep.isnull().all().all()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_partial_dependence_baseline(mock_fit, X_y_binary):
+    X, y = X_y_binary
+
+    class BaselineTestPipeline(BinaryClassificationPipeline):
+        component_graph = ["Baseline Classifier"]
+    pipeline = BaselineTestPipeline({})
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
+def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        X, y = X_y_binary
+
+        class CatBoostTestPipeline(BinaryClassificationPipeline):
+            component_graph = ["CatBoost Classifier"]
+        pipeline = CatBoostTestPipeline({})
+        pipeline.fit(X, y)
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
+def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    with pytest.raises(ValueError, match="Pipeline to calculate partial dependence for must be fitted"):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+
+
+def test_graph_partial_dependence(test_pipeline):
+    X, y = load_breast_cancer()
+
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    clf = test_pipeline
+    clf.fit(X, y)
+    fig = graph_partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius'"
+    assert len(fig_dict['data']) == 1
+
+    part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)

@@ -61,6 +61,20 @@ def test_classes():
     return MockComponent, MockEstimator, MockTransformer
 
 
+@pytest.fixture(scope="module")
+def test_estimator_needs_fitting_false():
+    class MockEstimatorNeedsFittingFalse(Estimator):
+        name = "Mock Estimator Needs Fitting False"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+        needs_fitting = False
+
+        def predict(self, X):
+            pass
+
+    return MockEstimatorNeedsFittingFalse
+
+
 class MockFitComponent(ComponentBase):
     model_family = ModelFamily.NONE
     name = 'Mock Fit Component'
@@ -679,9 +693,9 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X)
 
 
-def test_all_estimators_check_fit(X_y_binary):
+def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in _all_estimators():
+    for component_class in _all_estimators() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
             continue
 
@@ -705,9 +719,9 @@ def test_all_estimators_check_fit(X_y_binary):
         component.feature_importance
 
 
-def test_no_fitting_required_components(X_y_binary):
+def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in all_components():
+    for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
             component = component_class()
             if issubclass(component_class, Estimator):
