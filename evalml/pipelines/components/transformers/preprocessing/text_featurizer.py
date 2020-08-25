@@ -26,7 +26,6 @@ class TextFeaturizer(TextTransformer):
         self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
         self._trans = [self._nlp_primitives.DiversityScore,
                        self._nlp_primitives.MeanCharactersPerWord,
-                       self._nlp_primitives.PartOfSpeechCount,
                        self._nlp_primitives.PolarityScore]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
