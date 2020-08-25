@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='evalml',
-    version='0.12.2',
+    version='0.13.0.dev0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
