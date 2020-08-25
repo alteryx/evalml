@@ -196,15 +196,74 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     normalized_shap_values = _normalize_shap_values(shap_values)
 
 
-    table_makers = {("table", ProblemTypes.REGRESSION): _SHAPRegressionTableMaker(),
-                    ("table", ProblemTypes.BINARY): _SHAPBinaryTableMaker(),
-                    ("table", ProblemTypes.MULTICLASS): _SHAPMultiClassTableMaker(pipeline._classes),
+    table_makers = {("text", ProblemTypes.REGRESSION): _SHAPRegressionTableMaker(),
+                    ("text", ProblemTypes.BINARY): _SHAPBinaryTableMaker(),
+                    ("text", ProblemTypes.MULTICLASS): _SHAPMultiClassTableMaker(pipeline._classes),
                     ("dict", ProblemTypes.REGRESSION): _SHAPRegressionJSONMaker(),
                     ("dict", ProblemTypes.BINARY): _SHAPBinaryJSONMaker(),
                     ("dict", ProblemTypes.MULTICLASS): _SHAPMultiClassJSONMaker(pipeline._classes)}
 
     table_maker = table_makers[(output_format, pipeline.problem_type)]
     return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
+
+
+class _BestWorstReportMaker(abc.ABC):
+
+    def __init__(self, pipeline_data, heading_maker, predicted_values_maker, table_maker):
+        self.data = pipeline_data
+        self.heading_factory = heading_maker
+        self.results_section_factory = predicted_values_maker
+        self.table_maker_factory = table_maker
+
+    @abc.abstractmethod
+    def add_section(self, section):
+        """Add a report Section"""
+
+    def _make_report(self, num_to_explain, top_k_features, include_shap_values):
+        table_maker = self.table_maker_factory(top_k_features, include_shap_values,
+                                               training_data=self.data.input_features)
+        results_section_maker = self.results_section_factory(self.data.metric.__name__, self.data.y_pred_values)
+        header_maker = self.heading_factory(prefixes=self.headings, n_indices=num_to_explain)
+        index_list = self.data.best + self.data.worst
+
+        report_section_maker = _ReportSectionMaker(header_maker, results_section_maker, table_maker)
+        section = report_section_maker.make_report_section(self.data.pipeline, self.data.input_features,
+                                                           index_list, self.data.y_pred, self.data.y_true,
+                                                           self.data.errors)
+        self.add_section(section)
+
+    @abc.abstractmethod
+    def make_report(self, num_to_explain, top_k_features, include_shap_values):
+        """Make the report."""
+
+
+class _TextBestWorstReportMaker(_BestWorstReportMaker):
+
+    def __init__(self, pipeline_data, heading_maker, predicted_values_maker, table_maker):
+        super().__init__(pipeline_data, heading_maker, predicted_values_maker, table_maker)
+        self.report = [self.data.pipeline.name + "\n\n", str(self.data.pipeline.parameters) + "\n\n"]
+        self.headings = ["Best ", "Worst "]
+
+    def add_section(self, section):
+        self.report.extend(section)
+
+    def make_report(self, num_to_explain, top_k_features, include_shap_values):
+        self._make_report(num_to_explain, top_k_features, include_shap_values)
+        return "".join(self.report)
+
+
+class _DictBestWorstReportMaker(_BestWorstReportMaker):
+    def __init__(self, pipeline_data, heading_maker, predicted_values_maker, table_maker):
+        super().__init__(pipeline_data, heading_maker, predicted_values_maker, table_maker)
+        self.report = []
+        self.headings = ["best", "worst"]
+
+    def add_section(self, section):
+        self.report.extend(section["explanations"])
+
+    def make_report(self, num_to_explain, top_k_features, include_shap_values):
+        self._make_report(num_to_explain, top_k_features, include_shap_values)
+        return {"explanations": self.report}
 
 
 class _ReportSectionMaker:
@@ -244,14 +303,15 @@ class _ReportSectionMaker:
              str
         """
         report = []
-        for rank, index in enumerate(indices):
-            report.extend(self.heading_maker(rank, index))
+        breakpoint()
+        for index in indices:
+            report.extend(self.heading_maker(index))
             report.extend(self.make_predicted_values_maker(index, y_pred, y_true, errors))
             report.extend(self.table_maker(index, pipeline, input_features))
         return report
 
 
-class _JSONReportMaker:
+class _JSONReportSectionMaker:
     def __init__(self, heading_maker, predicted_values_maker, table_maker):
         self.heading_maker = heading_maker
         self.make_predicted_values_maker = predicted_values_maker
@@ -273,9 +333,9 @@ class _JSONReportMaker:
              str
         """
         report = []
-        for rank, index in enumerate(indices):
+        for index in indices:
             section = {}
-            section["rank"] = self.heading_maker(rank, index)
+            section["rank"] = self.heading_maker(index)
             section["predicted_values"] = self.make_predicted_values_maker(index, y_pred, y_true, errors)
             section["explanation"] = self.table_maker(index, pipeline, input_features)["explanation"]
             report.append(section)
@@ -306,21 +366,26 @@ class _HeadingMaker(_SectionMaker):
     are handled by formatting the value of the prefix parameter in the initialization.
     """
 
-    def __init__(self, prefix, n_indices):
-        self.prefix = prefix
+    def __init__(self, prefixes, n_indices):
+        self.prefixes = prefixes
         self.n_indices = n_indices
 
-    def __call__(self, rank, index):
-        return [f"\t{self.prefix}{rank + 1} of {self.n_indices}\n\n"]
+    def __call__(self, index):
+        breakpoint()
+        prefix = self.prefixes[(index // self.n_indices)]
+        rank = index % self.n_indices
+        return [f"\t{prefix}{rank + 1} of {self.n_indices}\n\n"]
 
 
 class _JSONHeadingMaker(_SectionMaker):
-    def __init__(self, prefix, n_indices):
-        self.prefix = prefix
+    def __init__(self, prefixes, n_indices):
+        self.prefixes = prefixes
         self.n_indices = n_indices
 
-    def __call__(self, rank, index):
-        return {"prefix": self.prefix, "index": rank + 1}
+    def __call__(self, index):
+        prefix = self.prefixes[(index // self.n_indices)]
+        rank = index % self.n_indices
+        return {"prefix": prefix, "index": rank + 1}
 
 
 class _EmptyPredictedValuesMaker(_SectionMaker):
@@ -376,7 +441,7 @@ class _ClassificationJSONPredictedValuesMaker(_SectionMaker):
 class _RegressionPredictedValuesMaker(_SectionMaker):
     """Makes the predicted values section for regression problem best/worst reports."""
 
-    def __init__(self, error_name):
+    def __init__(self, error_name, y_pred_values=None):
         # Replace the default name with something more user-friendly
         if error_name == "abs_error":
             error_name = "Absolute Difference"
@@ -390,7 +455,7 @@ class _RegressionPredictedValuesMaker(_SectionMaker):
 
 
 class _RegressionJSONPredictedValuesMaker(_SectionMaker):
-    def __init__(self, error_name):
+    def __init__(self, error_name, y_pred_values=None):
         # Replace the default name with something more user-friendly
         if error_name == "abs_error":
             error_name = "Absolute Difference"
