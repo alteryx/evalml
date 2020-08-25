@@ -1,5 +1,5 @@
 import os
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import graphviz
 import numpy as np
@@ -92,25 +92,23 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    figure = clf.graph_feature_importance(feature_threshold=0.001)
+
+    figure = clf.graph_feature_importance()
     assert isinstance(figure, go.Figure)
 
-    data = figure.data[0]
-    assert (np.all(data['x']))
-
-    figure = clf.graph_feature_importance(feature_threshold=0)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
 
 
-def test_graph_feature_importance_feature_threshold(X_y_binary, test_pipeline):
+def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    with pytest.raises(ValueError, match="Feature threshold of -0.0001 must be greater than or equal to 0"):
-        figure = clf.graph_feature_importance(feature_threshold=-0.0001)
-    figure = clf.graph_feature_importance(feature_threshold=0.5)
+
+    with pytest.raises(ValueError, match="Provided importance threshold of -0.0001 must be greater than or equal to 0"):
+        figure = clf.graph_feature_importance(importance_threshold=-0.0001)
+    figure = clf.graph_feature_importance(importance_threshold=0.5)
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]

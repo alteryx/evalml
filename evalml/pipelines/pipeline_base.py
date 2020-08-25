@@ -388,11 +388,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         return graph
 
-    def graph_feature_importance(self, feature_threshold=0):
+    def graph_feature_importance(self, importance_threshold=0):
         """Generate a bar graph of the pipeline's feature importance
 
         Arguments:
-            feature_threshold (float, optional): If provided, graph features with a permutation importance value larger than feature_threshold. Defaults to zero.
+            importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
         Returns:
             plotly.Figure, a bar graph showing features and their corresponding importance
@@ -402,11 +402,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
 
-        if feature_threshold < 0:
-            raise ValueError(f'Feature threshold of {feature_threshold} must be greater than or equal to 0')
+        if importance_threshold < 0:
+            raise ValueError(f'Provided importance threshold of {importance_threshold} must be greater than or equal to 0')
 
-        # Remove features with zero importance
-        feat_imp = feat_imp[feat_imp['importance'] >= feature_threshold]
+        # Remove features with importance whose absolute value is less than importance threshold
+        feat_imp = feat_imp[feat_imp['importance'] >= importance_threshold]
 
         # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
