@@ -43,7 +43,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         Returns:
             float: score
         """
-        conf_matrix = confusion_matrix(y_true, y_predicted, normalize_method=None)
+        conf_matrix = confusion_matrix(y_true, y_predicted, normalize_method='all')
         cost_matrix = np.array([[self.true_negative, self.false_positive],
                                 [self.false_negative, self.true_positive]])
 
