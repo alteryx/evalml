@@ -471,7 +471,7 @@ def test_graph_permutation_importance_feature_threshold(X_y_binary, test_pipelin
     data = fig.data[0]
     assert (np.all(data['x'] >= 0.5))
 
-    
+
 def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
