@@ -35,7 +35,7 @@ Release Notes
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
         * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
-        * Changed `show_all_features` parameter into `feature_threshold`, which allows for thresholding feature importance :pr:`1097`
+        * Changed `show_all_features` parameter into `importance_threshold`, which allows for thresholding feature importance :pr:`1097`, :pr:``
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
         * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
