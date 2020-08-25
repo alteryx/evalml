@@ -42,7 +42,7 @@ def test_cbm_objective_function():
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
-    assert cbm.objective_function(y_true, y_predicted) == ((3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)) / 10
+    assert np.isclose(cbm.objective_function(y_true, y_predicted), ((3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)) / 10)
 
 
 def test_cbm_objective_function_floats():
