@@ -19,6 +19,7 @@ Release Notes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
+        * Updated cost-benefit matrix to normalize score :pr:`1099`
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`

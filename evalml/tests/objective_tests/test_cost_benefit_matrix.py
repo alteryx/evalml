@@ -6,7 +6,7 @@ from evalml import AutoMLSearch
 from evalml.objectives import CostBenefitMatrix
 
 
-def test_cost_benefit_matrix_init():
+def test_cbm_init():
     with pytest.raises(ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."):
         CostBenefitMatrix(true_positive=None, true_negative=-1,
                           false_positive=-7, false_negative=-2)
@@ -22,7 +22,7 @@ def test_cost_benefit_matrix_init():
 
 
 @pytest.mark.parametrize("optimize_thresholds", [True, False])
-def test_cost_benefit_matrix_objective(optimize_thresholds, X_y_binary):
+def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
@@ -42,7 +42,7 @@ def test_cbm_objective_function():
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
-    assert cbm.objective_function(y_true, y_predicted) == (3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)
+    assert np.isclose(cbm.objective_function(y_true, y_predicted), ((3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)) / 10)
 
 
 def test_cbm_objective_function_floats():
@@ -50,10 +50,10 @@ def test_cbm_objective_function_floats():
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
     cbm = CostBenefitMatrix(true_positive=5.1, true_negative=-1.2,
                             false_positive=-6.7, false_negative=-0.1)
-    assert np.isclose(cbm.objective_function(y_true, y_predicted), (3 * 5.1) + (-1.2 * 2) + (1 * -6.7) + (4 * -0.1))
+    assert np.isclose(cbm.objective_function(y_true, y_predicted), ((3 * 5.1) + (-1.2 * 2) + (1 * -6.7) + (4 * -0.1)) / 10)
 
 
-def test_cmb_input_contains_nan(X_y_binary):
+def test_cbm_input_contains_nan(X_y_binary):
     y_predicted = pd.Series([np.nan, 0, 0])
     y_true = pd.Series([1, 2, 1])
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
@@ -67,7 +67,7 @@ def test_cmb_input_contains_nan(X_y_binary):
         cbm.score(y_true, y_predicted)
 
 
-def test_input_contains_inf(capsys):
+def test_cbm_input_contains_inf(capsys):
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     y_predicted = np.array([np.inf, 0, 0])
@@ -81,7 +81,7 @@ def test_input_contains_inf(capsys):
         cbm.score(y_true, y_predicted)
 
 
-def test_different_input_lengths():
+def test_cbm_different_input_lengths():
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     y_predicted = pd.Series([0, 0])
@@ -95,7 +95,7 @@ def test_different_input_lengths():
         cbm.score(y_true, y_predicted)
 
 
-def test_zero_input_lengths():
+def test_cbm_zero_input_lengths():
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     y_predicted = pd.Series([])
@@ -104,7 +104,7 @@ def test_zero_input_lengths():
         cbm.score(y_true, y_predicted)
 
 
-def test_binary_more_than_two_unique_values():
+def test_cbm_binary_more_than_two_unique_values():
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     y_predicted = pd.Series([0, 1, 2])
