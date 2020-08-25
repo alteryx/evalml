@@ -10,8 +10,10 @@ from skopt.space import Real
 
 from evalml.demos import load_breast_cancer
 from evalml.model_understanding.graphs import (
+    binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
     graph_partial_dependence,
     graph_permutation_importance,
@@ -22,7 +24,7 @@ from evalml.model_understanding.graphs import (
     precision_recall_curve,
     roc_curve
 )
-from evalml.objectives import get_objectives
+from evalml.objectives import CostBenefitMatrix, get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.problem_types import ProblemTypes
 
@@ -454,6 +456,75 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", show_all_features=True)
     data = figure.data[0]
     assert (np.any(data['x'] == 0.0))
+
+
+def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    original_pipeline_threshold = pipeline.threshold
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
+    assert cost_benefit_df.shape == (101, 2)
+    assert not cost_benefit_df.isnull().all().all()
+    assert pipeline.threshold == original_pipeline_threshold
+
+
+def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    # test objective with score_needs_proba == True
+    with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
+        binary_objective_vs_threshold(pipeline, X, y, 'log_loss_binary')
+
+    # test with non-binary objective
+    with pytest.raises(ValueError, match="can only be calculated for binary classification objectives"):
+        binary_objective_vs_threshold(pipeline, X, y, 'f1_micro')
+
+    # test objective with score_needs_proba == False
+    results_df = binary_objective_vs_threshold(pipeline, X, y, 'f1')
+    assert list(results_df.columns) == ['threshold', 'score']
+    assert results_df.shape == (101, 2)
+    assert not results_df.isnull().all().all()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_binary_objective_vs_threshold_steps(mock_score,
+                                             X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    mock_score.return_value = {"Cost Benefit Matrix": 0.2}
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
+    mock_score.assert_called()
+    assert list(cost_benefit_df.columns) == ['threshold', 'score']
+    assert cost_benefit_df.shape == (235, 2)
+
+
+@patch('evalml.model_understanding.graphs.binary_objective_vs_threshold')
+def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    cbm = CostBenefitMatrix(true_positive_cost=1, true_negative_cost=-1,
+                            false_positive_cost=-7, false_negative_cost=-2)
+
+    mock_cb_thresholds.return_value = pd.DataFrame({'threshold': [0, 0.5, 1.0],
+                                                    'score': [100, -20, 5]})
+
+    figure = graph_binary_objective_vs_threshold(pipeline, X, y, cbm)
+    assert isinstance(figure, go.Figure)
+    data = figure.data[0]
+    assert not np.any(np.isnan(data['x']))
+    assert not np.any(np.isnan(data['y']))
+    assert np.array_equal(data['x'], mock_cb_thresholds.return_value['threshold'])
+    assert np.array_equal(data['y'], mock_cb_thresholds.return_value['score'])
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
