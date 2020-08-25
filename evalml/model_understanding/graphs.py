@@ -279,7 +279,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def graph_permutation_importance(pipeline, X, y, objective, show_all_features=False):
+def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
 
     Arguments:
@@ -287,7 +287,7 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
         X (pd.DataFrame): The input data used to score and compute permutation importance
         y (pd.Series): The target labels
         objective (str, ObjectiveBase): Objective to score on
-        show_all_features (bool, optional): If True, graph features with a permutation importance value of zero. Defaults to False.
+        importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
     Returns:
         plotly.Figure, a bar graph showing features and their respective permutation importance.
@@ -296,9 +296,10 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
     perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
     perm_importance['importance'] = perm_importance['importance']
 
-    if not show_all_features:
-        # Remove features with close to zero importance
-        perm_importance = perm_importance[abs(perm_importance['importance']) >= 1e-3]
+    if importance_threshold < 0:
+        raise ValueError(f'Provided importance threshold of {importance_threshold} must be greater than or equal to 0')
+    # Remove features with close to zero importance
+    perm_importance = perm_importance[abs(perm_importance['importance']) >= importance_threshold]
     # List is reversed to go from ascending order to descending order
     perm_importance = perm_importance.iloc[::-1]
 
