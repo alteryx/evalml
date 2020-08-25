@@ -1,8 +1,10 @@
 
+import copy
 import warnings
 
 import numpy as np
 import pandas as pd
+from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
 from sklearn.metrics import auc as sklearn_auc
@@ -13,7 +15,9 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
+from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
+from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
 
 
@@ -319,3 +323,129 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
     fig = go.Figure(data=data, layout=layout)
     return fig
+
+
+def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Computes objective score as a function of potential binary classification
+        decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
+        X (pd.DataFrame): the input data used to compute objective score
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
+
+    """
+    objective = get_objective(objective)
+    if objective.problem_type != ProblemTypes.BINARY:
+        raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
+    if objective.score_needs_proba:
+        raise ValueError("Objective `score_needs_proba` must be False")
+
+    pipeline_tmp = copy.copy(pipeline)
+    thresholds = np.linspace(0, 1, steps + 1)
+    costs = []
+    for threshold in thresholds:
+        pipeline_tmp.threshold = threshold
+        scores = pipeline_tmp.score(X, y, [objective])
+        costs.append(scores[objective.name])
+    df = pd.DataFrame({"threshold": thresholds, "score": costs})
+    return df
+
+
+def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): fitted pipeline
+        X (pd.DataFrame): the input data used to score and compute scores
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score, shown on the y-axis of the graph
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        plotly.Figure representing the objective score vs. threshold graph generated
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    objective = get_objective(objective)
+    df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
+    title = f'{objective.name} Scores vs. Thresholds'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Threshold', 'range': _calculate_axis_range(df['threshold'])},
+                        yaxis={'title': f"{objective.name} Scores vs. Binary Classification Decision Threshold", 'range': _calculate_axis_range(df['score'])})
+    data = []
+    data.append(_go.Scatter(x=df['threshold'],
+                            y=df['score'],
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
+
+
+def partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Calculates partial dependence.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target features for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if not pipeline._is_fitted:
+        raise ValueError("Pipeline to calculate partial dependence for must be fitted")
+    if pipeline.model_family == ModelFamily.CATBOOST:
+        pipeline.estimator._component_obj._fitted_ = True
+    avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    return pd.DataFrame({"feature_values": values[0],
+                         "partial_dependence": avg_pred[0]})
+
+
+def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Create an one-way partial dependence plot.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target feature for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
+    feature_name = str(feature)
+    title = f"Partial Dependence of '{feature_name}'"
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
+    data = []
+    data.append(_go.Scatter(x=part_dep['feature_values'],
+                            y=part_dep['partial_dependence'],
+                            name='Partial Dependence',
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
+
+
+def _calculate_axis_range(arr):
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    max_value = arr.max()
+    min_value = arr.min()
+    margins = abs(max_value - min_value) * 0.05
+    return [min_value - margins, max_value + margins]
