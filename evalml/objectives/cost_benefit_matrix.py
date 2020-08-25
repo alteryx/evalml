@@ -45,5 +45,5 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         cost_matrix = np.array([[self.true_negative_cost, self.false_positive_cost],
                                 [self.false_negative_cost, self.true_positive_cost]])
 
-        total_cost = np.multiply(conf_matrix.values, cost_matrix).sum()
+        total_cost = np.multiply(conf_matrix.values, cost_matrix).sum() / len(y_true)
         return total_cost

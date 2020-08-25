@@ -42,7 +42,7 @@ def test_cbm_objective_function():
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
     cbm = CostBenefitMatrix(true_positive_cost=10, true_negative_cost=-1,
                             false_positive_cost=-7, false_negative_cost=-2)
-    assert cbm.objective_function(y_true, y_predicted) == (3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)
+    assert cbm.objective_function(y_true, y_predicted) == ((3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)) / 10
 
 
 def test_cbm_objective_function_floats():
@@ -50,7 +50,7 @@ def test_cbm_objective_function_floats():
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
     cbm = CostBenefitMatrix(true_positive_cost=5.1, true_negative_cost=-1.2,
                             false_positive_cost=-6.7, false_negative_cost=-0.1)
-    assert np.isclose(cbm.objective_function(y_true, y_predicted), (3 * 5.1) + (-1.2 * 2) + (1 * -6.7) + (4 * -0.1))
+    assert np.isclose(cbm.objective_function(y_true, y_predicted), ((3 * 5.1) + (-1.2 * 2) + (1 * -6.7) + (4 * -0.1)) / 10)
 
 
 def test_cmb_input_contains_nan(X_y_binary):
