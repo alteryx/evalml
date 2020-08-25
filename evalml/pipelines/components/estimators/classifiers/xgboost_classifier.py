@@ -5,6 +5,10 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
+import re
+import numpy as np
+regex = re.compile(r"\[|\]|<", re.IGNORECASE)
+
 
 
 class XGBoostClassifier(Estimator):
@@ -42,21 +46,35 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        self._mapping = {}
         # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
+            # self._column_names = X.columns
+            # X.columns = [regex.sub("_", col) if any(x in str(col) for x in set(('[', ']', '<'))) else col for col in X.columns.values]
+            for col in X.columns.values:
+                if any(x in str(col) for x in set(('[', ']', '<'))):
+                    self._mapping[regex.sub("_", col)] = col
+        self.inverse = dict((v, k) for k, v in self._mapping.items())
+        X.rename(columns=self.inverse, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict(X)
-
+            X.rename(columns=self.inverse, inplace=True)
+        predictions = super().predict(X)
+        if isinstance(predictions, pd.DataFrame):
+            predictions.rename(columns=self._mapping, inplace=True)
+        return predictions
+    
     def predict_proba(self, X):
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict_proba(X)
-
+            X.rename(columns=self.inverse, inplace=True)
+        predictions = super().predict_proba(X)
+        if isinstance(predictions, pd.DataFrame):
+            predictions.rename(columns=self._mapping, inplace=True)
+        return predictions
+    
+    
     @property
     def feature_importance(self):
         return self._component_obj.feature_importances_
