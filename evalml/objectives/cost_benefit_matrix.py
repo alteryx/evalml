@@ -7,7 +7,9 @@ from evalml.model_understanding.graphs import confusion_matrix
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):
-    """Score using a cost-benefit matrix"""
+    """Score using a cost-benefit matrix. Scores quantify the benefits of a given value, so greater numeric
+        scores represents a better score. Costs and scores can be negative, indicating that a value is not beneficial.
+        For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow."""
     name = "Cost Benefit Matrix"
     greater_is_better = True
     score_needs_proba = False
