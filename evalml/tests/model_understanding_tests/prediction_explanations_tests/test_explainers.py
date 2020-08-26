@@ -211,6 +211,18 @@ def test_explain_predictions_value_errors(input_features):
         explain_predictions(None, input_features)
 
 
+def test_output_format_checked():
+    input_features, y_true = pd.DataFrame({"a": range(15)}), pd.Series(range(15))
+    with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received bar"):
+        explain_predictions(None, input_features, output_format="bar")
+
+    with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received foo"):
+        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
+
+    with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received xml"):
+        explain_prediction(None, input_features=input_features, training_data=None, output_format="xml")
+
+
 regression_best_worst_answer = """Test Pipeline Name
 
         Parameters go here
