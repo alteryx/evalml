@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed XGBoost column names for partial dependence methods :pr:`1104`
     * Changes
     * Documentation Changes
     * Testing Changes

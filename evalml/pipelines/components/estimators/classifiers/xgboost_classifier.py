@@ -35,7 +35,7 @@ class XGBoostClassifier(Estimator):
                       "min_child_weight": min_child_weight,
                       "n_estimators": n_estimators}
         parameters.update(kwargs)
-
+        self._column_mappings = None
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(**parameters,
@@ -46,32 +46,29 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        self._mapping = {}
         # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            # self._column_names = X.columns
-            # X.columns = [regex.sub("_", col) if any(x in str(col) for x in set(('[', ']', '<'))) else col for col in X.columns.values]
-            for col in X.columns.values:
-                if any(x in str(col) for x in set(('[', ']', '<'))):
-                    self._mapping[regex.sub("_", col)] = col
-        self.inverse = dict((v, k) for k, v in self._mapping.items())
-        X.rename(columns=self.inverse, inplace=True)
+            # old : new
+            #10 : pie
+            self._column_mappings = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+            self.inverse = dict((v, k) for k, v in self._column_mappings.items())
+            X.rename(columns=self.inverse, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
-        if isinstance(X, pd.DataFrame):
-            X.rename(columns=self.inverse, inplace=True)
+        # if isinstance(X, pd.DataFrame):
+        #     X.rename(columns=self.inverse, inplace=True)
         predictions = super().predict(X)
-        if isinstance(predictions, pd.DataFrame):
-            predictions.rename(columns=self._mapping, inplace=True)
+        if self._column_mappings is not None:
+            predictions.rename(columns=self._column_mappings, inplace=True)
         return predictions
     
     def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame):
-            X.rename(columns=self.inverse, inplace=True)
+        # if isinstance(X, pd.DataFrame):
+            # X.rename(columns=self.inverse, inplace=True)
         predictions = super().predict_proba(X)
-        if isinstance(predictions, pd.DataFrame):
-            predictions.rename(columns=self._mapping, inplace=True)
+        if self._column_mappings is not None:
+            predictions.rename(columns=self._column_mappings, inplace=True)
         return predictions
     
     
