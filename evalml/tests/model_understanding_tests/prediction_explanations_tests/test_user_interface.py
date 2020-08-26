@@ -1,6 +1,6 @@
 import copy
-from itertools import product
 import json
+from itertools import product
 
 import numpy as np
 import pandas as pd
@@ -10,12 +10,12 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _DictBinarySHAPTable,
     _DictMultiClassSHAPTable,
     _DictRegressionSHAPTable,
+    _make_json_serializable,
     _make_rows,
     _make_text_table,
     _TextBinarySHAPTable,
     _TextMultiClassSHAPTable,
-    _TextRegressionSHAPTable,
-    _make_json_serializable
+    _TextRegressionSHAPTable
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "1.20", "++"], ["b", "1.10", "+"]]),
