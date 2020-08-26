@@ -52,23 +52,23 @@ class XGBoostClassifier(Estimator):
             #10 : pie
             self._column_mappings = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
             self.inverse = dict((v, k) for k, v in self._column_mappings.items())
-            X.rename(columns=self.inverse, inplace=True)
+            X.rename(columns=self._column_mappings, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
-        # if isinstance(X, pd.DataFrame):
-        #     X.rename(columns=self.inverse, inplace=True)
+        if isinstance(X, pd.DataFrame):
+            X.rename(columns=self._column_mappings, inplace=True)
         predictions = super().predict(X)
-        if self._column_mappings is not None:
-            predictions.rename(columns=self._column_mappings, inplace=True)
+        # if self._column_mappings is not None:
+        predictions.rename(columns=self.inverse, inplace=True)
         return predictions
     
     def predict_proba(self, X):
-        # if isinstance(X, pd.DataFrame):
-            # X.rename(columns=self.inverse, inplace=True)
+        if isinstance(X, pd.DataFrame):
+            X.rename(columns=self._column_mappings, inplace=True)
         predictions = super().predict_proba(X)
-        if self._column_mappings is not None:
-            predictions.rename(columns=self._column_mappings, inplace=True)
+        # if self._column_mappings is not None:
+        predictions.rename(columns=self.inverse, inplace=True)
         return predictions
     
     
