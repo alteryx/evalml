@@ -33,9 +33,10 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
+        output_format (str): Either "text" or "dict". Default is "text".
 
     Returns:
-        str: Table
+        str or dict - A report explaining the most positive/negative contributing features to the predictions.
     """
     return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
                                               output_format=output_format)
@@ -88,11 +89,11 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
+        output_format (str): Either "text" or "dict". Default is "text".
 
     Returns:
-        str - A report with the pipeline name and parameters and a table for each row of input_features.
-            The table will have the following columns: Feature Name, Contribution to Prediction, SHAP Value (optional),
-            and each row of the table will be a feature.
+        str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
+            The report will include the feature names, prediction contribution, and SHAP Value (optional).
     """
     if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
@@ -123,12 +124,12 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             the true labels and predicted value or probabilities as the only arguments and lower values
             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
             for classification problems.
+        output_format (str): Either "text" or "dict". Default is "text".
 
     Returns:
-        str - A report with the pipeline name and parameters. For each of the best/worst rows of input_features, the
-            predicted values, true labels, and metric value will be listed along with a table. The table will have the
-            following columns: Feature Name, Contribution to Prediction, SHAP Value (optional), and each row of the
-            table will correspond to a feature.
+        str or dict - A report explaining the top contributing features for the best/worst predictions in the input_features.
+            For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
+            feature names, prediction contribution, and SHAP Value (optional) will be listed.
     """
     if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "

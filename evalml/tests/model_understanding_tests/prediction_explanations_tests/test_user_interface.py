@@ -1,5 +1,6 @@
 import copy
 from itertools import product
+import json
 
 import numpy as np
 import pandas as pd
@@ -13,7 +14,8 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_text_table,
     _TextBinarySHAPTable,
     _TextMultiClassSHAPTable,
-    _TextRegressionSHAPTable
+    _TextRegressionSHAPTable,
+    _make_json_serializable
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "1.20", "++"], ["b", "1.10", "+"]]),
@@ -63,6 +65,18 @@ def test_make_rows_and_make_table(test_case, include_shap_values, include_string
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
     assert len(table) - 2 == len(new_answer)
+
+
+@pytest.mark.parametrize("value,answer", [(np.int64(3), 3), (np.float32(3.2), 3.2),
+                                          (np.str_("foo"), "foo"),
+                                          (np.bool_(True), True)])
+def test_make_json_serializable(value, answer):
+    value = _make_json_serializable(value)
+    if answer != "foo":
+        np.testing.assert_almost_equal(value, answer)
+    else:
+        assert value == answer
+    json.dumps(value)
 
 
 regression = {"a": [6.500], "b": [1.770], "c": [0.570],
