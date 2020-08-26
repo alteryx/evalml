@@ -13,9 +13,11 @@ from evalml.objectives import (
     BalancedAccuracyBinary,
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
+    CostBenefitMatrix,
     F1Macro,
     F1Micro,
     F1Weighted,
+    LogLossBinary,
     MCCBinary,
     MCCMulticlass,
     MeanSquaredLogError,
@@ -432,3 +434,20 @@ def test_calculate_percent_difference_with_nan(objective_class, nan_value):
     assert pd.isna(objective_class.calculate_percent_difference(nan_value, nan_value))
 
     assert pd.isna(objective_class.calculate_percent_difference(2, 0))
+
+
+def test_calculate_percent_difference_negative_and_equal_numbers():
+
+    assert CostBenefitMatrix.calculate_percent_difference(score=5, baseline_score=5) == 0
+
+    assert CostBenefitMatrix.calculate_percent_difference(score=-5, baseline_score=-10) == 50
+    assert CostBenefitMatrix.calculate_percent_difference(score=-10, baseline_score=-5) == -100
+    assert CostBenefitMatrix.calculate_percent_difference(score=-5, baseline_score=10) == -150
+    assert CostBenefitMatrix.calculate_percent_difference(score=10, baseline_score=-5) == 300
+
+    # These values are not possible for LogLossBinary but we need them for 100% coverage
+    # We might add an objective where lower is better that can take negative values in the future
+    assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=-10) == -50
+    assert LogLossBinary.calculate_percent_difference(score=-10, baseline_score=-5) == 100
+    assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=10) == 150
+    assert LogLossBinary.calculate_percent_difference(score=10, baseline_score=-5) == -300

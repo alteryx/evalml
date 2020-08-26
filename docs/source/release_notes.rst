@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.13.1 Aug. 25, 2020**
+    * Enhancements
         * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
@@ -19,6 +27,7 @@ Release Notes
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
         * Updated cost-benefit matrix to normalize score :pr:`1099`
+        * Fixed logic in `calculate_percent_difference` so that it can handle negative values :pr:`1100`
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
@@ -26,7 +35,7 @@ Release Notes
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
         * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
-        * Changed `show_all_features` parameter into `feature_threshold`, which allows for thresholding feature importance :pr:`1097`
+        * Changed `show_all_features` parameter into `importance_threshold`, which allows for thresholding feature importance :pr:`1097`, :pr:`1103`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
         * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
