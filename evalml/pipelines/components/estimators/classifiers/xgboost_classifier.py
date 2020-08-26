@@ -56,20 +56,23 @@ class XGBoostClassifier(Estimator):
         return super().fit(X, y)
 
     def predict(self, X):
-        if isinstance(X, pd.DataFrame):
+        if isinstance(X, pd.DataFrame) and self._column_mappings is not None:
             X.rename(columns=self._column_mappings, inplace=True)
         predictions = super().predict(X)
         # if self._column_mappings is not None:
-        predictions.rename(columns=self.inverse, inplace=True)
+        if self.inverse is not None:
+            predictions.rename(columns=self.inverse, inplace=True)
         return predictions
     
     def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame):
+        if isinstance(X, pd.DataFrame) and self._column_mappings is not None:
             X.rename(columns=self._column_mappings, inplace=True)
         predictions = super().predict_proba(X)
         # if self._column_mappings is not None:
-        predictions.rename(columns=self.inverse, inplace=True)
+        if self.inverse is not None:
+            predictions.rename(columns=self.inverse, inplace=True)
         return predictions
+    
     
     
     @property
