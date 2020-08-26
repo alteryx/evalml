@@ -1,5 +1,5 @@
 catboost==0.24
-cloudpickle==1.5.0
+cloudpickle==1.6.0
 numpy==1.19.1
 pandas==1.1.1
 pyzmq==19.0.2
