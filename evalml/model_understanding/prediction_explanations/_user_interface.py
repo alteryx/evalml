@@ -77,6 +77,10 @@ def _rows_to_dict(rows):
 
 
 def _make_json_serializable(value):
+    """Make sure a numeric boolean type is json serializable.
+
+    numpy.int64 or numpy.bool can't be serialized to json.
+    """
     if pd.api.types.is_number(value):
         if pd.api.types.is_integer(value):
             value = int(value)
