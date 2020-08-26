@@ -1,6 +1,5 @@
 import re
 
-import numpy as np
 import pandas as pd
 from skopt.space import Integer, Real
 
@@ -49,34 +48,36 @@ class XGBoostClassifier(Estimator):
     def fit(self, X, y=None):
         # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
-            if self.has_symbols:
+            has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if has_symbols:
                 self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
                 self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
                 X.rename(columns=self.name_to_col_num, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
+        has_symbols = False
         if isinstance(X, pd.DataFrame):
-            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
-            if self.has_symbols:
+            has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if has_symbols:
                 self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
                 self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
                 X.rename(columns=self.name_to_col_num, inplace=True)
         predictions = super().predict(X)
-        if self.has_symbols:
+        if has_symbols:
             predictions.rename(columns=self.col_num_to_name, inplace=True)
         return predictions
 
     def predict_proba(self, X):
+        has_symbols = False
         if isinstance(X, pd.DataFrame):
-            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
-            if self.has_symbols:
+            has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if has_symbols:
                 self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
                 self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
                 X.rename(columns=self.name_to_col_num, inplace=True)
         predictions = super().predict_proba(X)
-        if self.has_symbols:
+        if has_symbols:
             predictions.rename(columns=self.col_num_to_name, inplace=True)
         return predictions
 
