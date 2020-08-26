@@ -398,6 +398,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             plotly.Figure, a bar graph showing features and their corresponding importance
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        import_or_raise("ipywidgets", error_msg="Cannot find dependency ipywidgets")
 
         feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
