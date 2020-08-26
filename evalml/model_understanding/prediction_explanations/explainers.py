@@ -6,25 +6,17 @@ import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
+from evalml.model_understanding.prediction_explanations._report_creator_factory import (
+    _report_creator_factory
+)
 from evalml.model_understanding.prediction_explanations._user_interface import (
-    _TableClassificationPredictedValuesMaker,
-    _TableEmptyPredictedValuesMaker,
-    _TableHeadingMaker,
-    _make_single_prediction_shap_table,
-    _TableRegressionPredictedValuesMaker,
-    _TextReportMaker,
-    _TableSHAPMaker,
-    _DictSHAPMaker,
-    _DictHeadingMaker,
-    _DictReportMaker,
-    _DictRegressionPredictedValuesMaker,
-    _DictClassificationPredictedValuesMaker,
+    _make_single_prediction_shap_table
 )
 from evalml.problem_types import ProblemTypes
 
-_PipelineData = namedtuple("PipelineData", ["pipeline", "input_features",
-                                            "y_true", "y_pred", "y_pred_values",
-                                            "errors", "index_list"])
+# Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
+_ReportData = namedtuple("ReportData", ["pipeline", "input_features",
+                                        "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
 def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
@@ -104,17 +96,13 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     """
     if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
-    data = _PipelineData(pipeline, input_features, None, None, None, None, range(input_features.shape[0]))
-    if output_format == "text":
-        header_maker = _TableHeadingMaker([""], input_features.shape[0])
-        prediction_results_maker = _TableEmptyPredictedValuesMaker()
-        table_maker = _TableSHAPMaker(top_k_features, include_shap_values, training_data)
-        report_maker = _TextReportMaker(header_maker, prediction_results_maker, table_maker)
-        return report_maker.make_report(data)
-    else:
-        table_maker = _DictSHAPMaker(top_k_features, include_shap_values, training_data)
-        section_maker = _DictReportMaker(None, None, table_maker)
-        return section_maker.make_report(data)
+    data = _ReportData(pipeline, input_features, y_true=None, y_pred=None,
+                       y_pred_values=None, errors=None, index_list=range(input_features.shape[0]), metric=None)
+
+    report_creator = _report_creator_factory(data, report_type="explain_predictions",
+                                             output_format=output_format, top_k_features=top_k_features,
+                                             include_shap_values=include_shap_values)
+    return report_creator.make_report(data)
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
@@ -172,26 +160,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     worst = sorted_scores.index[-num_to_explain:]
     index_list = best.tolist() + worst.tolist()
 
-    pipeline_data = _PipelineData(pipeline, input_features, y_true, y_pred, y_pred_values, errors, index_list)
+    data = _ReportData(pipeline, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
-    if output_format == "text":
-        heading_maker = _TableHeadingMaker(["Best ", "Worst "], n_indices=num_to_explain)
-        table_maker = _TableSHAPMaker(top_k_features, include_shap_values, training_data=input_features)
-        if pipeline.problem_type == ProblemTypes.REGRESSION:
-            prediction_results_class = _TableRegressionPredictedValuesMaker
-        else:
-            prediction_results_class = _TableClassificationPredictedValuesMaker
-        prediction_results_maker = prediction_results_class(metric.__name__, y_pred_values)
-
-        report_maker = _TextReportMaker(heading_maker, prediction_results_maker, table_maker)
-    else:
-        heading_maker = _DictHeadingMaker(["best", "worst"], n_indices=num_to_explain)
-        table_maker = _DictSHAPMaker(top_k_features, include_shap_values, training_data=input_features)
-        if pipeline.problem_type == ProblemTypes.REGRESSION:
-            prediction_results_class = _DictRegressionPredictedValuesMaker
-        else:
-            prediction_results_class = _DictClassificationPredictedValuesMaker
-        prediction_results_maker = prediction_results_class(metric.__name__, y_pred_values)
-
-        report_maker = _DictReportMaker(heading_maker, prediction_results_maker, table_maker)
-    return report_maker.make_report(pipeline_data)
+    report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
+                                             output_format=output_format, top_k_features=top_k_features,
+                                             include_shap_values=include_shap_values, num_to_explain=num_to_explain)
+    return report_creator.make_report(data)

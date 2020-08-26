@@ -6,8 +6,11 @@ import pandas as pd
 import pytest
 
 from evalml.model_understanding.prediction_explanations._user_interface import (
+    _DictBinarySHAPTable,
+    _DictMultiClassSHAPTable,
+    _DictRegressionSHAPTable,
     _make_rows,
-    _make_table,
+    _make_text_table,
     _TextBinarySHAPTable,
     _TextMultiClassSHAPTable,
     _TextRegressionSHAPTable
@@ -55,7 +58,7 @@ def test_make_rows_and_make_table(test_case, include_shap_values, include_string
 
     assert _make_rows(values, values, pipeline_features, top_k, include_shap_values) == new_answer
 
-    table = _make_table(values, values, pipeline_features, top_k, include_shap_values).splitlines()
+    table = _make_text_table(values, values, pipeline_features, top_k, include_shap_values).splitlines()
     if include_shap_values:
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
@@ -92,6 +95,26 @@ regression_table_shap = """Feature Name Feature Value Contribution to Prediction
                          e 0.71 - -0.29
                          f -0.21 - -1.21""".splitlines()
 
+regression_dict = {
+    "explanation": [{
+        "feature_names": ["a", "b", "c", "d", "e", "f"],
+        "feature_values": [7.5, 2.77, 1.57, 0.91, 0.71, -0.21],
+        "qualitative_explanation": ["++++", "+", "+", "-", "-", "-"],
+        "quantitative_explanation": [None, None, None, None, None, None],
+        "class_name": None
+    }]
+}
+
+regression_dict_shap = {
+    "explanation": [{
+        "feature_names": ["a", "b", "c", "d", "e", "f"],
+        "feature_values": [7.5, 2.77, 1.57, 0.91, 0.71, -0.21],
+        "qualitative_explanation": ["++++", "+", "+", "-", "-", "-"],
+        "quantitative_explanation": [6.50, 1.77, 0.57, -0.09, -0.29, -1.21],
+        "class_name": None
+    }]
+}
+
 binary = [{"a": [0], "b": [0], "c": [0],
            "d": [0], "e": [0], "f": [0], "foo": [-1]},
           {"a": [1.180], "b": [1.120], "c": [0.000],
@@ -120,6 +143,26 @@ binary_table_shap = """Feature Name Feature Value Contribution to Prediction SHA
                      d -1.56 -- -2.56
                      e -1.80 -- -2.80
                      f -1.90 -- -2.90""".splitlines()
+
+binary_dict = {
+    "explanation": [{
+        "feature_names": ["a", "b", "c", "d", "e", "f"],
+        "feature_values": [2.180, 2.120, 1.000, -1.560, -1.800, -1.900],
+        "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+        "quantitative_explanation": [None, None, None, None, None, None],
+        "class_name": "1"
+    }]
+}
+
+binary_dict_shap = {
+    "explanation": [{
+        "feature_names": ["a", "b", "c", "d", "e", "f"],
+        "feature_values": [2.180, 2.120, 1.000, -1.560, -1.800, -1.900],
+        "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+        "quantitative_explanation": [1.180, 1.120, 0.000, -2.560, -2.800, -2.900],
+        "class_name": "1"
+    }]
+}
 
 multiclass = [{"a": [0], "b": [0], "c": [0],
                "d": [0], "e": [0], "f": [0], "foo": [-1]},
@@ -205,25 +248,82 @@ multiclass_table_shap = """Class: 0
                          e -1.80 -- -2.04
                          f -1.90 -- -2.68""".splitlines()
 
+multiclass_dict = {
+    "explanation": [
+        {"feature_names": ["f", "e", "d", "b", "a", "foo"],
+         "feature_values": [-1.9, -1.8, -1.56, 2.12, 2.18, 30],
+         "qualitative_explanation": ["+", "+", "+", "+", "+", "-----"],
+         "quantitative_explanation": [None, None, None, None, None, None],
+         "class_name": "0"},
+        {"feature_names": ["a", "b", "c", "d", "e", "f"],
+         "feature_values": [2.18, 2.12, 1.0, -1.56, -1.8, -1.9],
+         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+         "quantitative_explanation": [None, None, None, None, None, None],
+         "class_name": "1"},
+        {"feature_names": ["a", "c", "b", "d", "e", "f"],
+         "feature_values": [2.18, 1.0, 2.12, -1.56, -1.8, -1.9],
+         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+         "quantitative_explanation": [None, None, None, None, None, None],
+         "class_name": "2"}
+    ]
+}
 
-@pytest.mark.parametrize("values,normalized_values,pipeline_features,include_shap,answer",
-                         [(regression, regression_normalized, regression_pipeline_features, False, regression_table),
-                          (regression, regression_normalized, regression_pipeline_features, True, regression_table_shap),
-                          (binary, binary_normalized, binary_pipeline_features, False, binary_table),
-                          (binary, binary_normalized, binary_pipeline_features, True, binary_table_shap),
-                          (multiclass, multiclass_normalized, multiclass_pipeline_features, False, multiclass_table),
-                          (multiclass, multiclass_normalized, multiclass_pipeline_features, True, multiclass_table_shap)])
-def test_make_single_prediction_table(values, normalized_values, pipeline_features, include_shap, answer):
+multiclass_dict_shap = {
+    "explanation": [
+        {"feature_names": ["f", "e", "d", "b", "a", "foo"],
+         "feature_values": [-1.9, -1.8, -1.56, 2.12, 2.18, 30],
+         "qualitative_explanation": ["+", "+", "+", "+", "+", "-----"],
+         "quantitative_explanation": [0, 0, 0, 0, 0, -1],
+         "class_name": "0"},
+        {"feature_names": ["a", "b", "c", "d", "e", "f"],
+         "feature_values": [2.18, 2.12, 1.0, -1.56, -1.8, -1.9],
+         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+         "quantitative_explanation": [1.180, 1.120, 0.000, -2.560, -2.800, -2.900],
+         "class_name": "1"},
+        {"feature_names": ["a", "c", "b", "d", "e", "f"],
+         "feature_values": [2.18, 1.0, 2.12, -1.56, -1.8, -1.9],
+         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
+         "quantitative_explanation": [0.680, 0.000, 0.000, -1.840, -2.040, -2.680],
+         "class_name": "2"}
+    ]
+}
+
+
+@pytest.mark.parametrize("values,normalized_values,pipeline_features,include_shap,output_format,answer",
+                         [(regression, regression_normalized, regression_pipeline_features, False, "text", regression_table),
+                          (regression, regression_normalized, regression_pipeline_features, True, "text", regression_table_shap),
+                          (regression, regression_normalized, regression_pipeline_features, False, "dict", regression_dict),
+                          (regression, regression_normalized, regression_pipeline_features, True, "dict", regression_dict_shap),
+                          (binary, binary_normalized, binary_pipeline_features, False, "text", binary_table),
+                          (binary, binary_normalized, binary_pipeline_features, True, "text", binary_table_shap),
+                          (binary, binary_normalized, binary_pipeline_features, False, "dict", binary_dict),
+                          (binary, binary_normalized, binary_pipeline_features, True, "dict", binary_dict_shap),
+                          (multiclass, multiclass_normalized, multiclass_pipeline_features, False, "text", multiclass_table),
+                          (multiclass, multiclass_normalized, multiclass_pipeline_features, True, "text", multiclass_table_shap),
+                          (multiclass, multiclass_normalized, multiclass_pipeline_features, False, "dict", multiclass_dict),
+                          (multiclass, multiclass_normalized, multiclass_pipeline_features, True, "dict", multiclass_dict_shap)
+                          ])
+def test_make_single_prediction_table(values, normalized_values, pipeline_features, include_shap, output_format, answer):
+
+    class_names = ["0", "1", "2"]
+    makers = {"text": (_TextMultiClassSHAPTable(class_names), _TextBinarySHAPTable(), _TextRegressionSHAPTable()),
+              "dict": (_DictMultiClassSHAPTable(class_names), _DictBinarySHAPTable(class_names), _DictRegressionSHAPTable())}
+
+    multiclass, binary, regression = makers[output_format]
 
     if isinstance(values, list):
         if len(values) > 2:
-            table_maker = _TextMultiClassSHAPTable(class_names=["0", "1", "2"])
+            table_maker = multiclass
         else:
-            table_maker = _TextBinarySHAPTable()
+            table_maker = binary
     else:
-        table_maker = _TextRegressionSHAPTable()
+        table_maker = regression
+
     table = table_maker(values, normalized_values, pipeline_features, top_k=3, include_shap_values=include_shap)
 
     # Making sure the content is the same, regardless of formatting.
-    for index, (row_table, row_answer) in enumerate(zip(table.splitlines(), answer)):
-        assert row_table.strip().split() == row_answer.strip().split()
+    if output_format == "text":
+        for index, (row_table, row_answer) in enumerate(zip(table.splitlines(), answer)):
+            assert row_table.strip().split() == row_answer.strip().split()
+    else:
+        assert table == answer

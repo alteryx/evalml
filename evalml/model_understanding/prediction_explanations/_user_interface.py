@@ -1,6 +1,5 @@
 import abc
 
-import numpy as np
 import pandas as pd
 from texttable import Texttable
 
@@ -55,18 +54,18 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
     return rows
 
 
-def _jsonify_rows(rows):
-    """Turns a list of lists into a json-friendly dictionary."""
+def _rows_to_dict(rows):
+    """Turns a list of lists into a dictionary."""
 
     feature_names = []
     feature_values = []
     qualitative_explanations = []
     quantitative_explanations = []
-    for name, value, explanations in rows:
-        if isinstance(explanations, tuple):
-            qualitative, quantitative = explanations
-        else:
-            qualitative, quantitative = explanations, None
+    for row in rows:
+        name, value, qualitative = row[:3]
+        quantitative = None
+        if len(row) == 4:
+            quantitative = row[-1]
         feature_names.append(name)
         feature_values.append(value)
         qualitative_explanations.append(qualitative)
@@ -77,7 +76,18 @@ def _jsonify_rows(rows):
             "quantitative_explanation": quantitative_explanations}
 
 
-def _make_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+def _make_json_serializable(value):
+    if pd.api.types.is_number(value):
+        if pd.api.types.is_integer(value):
+            value = int(value)
+        else:
+            value = float(value)
+    elif pd.api.types.is_bool(value):
+        value = bool(value)
+    return value
+
+
+def _make_text_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
     """Make a table displaying the SHAP values for a prediction.
 
     Arguments:
@@ -121,7 +131,7 @@ class _TextRegressionSHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
     def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
-        return _make_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
+        return _make_text_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
 
 
 class _TextBinarySHAPTable(_TableMaker):
@@ -130,7 +140,7 @@ class _TextBinarySHAPTable(_TableMaker):
     def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         # The SHAP algorithm will return a two-element list for binary problems.
         # By convention, we display the explanation for the dominant class.
-        return _make_table(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values)
+        return _make_text_table(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values)
 
 
 class _TextMultiClassSHAPTable(_TableMaker):
@@ -143,23 +153,25 @@ class _TextMultiClassSHAPTable(_TableMaker):
         strings = []
         for class_name, class_values, normalized_class_values in zip(self.class_names, shap_values, normalized_values):
             strings.append(f"Class: {class_name}\n")
-            table = _make_table(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values)
+            table = _make_text_table(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values)
             strings += table.splitlines()
             strings.append("\n")
         return "\n".join(strings)
 
 
 class _DictRegressionSHAPTable(_TableMaker):
+    """Makes a SHAP table for regression problems formatted as a dictionary."""
 
     def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         rows = _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values,
                           convert_numeric_to_string=False)
-        json_rows = _jsonify_rows(rows)
+        json_rows = _rows_to_dict(rows)
         json_rows["class_name"] = None
         return {"explanation": [json_rows]}
 
 
 class _DictBinarySHAPTable(_TableMaker):
+    """Makes a SHAP table for binary classification problems formatted as a dictionary."""
 
     def __init__(self, class_names):
         self.class_names = class_names
@@ -167,12 +179,13 @@ class _DictBinarySHAPTable(_TableMaker):
     def __call__(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
         rows = _make_rows(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values,
                           convert_numeric_to_string=False)
-        json_rows = _jsonify_rows(rows)
-        json_rows["class_name"] = self.class_names[1]
+        json_rows = _rows_to_dict(rows)
+        json_rows["class_name"] = _make_json_serializable(self.class_names[1])
         return {"explanation": [json_rows]}
 
 
 class _DictMultiClassSHAPTable(_TableMaker):
+    """Makes a SHAP table for multiclass classification problems formatted as a dictionary."""
 
     def __init__(self, class_names):
         self.class_names = class_names
@@ -182,8 +195,8 @@ class _DictMultiClassSHAPTable(_TableMaker):
         for class_name, class_values, normalized_class_values in zip(self.class_names, shap_values, normalized_values):
             rows = _make_rows(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values,
                               convert_numeric_to_string=False)
-            json_output_for_class = _jsonify_rows(rows)
-            json_output_for_class["class_name"] = class_name
+            json_output_for_class = _rows_to_dict(rows)
+            json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
         return {"explanation": json_output}
 
@@ -211,94 +224,19 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
+    class_names = None
+    if hasattr(pipeline, "_classes"):
+        class_names = pipeline._classes
 
     table_makers = {("text", ProblemTypes.REGRESSION): _TextRegressionSHAPTable(),
                     ("text", ProblemTypes.BINARY): _TextBinarySHAPTable(),
-                    ("text", ProblemTypes.MULTICLASS): _TextMultiClassSHAPTable(pipeline._classes),
+                    ("text", ProblemTypes.MULTICLASS): _TextMultiClassSHAPTable(class_names),
                     ("dict", ProblemTypes.REGRESSION): _DictRegressionSHAPTable(),
-                    ("dict", ProblemTypes.BINARY): _DictBinarySHAPTable(pipeline._classes),
-                    ("dict", ProblemTypes.MULTICLASS): _DictMultiClassSHAPTable(pipeline._classes)}
+                    ("dict", ProblemTypes.BINARY): _DictBinarySHAPTable(class_names),
+                    ("dict", ProblemTypes.MULTICLASS): _DictMultiClassSHAPTable(class_names)}
 
     table_maker = table_makers[(output_format, pipeline.problem_type)]
     return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
-
-
-class _TextReportMaker:
-    """Make a prediction explanation report.
-
-    A report is made up of three parts: the header, the predicted values (if any), and the table.
-
-    There are two kinds of reports we make: Reports where we explain the best and worst predictions and
-    reports where we explain predictions for features the user has manually selected.
-
-    Each of these reports is slightly different depending on the type of problem (regression, binary, multiclass).
-
-    Rather than addressing all cases in one function/class, we write individual classes for formatting each part
-    of the report depending on the type of problem and report.
-
-    This class creates the report given callables for creating the header, predicted values, and table.
-    """
-
-    def __init__(self, heading_maker, predicted_values_maker, table_maker):
-        self.heading_maker = heading_maker
-        self.make_predicted_values_maker = predicted_values_maker
-        self.table_maker = table_maker
-
-    def make_report(self, data):
-        """Make a report for a subset of input features to a fitted pipeline.
-
-        Arguments:
-            pipeline (PipelineBase): Fitted pipeline.
-            input_features (pd.DataFrame): Features where the pipeline predictions will be explained.
-            indices (list(int)): List of indices specifying the subset of input features whose predictions
-                we want to explain.
-            y_pred (pd.Series): Predicted values of the input_features.
-            y_true (pd.Series): True labels of the input_features.
-            errors (pd.Series): Error between y_pred and y_true
-
-        Returns:
-             str
-        """
-        report = [data.pipeline.name + "\n\n", str(data.pipeline.parameters) + "\n\n"]
-        for rank, index in enumerate(data.index_list):
-            report.extend(self.heading_maker(rank))
-            report.extend(self.make_predicted_values_maker(index, data.y_pred, data.y_true, data.errors))
-            report.extend(self.table_maker(index, data.pipeline, data.input_features))
-        return "".join(report)
-
-
-class _DictReportMaker:
-    def __init__(self, heading_maker, predicted_values_maker, table_maker):
-        self.heading_maker = heading_maker
-        self.make_predicted_values_maker = predicted_values_maker
-        self.table_maker = table_maker
-
-    def make_report(self, data):
-        """Make a report for a subset of input features to a fitted pipeline.
-
-        Arguments:
-            pipeline (PipelineBase): Fitted pipeline.
-            input_features (pd.DataFrame): Features where the pipeline predictions will be explained.
-            indices (list(int)): List of indices specifying the subset of input features whose predictions
-                we want to explain.
-            y_pred (pd.Series): Predicted values of the input_features.
-            y_true (pd.Series): True labels of the input_features.
-            errors (pd.Series): Error between y_pred and y_true
-
-        Returns:
-             str
-        """
-        report = []
-        for rank, index in enumerate(data.index_list):
-            section = {}
-            if self.heading_maker:
-                section["rank"] = self.heading_maker(rank)
-            if self.make_predicted_values_maker:
-                section["predicted_values"] = self.make_predicted_values_maker(index, data.y_pred,
-                                                                               data.y_true, data.errors)
-            section["explanation"] = self.table_maker(index, data.pipeline, data.input_features)["explanation"]
-            report.append(section)
-        return {"explanations": report}
 
 
 class _SectionMaker(abc.ABC):
@@ -318,8 +256,8 @@ class _SectionMaker(abc.ABC):
         """
 
 
-class _TableHeadingMaker(_SectionMaker):
-    """Makes the heading section for reports.
+class _TextHeading(_SectionMaker):
+    """Makes the heading section for reports formatted as text.
 
     Differences between best/worst reports and reports where user manually specifies the input features subset
     are handled by formatting the value of the prefix parameter in the initialization.
@@ -335,7 +273,9 @@ class _TableHeadingMaker(_SectionMaker):
         return [f"\t{prefix}{rank + 1} of {self.n_indices}\n\n"]
 
 
-class _DictHeadingMaker(_SectionMaker):
+class _DictHeading(_SectionMaker):
+    """Makes the heading section for reports formatted as dictionaries."""
+
     def __init__(self, prefixes, n_indices):
         self.prefixes = prefixes
         self.n_indices = n_indices
@@ -346,15 +286,15 @@ class _DictHeadingMaker(_SectionMaker):
         return {"prefix": prefix, "index": rank + 1}
 
 
-class _TableEmptyPredictedValuesMaker(_SectionMaker):
+class _TextEmptyPredictedValues(_SectionMaker):
     """Omits the predicted values section for reports where the user specifies the subset of the input features."""
 
     def __call__(self, index, y_pred, y_true, scores):
         return [""]
 
 
-class _TableClassificationPredictedValuesMaker(_SectionMaker):
-    """Makes the predicted values section for classification problem best/worst reports."""
+class _TextClassificationPredictedValues(_SectionMaker):
+    """Makes the predicted values section for classification problem best/worst reports formatted as text."""
 
     def __init__(self, error_name, y_pred_values):
         # Replace the default name with something more user-friendly
@@ -375,23 +315,8 @@ class _TableClassificationPredictedValuesMaker(_SectionMaker):
                 f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
 
 
-class _DictClassificationPredictedValuesMaker(_SectionMaker):
-    def __init__(self, error_name, y_pred_values):
-        # Replace the default name with something more user-friendly
-        if error_name == "cross_entropy":
-            error_name = "Cross Entropy"
-        self.error_name = error_name
-        self.predicted_values = y_pred_values
-
-    def __call__(self, index, y_pred, y_true, scores):
-        pred_values = dict(zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist()))
-
-        return {"probabilities": pred_values, "predicted_value": self.predicted_values[index],
-                "target_value": y_true[index], "error_name": self.error_name, "error_value": round(scores[index], 3)}
-
-
-class _TableRegressionPredictedValuesMaker(_SectionMaker):
-    """Makes the predicted values section for regression problem best/worst reports."""
+class _TextRegressionPredictedValues(_SectionMaker):
+    """Makes the predicted values section for regression problem best/worst reports formatted as text."""
 
     def __init__(self, error_name, y_pred_values=None):
         # Replace the default name with something more user-friendly
@@ -406,7 +331,29 @@ class _TableRegressionPredictedValuesMaker(_SectionMaker):
                 f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
 
 
-class _DictRegressionPredictedValuesMaker(_SectionMaker):
+class _DictClassificationPredictedValues(_SectionMaker):
+    """Makes the predicted values section for classification problem best/worst reports formatted as dictionaries."""
+
+    def __init__(self, error_name, y_pred_values):
+        # Replace the default name with something more user-friendly
+        if error_name == "cross_entropy":
+            error_name = "Cross Entropy"
+        self.error_name = error_name
+        self.predicted_values = y_pred_values
+
+    def __call__(self, index, y_pred, y_true, scores):
+        pred_values = dict(zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist()))
+
+        return {"probabilities": pred_values,
+                "predicted_value": _make_json_serializable(self.predicted_values[index]),
+                "target_value": _make_json_serializable(y_true[index]),
+                "error_name": self.error_name,
+                "error_value": _make_json_serializable(scores[index])}
+
+
+class _DictRegressionPredictedValues(_SectionMaker):
+    """Makes the predicted values section for regression problem best/worst reports formatted as dictionaries."""
+
     def __init__(self, error_name, y_pred_values=None):
         # Replace the default name with something more user-friendly
         if error_name == "abs_error":
@@ -420,14 +367,14 @@ class _DictRegressionPredictedValuesMaker(_SectionMaker):
                 "error_value": round(scores[index], 3)}
 
 
-class _TableSHAPMaker(_SectionMaker):
-    """Makes the SHAP table section for reports.
+class _TextSHAPTable(_SectionMaker):
+    """Makes the SHAP table section for reports formatted as text.
 
     The table is the same whether the user requests a best/worst report or they manually specified the
     subset of the input features.
 
     Handling the differences in how the table is formatted between regression and classification problems
-    is delegated to the explain_prediction function.
+    is delegated to the _make_single_prediction_shap_table
     """
 
     def __init__(self, top_k_features, include_shap_values, training_data):
@@ -438,13 +385,14 @@ class _TableSHAPMaker(_SectionMaker):
     def __call__(self, index, pipeline, input_features):
         table = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
                                                    training_data=self.training_data, top_k=self.top_k_features,
-                                                   include_shap_values=self.include_shap_values)
+                                                   include_shap_values=self.include_shap_values, output_format="text")
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
 
-class _DictSHAPMaker(_SectionMaker):
+class _DictSHAPTable(_SectionMaker):
+    """Makes the SHAP table section for reports formatted as dictionaries."""
 
     def __init__(self, top_k_features, include_shap_values, training_data):
         self.top_k_features = top_k_features
@@ -457,3 +405,80 @@ class _DictSHAPMaker(_SectionMaker):
                                                          include_shap_values=self.include_shap_values,
                                                          output_format="dict")
         return json_output
+
+
+class _ReportMaker(abc.ABC):
+    """Make a prediction explanation report.
+
+    A report is made up of three parts: the header, the predicted values (if any), and the table.
+
+    There are two kinds of reports we make: Reports where we explain the best and worst predictions and
+    reports where we explain predictions for features the user has manually selected.
+
+    Each of these reports is slightly different depending on the type of problem (regression, binary, multiclass).
+
+    Rather than addressing all cases in one function/class, we write individual classes for formatting each part
+    of the report depending on the type of problem and report.
+
+    This class creates the report given callables for creating the header, predicted values, and table.
+    """
+
+    @abc.abstractmethod
+    def make_report(self, data):
+        """Make a report from the ReportData passed from the user."""
+
+
+class _TextReportMaker(_ReportMaker):
+    """Make a prediction explanation report that is formatted as text."""
+
+    def __init__(self, heading_maker, predicted_values_maker, table_maker):
+        self.heading_maker = heading_maker
+        self.make_predicted_values_maker = predicted_values_maker
+        self.table_maker = table_maker
+
+    def make_report(self, data):
+        """Make a report for a subset of input features to a fitted pipeline.
+
+        Arguments:
+           data (_ReportData): Data passed in by the user.
+
+        Returns:
+             str
+        """
+        report = [data.pipeline.name + "\n\n", str(data.pipeline.parameters) + "\n\n"]
+        for rank, index in enumerate(data.index_list):
+            report.extend(self.heading_maker(rank))
+            report.extend(self.make_predicted_values_maker(index, data.y_pred, data.y_true, data.errors))
+            report.extend(self.table_maker(index, data.pipeline, data.input_features))
+        return "".join(report)
+
+
+class _DictReportMaker(_ReportMaker):
+    """Make a prediction explanation report that is formatted as dictionary."""
+
+    def __init__(self, heading_maker, predicted_values_maker, table_maker):
+        self.heading_maker = heading_maker
+        self.make_predicted_values_maker = predicted_values_maker
+        self.table_maker = table_maker
+
+    def make_report(self, data):
+        """Make a report for a subset of input features to a fitted pipeline.
+
+        Arguments:
+            data (_ReportData): Data passed in by the user.
+
+        Returns:
+             dict
+        """
+        report = []
+        for rank, index in enumerate(data.index_list):
+            section = {}
+            # We want to omit heading and predicted values sections for "explain_predictions"-style reports
+            if self.heading_maker:
+                section["rank"] = self.heading_maker(rank)
+            if self.make_predicted_values_maker:
+                section["predicted_values"] = self.make_predicted_values_maker(index, data.y_pred,
+                                                                               data.y_true, data.errors)
+            section["explanation"] = self.table_maker(index, data.pipeline, data.input_features)["explanation"]
+            report.append(section)
+        return {"explanations": report}

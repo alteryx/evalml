@@ -97,7 +97,7 @@ explain_prediction_multiclass_dict_answer = {
         {"feature_names": ["a", "b", "c", "d"],
          "feature_values": [10, 20, 30, 40],
          "qualitative_explanation": ["+", "+", "-", "-"],
-         "quantitative_explanation": [None]*4,
+         "quantitative_explanation": [None] * 4,
          "class_name": "class_0"},
         {"feature_names": ["a", "b", "c", "d"],
          "feature_values": [10, 20, 30, 40],
@@ -111,6 +111,7 @@ explain_prediction_multiclass_dict_answer = {
          "class_name": "class_2"},
     ]
 }
+
 
 @pytest.mark.parametrize("problem_type,output_format,shap_values,normalized_shap_values,answer",
                          [(ProblemTypes.REGRESSION,
@@ -518,6 +519,7 @@ regression_custom_metric_answer_dict = {
          "explanation": ["explanation_dictionary_goes_here"]}
     ]
 }
+
 
 @pytest.mark.parametrize("output_format,answer",
                          [("text", regression_custom_metric_answer),
