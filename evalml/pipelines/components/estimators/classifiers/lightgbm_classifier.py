@@ -50,25 +50,30 @@ class LightGBMClassifier(Estimator):
                          component_obj=lgbm_classifier,
                          random_state=random_seed)
 
-    def _encode_categories(self, X):
-        # Encode the X input to be floats for all categorical components
+    def _convert_to_dataframe(self, X):
         X2 = pd.DataFrame(X).copy() if not isinstance(X, pd.DataFrame) else X.copy()
-        cat_cols = X2.select_dtypes(categorical_dtypes).columns
-        if not self._ordinal_encoder:
-            self._ordinal_encoder = OrdinalEncoder()
-            X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.fit_transform(X2[cat_cols]))
-        else:
-            X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.transform(X2[cat_cols]))
-
-        X2[cat_cols] = X2[cat_cols].astype('category')
-
         # rename columns in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
         X2.columns = np.arange(X2.shape[1])
+        cat_cols = X2.select_dtypes(categorical_dtypes).columns
+        return (X2, cat_cols)
 
+    def _make_encodings(self, X):
+        X2, cat_cols = self._convert_to_dataframe(X)
+        self._ordinal_encoder = OrdinalEncoder()
+        # Encode the X input to be floats for all categorical components
+        X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.fit_transform(X2[cat_cols]))
+        X2[cat_cols] = X2[cat_cols].astype('category')
+        return X2
+
+    def _encode_categories(self, X):
+        X2, cat_cols = self._convert_to_dataframe(X)
+        # Encode the X input to be floats for all categorical components
+        X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.transform(X2[cat_cols]))
+        X2[cat_cols] = X2[cat_cols].astype('category')
         return X2
 
     def fit(self, X, y=None):
-        X2 = self._encode_categories(X)
+        X2 = self._make_encodings(X)
         return super().fit(X2, y)
 
     def predict(self, X):
