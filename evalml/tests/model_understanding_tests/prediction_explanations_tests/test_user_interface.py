@@ -8,9 +8,9 @@ import pytest
 from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_rows,
     _make_table,
-    _SHAPBinaryTableMaker,
-    _SHAPMultiClassTableMaker,
-    _SHAPRegressionTableMaker
+    _TextBinarySHAPTable,
+    _TextMultiClassSHAPTable,
+    _TextRegressionSHAPTable
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "1.20", "++"], ["b", "1.10", "+"]]),
@@ -100,7 +100,6 @@ binary = [{"a": [0], "b": [0], "c": [0],
 binary_normalized = [{'a': [0.0], 'b': [0.0], 'c': [0.0], 'd': [0.0], 'e': [0.0], 'f': [0.0], 'foo': [-1.0]},
                      {'a': [0.102], 'b': [0.097], 'c': [0.0], 'd': [-0.225],
                       'e': [-0.2422], 'f': [-0.251], 'foo': [-0.087]}]
-
 binary_pipeline_features = pd.DataFrame({"a": 2.18, "b": 2.12, "c": 1.0, "d": -1.56, "e": -1.8, "f": -1.9,
                                          "foo": -20}, index=[23])
 
@@ -218,11 +217,11 @@ def test_make_single_prediction_table(values, normalized_values, pipeline_featur
 
     if isinstance(values, list):
         if len(values) > 2:
-            table_maker = _SHAPMultiClassTableMaker(class_names=["0", "1", "2"])
+            table_maker = _TextMultiClassSHAPTable(class_names=["0", "1", "2"])
         else:
-            table_maker = _SHAPBinaryTableMaker()
+            table_maker = _TextBinarySHAPTable()
     else:
-        table_maker = _SHAPRegressionTableMaker()
+        table_maker = _TextRegressionSHAPTable()
     table = table_maker(values, normalized_values, pipeline_features, top_k=3, include_shap_values=include_shap)
 
     # Making sure the content is the same, regardless of formatting.
