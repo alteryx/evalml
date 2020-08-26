@@ -6,6 +6,7 @@ from .components import (
     PerColumnImputer,
     StandardScaler,
     Transformer,
+    LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
