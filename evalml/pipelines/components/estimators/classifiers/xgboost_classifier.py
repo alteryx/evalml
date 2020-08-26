@@ -1,3 +1,6 @@
+import re
+
+import numpy as np
 import pandas as pd
 from skopt.space import Integer, Real
 
@@ -5,10 +8,8 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
-import re
-import numpy as np
-regex = re.compile(r"\[|\]|<", re.IGNORECASE)
 
+regex = re.compile(r"\[|\]|<", re.IGNORECASE)
 
 
 class XGBoostClassifier(Estimator):
@@ -48,33 +49,37 @@ class XGBoostClassifier(Estimator):
     def fit(self, X, y=None):
         # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            # old : new
-            #10 : pie
-            self._column_mappings = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
-            self.inverse = dict((v, k) for k, v in self._column_mappings.items())
-            X.rename(columns=self._column_mappings, inplace=True)
+            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if self.has_symbols:
+                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
+                X.rename(columns=self.name_to_col_num, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
-        if isinstance(X, pd.DataFrame) and self._column_mappings is not None:
-            X.rename(columns=self._column_mappings, inplace=True)
+        if isinstance(X, pd.DataFrame):
+            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if self.has_symbols:
+                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
+                X.rename(columns=self.name_to_col_num, inplace=True)
         predictions = super().predict(X)
-        # if self._column_mappings is not None:
-        if self.inverse is not None:
-            predictions.rename(columns=self.inverse, inplace=True)
+        if self.has_symbols:
+            predictions.rename(columns=self.col_num_to_name, inplace=True)
         return predictions
-    
+
     def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame) and self._column_mappings is not None:
-            X.rename(columns=self._column_mappings, inplace=True)
+        if isinstance(X, pd.DataFrame):
+            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if self.has_symbols:
+                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
+                X.rename(columns=self.name_to_col_num, inplace=True)
         predictions = super().predict_proba(X)
-        # if self._column_mappings is not None:
-        if self.inverse is not None:
-            predictions.rename(columns=self.inverse, inplace=True)
+        if self.has_symbols:
+            predictions.rename(columns=self.col_num_to_name, inplace=True)
         return predictions
-    
-    
-    
+
     @property
     def feature_importance(self):
         return self._component_obj.feature_importances_

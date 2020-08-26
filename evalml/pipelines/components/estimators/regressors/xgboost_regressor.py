@@ -43,13 +43,24 @@ class XGBoostRegressor(Estimator):
     def fit(self, X, y=None):
         # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
+            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if self.has_symbols:
+                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
+                X.rename(columns=self.name_to_col_num, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict(X)
+            self.has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
+            if self.has_symbols:
+                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
+                X.rename(columns=self.name_to_col_num, inplace=True)
+        predictions = super().predict(X)
+        if self.has_symbols:
+            predictions.rename(columns=self.col_num_to_name, inplace=True)
+        return predictions
 
     @property
     def feature_importance(self):
