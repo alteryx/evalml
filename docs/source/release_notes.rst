@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
     * Testing Changes
 
 
