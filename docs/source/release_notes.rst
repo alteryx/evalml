@@ -7,6 +7,8 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
+        * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
 
 
@@ -22,6 +24,7 @@ Release Notes
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added one-way partial dependence and partial dependence plots :pr:`1079`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
+        * Added LightGBM classification estimator :pr:`1082`
         * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`

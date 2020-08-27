@@ -22,6 +22,7 @@ from evalml.pipelines.components import (
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -148,6 +149,11 @@ def test_describe_component():
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    except ImportError:
+        pass
+    try:
+        lg_classifier = LightGBMClassifier()
+        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 0, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1}}
     except ImportError:
         pass
 

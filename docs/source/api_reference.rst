@@ -187,6 +187,7 @@ Classifiers are components that output a predicted class label.
     ElasticNetClassifier
     ExtraTreesClassifier
     RandomForestClassifier
+    LightGBMClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
     BaselineClassifier
