@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
+        * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
 
 
