@@ -224,11 +224,11 @@ def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
     clf.predict_proba(X1_predict)
     assert_frame_equal(X1_predict_expected, mock_predict_proba.call_args[0][0])
 
-    # same pattern as above, should produce the same int encoding, except the string labels happen to be different
-    X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "a"]})
-    X2_fit_expected = pd.DataFrame({0: [2.0, 1.0, 0.0, 0.0]}, dtype='category')
-    X2_predict = pd.DataFrame({"feature": ["c", "c", "b", "a"]})
-    X2_predict_expected = pd.DataFrame({0: [2.0, 2.0, 1.0, 0.0]}, dtype='category')
+    # Check if it will fit a different dataset with new variable
+    X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
+    X2_fit_expected = pd.DataFrame({0: [2.0, 1.0, 0.0, 3.0]}, dtype='category')
+    X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
+    X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype='category')
 
     clf = LightGBMClassifier()
     clf.fit(X2_fit, y)
