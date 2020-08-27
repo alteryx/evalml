@@ -11,3 +11,5 @@ psutil>=5.6.3
 requirements-parser>=0.2.0
 shap>=0.35.0
 texttable>=1.6.2
+featuretools
+nlp-primitives>=1.0.0
