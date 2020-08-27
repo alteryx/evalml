@@ -1,15 +1,9 @@
 from evalml.model_understanding.prediction_explanations._user_interface import (
-    _DictClassificationPredictedValues,
-    _DictHeading,
-    _DictRegressionPredictedValues,
-    _DictReportMaker,
-    _DictSHAPTable,
-    _TextClassificationPredictedValues,
-    _TextEmptyPredictedValues,
-    _TextHeading,
-    _TextRegressionPredictedValues,
-    _TextReportMaker,
-    _TextSHAPTable
+    _ClassificationPredictedValues,
+    _Heading,
+    _RegressionPredictedValues,
+    _ReportMaker,
+    _SHAPTable
 )
 from evalml.problem_types import ProblemTypes
 
@@ -32,27 +26,27 @@ def _report_creator_factory(data, report_type, output_format, top_k_features, in
         num_to_explain (int): How many rows to include in the entire report - passed in by user.
 
     Returns:
-        _ReportCreator instance needed to create the desired report.
+        _ReportCreator method needed to create the desired report.
     """
     if report_type == "explain_predictions" and output_format == "text":
-        heading = _TextHeading([""], data.input_features.shape[0])
-        predicted_values = _TextEmptyPredictedValues()
-        shap_table = _TextSHAPTable(top_k_features, include_shap_values, data.input_features)
-        report_maker = _TextReportMaker(heading, predicted_values, shap_table)
+        heading = _Heading([""], data.input_features.shape[0])
+        predicted_values = None
+        shap_table = _SHAPTable(top_k_features, include_shap_values, data.input_features)
+        report_maker = _ReportMaker(heading, predicted_values, shap_table).make_text
     elif report_type == "explain_predictions" and output_format == "dict":
-        shap_table = _DictSHAPTable(top_k_features, include_shap_values, data.input_features)
-        report_maker = _DictReportMaker(None, None, shap_table)
+        shap_table = _SHAPTable(top_k_features, include_shap_values, data.input_features)
+        report_maker = _ReportMaker(None, None, shap_table).make_dict
     elif report_type == "explain_predictions_best_worst" and output_format == "text":
-        heading_maker = _TextHeading(["Best ", "Worst "], n_indices=num_to_explain)
-        predicted_values = _best_worst_predicted_values_section(data, _TextRegressionPredictedValues,
-                                                                _TextClassificationPredictedValues)
-        table_maker = _TextSHAPTable(top_k_features, include_shap_values, training_data=data.input_features)
-        report_maker = _TextReportMaker(heading_maker, predicted_values, table_maker)
+        heading_maker = _Heading(["Best ", "Worst "], n_indices=num_to_explain)
+        predicted_values = _best_worst_predicted_values_section(data, _RegressionPredictedValues,
+                                                                _ClassificationPredictedValues)
+        table_maker = _SHAPTable(top_k_features, include_shap_values, training_data=data.input_features)
+        report_maker = _ReportMaker(heading_maker, predicted_values, table_maker).make_text
     else:
-        heading_maker = _DictHeading(["best", "worst"], n_indices=num_to_explain)
-        table_maker = _DictSHAPTable(top_k_features, include_shap_values, training_data=data.input_features)
-        predicted_values = _best_worst_predicted_values_section(data, _DictRegressionPredictedValues,
-                                                                _DictClassificationPredictedValues)
-        report_maker = _DictReportMaker(heading_maker, predicted_values, table_maker)
+        heading_maker = _Heading(["best", "worst"], n_indices=num_to_explain)
+        table_maker = _SHAPTable(top_k_features, include_shap_values, training_data=data.input_features)
+        predicted_values = _best_worst_predicted_values_section(data, _RegressionPredictedValues,
+                                                                _ClassificationPredictedValues)
+        report_maker = _ReportMaker(heading_maker, predicted_values, table_maker).make_dict
 
     return report_maker

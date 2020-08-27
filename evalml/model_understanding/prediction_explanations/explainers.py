@@ -107,7 +107,7 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     report_creator = _report_creator_factory(data, report_type="explain_predictions",
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values)
-    return report_creator.make_report(data)
+    return report_creator(data)
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
@@ -172,4 +172,4 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
-    return report_creator.make_report(data)
+    return report_creator(data)

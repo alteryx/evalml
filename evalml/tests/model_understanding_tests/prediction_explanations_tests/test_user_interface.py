@@ -7,15 +7,12 @@ import pandas as pd
 import pytest
 
 from evalml.model_understanding.prediction_explanations._user_interface import (
-    _DictBinarySHAPTable,
-    _DictMultiClassSHAPTable,
-    _DictRegressionSHAPTable,
+    _BinarySHAPTable,
     _make_json_serializable,
     _make_rows,
     _make_text_table,
-    _TextBinarySHAPTable,
-    _TextMultiClassSHAPTable,
-    _TextRegressionSHAPTable
+    _MultiClassSHAPTable,
+    _RegressionSHAPTable
 )
 
 make_rows_test_cases = [({"a": [0.2], "b": [0.1]}, 3, [["a", "1.20", "++"], ["b", "1.10", "+"]]),
@@ -320,18 +317,16 @@ multiclass_dict_shap = {
 def test_make_single_prediction_table(values, normalized_values, pipeline_features, include_shap, output_format, answer):
 
     class_names = ["0", "1", "2"]
-    makers = {"text": (_TextMultiClassSHAPTable(class_names), _TextBinarySHAPTable(), _TextRegressionSHAPTable()),
-              "dict": (_DictMultiClassSHAPTable(class_names), _DictBinarySHAPTable(class_names), _DictRegressionSHAPTable())}
-
-    multiclass, binary, regression = makers[output_format]
 
     if isinstance(values, list):
         if len(values) > 2:
-            table_maker = multiclass
+            table_maker = _MultiClassSHAPTable(class_names)
         else:
-            table_maker = binary
+            table_maker = _BinarySHAPTable(class_names)
     else:
-        table_maker = regression
+        table_maker = _RegressionSHAPTable()
+
+    table_maker = table_maker.make_text if output_format == "text" else table_maker.make_dict
 
     table = table_maker(values, normalized_values, pipeline_features, top_k=3, include_shap_values=include_shap)
 

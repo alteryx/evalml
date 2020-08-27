@@ -18,11 +18,7 @@ from evalml.problem_types import ProblemTypes
 def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
     for row, row_answer in zip(table_1, table_2):
-        # To make it easier to compare header underline
-        if "=" in row:
-            assert set(row.strip()) == set(row_answer.strip())
-        else:
-            assert row.strip().split() == row_answer.strip().split()
+        assert row.strip().split() == row_answer.strip().split()
 
 
 test_features = [5, [1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
