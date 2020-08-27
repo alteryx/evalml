@@ -50,9 +50,9 @@ class XGBoostClassifier(Estimator):
         if isinstance(X, pd.DataFrame):
             has_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if has_symbols:
-                self.col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
-                self.name_to_col_num = dict((v, k) for k, v in self.col_num_to_name.items())
-                X.rename(columns=self.name_to_col_num, inplace=True)
+                col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
+                name_to_col_num = dict((v, k) for k, v in col_num_to_name.items())
+                X.rename(columns=name_to_col_num, inplace=True)
         return super().fit(X, y)
 
     def predict(self, X):
