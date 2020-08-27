@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OrdinalEncoder
@@ -50,30 +52,24 @@ class LightGBMClassifier(Estimator):
                          component_obj=lgbm_classifier,
                          random_state=random_seed)
 
-    def _convert_to_dataframe(self, X):
-        X2 = pd.DataFrame(X).copy() if not isinstance(X, pd.DataFrame) else X.copy()
-        # rename columns in case input DataFrame has column names that contain symbols ([, ], <) that LightGBM cannot properly handle
-        X2.columns = np.arange(X2.shape[1])
+    def _encode_categories(self, X, fit=False):
+        X2 = pd.DataFrame(copy.copy(X))
+        # encode each categorical feature as an integer
+        X2.columns = np.arange(len(X2.columns))
+        # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
         cat_cols = X2.select_dtypes(categorical_dtypes).columns
-        return (X2, cat_cols)
-
-    def _make_encodings(self, X):
-        X2, cat_cols = self._convert_to_dataframe(X)
-        self._ordinal_encoder = OrdinalEncoder()
-        # Encode the X input to be floats for all categorical components
-        X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.fit_transform(X2[cat_cols]))
-        X2[cat_cols] = X2[cat_cols].astype('category')
-        return X2
-
-    def _encode_categories(self, X):
-        X2, cat_cols = self._convert_to_dataframe(X)
-        # Encode the X input to be floats for all categorical components
-        X2[cat_cols] = pd.DataFrame(self._ordinal_encoder.transform(X2[cat_cols]))
+        if fit:
+            self._ordinal_encoder = OrdinalEncoder()
+            encoder_output = self._ordinal_encoder.fit_transform(X2[cat_cols])
+        # elif not fit and self._ordinal_encoder:
+        else:
+            encoder_output = self._ordinal_encoder.transform(X2[cat_cols])
+        X2[cat_cols] = pd.DataFrame(encoder_output)
         X2[cat_cols] = X2[cat_cols].astype('category')
         return X2
 
     def fit(self, X, y=None):
-        X2 = self._make_encodings(X)
+        X2 = self._encode_categories(X, fit=True)
         return super().fit(X2, y)
 
     def predict(self, X):
