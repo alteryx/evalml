@@ -20,7 +20,7 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_shap_values (bool): Whether to include the SHAP values in their own column.
-        convert_numeric_to_string (bool): Whether numeric values should be converted to strings for numeric
+        convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
 
     Returns:
           list(str)
