@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+import json
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
@@ -13,7 +14,6 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions_best_worst
 )
 from evalml.problem_types import ProblemTypes
-
 
 def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
@@ -555,3 +555,33 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
         compare_two_tables(best_worst_report.splitlines(), regression_custom_metric_answer.splitlines())
     else:
         assert best_worst_report == answer
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_json_serialization(problem_type, X_y_regression, linear_regression_pipeline_class,
+                            X_y_binary, logistic_regression_binary_pipeline_class,
+                            X_y_multi,  logistic_regression_multiclass_pipeline_class):
+
+    if problem_type == problem_type.REGRESSION:
+        X, y = X_y_regression
+        y = pd.Series(y)
+        pipeline_class = linear_regression_pipeline_class
+    elif problem_type == problem_type.BINARY:
+        X, y = X_y_binary
+        y = pd.Series(y).astype("str")
+        pipeline_class = logistic_regression_binary_pipeline_class
+    else:
+        X, y = X_y_multi
+        y = pd.Series(y).astype("str")
+        pipeline_class = logistic_regression_multiclass_pipeline_class
+
+    pipeline = pipeline_class({})
+
+    pipeline.fit(X, y)
+
+    best_worst = explain_predictions_best_worst(pipeline, pd.DataFrame(X), y,
+                                                num_to_explain=1, output_format="dict")
+    assert json.loads(json.dumps(best_worst)) == best_worst
+
+    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
+    assert json.loads(json.dumps(report)) == report
