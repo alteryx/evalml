@@ -107,7 +107,7 @@ regression_table_shap = """Feature Name Feature Value Contribution to Prediction
                          f -0.21 - -1.21""".splitlines()
 
 regression_dict = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["a", "b", "c", "d", "e", "f"],
         "feature_values": [7.5, 2.77, 1.57, 0.91, 0.71, -0.21],
         "qualitative_explanation": ["++++", "+", "+", "-", "-", "-"],
@@ -117,7 +117,7 @@ regression_dict = {
 }
 
 regression_dict_shap = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["a", "b", "c", "d", "e", "f"],
         "feature_values": [7.5, 2.77, 1.57, 0.91, 0.71, -0.21],
         "qualitative_explanation": ["++++", "+", "+", "-", "-", "-"],
@@ -156,7 +156,7 @@ binary_table_shap = """Feature Name Feature Value Contribution to Prediction SHA
                      f -1.90 -- -2.90""".splitlines()
 
 binary_dict = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["a", "b", "c", "d", "e", "f"],
         "feature_values": [2.180, 2.120, 1.000, -1.560, -1.800, -1.900],
         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
@@ -166,7 +166,7 @@ binary_dict = {
 }
 
 binary_dict_shap = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["a", "b", "c", "d", "e", "f"],
         "feature_values": [2.180, 2.120, 1.000, -1.560, -1.800, -1.900],
         "qualitative_explanation": ["+", "+", "+", "--", "--", "--"],
@@ -260,7 +260,7 @@ multiclass_table_shap = """Class: 0
                          f -1.90 -- -2.68""".splitlines()
 
 multiclass_dict = {
-    "explanation": [
+    "explanations": [
         {"feature_names": ["f", "e", "d", "b", "a", "foo"],
          "feature_values": [-1.9, -1.8, -1.56, 2.12, 2.18, 30],
          "qualitative_explanation": ["+", "+", "+", "+", "+", "-----"],
@@ -280,7 +280,7 @@ multiclass_dict = {
 }
 
 multiclass_dict_shap = {
-    "explanation": [
+    "explanations": [
         {"feature_names": ["f", "e", "d", "b", "a", "foo"],
          "feature_values": [-1.9, -1.8, -1.56, 2.12, 2.18, 30],
          "qualitative_explanation": ["+", "+", "+", "+", "+", "-----"],

@@ -146,7 +146,7 @@ class _RegressionSHAPTable(_TableMaker):
                           convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
         json_rows["class_name"] = None
-        return {"explanation": [json_rows]}
+        return {"explanations": [json_rows]}
 
 
 class _BinarySHAPTable(_TableMaker):
@@ -165,7 +165,7 @@ class _BinarySHAPTable(_TableMaker):
                           convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
         json_rows["class_name"] = _make_json_serializable(self.class_names[1])
-        return {"explanation": [json_rows]}
+        return {"explanations": [json_rows]}
 
 
 class _MultiClassSHAPTable(_TableMaker):
@@ -191,7 +191,7 @@ class _MultiClassSHAPTable(_TableMaker):
             json_output_for_class = _rows_to_dict(rows)
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
-        return {"explanation": json_output}
+        return {"explanations": json_output}
 
 
 def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, training_data=None,
@@ -414,7 +414,7 @@ class _ReportMaker:
             if self.make_predicted_values_maker:
                 section["predicted_values"] = self.make_predicted_values_maker.make_dict(index, data.y_pred,
                                                                                          data.y_true, data.errors)
-            section["explanation"] = self.table_maker.make_dict(index, data.pipeline,
-                                                                data.input_features)["explanation"]
+            section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
+                                                                 data.input_features)["explanations"]
             report.append(section)
         return {"explanations": report}

@@ -40,7 +40,7 @@ explain_prediction_answer = """Feature Name Feature Value Contribution to Predic
                                  b           20.00          ----""".splitlines()
 
 explain_prediction_regression_dict_answer = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["d", "a", "c", "b"],
         "feature_values": [40, 10, 30, 20],
         "qualitative_explanation": ["++++", "+++", "--", "----"],
@@ -50,7 +50,7 @@ explain_prediction_regression_dict_answer = {
 }
 
 explain_prediction_binary_dict_answer = {
-    "explanation": [{
+    "explanations": [{
         "feature_names": ["d", "a", "c", "b"],
         "feature_values": [40, 10, 30, 20],
         "qualitative_explanation": ["++++", "+++", "--", "----"],
@@ -90,7 +90,7 @@ explain_prediction_multiclass_answer = """Class: class_0
             """.splitlines()
 
 explain_prediction_multiclass_dict_answer = {
-    "explanation": [
+    "explanations": [
         {"feature_names": ["a", "b", "c", "d"],
          "feature_values": [10, 20, 30, 40],
          "qualitative_explanation": ["+", "+", "-", "-"],
@@ -249,11 +249,11 @@ regression_best_worst_answer_dict = {
         {"rank": {"prefix": "best", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 1, "target_value": 2,
                               "error_name": "Absolute Difference", "error_value": 1},
-         "explanation": ["explanation_dictionary_goes_here"]},
+         "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 2, "target_value": 3,
                               "error_name": "Absolute Difference", "error_value": 4},
-         "explanation": ["explanation_dictionary_goes_here"]}
+         "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
 
@@ -275,8 +275,8 @@ no_best_worst_answer = """Test Pipeline Name
 
 no_best_worst_answer_dict = {
     "explanations": [
-        {"explanation": ["explanation_dictionary_goes_here"]},
-        {"explanation": ["explanation_dictionary_goes_here"]}
+        {"explanations": ["explanation_dictionary_goes_here"]},
+        {"explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
 
@@ -312,12 +312,12 @@ binary_best_worst_answer_dict = {
          "predicted_values": {"probabilities": {"benign": 0.05, "malignant": 0.95},
                               "predicted_value": "malignant", "target_value": "malignant",
                               "error_name": "Cross Entropy", "error_value": 0.2},
-         "explanation": ["explanation_dictionary_goes_here"]},
+         "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": {"benign": 0.1, "malignant": 0.9},
                               "predicted_value": "malignant", "target_value": "benign",
                               "error_name": "Cross Entropy", "error_value": 0.78},
-         "explanation": ["explanation_dictionary_goes_here"]}
+         "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
 
@@ -367,12 +367,12 @@ multiclass_best_worst_answer_dict = {
          "predicted_values": {"probabilities": {"setosa": 0.8, "versicolor": 0.1, "virginica": 0.1},
                               "predicted_value": "setosa", "target_value": "setosa",
                               "error_name": "Cross Entropy", "error_value": 0.15},
-         "explanation": ["explanation_dictionary_goes_here"]},
+         "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": {"setosa": 0.2, "versicolor": 0.75, "virginica": 0.05},
                               "predicted_value": "versicolor", "target_value": "versicolor",
                               "error_name": "Cross Entropy", "error_value": 0.34},
-         "explanation": ["explanation_dictionary_goes_here"]}
+         "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
 
@@ -406,7 +406,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
                                                                 problem_type, output_format, answer,
                                                                 explain_predictions_answer):
 
-    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanation": ["explanation_dictionary_goes_here"]}
+    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanations": ["explanation_dictionary_goes_here"]}
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]})
@@ -464,7 +464,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_custom_index(mock_make_table, problem_type, output_format, answer):
 
-    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanation": ["explanation_dictionary_goes_here"]}
+    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanations": ["explanation_dictionary_goes_here"]}
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]}, index=["first", "second"])
@@ -521,11 +521,11 @@ regression_custom_metric_answer_dict = {
         {"rank": {"prefix": "best", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 1, "target_value": 2,
                               "error_name": "sum", "error_value": 3},
-         "explanation": ["explanation_dictionary_goes_here"]},
+         "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 2, "target_value": 3,
                               "error_name": "sum", "error_value": 5},
-         "explanation": ["explanation_dictionary_goes_here"]}
+         "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
 
@@ -536,7 +536,7 @@ regression_custom_metric_answer_dict = {
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_format, answer):
 
-    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanation": ["explanation_dictionary_goes_here"]}
+    mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanations": ["explanation_dictionary_goes_here"]}
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [5, 6]})
