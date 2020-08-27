@@ -61,7 +61,6 @@ class LightGBMClassifier(Estimator):
         if fit:
             self._ordinal_encoder = OrdinalEncoder()
             encoder_output = self._ordinal_encoder.fit_transform(X2[cat_cols])
-        # elif not fit and self._ordinal_encoder:
         else:
             encoder_output = self._ordinal_encoder.transform(X2[cat_cols])
         X2[cat_cols] = pd.DataFrame(encoder_output)
