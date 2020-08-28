@@ -5,11 +5,13 @@ Release Notes
     * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
     * Fixes
+        * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
+        * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
 
 
 **v0.13.1 Aug. 25, 2020**
