@@ -58,11 +58,6 @@ class TextFeaturizer(TextTransformer):
         es = self._ft.EntitySet()
         es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
                                  variable_types=all_text_variable_types)
-
-        variable_types = es.entities[0].variable_types
-        for col in text_columns:
-            if variable_types[str(col)] is not self._ft.variable_types.variable.Text:
-                raise ValueError("Column '{}' is not a text column, cannot apply TextFeaturizer component".format(col))
         return es
 
     def fit(self, X, y=None):
