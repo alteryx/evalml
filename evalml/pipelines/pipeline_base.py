@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import traceback
+import warnings
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -347,6 +348,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 "  Windows: conda install python-graphviz\n"
             )
 
+        if self._jupyter_check():
+            if not self._import_ipy():
+                warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
+
         graph_format = None
         path_and_name = None
         if filepath:
@@ -398,6 +403,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             plotly.Figure, a bar graph showing features and their corresponding importance
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        if self._jupyter_check():
+            if not self._import_ipy():
+                warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
 
         feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
@@ -468,3 +476,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             A new instance of this pipeline with identical parameters and components
         """
         return self.__class__(self.parameters, random_state=random_state)
+
+    def _jupyter_check(self):
+        try:
+            get_ipython()
+            return True
+        except NameError:
+            return False
+
+    def _import_ipy(self):
+        try:
+            import_or_raise("ipywidgets", error_msg="Could not find ipywidgets")
+            return True
+        except ImportError:
+            return False
+        except Exception:
+            return False

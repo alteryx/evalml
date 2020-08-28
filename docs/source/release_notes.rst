@@ -44,7 +44,7 @@ Release Notes
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
         * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
-        * Update `model_understanding.ipynb` to include documentation for using plotly on Jupyter Lab :pr:`1108`
+        * Updated `model_understanding.ipynb` to include documentation for using plotly on Jupyter Lab :pr:`1108`
     * Testing Changes
         * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
         * Added a test to check that all test directories are included in evalml package :pr:`1054`

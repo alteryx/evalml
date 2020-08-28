@@ -619,3 +619,27 @@ def test_graph_partial_dependence(test_pipeline):
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
+
+
+@patch('evalml.model_understanding.graphs._jupyter_check')
+@patch('evalml.model_understanding.graphs._import_ipy')
+def test_jupyter_graph_check(ipy_check, jupyter_check, X_y_binary, test_pipeline):
+    jupyter_check.return_value = False
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    clf = test_pipeline
+    clf.fit(X, y)
+    with pytest.warns(None) as graph_valid:
+        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        assert len(graph_valid) == 0
+
+    jupyter_check.return_value = True
+    ipy_check.return_value = False
+    with pytest.warns(ImportWarning) as graph_invalid:
+        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        assert "ipywidgets" in str(graph_invalid[-1].message)
+
+    ipy_check.return_value = True
+    with pytest.warns(None) as graph_valid:
+        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        assert len(graph_valid) == 0

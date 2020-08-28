@@ -105,6 +105,9 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
         plotly.Figure representing the precision-recall plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -160,6 +163,9 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         plotly.Figure representing the ROC plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -215,6 +221,9 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
         plotly.Figure representing the confusion matrix plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -293,6 +302,10 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
         plotly.Figure, a bar graph showing features and their respective permutation importance.
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
+
     perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
     perm_importance['importance'] = perm_importance['importance']
 
@@ -373,6 +386,10 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
+
     objective = get_objective(objective)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     title = f'{objective.name} Scores vs. Thresholds'
@@ -430,6 +447,10 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if _jupyter_check():
+        if not _import_ipy():
+            warnings.warn("Missing ipywidgets dependency. Could result in plots not appearing", category=ImportWarning)
+
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
     title = f"Partial Dependence of '{feature_name}'"
@@ -450,3 +471,21 @@ def _calculate_axis_range(arr):
     min_value = arr.min()
     margins = abs(max_value - min_value) * 0.05
     return [min_value - margins, max_value + margins]
+
+
+def _jupyter_check():
+    try:
+        get_ipython()
+        return True
+    except NameError:
+        return False
+
+
+def _import_ipy():
+    try:
+        import_or_raise("ipywidgets", error_msg="Could not find ipywidgets")
+        return True
+    except ImportError:
+        return False
+    except Exception:
+        return False
