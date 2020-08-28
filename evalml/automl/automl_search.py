@@ -119,7 +119,7 @@ class AutoMLSearch:
                 Passed two parameters: pipeline_class, parameters.
 
             add_result_callback (callable): function called after each pipeline training iteration.
-                Passed two parameters: results, trained_pipeline.
+                Passed two parameters: A dictionary containing the training results for the new pipeline, and an untrained_pipeline containing the parameters used during training.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
