@@ -373,7 +373,6 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-
     objective = get_objective(objective)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     title = f'{objective.name} Scores vs. Thresholds'
@@ -431,7 +430,6 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
     title = f"Partial Dependence of '{feature_name}'"
