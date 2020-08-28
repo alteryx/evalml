@@ -21,7 +21,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     CatBoostClassifier,
-    LightGBMClassifier,
     LinearRegressor,
     RandomForestClassifier,
     XGBoostClassifier,
@@ -100,9 +99,6 @@ all_n_points_to_explain = [1, 5]
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
                          product(interpretable_estimators, all_problems, all_n_points_to_explain))
 def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression):
-
-    if estimator == LightGBMClassifier:
-        pytest.skip("Skipping because LightGBMClassifier still needs to be cleaned up.")
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
