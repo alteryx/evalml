@@ -182,3 +182,26 @@ pip freeze | grep evalml
 ```
 
 Note: make sure when you do this that you're in a virtualenv, your current working directory isn't in the evalml repo, and that you haven't added your repo to the `PYTHONPATH`, because in both cases python could pick up the repo instead, even in a virtualenv.
+
+## 6. Publish Our New Conda Package
+
+A couple of hours after you publish the GitHub release, a bot will open a PR to our [feedstock](https://github.com/conda-forge/evalml-core-feedstock) that automatically
+bumps the recipe to use the latest version of the package.
+
+If you had to modify the recipe in Step 1 (most common case is when dependencies are updated), then make those changes and push to the bot's PR. For help on how to push changes to the
+bot's PR please read this [document.](https://conda-forge.org/docs/maintainer/updating_pkgs.html#pushing-to-regro-cf-autotick-bot-branch)
+If you did not have to modify the recipe in Step 1, the bot's PR should be good to merge as-is.
+In either case, wait for the CI tests to pass before merging.
+This is just to be extra careful because you already ran the CI in Step 1!
+
+After you merge the PR, our latest package will be deployed to conda-forge! To verify, run this in a fresh conda environment:
+
+```shell
+conda install -c conda-forge evalml
+```
+
+Verify the latest version of `evalml` got installed by running 
+
+```shell
+python -c "import evalml; print(evalml.__version__)"
+``` 
