@@ -60,10 +60,8 @@ class XGBoostClassifier(Estimator):
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict(X)
         if col_names_with_symbols and isinstance(predictions, pd.DataFrame):
-            print ("DICT", col_num_to_name)
-            print ("PRED", predictions)
-
             predictions = predictions.rename(columns=col_num_to_name, inplace=False)
+
         return predictions
 
     def predict_proba(self, X):
@@ -76,9 +74,6 @@ class XGBoostClassifier(Estimator):
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict_proba(X)
         if col_names_with_symbols and isinstance(predictions, pd.DataFrame):
-            print ("DICT", col_num_to_name)
-            print ("PRED", predictions)
-
             predictions = predictions.rename(columns=col_num_to_name, inplace=False)
         return predictions
 
