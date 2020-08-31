@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
+        * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
@@ -20,6 +21,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * `get_objective` will now return a class definition rather than an instance by default :pr:`1132`
         * Deleted `OPTIONS` dictionary in `evalml.objectives.utils.py` :pr:`1132`
         * If specifying an objective by string, the string must now match the objective's `name` field. Note that a lowercase case is also valid :pr:`1132`
         * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
