@@ -61,16 +61,12 @@ class XGBoostClassifier(Estimator):
 
     def predict_proba(self, X):
         col_names_with_symbols = []
-        col_num_to_name = None
         if isinstance(X, pd.DataFrame):
             col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if col_names_with_symbols:
                 name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
-                col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict_proba(X)
-        if col_names_with_symbols and isinstance(predictions, pd.DataFrame):
-            predictions = predictions.rename(columns=col_num_to_name, inplace=False)
         return predictions
 
     @property
