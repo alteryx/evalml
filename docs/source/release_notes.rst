@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added `output_format` field to explain predictions functions :pr:`1107`
     * Fixes
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
