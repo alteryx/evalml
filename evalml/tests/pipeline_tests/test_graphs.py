@@ -115,25 +115,31 @@ def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
     assert (np.all(data['x'] >= 0.5))
 
 
-@patch('evalml.pipelines.pipeline_base.PipelineBase._jupyter_check')
-@patch('evalml.pipelines.pipeline_base.PipelineBase._import_ipy')
-def test_jupyter_graph_check(ipy_check, jupyter_check, X_y_binary, test_pipeline):
-    jupyter_check.return_value = False
+@patch('evalml.utils.gen_utils.import_or_warn')
+@patch('evalml.utils.gen_utils.jupyter_check')
+def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline, has_minimal_dependencies):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    with pytest.warns(None) as graph_valid:
-        clf.graph_feature_importance()
-        assert len(graph_valid) == 0
+    if has_minimal_dependencies:
+        jupyter_check.return_value = True
+        with pytest.warns(ImportWarning) as graph_invalid:
+            clf.graph()
+            assert "ipywidgets" in str(graph_invalid[-1].message)
 
-    jupyter_check.return_value = True
-    ipy_check.return_value = False
-    with pytest.warns(ImportWarning) as graph_invalid:
-        clf.graph_feature_importance()
-        assert "ipywidgets" in str(graph_invalid[-1].message)
+        jupyter_check.return_value = False
+        with pytest.warns(None) as graph_valid:
+            clf.graph_feature_importance()
+            assert len(graph_valid) == 0
 
-    ipy_check.return_value = True
-    with pytest.warns(None) as graph_valid:
-        clf.graph_feature_importance()
-        assert len(graph_valid) == 0
+    else:
+        jupyter_check.return_value = False
+        with pytest.warns(None) as graph_valid:
+            clf.graph()
+            assert len(graph_valid) == 0
+
+        jupyter_check.return_value = True
+        with pytest.warns(None) as graph_valid:
+            clf.graph_feature_importance()
+            assert len(graph_valid) == 0

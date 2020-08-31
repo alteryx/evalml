@@ -1,4 +1,5 @@
 import importlib
+import warnings
 from collections import namedtuple
 
 import numpy as np
@@ -181,3 +182,39 @@ def get_importable_subclasses(base_class, used_in_automl=True):
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
     return classes
+
+
+def jupyter_check():
+    """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
+
+    Arguments:
+        None
+
+    Returns:
+        Boolean: True if Ipython, False otherwise
+    """
+    try:
+        get_ipython()
+        return True
+    except NameError:
+        return False
+
+
+def import_or_warn(library, error_msg=None):
+    """Attempts to import the requested library by name.
+    If the import fails, shows an ImportWarning.
+
+    Arguments:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    """
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        if error_msg is None:
+            error_msg = ""
+        msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
+        warnings.warn(msg, category=ImportWarning)
+    except Exception as ex:
+        msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
+        warnings.warn(msg, category=ImportWarning)
