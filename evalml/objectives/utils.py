@@ -32,12 +32,14 @@ def get_objective(objective, return_instance=False):
     """Returns the Objective object of the given objective name
 
     Args:
-        objective (str or ObjectiveBase): name of the objective or the objective class
+        objective (str or ObjectiveBase): name or instance of the objective class.
         return_instance (bool): Whether to return an instance of the objective. This only applies if objective
             is of type str. Note that the instance will be initialized with default arguments.
 
     Returns:
-        Objective
+        ObjectiveBase if the parameter objective is of type ObjectiveBase. If objective is instead a valid
+        objective name, function will return the class corresponding to that name. If return_instance is True,
+        an instance of that objective will be returned.
     """
     if objective is None:
         raise TypeError("Objective parameter cannot be NoneType")
@@ -53,13 +55,16 @@ def get_objective(objective, return_instance=False):
     objective_class = all_objectives_dict[objective]
 
     if return_instance:
-        return objective_class()
+        try:
+            return objective_class()
+        except TypeError as e:
+            raise TypeError(f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}")
 
     return objective_class
 
 
-def get_objectives(problem_type, return_instance=False):
-    """Returns all objectives associated with the given problem type
+def get_objectives(problem_type):
+    """Returns all objective classes associated with the given problem type.
 
     Args:
         problem_type (str/ProblemTypes): type of problem
@@ -71,6 +76,4 @@ def get_objectives(problem_type, return_instance=False):
     all_objectives_dict = _all_objectives_dict()
     # To remove duplicates
     objectives = [obj for name, obj in all_objectives_dict.items() if obj.problem_type == problem_type and obj.name == name]
-    if return_instance:
-        return [obj() for obj in objectives]
     return objectives

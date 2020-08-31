@@ -973,7 +973,7 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
 
     name, objective = objective_tuple
 
-    if objective in AutoMLSearch._objectives_not_allowed_in_automl:
+    if objective in AutoMLSearch._objectives_not_allowed_in_automl and name != "Cost Benefit Matrix":
         pytest.skip(f"Skipping because {name} is not allowed in automl as a string.")
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,

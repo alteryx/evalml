@@ -168,14 +168,14 @@ class AutoMLSearch:
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
-            additional_objectives = get_objectives(self.problem_type, return_instance=False)
+            additional_objectives = get_objectives(self.problem_type)
             additional_objectives = [obj for obj in additional_objectives if obj not in self._objectives_not_allowed_in_automl]
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
         else:
-            additional_objectives = [get_objective(o, return_instance=False) for o in additional_objectives]
+            additional_objectives = [get_objective(o) for o in additional_objectives]
         additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
 

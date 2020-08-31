@@ -63,6 +63,12 @@ def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
         get_objective("log loss")
 
 
+def test_get_objective_return_instance_does_not_work_for_some_objectives():
+
+    with pytest.raises(TypeError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
+        get_objective("Cost Benefit Matrix", return_instance=True)
+
+
 def test_get_objectives_types():
 
     assert len(get_objectives(ProblemTypes.MULTICLASS)) == 16
