@@ -69,6 +69,11 @@ def test_get_objective_return_instance_does_not_work_for_some_objectives():
         get_objective("Cost Benefit Matrix", return_instance=True)
 
 
+def test_get_objective_does_not_work_for_none_type():
+    with pytest.raises(TypeError, match="Objective parameter cannot be NoneType"):
+        get_objective(None)
+
+
 def test_get_objectives_types():
 
     assert len(get_objectives(ProblemTypes.MULTICLASS)) == 16
