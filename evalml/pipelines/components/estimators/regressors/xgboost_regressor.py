@@ -49,7 +49,6 @@ class XGBoostRegressor(Estimator):
                 X = X.rename(columns=name_to_col_num, inplace=False)
         return super().fit(X, y)
 
-
     def predict(self, X):
         col_names_with_symbols = False
         if isinstance(X, pd.DataFrame):
