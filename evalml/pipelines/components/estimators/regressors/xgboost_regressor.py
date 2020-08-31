@@ -50,7 +50,7 @@ class XGBoostRegressor(Estimator):
         return super().fit(X, y)
 
     def predict(self, X):
-        col_names_with_symbols = False
+        col_names_with_symbols = []
         if isinstance(X, pd.DataFrame):
             col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if col_names_with_symbols:

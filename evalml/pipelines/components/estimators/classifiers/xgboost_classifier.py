@@ -31,7 +31,6 @@ class XGBoostClassifier(Estimator):
                       "min_child_weight": min_child_weight,
                       "n_estimators": n_estimators}
         parameters.update(kwargs)
-        self._column_mappings = None
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(**parameters,
@@ -51,18 +50,17 @@ class XGBoostClassifier(Estimator):
         return super().fit(X, y)
 
     def predict(self, X):
-        col_names_with_symbols = False
+        col_names_with_symbols = []
         if isinstance(X, pd.DataFrame):
             col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if col_names_with_symbols:
-                col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
-                name_to_col_num = dict((v, k) for k, v in col_num_to_name.items())
+                name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict(X)
         return predictions
 
     def predict_proba(self, X):
-        col_names_with_symbols = False
+        col_names_with_symbols = []
         if isinstance(X, pd.DataFrame):
             col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if col_names_with_symbols:
