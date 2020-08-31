@@ -14,6 +14,13 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import _get_subclasses
+from evalml.automl import AutoMLSearch
+
+_not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
+
+binary_objectives = [obj() for obj in get_objectives(ProblemTypes.BINARY) if obj not in _not_allowed_in_automl]
+multiclass_objectives = [obj() for obj in get_objectives(ProblemTypes.MULTICLASS) if obj not in _not_allowed_in_automl]
+regression_objectives = [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]
 
 
 def test_create_custom_objective():
@@ -74,9 +81,8 @@ def test_objective_outputs(X_y_binary, X_y_multi):
     classes = np.unique(y_multi_np)
     y_pred_proba_multi_np = np.concatenate([(y_multi_np == val).astype(float).reshape(-1, 1) for val in classes], axis=1)
 
-    all_objectives = (get_objectives(ProblemTypes.REGRESSION) +
-                      get_objectives(ProblemTypes.BINARY) +
-                      get_objectives(ProblemTypes.MULTICLASS))
+    all_objectives = binary_objectives + regression_objectives + multiclass_objectives
+
     for objective in all_objectives:
         print('Testing objective {}'.format(objective.name))
         expected_value = 1.0 if objective.greater_is_better else 0.0
