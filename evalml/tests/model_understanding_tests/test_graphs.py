@@ -8,6 +8,7 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
+from evalml.automl import AutoMLSearch
 from evalml.demos import load_breast_cancer
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.graphs import (
@@ -32,6 +33,12 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
+
+_not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
+
+binary_objectives = [obj() for obj in get_objectives(ProblemTypes.BINARY) if obj not in _not_allowed_in_automl]
+multiclass_objectives = [obj() for obj in get_objectives(ProblemTypes.MULTICLASS) if obj not in _not_allowed_in_automl]
+regression_objectives = [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]
 
 
 @pytest.fixture
@@ -376,7 +383,7 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
     X, y = X_y_regression
     pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
-        calculate_permutation_importance(pipeline, X, y, "mcc_multi")
+        calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
@@ -387,7 +394,7 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
         y = pd.Series(y)
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in get_objectives(ProblemTypes.BINARY):
+    for objective in binary_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -397,7 +404,7 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in get_objectives(ProblemTypes.MULTICLASS):
+    for objective in multiclass_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -407,7 +414,7 @@ def test_get_permutation_importance_regression(X_y_regression, linear_regression
     X, y = X_y_regression
     pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in get_objectives(ProblemTypes.REGRESSION):
+    for objective in regression_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -421,7 +428,7 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     y = y.astype(bool)
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    importance = calculate_permutation_importance(pipeline, X, y, objective="log_loss_binary", random_state=0)
+    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=0)
     assert list(importance.columns) == ["feature", "importance"]
     assert not importance.isnull().all().all()
     correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
@@ -434,7 +441,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+    fig = graph_permutation_importance(test_pipeline, X, y, "Log Loss Binary")
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Permutation Importance<br><sub>"\
@@ -443,7 +450,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
                                                   "permutation importance algorithm.</sub>"
     assert len(fig_dict['data']) == 1
 
-    perm_importance_data = calculate_permutation_importance(clf, X, y, "log_loss_binary")
+    perm_importance_data = calculate_permutation_importance(clf, X, y, "Log Loss Binary")
     assert np.array_equal(fig_dict['data'][0]['x'][::-1], perm_importance_data['importance'].values)
     assert np.array_equal(fig_dict['data'][0]['y'][::-1], perm_importance_data['feature'])
 
@@ -453,7 +460,7 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
 
-    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary")
+    figure = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "Log Loss Binary")
     assert isinstance(figure, go.Figure)
 
     data = figure.data[0]
@@ -466,8 +473,8 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
     mock_perm_importance.return_value = pd.DataFrame({"feature": ["f1", "f2"], "importance": [0.0, 0.6]})
 
     with pytest.raises(ValueError, match="Provided importance threshold of -0.1 must be greater than or equal to 0"):
-        fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=-0.1)
-    fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "log_loss_binary", importance_threshold=0.5)
+        fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "Log Loss Binary", importance_threshold=-0.1)
+    fig = graph_permutation_importance(test_pipeline, pd.DataFrame(), pd.Series(), "Log Loss Binary", importance_threshold=0.5)
     assert isinstance(fig, go.Figure)
 
     data = fig.data[0]
@@ -495,11 +502,11 @@ def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pi
 
     # test objective with score_needs_proba == True
     with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
-        binary_objective_vs_threshold(pipeline, X, y, 'log_loss_binary')
+        binary_objective_vs_threshold(pipeline, X, y, 'Log Loss Binary')
 
     # test with non-binary objective
     with pytest.raises(ValueError, match="can only be calculated for binary classification objectives"):
-        binary_objective_vs_threshold(pipeline, X, y, 'f1_micro')
+        binary_objective_vs_threshold(pipeline, X, y, 'f1 micro')
 
     # test objective with score_needs_proba == False
     results_df = binary_objective_vs_threshold(pipeline, X, y, 'f1')

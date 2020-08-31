@@ -5,14 +5,15 @@ import pytest
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
+    CostBenefitMatrix,
     MulticlassClassificationObjective,
-    Precision,
     RegressionObjective,
     get_objective,
     get_objectives
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import _get_subclasses
 
 
 def test_create_custom_objective():
@@ -24,30 +25,42 @@ def test_create_custom_objective():
         MockEmptyObjective()
 
     class MockNoObjectiveFunctionObjective(ObjectiveBase):
-        name = "Mock objective without objective function"
         problem_type = ProblemTypes.BINARY
 
     with pytest.raises(TypeError):
         MockNoObjectiveFunctionObjective()
 
 
-def test_get_objective():
-    assert isinstance(get_objective('precision'), Precision)
-    assert isinstance(get_objective(Precision()), Precision)
+@pytest.mark.parametrize("obj", _get_subclasses(ObjectiveBase))
+def test_get_objective_works_for_names_of_defined_objectives(obj):
+    assert get_objective(obj.name) == obj
+    assert get_objective(obj.name.lower()) == obj
 
-    with pytest.raises(TypeError):
-        get_objective(None)
+    args = []
+    if obj == CostBenefitMatrix:
+        args = [0] * 4
+    assert isinstance(get_objective(obj(*args)), obj)
+
+
+def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
+
+    class InvalidObjective:
+        pass
+
+    obj = InvalidObjective()
+
     with pytest.raises(ObjectiveNotFoundError):
-        get_objective('this is not a valid objective')
+        get_objective(obj)
+
     with pytest.raises(ObjectiveNotFoundError):
-        get_objective(1)
+        get_objective("log loss")
 
 
 def test_get_objectives_types():
 
-    assert len(get_objectives(ProblemTypes.MULTICLASS)) == 13
-    assert len(get_objectives(ProblemTypes.BINARY)) == 7
-    assert len(get_objectives(ProblemTypes.REGRESSION)) == 7
+    assert len(get_objectives(ProblemTypes.MULTICLASS)) == 16
+    assert len(get_objectives(ProblemTypes.BINARY)) == 11
+    assert len(get_objectives(ProblemTypes.REGRESSION)) == 9
 
 
 def test_objective_outputs(X_y_binary, X_y_multi):

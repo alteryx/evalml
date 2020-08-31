@@ -24,7 +24,20 @@ from evalml.exceptions import (
     PipelineNotFoundError,
     PipelineScoreError
 )
-from evalml.objectives import get_objective, get_objectives
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    LeadScoring,
+    MeanSquaredLogError,
+    Recall,
+    RecallMacro,
+    RecallMicro,
+    RecallWeighted,
+    RootMeanSquaredLogError,
+    get_objective,
+    get_objectives,
+    pretty_print_all_valid_objective_names
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
@@ -36,6 +49,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils.gen_utils import classproperty
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -55,9 +69,9 @@ class AutoMLSearch:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
-    _DEFAULT_OBJECTIVES = {'binary': 'log_loss_binary',
-                           'multiclass': 'log_loss_multi',
-                           'regression': 'r2'}
+    _DEFAULT_OBJECTIVES = {'binary': 'Log Loss Binary',
+                           'multiclass': 'Log Loss Multiclass',
+                           'regression': 'R2'}
 
     def __init__(self,
                  problem_type=None,
@@ -147,19 +161,22 @@ class AutoMLSearch:
         self.optimize_thresholds = optimize_thresholds
         if objective == 'auto':
             objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
-        self.objective = get_objective(objective)
+        objective = get_objective(objective, return_instance=False)
+        self.objective = self._validate_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
-            additional_objectives = get_objectives(self.problem_type)
+            additional_objectives = get_objectives(self.problem_type, return_instance=False)
+            additional_objectives = [obj for obj in additional_objectives if obj not in self._objectives_not_allowed_in_automl]
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
         else:
-            additional_objectives = [get_objective(o) for o in additional_objectives]
+            additional_objectives = [get_objective(o, return_instance=False) for o in additional_objectives]
+        additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
@@ -212,13 +229,27 @@ class AutoMLSearch:
 
         self._validate_problem_type()
 
+    @classproperty
+    def _objectives_not_allowed_in_automl(self):
+        return {CostBenefitMatrix, FraudCost, LeadScoring,
+                MeanSquaredLogError, Recall, RecallMacro, RecallMicro, RecallWeighted, RootMeanSquaredLogError}
+
+    def _validate_objective(self, objective):
+        if isinstance(objective, type):
+            if objective in self._objectives_not_allowed_in_automl:
+                raise ValueError(f"{objective.name} is not allowed in AutoML! " +
+                                 "Try one of the following objective names: \n" +
+                                 pretty_print_all_valid_objective_names())
+            return objective()
+        return objective
+
     @property
     def data_check_results(self):
         return self._data_check_results
 
     def __str__(self):
         def _print_list(obj_list):
-            lines = ['\t{}'.format(o.name) for o in obj_list]
+            lines = sorted(['\t{}'.format(o.name) for o in obj_list])
             return '\n'.join(lines)
 
         def _get_funct_name(function):

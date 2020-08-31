@@ -127,7 +127,7 @@ class ClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objectives = [get_objective(o) for o in objectives]
+        objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
 

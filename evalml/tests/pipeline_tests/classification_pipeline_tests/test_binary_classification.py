@@ -65,5 +65,5 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
     binary_pipeline.fit(X, y)
     with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
-        binary_pipeline.predict(X, "precision_micro")
+        binary_pipeline.predict(X, "precision micro")
     mock_transform.assert_called()

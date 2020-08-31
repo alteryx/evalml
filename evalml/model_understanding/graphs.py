@@ -269,7 +269,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     Returns:
         Mean feature importance scores over 5 shuffles.
     """
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     if objective.problem_type != pipeline.problem_type:
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
