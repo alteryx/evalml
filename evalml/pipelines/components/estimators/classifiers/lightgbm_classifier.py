@@ -58,6 +58,8 @@ class LightGBMClassifier(Estimator):
         X2.columns = np.arange(len(X2.columns))
         # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
         cat_cols = X2.select_dtypes(categorical_dtypes).columns
+        if len(cat_cols) == 0:
+            return X2
         if fit:
             self._ordinal_encoder = OrdinalEncoder()
             encoder_output = self._ordinal_encoder.fit_transform(X2[cat_cols])
@@ -68,19 +70,13 @@ class LightGBMClassifier(Estimator):
         return X2
 
     def fit(self, X, y=None):
-        if len(pd.DataFrame(X).select_dtypes(categorical_dtypes).columns):
-            X2 = self._encode_categories(X, fit=True)
-            return super().fit(X2, y)
-        return super().fit(X, y)
+        X2 = self._encode_categories(X, fit=True)
+        return super().fit(X2, y)
 
     def predict(self, X):
-        if self._ordinal_encoder:
-            X2 = self._encode_categories(X)
-            return super().predict(X2)
-        return super().predict(X)
+        X2 = self._encode_categories(X)
+        return super().predict(X2)
 
     def predict_proba(self, X):
-        if self._ordinal_encoder:
-            X2 = self._encode_categories(X)
-            return super().predict_proba(X2)
-        return super().predict_proba(X)
+        X2 = self._encode_categories(X)
+        return super().predict_proba(X2)

@@ -146,18 +146,20 @@ def test_fit_string_features(X_y_binary):
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
+    X2 = pd.DataFrame(X)
+    X2.columns = np.arange(len(X2.columns))
     clf = LightGBMClassifier()
     clf.fit(X, y)
     arg_X = mock_fit.call_args[0][0]
-    np.testing.assert_array_equal(arg_X, X)
+    np.testing.assert_array_equal(arg_X, X2)
 
     clf.predict(X)
     arg_X = mock_predict.call_args[0][0]
-    np.testing.assert_array_equal(arg_X, X)
+    np.testing.assert_array_equal(arg_X, X2)
 
     clf.predict_proba(X)
     arg_X = mock_predict_proba.call_args[0][0]
-    np.testing.assert_array_equal(arg_X, X)
+    np.testing.assert_array_equal(arg_X, X2)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
