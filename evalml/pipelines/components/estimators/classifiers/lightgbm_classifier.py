@@ -68,13 +68,19 @@ class LightGBMClassifier(Estimator):
         return X2
 
     def fit(self, X, y=None):
-        X2 = self._encode_categories(X, fit=True)
-        return super().fit(X2, y)
+        if len(pd.DataFrame(X).select_dtypes(categorical_dtypes).columns):
+            X2 = self._encode_categories(X, fit=True)
+            return super().fit(X2, y)
+        return super().fit(X, y)
 
     def predict(self, X):
-        X2 = self._encode_categories(X)
-        return super().predict(X2)
+        if self._ordinal_encoder:
+            X2 = self._encode_categories(X)
+            return super().predict(X2)
+        return super().predict(X)
 
     def predict_proba(self, X):
-        X2 = self._encode_categories(X)
-        return super().predict_proba(X2)
+        if self._ordinal_encoder:
+            X2 = self._encode_categories(X)
+            return super().predict_proba(X2)
+        return super().predict_proba(X)
