@@ -54,8 +54,7 @@ class XGBoostRegressor(Estimator):
         if isinstance(X, pd.DataFrame):
             col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
             if col_names_with_symbols:
-                col_num_to_name = dict((col_num, col) for col_num, col in enumerate(X.columns.values))
-                name_to_col_num = dict((v, k) for k, v in col_num_to_name.items())
+                name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict(X)
         return predictions
