@@ -73,10 +73,10 @@ def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
-    clf.fit(X, y)
-    y_pred_sk = clf.predict(X)
-    y_pred_proba_sk = clf.predict_proba(X)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    sk_clf.fit(X, y)
+    y_pred_sk = sk_clf.predict(X)
+    y_pred_proba_sk = sk_clf.predict_proba(X)
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
@@ -139,6 +139,25 @@ def test_fit_string_features(X_y_binary):
 
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    arg_X = mock_fit.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X)
+
+    clf.predict(X)
+    arg_X = mock_predict.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X)
+
+    clf.predict_proba(X)
+    arg_X = mock_predict_proba.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
