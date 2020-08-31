@@ -59,9 +59,6 @@ class XGBoostClassifier(Estimator):
                 name_to_col_num = dict((v, k) for k, v in col_num_to_name.items())
                 X = X.rename(columns=name_to_col_num, inplace=False)
         predictions = super().predict(X)
-        if col_names_with_symbols and isinstance(predictions, pd.DataFrame):
-            predictions = predictions.rename(columns=col_num_to_name, inplace=False)
-
         return predictions
 
     def predict_proba(self, X):
