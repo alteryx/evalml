@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.automl import AutoMLSearch
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
@@ -14,7 +15,6 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import _get_subclasses
-from evalml.automl import AutoMLSearch
 
 _not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
 
