@@ -73,10 +73,10 @@ def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
-    clf.fit(X, y)
-    y_pred_sk = clf.predict(X)
-    y_pred_proba_sk = clf.predict_proba(X)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    sk_clf.fit(X, y)
+    y_pred_sk = sk_clf.predict(X)
+    y_pred_proba_sk = sk_clf.predict_proba(X)
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
@@ -144,6 +144,27 @@ def test_fit_string_features(X_y_binary):
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    X2 = pd.DataFrame(X)
+    X2.columns = np.arange(len(X2.columns))
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    arg_X = mock_fit.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X2)
+
+    clf.predict(X)
+    arg_X = mock_predict.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X2)
+
+    clf.predict_proba(X)
+    arg_X = mock_predict_proba.call_args[0][0]
+    np.testing.assert_array_equal(arg_X, X2)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -183,7 +204,7 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame({"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]})
-    y = pd.Series([1, 1, 0, 0])
+    y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame({0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]})
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype('category')
 
@@ -206,15 +227,34 @@ def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y
     assert_frame_equal(X_expected_subset, arg_X)
 
 
-def test_multiple_fit(X_y_binary):
-    X, y = X_y_binary
-    X1 = pd.DataFrame(X)
-    X2 = X1.copy()
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
+    y = pd.Series([1] * 4)
+    X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
+    X1_fit_expected = pd.DataFrame({0: [0.0, 1.0, 2.0, 2.0]}, dtype='category')
+    X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
+    X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype='category')
 
     clf = LightGBMClassifier()
+    clf.fit(X1_fit, y)
+    assert_frame_equal(X1_fit_expected, mock_fit.call_args[0][0])
+    clf.predict(X1_predict)
+    assert_frame_equal(X1_predict_expected, mock_predict.call_args[0][0])
+    clf.predict_proba(X1_predict)
+    assert_frame_equal(X1_predict_expected, mock_predict_proba.call_args[0][0])
 
-    X1['string_col'] = 'abc'
-    clf.fit(X1, y)
+    # Check if it will fit a different dataset with new variable
+    X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
+    X2_fit_expected = pd.DataFrame({0: [2.0, 1.0, 0.0, 3.0]}, dtype='category')
+    X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
+    X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype='category')
 
-    X2['string_col'] = 'cba'
-    clf.fit(X2, y)
+    clf = LightGBMClassifier()
+    clf.fit(X2_fit, y)
+    assert_frame_equal(X2_fit_expected, mock_fit.call_args[0][0])
+    clf.predict(X2_predict)
+    assert_frame_equal(X2_predict_expected, mock_predict.call_args[0][0])
+    clf.predict_proba(X2_predict)
+    assert_frame_equal(X2_predict_expected, mock_predict_proba.call_args[0][0])
