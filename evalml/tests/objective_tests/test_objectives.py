@@ -56,7 +56,7 @@ def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
 
     obj = InvalidObjective()
 
-    with pytest.raises(ObjectiveNotFoundError):
+    with pytest.raises(TypeError):
         get_objective(obj)
 
     with pytest.raises(ObjectiveNotFoundError):

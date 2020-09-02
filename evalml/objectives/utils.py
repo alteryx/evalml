@@ -1,4 +1,4 @@
-import texttable
+from texttable import Texttable
 
 from .objective_base import ObjectiveBase
 
@@ -13,19 +13,37 @@ def _all_objectives_dict():
     for objective in all_objectives:
         if 'evalml.objectives' not in objective.__module__:
             continue
-        objectives_dict[objective.name] = objective
         objectives_dict[objective.name.lower()] = objective
     return objectives_dict
 
 
-def iterate_in_batches(sequence, batch_size):
-    return [sequence[pos:pos + batch_size] for pos in range(0, len(sequence), batch_size)]
+def _print_objectives_in_table(names):
+    """Print the list of objective names in a table.
+
+    Returns:
+         None
+    """
+    def iterate_in_batches(sequence, batch_size):
+        return [sequence[pos:pos + batch_size] for pos in range(0, len(sequence), batch_size)]
+    batch_size = 4
+    table = Texttable()
+    table.set_deco(Texttable.BORDER | Texttable.HLINES | Texttable.VLINES)
+    for row in iterate_in_batches(sorted(names), batch_size):
+        if len(row) < batch_size:
+            row += [""] * (batch_size - len(row))
+        table.add_row(row)
+    print(table.draw())
 
 
-def pretty_print_all_valid_objective_names():
+def print_all_objective_names():
+    """Get all valid objective names in a table.
+
+    Returns:
+        None
+    """
     all_objectives_dict = _all_objectives_dict()
-    table = texttable.Texttable()
-    return table.add_rows(iterate_in_batches(sorted(list(all_objectives_dict.keys())), 4)).draw()
+    all_names = list(all_objectives_dict.keys())
+    _print_objectives_in_table(all_names)
 
 
 def get_objective(objective, return_instance=False):
@@ -46,13 +64,14 @@ def get_objective(objective, return_instance=False):
     if isinstance(objective, ObjectiveBase):
         return objective
     all_objectives_dict = _all_objectives_dict()
-    if objective not in all_objectives_dict:
-        valid_names = pretty_print_all_valid_objective_names()
-        raise ObjectiveNotFoundError(f"{objective} is not a valid Objective! " +
-                                     "Objective must be one of:\n" +
-                                     valid_names)
+    if not isinstance(objective, str):
+        raise TypeError("If parameter objective is not a string, it must be an instance of ObjectiveBase!")
+    if objective.lower() not in all_objectives_dict:
+        raise ObjectiveNotFoundError(f"{objective} is not a valid Objective! "
+                                     "Use evalml.objectives.print_all_objective_names(allowed_in_automl=False)"
+                                     "to get a list of all valid objective names. ")
 
-    objective_class = all_objectives_dict[objective]
+    objective_class = all_objectives_dict[objective.lower()]
 
     if return_instance:
         try:
@@ -75,5 +94,5 @@ def get_objectives(problem_type):
     problem_type = handle_problem_types(problem_type)
     all_objectives_dict = _all_objectives_dict()
     # To remove duplicates
-    objectives = [obj for name, obj in all_objectives_dict.items() if obj.problem_type == problem_type and obj.name == name]
+    objectives = [obj for obj in all_objectives_dict.values() if obj.problem_type == problem_type]
     return objectives

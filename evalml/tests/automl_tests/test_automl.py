@@ -1076,3 +1076,7 @@ def test_max_batches_must_be_non_negative(max_batches):
 
     with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", _max_batches=max_batches)
+
+
+def test_can_print_out_automl_objective_names():
+    AutoMLSearch.print_objective_names_allowed_in_automl()

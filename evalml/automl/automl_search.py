@@ -35,8 +35,11 @@ from evalml.objectives import (
     RecallWeighted,
     RootMeanSquaredLogError,
     get_objective,
-    get_objectives,
-    pretty_print_all_valid_objective_names
+    get_objectives
+)
+from evalml.objectives.utils import (
+    _all_objectives_dict,
+    _print_objectives_in_table
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -234,12 +237,17 @@ class AutoMLSearch:
         return {CostBenefitMatrix, FraudCost, LeadScoring,
                 MeanSquaredLogError, Recall, RecallMacro, RecallMicro, RecallWeighted, RootMeanSquaredLogError}
 
+    @classmethod
+    def print_objective_names_allowed_in_automl(cls):
+        names = [name for name, value in _all_objectives_dict().items() if value not in cls._objectives_not_allowed_in_automl]
+        _print_objectives_in_table(names)
+
     def _validate_objective(self, objective):
         if isinstance(objective, type):
             if objective in self._objectives_not_allowed_in_automl:
-                raise ValueError(f"{objective.name} is not allowed in AutoML! " +
-                                 "Try one of the following objective names: \n" +
-                                 pretty_print_all_valid_objective_names())
+                raise ValueError(f"{objective.name} is not allowed in AutoML! "
+                                 "Use evalml.automl.AutoMLSearch.print_objective_names_allowed_in_automl() "
+                                 "to get all objective names allowed in automl.")
             return objective()
         return objective
 
