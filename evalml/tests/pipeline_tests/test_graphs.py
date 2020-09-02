@@ -132,4 +132,3 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     with pytest.warns(None) as graph_valid:
         clf.graph_feature_importance()
         import_check.assert_called_with('ipywidgets')
-
