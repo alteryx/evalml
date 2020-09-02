@@ -14,7 +14,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import _all_estimators
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def create_mock_pipeline(estimator, problem_type):
@@ -49,6 +49,26 @@ def all_binary_pipeline_classes(all_pipeline_classes):
 @pytest.fixture
 def all_multiclass_pipeline_classes(all_pipeline_classes):
     return [pipeline_class for pipeline_class in all_pipeline_classes if issubclass(pipeline_class, MulticlassClassificationPipeline)]
+
+
+@pytest.fixture
+def all_classification_estimators():
+    classification_estimators = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS}:
+            classification_estimators.append(estimator_class)
+    return classification_estimators
+
+
+@pytest.fixture
+def all_regression_estimators():
+    regression_estimators = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if set(supported_problem_types) == {ProblemTypes.REGRESSION}:
+            regression_estimators.append(estimator_class)
+    return regression_estimators
 
 
 def pytest_addoption(parser):
