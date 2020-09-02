@@ -24,6 +24,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False
+        self.validate_parameters(parameters)
 
     @property
     @classmethod
@@ -64,6 +65,23 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             cls._default_parameters = cls().parameters
 
         return cls._default_parameters
+
+    def validate_parameters(self, parameters, err_annotation=""):
+        """Determines if the parameters passed in are in the hyperparameter ranges allowed.
+
+            Arguments:
+                parameters (dict): dictionary of parameters passed in for this component
+                err_annotation (str): string to display if error comes up.
+        """
+        if parameters:
+            try:
+                hyperparams = self.hyperparameter_ranges
+                for parameter, parameter_value in self.parameters.items():
+                    if parameter in hyperparams.keys():
+                        if parameter_value not in hyperparams[parameter]:
+                            raise ValueError("{}{} = {} not in hyperparameter range of {}".format(err_annotation, parameter, parameter_value, hyperparams[parameter]))
+            except AttributeError:
+                pass
 
     def clone(self, random_state=0):
         """Constructs a new component with the same parameters

@@ -931,7 +931,10 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     pd.testing.assert_frame_equal(X_t, X_t_clone)
 
 
-def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
+def test_feature_importance_has_feature_names(X_y_binary):
+    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'RF Classifier Select From Model', 'Logistic Regression Classifier']
+
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
@@ -951,7 +954,7 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
         }
     }
 
-    clf = logistic_regression_binary_pipeline_class(parameters=parameters)
+    clf = LogisticRegressionBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
     assert len(clf.feature_importance) == len(X.columns)
     assert not clf.feature_importance.isnull().all().all()
@@ -1062,3 +1065,52 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
             clf.predict(X)
             mock_predict.assert_called()
     clf.feature_importance
+
+
+def test_invalid_name(X_y_binary):
+    class FakePipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters_wrong_name = {
+        'Ipnuts': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+    with pytest.raises(ValueError, match="Error in Fake Pipeline: Extra components found: {'Ipnuts'}"):
+        FakePipeline(parameters=parameters_wrong_name)
+
+
+def test_invalid_additional_params(X_y_binary):
+    class FakePipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'Standard Scaler', 'Logistic Regression Classifier']
+
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters_extra_name = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
+        },
+        'One Hot Encoder': {
+            'top_n': 10,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 2.0,
+        }
+    }
+    with pytest.raises(ValueError, match="Error in Fake Pipeline: Extra components found: {'One Hot Encoder'}"):
+        FakePipeline(parameters=parameters_extra_name)

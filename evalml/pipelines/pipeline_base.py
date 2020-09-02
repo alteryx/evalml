@@ -69,6 +69,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
+        self._validate_parameters(parameters)
 
     @classproperty
     def name(cls):
@@ -468,3 +469,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             A new instance of this pipeline with identical parameters and components
         """
         return self.__class__(self.parameters, random_state=random_state)
+
+    def _validate_parameters(self, parameters):
+        err_annotation = 'Error in {}:'.format(self.name)
+        # check to make sure all parameters passed in are in component_graph
+        diff = set.difference(set(parameters.keys()), {c.name for c in self.component_graph})
+        if len(diff) > 0:
+            raise ValueError("{} Extra components found: {}".format(err_annotation, str(diff)))
+        # validate all components that are passed in through parameters
+        for component in self.component_graph:
+            if component.name in parameters.keys():
+                component.validate_parameters(parameters[component.name], err_annotation=err_annotation)

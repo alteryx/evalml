@@ -769,3 +769,17 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
     component.save(path, pickle_protocol=42)
     assert len(mock_cloudpickle_dump.call_args_list) == 1
     assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
+
+
+def test_transformer_params():
+    OneHotEncoder(top_n=0, drop=None, handle_unknown="ignore", handle_missing="error", categories=None)
+
+    with pytest.raises(ValueError, match="percent_features = -0.5 not in hyperparameter range"):
+        RFClassifierSelectFromModel(percent_features=-0.5)
+
+
+def test_estimator_param_out_of_range():
+    with pytest.raises(ValueError, match="penalty = l4 not in hyperparameter range"):
+        LogisticRegressionClassifier(penalty="l4", C=1.0, n_jobs=-1, random_state=0)
+
+    RandomForestClassifier(n_estimators=10, max_depth=2)
