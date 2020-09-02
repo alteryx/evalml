@@ -349,9 +349,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 "  Windows: conda install python-graphviz\n"
             )
 
-        if jupyter_check():
-            import_or_warn("ipywidgets")
-
         graph_format = None
         path_and_name = None
         if filepath:
