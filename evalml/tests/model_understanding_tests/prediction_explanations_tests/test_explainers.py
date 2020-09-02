@@ -156,7 +156,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     mock_normalize_shap_values.return_value = normalized_shap_values
     pipeline = MagicMock()
     pipeline.problem_type = problem_type
-    pipeline._classes = ["class_0", "class_1", "class_2"]
+    pipeline.classes_ = ["class_0", "class_1", "class_2"]
 
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline._transform.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
@@ -420,7 +420,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pipeline.predict.return_value = pd.Series([2, 1])
         y_true = pd.Series([3, 2])
     elif problem_type == ProblemTypes.BINARY:
-        pipeline._classes.return_value = ["benign", "malignant"]
+        pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
@@ -431,7 +431,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         # Multiclass text output is formatted slightly different so need to account for that
         if output_format == "text":
             mock_make_table.return_value = multiclass_table
-        pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
+        pipeline.classes_.return_value = ["setosa", "versicolor", "virginica"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
@@ -474,13 +474,13 @@ def test_explain_predictions_custom_index(mock_make_table, problem_type, output_
     if problem_type == ProblemTypes.REGRESSION:
         pipeline.predict.return_value = pd.Series([2, 1])
     elif problem_type == ProblemTypes.BINARY:
-        pipeline._classes.return_value = ["benign", "malignant"]
+        pipeline.classes_.return_value = ["benign", "malignant"]
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
     else:
         if output_format == "text":
             mock_make_table.return_value = multiclass_table
-        pipeline._classes.return_value = ["setosa", "versicolor", "virginica"]
+        pipeline.classes_.return_value = ["setosa", "versicolor", "virginica"]
         pipeline.predict.return_value = pd.Series(["setosa", "versicolor"])
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
                                                             "virginica": [0.1, 0.05]})
