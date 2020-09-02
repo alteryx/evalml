@@ -8,7 +8,6 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
-from evalml.automl import AutoMLSearch
 from evalml.demos import load_breast_cancer
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.graphs import (
@@ -26,19 +25,13 @@ from evalml.model_understanding.graphs import (
     precision_recall_curve,
     roc_curve
 )
-from evalml.objectives import CostBenefitMatrix, get_objectives
+from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
-
-_not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
-
-binary_objectives = [obj() for obj in get_objectives(ProblemTypes.BINARY) if obj not in _not_allowed_in_automl]
-multiclass_objectives = [obj() for obj in get_objectives(ProblemTypes.MULTICLASS) if obj not in _not_allowed_in_automl]
-regression_objectives = [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]
 
 
 @pytest.fixture
@@ -387,34 +380,37 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class):
+def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
+                                           binary_objectives_allowed_in_automl):
     X, y = X_y_binary
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y = pd.Series(y)
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in binary_objectives:
+    for objective in binary_objectives_allowed_in_automl:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class):
+def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
+                                               multiclass_objectives_allowed_in_automl):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in multiclass_objectives:
+    for objective in multiclass_objectives_allowed_in_automl:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class):
+def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
+                                               regression_objectives_allowed_in_automl):
     X, y = X_y_regression
     pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in regression_objectives:
+    for objective in regression_objectives_allowed_in_automl:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()

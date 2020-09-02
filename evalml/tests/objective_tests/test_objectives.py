@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.automl import AutoMLSearch
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
@@ -15,12 +14,6 @@ from evalml.objectives import (
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import _get_subclasses
-
-_not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
-
-binary_objectives = [obj() for obj in get_objectives(ProblemTypes.BINARY) if obj not in _not_allowed_in_automl]
-multiclass_objectives = [obj() for obj in get_objectives(ProblemTypes.MULTICLASS) if obj not in _not_allowed_in_automl]
-regression_objectives = [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]
 
 
 def test_create_custom_objective():
@@ -74,6 +67,13 @@ def test_get_objective_does_not_work_for_none_type():
         get_objective(None)
 
 
+def test_get_objective_kwargs():
+
+    obj = get_objective("cost benefit matrix", return_instance=True,
+                        true_positive=0, true_negative=0, false_positive=0, false_negative=0)
+    assert isinstance(obj, CostBenefitMatrix)
+
+
 def test_get_objectives_types():
 
     assert len(get_objectives(ProblemTypes.MULTICLASS)) == 16
@@ -81,7 +81,9 @@ def test_get_objectives_types():
     assert len(get_objectives(ProblemTypes.REGRESSION)) == 9
 
 
-def test_objective_outputs(X_y_binary, X_y_multi):
+def test_objective_outputs(X_y_binary, X_y_multi, binary_objectives_allowed_in_automl,
+                           multiclass_objectives_allowed_in_automl,
+                           regression_objectives_allowed_in_automl):
     _, y_binary_np = X_y_binary
     assert isinstance(y_binary_np, np.ndarray)
     _, y_multi_np = X_y_multi
@@ -92,7 +94,7 @@ def test_objective_outputs(X_y_binary, X_y_multi):
     classes = np.unique(y_multi_np)
     y_pred_proba_multi_np = np.concatenate([(y_multi_np == val).astype(float).reshape(-1, 1) for val in classes], axis=1)
 
-    all_objectives = binary_objectives + regression_objectives + multiclass_objectives
+    all_objectives = binary_objectives_allowed_in_automl + regression_objectives_allowed_in_automl + multiclass_objectives_allowed_in_automl
 
     for objective in all_objectives:
         print('Testing objective {}'.format(objective.name))

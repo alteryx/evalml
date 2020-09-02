@@ -46,13 +46,14 @@ def print_all_objective_names():
     _print_objectives_in_table(all_names)
 
 
-def get_objective(objective, return_instance=False):
+def get_objective(objective, return_instance=False, **kwargs):
     """Returns the Objective object of the given objective name
 
-    Args:
+    Arguments:
         objective (str or ObjectiveBase): name or instance of the objective class.
         return_instance (bool): Whether to return an instance of the objective. This only applies if objective
             is of type str. Note that the instance will be initialized with default arguments.
+        **kwargs (Any): Any keyword arguments to pass into the objective. Only used when return_instance=True.
 
     Returns:
         ObjectiveBase if the parameter objective is of type ObjectiveBase. If objective is instead a valid
@@ -75,7 +76,7 @@ def get_objective(objective, return_instance=False):
 
     if return_instance:
         try:
-            return objective_class()
+            return objective_class(**kwargs)
         except TypeError as e:
             raise TypeError(f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}")
 
