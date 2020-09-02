@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
+from evalml.utils.gen_utils import _rename_column_names_to_numeric
 
 
 class XGBoostRegressor(Estimator):
@@ -41,21 +42,15 @@ class XGBoostRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        # rename column names to column number if input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
+        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
-            if col_names_with_symbols:
-                name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
-                X = X.rename(columns=name_to_col_num, inplace=False)
+            X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
     def predict(self, X):
-        col_names_with_symbols = []
+        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            col_names_with_symbols = [col for col in X.columns.values if any(x in str(col) for x in set(('[', ']', '<')))]
-            if col_names_with_symbols:
-                name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
-                X = X.rename(columns=name_to_col_num, inplace=False)
+            X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         return predictions
 

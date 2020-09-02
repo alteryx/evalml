@@ -8,7 +8,6 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
-import evalml
 from evalml.demos import load_breast_cancer
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.graphs import (
@@ -599,14 +598,13 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
 
-def test_partial_dependence_xgboost_feature_names(X_y_binary, has_minimal_dependencies):
+def test_partial_dependence_xgboost_feature_names(has_minimal_dependencies):
     if not has_minimal_dependencies:
-        X, y = X_y_binary
 
         class XGBoostPipeline(BinaryClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
-        X, y = evalml.demos.load_breast_cancer()
+        X, y = load_breast_cancer()
         X = X.rename(columns={"mean texture": "mean [texture]"})
         pipeline = XGBoostPipeline({})
         pipeline.fit(X, y)

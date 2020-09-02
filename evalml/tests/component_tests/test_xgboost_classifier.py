@@ -62,9 +62,6 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
     X = pd.DataFrame(X, columns=col_names)
     clf.fit(X, y)
-    assert len(clf.feature_importance) == len(X.columns)
-    assert not np.isnan(clf.feature_importance).all().all()
-
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
     assert not np.isnan(predictions).all()
@@ -72,3 +69,6 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
     predictions = clf.predict_proba(X)
     assert predictions.shape == (len(y), expected_cols)
     assert not np.isnan(predictions).all().all()
+
+    assert len(clf.feature_importance) == len(X.columns)
+    assert not clf.feature_importance.isnull().all().all()
