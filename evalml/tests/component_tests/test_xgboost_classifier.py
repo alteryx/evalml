@@ -71,4 +71,4 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
     assert not np.isnan(predictions).all().all()
 
     assert len(clf.feature_importance) == len(X.columns)
-    assert not clf.feature_importance.isnull().all().all()
+    assert not np.isnan(clf.feature_importance).all().all()
