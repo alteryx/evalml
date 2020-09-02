@@ -19,9 +19,9 @@ class StackedEnsembleRegressor(EnsembleBase):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
-        stacked_regressor = StackingRegressor(**parameters)
+        sklearn_parameters = parameters.copy()
+        sklearn_parameters.update({"estimators": [(estimator.name, estimator._component_obj) for estimator in estimators]})
+        stacked_regressor = StackingRegressor(**sklearn_parameters)
         super().__init__(parameters=parameters,
                          component_obj=stacked_regressor,
                          random_state=random_state)
-
-    # @classmethod def make_ensemble(X, y, estimators_list, final_estimator_cls)

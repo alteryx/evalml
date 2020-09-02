@@ -52,7 +52,7 @@ def all_multiclass_pipeline_classes(all_pipeline_classes):
 
 
 @pytest.fixture
-def all_classification_estimators():
+def all_classification_estimator_classes():
     classification_estimators = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
@@ -62,7 +62,7 @@ def all_classification_estimators():
 
 
 @pytest.fixture
-def all_regression_estimators():
+def all_regression_estimators_classes():
     regression_estimators = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]

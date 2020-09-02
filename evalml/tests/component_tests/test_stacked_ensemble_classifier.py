@@ -1,18 +1,26 @@
 
+import pytest
+
 from evalml.model_family import ModelFamily
+from evalml.pipelines.components import RandomForestClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.problem_types import ProblemTypes
 
 
-def test_model_family():
+@pytest.fixture
+def stackable_classifiers(all_classification_estimator_classes):
+    estimators = [estimator_class() for estimator_class in all_classification_estimator_classes if estimator_class.model_family != ModelFamily.ENSEMBLE and estimator_class.model_family != ModelFamily.BASELINE]
+    return estimators
+
+
+def test_stacked_model_family():
     assert StackedEnsembleClassifier.model_family == ModelFamily.ENSEMBLE
 
 
-def test_stacked_ensemble_parameters(all_classification_estimators):
-    estimators = [estimator_class() for estimator_class in all_classification_estimators if estimator_class.model_family != ModelFamily.ENSEMBLE]
-    clf = StackedEnsembleClassifier(estimators, final_estimator=None, random_state=2)
+def test_stacked_ensemble_parameters(stackable_classifiers):
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
     expected_parameters = {
-        "estimators": estimators,
+        "estimators": stackable_classifiers,
         "final_estimator": None,
         'cv': None,
         'n_jobs': -1
@@ -20,87 +28,44 @@ def test_stacked_ensemble_parameters(all_classification_estimators):
     assert clf.parameters == expected_parameters
 
 
-def test_problem_types():
+def test_stacked_problem_types():
     assert ProblemTypes.BINARY in StackedEnsembleClassifier.supported_problem_types
     assert ProblemTypes.MULTICLASS in StackedEnsembleClassifier.supported_problem_types
     assert len(StackedEnsembleClassifier.supported_problem_types) == 2
 
 
-# def test_fit_predict_binary(X_y_binary):
-#     X, y = X_y_binary
-
-#     sk_clf = SKElasticNetClassifier(loss="log",
-#                                     penalty="elasticnet",
-#                                     alpha=0.5,
-#                                     l1_ratio=0.5,
-#                                     n_jobs=-1,
-#                                     random_state=0)
-#     sk_clf.fit(X, y)
-#     y_pred_sk = sk_clf.predict(X)
-#     y_pred_proba_sk = sk_clf.predict_proba(X)
-
-#     clf = ElasticNetClassifier()
-#     clf.fit(X, y)
-#     y_pred = clf.predict(X)
-#     y_pred_proba = clf.predict_proba(X)
-
-#     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-#     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    y_pred_proba = clf.predict_proba(X)
 
 
-# def test_fit_predict_multi(X_y_multi):
-#     X, y = X_y_multi
-
-#     sk_clf = SKElasticNetClassifier(loss="log",
-#                                     penalty="elasticnet",
-#                                     alpha=0.5,
-#                                     l1_ratio=0.5,
-#                                     n_jobs=-1,
-#                                     random_state=0)
-#     sk_clf.fit(X, y)
-#     y_pred_sk = sk_clf.predict(X)
-#     y_pred_proba_sk = sk_clf.predict_proba(X)
-
-#     clf = ElasticNetClassifier()
-#     clf.fit(X, y)
-#     y_pred = clf.predict(X)
-#     y_pred_proba = clf.predict_proba(X)
-
-#     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-#     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_stacked_feature_importance(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
+    clf.fit(X, y)
+    clf.feature_importance
 
 
-# def test_feature_importance(X_y_binary):
-#     X, y = X_y_binary
-
-#     sk_clf = SKElasticNetClassifier(loss="log",
-#                                     penalty="elasticnet",
-#                                     alpha=0.5,
-#                                     l1_ratio=0.5,
-#                                     n_jobs=-1,
-#                                     random_state=0)
-#     sk_clf.fit(X, y)
-
-#     clf = ElasticNetClassifier()
-#     clf.fit(X, y)
-
-#     np.testing.assert_almost_equal(sk_clf.coef_.flatten(), clf.feature_importance, decimal=5)
-
-
-# def test_feature_importance_multi(X_y_multi):
-#     X, y = X_y_multi
-
-#     sk_clf = SKElasticNetClassifier(loss="log",
-#                                     penalty="elasticnet",
-#                                     alpha=0.5,
-#                                     l1_ratio=0.5,
-#                                     n_jobs=-1,
-#                                     random_state=0)
-#     sk_clf.fit(X, y)
-
-#     clf = ElasticNetClassifier()
-#     clf.fit(X, y)
-
-#     sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
-
-#     np.testing.assert_almost_equal(sk_features, clf.feature_importance, decimal=5)
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_stacked_feature_importance_rf(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
+    clf.fit(X, y)
+    clf.feature_importance
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=RandomForestClassifier(), random_state=2)
+    clf.fit(X, y)
+    clf.feature_importance
