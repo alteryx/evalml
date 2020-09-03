@@ -7,6 +7,7 @@ Release Notes
     * Fixes
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
+        * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
