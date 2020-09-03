@@ -46,6 +46,7 @@ def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, probl
     y_pred_proba = clf.predict_proba(X)
 
 
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_stacked_feature_importance(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
     if problem_type == ProblemTypes.BINARY:
@@ -57,15 +58,16 @@ def test_stacked_feature_importance(X_y_binary, X_y_multi, stackable_classifiers
     clf.feature_importance
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY])
 def test_stacked_feature_importance_rf(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
-    clf.fit(X, y)
-    clf.feature_importance
+    # clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=None, random_state=2)
+    # clf.fit(X, y)
+    # clf.feature_importance
     clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=RandomForestClassifier(), random_state=2)
     clf.fit(X, y)
+    import pdb; pdb.set_trace()
     clf.feature_importance

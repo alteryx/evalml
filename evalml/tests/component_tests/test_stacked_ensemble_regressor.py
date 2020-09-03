@@ -39,10 +39,8 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     y_pred = clf.predict(X)
 
 
-def test_stacked_feature_importance(X_y_regression):
+def test_stacked_feature_importance(X_y_regression, stackable_regressors):
     X, y = X_y_regression
     clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=None, random_state=2)
     clf.fit(X, y)
-    y_pred = clf.predict(X)
-
-    np.testing.assert_almost_equal(sk_clf.coef_.flatten(), clf.feature_importance, decimal=5)
+    clf.feature_importance
