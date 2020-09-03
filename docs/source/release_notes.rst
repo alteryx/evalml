@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated `featuretools` and `nlp_primitives` to be installed by default :pr:`1140`
     * Changes
     * Documentation Changes
     * Testing Changes
