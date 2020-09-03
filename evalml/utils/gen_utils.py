@@ -1,4 +1,5 @@
 import importlib
+import warnings
 from collections import namedtuple
 
 import numpy as np
@@ -17,13 +18,14 @@ categorical_dtypes = ['object', 'category']
 datetime_dtypes = [np.datetime64]
 
 
-def import_or_raise(library, error_msg=None):
+def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
-    If the import fails, raises an ImportError.
+    If the import fails, raises an ImportError or warning.
 
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
+        warning (bool): if True, import_or_raise gives a warning instead of ImportError. Defaults to False.
     """
     try:
         return importlib.import_module(library)
@@ -31,10 +33,16 @@ def import_or_raise(library, error_msg=None):
         if error_msg is None:
             error_msg = ""
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
-        raise ImportError(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise ImportError(msg)
     except Exception as ex:
         msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
-        raise Exception(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise Exception(msg)
 
 
 def convert_to_seconds(input_str):
@@ -196,3 +204,19 @@ def _rename_column_names_to_numeric(X):
     """
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
     return X.rename(columns=name_to_col_num, inplace=False)
+
+  
+def jupyter_check():
+    """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
+
+    Arguments:
+        None
+
+    Returns:
+        Boolean: True if Ipython, False otherwise
+    """
+    try:
+        get_ipython()
+        return True
+    except NameError:
+        return False

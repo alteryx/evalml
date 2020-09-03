@@ -172,3 +172,21 @@ def test_get_importable_subclasses_wont_get_custom_classes():
         pass
 
     assert ChildClass not in get_importable_subclasses(ComponentBase)
+
+
+@patch('importlib.import_module')
+def test_import_or_warn_errors(dummy_importlib):
+    def _mock_import_function(library_str):
+        if library_str == "_evalml":
+            raise ImportError("Mock ImportError executed!")
+        if library_str == "attr_error_lib":
+            raise Exception("Mock Exception executed!")
+
+    dummy_importlib.side_effect = _mock_import_function
+
+    with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'"):
+        import_or_raise("_evalml", warning=True)
+    with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
+        import_or_raise("_evalml", "Additional error message", warning=True)
+    with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
+        import_or_raise("attr_error_lib", warning=True)

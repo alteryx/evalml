@@ -113,3 +113,21 @@ def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
 
     data = figure.data[0]
     assert (np.all(data['x'] >= 0.5))
+
+
+@patch('evalml.pipelines.pipeline_base.jupyter_check')
+@patch('evalml.pipelines.pipeline_base.import_or_raise')
+def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    clf = test_pipeline
+    clf.fit(X, y)
+    jupyter_check.return_value = False
+    with pytest.warns(None) as graph_valid:
+        clf.graph_feature_importance()
+        assert len(graph_valid) == 0
+
+    jupyter_check.return_value = True
+    with pytest.warns(None) as graph_valid:
+        clf.graph_feature_importance()
+        import_check.assert_called_with('ipywidgets', warning=True)
