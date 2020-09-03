@@ -14,8 +14,8 @@ def test_class_imbalance_invalid_threshold():
     with pytest.raises(ValueError, match="threshold 0 is not within the range"):
         class_imbalance_check.validate(X, y=pd.Series([0, 1, 1]), threshold=0)
 
-    with pytest.raises(ValueError, match="threshold 1 is not within the range"):
-        class_imbalance_check.validate(X, y=pd.Series([0, 1, 1]), threshold=1)
+    with pytest.raises(ValueError, match="threshold 0.51 is not within the range"):
+        class_imbalance_check.validate(X, y=pd.Series([0, 1, 1]), threshold=0.51)
 
     with pytest.raises(ValueError, match="threshold -0.5 is not within the range"):
         class_imbalance_check.validate(X, y=pd.Series([0, 1, 1]), threshold=-0.5)

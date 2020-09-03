@@ -26,8 +26,8 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> target_check = ClassImbalanceDataCheck()
             >>> assert target_check.validate(X, y, threshold) == [DataCheckWarning("Label 0 makes up 9.091% of the target data, which is below the acceptable threshold of 10%", "ClassImbalanceDataCheck")]
         """
-        if threshold <= 0 or threshold >= 1:
-            raise ValueError("Provided threshold {} is not within the range (0, 1)".format(threshold))
+        if threshold <= 0 or threshold > 0.5:
+            raise ValueError("Provided threshold {} is not within the range (0, 0.5]".format(threshold))
 
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
