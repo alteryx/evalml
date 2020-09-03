@@ -24,7 +24,6 @@ from evalml.utils import (
     get_logger,
     get_random_state,
     import_or_raise,
-    import_or_warn,
     jupyter_check,
     log_subtitle,
     log_title
@@ -401,7 +400,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
         if jupyter_check():
-            import_or_warn("ipywidgets")
+            import_or_raise("ipywidgets", warning=True)
 
         feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])

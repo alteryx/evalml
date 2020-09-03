@@ -18,13 +18,14 @@ categorical_dtypes = ['object', 'category']
 datetime_dtypes = [np.datetime64]
 
 
-def import_or_raise(library, error_msg=None):
+def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
     If the import fails, raises an ImportError.
 
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
+        warning (bool): if True, import or raise warning instead
     """
     try:
         return importlib.import_module(library)
@@ -32,10 +33,16 @@ def import_or_raise(library, error_msg=None):
         if error_msg is None:
             error_msg = ""
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
-        raise ImportError(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise ImportError(msg)
     except Exception as ex:
         msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
-        raise Exception(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise Exception(msg)
 
 
 def convert_to_seconds(input_str):
@@ -198,23 +205,3 @@ def jupyter_check():
         return True
     except NameError:
         return False
-
-
-def import_or_warn(library, error_msg=None):
-    """Attempts to import the requested library by name.
-    If the import fails, shows an ImportWarning.
-
-    Arguments:
-        library (str): the name of the library
-        error_msg (str): error message to return if the import fails
-    """
-    try:
-        return importlib.import_module(library)
-    except ImportError:
-        if error_msg is None:
-            error_msg = ""
-        msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
-        warnings.warn(msg)
-    except Exception as ex:
-        msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
-        warnings.warn(msg)

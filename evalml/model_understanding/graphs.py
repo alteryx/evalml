@@ -18,7 +18,7 @@ from sklearn.utils.multiclass import unique_labels
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise, import_or_warn, jupyter_check
+from evalml.utils import import_or_raise, jupyter_check
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -106,7 +106,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -163,7 +163,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -220,7 +220,7 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -300,7 +300,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
     perm_importance['importance'] = perm_importance['importance']
@@ -383,7 +383,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     objective = get_objective(objective)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
@@ -443,7 +443,7 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
-        import_or_warn("ipywidgets")
+        import_or_raise("ipywidgets", warning=True)
 
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)

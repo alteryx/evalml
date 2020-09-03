@@ -12,8 +12,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
-    import_or_raise,
-    import_or_warn
+    import_or_raise
 )
 
 
@@ -186,8 +185,8 @@ def test_import_or_warn_errors(dummy_importlib):
     dummy_importlib.side_effect = _mock_import_function
 
     with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'"):
-        import_or_warn("_evalml")
+        import_or_raise("_evalml", warning=True)
     with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
-        import_or_warn("_evalml", "Additional error message")
+        import_or_raise("_evalml", "Additional error message", warning=True)
     with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
-        import_or_warn("attr_error_lib")
+        import_or_raise("attr_error_lib", warning=True)
