@@ -5,7 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class ClassImbalanceDataCheck(DataCheck):
-    """Checks if the target labels contain missing or invalid data."""
+    """Checks if any target labels are imbalanced beyond a threshold"""
 
     def validate(self, X, y, threshold=0.10):
         """Checks if the target labels are below a certain threshold.
