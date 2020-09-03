@@ -214,7 +214,7 @@ def import_or_warn(library, error_msg=None):
         if error_msg is None:
             error_msg = ""
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
-        warnings.warn(msg, category=ImportWarning)
+        warnings.warn(msg)
     except Exception as ex:
         msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
-        warnings.warn(msg, category=ImportWarning)
+        warnings.warn(msg)

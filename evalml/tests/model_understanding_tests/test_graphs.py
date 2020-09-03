@@ -633,9 +633,11 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     with pytest.warns(None) as graph_valid:
         graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
         assert len(graph_valid) == 0
+        assert not import_check.called
     with pytest.warns(None) as graph_valid:
         graph_confusion_matrix(y, y)
         assert len(graph_valid) == 0
+        assert not import_check.called
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
