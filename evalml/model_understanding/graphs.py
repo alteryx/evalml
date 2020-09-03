@@ -19,7 +19,7 @@ from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
-
+import evalml
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
@@ -409,8 +409,14 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     if pipeline.model_family == ModelFamily.CATBOOST:
         pipeline.estimator._component_obj._fitted_ = True
     if pipeline.model_family == ModelFamily.XGBOOST:
-        pipeline.estimator.classes_ = pipeline.classes_
-        pipeline.estimator._estimator_type = "classifier"
+        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+            pipeline.estimator._estimator_type = "classifier"
+            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
+            pipeline.estimator.classes_ = pipeline.classes_
+        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+            pipeline.estimator._estimator_type = "regressor"
+            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
+            pipeline.estimator.feature_importances_ = pipeline.feature_importance
         avg_pred, values = sk_partial_dependence(pipeline.estimator, X=X, features=[feature], grid_resolution=grid_resolution)
     else:
         avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)

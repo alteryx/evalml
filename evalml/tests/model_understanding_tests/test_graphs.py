@@ -28,7 +28,7 @@ from evalml.model_understanding.graphs import (
 from evalml.objectives import CostBenefitMatrix, get_objectives
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.problem_types import ProblemTypes
-
+from evalml.pipelines import BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline
 
 @pytest.fixture
 def test_pipeline():
@@ -598,27 +598,42 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
 
-def test_partial_dependence_xgboost_feature_names(has_minimal_dependencies):
-    if not has_minimal_dependencies:
-
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_dependencies,
+X_y_binary, X_y_multi, X_y_regression):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
+    if problem_type == ProblemTypes.REGRESSION:
+        class XGBoostPipeline(RegressionPipeline):
+            component_graph = ['Simple Imputer', 'XGBoost Regressor']
+            model_family = ModelFamily.XGBOOST
+        X, y = X_y_regression
+    elif problem_type == ProblemTypes.BINARY:
         class XGBoostPipeline(BinaryClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
-        X, y = load_breast_cancer()
-        X = X.rename(columns={"mean texture": "mean [texture]"})
-        pipeline = XGBoostPipeline({})
-        pipeline.fit(X, y)
-        part_dep = partial_dependence(pipeline, X, feature="mean [texture]", grid_resolution=20)
-        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
-        assert len(part_dep["partial_dependence"]) == 20
-        assert len(part_dep["feature_values"]) == 20
-        assert not part_dep.isnull().all().all()
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        class XGBoostPipeline(MulticlassClassificationPipeline):
+            component_graph = ['Simple Imputer', 'XGBoost Classifier']
+            model_family = ModelFamily.XGBOOST
+        X, y = X_y_multi
 
-        part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
-        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
-        assert len(part_dep["partial_dependence"]) == 20
-        assert len(part_dep["feature_values"]) == 20
-        assert not part_dep.isnull().all().all()
+    X = pd.DataFrame(X)
+    X = X.rename(columns={0: '<[0]'})
+    pipeline = XGBoostPipeline({})
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature="<[0]", grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
+    assert len(part_dep["feature_values"]) == 20
+    assert not part_dep.isnull().all().all()
+
+    part_dep = partial_dependence(pipeline, X, feature=1, grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 20
+    assert len(part_dep["feature_values"]) == 20
+    assert not part_dep.isnull().all().all()
 
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
