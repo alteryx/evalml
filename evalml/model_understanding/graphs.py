@@ -15,11 +15,12 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
+import evalml
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise
-import evalml
+
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.

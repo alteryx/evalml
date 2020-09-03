@@ -26,9 +26,13 @@ from evalml.model_understanding.graphs import (
     roc_curve
 )
 from evalml.objectives import CostBenefitMatrix, get_objectives
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline
+)
 from evalml.problem_types import ProblemTypes
-from evalml.pipelines import BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline
+
 
 @pytest.fixture
 def test_pipeline():
@@ -600,7 +604,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_dependencies,
-X_y_binary, X_y_multi, X_y_regression):
+                                                  X_y_binary, X_y_multi, X_y_regression):
     if has_minimal_dependencies:
         pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
     if problem_type == ProblemTypes.REGRESSION:
