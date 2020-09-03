@@ -28,6 +28,7 @@ Release Notes
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
         * Added LightGBM classification estimator :pr:`1082`, :pr:`1114`
         * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
+        * Added `ClassImbalanceDataCheck` to determine whether target imbalance falls below a given threshold :pr:``
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
