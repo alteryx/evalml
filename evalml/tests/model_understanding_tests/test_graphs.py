@@ -619,3 +619,50 @@ def test_graph_partial_dependence(test_pipeline):
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
+
+
+@patch('evalml.model_understanding.graphs.jupyter_check')
+@patch('evalml.model_understanding.graphs.import_or_raise')
+def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X, y = X_y_binary
+    clf = test_pipeline
+    clf.fit(X, y)
+    cbm = CostBenefitMatrix(true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2)
+    jupyter_check.return_value = False
+    with pytest.warns(None) as graph_valid:
+        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        assert len(graph_valid) == 0
+    with pytest.warns(None) as graph_valid:
+        graph_confusion_matrix(y, y)
+        assert len(graph_valid) == 0
+
+    jupyter_check.return_value = True
+    with pytest.warns(None) as graph_valid:
+        graph_partial_dependence(clf, X, feature=0, grid_resolution=20)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+    with pytest.warns(None) as graph_valid:
+        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+    with pytest.warns(None) as graph_valid:
+        rs = np.random.RandomState(42)
+        y_pred_proba = y * rs.random(y.shape)
+        graph_precision_recall_curve(y, y_pred_proba)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+    with pytest.warns(None) as graph_valid:
+        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+    with pytest.warns(None) as graph_valid:
+        graph_confusion_matrix(y, y)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+    with pytest.warns(None) as graph_valid:
+        rs = np.random.RandomState(42)
+        y_pred_proba = y * rs.random(y.shape)
+        graph_roc_curve(y, y_pred_proba)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
