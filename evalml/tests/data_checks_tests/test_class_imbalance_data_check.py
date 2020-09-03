@@ -25,6 +25,7 @@ def test_class_imbalance_data_check_binary():
     X = pd.DataFrame()
     class_imbalance_check = ClassImbalanceDataCheck()
 
+    assert class_imbalance_check.validate(X, y=[0, 1, 1]) == []
     assert class_imbalance_check.validate(X, y=pd.Series([0, 1, 1])) == []
     assert class_imbalance_check.validate(X, y=pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])) == [DataCheckWarning("Label 0 makes up 9.091% of the target data, which is below the acceptable threshold of 10%", "ClassImbalanceDataCheck")]
     assert class_imbalance_check.validate(X, y=pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), threshold=0.25) == [DataCheckWarning("Label 0 makes up 9.091% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck")]
