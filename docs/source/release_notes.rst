@@ -12,6 +12,7 @@ Release Notes
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
+        * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
 
 
 **v0.13.1 Aug. 25, 2020**
