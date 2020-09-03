@@ -8,11 +8,13 @@ Release Notes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
+        * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
+        * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
 
 
 **v0.13.1 Aug. 25, 2020**
