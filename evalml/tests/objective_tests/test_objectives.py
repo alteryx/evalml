@@ -9,7 +9,8 @@ from evalml.objectives import (
     MulticlassClassificationObjective,
     RegressionObjective,
     get_objective,
-    get_objectives
+    get_objectives,
+    print_all_objective_names
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
@@ -72,6 +73,10 @@ def test_get_objective_kwargs():
     obj = get_objective("cost benefit matrix", return_instance=True,
                         true_positive=0, true_negative=0, false_positive=0, false_negative=0)
     assert isinstance(obj, CostBenefitMatrix)
+
+
+def test_can_print_all_objective_names():
+    print_all_objective_names()
 
 
 def test_get_objectives_types():
