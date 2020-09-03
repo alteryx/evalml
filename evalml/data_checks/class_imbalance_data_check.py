@@ -14,7 +14,8 @@ class ClassImbalanceDataCheck(DataCheck):
             X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
             y: Target labels to check for invalid data.
             threshold (float, optional): The minimum threshold allowed for class imbalance before a warning is raised.
-                                        A perfectly balanced dataset would have a threshold of (1/n_classes), ie 0.50 for binary classes
+                                        A perfectly balanced dataset would have a threshold of (1/n_classes), ie 0.50 for binary classes.
+                                        Defaults to 0.10
 
         Returns:
             list (DataCheckWarning): list with DataCheckWarnings if imbalance in classes is less than the threshold.
