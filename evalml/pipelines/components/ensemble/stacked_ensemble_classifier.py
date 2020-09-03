@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.ensemble import StackingClassifier
 
 from evalml.model_family import ModelFamily
@@ -24,21 +23,21 @@ class StackedEnsembleClassifier(EnsembleBase):
         sklearn_parameters = parameters.copy()
         parameters.update(kwargs)
         if final_estimator is None:
-            self.final_estimator = LogisticRegressionClassifier()
+            self._final_estimator = LogisticRegressionClassifier()
         else:
-            self.final_estimator = final_estimator
-        sklearn_parameters.update({"estimators": [(estimator.name, estimator._component_obj) for estimator in estimators]})
-        sklearn_parameters.update({"final_estimator": self.final_estimator._component_obj})
-        stacked_classifier = StackingClassifier(**sklearn_parameters)
-        self.stacked_classifier = stacked_classifier
+            self._final_estimator = final_estimator
+        sklearn_parameters.update({"estimators": [(f'{estimator.name} ({index})', estimator._component_obj) for index, estimator in enumerate(estimators)]})
+        sklearn_parameters.update({"final_estimator": self._final_estimator._component_obj})
+        self._stacked_classifier = StackingClassifier(**sklearn_parameters)
         super().__init__(parameters=parameters,
-                         component_obj=stacked_classifier,
+                         component_obj=self._stacked_classifier,
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        # TODO: write note as to why this is done
         self._component_obj.fit(X, y)
-        self.final_estimator._is_fitted = True
-        return self
+        self._final_estimator._is_fitted = True
+        self._final_estimator._component_obj = self._stacked_classifier.final_estimator_
 
     @property
     def feature_importance(self):
@@ -47,17 +46,4 @@ class StackedEnsembleClassifier(EnsembleBase):
         Returns:
             list(float): importance associated with each feature
         """
-        if self.parameters["final_estimator"] is None:
-            coef_ = self._component_obj.final_estimator_.coef_
-            # binary classification case
-            if len(coef_) <= 2:
-                return coef_[0]
-            else:
-                # multiclass classification case
-                return np.linalg.norm(coef_, axis=0, ord=2)
-        print ("STACKED CLASSIFIER FINAL ESTIMATOR:", self.stacked_classifier.final_estimator.__repr__())
-        print ("FINAL ESTIMATOR:", self.final_estimator.__repr__())
-        print ("FINAL ESTIMATOR OBJ:", self.final_estimator._component_obj.__repr__())
-        # return self.stacked_classifier.final_estimator.feature_importances_
-        print (self.stacked_classifier.final_estimator == self.final_estimator._component_obj)
-        return self.final_estimator.feature_importance
+        return self._final_estimator.feature_importance
