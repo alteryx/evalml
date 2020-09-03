@@ -20,12 +20,12 @@ datetime_dtypes = [np.datetime64]
 
 def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
-    If the import fails, raises an ImportError.
+    If the import fails, raises an ImportError or warning.
 
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
-        warning (bool): if True, import or raise warning instead
+        warning (bool): if True, import_or_raise gives a warning instead of ImportError. Defaults to False.
     """
     try:
         return importlib.import_module(library)
