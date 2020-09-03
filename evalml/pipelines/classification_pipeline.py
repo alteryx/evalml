@@ -60,7 +60,7 @@ class ClassificationPipeline(PipelineBase):
         return self._encoder.inverse_transform(y.astype(int))
 
     @property
-    def _classes(self):
+    def classes_(self):
         """Gets the class names for the problem."""
         if not hasattr(self._encoder, "classes_"):
             raise AttributeError("Cannot access class names before fitting the pipeline.")

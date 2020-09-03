@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
+from evalml.utils.gen_utils import _rename_column_names_to_numeric
 
 
 class XGBoostRegressor(Estimator):
@@ -41,15 +42,17 @@ class XGBoostRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        # necessary to convert to numpy in case input DataFrame has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
+        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
+            X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
     def predict(self, X):
+        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        return super().predict(X)
+            X = _rename_column_names_to_numeric(X)
+        predictions = super().predict(X)
+        return predictions
 
     @property
     def feature_importance(self):

@@ -25,7 +25,6 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
-
             predictions = clf.predict(X)
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
