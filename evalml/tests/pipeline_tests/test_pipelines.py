@@ -958,6 +958,38 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
     assert sorted(clf.feature_importance["feature"]) == sorted(col_names)
 
 
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_dependencies,
+                                                      X_y_regression, X_y_binary, X_y_multi):
+    # Testing that we store the original feature names since we map to numeric values for XGBoost
+    if has_minimal_dependencies:
+        pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
+    if problem_type == ProblemTypes.REGRESSION:
+        class XGBoostPipeline(RegressionPipeline):
+            component_graph = ['Simple Imputer', 'XGBoost Regressor']
+            model_family = ModelFamily.XGBOOST
+        X, y = X_y_regression
+    elif problem_type == ProblemTypes.BINARY:
+        class XGBoostPipeline(BinaryClassificationPipeline):
+            component_graph = ['Simple Imputer', 'XGBoost Classifier']
+            model_family = ModelFamily.XGBOOST
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        class XGBoostPipeline(MulticlassClassificationPipeline):
+            component_graph = ['Simple Imputer', 'XGBoost Classifier']
+            model_family = ModelFamily.XGBOOST
+        X, y = X_y_multi
+
+    X = pd.DataFrame(X)
+    X = X.rename(columns={col_name: f'<[{col_name}]' for col_name in X.columns.values})
+    col_names = X.columns.values
+    pipeline = XGBoostPipeline({})
+    pipeline.fit(X, y)
+    assert len(pipeline.feature_importance) == len(X.columns)
+    assert not pipeline.feature_importance.isnull().all().all()
+    assert sorted(pipeline.feature_importance["feature"]) == sorted(col_names)
+
+
 def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
     class FakePipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']

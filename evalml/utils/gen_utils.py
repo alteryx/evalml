@@ -191,6 +191,21 @@ def get_importable_subclasses(base_class, used_in_automl=True):
     return classes
 
 
+def _rename_column_names_to_numeric(X):
+    """Used in XGBoost classifier and regressor classes to rename column names
+        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
+
+    Arguments:
+        X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+
+    Returns:
+        Transformed X where column names are renamed to numerical values
+
+    """
+    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
+    return X.rename(columns=name_to_col_num, inplace=False)
+
+
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
 

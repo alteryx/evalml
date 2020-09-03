@@ -6,6 +6,7 @@ Release Notes
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
     * Fixes
+        * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
