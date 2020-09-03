@@ -7,11 +7,13 @@ Release Notes
     * Fixes
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
     * Changes
+        * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
+        * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
 
 
 **v0.13.1 Aug. 25, 2020**
@@ -26,7 +28,7 @@ Release Notes
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Added one-way partial dependence and partial dependence plots :pr:`1079`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
-        * Added LightGBM classification estimator :pr:`1082`
+        * Added LightGBM classification estimator :pr:`1082`, :pr:`1114`
         * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
