@@ -205,7 +205,7 @@ def _rename_column_names_to_numeric(X):
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
     return X.rename(columns=name_to_col_num, inplace=False)
 
-  
+
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
 
