@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -37,6 +38,13 @@ def test_class_imbalance_data_check_multiclass():
 
     assert class_imbalance_check.validate(X, y=pd.Series([0, 2, 1, 1])) == []
     assert class_imbalance_check.validate(X, y=pd.Series([0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])) == [DataCheckWarning("Label 0 makes up 7.692% of the target data, which is below the acceptable threshold of 10%", "ClassImbalanceDataCheck")]
-    assert class_imbalance_check.validate(X, y=pd.Series([0, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), threshold=0.25) == [DataCheckWarning("Label 2 makes up 23.529% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck"),
-                                                                                                                                   DataCheckWarning("Label 3 makes up 11.765% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck"),
-                                                                                                                                   DataCheckWarning("Label 0 makes up 5.882% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck")]
+    assert class_imbalance_check.validate(X, y=pd.Series([0, 2, 2, 2, 3, 3, 1, 1, 1, 1]), threshold=0.25) == [DataCheckWarning("Label 3 makes up 20.000% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck"),
+                                                                                                              DataCheckWarning("Label 0 makes up 10.000% of the target data, which is below the acceptable threshold of 25%", "ClassImbalanceDataCheck")]
+
+
+def test_class_imbalance_empty_and_nan():
+    X = pd.DataFrame()
+    class_imbalance_check = ClassImbalanceDataCheck()
+
+    assert class_imbalance_check.validate(X, y=pd.Series([])) == []
+    assert class_imbalance_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 2]), threshold=0.5) == [DataCheckWarning("Label 2 makes up 20.000% of the target data, which is below the acceptable threshold of 50%", "ClassImbalanceDataCheck")]

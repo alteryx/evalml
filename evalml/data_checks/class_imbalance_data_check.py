@@ -5,14 +5,14 @@ from .data_check_message import DataCheckWarning
 
 
 class ClassImbalanceDataCheck(DataCheck):
-    """Checks if any target labels are imbalanced beyond a threshold"""
+    """Classification problems, checks if any target labels are imbalanced beyond a threshold"""
 
     def validate(self, X, y, threshold=0.10):
-        """Checks if the target labels are below a certain threshold.
+        """Checks if the percentage of each target value is below a certain threshold. Ignores NaN values
 
         Arguments:
             X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
-            y: Target labels to check for invalid data.
+            y: Target labels to check for imbalanced data.
             threshold (float, optional): The minimum threshold allowed for class imbalance before a warning is raised.
                                         A perfectly balanced dataset would have a threshold of (1/n_classes), ie 0.50 for binary classes.
                                         Defaults to 0.10
