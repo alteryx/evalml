@@ -9,6 +9,7 @@ Release Notes
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
+        * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
