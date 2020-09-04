@@ -27,7 +27,10 @@ class TextFeaturizer(TextTransformer):
         self._trans = [self._nlp_primitives.DiversityScore,
                        self._nlp_primitives.MeanCharactersPerWord,
                        self._nlp_primitives.PartOfSpeechCount,
-                       self._nlp_primitives.PolarityScore]
+                       self._nlp_primitives.PolarityScore,
+                       self._nlp_primitives.StopwordCount,
+                       self._nlp_primitives.TitleWordCount,
+                       self._nlp_primitives.UpperCaseCount]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         super().__init__(text_columns=text_columns,
@@ -39,7 +42,7 @@ class TextFeaturizer(TextTransformer):
 
         def normalize(text):
             text = text.translate(str.maketrans('', '', string.punctuation))
-            return text.lower()
+            return text  # .lower()
 
         for col_name in X.columns:
             # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
