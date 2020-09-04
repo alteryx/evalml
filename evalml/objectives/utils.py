@@ -94,6 +94,5 @@ def get_objectives(problem_type):
     """
     problem_type = handle_problem_types(problem_type)
     all_objectives_dict = _all_objectives_dict()
-    # To remove duplicates
     objectives = [obj for obj in all_objectives_dict.values() if obj.problem_type == problem_type]
     return objectives

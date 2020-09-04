@@ -62,6 +62,9 @@ def test_get_objective_return_instance_does_not_work_for_some_objectives():
     with pytest.raises(TypeError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
         get_objective("Cost Benefit Matrix", return_instance=True)
 
+    cbm = CostBenefitMatrix(0, 0, 0, 0)
+    assert get_objective(cbm) == cbm
+
 
 def test_get_objective_does_not_work_for_none_type():
     with pytest.raises(TypeError, match="Objective parameter cannot be NoneType"):

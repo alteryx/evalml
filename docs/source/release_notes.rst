@@ -23,7 +23,7 @@ Release Notes
     **Breaking Changes**
         * `get_objective` will now return a class definition rather than an instance by default :pr:`1132`
         * Deleted `OPTIONS` dictionary in `evalml.objectives.utils.py` :pr:`1132`
-        * If specifying an objective by string, the string must now match the objective's `name` field. Note that a lowercase case version of the name is also valid :pr:`1132`
+        * If specifying an objective by string, the string must now match the objective's name field, case-insensitive :pr:`1132`
         * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
             "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
             rather than an `ObjectiveNotFoundError` :pr:`1132`
