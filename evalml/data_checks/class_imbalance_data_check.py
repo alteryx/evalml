@@ -8,7 +8,7 @@ class ClassImbalanceDataCheck(DataCheck):
     """Classification problems, checks if any target labels are imbalanced beyond a threshold"""
 
     def validate(self, X, y, threshold=0.10):
-        """Checks if the percentage of each target value is below a certain threshold. Ignores NaN values
+        """Checks if any target labels are imbalanced beyond a threshold for binary and multiclass problems
 
         Arguments:
             X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
@@ -37,7 +37,7 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold = counts.where(counts < threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
-            warning_msg = "Label {0:.0f} makes up {1:.3f}% of the target data, which is below the recommended threshold of {2:.0f}%"
+            warning_msg = "Label '{0:}' makes up {1:.2f}% of the target data, which is below the recommended threshold of {2:.0f}%"
             for index, value in below_threshold.items():
                 messages.append(DataCheckWarning(warning_msg.format(index, value * 100, threshold * 100), self.name))
 
