@@ -5,14 +5,16 @@ import pytest
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
+    CostBenefitMatrix,
     MulticlassClassificationObjective,
-    Precision,
     RegressionObjective,
     get_objective,
-    get_objectives
+    get_objectives,
+    print_all_objective_names
 )
 from evalml.objectives.objective_base import ObjectiveBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import _get_subclasses
 
 
 def test_create_custom_objective():
@@ -24,33 +26,72 @@ def test_create_custom_objective():
         MockEmptyObjective()
 
     class MockNoObjectiveFunctionObjective(ObjectiveBase):
-        name = "Mock objective without objective function"
         problem_type = ProblemTypes.BINARY
 
     with pytest.raises(TypeError):
         MockNoObjectiveFunctionObjective()
 
 
-def test_get_objective():
-    assert isinstance(get_objective('precision'), Precision)
-    assert isinstance(get_objective(Precision()), Precision)
+@pytest.mark.parametrize("obj", _get_subclasses(ObjectiveBase))
+def test_get_objective_works_for_names_of_defined_objectives(obj):
+    assert get_objective(obj.name) == obj
+    assert get_objective(obj.name.lower()) == obj
+
+    args = []
+    if obj == CostBenefitMatrix:
+        args = [0] * 4
+    assert isinstance(get_objective(obj(*args)), obj)
+
+
+def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
+
+    class InvalidObjective:
+        pass
+
+    obj = InvalidObjective()
 
     with pytest.raises(TypeError):
+        get_objective(obj)
+
+    with pytest.raises(ObjectiveNotFoundError):
+        get_objective("log loss")
+
+
+def test_get_objective_return_instance_does_not_work_for_some_objectives():
+
+    with pytest.raises(TypeError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
+        get_objective("Cost Benefit Matrix", return_instance=True)
+
+    cbm = CostBenefitMatrix(0, 0, 0, 0)
+    assert get_objective(cbm) == cbm
+
+
+def test_get_objective_does_not_work_for_none_type():
+    with pytest.raises(TypeError, match="Objective parameter cannot be NoneType"):
         get_objective(None)
-    with pytest.raises(ObjectiveNotFoundError):
-        get_objective('this is not a valid objective')
-    with pytest.raises(ObjectiveNotFoundError):
-        get_objective(1)
+
+
+def test_get_objective_kwargs():
+
+    obj = get_objective("cost benefit matrix", return_instance=True,
+                        true_positive=0, true_negative=0, false_positive=0, false_negative=0)
+    assert isinstance(obj, CostBenefitMatrix)
+
+
+def test_can_print_all_objective_names():
+    print_all_objective_names()
 
 
 def test_get_objectives_types():
 
-    assert len(get_objectives(ProblemTypes.MULTICLASS)) == 13
-    assert len(get_objectives(ProblemTypes.BINARY)) == 7
-    assert len(get_objectives(ProblemTypes.REGRESSION)) == 7
+    assert len(get_objectives(ProblemTypes.MULTICLASS)) == 16
+    assert len(get_objectives(ProblemTypes.BINARY)) == 11
+    assert len(get_objectives(ProblemTypes.REGRESSION)) == 9
 
 
-def test_objective_outputs(X_y_binary, X_y_multi):
+def test_objective_outputs(X_y_binary, X_y_multi, binary_objectives_allowed_in_automl,
+                           multiclass_objectives_allowed_in_automl,
+                           regression_objectives_allowed_in_automl):
     _, y_binary_np = X_y_binary
     assert isinstance(y_binary_np, np.ndarray)
     _, y_multi_np = X_y_multi
@@ -61,9 +102,8 @@ def test_objective_outputs(X_y_binary, X_y_multi):
     classes = np.unique(y_multi_np)
     y_pred_proba_multi_np = np.concatenate([(y_multi_np == val).astype(float).reshape(-1, 1) for val in classes], axis=1)
 
-    all_objectives = (get_objectives(ProblemTypes.REGRESSION) +
-                      get_objectives(ProblemTypes.BINARY) +
-                      get_objectives(ProblemTypes.MULTICLASS))
+    all_objectives = binary_objectives_allowed_in_automl + regression_objectives_allowed_in_automl + multiclass_objectives_allowed_in_automl
+
     for objective in all_objectives:
         print('Testing objective {}'.format(objective.name))
         expected_value = 1.0 if objective.greater_is_better else 0.0

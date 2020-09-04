@@ -574,7 +574,7 @@ def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary
     mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
-    objective_names = ['f1_micro']
+    objective_names = ['f1 micro']
     scores = clf.score(X, y, objective_names)
     mock_encode.assert_called()
     mock_fit.assert_called()
@@ -621,7 +621,7 @@ def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
     mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
-    objective_names = ['f1_micro', 'precision_micro']
+    objective_names = ['f1 micro', 'precision micro']
     scores = clf.score(X, y, objective_names)
     mock_predict.assert_called()
     assert scores == {'F1 Micro': 1.0, 'Precision Micro': 1.0}
@@ -681,7 +681,7 @@ def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective
     mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
-    objective_names = ['f1_micro', 'precision_micro']
+    objective_names = ['f1 micro', 'precision micro']
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         _ = clf.score(X, y, objective_names)
@@ -1025,7 +1025,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 @pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
 def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
     if problem_type == ProblemTypes.BINARY:
-        objective = "log_loss_binary"
+        objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
         X, y = load_breast_cancer()
         if target_type == "bool":
@@ -1033,7 +1033,7 @@ def test_targets_data_types_classification_pipelines(problem_type, target_type, 
     elif problem_type == ProblemTypes.MULTICLASS:
         if target_type == "bool":
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
-        objective = "log_loss_multi"
+        objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
 

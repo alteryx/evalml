@@ -148,7 +148,7 @@ def test_plot_iterations_max_time(X_y_regression):
 
 
 def test_log_metrics_only_passed_directly():
-    with pytest.raises(ObjectiveNotFoundError, match="Could not find the specified objective."):
+    with pytest.raises(ObjectiveNotFoundError, match="RootMeanSquaredLogError is not a valid Objective!"):
         AutoMLSearch(problem_type='regression', additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
 
     ar = AutoMLSearch(problem_type='regression', additional_objectives=[RootMeanSquaredLogError(), MeanSquaredLogError()])

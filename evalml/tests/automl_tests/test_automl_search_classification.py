@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
 
 from evalml import AutoMLSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
-from evalml.exceptions import ObjectiveNotFoundError, PipelineNotFoundError
+from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
@@ -84,8 +84,9 @@ def test_max_pipelines(X_y_binary):
 
 def test_recall_error(X_y_binary):
     X, y = X_y_binary
-    error_msg = 'Could not find the specified objective.'
-    with pytest.raises(ObjectiveNotFoundError, match=error_msg):
+    # Recall is a valid objective but it's not allowed in AutoML so a ValueError is expected
+    error_msg = 'Recall is not allowed in AutoML!'
+    with pytest.raises(ValueError, match=error_msg):
         AutoMLSearch(problem_type='binary', objective='recall', max_pipelines=1)
 
 
@@ -99,7 +100,7 @@ def test_recall_object(X_y_binary):
 
 def test_binary_auto(X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', objective="log_loss_binary", max_pipelines=5)
+    automl = AutoMLSearch(problem_type='binary', objective="Log Loss Binary", max_pipelines=5)
     automl.search(X, y)
 
     best_pipeline = automl.best_pipeline
@@ -118,7 +119,7 @@ def test_multi_auto(X_y_multi):
     y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    expected_additional_objectives = get_objectives('multiclass')
+    expected_additional_objectives = [obj() for obj in get_objectives('multiclass') if obj not in automl._objectives_not_allowed_in_automl]
     objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
     expected_additional_objectives.remove(objective_in_additional_objectives)
 
@@ -127,16 +128,16 @@ def test_multi_auto(X_y_multi):
 
 
 def test_multi_objective(X_y_multi):
-    automl = AutoMLSearch(problem_type='binary', objective="log_loss_binary")
+    automl = AutoMLSearch(problem_type='binary', objective="Log Loss Binary")
     assert automl.problem_type == ProblemTypes.BINARY
 
-    automl = AutoMLSearch(problem_type='multiclass', objective="log_loss_multi")
+    automl = AutoMLSearch(problem_type='multiclass', objective="Log Loss Multiclass")
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoMLSearch(problem_type='multiclass', objective='auc_micro')
+    automl = AutoMLSearch(problem_type='multiclass', objective='AUC Micro')
     assert automl.problem_type == ProblemTypes.MULTICLASS
 
-    automl = AutoMLSearch(problem_type='binary', objective='auc')
+    automl = AutoMLSearch(problem_type='binary', objective='AUC')
     assert automl.problem_type == ProblemTypes.BINARY
 
     automl = AutoMLSearch(problem_type='multiclass')
