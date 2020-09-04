@@ -837,7 +837,17 @@ def test_hyperparameters_override():
 
 
 def test_hyperparameters_none(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
+
+        def fit(self, X, y):
+            return self
 
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
