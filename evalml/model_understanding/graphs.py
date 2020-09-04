@@ -386,7 +386,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},
