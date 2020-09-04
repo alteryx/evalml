@@ -846,9 +846,6 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
         def __init__(self, random_state=0):
             super().__init__(parameters={}, component_obj=None, random_state=random_state)
 
-        def fit(self, X, y):
-            return self
-
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
 
