@@ -351,7 +351,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     if objective.problem_type != ProblemTypes.BINARY:
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
     if objective.score_needs_proba:

@@ -677,7 +677,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     cbm = CostBenefitMatrix(true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2)
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        graph_permutation_importance(test_pipeline, X, y, "log loss binary")
         assert len(graph_valid) == 0
     with pytest.warns(None) as graph_valid:
         graph_confusion_matrix(y, y)
@@ -699,7 +699,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(test_pipeline, X, y, "log_loss_binary")
+        graph_permutation_importance(test_pipeline, X, y, "log loss binary")
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
