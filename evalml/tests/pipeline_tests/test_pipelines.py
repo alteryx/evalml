@@ -849,6 +849,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
 
+    assert MockPipelineNone.component_graph == [MockEstimator]
     assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
