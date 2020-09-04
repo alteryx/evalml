@@ -218,8 +218,8 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
-    if hasattr(pipeline, "_classes"):
-        class_names = pipeline._classes
+    if hasattr(pipeline, "classes_"):
+        class_names = pipeline.classes_
 
     table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(),
                     ProblemTypes.BINARY: _BinarySHAPTable(class_names),
