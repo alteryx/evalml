@@ -37,6 +37,10 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
+from evalml.pipelines.components.ensemble import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     allowed_model_families
@@ -1094,3 +1098,17 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
             clf.predict(X)
             mock_predict.assert_called()
     clf.feature_importance
+
+
+def test_stacked_estimator_in_pipeline(X_y_binary):
+    class StackedPipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
+        model_family = ModelFamily.ENSEMBLE
+    X, y = X_y_binary
+    parameters = {
+        "Stacked Ensemble Classifier": {
+        "estimators": [RandomForestClassifier()],
+        "final_estimator": RandomForestClassifier(),
+        }
+    }
+    sp = StackedPipeline(parameters)

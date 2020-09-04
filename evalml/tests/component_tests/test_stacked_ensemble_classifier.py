@@ -65,6 +65,15 @@ def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, probl
     assert y_pred_proba.shape == (len(y), num_classes)
     assert not np.isnan(y_pred).all().all()
 
+    clf = StackedEnsembleClassifier(stackable_classifiers, final_estimator=RandomForestClassifier(), random_state=2)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    assert len(y_pred) == len(y)
+    assert not np.isnan(y_pred).all()
+    y_pred_proba = clf.predict_proba(X)
+    assert y_pred_proba.shape == (len(y), num_classes)
+    assert not np.isnan(y_pred).all().all()
+
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_stacked_feature_importance_rf(X_y_binary, X_y_multi, stackable_classifiers, problem_type):

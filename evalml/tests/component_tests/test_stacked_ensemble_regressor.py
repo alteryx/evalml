@@ -54,6 +54,12 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     assert len(y_pred) == len(y)
     assert not np.isnan(y_pred).all()
 
+    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    assert len(y_pred) == len(y)
+    assert not np.isnan(y_pred).all()
+
 
 def test_stacked_feature_importance(X_y_regression, stackable_regressors):
     X, y = X_y_regression
