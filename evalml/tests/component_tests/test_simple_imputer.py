@@ -203,3 +203,29 @@ def test_simple_imputer_resets_index():
                                   pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
                                                dtype=float,
                                                index=list(range(0, 9))))
+
+
+def test_simple_imputer_with_none():
+    X = pd.DataFrame({"int with None": [1, 0, 5, None],
+                      "float with None": [0.1, 0.0, 0.5, None],
+                      "all None": [None, None, None, None]})
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = SimpleImputer(impute_strategy="mean")
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({"int with None": [1, 0, 5, 2],
+                             "float with None": [0.1, 0.0, 0.5, 0.2]})
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    X = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", None], dtype='category'),
+                      "boolean with None": [True, None, False, True],
+                      "object with None": ["b", "a", "a", None],
+                      "all None": [None, None, None, None]})
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = SimpleImputer()
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", "a"], dtype='category'),
+                             "boolean with None": [True, True, False, True],
+                             "object with None": ["b", "a", "a", "a"]})
+    assert_frame_equal(transformed, expected, check_dtype=False)

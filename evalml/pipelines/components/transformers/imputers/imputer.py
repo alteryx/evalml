@@ -52,7 +52,8 @@ class Imputer(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits imputer to data
+        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
+            treated as the same.
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]

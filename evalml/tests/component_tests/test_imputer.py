@@ -263,3 +263,26 @@ def test_imputer_no_nans(imputer_test_data):
                       categorical_fill_value="fill", numeric_fill_value=-1)
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_with_none():
+    X = pd.DataFrame({"int with None": [1, 0, 5, None],
+                      "float with None": [0.1, 0.0, 0.5, None],
+                      "category with None": pd.Series(["b", "a", "a", None], dtype='category'),
+                      "boolean with None": [True, None, False, True],
+                      "object with None": ["b", "a", "a", None],
+                      "all None": [None, None, None, None]})
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = Imputer()
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({"int with None": [1, 0, 5, 2],
+                             "float with None": [0.1, 0.0, 0.5, 0.2],
+                             "category with None": pd.Series(["b", "a", "a", "a"], dtype='category'),
+                             "boolean with None": [True, True, False, True],
+                             "object with None": ["b", "a", "a", "a"]})
+    assert_frame_equal(transformed, expected, check_dtype=False)
+
+    imputer = Imputer()
+    transformed = imputer.fit_transform(X, y)
+    assert_frame_equal(transformed, expected, check_dtype=False)

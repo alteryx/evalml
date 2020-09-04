@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
@@ -41,6 +42,9 @@ class SimpleImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
+        # Convert None to np.nan, since None cannot be properly handled
+        X = X.fillna(value=np.nan)
+
         self._component_obj.fit(X, y)
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
@@ -56,6 +60,8 @@ class SimpleImputer(Transformer):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
+        # Convert None to np.nan, since None cannot be properly handled
+        X = X.fillna(value=np.nan)
 
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
