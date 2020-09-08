@@ -25,7 +25,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> threshold = 0.10
             >>> target_check = ClassImbalanceDataCheck()
-            >>> assert target_check.validate(X, y, threshold) == [DataCheckWarning("Label 0 makes up 9.09% of the target data, which is below the recommended threshold of 10%", "ClassImbalanceDataCheck")]
+            >>> assert target_check.validate(X, y, threshold) == [DataCheckWarning("Label '0' makes up 9.09% of the target data, which is below the recommended threshold of 10%", "ClassImbalanceDataCheck")]
         """
         if threshold <= 0 or threshold > 0.5:
             raise ValueError("Provided threshold {} is not within the range (0, 0.5]".format(threshold))
