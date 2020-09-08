@@ -6,7 +6,7 @@ class SearchIterationPlot():
         self._go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
         if jupyter_check():
-            import_or_raise("ipywidget", warning=True)
+            import_or_raise("ipywidgets", warning=True)
 
         self.data = data
         self.best_score_by_iter_fig = None
