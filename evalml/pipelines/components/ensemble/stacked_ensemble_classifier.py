@@ -7,11 +7,11 @@ from evalml.problem_types import ProblemTypes
 
 
 class StackedEnsembleClassifier(EnsembleBase):
-
     """Stacked Ensemble Classifier."""
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    hyperparameter_ranges = {}
 
     def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
         if 'estimators' not in kwargs:

@@ -11,6 +11,7 @@ class StackedEnsembleRegressor(EnsembleBase):
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.REGRESSION]
+    hyperparameter_ranges = {}
 
     def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
         if 'estimators' not in kwargs:
