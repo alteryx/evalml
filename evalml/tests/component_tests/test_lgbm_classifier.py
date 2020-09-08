@@ -258,3 +258,37 @@ def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
     assert_frame_equal(X2_predict_expected, mock_predict.call_args[0][0])
     clf.predict_proba(X2_predict)
     assert_frame_equal(X2_predict_expected, mock_predict_proba.call_args[0][0])
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
+    X, y = X_y_multi
+    y = pd.Series(y)
+    y1 = pd.Series(y.copy().replace({0: "alright", 1: "better", 2: "great"}))
+
+    clf = LightGBMClassifier()
+    clf.fit(X, y1)
+    y_arg = mock_fit.call_args[0][1]
+    assert_frame_equal(y_arg, y1)
+
+    preds = clf.predict(X)
+    print(preds)
+
+
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
+@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
+    X, y = X_y_binary
+    y = pd.Series(y)
+    y1 = pd.Series(y.copy().replace({0: "no", 1: "yes"}))
+
+    clf = LightGBMClassifier()
+    clf.fit(X, y1)
+    print(mock_fit.call_args[0][1])
+    y_arg = mock_fit.call_args[0][1]
+    assert_frame_equal(y_arg, y)
+
+    preds = clf.predict(X)
+    print(preds.return_value())
+    print(preds)
