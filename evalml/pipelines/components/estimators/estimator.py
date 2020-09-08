@@ -69,3 +69,15 @@ class Estimator(ComponentBase):
             return self._component_obj.feature_importances_
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
+
+    def get_params(self, deep=False):
+        """
+        """
+        return self.parameters
+
+    @property
+    def classes_(self):
+        try:
+            return self._component_obj.classes_
+        except AttributeError:
+            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")

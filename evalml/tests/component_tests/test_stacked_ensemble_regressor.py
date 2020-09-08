@@ -1,4 +1,6 @@
 
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
@@ -67,12 +69,12 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_feature_importance(X_y_regression, stackable_regressors):
+@patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
+def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
     X, y = X_y_regression
     clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=None, random_state=2)
     clf.fit(X, y)
-    assert not np.isnan(clf.feature_importance).all().all()
-
-    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
-    clf.fit(X, y)
-    assert not np.isnan(clf.feature_importance).all().all()
+    mock_fit.assert_called()
+    clf._is_fitted = True
+    with pytest.raises(NotImplementedError, match="feature_importance is not implemented for StackedEnsembleRegressor"):
+        clf.feature_importance

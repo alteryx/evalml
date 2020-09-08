@@ -1,4 +1,6 @@
 
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
@@ -82,15 +84,16 @@ def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, probl
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_stacked_feature_importance_rf(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
+@patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier.fit')
+def test_stacked_feature_importance(mock_fit, X_y_binary, X_y_multi, stackable_classifiers, problem_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
+
     clf = StackedEnsembleClassifier(estimators=stackable_classifiers, final_estimator=None, random_state=2)
     clf.fit(X, y)
-    assert not np.isnan(clf.feature_importance).all().all()
-
-    clf = StackedEnsembleClassifier(estimators=stackable_classifiers, final_estimator=RandomForestClassifier(), random_state=2)
-    clf.fit(X, y)
-    assert not np.isnan(clf.feature_importance).all().all()
+    mock_fit.assert_called()
+    clf._is_fitted = True
+    with pytest.raises(NotImplementedError, match="feature_importance is not implemented for StackedEnsembleClassifier"):
+        clf.feature_importance
