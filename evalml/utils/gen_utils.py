@@ -5,7 +5,10 @@ from collections import namedtuple
 import numpy as np
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import (
+    EnsembleMissingEstimatorsError,
+    MissingComponentError
+)
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -184,7 +187,8 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')
-
+        except EnsembleMissingEstimatorsError:
+            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 

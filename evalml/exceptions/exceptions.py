@@ -38,6 +38,11 @@ class AutoMLSearchException(Exception):
     pass
 
 
+class EnsembleMissingEstimatorsError(Exception):
+    """Exception to ensemble is missing estimators list as a parameter."""
+    pass
+
+
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 

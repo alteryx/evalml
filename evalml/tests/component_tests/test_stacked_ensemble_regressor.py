@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 
+from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import RandomForestRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
@@ -18,9 +19,14 @@ def test_stacked_model_family():
     assert StackedEnsembleRegressor.model_family == ModelFamily.ENSEMBLE
 
 
+def test_stacked_ensemble_init_without_estimators_kwarg(stackable_regressors):
+    with pytest.raises(EnsembleMissingEstimatorsError):
+        StackedEnsembleRegressor()
+
+
 def test_stacked_ensemble_init_with_multiple_same_estimators(stackable_regressors):
     # Checks that it is okay to pass multiple of the same type of estimator
-    clf = StackedEnsembleRegressor(stackable_regressors + stackable_regressors, final_estimator=None, random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors + stackable_regressors, final_estimator=None, random_state=2)
     expected_parameters = {
         "estimators": stackable_regressors + stackable_regressors,
         "final_estimator": None,
@@ -31,7 +37,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(stackable_regressor
 
 
 def test_stacked_ensemble_parameters(stackable_regressors):
-    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=None, random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=None, random_state=2)
     expected_parameters = {
         "estimators": stackable_regressors,
         "final_estimator": None,
@@ -48,13 +54,13 @@ def test_stacked_problem_types():
 
 def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=None, random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=None, random_state=2)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
     assert not np.isnan(y_pred).all()
 
-    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
@@ -63,10 +69,10 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
 
 def test_stacked_feature_importance(X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=None, random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=None, random_state=2)
     clf.fit(X, y)
     assert not np.isnan(clf.feature_importance).all().all()
 
-    clf = StackedEnsembleRegressor(stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
+    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=RandomForestRegressor(), random_state=2)
     clf.fit(X, y)
     assert not np.isnan(clf.feature_importance).all().all()

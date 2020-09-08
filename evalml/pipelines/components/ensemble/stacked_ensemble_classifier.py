@@ -1,5 +1,6 @@
 from sklearn.ensemble import StackingClassifier
 
+from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
 from evalml.pipelines.components.ensemble import EnsembleBase
@@ -13,7 +14,10 @@ class StackedEnsembleClassifier(EnsembleBase):
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, estimators, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
+    def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
+        if 'estimators' not in kwargs:
+            raise EnsembleMissingEstimatorsError("Must pass in estimators keyword argument")
+        estimators = kwargs.get('estimators')
         parameters = {
             "estimators": estimators,
             "final_estimator": final_estimator,
