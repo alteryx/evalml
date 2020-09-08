@@ -131,12 +131,14 @@ class OneHotEncoder(CategoricalEncoder):
         for col in X.columns:
             if col not in cat_cols:
                 X_t = pd.concat([X_t, X[col]], axis=1)
+        # The call to pd.concat below changes the type of the index. We call reindex in order to keep it the same.
+        X_t = X_t.reindex(X.index)
 
         # Call sklearn's transform on the categorical columns
         if len(cat_cols) > 0:
-            X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray())
+            X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray(), index=X_t.index)
             cat_cols_str = [str(c) for c in cat_cols]
             X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
-            X_t = pd.concat([X_t.reindex(X_cat.index), X_cat], axis=1)
+            X_t = pd.concat([X_t, X_cat], axis=1)
 
         return X_t
