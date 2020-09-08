@@ -430,8 +430,10 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             pipeline.estimator._estimator_type = "regressor"
             # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
             pipeline.estimator.feature_importances_ = pipeline.feature_importance
+        X = pipeline._transform(X)
         avg_pred, values = sk_partial_dependence(pipeline.estimator, X=X, features=[feature], grid_resolution=grid_resolution)
     else:
+        X = pipeline._transform(X)
         avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
