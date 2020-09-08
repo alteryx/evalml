@@ -272,8 +272,7 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     y_arg = mock_fit.call_args[0][1]
     assert_frame_equal(y_arg, y1)
 
-    preds = clf.predict(X)
-    print(preds)
+    clf.predict(X)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
@@ -289,6 +288,6 @@ def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     y_arg = mock_fit.call_args[0][1]
     assert_frame_equal(y_arg, y)
 
-    preds = clf.predict(X)
-    print(preds.return_value())
-    print(preds)
+    clf.predict(X)
+    # print(preds.return_value())
+    # print(preds)
