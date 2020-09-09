@@ -11,6 +11,7 @@ import pytest
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
+    EnsembleMissingEstimatorsError,
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
@@ -35,6 +36,10 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer,
     XGBoostClassifier
+)
+from evalml.pipelines.components.ensemble import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 from evalml.pipelines.components.utils import (
     _all_estimators,
@@ -353,7 +358,11 @@ def test_component_parameters_getter(test_classes):
 def test_component_parameters_init():
     for component_class in all_components():
         print('Testing component {}'.format(component_class.name))
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingEstimatorsError:
+            component = component_class(estimators=[])
+
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -403,7 +412,10 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingEstimatorsError:
+            continue
         if component._component_obj is None:
             continue
 
@@ -516,13 +528,12 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters(cls):
-
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters_raise_no_warnings(cls):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -701,7 +712,8 @@ def test_all_transformers_check_fit(X_y_binary):
 
 def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in _all_estimators() + [test_estimator_needs_fitting_false]:
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
@@ -742,8 +754,14 @@ def test_serialization(X_y_binary, tmpdir):
 
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
+        try:
+            component = component_class()
+        except EnsembleMissingEstimatorsError:
+            if (component_class == StackedEnsembleClassifier):
+                component = component_class(estimators=[RandomForestClassifier(random_state=0)])
+            elif (component_class == StackedEnsembleRegressor):
+                component = component_class(estimators=[RandomForestRegressor(random_state=0)])
 
-        component = component_class()
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
