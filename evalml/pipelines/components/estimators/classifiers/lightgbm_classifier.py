@@ -2,7 +2,7 @@ import copy
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
