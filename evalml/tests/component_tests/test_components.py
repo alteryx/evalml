@@ -751,26 +751,38 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
-
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
         try:
             component = component_class()
         except EnsembleMissingEstimatorsError:
             if (component_class == StackedEnsembleClassifier):
-                component = component_class(estimators=[RandomForestClassifier(random_state=0)])
+                component = component_class(estimators=[RandomForestClassifier(n_estimators=2)])
             elif (component_class == StackedEnsembleRegressor):
-                component = component_class(estimators=[RandomForestRegressor(random_state=0)])
+                component = component_class(estimators=[RandomForestRegressor(n_estimators=2)])
 
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
             component.save(path, pickle_protocol=pickle_protocol)
             loaded_component = ComponentBase.load(path)
-            assert component.parameters == loaded_component.parameters
-            assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
-            if issubclass(component_class, Estimator):
-                assert (component.feature_importance == loaded_component.feature_importance).all()
+            if isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor):
+                # test all parameters except "estimators"
+                params_without_estimators = {key: value for key, value in component.parameters.items() if key != "estimators"}
+                loaded_params_without_estimators = {key: value for key, value in loaded_component.parameters.items() if key != "estimators"}
+                assert params_without_estimators == loaded_params_without_estimators
+                estimators = component.parameters['estimators']
+                loaded_estimators = loaded_component.parameters['estimators']
+                # test equality for each estimator in estimators
+                for est, loaded_est in zip(estimators, loaded_estimators):
+                    assert est.parameters == loaded_est.parameters
+                    assert est.describe(return_dict=True) == loaded_est.describe(return_dict=True)
+
+            else:
+                assert component.parameters == loaded_component.parameters
+                assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
+                if issubclass(component_class, Estimator):
+                    assert (component.feature_importance == loaded_component.feature_importance).all()
 
 
 @patch('cloudpickle.dump')
