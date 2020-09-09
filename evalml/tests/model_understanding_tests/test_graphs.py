@@ -582,9 +582,9 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
     assert not part_dep.isnull().all().all()
 
 
-def test_partial_dependence_with_non_numeric_columns(X_y_categorical_regression, linear_regression_pipeline_class):
-    X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'a'], 'also string': ['c', 'b', 'a']})
-    y = [0, 0.2, 1.4]
+def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
+    X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+    y = [0, 0.2, 1.4, 1]
     pipeline = linear_regression_pipeline_class(parameters={})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature='numeric')
