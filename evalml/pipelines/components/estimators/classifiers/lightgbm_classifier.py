@@ -70,19 +70,16 @@ class LightGBMClassifier(Estimator):
         X2[cat_cols] = X2[cat_cols].astype('category')
         return X2
 
-    def _encode_labels(self, y, fit=False):
+    def _encode_labels(self, y):
         y1 = pd.Series(y)
         if y1.nunique() <= 2:
-            if fit:
-                self._label_encoder = LabelEncoder()
-                y1 = self._label_encoder.fit_transform(y1)
-            else:
-                y1 = self._label_encoder.transform(y1)
+            self._label_encoder = LabelEncoder()
+            y1 = self._label_encoder.fit_transform(y1)
         return pd.Series(y1)
 
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
-        y2 = self._encode_labels(y, fit=True)
+        y2 = self._encode_labels(y)
         return super().fit(X2, y2)
 
     def predict(self, X):

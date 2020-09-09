@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-from pandas._testing import assert_frame_equal
+from pandas._testing import assert_frame_equal, assert_series_equal
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -270,7 +270,7 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     clf = LightGBMClassifier()
     clf.fit(X, y1)
     y_arg = mock_fit.call_args[0][1]
-    assert_frame_equal(y_arg, y1)
+    assert_series_equal(y_arg, y1)
 
     clf.predict(X)
 
@@ -284,10 +284,7 @@ def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
 
     clf = LightGBMClassifier()
     clf.fit(X, y1)
-    print(mock_fit.call_args[0][1])
     y_arg = mock_fit.call_args[0][1]
-    assert_frame_equal(y_arg, y)
+    assert_series_equal(y_arg, y)
 
     clf.predict(X)
-    # print(preds.return_value())
-    # print(preds)
