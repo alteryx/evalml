@@ -14,7 +14,11 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.components import Estimator
+from evalml.pipelines.components import (
+    Estimator,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
@@ -39,7 +43,7 @@ def create_mock_pipeline(estimator, problem_type):
 @pytest.fixture
 def all_pipeline_classes():
     all_possible_pipeline_classes = []
-    for estimator in _all_estimators():
+    for estimator in [estimator for estimator in _all_estimators() if estimator != StackedEnsembleClassifier and estimator != StackedEnsembleRegressor]:
         for problem_type in estimator.supported_problem_types:
             all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
     return all_possible_pipeline_classes
