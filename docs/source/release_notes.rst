@@ -8,6 +8,7 @@ Release Notes
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
         * Added label encoder to lightGBM for binary classification :pr:`1152`
         * Added labels for the row index of confusion matrix :pr: `1154`
+        * Added labels for the row index of confusion matrix :pr:`1154`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
