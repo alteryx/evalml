@@ -40,7 +40,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
 
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
-    conf_mat = pd.DataFrame(conf_mat, columns=labels)
+    conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
     if normalize_method is not None:
         return normalize_confusion_matrix(conf_mat, normalize_method=normalize_method)
     return conf_mat
