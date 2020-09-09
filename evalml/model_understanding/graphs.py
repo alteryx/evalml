@@ -269,7 +269,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     Returns:
         Mean feature importance scores over 5 shuffles.
     """
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     if objective.problem_type != pipeline.problem_type:
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
@@ -351,7 +351,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     if objective.problem_type != ProblemTypes.BINARY:
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
     if objective.score_needs_proba:
@@ -386,7 +386,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
     title = f'{objective.name} Scores vs. Thresholds'
     layout = _go.Layout(title={'text': title},

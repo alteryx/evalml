@@ -43,4 +43,4 @@ from .standard_metrics import (
     RecallMicro,
     RecallWeighted
 )
-from .utils import get_objective, get_objectives
+from .utils import get_objective, get_objectives, print_all_objective_names

@@ -49,6 +49,6 @@ class RegressionPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objectives = [get_objective(o) for o in objectives]
+        objectives = [get_objective(o, return_instance=True) for o in objectives]
         y_predicted = self.predict(X)
         return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)

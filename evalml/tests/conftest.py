@@ -6,7 +6,9 @@ import pytest
 from sklearn import datasets
 from skopt.space import Integer, Real
 
+from evalml.automl import AutoMLSearch
 from evalml.model_family import ModelFamily
+from evalml.objectives.utils import get_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -15,6 +17,8 @@ from evalml.pipelines import (
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
+
+_not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
 
 
 def create_mock_pipeline(estimator, problem_type):
@@ -256,3 +260,18 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
     return LinearRegressionPipeline
+
+
+@pytest.fixture
+def binary_objectives_allowed_in_automl():
+    return [obj() for obj in get_objectives(ProblemTypes.BINARY) if obj not in _not_allowed_in_automl]
+
+
+@pytest.fixture
+def multiclass_objectives_allowed_in_automl():
+    return [obj() for obj in get_objectives(ProblemTypes.MULTICLASS) if obj not in _not_allowed_in_automl]
+
+
+@pytest.fixture
+def regression_objectives_allowed_in_automl():
+    return [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]

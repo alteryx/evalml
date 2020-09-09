@@ -5,9 +5,12 @@ Release Notes
     * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
+        * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
+        * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
+        * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
@@ -16,6 +19,16 @@ Release Notes
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
         * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
+
+.. warning::
+
+    **Breaking Changes**
+        * `get_objective` will now return a class definition rather than an instance by default :pr:`1132`
+        * Deleted `OPTIONS` dictionary in `evalml.objectives.utils.py` :pr:`1132`
+        * If specifying an objective by string, the string must now match the objective's name field, case-insensitive :pr:`1132`
+        * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
+            "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
+            rather than an `ObjectiveNotFoundError` :pr:`1132`
 
 
 **v0.13.1 Aug. 25, 2020**
