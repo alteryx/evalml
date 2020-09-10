@@ -39,7 +39,7 @@ class AutoMLSearchException(Exception):
 
 
 class EnsembleMissingEstimatorsError(Exception):
-    """Exception to ensemble is missing estimators list as a parameter."""
+    """An exception raised when an ensemble is missing `estimators` (list) as a parameter."""
     pass
 
 

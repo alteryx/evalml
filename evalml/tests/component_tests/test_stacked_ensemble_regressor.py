@@ -22,7 +22,7 @@ def test_stacked_model_family():
 
 
 def test_stacked_ensemble_init_without_estimators_kwarg(stackable_regressors):
-    with pytest.raises(EnsembleMissingEstimatorsError):
+    with pytest.raises(EnsembleMissingEstimatorsError, match='must be passed to the constructor as a keyword argument'):
         StackedEnsembleRegressor()
 
 

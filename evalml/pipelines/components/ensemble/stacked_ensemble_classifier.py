@@ -15,7 +15,7 @@ class StackedEnsembleClassifier(EnsembleBase):
 
     def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
         if 'estimators' not in kwargs:
-            raise EnsembleMissingEstimatorsError("Must pass in estimators keyword argument")
+            raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
         estimators = kwargs.get('estimators')
         parameters = {
             "estimators": estimators,
