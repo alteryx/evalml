@@ -40,7 +40,7 @@ class FraudCost(BinaryClassificationObjective):
             threshold (float): Dollar threshold to determine if transaction is fraud
 
         Returns:
-            pd.Series: Series of predicted fraud labels using X and threshold
+            pd.Series: pd.Series of predicted fraud labels using X and threshold
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -60,7 +60,7 @@ class FraudCost(BinaryClassificationObjective):
             X (pd.DataFrame): pd.Dataframe with transaction amounts
 
         Returns:
-            float: amount lost to fraud per transaction
+            float: Amount lost to fraud per transaction
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

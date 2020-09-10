@@ -32,7 +32,7 @@ class LabelLeakageDataCheck(DataCheck):
             y (pd.Series): The target data
 
         Returns:
-            list (DataCheckWarning): list with a DataCheckWarning if there is label leakage detected.
+            list (DataCheckWarning): List with a DataCheckWarning if there is label leakage detected.
 
         Example:
             >>> X = pd.DataFrame({

@@ -323,7 +323,7 @@ class AutoMLSearch:
     def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
         """Presents a prompt to the user asking if they want to stop the search.
 
-        Args:
+        Arguments:
             pipeline (PipelineBase): Current pipeline in the search.
             current_batch_pipelines (list): Other pipelines in the batch.
 

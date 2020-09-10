@@ -50,7 +50,7 @@ class NoVarianceDataCheck(DataCheck):
             y (pd.Series): The target data.
 
         Returns:
-            list (DataCheckWarning or DataCheckError), list of warnings/errors corresponding to features or target with no variance.
+            list (DataCheckWarning or DataCheckError): List of warnings/errors corresponding to features or target with no variance.
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

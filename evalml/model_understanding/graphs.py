@@ -442,14 +442,14 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
 
     Returns:
-        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
 
     """

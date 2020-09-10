@@ -9,6 +9,6 @@ class CategoricalEncoder(Transformer):
         """Returns names of transformed and added columns
 
         Returns:
-            list: list of feature names not including dropped features
+            list: List of feature names, not including dropped features
         """
         return self._component_obj.feature_names
