@@ -76,8 +76,6 @@ class LightGBMClassifier(Estimator):
         if y1.dtype != np.dtype('int64'):
             self._label_encoder = LabelEncoder()
             y1 = pd.Series(self._label_encoder.fit_transform(y1))
-        else:
-            self._label_encoder = None
         return y1
 
     def fit(self, X, y=None):
@@ -88,7 +86,7 @@ class LightGBMClassifier(Estimator):
     def predict(self, X):
         X2 = self._encode_categories(X)
         predictions = super().predict(X2)
-        if self._label_encoder is not None:
+        if self._label_encoder:
             predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return predictions
 
