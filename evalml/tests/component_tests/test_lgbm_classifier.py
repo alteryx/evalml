@@ -279,7 +279,7 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     X, y = X_y_binary
-    y_numeric = pd.Series(y)
+    y_numeric = pd.Series(y, dtype='int64')
     y_alpha = pd.Series(y_numeric.copy().replace({0: "no", 1: "yes"}))
 
     clf = LightGBMClassifier()

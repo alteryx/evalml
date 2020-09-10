@@ -76,7 +76,7 @@ class LightGBMClassifier(Estimator):
         # change only if dtype isn't int
         if not is_integer_dtype(y1):
             self._label_encoder = LabelEncoder()
-            y1 = pd.Series(self._label_encoder.fit_transform(y1))
+            y1 = pd.Series(self._label_encoder.fit_transform(y1), dtype='int64')
         return y1
 
     def fit(self, X, y=None):
