@@ -1096,17 +1096,47 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
     clf.feature_importance
 
 
-def test_stacked_estimator_in_pipeline(X_y_binary):
-    class StackedPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
-        model_family = ModelFamily.ENSEMBLE
-    X, y = X_y_binary
-    parameters = {
-        "Stacked Ensemble Classifier": {
-            "estimators": [RandomForestClassifier()],
-            "final_estimator": RandomForestClassifier(),
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+
+        class StackedPipeline(BinaryClassificationPipeline):
+            component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
+            model_family = ModelFamily.ENSEMBLE
+        parameters = {
+            "Stacked Ensemble Classifier": {
+                "estimators": [RandomForestClassifier()],
+                "final_estimator": RandomForestClassifier(),
+            }
         }
-    }
-    sp = StackedPipeline(parameters)
-    sp.fit(X, y)
-    sp.predict_proba(X)
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+
+        class StackedPipeline(MulticlassClassificationPipeline):
+            component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
+            model_family = ModelFamily.ENSEMBLE
+        parameters = {
+            "Stacked Ensemble Classifier": {
+                "estimators": [RandomForestClassifier()],
+                "final_estimator": RandomForestClassifier(),
+            }
+        }
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+        class StackedPipeline(RegressionPipeline):
+            component_graph = ['Simple Imputer', 'Stacked Ensemble Regressor']
+            model_family = ModelFamily.ENSEMBLE
+        parameters = {
+            "Stacked Ensemble Regressor": {
+                "estimators": [RandomForestRegressor()],
+                "final_estimator": RandomForestRegressor(),
+            }
+        }
+    pipeline = StackedPipeline(parameters)
+    pipeline.fit(X, y)
+    assert not np.isnan(pipeline.predict(X)).values.any()
+
+    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
+        assert not np.isnan(pipeline.predict_proba(X)).values.any()
