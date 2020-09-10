@@ -72,10 +72,13 @@ class LightGBMClassifier(Estimator):
 
     def _encode_labels(self, y):
         y1 = pd.Series(y)
-        if y1.nunique() <= 2:
+        # change only if dtype isn't int
+        if y1.dtype != np.dtype('int64'):
             self._label_encoder = LabelEncoder()
-            y1 = self._label_encoder.fit_transform(y1)
-        return pd.Series(y1)
+            y1 = pd.Series(self._label_encoder.fit_transform(y1))
+        else:
+            self._label_encoder = None
+        return y1
 
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
@@ -85,9 +88,9 @@ class LightGBMClassifier(Estimator):
     def predict(self, X):
         X2 = self._encode_categories(X)
         predictions = super().predict(X2)
-        if self._label_encoder:
-            predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
-        return pd.Series(predictions)
+        if self._label_encoder is not None:
+            predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
+        return predictions
 
     def predict_proba(self, X):
         X2 = self._encode_categories(X)

@@ -270,7 +270,7 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     clf = LightGBMClassifier()
     clf.fit(X, y1)
     y_arg = mock_fit.call_args[0][1]
-    assert_series_equal(y_arg, y1)
+    assert_series_equal(y_arg, y)
 
     clf.predict(X)
 
