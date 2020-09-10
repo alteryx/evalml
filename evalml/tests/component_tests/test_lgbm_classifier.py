@@ -288,3 +288,10 @@ def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     assert_series_equal(y_arg, y_numeric)
 
     clf.predict(X)
+
+    y_float = pd.Series(y_numeric.copy().replace({0: 0.99, 1: 1.01}))
+    clf.fit(X, y_float)
+    y_arg = mock_fit.call_args[0][1]
+    assert_series_equal(y_arg, y_numeric)
+
+    clf.predict(X)

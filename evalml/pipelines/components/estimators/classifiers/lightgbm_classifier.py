@@ -2,6 +2,7 @@ import copy
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from skopt.space import Integer, Real
 
@@ -73,7 +74,7 @@ class LightGBMClassifier(Estimator):
     def _encode_labels(self, y):
         y1 = pd.Series(y)
         # change only if dtype isn't int
-        if y1.dtype != np.dtype('int64'):
+        if not is_integer_dtype(y1):
             self._label_encoder = LabelEncoder()
             y1 = pd.Series(self._label_encoder.fit_transform(y1))
         return y1
