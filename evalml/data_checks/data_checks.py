@@ -24,7 +24,7 @@ class DataChecks:
 
         Arguments:
             X (pd.DataFrame): the input data of shape [n_samples, n_features]
-            y (pd.Series): the target labels of length [n_samples]
+            y (pd.Series): the target data of length [n_samples]
 
         Returns:
             list (DataCheckMessage): list containing DataCheckMessage objects

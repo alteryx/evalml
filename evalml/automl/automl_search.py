@@ -352,7 +352,7 @@ class AutoMLSearch:
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training labels of length [n_samples]
+            y (pd.Series): the target training data of length [n_samples]
 
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
@@ -550,7 +550,7 @@ class AutoMLSearch:
 
         Arguments:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
-            y (pd.Series): the target training labels of length [n_samples]
+            y (pd.Series): the target training data of length [n_samples]
 
         Returns:
             bool - If the user ends the search early, will return True and searching will immediately finish. Else,
@@ -792,7 +792,7 @@ class AutoMLSearch:
 
             X (pd.DataFrame): the input training data of shape [n_samples, n_features].
 
-            y (pd.Series): the target training labels of length [n_samples].
+            y (pd.Series): the target training data of length [n_samples].
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

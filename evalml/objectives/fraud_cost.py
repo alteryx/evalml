@@ -55,9 +55,9 @@ class FraudCost(BinaryClassificationObjective):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
         Arguments:
-            y_predicted (pd.Series): predicted fraud labels
-             y_true (pd.Series): true fraud labels
-            X (pd.DataFrame): dataframe with transaction amounts
+            y_predicted (pd.Series): Predicted fraud labels
+             y_true (pd.Series): True fraud labels
+            X (pd.DataFrame): pd.Dataframe with transaction amounts
 
         Returns:
             float: amount lost to fraud per transaction

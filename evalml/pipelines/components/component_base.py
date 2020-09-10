@@ -81,7 +81,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
+            y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self

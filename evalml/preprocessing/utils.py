@@ -2,26 +2,26 @@ import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 
-def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs):
-    """Load features and labels from file.
+def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
+    """Load features and target from file.
 
     Arguments:
         path (str): Path to file or a http/ftp/s3 URL
         index (str): Column for index
-        label (str): Column for labels
+        target (str): Column for target
         n_rows (int): Number of rows to return
         drop (list): List of columns to drop
-        verbose (bool): If True, prints information about features and labels
+        verbose (bool): If True, prints information about features and target
 
     Returns:
-        pd.DataFrame, pd.Series: features and labels
+        pd.DataFrame, pd.Series: features and target
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
-    labels = [label] + (drop or [])
-    y = feature_matrix[label]
-    X = feature_matrix.drop(columns=labels)
+    targets = [target] + (drop or [])
+    y = feature_matrix[target]
+    X = feature_matrix.drop(columns=targets)
 
     if verbose:
         # number of features
@@ -31,8 +31,8 @@ def load_data(path, index, label, n_rows=None, drop=None, verbose=True, **kwargs
         info = 'Number of training examples: {}'
         print(info.format(len(X)), end='\n')
 
-        # label distribution
-        print(label_distribution(y))
+        # target distribution
+        print(target_distribution(y))
 
     return X, y
 
@@ -42,7 +42,7 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
 
     Arguments:
         X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-        y (pd.Series): labels of length [n_samples]
+        y (pd.Series): Target data of length [n_samples]
         regression (bool): if true, do not use stratified split
         test_size (float): percent of train set to holdout for testing
         random_state (int, np.random.RandomState): seed for the random number generator
@@ -95,17 +95,17 @@ def number_of_features(dtypes):
     return vtypes.sort_index().to_frame('Number of Features')
 
 
-def label_distribution(labels):
-    """Get the label distributions.
+def target_distribution(targets):
+    """Get the target distributions.
 
     Arguments:
-        labels (pd.Series): Label values
+        targets (pd.Series): Target values
 
     Returns:
-        pd.Series: Label values and their frequency distribution as percentages.
+        pd.Series: Target values and their frequency distribution as percentages.
     """
-    distribution = labels.value_counts() / len(labels)
-    return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Labels')
+    distribution = targets.value_counts() / len(targets)
+    return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Targets')
 
 
 def drop_nan_target_rows(X, y):

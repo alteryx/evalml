@@ -10,17 +10,17 @@ from evalml.utils.gen_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """Checks if the target labels contain missing or invalid data."""
+    """Checks if the target data contains missing or invalid values."""
 
     def validate(self, X, y):
-        """Checks if the target labels contain missing or invalid data.
+        """Checks if the target data contains missing or invalid values.
 
         Arguments:
             X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
-            y: Target labels to check for invalid data.
+            y: Target data to check for invalid values.
 
         Returns:
-            list (DataCheckError): list with DataCheckErrors if any invalid data is found in target labels.
+            list (DataCheckError): list with DataCheckErrors if any invalid values are found in the target data.
 
         Example:
             >>> X = pd.DataFrame({})

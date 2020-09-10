@@ -62,7 +62,7 @@ class DateTimeFeaturizer(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
+            y (pd.Series, optional): Ignored.
         Returns:
             pd.DataFrame: Transformed X
         """
