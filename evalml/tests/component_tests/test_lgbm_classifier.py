@@ -264,7 +264,7 @@ def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     X, y = X_y_multi
-    y_numeric = pd.Series(y)
+    y_numeric = pd.Series(y, dtype='int64')
     y_alpha = pd.Series(y_numeric.copy().replace({0: "alright", 1: "better", 2: "great"}))
 
     clf = LightGBMClassifier()
