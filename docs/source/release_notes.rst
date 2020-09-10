@@ -15,6 +15,7 @@ Release Notes
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
+        * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
         * Updated README.md example to load demo dataset :pr:`1151` 
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
     * Testing Changes
