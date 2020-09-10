@@ -421,8 +421,8 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.CATBOOST:
         pipeline.estimator._component_obj._fitted_ = True
-        avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
-    elif pipeline.model_family == ModelFamily.XGBOOST:
+
+    if pipeline.model_family == ModelFamily.XGBOOST:
         if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
             pipeline.estimator._estimator_type = "classifier"
             # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
