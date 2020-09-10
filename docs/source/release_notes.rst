@@ -7,10 +7,12 @@ Release Notes
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
         * Updated partial dependence methods to support non-numeric columns :pr:`1150`
+        * Added label encoder to lightGBM for binary classification :pr:`1152`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
         * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
+        * OneHotEncoder preserves the custom index in the input data :pr:`1146`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
