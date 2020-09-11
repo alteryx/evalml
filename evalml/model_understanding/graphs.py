@@ -31,7 +31,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
-        pd.DataFrame: confusion matrix
+        pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -40,7 +40,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
 
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
-    conf_mat = pd.DataFrame(conf_mat, columns=labels)
+    conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
     if normalize_method is not None:
         return normalize_confusion_matrix(conf_mat, normalize_method=normalize_method)
     return conf_mat
@@ -54,7 +54,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
-        pd.DataFrame: normalized version of the input confusion matrix.
+        pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     with warnings.catch_warnings(record=True) as w:
         if normalize_method == 'true':
