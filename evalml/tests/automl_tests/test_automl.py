@@ -226,7 +226,7 @@ def test_rankings(X_y_binary, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
-    def _dummy_callback(param1, param2):
+    def _dummy_callback(param1, param2, param3):
         return None
 
     X, y = X_y_binary
@@ -861,7 +861,7 @@ class KeyboardInterruptOnKthPipeline:
         self.n_calls = 1
         self.k = k
 
-    def __call__(self, pipeline_class, parameters):
+    def __call__(self, pipeline_class, parameters, automl_obj):
         """Raises KeyboardInterrupt on the kth call.
 
         Arguments are ignored but included to meet the call back API.
