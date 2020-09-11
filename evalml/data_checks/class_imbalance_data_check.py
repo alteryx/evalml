@@ -9,6 +9,7 @@ class ClassImbalanceDataCheck(DataCheck):
 
     def validate(self, X, y, threshold=0.10):
         """Checks if any target labels are imbalanced beyond a threshold for binary and multiclass problems
+        Ignores nan values in target labels if they appear
 
         Arguments:
             X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
@@ -25,7 +26,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> threshold = 0.10
             >>> target_check = ClassImbalanceDataCheck()
-            >>> assert target_check.validate(X, y, threshold) == [DataCheckWarning("Label '0' makes up 9.09% of the target data, which is below the recommended threshold of 10%", "ClassImbalanceDataCheck")]
+            >>> assert target_check.validate(X, y, threshold) == [DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]
         """
         if threshold <= 0 or threshold > 0.5:
             raise ValueError("Provided threshold {} is not within the range (0, 0.5]".format(threshold))
@@ -37,8 +38,6 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold = counts.where(counts < threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
-            warning_msg = "Label '{0:}' makes up {1:.2f}% of the target data, which is below the recommended threshold of {2:.0f}%"
-            for index, value in below_threshold.items():
-                messages.append(DataCheckWarning(warning_msg.format(index, value * 100, threshold * 100), self.name))
-
+            warning_msg = "The following labels fall below {:.0f}% of the target: {}"
+            messages.append(DataCheckWarning(warning_msg.format(threshold * 100, below_threshold.index.tolist()), self.name))
         return messages
