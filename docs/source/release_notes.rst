@@ -7,7 +7,6 @@ Release Notes
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
         * Added label encoder to lightGBM for binary classification :pr:`1152`
-        * Added labels for the row index of confusion matrix :pr: `1154`
         * Added labels for the row index of confusion matrix :pr:`1154`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
