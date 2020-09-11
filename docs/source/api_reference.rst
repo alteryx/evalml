@@ -15,6 +15,7 @@ Demo Datasets
     load_wine
     load_breast_cancer
     load_diabetes
+    load_churn
 
 
 .. currentmodule:: evalml.preprocessing
