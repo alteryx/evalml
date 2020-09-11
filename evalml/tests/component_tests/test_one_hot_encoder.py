@@ -342,3 +342,17 @@ def test_data_types(data_type):
     X_t = encoder.transform(X)
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
+
+
+@pytest.mark.parametrize("index", [list(range(-5, 0)),
+                                   list(range(100, 105)),
+                                   [f"row_{i}" for i in range(5)],
+                                   pd.date_range("2020-09-08", periods=5)])
+def test_ohe_preserves_custom_index(index):
+
+    df = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+                      index=index)
+    ohe = OneHotEncoder()
+    new_df = ohe.fit_transform(df)
+    pd.testing.assert_index_equal(new_df.index, df.index)
+    assert not new_df.isna().any(axis=None)
