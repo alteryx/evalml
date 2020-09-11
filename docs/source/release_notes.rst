@@ -6,6 +6,7 @@ Release Notes
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
+        * Added `ClassImbalanceDataCheck` to determine whether target imbalance falls below a given threshold :pr:`1135`
         * Added label encoder to lightGBM for binary classification :pr:`1152`
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
