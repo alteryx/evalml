@@ -2,7 +2,8 @@ import copy
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder
+from pandas.api.types import is_integer_dtype
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -45,6 +46,7 @@ class LightGBMClassifier(Estimator):
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
         self._ordinal_encoder = None
+        self._label_encoder = None
 
         lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **parameters)
 
@@ -69,13 +71,25 @@ class LightGBMClassifier(Estimator):
         X2[cat_cols] = X2[cat_cols].astype('category')
         return X2
 
+    def _encode_labels(self, y):
+        y1 = pd.Series(y)
+        # change only if dtype isn't int
+        if not is_integer_dtype(y1):
+            self._label_encoder = LabelEncoder()
+            y1 = pd.Series(self._label_encoder.fit_transform(y1), dtype='int64')
+        return y1
+
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
-        return super().fit(X2, y)
+        y2 = self._encode_labels(y)
+        return super().fit(X2, y2)
 
     def predict(self, X):
         X2 = self._encode_categories(X)
-        return super().predict(X2)
+        predictions = super().predict(X2)
+        if self._label_encoder:
+            predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
+        return predictions
 
     def predict_proba(self, X):
         X2 = self._encode_categories(X)
