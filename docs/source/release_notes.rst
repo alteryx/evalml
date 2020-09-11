@@ -7,6 +7,7 @@ Release Notes
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
         * Added label encoder to lightGBM for binary classification :pr:`1152`
+        * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
@@ -32,6 +33,7 @@ Release Notes
         * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
             "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
             rather than an `ObjectiveNotFoundError` :pr:`1132`
+        * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
 
 
 **v0.13.1 Aug. 25, 2020**
