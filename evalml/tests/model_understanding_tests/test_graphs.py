@@ -63,37 +63,21 @@ def test_confusion_matrix(data_type):
     conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     assert isinstance(conf_mat, pd.DataFrame)
-    if data_type == 'pd':
-        labels = [0, 1, 2]
-        assert np.array_equal(conf_mat.index, labels)
-        assert np.array_equal(conf_mat.columns, labels)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
     conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     assert isinstance(conf_mat, pd.DataFrame)
-    if data_type == 'pd':
-        labels = [0, 1, 2]
-        assert np.array_equal(conf_mat.index, labels)
-        assert np.array_equal(conf_mat.columns, labels)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
     conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
     assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
     assert isinstance(conf_mat, pd.DataFrame)
-    if data_type == 'pd':
-        labels = [0, 1, 2]
-        assert np.array_equal(conf_mat.index, labels)
-        assert np.array_equal(conf_mat.columns, labels)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
     conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
     assert np.array_equal(conf_mat_expected, conf_mat)
     assert isinstance(conf_mat, pd.DataFrame)
-    if data_type == 'pd':
-        labels = [0, 1, 2]
-        assert np.array_equal(conf_mat.index, labels)
-        assert np.array_equal(conf_mat.columns, labels)
 
     with pytest.raises(ValueError, match='Invalid value provided'):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
@@ -147,6 +131,55 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'pred')
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd'])
+def test_confusion_matrix_labels(data_type):
+    def convert_pd(y_true, y_pred):
+        if data_type == 'pd':
+            y_true = pd.Series(y_true)
+            y_pred = pd.Series(y_pred)
+        return y_true, y_pred
+
+    y_true = [True, False, True, True, False, False]
+    y_pred = [False, False, True, True, False, False]
+    y_true, y_pred = convert_pd(y_true, y_pred)
+    conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
+    labels = [False, True]
+    assert np.array_equal(conf_mat.index, labels)
+    assert np.array_equal(conf_mat.columns, labels)
+
+    y_true = [0, 1, 0, 1, 0, 1]
+    y_pred = [0, 1, 1, 1, 1, 1]
+    y_true, y_pred = convert_pd(y_true, y_pred)
+    conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
+    labels = [0, 1]
+    assert np.array_equal(conf_mat.index, labels)
+    assert np.array_equal(conf_mat.columns, labels)
+
+    y_true = ['blue', 'red', 'blue', 'red']
+    y_pred = ['blue', 'red', 'red', 'red']
+    y_true, y_pred = convert_pd(y_true, y_pred)
+    conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
+    labels = ['blue', 'red']
+    assert np.array_equal(conf_mat.index, labels)
+    assert np.array_equal(conf_mat.columns, labels)
+
+    y_true = ['blue', 'red', 'red', 'red', 'orange', 'orange']
+    y_pred = ['red', 'blue', 'blue', 'red', 'orange', 'orange']
+    y_true, y_pred = convert_pd(y_true, y_pred)
+    conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
+    labels = ['blue', 'orange', 'red']
+    assert np.array_equal(conf_mat.index, labels)
+    assert np.array_equal(conf_mat.columns, labels)
+
+    y_true = [0, 1, 2, 1, 2, 1, 2, 3]
+    y_pred = [0, 1, 1, 1, 1, 1, 3, 3]
+    y_true, y_pred = convert_pd(y_true, y_pred)
+    conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
+    labels = [0, 1, 2, 3]
+    assert np.array_equal(conf_mat.index, labels)
+    assert np.array_equal(conf_mat.columns, labels)
 
 
 @pytest.fixture
