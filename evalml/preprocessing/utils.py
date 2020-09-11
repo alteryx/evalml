@@ -58,7 +58,7 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     if regression:
         CV_method = ShuffleSplit(n_splits=1,
                                  test_size=test_size,
-                                 random_state=0)
+                                 random_state=random_state)
     else:
         CV_method = StratifiedShuffleSplit(
             n_splits=1,
