@@ -34,7 +34,7 @@ win-circleci-test:
 installdeps:
 	pip install --upgrade pip -q
 	pip install -e . -q
-	pip install git+https://github.com/FeatureLabs/nlp_primitives.git@improve_primitive_performance
+	pip install git+https://github.com/FeatureLabs/nlp_primitives.git@include_data
 
 .PHONY: installdeps-test
 installdeps-test:
