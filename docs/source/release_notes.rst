@@ -7,15 +7,22 @@ Release Notes
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
+        * Added `ClassImbalanceDataCheck` to determine whether target imbalance falls below a given threshold :pr:`1135`
+        * Added label encoder to lightGBM for binary classification :pr:`1152`
+        * Added labels for the row index of confusion matrix :pr:`1154`
+        * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
         * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
+        * OneHotEncoder preserves the custom index in the input data :pr:`1146`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
+        * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
+        * Updated README.md example to load demo dataset :pr:`1151` 
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
         * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
@@ -29,6 +36,7 @@ Release Notes
         * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
             "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
             rather than an `ObjectiveNotFoundError` :pr:`1132`
+        * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
 
 
 **v0.13.1 Aug. 25, 2020**

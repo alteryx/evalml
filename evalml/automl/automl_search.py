@@ -133,10 +133,10 @@ class AutoMLSearch:
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 
             start_iteration_callback (callable): function called before each pipeline training iteration.
-                Passed two parameters: pipeline_class, parameters.
+                Passed three parameters: pipeline_class, parameters, and the AutoMLSearch object.
 
             add_result_callback (callable): function called after each pipeline training iteration.
-                Passed two parameters: A dictionary containing the training results for the new pipeline, and an untrained_pipeline containing the parameters used during training.
+                Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
@@ -470,7 +470,7 @@ class AutoMLSearch:
                 logger.debug('Pipeline parameters: {}'.format(parameters))
 
                 if self.start_iteration_callback:
-                    self.start_iteration_callback(pipeline.__class__, parameters)
+                    self.start_iteration_callback(pipeline.__class__, parameters, self)
                 desc = f"{pipeline.name}"
                 if len(desc) > self._MAX_NAME_LEN:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
@@ -570,7 +570,7 @@ class AutoMLSearch:
         while pipelines:
             try:
                 if self.start_iteration_callback:
-                    self.start_iteration_callback(baseline.__class__, baseline.parameters)
+                    self.start_iteration_callback(baseline.__class__, baseline.parameters, self)
                 baseline = pipelines.pop()
                 desc = f"{baseline.name}"
                 if len(desc) > self._MAX_NAME_LEN:
@@ -693,7 +693,7 @@ class AutoMLSearch:
         self._results['search_order'].append(pipeline_id)
 
         if self.add_result_callback:
-            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline)
+            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
 
     def _evaluate(self, pipeline, X, y):
         parameters = pipeline.parameters
