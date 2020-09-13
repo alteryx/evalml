@@ -21,7 +21,8 @@ Release Notes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
         * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
-        * Updated README.md example to load demo dataset :pr:`1151` 
+        * Updated README.md example to load demo dataset :pr:`1151`
+        * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
         * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
