@@ -2,10 +2,7 @@ import inspect
 
 import pytest
 
-from evalml.exceptions import (
-    EnsembleMissingEstimatorsError,
-    MissingComponentError
-)
+from evalml.exceptions import MissingComponentError
 from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import (
     all_components,
@@ -28,14 +25,6 @@ def test_handle_component_class_names():
         name_ret = handle_component_class(cls.name)
         assert inspect.isclass(name_ret)
         assert issubclass(name_ret, ComponentBase)
-
-    for cls in all_components():
-        try:
-            obj = cls()
-            with pytest.raises(ValueError, match='component_graph may only contain str or ComponentBase subclasses, not'):
-                handle_component_class(obj)
-        except EnsembleMissingEstimatorsError:
-            obj = cls(estimators=[])
 
     invalid_name = 'This Component Does Not Exist'
     with pytest.raises(MissingComponentError, match='Component "This Component Does Not Exist" was not found'):
