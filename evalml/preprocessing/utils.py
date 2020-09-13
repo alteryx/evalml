@@ -99,10 +99,10 @@ def target_distribution(targets):
     """Get the target distributions.
 
     Arguments:
-        targets (pd.Series): Target values
+        targets (pd.Series): Target data
 
     Returns:
-        pd.Series: Target values and their frequency distribution as percentages.
+        pd.Series: Target data and their frequency distribution as percentages.
     """
     distribution = targets.value_counts() / len(targets)
     return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Targets')
@@ -113,7 +113,7 @@ def drop_nan_target_rows(X, y):
 
     Arguments:
         X (pd.DataFrame): Data to transform
-        y (pd.Series): Target values
+        y (pd.Series): Target data
 
     Returns:
         pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.

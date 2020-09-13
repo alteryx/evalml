@@ -234,7 +234,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Arguments:
             X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): True values of length [n_samples]
+            y (pd.Series): Target data of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:

@@ -67,7 +67,7 @@ def make_pipeline(X, y, estimator, problem_type):
 
    Arguments:
         X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target value of length [n_samples]
+        y (pd.Series): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
 
