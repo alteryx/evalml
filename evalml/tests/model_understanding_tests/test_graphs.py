@@ -622,7 +622,7 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
@@ -633,7 +633,7 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
 
 
 def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
@@ -645,7 +645,7 @@ def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 4
     assert len(part_dep["feature_values"]) == 4
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')

@@ -400,7 +400,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
 
 def partial_dependence(pipeline, X, feature, grid_resolution=100):
-    """Calculates partial dependence.
+    """Calculates partial dependence. Currently only supports numerical features.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
