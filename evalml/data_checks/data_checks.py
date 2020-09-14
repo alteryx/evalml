@@ -49,11 +49,13 @@ class DataChecks:
 def init_data_checks_from_params(data_check_classes, params):
     """Inits a DataChecks instance from a list of DataCheck classes and corresponding params."""
     params = params or dict()
+    if not isinstance(params, dict):
+        raise ValueError(f"Params must be a dictionary. Received {params}")
     data_check_instances = []
     for extraneous_class in set(params.keys()).difference([c.name for c in data_check_classes]):
-        warnings.warn(f"Class {extraneous_class} was provided in params dictionary but it does not match any name in "
-                      "in the data_check_classes list. Make sure every key of the params dictionary matches the name"
-                      "attribute of a corresponding DataCheck class.")
+        raise DataCheckInitError(f"Class {extraneous_class} was provided in params dictionary but it does not match any name in "
+                                  "in the data_check_classes list. Make sure every key of the params dictionary matches the name"
+                                  "attribute of a corresponding DataCheck class.")
 
     for data_check_class in data_check_classes:
         class_params = params.get(data_check_class.name, {})
