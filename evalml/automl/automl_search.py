@@ -354,7 +354,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, X, y, data_checks="auto", show_iteration_plot=True, feature_types=None):
+    def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
