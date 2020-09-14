@@ -29,3 +29,8 @@ def test_handle_incorrect_type():
     error_msg = '`handle_model_family` was not passed a str or ModelFamily object'
     with pytest.raises(ValueError, match=error_msg):
         handle_model_family(5)
+
+
+def test_handle_repr(correct_model_families):
+    assert ModelFamily.LINEAR_MODEL.__repr__() == "Linear"
+    assert ModelFamily.RANDOM_FOREST.__repr__() == "Random Forest"

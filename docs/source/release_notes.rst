@@ -15,6 +15,7 @@ Release Notes
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
         * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
         * OneHotEncoder preserves the custom index in the input data :pr:`1146`
+        * Fixed representation for `ModelFamily` :pr:``
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
