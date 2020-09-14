@@ -32,6 +32,6 @@ def test_handle_incorrect_type():
 
 
 def test_handle_repr(correct_model_families):
-    assert ModelFamily.LINEAR_MODEL.__repr__() == "Linear"
-    assert ModelFamily.RANDOM_FOREST.__repr__() == "Random Forest"
-    assert ModelFamily.NONE.__repr__() == "None"
+    assert eval(repr(ModelFamily.LINEAR_MODEL)) == ModelFamily.LINEAR_MODEL
+    assert eval(repr(ModelFamily.RANDOM_FOREST)) == ModelFamily.RANDOM_FOREST
+    assert eval(repr(ModelFamily.NONE)) == ModelFamily.NONE
