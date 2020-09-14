@@ -128,14 +128,14 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba):
     """
-    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
+    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems. 
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note that 1 dimensional input is expected.
+        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied.
 
     Returns:
-        list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return one dictionary.
+        list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
             Each dictionary contains metrics used to generate an ROC plot with the following keys:
                   * `fpr_rate`: False positive rate.
                   * `tpr_rate`: True positive rate.
@@ -172,7 +172,7 @@ def roc_curve(y_true, y_pred_proba):
 
 
 def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
-    """Generate and display a Receiver Operating Characteristic (ROC) plot.
+    """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems. 
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
