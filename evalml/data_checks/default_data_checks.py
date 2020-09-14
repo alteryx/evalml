@@ -18,7 +18,7 @@ class DefaultDataChecks(DataChecks):
         """
         A collection of basic data checks.
         Arguments:
-            problem_type (str): The problem type that is being validated. Can be regression,
+            problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """
         super().__init__(_default_data_checks_classes,
                          data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
