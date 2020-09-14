@@ -110,3 +110,8 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline)
     assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
+
+
+def test_iterative_algorithm_max_pipelines_deprecation():
+    with pytest.warns(DeprecationWarning, match="`max_pipelines will be deprecated in the next release. Use `max_iterations` instead."):
+        IterativeAlgorithm(max_pipelines=5)
