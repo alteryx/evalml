@@ -40,3 +40,15 @@ def test_automl_algorithm_dummy():
     assert algo.batch_number == 3
     with pytest.raises(StopIteration, match='No more pipelines!'):
         algo.next_batch()
+
+
+def test_automl_algorithm_deprecation_warning():
+    class UsePipelineMaxAlgo(AutoMLAlgorithm):
+        def __init__(self):
+            super().__init__(max_pipelines=5)
+
+        def next_batch(self):
+            pass
+
+    with pytest.warns(DeprecationWarning, match="`max_pipelines will be deprecated in the next release. Use `max_iterations` instead."):
+        UsePipelineMaxAlgo()
