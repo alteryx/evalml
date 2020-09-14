@@ -317,7 +317,7 @@ def test_automl_empty_data_checks(mock_fit, mock_score):
     assert automl.data_check_results is None
 
 
-@patch('evalml.data_checks.DefaultDataChecks.validate')
+@patch('evalml.data_checks.DataChecks.validate')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_binary, caplog):

@@ -12,6 +12,9 @@ from evalml.utils.gen_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 
+    def __init__(self, problem_type):
+        self.problem_type = problem_type
+
     def validate(self, X, y):
         """Checks if the target data contains missing or invalid values.
 
@@ -25,7 +28,7 @@ class InvalidTargetDataCheck(DataCheck):
         Example:
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
-            >>> target_check = InvalidTargetDataCheck()
+            >>> target_check = InvalidTargetDataCheck('binary')
             >>> assert target_check.validate(X, y) == [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")]
         """
         if not isinstance(y, pd.Series):

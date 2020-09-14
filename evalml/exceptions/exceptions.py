@@ -61,3 +61,7 @@ class PipelineScoreError(Exception):
 
         self.message = message
         super().__init__(message)
+
+
+class DataCheckInitError(Exception):
+    """Exception raised when a data check can't init with the parameters given."""
