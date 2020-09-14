@@ -40,6 +40,7 @@ Release Notes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
         * Removed tqdm as a dependency :pr:`1177`
         * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
+        * Rename `max_pipelines` to `max_iterations` :pr:`1169`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
@@ -64,6 +65,7 @@ Release Notes
         * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
         * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
         * Results from `roc_curve` will now return as a list of dictionaries with each dictionary representing a class :pr:`1164`
+        * `max_pipelines` now raises a `DeprecationWarning' and will be removed in the next release. `max_iterations` should be used instead. :pr:`1169`
 
 
 **v0.13.1 Aug. 25, 2020**

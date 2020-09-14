@@ -191,7 +191,7 @@ class AutoMLSearch:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-      
+
         if max_pipelines:
             if not max_iterations:
                 max_iterations = max_pipelines
