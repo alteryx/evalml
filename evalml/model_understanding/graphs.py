@@ -194,10 +194,12 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     data = []
     for i in range(n_classes):
         roc_curve_data = roc_curve(y_one_hot_true[:, i], y_pred_proba[:, i])
+        name = i + 1 if custom_class_names is None else custom_class_names[i]
         data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                                name='Class {name} (AUC {:06f})'
-                                .format(roc_curve_data['auc_score'],
-                                        name=i + 1 if custom_class_names is None else custom_class_names[i]),
+                                hovertemplate="(False Postive Rate: %{x}, True Positive Rate: %{y})<br>" +
+                                              "Threshold: %{text}",
+                                name=f"Class {name} (AUC {roc_curve_data['auc_score']:.06f})",
+                                text=roc_curve_data["thresholds"],
                                 line=dict(width=3)))
     data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                             name='Trivial Model (AUC 0.5)',
