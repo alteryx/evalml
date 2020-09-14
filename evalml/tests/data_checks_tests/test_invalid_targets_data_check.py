@@ -27,10 +27,11 @@ def test_invalid_target_data_check_numeric_binary_classification_valid_float():
 
 def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("classification")
+    invalid_targets_check = InvalidTargetDataCheck("binary")
     assert invalid_targets_check.validate(X, y=pd.Series([1, 5, 1, 5, 1, 1])) == [DataCheckError("Numerical binary classification target classes must be [0, 1], got [1, 5] instead", "InvalidTargetDataCheck")]
     assert invalid_targets_check.validate(X, y=pd.Series([0, 5, np.nan, np.nan])) == [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck"),
                                                                                       DataCheckError("Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead", "InvalidTargetDataCheck")]
+    assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 0, 1, 2])) == [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
 
 
 def test_invalid_target_data_check_invalid_data_types_error():
@@ -43,7 +44,8 @@ def test_invalid_target_data_check_invalid_data_types_error():
         assert invalid_targets_check.validate(X, y) == []
 
     y = pd.date_range('2000-02-03', periods=5, freq='W')
-    assert invalid_targets_check.validate(X, y) == [DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_data_types)), "InvalidTargetDataCheck")]
+    assert invalid_targets_check.validate(X, y) == [DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_data_types)), "InvalidTargetDataCheck"),
+                                                    DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
 
 
 def test_invalid_target_data_input_formats():
@@ -52,16 +54,18 @@ def test_invalid_target_data_input_formats():
 
     # test None
     messages = invalid_targets_check.validate(X, y=None)
-    assert messages == []
+    assert messages == [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
 
     # test empty pd.Series
     messages = invalid_targets_check.validate(X, pd.Series())
-    assert messages == []
+    assert messages == [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
 
     #  test list
     messages = invalid_targets_check.validate(X, [None, None, None, 0])
-    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck"),
+                        DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
 
     # test np.array
     messages = invalid_targets_check.validate(X, np.array([None, None, None, 0]))
-    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck")]
+    assert messages == [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck"),
+                        DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck")]
