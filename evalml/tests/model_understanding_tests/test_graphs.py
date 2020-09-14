@@ -668,9 +668,9 @@ def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_
     assert not part_dep.isnull().any(axis=None)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_partial_dependence_baseline(mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_partial_dependence_baseline():
+    X = pd.DataFrame([[1, 0], [0, 1]])
+    y = pd.Series([0, 1])
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
         component_graph = ["Baseline Classifier"]
