@@ -31,7 +31,13 @@ def test_handle_incorrect_type():
         handle_model_family(5)
 
 
-def test_handle_repr(correct_model_families):
+def test_handle_repr():
     assert eval(repr(ModelFamily.LINEAR_MODEL)) == ModelFamily.LINEAR_MODEL
     assert eval(repr(ModelFamily.RANDOM_FOREST)) == ModelFamily.RANDOM_FOREST
     assert eval(repr(ModelFamily.NONE)) == ModelFamily.NONE
+
+
+def test_repr_list(correct_model_families):
+    representation = repr(correct_model_families)
+    for model in ModelFamily:
+        assert repr(model) in representation
