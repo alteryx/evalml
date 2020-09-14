@@ -17,6 +17,7 @@ Release Notes
         * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
         * OneHotEncoder preserves the custom index in the input data :pr:`1146`
         * Fixed representation for `ModelFamily` :pr:`1165`
+        * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
