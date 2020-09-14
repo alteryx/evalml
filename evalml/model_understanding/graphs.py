@@ -20,6 +20,7 @@ from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, jupyter_check
+from evalml.utils.gen_utils import numeric_dtypes
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -406,7 +407,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
@@ -417,6 +418,10 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    if X[feature].dtype not in numeric_dtypes:
+        raise ValueError(f"Partial dependence is is currently only supported for numeric dtypes.")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
     if not pipeline._is_fitted:
@@ -445,7 +450,7 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
