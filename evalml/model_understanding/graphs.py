@@ -128,7 +128,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba):
     """
-    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems. 
+    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
@@ -172,7 +172,7 @@ def roc_curve(y_true, y_pred_proba):
 
 
 def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
-    """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems. 
+    """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
@@ -206,11 +206,10 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         roc_curve_data = all_curve_data[i]
         name = i + 1 if custom_class_names is None else custom_class_names[i]
         graph_data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                                hovertemplate="(False Postive Rate: %{x}, True Positive Rate: %{y})<br>" +
-                                              "Threshold: %{text}",
-                                name=f"Class {name} (AUC {roc_curve_data['auc_score']:.06f})",
-                                text=roc_curve_data["thresholds"],
-                                line=dict(width=3)))
+                                      hovertemplate="(False Postive Rate: %{x}, True Positive Rate: %{y})<br>" + "Threshold: %{text}",
+                                      name=f"Class {name} (AUC {roc_curve_data['auc_score']:.06f})",
+                                      text=roc_curve_data["thresholds"],
+                                      line=dict(width=3)))
     graph_data.append(_go.Scatter(x=[0, 1], y=[0, 1],
                                   name='Trivial Model (AUC 0.5)',
                                   line=dict(dash='dash')))

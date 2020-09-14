@@ -307,7 +307,7 @@ def test_roc_curve_multiclass(data_type):
         assert np.array_equal(fpr_expected[i], fpr_rates)
         assert np.array_equal(tpr_expected[i], tpr_rates)
         assert np.array_equal(thresholds_expected[i], thresholds)
-        assert auc_expected[i] == pytest.approx(1, 1e-5)
+        assert auc_expected[i] == pytest.approx(auc_score, 1e-5)
         assert isinstance(roc_curve_data[i]['fpr_rates'], np.ndarray)
         assert isinstance(roc_curve_data[i]['tpr_rates'], np.ndarray)
         assert isinstance(roc_curve_data[i]['thresholds'], np.ndarray)
