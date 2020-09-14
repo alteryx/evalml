@@ -10,7 +10,6 @@ from evalml.data_checks.class_imbalance_data_check import (
 
 def test_class_imbalance_invalid_threshold():
     X = pd.DataFrame()
-    class_imbalance_check = ClassImbalanceDataCheck()
 
     with pytest.raises(ValueError, match="threshold 0 is not within the range"):
         ClassImbalanceDataCheck(threshold=0).validate(X, y=pd.Series([0, 1, 1]))

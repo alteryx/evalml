@@ -5,7 +5,6 @@ from .invalid_targets_data_check import InvalidTargetDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 
-
 _default_data_checks_classes = [HighlyNullDataCheck, IDColumnsDataCheck,
                                 LabelLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
 

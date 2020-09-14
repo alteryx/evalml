@@ -1,6 +1,7 @@
 import inspect
-import warnings
+
 from .data_check import DataCheck
+
 from evalml.exceptions import DataCheckInitError
 
 
@@ -54,8 +55,8 @@ def init_data_checks_from_params(data_check_classes, params):
     data_check_instances = []
     for extraneous_class in set(params.keys()).difference([c.name for c in data_check_classes]):
         raise DataCheckInitError(f"Class {extraneous_class} was provided in params dictionary but it does not match any name in "
-                                  "in the data_check_classes list. Make sure every key of the params dictionary matches the name"
-                                  "attribute of a corresponding DataCheck class.")
+                                 "in the data_check_classes list. Make sure every key of the params dictionary matches the name"
+                                 "attribute of a corresponding DataCheck class.")
 
     for data_check_class in data_check_classes:
         class_params = params.get(data_check_class.name, {})
@@ -66,4 +67,3 @@ def init_data_checks_from_params(data_check_classes, params):
         except TypeError as e:
             raise DataCheckInitError(f"Encountered the following error while initializing {data_check_class.name}: {e}")
     return data_check_instances
-

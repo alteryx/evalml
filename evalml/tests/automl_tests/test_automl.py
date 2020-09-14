@@ -338,6 +338,7 @@ class MockDataCheckErrorAndWarning(DataCheck):
     def validate(self, X, y):
         return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
 
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_can_init_data_checks_from_classes(mock_fit, mock_score, caplog):
@@ -366,6 +367,7 @@ def test_automl_can_init_data_checks_from_classes(mock_fit, mock_score, caplog):
     assert "error one" in out
     assert "warning one" in out
     assert automl.data_check_results == MockDataCheckErrorAndWarning().validate(X, y)
+
 
 @pytest.mark.parametrize("data_checks",
                          [[MockDataCheckErrorAndWarning()],

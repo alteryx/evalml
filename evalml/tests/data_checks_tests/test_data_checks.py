@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
+from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_check_message import (
     DataCheckError,
@@ -9,7 +10,6 @@ from evalml.data_checks.data_check_message import (
 )
 from evalml.data_checks.data_checks import DataChecks
 from evalml.data_checks.default_data_checks import _default_data_checks_classes
-from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 from evalml.exceptions import DataCheckInitError
 
 
@@ -97,7 +97,7 @@ def test_default_data_checks_regression():
     # Skip Invalid Target
     assert data_checks.validate(X, y2) == messages[:3] + messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]
 
-    data_checks = DataChecks(_default_data_checks_classes,  {"InvalidTargetDataCheck": {"problem_type": "regression"}})
+    data_checks = DataChecks(_default_data_checks_classes, {"InvalidTargetDataCheck": {"problem_type": "regression"}})
     assert data_checks.validate(X, y) == messages
 
 
@@ -141,7 +141,7 @@ class MockCheck(DataCheck):
                          [([MockCheck], {"mock_check": 1}, DataCheckInitError,
                            "Parameters for mock_check were not in a dictionary. Received 1."),
                           ([MockCheck], {"mock_check": {"foo": 1}}, DataCheckInitError,
-                           "Encountered the following error while initializing mock_check: __init__\(\) missing 1 required positional argument: 'bar'"),
+                           r"Encountered the following error while initializing mock_check: __init__\(\) missing 1 required positional argument: 'bar'"),
                           ([MockCheck], {"mock_check": {"Bar": 2}}, DataCheckInitError,
                            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'Bar'"),
                           ([MockCheck], {"mock_check": {"fo": 3, "ba": 4}}, DataCheckInitError,
@@ -151,7 +151,7 @@ class MockCheck(DataCheck):
                           ([1], None, ValueError, ("All elements of parameter data_checks must be an instance of DataCheck " +
                                                    "or a DataCheck class with any desired parameters specified in the " +
                                                    "data_check_params dictionary.")),
-                          ([MockCheck], [1], ValueError, "Params must be a dictionary. Received \[1\]")])
+                          ([MockCheck], [1], ValueError, r"Params must be a dictionary. Received \[1\]")])
 def test_data_checks_raises_value_errors_on_init(classes, params, expected_exception, expected_message):
 
     with pytest.raises(expected_exception, match=expected_message):
