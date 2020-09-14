@@ -194,8 +194,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
     all_curve_data = roc_curve(y_true, y_pred_proba)
     graph_data = []
-    if type(all_curve_data) == dict:
-        all_curve_data = [all_curve_data]
 
     n_classes = len(all_curve_data)
 
