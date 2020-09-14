@@ -301,7 +301,7 @@ class AutoMLSearch:
 
         return search_desc + rankings_desc
 
-    def _validate_data_checks(self, data_checks, params):
+    def _validate_data_checks(self, data_checks):
         """Validate data_checks parameter.
 
         Arguments:
@@ -314,7 +314,7 @@ class AutoMLSearch:
         if isinstance(data_checks, DataChecks):
             return data_checks
         elif isinstance(data_checks, list):
-            return DataChecks(data_checks, data_check_params=params)
+            return DataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
                 return DefaultDataChecks(problem_type=self.problem_type)
@@ -326,7 +326,7 @@ class AutoMLSearch:
         elif data_checks is None:
             return EmptyDataChecks()
         else:
-            return DataChecks(data_checks, data_check_params=params)
+            return DataChecks(data_checks)
 
     def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
         """Presents a prompt to the user asking if they want to stop the search.
@@ -354,11 +354,10 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, X, y, data_checks="auto", data_check_params=None, show_iteration_plot=True, feature_types=None):
+    def search(self, X, y, data_checks="auto", show_iteration_plot=True, feature_types=None):
         """Find the best pipeline for the data set.
 
         Arguments:
-            data_check_params:
             X (pd.DataFrame): the input training data of shape [n_samples, n_features]
 
             y (pd.Series): the target training data of length [n_samples]
@@ -402,7 +401,7 @@ class AutoMLSearch:
 
         self.data_split = self.data_split or default_data_split
 
-        data_checks = self._validate_data_checks(data_checks, data_check_params)
+        data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
 
         if len(data_check_results) > 0:

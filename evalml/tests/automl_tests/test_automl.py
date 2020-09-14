@@ -339,36 +339,6 @@ class MockDataCheckErrorAndWarning(DataCheck):
         return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_can_init_data_checks_from_classes(mock_fit, mock_score, caplog, X_y_binary):
-    X, y = X_y_binary
-
-    class MockDataCheckNoError(DataCheck):
-        name = "Mock Check"
-
-        def __init__(self, foo):
-            """Mock Init"""
-
-        def validate(self, X, y=None):
-            """Mock validate"""
-            return []
-
-    automl = AutoMLSearch(problem_type="binary", max_pipelines=1)
-
-    with patch.object(MockDataCheckNoError, "__init__", return_value=None) as mock_init:
-        automl.search(X, y, data_checks=[MockDataCheckNoError], data_check_params={"Mock Check": {"foo": 1}})
-        mock_init.assert_called_once_with(foo=1)
-
-    with pytest.raises(ValueError, match="Data checks raised"):
-        automl.search(X, y, data_checks=[MockDataCheckErrorAndWarning()])
-
-    out = caplog.text
-    assert "error one" in out
-    assert "warning one" in out
-    assert automl.data_check_results == MockDataCheckErrorAndWarning().validate(X, y)
-
-
 @pytest.mark.parametrize("data_checks",
                          [[MockDataCheckErrorAndWarning()],
                           DataChecks([MockDataCheckErrorAndWarning()])])
