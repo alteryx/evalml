@@ -10,10 +10,6 @@ from evalml.data_checks.data_checks import DataChecks
 from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 
 
-def get_default_data_checks(problem_type):
-    return DataChecks(DefaultDataChecks, {"InvalidTargetDataCheck": {"problem_type": problem_type}})
-
-
 def test_data_checks(X_y_binary):
     X, y = X_y_binary
 
@@ -64,7 +60,7 @@ def test_default_data_checks_classification():
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0, 1, np.nan, 1, 0])
-    data_checks = get_default_data_checks("binary")
+    data_checks = DefaultDataChecks("binary")
 
     leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
 
@@ -72,7 +68,7 @@ def test_default_data_checks_classification():
 
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
-    data_checks = get_default_data_checks("multiclass")
+    data_checks = DefaultDataChecks("multiclass")
     assert data_checks.validate(X, y) == messages
 
 
@@ -86,7 +82,7 @@ def test_default_data_checks_regression():
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y2 = pd.Series([5] * 4)
 
-    data_checks = get_default_data_checks("regression")
+    data_checks = DefaultDataChecks("regression")
     assert data_checks.validate(X, y) == messages
 
     # Skip Invalid Target

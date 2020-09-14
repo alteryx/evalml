@@ -317,8 +317,7 @@ class AutoMLSearch:
             return DataChecks(data_checks, data_check_params=params)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DataChecks(DefaultDataChecks,
-                                  data_check_params={"InvalidTargetDataCheck": {"problem_type": self.problem_type}})
+                return DefaultDataChecks(problem_type=self.problem_type)
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
