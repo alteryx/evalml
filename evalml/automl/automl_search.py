@@ -80,6 +80,7 @@ class AutoMLSearch:
                  problem_type=None,
                  objective='auto',
                  max_pipelines=None,
+                 max_iterations=None,
                  max_time=None,
                  patience=None,
                  tolerance=None,
@@ -105,8 +106,11 @@ class AutoMLSearch:
                 LogLossMulticlass for multiclass classification problems, and
                 R2 for regression problems.
 
-            max_pipelines (int): Maximum number of pipelines to search. If max_pipelines and
+            max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
+
+            max_iterations (int): Maximum number of iterations to search. If max_iterations and
+                max_time is not set, then max_iterations will default to max_iterations of 5.
 
             max_time (int, str): Maximum time to search for pipelines.
                 This will not start a new pipeline search after the duration
@@ -149,7 +153,7 @@ class AutoMLSearch:
             verbose (boolean): If True, turn verbosity on. Defaults to True
 
             _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
-                max_pipelines have precedence over stopping the search.
+                max_iterations have precedence over stopping the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -187,11 +191,16 @@ class AutoMLSearch:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
+      
+        if max_pipelines:
+            if not max_iterations:
+                max_iterations = max_pipelines
+            warnings.warn("`max_pipelines will be deprecated in the next release. Use `max_iterations` instead.", DeprecationWarning)
 
-        self.max_pipelines = max_pipelines
-        if self.max_pipelines is None and self.max_time is None and _max_batches is None:
-            self.max_pipelines = 5
-            logger.info("Using default limit of max_pipelines=5.\n")
+        self.max_iterations = max_iterations
+        if self.max_iterations is None and self.max_time is None and _max_batches is None:
+            self.max_iterations = 5
+            logger.info("Using default limit of max_iterations=5.\n")
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
@@ -270,7 +279,7 @@ class AutoMLSearch:
             f"Parameters: \n{'='*20}\n"
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
-            f"Max Pipelines: {self.max_pipelines}\n"
+            f"Max Iterations: {self.max_iterations}\n"
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
@@ -414,8 +423,8 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
-        if self._max_batches and self.max_pipelines is None:
-            self.max_pipelines = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
+        if self._max_batches and self.max_iterations is None:
+            self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -423,7 +432,7 @@ class AutoMLSearch:
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
         self._automl_algorithm = IterativeAlgorithm(
-            max_pipelines=self.max_pipelines,
+            max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
             random_state=self.random_state,
@@ -436,8 +445,8 @@ class AutoMLSearch:
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
 
-        if self.max_pipelines is not None:
-            logger.info("Searching up to %s pipelines. " % self.max_pipelines)
+        if self.max_iterations is not None:
+            logger.info("Searching up to %s pipelines. " % self.max_iterations)
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
@@ -476,7 +485,7 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines, self._start)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
 
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
@@ -506,11 +515,11 @@ class AutoMLSearch:
         should_continue = True
         num_pipelines = len(self._results['pipeline_results'])
 
-        # check max_time and max_pipelines
+        # check max_time and max_iterations
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
             return False
-        elif self.max_pipelines and num_pipelines >= self.max_pipelines:
+        elif self.max_iterations and num_pipelines >= self.max_iterations:
             return False
 
         # check for early stopping
@@ -577,7 +586,7 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_pipelines,
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
                                 self._start)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)

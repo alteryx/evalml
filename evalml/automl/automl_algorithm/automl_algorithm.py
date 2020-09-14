@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import warnings
 
 from evalml.tuners import SKOptTuner
 from evalml.utils import get_random_state
@@ -15,6 +16,7 @@ class AutoMLAlgorithm(ABC):
     def __init__(self,
                  allowed_pipelines=None,
                  max_pipelines=None,
+                 max_iterations=None,
                  tuner_class=None,
                  random_state=0):
         """This class represents an automated machine learning (AutoML) algorithm. It encapsulates the decision-making logic behind an automl search, by both deciding which pipelines to evaluate next and by deciding what set of parameters to configure the pipeline with.
@@ -23,13 +25,18 @@ class AutoMLAlgorithm(ABC):
 
         Arguments:
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-            max_pipelines (int): The maximum number of pipelines to be evaluated.
+            max_pipelines (int): Will be deprecated in the next release. The maximum number of pipelines to be evaluated.
+            max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
         self.allowed_pipelines = allowed_pipelines or []
-        self.max_pipelines = max_pipelines
+        if max_pipelines:
+            if not max_iterations:
+                max_iterations = max_pipelines
+            warnings.warn("`max_pipelines will be deprecated in the next release. Use `max_iterations` instead.", DeprecationWarning)
+        self.max_iterations = max_iterations
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         for p in self.allowed_pipelines:

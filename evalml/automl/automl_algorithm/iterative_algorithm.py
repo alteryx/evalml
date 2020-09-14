@@ -1,4 +1,5 @@
 import inspect
+import warnings
 from operator import itemgetter
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
@@ -12,6 +13,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def __init__(self,
                  allowed_pipelines=None,
                  max_pipelines=None,
+                 max_iterations=None,
                  tuner_class=None,
                  random_state=0,
                  pipelines_per_batch=5,
@@ -21,15 +23,21 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         Arguments:
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-            max_pipelines (int): The maximum number of pipelines to be evaluated.
+            max_pipelines (int): Will be deprecated in the next release. The maximum number of pipelines to be evaluated.
+            max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
             pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
         """
+        if max_pipelines:
+            if not max_iterations:
+                max_iterations = max_pipelines
+            warnings.warn("`max_pipelines will be deprecated in the next release. Use `max_iterations` instead.", DeprecationWarning)
+
         super().__init__(allowed_pipelines=allowed_pipelines,
-                         max_pipelines=max_pipelines,
+                         max_iterations=max_iterations,
                          tuner_class=tuner_class,
                          random_state=random_state)
         self.pipelines_per_batch = pipelines_per_batch
