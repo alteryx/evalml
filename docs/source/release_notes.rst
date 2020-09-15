@@ -19,6 +19,7 @@ Release Notes
         * Fixed representation for `ModelFamily` :pr:`1165`
         * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
         * Users can now pass in any valid kwargs to all estimators :pr:`1157`
+        * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
@@ -42,6 +43,8 @@ Release Notes
             "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
             rather than an `ObjectiveNotFoundError` :pr:`1132`
         * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
+        * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
+        * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
 
 
 **v0.13.1 Aug. 25, 2020**
