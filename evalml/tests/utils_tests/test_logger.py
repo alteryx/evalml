@@ -6,7 +6,12 @@ from unittest.mock import call, patch
 
 import pytest
 
-from evalml.utils.logger import get_logger, log_subtitle, log_title, time_elapsed
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed
+)
 
 TEST_LOGGER_NAME = 'my_logger'
 
