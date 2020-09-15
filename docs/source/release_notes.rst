@@ -30,6 +30,7 @@ Release Notes
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
         * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
+        * Fixed release notes check-in test for `Update Dependencies` actions :pr:`1172`
 
 .. warning::
 
