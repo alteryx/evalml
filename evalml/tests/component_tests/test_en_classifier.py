@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 
 from evalml.model_family import ModelFamily
@@ -18,7 +19,9 @@ def test_en_parameters():
         "alpha": 0.75,
         "l1_ratio": 0.5,
         'max_iter': 1000,
-        'n_jobs': -1
+        'n_jobs': -1,
+        'penalty': 'elasticnet',
+        'loss': 'log'
     }
     assert clf.parameters == expected_parameters
 
@@ -107,3 +110,16 @@ def test_feature_importance_multi(X_y_multi):
     sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
 
     np.testing.assert_almost_equal(sk_features, clf.feature_importance, decimal=5)
+
+
+def test_overwrite_loss_parameter_in_kwargs():
+
+    with pytest.warns(expected_warning=UserWarning) as warnings:
+        en = ElasticNetClassifier(loss="hinge")
+
+    assert len(warnings) == 1
+    # check that the message matches
+    assert warnings[0].message.args[0] == ("Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
+                                           ". Originally received 'hinge'.")
+
+    assert en.parameters['loss'] == 'log'
