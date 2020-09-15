@@ -62,6 +62,7 @@ def time_elapsed(start_time):
     """
 
     time_diff = time.time() - start_time
+    # Source: tqdm.std.tqdm.format_interval
     mins, s = divmod(int(time_diff), 60)
     h, m = divmod(mins, 60)
     if h:
