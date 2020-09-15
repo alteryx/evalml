@@ -26,8 +26,6 @@ class LogisticRegressionClassifier(Estimator):
         parameters.update(kwargs)
 
         lr_classifier = LogisticRegression(random_state=random_state,
-                                           multi_class="auto",
-                                           solver="lbfgs",
                                            **parameters)
         super().__init__(parameters=parameters,
                          component_obj=lr_classifier,
