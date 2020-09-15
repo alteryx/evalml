@@ -11,6 +11,7 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `__eq__` for `ComponentBase`and`PipelineBase` pr:`1178`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
