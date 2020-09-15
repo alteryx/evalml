@@ -783,12 +783,38 @@ def test_estimators_accept_all_kwargs(estimator_class):
     estimator_class(**params)
 
 
+def test_component_equality_different_attributes():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockComponentWithADifferentName(ComponentBase):
+        name = "Mock Component with a different name"
+        model_family = ModelFamily.NONE
+
+    class MockComponentWithADifferentModelFamily(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.RANDOM_FOREST
+    assert MockComponent() != MockComponentWithADifferentName()
+    assert MockComponent() != MockComponentWithADifferentModelFamily()
+
+
+def test_component_equality_subclasses():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockEstimatorSublass(MockComponent):
+        pass
+    assert MockComponent() != MockEstimatorSublass()
+
+
 def test_component_equality():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-        def __init__(self, param_1, param_2, random_state=0, **kwargs):
+        def __init__(self, param_1=0, param_2=0, random_state=0, **kwargs):
             parameters = {"param_1": param_1,
                           "param_2": param_2}
             parameters.update(kwargs)
@@ -796,4 +822,24 @@ def test_component_equality():
                              component_obj=None,
                              random_state=random_state)
 
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_component = MockComponent()
+    assert mock_component == mock_component
+
+    # Test defaults
+    assert MockComponent() == MockComponent()
+
+    # Test random_state
+    assert MockComponent(random_state=10) == MockComponent(random_state=10)
+    assert MockComponent(random_state=10) != MockComponent(random_state=0)
+
+    # Test parameters
     assert MockComponent(1, 2) == MockComponent(1, 2)
+    assert MockComponent(1, 2) != MockComponent(1, 0)
+    assert MockComponent(0, 2) != MockComponent(1, 2)
+
+    # Test fitted equality
+    mock_component.fit(pd.DataFrame({}))
+    assert mock_component != MockComponent()

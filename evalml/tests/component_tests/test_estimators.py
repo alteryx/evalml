@@ -3,6 +3,8 @@ import string
 import numpy as np
 import pandas as pd
 
+from evalml.model_family import ModelFamily
+from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
@@ -42,3 +44,16 @@ def test_binary_classification_estimators_predict_proba_col_order():
             predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
+
+
+def test_estimator_equality():
+    class MockEstimator(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+    class MockEstimatorWithDifferentProblemTypes(Estimator):
+        name = "Mock Estimator"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary', 'multiclass']
+    assert MockEstimator() != MockEstimatorWithDifferentProblemTypes()
