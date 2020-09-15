@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
 from evalml.pipelines.components.ensemble import EnsembleBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import _nonstackable_model_families
 
 
 class StackedEnsembleRegressor(EnsembleBase):
@@ -31,6 +32,27 @@ class StackedEnsembleRegressor(EnsembleBase):
             random_state (int, np.random.RandomState): seed for the random number generator
             **kwargs: 'estimators' containing a list of Estimator objects must be passed as a keyword argument, or else EnsembleMissingEstimatorsError will be raised
         """
+        # if 'estimators' not in kwargs:
+        #     raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
+        # estimators = kwargs.get('estimators')
+        # parameters = {
+        #     "estimators": estimators,
+        #     "final_estimator": final_estimator,
+        #     "cv": cv,
+        #     "n_jobs": n_jobs
+        # }
+        # contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
+        # if contains_non_stackable:
+        #     raise ValueError("Regressors with any of the following model families cannot be used as base estimators in StackedEnsembleRegressor: {}".format(_nonstackable_model_families))
+        # sklearn_parameters = parameters.copy()
+        # parameters.update(kwargs)
+        # if final_estimator is None:
+        #     final_estimator = LinearRegressor()
+        # sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
+        # sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
+        # super().__init__(parameters=parameters,
+        #                  component_obj=StackingRegressor(**sklearn_parameters),
+        #                  random_state=random_state)
         if 'estimators' not in kwargs:
             raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
         estimators = kwargs.get('estimators')
@@ -40,15 +62,17 @@ class StackedEnsembleRegressor(EnsembleBase):
             "cv": cv,
             "n_jobs": n_jobs
         }
+        contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
+        if contains_non_stackable:
+            raise ValueError("Regressors with any of the following model families cannot be used as base estimators in StackedEnsembleRegressor: {}".format(_nonstackable_model_families))
         sklearn_parameters = parameters.copy()
         parameters.update(kwargs)
         if final_estimator is None:
             final_estimator = LinearRegressor()
         sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
-        sklearn_parameters.update({"estimators": [(estimator.name, estimator._component_obj) for estimator in estimators]})
-        self._stacked_classifier = StackingRegressor(**sklearn_parameters)
+        sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
         super().__init__(parameters=parameters,
-                         component_obj=self._stacked_classifier,
+                         component_obj=StackingRegressor(**sklearn_parameters),
                          random_state=random_state)
 
     @property

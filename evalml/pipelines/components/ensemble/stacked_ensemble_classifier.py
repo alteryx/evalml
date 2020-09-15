@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
 from evalml.pipelines.components.ensemble import EnsembleBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import _nonstackable_model_families
 
 
 class StackedEnsembleClassifier(EnsembleBase):
@@ -40,15 +41,17 @@ class StackedEnsembleClassifier(EnsembleBase):
             "cv": cv,
             "n_jobs": n_jobs
         }
+        contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
+        if contains_non_stackable:
+            raise ValueError("Classifiers with any of the following model families cannot be used as base estimators in StackedEnsembleClassifier: {}".format(_nonstackable_model_families))
         sklearn_parameters = parameters.copy()
         parameters.update(kwargs)
         if final_estimator is None:
             final_estimator = LogisticRegressionClassifier()
         sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
-        sklearn_parameters.update({"estimators": [(estimator.name, estimator._component_obj) for estimator in estimators]})
-        stacked_classifier = StackingClassifier(**sklearn_parameters)
+        sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
         super().__init__(parameters=parameters,
-                         component_obj=stacked_classifier,
+                         component_obj=StackingClassifier(**sklearn_parameters),
                          random_state=random_state)
 
     @property
