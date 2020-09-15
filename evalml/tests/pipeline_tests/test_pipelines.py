@@ -41,7 +41,7 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     allowed_model_families
 )
-from evalml.pipelines.utils import get_estimators, make_pipeline
+from evalml.pipelines.utils import get_estimators, make_pipeline, make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
@@ -238,6 +238,19 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), LinearRegressor, ProblemTypes.MULTICLASS)
     with pytest.raises(ValueError, match=f"{Transformer.name} is not a valid estimator for problem type"):
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
+
+
+def test_make_pipeline_from_components():
+    with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
+        make_pipeline_from_components([Imputer], problem_type='binary')
+
+    pipeline = make_pipeline_from_components([Imputer(), LogisticRegressionClassifier()], ProblemTypes.BINARY, custom_name='My Pipeline')
+    parameters = pipeline.parameters
+    assert len(parameters) == 2
+    assert 'Imputer' in parameters
+    assert 'Logistic Regression Classifier' in parameters
+    assert pipeline.problem_type == ProblemTypes.BINARY
+    assert pipeline.custom_name == 'My Pipeline'
 
 
 def test_required_fields():
