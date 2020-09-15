@@ -6,8 +6,6 @@ import traceback
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-import tqdm
-
 
 def get_logger(name):
     logger = logging.getLogger(name)
@@ -62,7 +60,14 @@ def time_elapsed(start_time):
     Returns:
         str: elapsed time formatted as a string [H:]MM:SS
     """
-    return tqdm.std.tqdm.format_interval(time.time() - start_time)
+
+    time_diff = time.time() - start_time
+    mins, s = divmod(int(time_diff), 60)
+    h, m = divmod(mins, 60)
+    if h:
+        return '{0:d}:{1:02d}:{2:02d}'.format(h, m, s)
+    else:
+        return '{0:02d}:{1:02d}'.format(m, s)
 
 
 def update_pipeline(logger, pipeline_name, current_iteration, max_pipelines, start_time):
