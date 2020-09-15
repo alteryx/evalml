@@ -41,7 +41,11 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     allowed_model_families
 )
-from evalml.pipelines.utils import get_estimators, make_pipeline, make_pipeline_from_components
+from evalml.pipelines.utils import (
+    get_estimators,
+    make_pipeline,
+    make_pipeline_from_components
+)
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
