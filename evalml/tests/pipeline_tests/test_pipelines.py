@@ -1096,5 +1096,106 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
     clf.feature_importance
 
 
-def test_equality():
-    pass
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality_different_attributes(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+        different_estimator = 'Logistic Regression Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+        different_estimator = 'Linear Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        # model_family = ModelFamily.NONE
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineWithADifferentName(pipeline_class):
+        name = "Mock Pipeline with a different name"
+        # model_family = ModelFamily.NONE
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineWithADifferentModelFamily(pipeline_class):
+        name = "Mock Pipeline"
+        # model_family = ModelFamily.RANDOM_FOREST
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineWithADifferenComponentGraph(pipeline_class):
+        name = "Mock Pipeline"
+        # model_family = ModelFamily.LINEAR_MODEL
+        component_graph = ['Imputer', different_estimator]
+    assert MockPipeline(parameters={}) != MockPipelineWithADifferentName(parameters={})
+    assert MockPipeline(parameters={}) != MockPipelineWithADifferentModelFamily(parameters={})
+    assert MockPipeline(parameters={}) != MockPipelineWithADifferenComponentGraph(parameters={})
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality_subclasses(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        # model_family = ModelFamily.NONE
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineSublass(MockPipeline):
+        pass
+    assert MockPipeline(parameters={}) != MockPipelineSublass(parameters={})
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    different_parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "constant",
+            "numeric_impute_strategy": "mean",
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        # model_family = ModelFamily.NONE
+        component_graph = ['Imputer', final_estimator]
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_pipeline = MockPipeline(parameters={})
+    assert mock_pipeline == mock_pipeline
+
+    # Test defaults
+    assert MockPipeline(parameters={}) == MockPipeline(parameters={})
+
+    # Test random_state
+    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
+    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+
+    # Test parameters
+    assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
+
+    # Test fitted equality
+    mock_pipeline.fit(pd.DataFrame({}))
+    assert mock_pipeline != MockPipeline(parameters={})

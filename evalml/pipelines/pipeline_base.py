@@ -20,6 +20,7 @@ from evalml.exceptions import (
 )
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
+    check_random_state_equality,
     classproperty,
     get_logger,
     get_random_state,
@@ -63,7 +64,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(component_class, parameters) for component_class in self.component_graph]
         self.input_feature_names = {}
-        self.results = {}
+        # self.results = {}
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -474,6 +475,17 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
+            if len(self.component_graph) != len(other.component_graph):
+                return False
+            for component, other_component in zip(self.component_graph, other.component_graph):
+                if component != other_component:
+                    return False
+            hyperparams_eq = self.hyperparameters == other.hyperparameters
+            params_eq = self.parameters == other.parameters
+            names_eq = self.name == other.name
+            model_family_eq = self.model_family == other.model_family
+            fitted_eq = self._is_fitted == other._is_fitted
+            random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+
+            return hyperparams_eq and params_eq and names_eq and model_family_eq and fitted_eq and random_state_eq
+        return False

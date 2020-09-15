@@ -2,11 +2,11 @@ import copy
 from abc import ABC, abstractmethod
 
 import cloudpickle
-import numpy as np
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
+    check_random_state_equality,
     classproperty,
     get_logger,
     get_random_state,
@@ -146,15 +146,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             names_eq = self.name == other.name
             model_family_eq = self.model_family == other.model_family
             fitted_eq = self._is_fitted == other._is_fitted
-            random_state_eq = True
-            for self_rs, other_rs in zip(self.random_state.get_state(), other.random_state.get_state()):
-                if isinstance(self_rs, np.ndarray) and isinstance(other_rs, np.ndarray):
-                    if not (self_rs == other_rs).all():
-                        random_state_eq = False
-                        break
-                else:
-                    if not (self_rs == other_rs):
-                        random_state_eq = False
-                        break
+            random_state_eq = check_random_state_equality(self.random_state, other.random_state)
             return params_eq and names_eq and model_family_eq and fitted_eq and random_state_eq
         return False
