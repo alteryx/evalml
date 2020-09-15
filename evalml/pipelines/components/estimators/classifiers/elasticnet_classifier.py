@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 from skopt.space import Real
@@ -17,16 +19,19 @@ class ElasticNetClassifier(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=0, **kwargs):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=0, penalty='elasticnet',
+                 **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio,
                       'n_jobs': n_jobs,
-                      'max_iter': max_iter}
+                      'max_iter': max_iter,
+                      'penalty': penalty}
+        if kwargs.get('loss', 'log') != 'log':
+            warnings.warn("Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
+                          f". Originally received '{kwargs['loss']}'.")
+        kwargs["loss"] = "log"
         parameters.update(kwargs)
-
-        en_classifier = SKElasticNetClassifier(loss="log",
-                                               penalty="elasticnet",
-                                               random_state=random_state,
+        en_classifier = SKElasticNetClassifier(random_state=random_state,
                                                **parameters)
         super().__init__(parameters=parameters,
                          component_obj=en_classifier,
