@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pytest import importorskip
 
 from evalml.pipelines.components import CatBoostClassifier
@@ -41,3 +42,14 @@ def test_catboost_classifier_random_state_bounds_rng(X_y_binary):
     rng = make_mock_random_state(CatBoostClassifier.SEED_MAX)
     clf = CatBoostClassifier(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
+
+
+def test_overwrite_allow_writing_files_parameter_in_kwargs():
+
+    with pytest.warns(expected_warning=UserWarning) as warnings:
+        cb = CatBoostClassifier(allow_writing_files=True)
+
+    assert len(warnings) == 1
+    # check that the message matches
+    assert warnings[0].message.args[0] == "Parameter allow_writing_files is being set to False in CatBoostClassifier"
+    assert not cb.parameters['allow_writing_files']

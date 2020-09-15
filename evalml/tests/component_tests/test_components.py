@@ -139,7 +139,7 @@ def test_describe_component():
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1}}
-    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000}}
+    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
     assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000, 'normalize': False}}
     assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
     assert et_regressor.describe(return_dict=True) == {'name': 'Extra Trees Regressor', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
@@ -769,3 +769,15 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
     component.save(path, pickle_protocol=42)
     assert len(mock_cloudpickle_dump.call_args_list) == 1
     assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+def test_estimators_accept_all_kwargs(estimator_class):
+    estimator = estimator_class()
+    if estimator._component_obj is None:
+        pytest.skip(f"Skipping {estimator_class} because does not have component object.")
+    params = estimator._component_obj.get_params()
+    if estimator_class.model_family == ModelFamily.CATBOOST:
+        # Deleting because we call it random_state in our api
+        del params["random_seed"]
+    estimator_class(**params)
