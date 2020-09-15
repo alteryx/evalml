@@ -781,3 +781,19 @@ def test_estimators_accept_all_kwargs(estimator_class):
         # Deleting because we call it random_state in our api
         del params["random_seed"]
     estimator_class(**params)
+
+
+def test_component_equality():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+        def __init__(self, param_1, param_2, random_state=0, **kwargs):
+            parameters = {"param_1": param_1,
+                          "param_2": param_2}
+            parameters.update(kwargs)
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    assert MockComponent(1, 2) == MockComponent(1, 2)

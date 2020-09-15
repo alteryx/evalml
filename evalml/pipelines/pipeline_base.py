@@ -471,3 +471,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             A new instance of this pipeline with identical parameters and components
         """
         return self.__class__(self.parameters, random_state=random_state)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False

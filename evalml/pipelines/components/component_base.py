@@ -138,3 +138,12 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            params_eq = self._parameters == other._parameters
+            names_eq = self.name == other.name
+            model_family_eq = self.model_family == other.model_family
+            return params_eq and names_eq and model_family_eq
+        else:
+            return False
