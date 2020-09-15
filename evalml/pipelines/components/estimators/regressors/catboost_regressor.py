@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 import pandas as pd
 from skopt.space import Integer, Real
@@ -29,12 +30,17 @@ class CatBoostRegressor(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, random_state=0, **kwargs):
+    def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=False,
+                 random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,
-                      'bootstrap_type': bootstrap_type}
+                      'bootstrap_type': bootstrap_type,
+                      'silent': silent}
+        if kwargs.get('allow_writing_files', False):
+            warnings.warn("Parameter allow_writing_files is being set to False in CatBoostRegressor")
+        kwargs["allow_writing_files"] = False
         parameters.update(kwargs)
 
         cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
@@ -44,9 +50,7 @@ class CatBoostRegressor(Estimator):
         if bootstrap_type is None:
             cb_parameters.pop('bootstrap_type')
         cb_regressor = catboost.CatBoostRegressor(**cb_parameters,
-                                                  random_seed=random_seed,
-                                                  silent=True,
-                                                  allow_writing_files=False)
+                                                  random_seed=random_seed)
         super().__init__(parameters=parameters,
                          component_obj=cb_regressor,
                          random_state=random_state)

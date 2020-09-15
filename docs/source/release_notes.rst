@@ -16,6 +16,9 @@ Release Notes
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
         * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
         * OneHotEncoder preserves the custom index in the input data :pr:`1146`
+        * Fixed representation for `ModelFamily` :pr:`1165`
+        * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
+        * Users can now pass in any valid kwargs to all estimators :pr:`1157`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
     * Documentation Changes
@@ -24,9 +27,11 @@ Release Notes
         * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
         * Updated README.md example to load demo dataset :pr:`1151`
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
+        * Swapped mapping of breast cancer targets in `model_understanding.ipynb` :pr:`1170`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
         * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
+        * Fixed release notes check-in test for `Update Dependencies` actions :pr:`1172`
 
 .. warning::
 
