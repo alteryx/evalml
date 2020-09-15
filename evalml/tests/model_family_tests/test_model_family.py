@@ -5,7 +5,7 @@ from evalml.model_family import ModelFamily, handle_model_family
 
 @pytest.fixture
 def correct_model_families():
-    correct_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.LIGHTGBM, ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES, ModelFamily.BASELINE, ModelFamily.NONE]
+    correct_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.LIGHTGBM, ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES, ModelFamily.BASELINE, ModelFamily.ENSEMBLE, ModelFamily.NONE]
     yield correct_model_families
 
 
