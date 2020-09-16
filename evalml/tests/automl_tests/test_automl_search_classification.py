@@ -82,9 +82,9 @@ def test_max_iterations(X_y_binary):
     assert len(automl.full_rankings) == max_iterations
 
 
-def test_max_pipelines_deprecation():
-    with pytest.warns(DeprecationWarning, match="`max_pipelines will be deprecated in the next release. Use `max_iterations` instead."):
-        AutoMLSearch(problem_type='binary', max_pipelines=5)
+def test_max_pipelines_deprecation(caplog):
+    AutoMLSearch(problem_type='binary', max_pipelines=5)
+    assert "`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead." in caplog.text
 
 
 def test_recall_error(X_y_binary):
