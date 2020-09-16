@@ -2,6 +2,7 @@ import importlib
 import warnings
 from collections import namedtuple
 
+import pandas as pd
 import numpy as np
 from sklearn.utils import check_random_state
 
@@ -220,3 +221,28 @@ def jupyter_check():
         return True
     except NameError:
         return False
+
+
+def detect_problem_type(y):
+    """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression)
+
+    Arguments:
+        y (pd.Series): the target labels to predict
+
+    Returns:
+        String: string representation for the problem type
+    """
+    y = pd.Series(y)
+    num_classes = y.nunique()
+    if num_classes < 2:
+        raise ValueError("Less than 2 classes detected!")
+    elif num_classes == 2:
+        return "binary"
+    else:
+        if pd.api.types.is_float_dtype(y):
+            y2 = y.copy().astype('int64')
+            if all(y == y2):
+                # if all floats are equivalent to their int counterpart (ie 1.0 == 1)
+                return 'multiclass'
+            return 'regression'
+        return 'multiclass'

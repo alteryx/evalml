@@ -11,6 +11,7 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `detect_problem_type` to `gen_utils.py` to automatically detect the problem type given targets :pr:``
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
