@@ -22,6 +22,7 @@ Release Notes
         * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
+        * Removed tqdm as a dependency :pr:`1177`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
