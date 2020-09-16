@@ -251,25 +251,35 @@ def test_make_pipeline_from_components():
 
     imp = Imputer(numeric_impute_strategy='median')
     est = RandomForestClassifier()
-
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline')
     components_list = pipeline.component_graph
-    assert len(components_list) == 2
-    assert components_list[0] == imp
-    assert components_list[1] == est
+    assert components_list == [imp, est]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
+    expected_parameters = {
+        'Imputer': {
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'median',
+            'categorical_fill_value': None,
+            'numeric_fill_value': None},
+        'Random Forest Classifier': {
+            'n_estimators': 100,
+            'max_depth': 6,
+            'n_jobs': -1}
+    }
+    assert pipeline.parameters == expected_parameters
 
     class DummyEstimator(Estimator):
         name = "Dummy!"
         model_family = "foo"
         supported_problem_types = [ProblemTypes.BINARY]
         parameters = {'bar': 'baz'}
-
     pipeline = make_pipeline_from_components([DummyEstimator()], ProblemTypes.BINARY)
     components_list = pipeline.component_graph
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
+    expected_parameters = {'Dummy!': {'bar': 'baz'}}
+    assert pipeline.parameters == expected_parameters
 
 
 def test_required_fields():
