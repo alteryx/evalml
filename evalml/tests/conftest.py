@@ -19,6 +19,9 @@ from evalml.pipelines.components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    _nonstackable_model_families
+)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
@@ -57,26 +60,6 @@ def all_binary_pipeline_classes(all_pipeline_classes):
 @pytest.fixture
 def all_multiclass_pipeline_classes(all_pipeline_classes):
     return [pipeline_class for pipeline_class in all_pipeline_classes if issubclass(pipeline_class, MulticlassClassificationPipeline)]
-
-
-@pytest.fixture
-def all_classification_estimator_classes():
-    classification_estimators = []
-    for estimator_class in _all_estimators():
-        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
-        if set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS}:
-            classification_estimators.append(estimator_class)
-    return classification_estimators
-
-
-@pytest.fixture
-def all_regression_estimators_classes():
-    regression_estimators = []
-    for estimator_class in _all_estimators():
-        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
-        if set(supported_problem_types) == {ProblemTypes.REGRESSION}:
-            regression_estimators.append(estimator_class)
-    return regression_estimators
 
 
 def pytest_addoption(parser):
@@ -279,3 +262,27 @@ def multiclass_objectives_allowed_in_automl():
 @pytest.fixture
 def regression_objectives_allowed_in_automl():
     return [obj() for obj in get_objectives(ProblemTypes.REGRESSION) if obj not in _not_allowed_in_automl]
+
+
+@pytest.fixture
+def stackable_classifiers():
+    stackable_classifiers = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
+            estimator_class.model_family not in _nonstackable_model_families and
+                estimator_class.model_family != ModelFamily.ENSEMBLE):
+            stackable_classifiers.append(estimator_class())
+    return stackable_classifiers
+
+
+@pytest.fixture
+def stackable_regressors():
+    stackable_regressors = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if (set(supported_problem_types) == {ProblemTypes.REGRESSION} and
+            estimator_class.model_family not in _nonstackable_model_families and
+                estimator_class.model_family != ModelFamily.ENSEMBLE):
+            stackable_regressors.append(estimator_class())
+    return stackable_regressors

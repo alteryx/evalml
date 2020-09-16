@@ -1,24 +1,27 @@
 from sklearn.ensemble import StackingRegressor
 
-from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
-from evalml.pipelines.components.ensemble import EnsembleBase
+from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _nonstackable_model_families
 
 
-class StackedEnsembleRegressor(EnsembleBase):
+class StackedEnsembleRegressor(StackedEnsembleBase):
+    _stacking_estimator_class = StackingRegressor
     """Stacked Ensemble Regressor."""
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.REGRESSION]
     hyperparameter_ranges = {}
+    _default_final_estimator = LinearRegressor
 
-    def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
+    def __init__(self, estimators=None, final_estimator=None,
+                 cv=None, n_jobs=-1, random_state=0, **kwargs):
         """Stacked ensemble regressor.
 
         Arguments:
+            estimators (list(Estimator or subclass)): List of Estimator objects to use as the base estimators.
+                This must not be None or an empty list or else EnsembleMissingEstimatorsError will be raised.
             final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
@@ -29,52 +32,7 @@ class StackedEnsembleRegressor(EnsembleBase):
                     - An iterable yielding (train, test) splits
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-            random_state (int, np.random.RandomState): seed for the random number generator
-            **kwargs: 'estimators' containing a list of Estimator objects must be passed as a keyword argument, or else EnsembleMissingEstimatorsError will be raised
+            random_state (int, np.random.RandomState): Seed for the random number generator
         """
-        # if 'estimators' not in kwargs:
-        #     raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
-        # estimators = kwargs.get('estimators')
-        # parameters = {
-        #     "estimators": estimators,
-        #     "final_estimator": final_estimator,
-        #     "cv": cv,
-        #     "n_jobs": n_jobs
-        # }
-        # contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
-        # if contains_non_stackable:
-        #     raise ValueError("Regressors with any of the following model families cannot be used as base estimators in StackedEnsembleRegressor: {}".format(_nonstackable_model_families))
-        # sklearn_parameters = parameters.copy()
-        # parameters.update(kwargs)
-        # if final_estimator is None:
-        #     final_estimator = LinearRegressor()
-        # sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
-        # sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
-        # super().__init__(parameters=parameters,
-        #                  component_obj=StackingRegressor(**sklearn_parameters),
-        #                  random_state=random_state)
-        if 'estimators' not in kwargs:
-            raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
-        estimators = kwargs.get('estimators')
-        parameters = {
-            "estimators": estimators,
-            "final_estimator": final_estimator,
-            "cv": cv,
-            "n_jobs": n_jobs
-        }
-        contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
-        if contains_non_stackable:
-            raise ValueError("Regressors with any of the following model families cannot be used as base estimators in StackedEnsembleRegressor: {}".format(_nonstackable_model_families))
-        sklearn_parameters = parameters.copy()
-        parameters.update(kwargs)
-        if final_estimator is None:
-            final_estimator = LinearRegressor()
-        sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
-        sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
-        super().__init__(parameters=parameters,
-                         component_obj=StackingRegressor(**sklearn_parameters),
-                         random_state=random_state)
-
-    @property
-    def feature_importance(self):
-        raise NotImplementedError("feature_importance is not implemented for StackedEnsembleRegressor")
+        super().__init__(estimators=estimators, final_estimator=final_estimator, cv=cv,
+                         n_jobs=n_jobs, random_state=random_state, **kwargs)

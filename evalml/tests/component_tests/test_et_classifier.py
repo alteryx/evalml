@@ -13,7 +13,7 @@ def test_model_family():
 def test_problem_types():
     assert ProblemTypes.BINARY in ExtraTreesClassifier.supported_problem_types
     assert ProblemTypes.MULTICLASS in ExtraTreesClassifier.supported_problem_types
-    assert len(ExtraTreesClassifier.supported_problem_types) == 2
+    assert ExtraTreesClassifier.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
 
 def test_et_parameters():

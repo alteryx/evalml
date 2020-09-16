@@ -1,24 +1,27 @@
 from sklearn.ensemble import StackingClassifier
 
-from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
-from evalml.pipelines.components.ensemble import EnsembleBase
+from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _nonstackable_model_families
 
 
-class StackedEnsembleClassifier(EnsembleBase):
+class StackedEnsembleClassifier(StackedEnsembleBase):
     """Stacked Ensemble Classifier."""
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
     hyperparameter_ranges = {}
+    _stacking_estimator_class = StackingClassifier
+    _default_final_estimator = LogisticRegressionClassifier
 
-    def __init__(self, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
+    def __init__(self, estimators=None, final_estimator=None,
+                 cv=None, n_jobs=-1, random_state=0, **kwargs):
         """Stacked ensemble classifier.
 
         Arguments:
+            estimators (list(Estimator or subclass)): List of Estimator objects to use as the base estimators.
+                This must not be None or an empty list or else EnsembleMissingEstimatorsError will be raised.
             final_estimator (Estimator or subclass): The classifier used to combine the base estimators. If None, uses LogisticRegressionClassifier.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
@@ -30,30 +33,6 @@ class StackedEnsembleClassifier(EnsembleBase):
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
-            **kwargs: 'estimators' containing a list of Estimator objects must be passed as a keyword argument, or else EnsembleMissingEstimatorsError will be raised
         """
-        if 'estimators' not in kwargs:
-            raise EnsembleMissingEstimatorsError("`estimators` must be passed to the constructor as a keyword argument")
-        estimators = kwargs.get('estimators')
-        parameters = {
-            "estimators": estimators,
-            "final_estimator": final_estimator,
-            "cv": cv,
-            "n_jobs": n_jobs
-        }
-        contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
-        if contains_non_stackable:
-            raise ValueError("Classifiers with any of the following model families cannot be used as base estimators in StackedEnsembleClassifier: {}".format(_nonstackable_model_families))
-        sklearn_parameters = parameters.copy()
-        parameters.update(kwargs)
-        if final_estimator is None:
-            final_estimator = LogisticRegressionClassifier()
-        sklearn_parameters.update({"final_estimator": final_estimator._component_obj})
-        sklearn_parameters.update({"estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)]})
-        super().__init__(parameters=parameters,
-                         component_obj=StackingClassifier(**sklearn_parameters),
-                         random_state=random_state)
-
-    @property
-    def feature_importance(self):
-        raise NotImplementedError("feature_importance is not implemented for StackedEnsembleClassifier")
+        super().__init__(estimators=estimators, final_estimator=final_estimator,
+                         cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)

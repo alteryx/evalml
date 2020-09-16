@@ -1097,46 +1097,62 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,):
+def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                       stackable_classifiers,
+                                       stackable_regressors,
+                                       logistic_regression_binary_pipeline_class,
+                                       logistic_regression_multiclass_pipeline_class,
+                                       linear_regression_pipeline_class):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-
-        class StackedPipeline(BinaryClassificationPipeline):
-            component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
-            model_family = ModelFamily.ENSEMBLE
+        base_pipeline_class = BinaryClassificationPipeline
         parameters = {
             "Stacked Ensemble Classifier": {
-                "estimators": [RandomForestClassifier()],
-                "final_estimator": RandomForestClassifier(),
+                "estimators": stackable_classifiers
             }
         }
+        graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
+        comparison_pipeline_class = logistic_regression_binary_pipeline_class
+        objective = 'Log Loss Binary'
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-
-        class StackedPipeline(MulticlassClassificationPipeline):
-            component_graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
-            model_family = ModelFamily.ENSEMBLE
+        base_pipeline_class = MulticlassClassificationPipeline
         parameters = {
             "Stacked Ensemble Classifier": {
-                "estimators": [RandomForestClassifier()],
-                "final_estimator": RandomForestClassifier(),
+                "estimators": stackable_classifiers,
             }
         }
+        graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
+        comparison_pipeline_class = logistic_regression_multiclass_pipeline_class
+        objective = 'Log Loss Multiclass'
+
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-
-        class StackedPipeline(RegressionPipeline):
-            component_graph = ['Simple Imputer', 'Stacked Ensemble Regressor']
-            model_family = ModelFamily.ENSEMBLE
+        base_pipeline_class = RegressionPipeline
         parameters = {
             "Stacked Ensemble Regressor": {
-                "estimators": [RandomForestRegressor()],
-                "final_estimator": RandomForestRegressor(),
+                "estimators": stackable_regressors,
             }
         }
-    pipeline = StackedPipeline(parameters)
+        graph = ['Simple Imputer', 'Stacked Ensemble Regressor']
+        comparison_pipeline_class = linear_regression_pipeline_class
+        objective = 'R2'
+
+    class StackedPipeline(base_pipeline_class):
+        component_graph = graph
+        model_family = ModelFamily.ENSEMBLE
+
+    pipeline = StackedPipeline(parameters=parameters)
     pipeline.fit(X, y)
+    comparison_pipeline = comparison_pipeline_class(parameters={})
+    comparison_pipeline.fit(X, y)
     assert not np.isnan(pipeline.predict(X)).values.any()
+
+    pipeline_score = pipeline.score(X, y, [objective])[objective]
+    comparison_pipeline_score = comparison_pipeline.score(X, y, [objective])[objective]
 
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
         assert not np.isnan(pipeline.predict_proba(X)).values.any()
+        assert (pipeline_score <= comparison_pipeline_score)
+    else:
+        assert (pipeline_score >= comparison_pipeline_score)

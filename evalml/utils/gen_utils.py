@@ -9,7 +9,6 @@ from evalml.exceptions import (
     EnsembleMissingEstimatorsError,
     MissingComponentError
 )
-from evalml.model_family import ModelFamily
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -19,7 +18,6 @@ boolean = ['bool']
 numeric_and_boolean_dtypes = numeric_dtypes + boolean
 categorical_dtypes = ['object', 'category']
 datetime_dtypes = [np.datetime64]
-_nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
 
 def import_or_raise(library, error_msg=None, warning=False):

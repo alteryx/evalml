@@ -9,32 +9,30 @@ from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     BaselineRegressor,
+    Estimator,
     RandomForestRegressor
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
-from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _nonstackable_model_families
-
-
-@pytest.fixture
-def stackable_regressors(all_regression_estimators_classes):
-    estimators = [estimator_class() for estimator_class in all_regression_estimators_classes
-                  if estimator_class.model_family not in _nonstackable_model_families and
-                  estimator_class.model_family != ModelFamily.ENSEMBLE]
-    return estimators
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    _nonstackable_model_families
+)
+from evalml.pipelines.components.utils import _all_estimators
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def test_stacked_model_family():
     assert StackedEnsembleRegressor.model_family == ModelFamily.ENSEMBLE
 
 
-def test_stacked_ensemble_init_without_estimators_kwarg(stackable_regressors):
-    with pytest.raises(EnsembleMissingEstimatorsError, match='must be passed to the constructor as a keyword argument'):
+def test_stacked_ensemble_init_with_invalid_estimators_parameter():
+    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
         StackedEnsembleRegressor()
+    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
+        StackedEnsembleRegressor(estimators=[])
 
 
-def test_stacked_ensemble_nonstackable_model_families(all_regression_estimators_classes):
-    with pytest.raises(ValueError, match="Regressors with any of the following model families cannot be used as base estimators in StackedEnsembleRegressor"):
+def test_stacked_ensemble_nonstackable_model_families():
+    with pytest.raises(ValueError, match="Estimators with any of the following model families cannot be used as base estimators"):
         StackedEnsembleRegressor(estimators=[BaselineRegressor()])
 
 
@@ -68,20 +66,23 @@ def test_stacked_ensemble_multilevel():
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_ensemble_parameters(stackable_regressors):
-    clf = StackedEnsembleRegressor(estimators=stackable_regressors, final_estimator=None, random_state=2)
-    expected_parameters = {
-        "estimators": stackable_regressors,
-        "final_estimator": None,
-        'cv': None,
-        'n_jobs': -1
-    }
-    assert clf.parameters == expected_parameters
-
-
 def test_stacked_problem_types():
     assert ProblemTypes.REGRESSION in StackedEnsembleRegressor.supported_problem_types
     assert len(StackedEnsembleRegressor.supported_problem_types) == 1
+
+
+def test_stacked_ensemble_final_estimator_without_component_obj(stackable_regressors):
+    class MockRegressor(Estimator):
+        name = "Mock Regressor"
+        model_family = ModelFamily.RANDOM_FOREST
+        supported_problem_types = [ProblemTypes.REGRESSION]
+
+    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
+        StackedEnsembleRegressor(estimators=stackable_regressors,
+                                 final_estimator=MockRegressor())
+    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
+        StackedEnsembleRegressor(estimators=[MockRegressor()],
+                                 final_estimator=RandomForestRegressor())
 
 
 def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
@@ -106,5 +107,5 @@ def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regresso
     clf.fit(X, y)
     mock_fit.assert_called()
     clf._is_fitted = True
-    with pytest.raises(NotImplementedError, match="feature_importance is not implemented for StackedEnsembleRegressor"):
+    with pytest.raises(NotImplementedError, match="feature_importance is not implemented"):
         clf.feature_importance

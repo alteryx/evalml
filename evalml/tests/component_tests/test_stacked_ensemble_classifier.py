@@ -9,36 +9,34 @@ from evalml.exceptions import EnsembleMissingEstimatorsError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     BaselineClassifier,
+    Estimator,
     RandomForestClassifier
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
-from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _nonstackable_model_families
-
-
-@pytest.fixture
-def stackable_classifiers(all_classification_estimator_classes):
-    estimators = [estimator_class() for estimator_class in all_classification_estimator_classes
-                  if estimator_class.model_family not in _nonstackable_model_families and
-                  estimator_class.model_family != ModelFamily.ENSEMBLE]
-    return estimators
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    _nonstackable_model_families
+)
+from evalml.pipelines.components.utils import _all_estimators
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def test_stacked_model_family():
     assert StackedEnsembleClassifier.model_family == ModelFamily.ENSEMBLE
 
 
-def test_stacked_ensemble_init_without_estimators_kwarg(stackable_classifiers):
-    with pytest.raises(EnsembleMissingEstimatorsError, match='must be passed to the constructor as a keyword argument'):
+def test_stacked_ensemble_init_with_invalid_estimators_parameter():
+    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
         StackedEnsembleClassifier()
+    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
+        StackedEnsembleClassifier(estimators=[])
 
 
-def test_stacked_ensemble_nonstackable_model_families(all_classification_estimator_classes):
-    with pytest.raises(ValueError, match="Classifiers with any of the following model families cannot be used as base estimators in StackedEnsembleClassifier"):
+def test_stacked_ensemble_nonstackable_model_families():
+    with pytest.raises(ValueError, match="Estimators with any of the following model families cannot be used as base estimators"):
         StackedEnsembleClassifier(estimators=[BaselineClassifier()])
 
 
-def test_stacked_ensemble_init_with_multiple_same_estimators(stackable_classifiers, X_y_binary):
+def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary):
     # Checks that it is okay to pass multiple of the same type of estimator
     X, y = X_y_binary
     estimators = [RandomForestClassifier(), RandomForestClassifier()]
@@ -68,21 +66,23 @@ def test_stacked_ensemble_multilevel():
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_ensemble_parameters(stackable_classifiers):
-    clf = StackedEnsembleClassifier(estimators=stackable_classifiers)
-    expected_parameters = {
-        "estimators": stackable_classifiers,
-        "final_estimator": None,
-        'cv': None,
-        'n_jobs': -1
-    }
-    assert clf.parameters == expected_parameters
-
-
 def test_stacked_problem_types():
     assert ProblemTypes.BINARY in StackedEnsembleClassifier.supported_problem_types
     assert ProblemTypes.MULTICLASS in StackedEnsembleClassifier.supported_problem_types
-    assert len(StackedEnsembleClassifier.supported_problem_types) == 2
+    assert StackedEnsembleClassifier.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+
+def test_stacked_ensemble_final_estimator_without_component_obj(stackable_classifiers):
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.RANDOM_FOREST
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
+        StackedEnsembleClassifier(estimators=stackable_classifiers,
+                                  final_estimator=MockEstimator())
+    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
+        StackedEnsembleClassifier(estimators=[MockEstimator()],
+                                  final_estimator=RandomForestClassifier())
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -125,5 +125,5 @@ def test_stacked_feature_importance(mock_fit, X_y_binary, X_y_multi, stackable_c
     clf.fit(X, y)
     mock_fit.assert_called()
     clf._is_fitted = True
-    with pytest.raises(NotImplementedError, match="feature_importance is not implemented for StackedEnsembleClassifier"):
+    with pytest.raises(NotImplementedError, match="feature_importance is not implemented"):
         clf.feature_importance
