@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
-from .encoder import CategoricalEncoder
+from ..transformer import Transformer
 
 
-class OneHotEncoder(CategoricalEncoder):
+class OneHotEncoder(Transformer):
 
     """One-hot encoder to encode non-numeric data."""
     name = 'One Hot Encoder'
