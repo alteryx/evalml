@@ -27,6 +27,7 @@ from evalml.pipelines.components import (
     DropNullColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
+    Estimator,
     Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -248,13 +249,27 @@ def test_make_pipeline_from_components():
     with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
         make_pipeline_from_components([Imputer], problem_type='binary')
 
-    pipeline = make_pipeline_from_components([Imputer(), LogisticRegressionClassifier()], ProblemTypes.BINARY, custom_name='My Pipeline')
-    parameters = pipeline.parameters
-    assert len(parameters) == 2
-    assert 'Imputer' in parameters
-    assert 'Logistic Regression Classifier' in parameters
+    imp = Imputer(numeric_impute_strategy='median')
+    est = RandomForestClassifier()
+
+    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline')
+    components_list = pipeline.component_graph
+    assert len(components_list) == 2
+    assert components_list[0] == imp
+    assert components_list[1] == est
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
+
+    class DummyEstimator(Estimator):
+        name = "Dummy!"
+        model_family = "foo"
+        supported_problem_types = [ProblemTypes.BINARY]
+        parameters = {'bar': 'baz'}
+
+    pipeline = make_pipeline_from_components([DummyEstimator()], ProblemTypes.BINARY)
+    components_list = pipeline.component_graph
+    assert len(components_list) == 1
+    assert isinstance(components_list[0], DummyEstimator)
 
 
 def test_required_fields():
