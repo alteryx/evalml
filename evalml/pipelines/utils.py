@@ -107,9 +107,9 @@ def make_pipeline(X, y, estimator, problem_type):
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None):
-    """Given a list of component instances and the problem type, a pipeline class is generated with the component instances.
+    """Given a list of component instances and the problem type, a pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. A custom name for
-    the pipeline can optionally be specified.
+    the pipeline can optionally be specified; otherwise the default pipeline name will be 'Templated Pipeline'.
 
    Arguments:
         component_instances (list): a list of all of the components to include in the pipeline
@@ -117,18 +117,19 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         custom_name (string): a name for the new pipeline
 
     Returns:
-        class: PipelineBase subclass with component instances and specified estimator
+        Pipeline instance with component instances and specified estimator
 
     """
     if not isinstance(component_instances[-1], Estimator):
         raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
 
     pipeline_name = custom_name
-    pipeline_parameters = {component.name: component.parameters for component in component_instances}
     problem_type = handle_problem_types(problem_type)
 
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
-        component_graph = pipeline_parameters
+        component_graph = [c.__class__ for c in component_instances]
 
-    return TemplatedPipeline(pipeline_parameters)
+    pipeline_instance = TemplatedPipeline({})
+    pipeline_instance.component_graph = component_instances
+    return pipeline_instance
