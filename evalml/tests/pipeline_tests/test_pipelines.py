@@ -1107,26 +1107,22 @@ def test_pipeline_equality_different_attributes(pipeline_class):
 
     class MockPipeline(pipeline_class):
         name = "Mock Pipeline"
-        # model_family = ModelFamily.NONE
         component_graph = ['Imputer', final_estimator]
 
     class MockPipelineWithADifferentName(pipeline_class):
         name = "Mock Pipeline with a different name"
-        # model_family = ModelFamily.NONE
         component_graph = ['Imputer', final_estimator]
 
     class MockPipelineWithADifferentModelFamily(pipeline_class):
         name = "Mock Pipeline"
-        # model_family = ModelFamily.RANDOM_FOREST
         component_graph = ['Imputer', final_estimator]
 
-    class MockPipelineWithADifferenComponentGraph(pipeline_class):
+    class MockPipelineWithADifferentComponentGraph(pipeline_class):
         name = "Mock Pipeline"
-        # model_family = ModelFamily.LINEAR_MODEL
         component_graph = ['Imputer', different_estimator]
     assert MockPipeline(parameters={}) != MockPipelineWithADifferentName(parameters={})
     assert MockPipeline(parameters={}) != MockPipelineWithADifferentModelFamily(parameters={})
-    assert MockPipeline(parameters={}) != MockPipelineWithADifferenComponentGraph(parameters={})
+    assert MockPipeline(parameters={}) != MockPipelineWithADifferentComponentGraph(parameters={})
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])

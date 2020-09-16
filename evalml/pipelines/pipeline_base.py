@@ -475,8 +475,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            if len(self.component_graph) != len(other.component_graph):
-                return False
             for component, other_component in zip(self.component_graph, other.component_graph):
                 if component != other_component:
                     return False
