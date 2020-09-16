@@ -158,7 +158,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Arguments:
             feature_name (str): the name of any feature provided to one-hot encoder during fit
         Returns:
-            list: the unique categories, in the same dtype as they were provided during fit
+            np.array: the unique categories, in the same dtype as they were provided during fit
         """
         try:
             index = self._cols_to_encode.index(feature_name)
