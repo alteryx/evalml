@@ -46,14 +46,12 @@ def test_binary_classification_estimators_predict_proba_col_order():
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 
 
-def test_estimator_equality():
+def test_estimator_equality_different_supported_problem_types():
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
 
-    class MockEstimatorWithDifferentProblemTypes(Estimator):
-        name = "Mock Estimator"
-        model_family = ModelFamily.LINEAR_MODEL
-        supported_problem_types = ['binary', 'multiclass']
-    assert MockEstimator() != MockEstimatorWithDifferentProblemTypes()
+    mock_estimator = MockEstimator()
+    mock_estimator.supported_problem_types = ['binary', 'multiclass']
+    assert mock_estimator != MockEstimator()

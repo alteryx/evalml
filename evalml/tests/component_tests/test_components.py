@@ -783,20 +783,17 @@ def test_estimators_accept_all_kwargs(estimator_class):
     estimator_class(**params)
 
 
-def test_component_equality_different_attributes():
+def test_component_equality_different_classes():
+    # Tests that two classes which are equivalent are not equal
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
     class MockComponentWithADifferentName(ComponentBase):
-        name = "Mock Component with a different name"
+        name = "Mock Component"
         model_family = ModelFamily.NONE
 
-    class MockComponentWithADifferentModelFamily(ComponentBase):
-        name = "Mock Component"
-        model_family = ModelFamily.RANDOM_FOREST
     assert MockComponent() != MockComponentWithADifferentName()
-    assert MockComponent() != MockComponentWithADifferentModelFamily()
 
 
 def test_component_equality_subclasses():
