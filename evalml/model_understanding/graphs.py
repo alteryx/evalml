@@ -132,7 +132,7 @@ def roc_curve(y_true, y_pred_proba):
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied.
+        y_pred_proba (pd.DataFrame, pd.Series, or np.array): predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -149,6 +149,8 @@ def roc_curve(y_true, y_pred_proba):
 
     if y_pred_proba.ndim == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
+    if y_pred_proba.shape[1] == 2:
+        y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
 
     nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
     y_true = y_true[~nan_indices]
