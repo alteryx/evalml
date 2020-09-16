@@ -11,6 +11,7 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added support for multiclass classification for `roc_curve` :pr:`1164`
         * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
@@ -48,6 +49,7 @@ Release Notes
         * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
         * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
         * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
+        * Results from `roc_curve` will now return as a list of dictionaries with each dictionary representing a class :pr:`1164`
 
 
 **v0.13.1 Aug. 25, 2020**
