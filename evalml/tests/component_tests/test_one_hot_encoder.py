@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import get_random_state
 
@@ -356,3 +357,15 @@ def test_ohe_preserves_custom_index(index):
     new_df = ohe.fit_transform(df)
     pd.testing.assert_index_equal(new_df.index, df.index)
     assert not new_df.isna().any(axis=None)
+
+
+def test_ohe_categories():
+    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "e"],
+                      'col_2': ["a", "a", "a", "a", "a"],
+                      'col_3': ["a", "a", "e", "e", "e"]})
+    ohe = OneHotEncoder()
+    with pytest.raises(ComponentNotYetFittedError, match='This OneHotEncoder is not fitted yet. You must fit OneHotEncoder before calling categories.'):
+        ohe.categories()
+
+    ohe.fit(X)
+    np.testing.assert_array_equal(ohe.categories('col_1'), np.array(['a', 'b', 'c', 'd', 'e']))

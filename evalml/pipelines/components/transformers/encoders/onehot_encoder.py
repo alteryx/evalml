@@ -5,9 +5,15 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from ..transformer import Transformer
 
+from evalml.pipelines.components import ComponentBaseMeta
 
-class OneHotEncoder(Transformer):
 
+class OneHotEncoderMeta(ComponentBaseMeta):
+    """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""
+    METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + ['categories']
+
+
+class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """One-hot encoder to encode non-numeric data."""
     name = 'One Hot Encoder'
     hyperparameter_ranges = {}
@@ -54,12 +60,14 @@ class OneHotEncoder(Transformer):
         if top_n is not None and categories is not None:
             raise ValueError("Cannot use categories and top_n arguments simultaneously")
 
+        self._cols_to_encode = None
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
 
-    def _get_cat_cols(self, X):
+    @staticmethod
+    def _get_cat_cols(X):
         """Get names of 'object' or 'categorical' columns in the DataFrame."""
         obj_cols = []
         for idx, dtype in enumerate(X.dtypes):
@@ -72,24 +80,24 @@ class OneHotEncoder(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_t = X
-        cols_to_encode = self._get_cat_cols(X_t)
+        self._cols_to_encode = self._get_cat_cols(X_t)
 
         if self.parameters['handle_missing'] == "as_category":
-            X_t[cols_to_encode] = X_t[cols_to_encode].replace(np.nan, "nan")
+            X_t[self._cols_to_encode] = X_t[self._cols_to_encode].replace(np.nan, "nan")
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
 
-        if len(cols_to_encode) == 0:
+        if len(self._cols_to_encode) == 0:
             categories = 'auto'
 
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
-            if len(categories) != len(cols_to_encode) or not isinstance(categories[0], list):
+            if len(categories) != len(self._cols_to_encode) or not isinstance(categories[0], list):
                 raise ValueError('Categories argument must contain a list of categories for each categorical feature')
 
         else:
             categories = []
-            for col in X_t[cols_to_encode]:
+            for col in X_t[self._cols_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
@@ -104,7 +112,7 @@ class OneHotEncoder(Transformer):
         self._encoder = SKOneHotEncoder(categories=categories,
                                         drop=self.parameters['drop'],
                                         handle_unknown=self.parameters['handle_unknown'])
-        self._encoder.fit(X_t[cols_to_encode])
+        self._encoder.fit(X_t[self._cols_to_encode])
         return self
 
     def transform(self, X, y=None):
@@ -143,3 +151,17 @@ class OneHotEncoder(Transformer):
             X_t = pd.concat([X_t, X_cat], axis=1)
 
         return X_t
+
+    def categories(self, feature_name):
+        """Returns a list of the unique categories to be encoded for the particular feature, in order.
+
+        Arguments:
+            feature_name (str): the name of any feature provided to one-hot encoder during fit
+        Returns:
+            list: the unique categories, in the same dtype as they were provided during fit
+        """
+        try:
+            index = self._cols_to_encode.index(feature_name)
+        except Exception:
+            raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
+        return self._encoder.categories_[index]
