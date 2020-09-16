@@ -195,7 +195,7 @@ class AutoMLSearch:
         if max_pipelines:
             if not max_iterations:
                 max_iterations = max_pipelines
-            warnings.warn("`max_pipelines will be deprecated in the next release. Use `max_iterations` instead.", DeprecationWarning)
+            logger.warning("`max_pipelines will be deprecated in the next release. Use `max_iterations` instead.")
 
         self.max_iterations = max_iterations
         if self.max_iterations is None and self.max_time is None and _max_batches is None:
