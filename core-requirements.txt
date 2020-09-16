@@ -3,7 +3,6 @@ pandas>=0.25.0
 scipy>=1.2.1
 scikit-learn>=0.23
 scikit-optimize>=0.8
-tqdm>=4.33.0
 colorama
 cloudpickle>=0.2.2
 click>=7.0.0
