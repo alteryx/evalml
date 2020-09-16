@@ -28,7 +28,6 @@ from .transformers import (
     Imputer,
     StandardScaler,
     FeatureSelector,
-    CategoricalEncoder,
     DropColumns,
     DropNullColumns,
     DateTimeFeaturizer,

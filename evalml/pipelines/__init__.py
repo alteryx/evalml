@@ -14,7 +14,6 @@ from .components import (
     XGBoostClassifier,
     XGBoostRegressor,
     FeatureSelector,
-    CategoricalEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     CatBoostClassifier,
