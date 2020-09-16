@@ -141,11 +141,13 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return cloudpickle.load(f)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            params_eq = self._parameters == other._parameters
-            names_eq = self.name == other.name
-            model_family_eq = self.model_family == other.model_family
-            fitted_eq = self._is_fitted == other._is_fitted
-            random_state_eq = check_random_state_equality(self.random_state, other.random_state)
-            return params_eq and names_eq and model_family_eq and fitted_eq and random_state_eq
-        return False
+        if not isinstance(other, self.__class__):
+            return False
+        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        if not random_state_eq:
+            return False
+        attributes_to_check = ['_parameters', 'name', 'model_family', '_is_fitted']
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True

@@ -474,16 +474,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.__class__(self.parameters, random_state=random_state)
 
     def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            for component, other_component in zip(self.component_graph, other.component_graph):
-                if component != other_component:
-                    return False
-            hyperparams_eq = self.hyperparameters == other.hyperparameters
-            params_eq = self.parameters == other.parameters
-            names_eq = self.name == other.name
-            model_family_eq = self.model_family == other.model_family
-            fitted_eq = self._is_fitted == other._is_fitted
-            random_state_eq = check_random_state_equality(self.random_state, other.random_state)
-
-            return hyperparams_eq and params_eq and names_eq and model_family_eq and fitted_eq and random_state_eq
-        return False
+        if not isinstance(other, self.__class__):
+            return False
+        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        if not random_state_eq:
+            return False
+        attributes_to_check = ['hyperparameters', 'parameters', 'name', 'model_family', '_is_fitted', 'component_graph']
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
