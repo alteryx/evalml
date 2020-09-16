@@ -1,4 +1,3 @@
-import warnings
 from abc import ABC, abstractmethod
 
 from evalml.tuners import SKOptTuner
