@@ -360,12 +360,14 @@ def test_ohe_preserves_custom_index(index):
 
 
 def test_ohe_categories():
-    X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "e"],
-                      'col_2': ["a", "a", "a", "a", "a"],
-                      'col_3': ["a", "a", "e", "e", "e"]})
-    ohe = OneHotEncoder()
+    X = pd.DataFrame({'col_1': ['a'] * 10,
+                      'col_2': ['a'] * 3 + ['b'] * 3 + ['c'] * 2 + ['d'] * 2})
+    ohe = OneHotEncoder(top_n=2)
     with pytest.raises(ComponentNotYetFittedError, match='This OneHotEncoder is not fitted yet. You must fit OneHotEncoder before calling categories.'):
-        ohe.categories()
+        ohe.categories('col_1')
 
     ohe.fit(X)
-    np.testing.assert_array_equal(ohe.categories('col_1'), np.array(['a', 'b', 'c', 'd', 'e']))
+    np.testing.assert_array_equal(ohe.categories('col_1'), np.array(['a']))
+    np.testing.assert_array_equal(ohe.categories('col_2'), np.array(['a', 'b']))
+    with pytest.raises(ValueError, match='Feature "col_12345" was not provided to one-hot encoder as a training feature'):
+        ohe.categories('col_12345')
