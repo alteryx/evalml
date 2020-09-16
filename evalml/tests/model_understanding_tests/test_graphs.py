@@ -275,6 +275,27 @@ def test_roc_curve_binary(data_type):
     assert isinstance(roc_curve_data['tpr_rates'], np.ndarray)
     assert isinstance(roc_curve_data['thresholds'], np.ndarray)
 
+    y_true = np.array([1, 1, 0, 0])
+    y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
+    if data_type == 'pd':
+        y_true = pd.Series(y_true)
+        y_predict_proba = pd.DataFrame(y_predict_proba)
+    roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
+    fpr_rates = roc_curve_data.get('fpr_rates')
+    tpr_rates = roc_curve_data.get('tpr_rates')
+    thresholds = roc_curve_data.get('thresholds')
+    auc_score = roc_curve_data.get('auc_score')
+    fpr_expected = np.array([0, 0.5, 0.5, 1, 1])
+    tpr_expected = np.array([0, 0, 0.5, 0.5, 1])
+    thresholds_expected = np.array([1.8, 0.8, 0.4, 0.35, 0.1])
+    assert np.array_equal(fpr_expected, fpr_rates)
+    assert np.array_equal(tpr_expected, tpr_rates)
+    assert np.array_equal(thresholds_expected, thresholds)
+    assert auc_score == pytest.approx(0.25, 1e-5)
+    assert isinstance(roc_curve_data['fpr_rates'], np.ndarray)
+    assert isinstance(roc_curve_data['tpr_rates'], np.ndarray)
+    assert isinstance(roc_curve_data['thresholds'], np.ndarray)
+
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_roc_curve_multiclass(data_type):
