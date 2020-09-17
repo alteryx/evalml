@@ -12,7 +12,8 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
-    import_or_raise
+    import_or_raise,
+    jupyter_check
 )
 
 
@@ -190,3 +191,25 @@ def test_import_or_warn_errors(dummy_importlib):
         import_or_raise("_evalml", "Additional error message", warning=True)
     with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
         import_or_raise("attr_error_lib", warning=True)
+
+
+@patch('evalml.utils.gen_utils.get_ipython')
+def test_jupyter_check_mock(mock_get_ipython):
+    mock_get_ipython.return_value = True
+    assert jupyter_check()
+    assert mock_get_ipython.called
+
+    mock_get_ipython.reset()
+    mock_get_ipython.side_effect = NameError('BOOM')
+    assert not jupyter_check()
+    assert mock_get_ipython.called
+
+    mock_get_ipython.reset()
+    mock_get_ipython.side_effect = Exception('BOOM')
+    assert not jupyter_check()
+    assert mock_get_ipython.called
+
+    mock_get_ipython.reset()
+    mock_get_ipython.side_effect = ImportError('BOOM')
+    assert not jupyter_check()
+    assert mock_get_ipython.called

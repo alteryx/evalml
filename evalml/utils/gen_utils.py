@@ -8,6 +8,13 @@ from sklearn.utils import check_random_state
 from evalml.exceptions import MissingComponentError
 from evalml.utils import get_logger
 
+try:
+    from IPython import get_ipython
+except ImportError:
+    pass
+except Exception:
+    pass
+
 logger = get_logger(__file__)
 
 
@@ -219,4 +226,6 @@ def jupyter_check():
         get_ipython()
         return True
     except NameError:
+        return False
+    except Exception:
         return False
