@@ -11,6 +11,7 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `__eq__` for `ComponentBase` and `PipelineBase` :pr:`1178`
         * Added support for multiclass classification for `roc_curve` :pr:`1164`
         * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
         * Added utility function to create pipeline instances from a list of component instances :pr:`1176`

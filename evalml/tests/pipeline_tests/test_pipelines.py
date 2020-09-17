@@ -1135,3 +1135,125 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
             clf.predict(X)
             mock_predict.assert_called()
     clf.feature_importance
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality_different_attributes(pipeline_class):
+    # Tests that two classes which are equivalent are not equal
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineWithADifferentClassName(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    assert MockPipeline(parameters={}) != MockPipelineWithADifferentClassName(parameters={})
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality_subclasses(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    class MockPipelineSubclass(MockPipeline):
+        pass
+    assert MockPipeline(parameters={}) != MockPipelineSubclass(parameters={})
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_equality(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    different_parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "constant",
+            "numeric_impute_strategy": "mean",
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+        }
+    }
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_pipeline = MockPipeline(parameters={})
+    assert mock_pipeline == mock_pipeline
+
+    # Test defaults
+    assert MockPipeline(parameters={}) == MockPipeline(parameters={})
+
+    # Test random_state
+    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
+    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+
+    # Test parameters
+    assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
+
+    # Test fitted equality
+    X = pd.DataFrame({})
+    mock_pipeline.fit(X)
+    assert mock_pipeline != MockPipeline(parameters={})
+
+    mock_pipeline_equal = MockPipeline(parameters={})
+    mock_pipeline_equal.fit(X)
+    assert mock_pipeline == mock_pipeline_equal
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                                 linear_regression_pipeline_class,
+                                                 logistic_regression_binary_pipeline_class,
+                                                 logistic_regression_multiclass_pipeline_class):
+    # Test fitted on different data
+    if problem_type == ProblemTypes.BINARY:
+        pipeline_class = logistic_regression_binary_pipeline_class
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        pipeline_class = logistic_regression_multiclass_pipeline_class
+        X, y = X_y_multi
+    elif problem_type == ProblemTypes.REGRESSION:
+        pipeline_class = linear_regression_pipeline_class
+        X, y = X_y_regression
+
+    pipeline = pipeline_class(parameters={})
+    pipeline_diff_data = pipeline_class(parameters={})
+    assert pipeline == pipeline_diff_data
+
+    pipeline.fit(X, y)
+    # Add new column to data to make it different
+    X = np.append(X, np.zeros((len(X), 1)), axis=1)
+    pipeline_diff_data.fit(X, y)
+
+    assert pipeline != pipeline_diff_data
