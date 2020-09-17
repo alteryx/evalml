@@ -814,7 +814,10 @@ def test_estimators_accept_all_kwargs(estimator_class):
             estimator = estimator_class(estimators=[RandomForestRegressor()])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
-    params = estimator._component_obj.get_params()
+    if estimator_class.model_family == ModelFamily.ENSEMBLE:
+        params = estimator._parameters
+    else:
+        params = estimator._component_obj.get_params()
     if estimator_class.model_family == ModelFamily.CATBOOST:
         # Deleting because we call it random_state in our api
         del params["random_seed"]
