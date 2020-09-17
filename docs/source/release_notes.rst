@@ -13,6 +13,7 @@ Release Notes
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
         * Added support for multiclass classification for `roc_curve` :pr:`1164`
         * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
+        * Added utility function to create pipeline instances from a list of component instances :pr:`1176`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
