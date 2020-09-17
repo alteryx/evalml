@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import EnsembleMissingEstimatorsError
+from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     BaselineClassifier,
@@ -21,22 +21,22 @@ def test_stacked_model_family():
 
 
 def test_stacked_ensemble_init_with_invalid_estimators_parameter():
-    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
+    with pytest.raises(EnsembleMissingPipelinesError, match='must not be None or an empty list.'):
         StackedEnsembleClassifier()
-    with pytest.raises(EnsembleMissingEstimatorsError, match='must not be None or an empty list.'):
-        StackedEnsembleClassifier(estimators=[])
+    with pytest.raises(EnsembleMissingPipelinesError, match='must not be None or an empty list.'):
+        StackedEnsembleClassifier(input_pipelines=[])
 
 
 def test_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(ValueError, match="Estimators with any of the following model families cannot be used as base estimators"):
-        StackedEnsembleClassifier(estimators=[BaselineClassifier()])
+        StackedEnsembleClassifier(input_pipelines=[BaselineClassifier()])
 
 
 def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary):
     # Checks that it is okay to pass multiple of the same type of estimator
     X, y = X_y_binary
     estimators = [RandomForestClassifier(), RandomForestClassifier()]
-    clf = StackedEnsembleClassifier(estimators=estimators)
+    clf = StackedEnsembleClassifier(input_pipelines=estimators)
     expected_parameters = {
         "estimators": estimators,
         "final_estimator": None,
@@ -54,8 +54,8 @@ def test_stacked_ensemble_multilevel():
     # checks passing a stacked ensemble classifier as a final estimator
     X = pd.DataFrame(np.random.rand(50, 5))
     y = pd.Series([1, 0] * 25)
-    base = StackedEnsembleClassifier(estimators=[RandomForestClassifier(), RandomForestClassifier()])
-    clf = StackedEnsembleClassifier(estimators=[RandomForestClassifier(), RandomForestClassifier()], final_estimator=base)
+    base = StackedEnsembleClassifier(input_pipelines=[RandomForestClassifier(), RandomForestClassifier()])
+    clf = StackedEnsembleClassifier(input_pipelines=[RandomForestClassifier(), RandomForestClassifier()], final_estimator=base)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
@@ -74,10 +74,10 @@ def test_stacked_ensemble_final_estimator_without_component_obj(stackable_classi
         model_family = ModelFamily.RANDOM_FOREST
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
     with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
-        StackedEnsembleClassifier(estimators=stackable_classifiers,
+        StackedEnsembleClassifier(input_pipelines=stackable_classifiers,
                                   final_estimator=MockEstimator())
     with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
-        StackedEnsembleClassifier(estimators=[MockEstimator()],
+        StackedEnsembleClassifier(input_pipelines=[MockEstimator()],
                                   final_estimator=RandomForestClassifier())
 
 
@@ -90,7 +90,7 @@ def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, probl
         X, y = X_y_multi
         num_classes = 3
 
-    clf = StackedEnsembleClassifier(estimators=stackable_classifiers)
+    clf = StackedEnsembleClassifier(input_pipelines=stackable_classifiers)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
@@ -99,7 +99,7 @@ def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, probl
     assert y_pred_proba.shape == (len(y), num_classes)
     assert not np.isnan(y_pred_proba).all().all()
 
-    clf = StackedEnsembleClassifier(estimators=stackable_classifiers, final_estimator=RandomForestClassifier())
+    clf = StackedEnsembleClassifier(input_pipelines=stackable_classifiers, final_estimator=RandomForestClassifier())
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
@@ -117,7 +117,7 @@ def test_stacked_feature_importance(mock_fit, X_y_binary, X_y_multi, stackable_c
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
 
-    clf = StackedEnsembleClassifier(estimators=stackable_classifiers)
+    clf = StackedEnsembleClassifier(input_pipelines=stackable_classifiers)
     clf.fit(X, y)
     mock_fit.assert_called()
     clf._is_fitted = True

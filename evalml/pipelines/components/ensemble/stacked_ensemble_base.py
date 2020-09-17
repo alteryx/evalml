@@ -1,4 +1,4 @@
-from evalml.exceptions import EnsembleMissingEstimatorsError
+from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 
@@ -11,12 +11,12 @@ class StackedEnsembleBase(Estimator):
     _stacking_estimator_class = None
     _default_final_estimator = None
 
-    def __init__(self, estimators=None, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
-            estimators (list(Estimator or subclass)): List of Estimator objects to use as the base estimators.
-                This must not be None or an empty list or else EnsembleMissingEstimatorsError will be raised.
+            input_pipelines (list(PipelineBase or subclass)): List of PipelineBase objects to use as the base estimators.
+                This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The estimator used to combine the base estimators.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
@@ -29,13 +29,13 @@ class StackedEnsembleBase(Estimator):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        if not estimators:
-            raise EnsembleMissingEstimatorsError("`estimators` must not be None or an empty list.")
-        contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
+        if not input_pipelines:
+            raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
+        contains_non_stackable = [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]
         if contains_non_stackable:
             raise ValueError("Estimators with any of the following model families cannot be used as base estimators: {}".format(_nonstackable_model_families))
         parameters = {
-            "estimators": estimators,
+            "input_pipelines": input_pipelines,
             "final_estimator": final_estimator,
             "cv": cv,
             "n_jobs": n_jobs
@@ -44,6 +44,7 @@ class StackedEnsembleBase(Estimator):
 
         if final_estimator is None:
             final_estimator = self._default_final_estimator()
+        estimators = [pipeline.estimator for pipeline in input_pipelines]
         component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
         if component_without_obj:
             raise ValueError("All estimators and final_estimator must have a valid ._component_obj")

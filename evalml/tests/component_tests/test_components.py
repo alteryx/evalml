@@ -11,7 +11,7 @@ import pytest
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
-    EnsembleMissingEstimatorsError,
+    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
@@ -360,11 +360,11 @@ def test_component_parameters_init():
         print('Testing component {}'.format(component_class.name))
         try:
             component = component_class()
-        except EnsembleMissingEstimatorsError:
+        except EnsembleMissingPipelinesError:
             if component_class == StackedEnsembleClassifier:
-                component = component_class(estimators=[RandomForestClassifier()])
+                component = component_class(input_pipelines=[RandomForestClassifier()])
             elif component_class == StackedEnsembleRegressor:
-                component = component_class(estimators=[RandomForestRegressor()])
+                component = component_class(input_pipelines=[RandomForestRegressor()])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -416,7 +416,7 @@ def test_components_init_kwargs():
     for component_class in all_components():
         try:
             component = component_class()
-        except EnsembleMissingEstimatorsError:
+        except EnsembleMissingPipelinesError:
             continue
         if component._component_obj is None:
             continue
@@ -761,11 +761,11 @@ def test_serialization(X_y_binary, tmpdir):
         print('Testing serialization of component {}'.format(component_class.name))
         try:
             component = component_class()
-        except EnsembleMissingEstimatorsError:
+        except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
-                component = component_class(estimators=[RandomForestClassifier(n_estimators=2)])
+                component = component_class(input_pipelines=[RandomForestClassifier(n_estimators=2)])
             elif (component_class == StackedEnsembleRegressor):
-                component = component_class(estimators=[RandomForestRegressor(n_estimators=2)])
+                component = component_class(input_pipelines=[RandomForestRegressor(n_estimators=2)])
 
         component.fit(X, y)
 
@@ -811,11 +811,11 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 def test_estimators_accept_all_kwargs(estimator_class):
     try:
         estimator = estimator_class()
-    except EnsembleMissingEstimatorsError:
+    except EnsembleMissingPipelinesError:
         if estimator_class == StackedEnsembleClassifier:
-            estimator = estimator_class(estimators=[RandomForestClassifier()])
+            estimator = estimator_class(input_pipelines=[RandomForestClassifier()])
         elif estimator_class == StackedEnsembleRegressor:
-            estimator = estimator_class(estimators=[RandomForestRegressor()])
+            estimator = estimator_class(input_pipelines=[RandomForestRegressor()])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
