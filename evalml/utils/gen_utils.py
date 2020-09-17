@@ -1,4 +1,5 @@
 import importlib
+import warnings
 from collections import namedtuple
 
 import numpy as np
@@ -17,13 +18,14 @@ categorical_dtypes = ['object', 'category']
 datetime_dtypes = [np.datetime64]
 
 
-def import_or_raise(library, error_msg=None):
+def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
-    If the import fails, raises an ImportError.
+    If the import fails, raises an ImportError or warning.
 
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
+        warning (bool): if True, import_or_raise gives a warning instead of ImportError. Defaults to False.
     """
     try:
         return importlib.import_module(library)
@@ -31,10 +33,16 @@ def import_or_raise(library, error_msg=None):
         if error_msg is None:
             error_msg = ""
         msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
-        raise ImportError(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise ImportError(msg)
     except Exception as ex:
         msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
-        raise Exception(msg)
+        if warning:
+            warnings.warn(msg)
+        else:
+            raise Exception(msg)
 
 
 def convert_to_seconds(input_str):
@@ -95,6 +103,18 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
     return random_state
 
 
+def check_random_state_equality(random_state, other_random_state):
+    """Method to check for equality of two numpy.random.RandomState objects"""
+    for self_rs_attr, other_rs_attr in zip(random_state.get_state(), other_random_state.get_state()):
+        if isinstance(self_rs_attr, np.ndarray) and isinstance(other_rs_attr, np.ndarray):
+            if not (self_rs_attr == other_rs_attr).all():
+                return False
+        else:
+            if not (self_rs_attr == other_rs_attr):
+                return False
+    return True
+
+
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
@@ -147,7 +167,7 @@ def _get_subclasses(base_class):
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
+                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline', 'LightGBMClassifier'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -181,3 +201,34 @@ def get_importable_subclasses(base_class, used_in_automl=True):
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
     return classes
+
+
+def _rename_column_names_to_numeric(X):
+    """Used in XGBoost classifier and regressor classes to rename column names
+        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
+
+    Arguments:
+        X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+
+    Returns:
+        Transformed X where column names are renamed to numerical values
+
+    """
+    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
+    return X.rename(columns=name_to_col_num, inplace=False)
+
+
+def jupyter_check():
+    """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
+
+    Arguments:
+        None
+
+    Returns:
+        Boolean: True if Ipython, False otherwise
+    """
+    try:
+        get_ipython()
+        return True
+    except NameError:
+        return False

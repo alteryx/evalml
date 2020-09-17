@@ -3,20 +3,88 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.13.2 Sep. 17, 2020**
+    * Enhancements
+        * Added `output_format` field to explain predictions functions :pr:`1107`
+        * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
+        * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
+        * Added `ClassImbalanceDataCheck` to determine whether target imbalance falls below a given threshold :pr:`1135`
+        * Added label encoder to lightGBM for binary classification :pr:`1152`
+        * Added labels for the row index of confusion matrix :pr:`1154`
+        * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
+        * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `__eq__` for `ComponentBase` and `PipelineBase` :pr:`1178`
+        * Added support for multiclass classification for `roc_curve` :pr:`1164`
+        * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
+        * Added utility function to create pipeline instances from a list of component instances :pr:`1176`
+    * Fixes
+        * Fixed XGBoost column names for partial dependence methods :pr:`1104`
+        * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
+        * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
+        * OneHotEncoder preserves the custom index in the input data :pr:`1146`
+        * Fixed representation for `ModelFamily` :pr:`1165`
+        * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
+        * Users can now pass in any valid kwargs to all estimators :pr:`1157`
+        * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
+        * Removed LightGBM Estimator from AutoML models :pr:`1186`
+    * Changes
+        * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
+        * Removed tqdm as a dependency :pr:`1177`
+        * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
+    * Documentation Changes
+        * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
+        * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
+        * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
+        * Updated README.md example to load demo dataset :pr:`1151`
+        * Swapped mapping of breast cancer targets in `model_understanding.ipynb` :pr:`1170`
+    * Testing Changes
+        * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
+        * Changed Python version of `Update Dependencies` action to 3.8.x :pr:`1137`
+        * Fixed release notes check-in test for `Update Dependencies` actions :pr:`1172`
+
+.. warning::
+
+    **Breaking Changes**
+        * `get_objective` will now return a class definition rather than an instance by default :pr:`1132`
+        * Deleted `OPTIONS` dictionary in `evalml.objectives.utils.py` :pr:`1132`
+        * If specifying an objective by string, the string must now match the objective's name field, case-insensitive :pr:`1132`
+        * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
+            "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
+            rather than an `ObjectiveNotFoundError` :pr:`1132`
+        * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
+        * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
+        * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
+        * Results from `roc_curve` will now return as a list of dictionaries with each dictionary representing a class :pr:`1164`
+
+
+**v0.13.1 Aug. 25, 2020**
+    * Enhancements
         * Added Cost-Benefit Matrix objective for binary classification :pr:`1038`
         * Split `fill_value` into `categorical_fill_value` and `numeric_fill_value` for Imputer :pr:`1019`
         * Added `explain_predictions` and `explain_predictions_best_worst` for explaining multiple predictions with SHAP :pr:`1016`
         * Added new LSA component for text featurization :pr:`1022`
         * Added guide on installing with conda :pr:`1041`
+        * Added a “cost-benefit curve” util method to graph cost-benefit matrix scores vs. binary classification thresholds :pr:`1081`
         * Standardized error when calling transform/predict before fit for pipelines :pr:`1048`
         * Added `percent_better_than_baseline` to Automl search rankings and full rankings table :pr:`1050`
         * Included TextFeaturizer in options for automl search :pr:`1062`
+        * Added one-way partial dependence and partial dependence plots :pr:`1079`
         * Added "Feature Value" column to prediction explanation reports. :pr:`1064`
+        * Added LightGBM classification estimator :pr:`1082`, :pr:`1114`
+        * Added `max_batches` parameter to AutoMLSearch :pr:`1087`
     * Fixes
         * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Updated TextFeaturizer to no longer output NaNs :pr:`1062`
         * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
+        * Updated cost-benefit matrix to normalize score :pr:`1099`
+        * Fixed logic in `calculate_percent_difference` so that it can handle negative values :pr:`1100`
     * Changes
         * Added `needs_fitting` property to ComponentBase :pr:`1044`
         * Updated references to data types to use datatype lists defined in `evalml.utils.gen_utils` :pr:`1039`
@@ -24,8 +92,11 @@ Release Notes
         * Moved `all_components` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under `evalml.utils.graph_utils` :pr:`1060`
         * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
+        * Changed `show_all_features` parameter into `importance_threshold`, which allows for thresholding feature importance :pr:`1097`, :pr:`1103`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
+        * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
+        * Updated `model_understanding.ipynb` to include documentation for using plotly on Jupyter Lab :pr:`1108`
     * Testing Changes
         * Refactor CircleCI tests to use matrix jobs (:pr:`1043`)
         * Added a test to check that all test directories are included in evalml package :pr:`1054`

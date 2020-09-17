@@ -24,7 +24,23 @@ from evalml.exceptions import (
     PipelineNotFoundError,
     PipelineScoreError
 )
-from evalml.objectives import get_objective, get_objectives
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    LeadScoring,
+    MeanSquaredLogError,
+    Recall,
+    RecallMacro,
+    RecallMicro,
+    RecallWeighted,
+    RootMeanSquaredLogError,
+    get_objective,
+    get_objectives
+)
+from evalml.objectives.utils import (
+    _all_objectives_dict,
+    _print_objectives_in_table
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
@@ -36,6 +52,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils.gen_utils import classproperty
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -55,9 +72,9 @@ class AutoMLSearch:
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
 
-    _DEFAULT_OBJECTIVES = {'binary': 'log_loss_binary',
-                           'multiclass': 'log_loss_multi',
-                           'regression': 'r2'}
+    _DEFAULT_OBJECTIVES = {'binary': 'Log Loss Binary',
+                           'multiclass': 'Log Loss Multiclass',
+                           'regression': 'R2'}
 
     def __init__(self,
                  problem_type=None,
@@ -76,7 +93,8 @@ class AutoMLSearch:
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=False):
+                 optimize_thresholds=False,
+                 _max_batches=None):
         """Automated pipeline search
 
         Arguments:
@@ -115,10 +133,10 @@ class AutoMLSearch:
             tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
 
             start_iteration_callback (callable): function called before each pipeline training iteration.
-                Passed two parameters: pipeline_class, parameters.
+                Passed three parameters: pipeline_class, parameters, and the AutoMLSearch object.
 
             add_result_callback (callable): function called after each pipeline training iteration.
-                Passed two parameters: results, trained_pipeline.
+                Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
@@ -129,6 +147,9 @@ class AutoMLSearch:
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
             verbose (boolean): If True, turn verbosity on. Defaults to True
+
+            _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+                max_pipelines have precedence over stopping the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -143,19 +164,21 @@ class AutoMLSearch:
         self.optimize_thresholds = optimize_thresholds
         if objective == 'auto':
             objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
-        self.objective = get_objective(objective)
+        objective = get_objective(objective, return_instance=False)
+        self.objective = self._validate_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
-            additional_objectives = get_objectives(self.problem_type)
+            additional_objectives = [obj for obj in get_objectives(self.problem_type) if obj not in self._objectives_not_allowed_in_automl]
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
                 additional_objectives.remove(existing_main_objective)
         else:
             additional_objectives = [get_objective(o) for o in additional_objectives]
+        additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
 
         if max_time is None or isinstance(max_time, (int, float)):
@@ -166,7 +189,7 @@ class AutoMLSearch:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
         self.max_pipelines = max_pipelines
-        if self.max_pipelines is None and self.max_time is None:
+        if self.max_pipelines is None and self.max_time is None and _max_batches is None:
             self.max_pipelines = 5
             logger.info("Using default limit of max_pipelines=5.\n")
 
@@ -199,7 +222,33 @@ class AutoMLSearch:
         self._start = None
         self._baseline_cv_score = None
 
+        if _max_batches is not None and _max_batches <= 0:
+            raise ValueError("Parameter max batches must be None or non-negative. Received {max_batches}.")
+        self._max_batches = _max_batches
+        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
+        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
+        self._pipelines_per_batch = 5
+
         self._validate_problem_type()
+
+    @classproperty
+    def _objectives_not_allowed_in_automl(self):
+        return {CostBenefitMatrix, FraudCost, LeadScoring,
+                MeanSquaredLogError, Recall, RecallMacro, RecallMicro, RecallWeighted, RootMeanSquaredLogError}
+
+    @classmethod
+    def print_objective_names_allowed_in_automl(cls):
+        names = [name for name, value in _all_objectives_dict().items() if value not in cls._objectives_not_allowed_in_automl]
+        _print_objectives_in_table(names)
+
+    def _validate_objective(self, objective):
+        if isinstance(objective, type):
+            if objective in self._objectives_not_allowed_in_automl:
+                raise ValueError(f"{objective.name} is not allowed in AutoML! "
+                                 "Use evalml.automl.AutoMLSearch.print_objective_names_allowed_in_automl() "
+                                 "to get all objective names allowed in automl.")
+            return objective()
+        return objective
 
     @property
     def data_check_results(self):
@@ -207,7 +256,7 @@ class AutoMLSearch:
 
     def __str__(self):
         def _print_list(obj_list):
-            lines = ['\t{}'.format(o.name) for o in obj_list]
+            lines = sorted(['\t{}'.format(o.name) for o in obj_list])
             return '\n'.join(lines)
 
         def _get_funct_name(function):
@@ -365,6 +414,8 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        if self._max_batches and self.max_pipelines is None:
+            self.max_pipelines = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -378,7 +429,8 @@ class AutoMLSearch:
             text_columns=text_columns,
             random_state=self.random_state,
             n_jobs=self.n_jobs,
-            number_features=X.shape[1]
+            number_features=X.shape[1],
+            pipelines_per_batch=self._pipelines_per_batch
         )
 
         log_title(logger, "Beginning pipeline search")
@@ -419,7 +471,7 @@ class AutoMLSearch:
                 logger.debug('Pipeline parameters: {}'.format(parameters))
 
                 if self.start_iteration_callback:
-                    self.start_iteration_callback(pipeline.__class__, parameters)
+                    self.start_iteration_callback(pipeline.__class__, parameters, self)
                 desc = f"{pipeline.name}"
                 if len(desc) > self._MAX_NAME_LEN:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
@@ -519,7 +571,7 @@ class AutoMLSearch:
         while pipelines:
             try:
                 if self.start_iteration_callback:
-                    self.start_iteration_callback(baseline.__class__, baseline.parameters)
+                    self.start_iteration_callback(baseline.__class__, baseline.parameters, self)
                 baseline = pipelines.pop()
                 desc = f"{baseline.name}"
                 if len(desc) > self._MAX_NAME_LEN:
@@ -556,7 +608,6 @@ class AutoMLSearch:
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-
                 if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone()
@@ -643,7 +694,7 @@ class AutoMLSearch:
         self._results['search_order'].append(pipeline_id)
 
         if self.add_result_callback:
-            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline)
+            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
 
     def _evaluate(self, pipeline, X, y):
         parameters = pipeline.parameters

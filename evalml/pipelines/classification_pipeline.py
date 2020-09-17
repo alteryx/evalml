@@ -60,7 +60,7 @@ class ClassificationPipeline(PipelineBase):
         return self._encoder.inverse_transform(y.astype(int))
 
     @property
-    def _classes(self):
+    def classes_(self):
         """Gets the class names for the problem."""
         if not hasattr(self._encoder, "classes_"):
             raise AttributeError("Cannot access class names before fitting the pipeline.")
@@ -127,7 +127,7 @@ class ClassificationPipeline(PipelineBase):
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        objectives = [get_objective(o) for o in objectives]
+        objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
 

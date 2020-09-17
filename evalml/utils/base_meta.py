@@ -7,6 +7,10 @@ from functools import wraps
 class BaseMeta(ABCMeta):
     """Metaclass that overrides creating a new component or pipeline by wrapping methods with validators and setters"""
 
+    FIT_METHODS = ['fit', 'fit_transform']
+    METHODS_TO_CHECK = ['predict', 'predict_proba', 'transform']
+    PROPERTIES_TO_CHECK = ['feature_importance']
+
     @classmethod
     def set_fit(cls, method):
         @wraps(method)
@@ -17,18 +21,14 @@ class BaseMeta(ABCMeta):
         return _set_fit
 
     def __new__(cls, name, bases, dct):
-        if 'predict' in dct:
-            dct['predict'] = cls.check_for_fit(dct['predict'])
-        if 'predict_proba' in dct:
-            dct['predict_proba'] = cls.check_for_fit(dct['predict_proba'])
-        if 'transform' in dct:
-            dct['transform'] = cls.check_for_fit(dct['transform'])
-        if 'feature_importance' in dct:
-            fi = dct['feature_importance']
-            new_fi = property(cls.check_for_fit(fi.__get__), fi.__set__, fi.__delattr__)
-            dct['feature_importance'] = new_fi
-        if 'fit' in dct:
-            dct['fit'] = cls.set_fit(dct['fit'])
-        if 'fit_transform' in dct:
-            dct['fit_transform'] = cls.set_fit(dct['fit_transform'])
+        for attribute in dct:
+            if attribute in cls.FIT_METHODS:
+                dct[attribute] = cls.set_fit(dct[attribute])
+            if attribute in cls.METHODS_TO_CHECK:
+                dct[attribute] = cls.check_for_fit(dct[attribute])
+            if attribute in cls.PROPERTIES_TO_CHECK:
+                property_orig = dct[attribute]
+                dct[attribute] = property(cls.check_for_fit(property_orig.__get__),
+                                          property_orig.__set__,
+                                          property_orig.__delattr__)
         return super().__new__(cls, name, bases, dct)

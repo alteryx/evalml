@@ -20,10 +20,12 @@ from evalml.exceptions import (
 )
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
+    check_random_state_equality,
     classproperty,
     get_logger,
     get_random_state,
     import_or_raise,
+    jupyter_check,
     log_subtitle,
     log_title
 )
@@ -62,7 +64,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(component_class, parameters) for component_class in self.component_graph]
         self.input_feature_names = {}
-        self.results = {}
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -388,23 +389,27 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         return graph
 
-    def graph_feature_importance(self, show_all_features=False):
+    def graph_feature_importance(self, importance_threshold=0):
         """Generate a bar graph of the pipeline's feature importance
 
         Arguments:
-            show_all_features (bool, optional) : If true, graph features with an importance value of zero. Defaults to false.
+            importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
         Returns:
             plotly.Figure, a bar graph showing features and their corresponding importance
         """
         go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+        if jupyter_check():
+            import_or_raise("ipywidgets", warning=True)
 
         feat_imp = self.feature_importance
         feat_imp['importance'] = abs(feat_imp['importance'])
 
-        if not show_all_features:
-            # Remove features with zero importance
-            feat_imp = feat_imp[feat_imp['importance'] != 0]
+        if importance_threshold < 0:
+            raise ValueError(f'Provided importance threshold of {importance_threshold} must be greater than or equal to 0')
+
+        # Remove features with importance whose absolute value is less than importance threshold
+        feat_imp = feat_imp[feat_imp['importance'] >= importance_threshold]
 
         # List is reversed to go from ascending order to descending order
         feat_imp = feat_imp.iloc[::-1]
@@ -466,3 +471,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             A new instance of this pipeline with identical parameters and components
         """
         return self.__class__(self.parameters, random_state=random_state)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        if not random_state_eq:
+            return False
+        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names']
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True

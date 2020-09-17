@@ -12,11 +12,11 @@ def test_new_unique_targets_in_score(X_y_binary, logistic_regression_binary_pipe
     if problem_type == "binary":
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline_class(parameters={})
-        objective = 'log_loss_binary'
+        objective = 'Log Loss Binary'
     elif problem_type == "multi":
         X, y = X_y_multi
         pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
-        objective = 'log_loss_multi'
+        objective = 'Log Loss Multiclass'
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="y contains previously unseen labels"):
         pipeline.score(X, pd.Series([4] * len(y)), [objective])
@@ -43,7 +43,7 @@ def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class
             answer = ["class_0", "class_1", "class_2"]
 
     with pytest.raises(AttributeError, match="Cannot access class names before fitting the pipeline."):
-        pipeline._classes
+        pipeline.classes_
 
     pipeline.fit(X, y)
-    pd.testing.assert_series_equal(pd.Series(pipeline._classes), pd.Series(answer))
+    pd.testing.assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))

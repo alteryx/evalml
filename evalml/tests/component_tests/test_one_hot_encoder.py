@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import get_random_state
 
@@ -342,3 +343,31 @@ def test_data_types(data_type):
     X_t = encoder.transform(X)
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
+
+
+@pytest.mark.parametrize("index", [list(range(-5, 0)),
+                                   list(range(100, 105)),
+                                   [f"row_{i}" for i in range(5)],
+                                   pd.date_range("2020-09-08", periods=5)])
+def test_ohe_preserves_custom_index(index):
+
+    df = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+                      index=index)
+    ohe = OneHotEncoder()
+    new_df = ohe.fit_transform(df)
+    pd.testing.assert_index_equal(new_df.index, df.index)
+    assert not new_df.isna().any(axis=None)
+
+
+def test_ohe_categories():
+    X = pd.DataFrame({'col_1': ['a'] * 10,
+                      'col_2': ['a'] * 3 + ['b'] * 3 + ['c'] * 2 + ['d'] * 2})
+    ohe = OneHotEncoder(top_n=2)
+    with pytest.raises(ComponentNotYetFittedError, match='This OneHotEncoder is not fitted yet. You must fit OneHotEncoder before calling categories.'):
+        ohe.categories('col_1')
+
+    ohe.fit(X)
+    np.testing.assert_array_equal(ohe.categories('col_1'), np.array(['a']))
+    np.testing.assert_array_equal(ohe.categories('col_2'), np.array(['a', 'b']))
+    with pytest.raises(ValueError, match='Feature "col_12345" was not provided to one-hot encoder as a training feature'):
+        ohe.categories('col_12345')

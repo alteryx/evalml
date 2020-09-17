@@ -1,9 +1,13 @@
-from evalml.utils import import_or_raise
+from evalml.utils import import_or_raise, jupyter_check
 
 
 class SearchIterationPlot():
     def __init__(self, data, show_plot=True):
         self._go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+        if jupyter_check():
+            import_or_raise("ipywidgets", warning=True)
+
         self.data = data
         self.best_score_by_iter_fig = None
         self.curr_iteration_scores = list()

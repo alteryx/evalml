@@ -3,6 +3,7 @@ from .component_base import ComponentBase, ComponentBaseMeta
 from .estimators import (
     Estimator,
     LinearRegressor,
+    LightGBMClassifier,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
@@ -27,7 +28,6 @@ from .transformers import (
     Imputer,
     StandardScaler,
     FeatureSelector,
-    CategoricalEncoder,
     DropColumns,
     DropNullColumns,
     DateTimeFeaturizer,

@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
+from evalml.automl import AutoMLSearch
 from evalml.objectives import (
     F1,
     MSE,
@@ -13,13 +14,14 @@ from evalml.objectives import (
     BalancedAccuracyBinary,
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
+    CostBenefitMatrix,
     F1Macro,
     F1Micro,
     F1Weighted,
+    LogLossBinary,
     MCCBinary,
     MCCMulticlass,
     MeanSquaredLogError,
-    ObjectiveBase,
     Precision,
     PrecisionMacro,
     PrecisionMicro,
@@ -31,24 +33,23 @@ from evalml.objectives import (
     RootMeanSquaredError,
     RootMeanSquaredLogError
 )
-from evalml.objectives.utils import OPTIONS
-from evalml.utils.gen_utils import _get_subclasses
+from evalml.objectives.utils import _all_objectives_dict
 
 EPS = 1e-5
-
-all_objectives = _get_subclasses(ObjectiveBase)
+all_automl_objectives = _all_objectives_dict()
+all_automl_objectives = {name: class_() for name, class_ in all_automl_objectives.items() if class_ not in AutoMLSearch._objectives_not_allowed_in_automl}
 
 
 def test_input_contains_nan():
     y_predicted = np.array([np.nan, 0, 0])
     y_true = np.array([1, 2, 1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
     y_true = np.array([np.nan, 0, 0])
     y_predicted = np.array([1, 2, 0])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
@@ -56,13 +57,13 @@ def test_input_contains_nan():
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
     y_true = np.array([np.inf, 0, 0])
     y_predicted = np.array([1, 0, 0])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
@@ -70,13 +71,13 @@ def test_input_contains_inf():
 def test_different_input_lengths():
     y_predicted = np.array([0, 0])
     y_true = np.array([1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
             objective.score(y_true, y_predicted)
 
     y_true = np.array([0, 0])
     y_predicted = np.array([1, 2, 0])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
             objective.score(y_true, y_predicted)
 
@@ -84,7 +85,7 @@ def test_different_input_lengths():
 def test_zero_input_lengths():
     y_predicted = np.array([])
     y_true = np.array([])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="Length of inputs is 0"):
             objective.score(y_true, y_predicted)
 
@@ -92,14 +93,14 @@ def test_zero_input_lengths():
 def test_probabilities_not_in_0_1_range():
     y_predicted = np.array([0.3, 1.001, 0.3])
     y_true = np.array([1, 0, 1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
 
     y_predicted = np.array([0.3, -0.001, 0.3])
     y_true = np.array([1, 0, 1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
@@ -116,14 +117,14 @@ def test_negative_with_log():
 def test_binary_more_than_two_unique_values():
     y_predicted = np.array([0, 1, 2])
     y_true = np.array([1, 0, 1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         if isinstance(objective, BinaryClassificationObjective) and not objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains more than two unique values"):
                 objective.score(y_true, y_predicted)
 
     y_true = np.array([0, 1, 2])
     y_predicted = np.array([1, 0, 1])
-    for objective in OPTIONS.values():
+    for objective in all_automl_objectives.values():
         if isinstance(objective, BinaryClassificationObjective) and not objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_true contains more than two unique values"):
                 objective.score(y_true, y_predicted)
@@ -412,7 +413,7 @@ def test_mcc_catches_warnings():
         assert len(record) == 0
 
 
-@pytest.mark.parametrize("objective_class", all_objectives)
+@pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
 def test_calculate_percent_difference(objective_class):
     score = 5
     reference_score = 10
@@ -424,7 +425,7 @@ def test_calculate_percent_difference(objective_class):
     assert objective_class.perfect_score is not None
 
 
-@pytest.mark.parametrize("objective_class,nan_value", product(all_objectives, [None, np.nan]))
+@pytest.mark.parametrize("objective_class,nan_value", product(_all_objectives_dict().values(), [None, np.nan]))
 def test_calculate_percent_difference_with_nan(objective_class, nan_value):
 
     assert pd.isna(objective_class.calculate_percent_difference(nan_value, 2))
@@ -432,3 +433,20 @@ def test_calculate_percent_difference_with_nan(objective_class, nan_value):
     assert pd.isna(objective_class.calculate_percent_difference(nan_value, nan_value))
 
     assert pd.isna(objective_class.calculate_percent_difference(2, 0))
+
+
+def test_calculate_percent_difference_negative_and_equal_numbers():
+
+    assert CostBenefitMatrix.calculate_percent_difference(score=5, baseline_score=5) == 0
+
+    assert CostBenefitMatrix.calculate_percent_difference(score=-5, baseline_score=-10) == 50
+    assert CostBenefitMatrix.calculate_percent_difference(score=-10, baseline_score=-5) == -100
+    assert CostBenefitMatrix.calculate_percent_difference(score=-5, baseline_score=10) == -150
+    assert CostBenefitMatrix.calculate_percent_difference(score=10, baseline_score=-5) == 300
+
+    # These values are not possible for LogLossBinary but we need them for 100% coverage
+    # We might add an objective where lower is better that can take negative values in the future
+    assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=-10) == -50
+    assert LogLossBinary.calculate_percent_difference(score=-10, baseline_score=-5) == 100
+    assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=10) == 150
+    assert LogLossBinary.calculate_percent_difference(score=10, baseline_score=-5) == -300

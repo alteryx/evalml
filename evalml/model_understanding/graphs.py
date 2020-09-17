@@ -1,8 +1,10 @@
 
+import copy
 import warnings
 
 import numpy as np
 import pandas as pd
+from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
 from sklearn.metrics import auc as sklearn_auc
@@ -13,8 +15,11 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
+import evalml
+from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
-from evalml.utils import import_or_raise
+from evalml.problem_types import ProblemTypes
+from evalml.utils import import_or_raise, jupyter_check
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -26,7 +31,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
-        pd.DataFrame: confusion matrix
+        pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -35,7 +40,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
 
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
-    conf_mat = pd.DataFrame(conf_mat, columns=labels)
+    conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
     if normalize_method is not None:
         return normalize_confusion_matrix(conf_mat, normalize_method=normalize_method)
     return conf_mat
@@ -49,7 +54,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
-        pd.DataFrame: normalized version of the input confusion matrix.
+        pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     with warnings.catch_warnings(record=True) as w:
         if normalize_method == 'true':
@@ -101,6 +106,8 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
         plotly.Figure representing the precision-recall plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -121,30 +128,53 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba):
     """
-    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve.
+    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note that 1 dimensional input is expected.
-
+        y_pred_proba (pd.DataFrame, pd.Series, or np.array): predictions from a classifier, before thresholding has been applied.
 
     Returns:
-        dict: Dictionary containing metrics used to generate an ROC plot, with the following keys:
+        list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
+            Each dictionary contains metrics used to generate an ROC plot with the following keys:
                   * `fpr_rate`: False positive rate.
                   * `tpr_rate`: True positive rate.
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_true, y_pred_proba)
-    auc_score = sklearn_auc(fpr_rates, tpr_rates)
-    return {'fpr_rates': fpr_rates,
-            'tpr_rates': tpr_rates,
-            'thresholds': thresholds,
-            'auc_score': auc_score}
+    if isinstance(y_true, pd.Series):
+        y_true = y_true.to_numpy()
+    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
+        y_pred_proba = y_pred_proba.to_numpy()
+
+    if y_pred_proba.ndim == 1:
+        y_pred_proba = y_pred_proba.reshape(-1, 1)
+    if y_pred_proba.shape[1] == 2:
+        y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
+
+    nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
+    y_true = y_true[~nan_indices]
+    y_pred_proba = y_pred_proba[~nan_indices]
+
+    lb = LabelBinarizer()
+    lb.fit(np.unique(y_true))
+    y_one_hot_true = lb.transform(y_true)
+    n_classes = y_one_hot_true.shape[1]
+
+    curve_data = []
+    for i in range(n_classes):
+        fpr_rates, tpr_rates, thresholds = sklearn_roc_curve(y_one_hot_true[:, i], y_pred_proba[:, i])
+        auc_score = sklearn_auc(fpr_rates, tpr_rates)
+        curve_data.append({'fpr_rates': fpr_rates,
+                           'tpr_rates': tpr_rates,
+                           'thresholds': thresholds,
+                           'auc_score': auc_score})
+
+    return curve_data
 
 
 def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
-    """Generate and display a Receiver Operating Characteristic (ROC) plot.
+    """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
         y_true (pd.Series or np.array): true labels.
@@ -156,44 +186,34 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         plotly.Figure representing the ROC plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
-        y_pred_proba = y_pred_proba.to_numpy()
-
-    if y_pred_proba.ndim == 1:
-        y_pred_proba = y_pred_proba.reshape(-1, 1)
-
-    nan_indices = np.logical_or(np.isnan(y_true), np.isnan(y_pred_proba).any(axis=1))
-    y_true = y_true[~nan_indices]
-    y_pred_proba = y_pred_proba[~nan_indices]
-
-    lb = LabelBinarizer()
-    lb.fit(np.unique(y_true))
-    y_one_hot_true = lb.transform(y_true)
-    n_classes = y_one_hot_true.shape[1]
-
-    if custom_class_names and len(custom_class_names) != n_classes:
-        raise ValueError('Number of custom class names does not match number of classes')
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
 
     title = 'Receiver Operating Characteristic{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'False Positive Rate', 'range': [-0.05, 1.05]},
                         yaxis={'title': 'True Positive Rate', 'range': [-0.05, 1.05]})
 
-    data = []
+    all_curve_data = roc_curve(y_true, y_pred_proba)
+    graph_data = []
+
+    n_classes = len(all_curve_data)
+
+    if custom_class_names and len(custom_class_names) != n_classes:
+        raise ValueError('Number of custom class names does not match number of classes')
+
     for i in range(n_classes):
-        roc_curve_data = roc_curve(y_one_hot_true[:, i], y_pred_proba[:, i])
-        data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
-                                name='Class {name} (AUC {:06f})'
-                                .format(roc_curve_data['auc_score'],
-                                        name=i + 1 if custom_class_names is None else custom_class_names[i]),
-                                line=dict(width=3)))
-    data.append(_go.Scatter(x=[0, 1], y=[0, 1],
-                            name='Trivial Model (AUC 0.5)',
-                            line=dict(dash='dash')))
-    return _go.Figure(layout=layout, data=data)
+        roc_curve_data = all_curve_data[i]
+        name = i + 1 if custom_class_names is None else custom_class_names[i]
+        graph_data.append(_go.Scatter(x=roc_curve_data['fpr_rates'], y=roc_curve_data['tpr_rates'],
+                                      hovertemplate="(False Postive Rate: %{x}, True Positive Rate: %{y})<br>" + "Threshold: %{text}",
+                                      name=f"Class {name} (AUC {roc_curve_data['auc_score']:.06f})",
+                                      text=roc_curve_data["thresholds"],
+                                      line=dict(width=3)))
+    graph_data.append(_go.Scatter(x=[0, 1], y=[0, 1],
+                                  name='Trivial Model (AUC 0.5)',
+                                  line=dict(dash='dash')))
+    return _go.Figure(layout=layout, data=graph_data)
 
 
 def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
@@ -211,6 +231,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
         plotly.Figure representing the confusion matrix plot generated
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
 
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
@@ -258,7 +280,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     Returns:
         Mean feature importance scores over 5 shuffles.
     """
-    objective = get_objective(objective)
+    objective = get_objective(objective, return_instance=True)
     if objective.problem_type != pipeline.problem_type:
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
@@ -275,7 +297,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def graph_permutation_importance(pipeline, X, y, objective, show_all_features=False):
+def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
 
     Arguments:
@@ -283,18 +305,22 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
         X (pd.DataFrame): The input data used to score and compute permutation importance
         y (pd.Series): The target labels
         objective (str, ObjectiveBase): Objective to score on
-        show_all_features (bool, optional): If True, graph features with a permutation importance value of zero. Defaults to False.
+        importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
     Returns:
         plotly.Figure, a bar graph showing features and their respective permutation importance.
     """
     go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
     perm_importance = calculate_permutation_importance(pipeline, X, y, objective)
     perm_importance['importance'] = perm_importance['importance']
 
-    if not show_all_features:
-        # Remove features with close to zero importance
-        perm_importance = perm_importance[abs(perm_importance['importance']) >= 1e-3]
+    if importance_threshold < 0:
+        raise ValueError(f'Provided importance threshold of {importance_threshold} must be greater than or equal to 0')
+    # Remove features with close to zero importance
+    perm_importance = perm_importance[abs(perm_importance['importance']) >= importance_threshold]
     # List is reversed to go from ascending order to descending order
     perm_importance = perm_importance.iloc[::-1]
 
@@ -319,3 +345,146 @@ def graph_permutation_importance(pipeline, X, y, objective, show_all_features=Fa
 
     fig = go.Figure(data=data, layout=layout)
     return fig
+
+
+def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Computes objective score as a function of potential binary classification
+        decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
+        X (pd.DataFrame): the input data used to compute objective score
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
+
+    """
+    objective = get_objective(objective, return_instance=True)
+    if objective.problem_type != ProblemTypes.BINARY:
+        raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
+    if objective.score_needs_proba:
+        raise ValueError("Objective `score_needs_proba` must be False")
+
+    pipeline_tmp = copy.copy(pipeline)
+    thresholds = np.linspace(0, 1, steps + 1)
+    costs = []
+    for threshold in thresholds:
+        pipeline_tmp.threshold = threshold
+        scores = pipeline_tmp.score(X, y, [objective])
+        costs.append(scores[objective.name])
+    df = pd.DataFrame({"threshold": thresholds, "score": costs})
+    return df
+
+
+def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
+    """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): fitted pipeline
+        X (pd.DataFrame): the input data used to score and compute scores
+        y (pd.Series): the target labels
+        objective (ObjectiveBase obj, str): objective used to score, shown on the y-axis of the graph
+        steps (int): Number of intervals to divide and calculate objective score at
+
+    Returns:
+        plotly.Figure representing the objective score vs. threshold graph generated
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    objective = get_objective(objective, return_instance=True)
+    df = binary_objective_vs_threshold(pipeline, X, y, objective, steps)
+    title = f'{objective.name} Scores vs. Thresholds'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Threshold', 'range': _calculate_axis_range(df['threshold'])},
+                        yaxis={'title': f"{objective.name} Scores vs. Binary Classification Decision Threshold", 'range': _calculate_axis_range(df['score'])})
+    data = []
+    data.append(_go.Scatter(x=df['threshold'],
+                            y=df['score'],
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
+
+
+def partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Calculates partial dependence.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target features for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if not pipeline._is_fitted:
+        raise ValueError("Pipeline to calculate partial dependence for must be fitted")
+    if pipeline.model_family == ModelFamily.CATBOOST:
+        pipeline.estimator._component_obj._fitted_ = True
+    if pipeline.model_family == ModelFamily.XGBOOST:
+        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+            pipeline.estimator._estimator_type = "classifier"
+            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
+            pipeline.estimator.classes_ = pipeline.classes_
+        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+            pipeline.estimator._estimator_type = "regressor"
+            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
+            pipeline.estimator.feature_importances_ = pipeline.feature_importance
+        avg_pred, values = sk_partial_dependence(pipeline.estimator, X=X, features=[feature], grid_resolution=grid_resolution)
+    else:
+        avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    return pd.DataFrame({"feature_values": values[0],
+                         "partial_dependence": avg_pred[0]})
+
+
+def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
+    """Create an one-way partial dependence plot.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+            for feature where partial dependence will be calculated at
+        feature (int, string): The target feature for which to create the partial dependence plot for.
+            If feature is an int, it must be the index of the feature to use.
+            If feature is a string, it must be a valid column name in X.
+
+    Returns:
+        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+            over all samples of X and the values used to calculate those predictions.
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
+    feature_name = str(feature)
+    title = f"Partial Dependence of '{feature_name}'"
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
+    data = []
+    data.append(_go.Scatter(x=part_dep['feature_values'],
+                            y=part_dep['partial_dependence'],
+                            name='Partial Dependence',
+                            line=dict(width=3)))
+    return _go.Figure(layout=layout, data=data)
+
+
+def _calculate_axis_range(arr):
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    max_value = arr.max()
+    min_value = arr.min()
+    margins = abs(max_value - min_value) * 0.05
+    return [min_value - margins, max_value + margins]

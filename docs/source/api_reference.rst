@@ -187,6 +187,7 @@ Classifiers are components that output a predicted class label.
     ElasticNetClassifier
     ExtraTreesClassifier
     RandomForestClassifier
+    LightGBMClassifier
     LogisticRegressionClassifier
     XGBoostClassifier
     BaselineClassifier
@@ -229,7 +230,8 @@ Graph Utils
     graph_confusion_matrix
     calculate_permutation_importance
     graph_permutation_importance
-
+    binary_objective_vs_threshold
+    graph_binary_objective_vs_threshold
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
 

@@ -7,6 +7,7 @@ import pytest
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
+    check_random_state_equality,
     classproperty,
     convert_to_seconds,
     get_importable_subclasses,
@@ -172,3 +173,44 @@ def test_get_importable_subclasses_wont_get_custom_classes():
         pass
 
     assert ChildClass not in get_importable_subclasses(ComponentBase)
+
+
+@patch('importlib.import_module')
+def test_import_or_warn_errors(dummy_importlib):
+    def _mock_import_function(library_str):
+        if library_str == "_evalml":
+            raise ImportError("Mock ImportError executed!")
+        if library_str == "attr_error_lib":
+            raise Exception("Mock Exception executed!")
+
+    dummy_importlib.side_effect = _mock_import_function
+
+    with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'"):
+        import_or_raise("_evalml", warning=True)
+    with pytest.warns(UserWarning, match="Missing optional dependency '_evalml'. Please use pip to install _evalml. Additional error message"):
+        import_or_raise("_evalml", "Additional error message", warning=True)
+    with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
+        import_or_raise("attr_error_lib", warning=True)
+
+
+def test_check_random_state_equality():
+    assert check_random_state_equality(get_random_state(1), get_random_state(1))
+
+    rs_1 = get_random_state(1)
+    rs_2 = get_random_state(2)
+    assert not check_random_state_equality(rs_1, rs_2)
+
+    # Test equality
+    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    assert check_random_state_equality(rs_1, rs_2)
+
+    # Test numpy array value not equal
+    rs_1.set_state(tuple(['MT19937', np.array([0] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
+    assert not check_random_state_equality(rs_1, rs_2)
+
+    # Test non-numpy array value not equal
+    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
+    assert not check_random_state_equality(rs_1, rs_2)

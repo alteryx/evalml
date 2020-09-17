@@ -22,6 +22,7 @@ from evalml.pipelines.components import (
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -59,6 +60,20 @@ def test_classes():
         name = "Mock Transformer"
 
     return MockComponent, MockEstimator, MockTransformer
+
+
+@pytest.fixture(scope="module")
+def test_estimator_needs_fitting_false():
+    class MockEstimatorNeedsFittingFalse(Estimator):
+        name = "Mock Estimator Needs Fitting False"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+        needs_fitting = False
+
+        def predict(self, X):
+            pass
+
+    return MockEstimatorNeedsFittingFalse
 
 
 class MockFitComponent(ComponentBase):
@@ -124,7 +139,7 @@ def test_describe_component():
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1}}
-    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000}}
+    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
     assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000, 'normalize': False}}
     assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
     assert et_regressor.describe(return_dict=True) == {'name': 'Extra Trees Regressor', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
@@ -134,6 +149,11 @@ def test_describe_component():
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    except ImportError:
+        pass
+    try:
+        lg_classifier = LightGBMClassifier()
+        assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 0, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1}}
     except ImportError:
         pass
 
@@ -398,8 +418,12 @@ def test_components_init_kwargs():
 
         with patch(patched, new=all_init) as _:
             component = component_class(test_arg="test")
+            component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters['test_arg'] == "test"
             assert component._component_obj.test_arg == "test"
+            # Test equality of different components with same or different kwargs
+            assert component == component_class(test_arg="test")
+            assert component != component_with_different_kwargs
 
 
 def test_component_has_random_state():
@@ -679,9 +703,9 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X)
 
 
-def test_all_estimators_check_fit(X_y_binary):
+def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in _all_estimators():
+    for component_class in _all_estimators() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
             continue
 
@@ -705,9 +729,9 @@ def test_all_estimators_check_fit(X_y_binary):
         component.feature_importance
 
 
-def test_no_fitting_required_components(X_y_binary):
+def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in all_components():
+    for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
             component = component_class()
             if issubclass(component_class, Estimator):
@@ -749,3 +773,82 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
     component.save(path, pickle_protocol=42)
     assert len(mock_cloudpickle_dump.call_args_list) == 1
     assert mock_cloudpickle_dump.call_args_list[0][1]['protocol'] == 42
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+def test_estimators_accept_all_kwargs(estimator_class):
+    estimator = estimator_class()
+    if estimator._component_obj is None:
+        pytest.skip(f"Skipping {estimator_class} because does not have component object.")
+    params = estimator._component_obj.get_params()
+    if estimator_class.model_family == ModelFamily.CATBOOST:
+        # Deleting because we call it random_state in our api
+        del params["random_seed"]
+    estimator_class(**params)
+
+
+def test_component_equality_different_classes():
+    # Tests that two classes which are equivalent are not equal
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockComponentWithADifferentName(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    assert MockComponent() != MockComponentWithADifferentName()
+
+
+def test_component_equality_subclasses():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockEstimatorSubclass(MockComponent):
+        pass
+    assert MockComponent() != MockEstimatorSubclass()
+
+
+def test_component_equality():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+        def __init__(self, param_1=0, param_2=0, random_state=0, **kwargs):
+            parameters = {"param_1": param_1,
+                          "param_2": param_2}
+            parameters.update(kwargs)
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_component = MockComponent()
+    assert mock_component == mock_component
+
+    # Test defaults
+    assert MockComponent() == MockComponent()
+
+    # Test random_state
+    assert MockComponent(random_state=10) == MockComponent(random_state=10)
+    assert MockComponent(random_state=10) != MockComponent(random_state=0)
+
+    # Test parameters
+    assert MockComponent(1, 2) == MockComponent(1, 2)
+    assert MockComponent(1, 2) != MockComponent(1, 0)
+    assert MockComponent(0, 2) != MockComponent(1, 2)
+
+    # Test fitted equality
+    mock_component.fit(pd.DataFrame({}))
+    assert mock_component != MockComponent()
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_equality_all_components(component_class):
+    component = component_class()
+    parameters = component.parameters
+    equal_component = component_class(**parameters)
+    assert component == equal_component

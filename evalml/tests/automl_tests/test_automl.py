@@ -20,7 +20,7 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost
-from evalml.objectives.utils import OPTIONS
+from evalml.objectives.utils import _all_objectives_dict
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -226,7 +226,7 @@ def test_rankings(X_y_binary, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
-    def _dummy_callback(param1, param2):
+    def _dummy_callback(param1, param2, param3):
         return None
 
     X, y = X_y_binary
@@ -389,12 +389,12 @@ def test_automl_str_no_param_search():
         'Data Splitting': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
+            'AUC',
             'Accuracy Binary',
             'Balanced Accuracy Binary',
             'F1',
-            'Precision',
-            'AUC',
-            'MCC Binary'],
+            'MCC Binary',
+            'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
         'Random State': 'RandomState(MT19937)',
@@ -404,7 +404,6 @@ def test_automl_str_no_param_search():
     }
 
     str_rep = str(automl)
-
     for param, value in param_str_reps.items():
         assert f"{param}" in str_rep
         if isinstance(value, list):
@@ -862,7 +861,7 @@ class KeyboardInterruptOnKthPipeline:
         self.n_calls = 1
         self.k = k
 
-    def __call__(self, pipeline_class, parameters):
+    def __call__(self, pipeline_class, parameters, automl_obj):
         """Raises KeyboardInterrupt on the kth call.
 
         Arguments are ignored but included to meet the call back API.
@@ -954,14 +953,14 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_train_test_split.side_effect = RuntimeError()
-    automl = AutoMLSearch(problem_type='binary', objective='accuracy_binary', max_pipelines=2, optimize_thresholds=True)
+    automl = AutoMLSearch(problem_type='binary', objective='Accuracy Binary', max_pipelines=2, optimize_thresholds=True)
     automl.search(X, y)
     for pipeline in automl.results['pipeline_results'].values():
         assert np.isnan(pipeline['score'])
 
 
 @pytest.mark.parametrize("objective_tuple,pipeline_scores,baseline_score",
-                         product(OPTIONS.items(),
+                         product(_all_objectives_dict().items(),
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
                                  [0.1, np.nan]))
 def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scores, baseline_score,
@@ -973,6 +972,9 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
     X, y = X_y_binary
 
     name, objective = objective_tuple
+
+    if objective in AutoMLSearch._objectives_not_allowed_in_automl and name != "cost benefit matrix":
+        pytest.skip(f"Skipping because {name} is not allowed in automl as a string.")
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
@@ -999,8 +1001,12 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
     Pipeline1.score = mock_score_1
     Pipeline2.score = mock_score_2
 
-    automl = AutoMLSearch(problem_type=objective.problem_type, max_pipelines=3,
-                          allowed_pipelines=[Pipeline1, Pipeline2], objective=name)
+    if name == "cost benefit matrix":
+        automl = AutoMLSearch(problem_type=objective.problem_type, max_pipelines=3,
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0))
+    else:
+        automl = AutoMLSearch(problem_type=objective.problem_type, max_pipelines=3,
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=name)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         automl.search(X, y, data_checks=None)
@@ -1011,3 +1017,66 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
                    baseline_name: round(objective.calculate_percent_difference(baseline_score, baseline_score), 2)}
         for name in answers:
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
+
+
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=None,
+                          _max_batches=max_batches, objective="Log Loss Binary")
+    automl.search(X, y, data_checks=None)
+
+    if max_batches is None:
+        n_results = 5
+        max_batches = 1
+        # _automl_algorithm will include all allowed_pipelines in the first batch even
+        # if they are not searched over. That is why n_automl_pipelines does not equal
+        # n_results when max_pipelines and max_batches are None
+        n_automl_pipelines = 1 + len(automl.allowed_pipelines)
+    else:
+        # So that the test does not break when new estimator classes are added
+        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
+        n_automl_pipelines = n_results
+
+    assert automl._automl_algorithm.batch_number == max_batches
+    # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
+    assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
+    assert len(automl.results["pipeline_results"]) == n_results
+    assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)
+    assert automl.full_rankings.shape[0] == n_results
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+
+    # Use the old default when all are None
+    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary")
+    automl.search(X, y, data_checks=None)
+    assert len(automl.results["pipeline_results"]) == 5
+
+    # Use max_pipelines when both max_pipelines and max_batches are set
+    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", _max_batches=10,
+                          max_pipelines=6)
+    automl.search(X, y, data_checks=None)
+    assert len(automl.results["pipeline_results"]) == 6
+
+    # Don't change max_pipelines when only max_pipelines is set
+    automl = AutoMLSearch(problem_type="binary", max_pipelines=4)
+    automl.search(X, y, data_checks=None)
+    assert len(automl.results["pipeline_results"]) == 4
+
+
+@pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
+def test_max_batches_must_be_non_negative(max_batches):
+
+    with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
+        AutoMLSearch(problem_type="binary", _max_batches=max_batches)
+
+
+def test_can_print_out_automl_objective_names():
+    AutoMLSearch.print_objective_names_allowed_in_automl()
