@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-from pandas._testing import assert_frame_equal, assert_series_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily

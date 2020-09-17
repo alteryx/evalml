@@ -7,6 +7,7 @@ import pytest
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
+    check_random_state_equality,
     classproperty,
     convert_to_seconds,
     get_importable_subclasses,
@@ -190,3 +191,26 @@ def test_import_or_warn_errors(dummy_importlib):
         import_or_raise("_evalml", "Additional error message", warning=True)
     with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
         import_or_raise("attr_error_lib", warning=True)
+
+
+def test_check_random_state_equality():
+    assert check_random_state_equality(get_random_state(1), get_random_state(1))
+
+    rs_1 = get_random_state(1)
+    rs_2 = get_random_state(2)
+    assert not check_random_state_equality(rs_1, rs_2)
+
+    # Test equality
+    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    assert check_random_state_equality(rs_1, rs_2)
+
+    # Test numpy array value not equal
+    rs_1.set_state(tuple(['MT19937', np.array([0] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
+    assert not check_random_state_equality(rs_1, rs_2)
+
+    # Test non-numpy array value not equal
+    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
+    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
+    assert not check_random_state_equality(rs_1, rs_2)

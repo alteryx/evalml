@@ -11,6 +11,10 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `__eq__` for `ComponentBase` and `PipelineBase` :pr:`1178`
+        * Added support for multiclass classification for `roc_curve` :pr:`1164`
+        * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
+        * Added utility function to create pipeline instances from a list of component instances :pr:`1176`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
@@ -19,8 +23,12 @@ Release Notes
         * Fixed representation for `ModelFamily` :pr:`1165`
         * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
         * Users can now pass in any valid kwargs to all estimators :pr:`1157`
+        * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
+        * Removed LightGBM Estimator from AutoML models :pr:`1186`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
+        * Removed tqdm as a dependency :pr:`1177`
+        * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
@@ -44,6 +52,9 @@ Release Notes
             "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to `AutoMLSearch` will now result in a `ValueError`
             rather than an `ObjectiveNotFoundError` :pr:`1132`
         * Search callbacks `start_iteration_callback` and `add_results_callback` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
+        * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
+        * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
+        * Results from `roc_curve` will now return as a list of dictionaries with each dictionary representing a class :pr:`1164`
 
 
 **v0.13.1 Aug. 25, 2020**

@@ -6,6 +6,7 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
+    check_random_state_equality,
     classproperty,
     get_logger,
     get_random_state,
@@ -138,3 +139,15 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        if not random_state_eq:
+            return False
+        attributes_to_check = ['_parameters', '_is_fitted']
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
