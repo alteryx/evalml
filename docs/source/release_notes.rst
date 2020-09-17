@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
     * Testing Changes
 
 
@@ -42,7 +43,6 @@ Release Notes
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
         * Added warning for missing ipywidgets dependency for using `PipelineSearchPlots` on Jupyterlab :pr:`1145`
         * Updated README.md example to load demo dataset :pr:`1151`
-        * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Swapped mapping of breast cancer targets in `model_understanding.ipynb` :pr:`1170`
     * Testing Changes
         * Added test confirming `TextFeaturizer` never outputs null values :pr:`1122`
