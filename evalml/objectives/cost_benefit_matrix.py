@@ -41,7 +41,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
             X (pd.DataFrame): Ignored.
 
         Returns:
-            float: Cost-benefit matrix score
+            float: score
         """
         conf_matrix = confusion_matrix(y_true, y_predicted, normalize_method='all')
         cost_matrix = np.array([[self.true_negative, self.false_positive],

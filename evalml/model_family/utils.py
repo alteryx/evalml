@@ -2,11 +2,9 @@ from .model_family import ModelFamily
 
 
 def handle_model_family(model_family):
-    """Handles model_family by either returning the ModelFamily or converting from a string
-
-    Arguments:
-        model_family (str or ModelFamily): Model type that needs to be handled
-
+    """Handles model_family by either returning the ModelFamily or converting from a str
+    Args:
+        model_family (str or ModelFamily): model type that needs to be handled
     Returns:
         ModelFamily
     """

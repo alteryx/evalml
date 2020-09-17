@@ -50,10 +50,10 @@ def get_objective(objective, return_instance=False, **kwargs):
     """Returns the Objective object of the given objective name
 
     Arguments:
-        objective (str or ObjectiveBase): Name or instance of the objective class.
+        objective (str or ObjectiveBase): name or instance of the objective class.
         return_instance (bool): Whether to return an instance of the objective. This only applies if objective
             is of type str. Note that the instance will be initialized with default arguments.
-            **kwargs (Any): Any keyword arguments to pass into the objective. Only used when return_instance=True.
+        **kwargs (Any): Any keyword arguments to pass into the objective. Only used when return_instance=True.
 
     Returns:
         ObjectiveBase if the parameter objective is of type ObjectiveBase. If objective is instead a valid
@@ -86,8 +86,8 @@ def get_objective(objective, return_instance=False, **kwargs):
 def get_objectives(problem_type):
     """Returns all objective classes associated with the given problem type.
 
-    Arguments:
-        problem_type (str/ProblemTypes): Type of problem
+    Args:
+        problem_type (str/ProblemTypes): type of problem
 
     Returns:
         List of Objectives

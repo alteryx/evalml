@@ -11,7 +11,7 @@ class IDColumnsDataCheck(DataCheck):
         """Check if any of the features are likely to be ID columns.
 
         Arguments:
-            id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
+            id_threshold (float): the probability threshold to be considered an ID column. Defaults to 1.0.
         """
         if id_threshold < 0 or id_threshold > 1:
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
@@ -26,7 +26,7 @@ class IDColumnsDataCheck(DataCheck):
 
         Arguments:
             X (pd.DataFrame): The input features to check
-            threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
+            threshold (float): the probability threshold to be considered an ID column. Defaults to 1.0
 
         Returns:
             A dictionary of features with column name or index and their probability of being ID columns

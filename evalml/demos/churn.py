@@ -5,11 +5,11 @@ from evalml.preprocessing import load_data
 
 def load_churn(n_rows=None, verbose=True):
     """Load credit card fraud dataset.
-        The fraud dataset can be used for binary classification problems.
+    The fraud dataset can be used for binary classification problems.
 
-    Arguments:
-        n_rows (int): Number of rows from the dataset to return
-        verbose (bool): Whether to print information about features and labels
+    Args:
+        n_rows (int): number of rows from the dataset to return
+        verbose (bool): whether to print information about features and labels
 
     Returns:
         pd.DataFrame, pd.Series: X, y
@@ -20,7 +20,7 @@ def load_churn(n_rows=None, verbose=True):
 
     X, y = load_data(path=churn_data_path,
                      index="customerID",
-                     target="Churn",
+                     label="Churn",
                      n_rows=n_rows,
                      verbose=verbose)
 

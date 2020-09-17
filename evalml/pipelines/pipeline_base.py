@@ -43,7 +43,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns list of components representing pipeline graph structure
 
         Returns:
-            list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline
+            list(str / ComponentBase subclass): list of ComponentBase subclasses or strings denotes graph structure of this pipeline
         """
 
     custom_hyperparameters = None
@@ -57,7 +57,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
 
         Arguments:
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
@@ -143,10 +143,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns component by name
 
         Arguments:
-            name (str): Name of component
+            name (str): name of component
 
         Returns:
-            Component: Component to return
+            Component: component to return
 
         """
         return next((component for component in self.component_graph if component.name == name), None)
@@ -158,7 +158,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
         Returns:
-            dict: Dictionary of all component parameters if return_dict is True, else None
+            dict: dictionary of all component parameters if return_dict is True, else None
         """
         log_title(logger, self.name)
         logger.info("Problem Type: {}".format(self.problem_type))
@@ -203,9 +203,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): The target training data of length [n_samples]
+            y (pd.Series): the target training labels of length [n_samples]
 
         Returns:
             self
@@ -216,11 +216,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            objective (Object or string): the objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            pd.Series: estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -233,12 +233,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): Target data of length [n_samples]
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            y (pd.Series): true labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
-            dict: Ordered dictionary of objective scores
+            dict: ordered dictionary of objective scores
         """
 
     @staticmethod
@@ -251,7 +251,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Will raise a PipelineScoreError if any objectives fail.
         Arguments:
             X (pd.DataFrame): The feature matrix.
-            y (pd.Series): The target data.
+            y (pd.Series): The labels.
             y_pred (pd.Series): The pipeline predictions.
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
@@ -298,7 +298,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns parameter dictionary for this pipeline
 
         Returns:
-            dict: Dictionary of all component parameters
+            dict: dictionary of all component parameters
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
@@ -307,7 +307,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns the default parameter dictionary for this pipeline.
 
         Returns:
-            dict: Dictionary of all component default parameters.
+            dict: dictionary of all component default parameters.
         """
         defaults = {}
         for c in cls.component_graph:

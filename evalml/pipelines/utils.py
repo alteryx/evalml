@@ -29,13 +29,13 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
-        X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target data of length [n_samples]
-        problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline
+        X (pd.DataFrame): the input data of shape [n_samples, n_features]
+        y (pd.Series): the target labels of length [n_samples]
+        problem_type (ProblemTypes or str): problem type
+        estimator_class (class):A class which subclasses Estimator estimator for pipeline
 
     Returns:
-        list[Transformer]: A list of applicable preprocessing components to use with the estimator
+        list[Transformer]: a list of applicable preprocessing components to use with the estimator
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
@@ -77,10 +77,10 @@ def make_pipeline(X, y, estimator, problem_type):
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
    Arguments:
-        X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target data of length [n_samples]
-        estimator (Estimator): Estimator for pipeline
-        problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        X (pd.DataFrame): the input data of shape [n_samples, n_features]
+        y (pd.Series): the target labels of length [n_samples]
+        estimator (Estimator): estimator for pipeline
+        problem_type (ProblemTypes or str): problem type for pipeline to generate
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator

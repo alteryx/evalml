@@ -15,8 +15,9 @@ class RegressionPipeline(PipelineBase):
         """Build a regression model.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+
+            y (pd.Series): the target training labels of length [n_samples]
 
         Returns:
             self
@@ -35,13 +36,13 @@ class RegressionPipeline(PipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
-        Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): True values of length [n_samples]
+        Args:
+            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            y (pd.Series): true labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
-            dict: Ordered dictionary of objective scores
+            dict: ordered dictionary of objective scores
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

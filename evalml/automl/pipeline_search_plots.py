@@ -74,7 +74,7 @@ class PipelineSearchPlots:
     def __init__(self, data):
         """Make plots for the AutoMLSearch class.
 
-        Arguments:
+        Args:
             data (AutoMLSearch): Automated pipeline search object
         """
         self._go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")

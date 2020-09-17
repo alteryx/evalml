@@ -33,8 +33,9 @@ class DateTimeFeaturizer(Transformer):
         """Extracts features from DateTime columns
 
         Arguments:
-            features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
+            features_to_extract (list): list of features to extract. Valid options include "year", "month", "day_of_week", "hour".
             random_state (int, np.random.RandomState): Seed for the random number generator.
+
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
@@ -61,8 +62,7 @@ class DateTimeFeaturizer(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
-
+            y (pd.Series, optional): Input Labels
         Returns:
             pd.DataFrame: Transformed X
         """

@@ -39,11 +39,9 @@ class LSA(TextTransformer):
 
     def transform(self, X, y=None):
         """Transforms data X by applying the LSA pipeline.
-
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
-
+            y (pd.Series, optional): Targets
         Returns:
             pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.

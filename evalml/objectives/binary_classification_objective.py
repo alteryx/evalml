@@ -27,7 +27,9 @@ class BinaryClassificationObjective(ObjectiveBase):
 
         Arguments:
             ypred_proba (list): The classifier's predicted probabilities
+
             y_true (list): The ground truth for the predictions.
+
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
@@ -49,7 +51,9 @@ class BinaryClassificationObjective(ObjectiveBase):
 
         Arguments:
             ypred_proba (list): The classifier's predicted probabilities
+
             threshold (float, optional): Threshold used to make a prediction. Defaults to 0.5.
+
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:

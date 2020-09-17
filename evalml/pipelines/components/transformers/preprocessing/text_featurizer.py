@@ -89,8 +89,7 @@ class TextFeaturizer(TextTransformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
-
+            y (pd.Series, optional): Input Labels
         Returns:
             pd.DataFrame: Transformed X
         """

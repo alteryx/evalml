@@ -4,8 +4,8 @@ from .problem_types import ProblemTypes
 def handle_problem_types(problem_type):
     """Handles problem_type by either returning the ProblemTypes or converting from a str.
 
-    Arguments:
-        problem_type (str or ProblemTypes): Problem type that needs to be handled
+    Args:
+        problem_type (str or ProblemTypes): problem type that needs to be handled
 
     Returns:
         ProblemTypes

@@ -37,21 +37,21 @@ class ObjectiveBase(ABC):
     def objective_function(cls, y_true, y_predicted, X=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
          Arguments:
-            y_predicted (pd.Series): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
-            X (pd.DataFrame or np.array): Extra data of shape [n_samples, n_features] necessary to calculate score
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
+            X (pd.DataFrame or np.array): extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
-            Numerical value used to calculate score
+            numerical value used to calculate score
         """
 
     def score(self, y_true, y_predicted, X=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:
-            y_predicted (pd.Series): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
-            X (pd.DataFrame or np.array): Extra data of shape [n_samples, n_features] necessary to calculate score
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
+            X (pd.DataFrame or np.array): extra data of shape [n_samples, n_features] necessary to calculate score
 
         Returns:
             score
@@ -66,7 +66,7 @@ class ObjectiveBase(ABC):
         """Standardize np or pd input to np for scoring
 
         Arguments:
-            y_in (np.ndarray or pd.Series): A matrix of predictions or predicted probabilities
+            y_in (np.ndarray or pd.Series): a matrix of predictions or predicted probabilities
 
         Returns:
             np.ndarray: a 1d np array, or a 2d np array if predicted probabilities were provided.
@@ -79,8 +79,8 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (pd.Series): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
+            y_predicted (pd.Series): predicted values of length [n_samples]
+            y_true (pd.Series): actual class labels of length [n_samples]
 
         Returns:
             None

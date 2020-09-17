@@ -40,12 +40,11 @@ class PerColumnImputer(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits imputers on input data
+        """Fits imputers on data X
 
         Arguments:
             X (pd.DataFrame): Data to fit
-            y (pd.Series, optional): Ignored.
-
+            y (pd.Series, optional): Input Labels
         Returns:
             self
         """
@@ -64,12 +63,11 @@ class PerColumnImputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms input data by imputing missing values
+        """Transforms data X by imputing missing values
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
-
+            y (pd.Series, optional): Input Labels
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -87,12 +85,11 @@ class PerColumnImputer(Transformer):
         return X_t
 
     def fit_transform(self, X, y=None):
-        """Fits imputer and imputes missing values in input data.
+        """Fits imputer on data X then imputes missing values in X
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Target data.
-
+            y (pd.Series): Labels to fit and transform
         Returns:
             pd.DataFrame: Transformed X
         """

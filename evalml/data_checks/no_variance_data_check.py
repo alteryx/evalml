@@ -9,10 +9,10 @@ logger = get_logger(__file__)
 
 
 class NoVarianceDataCheck(DataCheck):
-    """Check if the target or any of the features have no variance."""
+    """Check if any of the features or labels have no variance."""
 
     def __init__(self, count_nan_as_value=False):
-        """Check if the target or any of the features have no variance.
+        """Check if any of the features or labels have no variance.
 
         Arguments:
             count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
@@ -43,14 +43,14 @@ class NoVarianceDataCheck(DataCheck):
                                     "this column to be useful for machine learning.", self.name)
 
     def validate(self, X, y):
-        """Check if the target or any of the features have no variance (1 unique value).
+        """Check if any of the features or if the labels have no variance (1 unique value).
 
         Arguments:
             X (pd.DataFrame): The input features.
-            y (pd.Series): The target data.
+            y (pd.Series): The labels.
 
         Returns:
-            list (DataCheckWarning or DataCheckError): List of warnings/errors corresponding to features or target with no variance.
+            list (DataCheckWarning or DataCheckError), list of warnings/errors corresponding to features or labels with no variance.
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -73,9 +73,9 @@ class NoVarianceDataCheck(DataCheck):
         if not y_name:
             y_name = "Y"
 
-        target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
+        label_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
 
-        if target_message:
-            messages.append(target_message)
+        if label_message:
+            messages.append(label_message)
 
         return messages
