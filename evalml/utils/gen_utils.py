@@ -220,5 +220,3 @@ def jupyter_check():
         return True
     except NameError:
         return False
-    except Exception:
-        return False
