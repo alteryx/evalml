@@ -71,6 +71,4 @@ class Estimator(ComponentBase):
             raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
 
     def __eq__(self, other):
-        supported_problem_types_eq = self.supported_problem_types == other.supported_problem_types
-        component_eq = super().__eq__(other)
-        return supported_problem_types_eq and component_eq
+        return self.supported_problem_types == other.supported_problem_types and super().__eq__(other)

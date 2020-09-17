@@ -1126,9 +1126,9 @@ def test_pipeline_equality_subclasses(pipeline_class):
         name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
-    class MockPipelineSublass(MockPipeline):
+    class MockPipelineSubclass(MockPipeline):
         pass
-    assert MockPipeline(parameters={}) != MockPipelineSublass(parameters={})
+    assert MockPipeline(parameters={}) != MockPipelineSubclass(parameters={})
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
@@ -1181,8 +1181,13 @@ def test_pipeline_equality(pipeline_class):
     assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
 
     # Test fitted equality
-    mock_pipeline.fit(pd.DataFrame({}))
+    X = pd.DataFrame({})
+    mock_pipeline.fit(X)
     assert mock_pipeline != MockPipeline(parameters={})
+
+    mock_pipeline_equal = MockPipeline(parameters={})
+    mock_pipeline_equal.fit(X)
+    assert mock_pipeline == mock_pipeline_equal
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])

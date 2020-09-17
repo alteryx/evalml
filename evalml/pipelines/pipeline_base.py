@@ -478,8 +478,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_state_eq = check_random_state_equality(self.random_state, other.random_state)
         if not random_state_eq:
             return False
-        attributes_to_check = ['hyperparameters', 'parameters', 'name', 'custom_name', 'custom_hyperparameters',
-                               'problem_type', 'model_family', '_is_fitted', 'component_graph', 'input_feature_names']
+        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False

@@ -146,8 +146,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         random_state_eq = check_random_state_equality(self.random_state, other.random_state)
         if not random_state_eq:
             return False
-        attributes_to_check = ['_parameters', 'name', 'model_family', '_is_fitted']
+        attributes_to_check = ['_parameters', '_is_fitted']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
-                return False
+                return False∂∂∂∂∂
         return True

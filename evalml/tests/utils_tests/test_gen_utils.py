@@ -194,8 +194,11 @@ def test_import_or_warn_errors(dummy_importlib):
 
 
 def test_check_random_state_equality():
+    assert check_random_state_equality(get_random_state(1), get_random_state(1))
+
     rs_1 = get_random_state(1)
     rs_2 = get_random_state(2)
+    assert not check_random_state_equality(rs_1, rs_2)
 
     # Test equality
     rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))

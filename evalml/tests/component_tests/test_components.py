@@ -801,9 +801,9 @@ def test_component_equality_subclasses():
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-    class MockEstimatorSublass(MockComponent):
+    class MockEstimatorSubclass(MockComponent):
         pass
-    assert MockComponent() != MockEstimatorSublass()
+    assert MockComponent() != MockEstimatorSubclass()
 
 
 def test_component_equality():
