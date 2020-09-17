@@ -1,7 +1,12 @@
-import pytest
-import pandas as pd
 import numpy as np
-from evalml.problem_types import ProblemTypes, handle_problem_types, detect_problem_type
+import pandas as pd
+import pytest
+
+from evalml.problem_types import (
+    ProblemTypes,
+    detect_problem_type,
+    handle_problem_types
+)
 
 
 @pytest.fixture
@@ -35,7 +40,7 @@ def test_handle_incorrect_type():
 def test_detect_problem_type_error():
     y_empty = pd.Series([])
     y_one_value = pd.Series([1, 1, 1, 1, 1, 1])
-    y_nan = pd.Series([np.nan, np.nan, 1, 1, 1])
+    y_nan = pd.Series([np.nan, np.nan])
 
     with pytest.raises(ValueError, match="Less than 2"):
         detect_problem_type(y_empty)
@@ -46,30 +51,58 @@ def test_detect_problem_type_error():
 
 
 def test_detect_problem_type_binary():
-    y_binary = pd.Series([1, 0, 1, 0, 0])
+    y_binary = pd.Series([1, 0, 1, 0, 0, 1])
     y_bool = pd.Series([True, False, True, True, True])
     y_float = pd.Series([1.0, 0.0, 1.0, 1.0, 0.0, 0.0])
     y_categorical = pd.Series(['yes', 'no', 'no', 'yes'])
+    y_null = pd.Series([None, np.nan, np.nan, 1, 1, 1])
 
     assert detect_problem_type(y_binary) == 'binary'
     assert detect_problem_type(y_bool) == 'binary'
     assert detect_problem_type(y_float) == 'binary'
     assert detect_problem_type(y_categorical) == 'binary'
+    assert detect_problem_type(y_null) == 'binary'
 
 
 def test_detect_problem_type_multiclass():
-    y_multi = pd.Series([1, 2, 0, 2, 0, 0])
+    y_multi = pd.Series([1, 2, 0, 2, 0, 0, 1])
     y_categorical = pd.Series(['yes', 'no', 'maybe', 'no'])
-    y_float = pd.Series([1, 2, 3.0, 2.0000, 1, 0, 0])
+    y_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9] * 5)
+    y_classes_nan = pd.Series([1, 2, 3, 4, 5, 6, pd.NA] * 5)
 
     assert detect_problem_type(y_multi) == 'multiclass'
     assert detect_problem_type(y_categorical) == 'multiclass'
-    assert detect_problem_type(y_float) == 'multiclass'
+    assert detect_problem_type(y_classes) == 'multiclass'
+    assert detect_problem_type(y_classes_nan) == 'multiclass'
 
 
 def test_detect_problem_type_regression():
     y_regress = pd.Series([1.0, 2.1, 1.2, 0.3, 3.0, 2.3])
     y_mix = pd.Series([1, 0, 2, 3.000001])
+    y_float = pd.Series([1, 2, 3.0, 2.0000, 1, 0, 0])
+    y_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 0] * 5)
+    y_nan = pd.Series([1.0, 2.1, 3, np.nan])
+    y_null_over = pd.Series([1, 3, np.nan, None, pd.NA])
 
     assert detect_problem_type(y_regress) == 'regression'
     assert detect_problem_type(y_mix) == 'regression'
+    assert detect_problem_type(y_float) == 'regression'
+    assert detect_problem_type(y_classes) == 'regression'
+    assert detect_problem_type(y_nan) == 'regression'
+    assert detect_problem_type(y_null_over) == 'regression'
+
+
+def test_nan_none_na():
+    y_none = pd.Series([None])
+    y_pdna = pd.Series([pd.NA])
+    y_nan = pd.Series([np.nan])
+    y_all_null = pd.Series([None, pd.NA, np.nan])
+
+    with pytest.raises(ValueError, match="Less than 2"):
+        detect_problem_type(y_none)
+    with pytest.raises(ValueError, match="Less than 2"):
+        detect_problem_type(y_pdna)
+    with pytest.raises(ValueError, match="Less than 2"):
+        detect_problem_type(y_nan)
+    with pytest.raises(ValueError, match="Less than 2"):
+        detect_problem_type(y_all_null)

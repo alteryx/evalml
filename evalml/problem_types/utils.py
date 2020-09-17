@@ -1,5 +1,7 @@
-from .problem_types import ProblemTypes
+import numpy as np
 import pandas as pd
+
+from .problem_types import ProblemTypes
 
 
 def handle_problem_types(problem_type):
@@ -24,6 +26,7 @@ def handle_problem_types(problem_type):
 
 def detect_problem_type(y):
     """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression)
+        Treats np.nan as a separate value
 
     Arguments:
         y (pd.Series): the target labels to predict
@@ -32,16 +35,21 @@ def detect_problem_type(y):
         String: string representation for the problem type
     """
     y = pd.Series(y)
-    num_classes = y.nunique()
+    y2 = y.copy().dropna()
+    y = y.fillna(np.nan)
+    num_classes = y.nunique(dropna=False)
     if num_classes < 2:
         raise ValueError("Less than 2 classes detected!")
     elif num_classes == 2:
         return "binary"
     else:
-        if pd.api.types.is_float_dtype(y):
-            y2 = y.copy().astype('int64')
-            if all(y == y2):
-                # if all floats are equivalent to their int counterpart (ie 1.0 == 1)
-                return 'multiclass'
-            return 'regression'
+        if pd.api.types.is_numeric_dtype(y):
+            # if we have too many classes or too many classes per length of data
+            if (num_classes >= 10) or (num_classes > (0.5 * len(y))):
+                return 'regression'
+            # else if remaining values are ints, is multiclass
+            elif pd.api.types.is_float_dtype(y2):
+                if pd.api.types.is_integer_dtype(pd.Series(y2.values)):
+                    return 'multiclass'
+                return 'regression'
         return 'multiclass'
