@@ -8,13 +8,6 @@ from sklearn.utils import check_random_state
 from evalml.exceptions import MissingComponentError
 from evalml.utils import get_logger
 
-try:
-    from IPython import get_ipython
-except ImportError:
-    pass
-except Exception:
-    pass
-
 logger = get_logger(__file__)
 
 

@@ -317,8 +317,8 @@ def test_roc_curve_multiclass(data_type):
                              [0, 0.5, 1, 1, 1, 1],
                              [0, 0.5, 1, 1, 1]])
     thresholds_expected = np.array([[1.8, 0.8, 0.75, 0.05],
-                                   [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
-                                   [1.9, 0.9, 0.8, 0.3, 0.1]])
+                                    [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
+                                    [1.9, 0.9, 0.8, 0.3, 0.1]])
     auc_expected = [1, 1, 1]
     for i in np.unique(y_true):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
