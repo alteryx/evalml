@@ -418,8 +418,12 @@ def test_components_init_kwargs():
 
         with patch(patched, new=all_init) as _:
             component = component_class(test_arg="test")
+            component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters['test_arg'] == "test"
             assert component._component_obj.test_arg == "test"
+            # Test equality of different components with same or different kwargs
+            assert component == component_class(test_arg="test")
+            assert component != component_with_different_kwargs
 
 
 def test_component_has_random_state():
@@ -840,3 +844,11 @@ def test_component_equality():
     # Test fitted equality
     mock_component.fit(pd.DataFrame({}))
     assert mock_component != MockComponent()
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_equality_all_components(component_class):
+    component = component_class()
+    parameters = component.parameters
+    equal_component = component_class(**parameters)
+    assert component == equal_component
