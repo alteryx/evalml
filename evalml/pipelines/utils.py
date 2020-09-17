@@ -12,6 +12,7 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     DateTimeFeaturizer,
     DropNullColumns,
+    Estimator,
     Imputer,
     OneHotEncoder,
     StandardScaler
@@ -60,6 +61,16 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     return pp_components
 
 
+def _get_pipeline_base_class(problem_type):
+    """Returns pipeline base class for problem_type"""
+    if problem_type == ProblemTypes.BINARY:
+        return BinaryClassificationPipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        return MulticlassClassificationPipeline
+    elif problem_type == ProblemTypes.REGRESSION:
+        return RegressionPipeline
+
+
 def make_pipeline(X, y, estimator, problem_type):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
@@ -85,16 +96,7 @@ def make_pipeline(X, y, estimator, problem_type):
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
-    def get_pipeline_base_class(problem_type):
-        """Returns pipeline base class for problem_type"""
-        if problem_type == ProblemTypes.BINARY:
-            return BinaryClassificationPipeline
-        elif problem_type == ProblemTypes.MULTICLASS:
-            return MulticlassClassificationPipeline
-        elif problem_type == ProblemTypes.REGRESSION:
-            return RegressionPipeline
-
-    base_class = get_pipeline_base_class(problem_type)
+    base_class = _get_pipeline_base_class(problem_type)
 
     class GeneratedPipeline(base_class):
         custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
@@ -102,3 +104,32 @@ def make_pipeline(X, y, estimator, problem_type):
         custom_hyperparameters = hyperparameters
 
     return GeneratedPipeline
+
+
+def make_pipeline_from_components(component_instances, problem_type, custom_name=None):
+    """Given a list of component instances and the problem type, a pipeline instance is generated with the component instances.
+    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. A custom name for
+    the pipeline can optionally be specified; otherwise the default pipeline name will be 'Templated Pipeline'.
+
+   Arguments:
+        component_instances (list): a list of all of the components to include in the pipeline
+        problem_type (str or ProblemTypes): problem type for the pipeline to generate
+        custom_name (string): a name for the new pipeline
+
+    Returns:
+        Pipeline instance with component instances and specified estimator
+
+    """
+    if not isinstance(component_instances[-1], Estimator):
+        raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
+
+    pipeline_name = custom_name
+    problem_type = handle_problem_types(problem_type)
+
+    class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
+        custom_name = pipeline_name
+        component_graph = [c.__class__ for c in component_instances]
+
+    pipeline_instance = TemplatedPipeline({})
+    pipeline_instance.component_graph = component_instances
+    return pipeline_instance
