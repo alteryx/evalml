@@ -26,6 +26,7 @@ Release Notes
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
         * Removed tqdm as a dependency :pr:`1177`
+        * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
