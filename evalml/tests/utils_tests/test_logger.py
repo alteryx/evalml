@@ -6,7 +6,12 @@ from unittest.mock import call, patch
 
 import pytest
 
-from evalml.utils.logger import get_logger, log_subtitle, log_title
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed
+)
 
 TEST_LOGGER_NAME = 'my_logger'
 
@@ -197,3 +202,11 @@ def test_get_logger_exception(mock_RotatingFileHandler, capsys, caplog, logger_e
     assert "Exception encountered while setting up debug log file" in stdouterr.out
     assert "Warning: cannot write debug logs" not in stdouterr.err
     assert "Exception encountered while setting up debug log file" not in stdouterr.err
+
+
+@pytest.mark.parametrize("time_passed,answer", [(101199, "28:06:39"), (3660, "1:01:00"), (65, "01:05"), (7, "00:07")])
+@patch("time.time")
+def test_time_elapsed(mock_time, time_passed, answer):
+    mock_time.return_value = time_passed
+    time = time_elapsed(start_time=0)
+    assert time == answer
