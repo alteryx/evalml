@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.13.2 Sep. 17, 2020**
+    * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
@@ -12,8 +20,10 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in `graph_roc_curve` :pr:`1161`
+        * Added `__eq__` for `ComponentBase` and `PipelineBase` :pr:`1178`
         * Added support for multiclass classification for `roc_curve` :pr:`1164`
         * Added `categories` accessor to `OneHotEncoder` for listing the categories associated with a feature :pr:`1182`
+        * Added utility function to create pipeline instances from a list of component instances :pr:`1176`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from `TextFeaturizer` :pr:`1122`
@@ -23,9 +33,11 @@ Release Notes
         * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
         * Users can now pass in any valid kwargs to all estimators :pr:`1157`
         * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
+        * Removed LightGBM Estimator from AutoML models :pr:`1186`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
         * Removed tqdm as a dependency :pr:`1177`
+        * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
