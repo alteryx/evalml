@@ -76,7 +76,6 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == 0
 
 
-
 def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes)
     assert algo.pipeline_number == 0
