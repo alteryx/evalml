@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
     * Fixes
     * Changes
     * Documentation Changes
@@ -12,7 +13,6 @@ Release Notes
 **v0.13.2 Sep. 17, 2020**
     * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
-        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
         * Added a `return_instance` boolean parameter to `get_objective` :pr:`1132`
         * Added `ClassImbalanceDataCheck` to determine whether target imbalance falls below a given threshold :pr:`1135`
