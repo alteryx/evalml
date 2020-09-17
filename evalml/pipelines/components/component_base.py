@@ -149,5 +149,5 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         attributes_to_check = ['_parameters', '_is_fitted']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
-                return False∂∂∂∂∂
+                return False
         return True
