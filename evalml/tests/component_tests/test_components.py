@@ -361,8 +361,10 @@ def test_component_parameters_init():
         try:
             component = component_class()
         except EnsembleMissingEstimatorsError:
-            component = component_class(estimators=[])
-
+            if component_class == StackedEnsembleClassifier:
+                component = component_class(estimators=[RandomForestClassifier()])
+            elif component_class == StackedEnsembleRegressor:
+                component = component_class(estimators=[RandomForestRegressor()])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -803,7 +805,13 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
 def test_estimators_accept_all_kwargs(estimator_class):
-    estimator = estimator_class()
+    try:
+        estimator = estimator_class()
+    except EnsembleMissingEstimatorsError:
+        if estimator_class == StackedEnsembleClassifier:
+            estimator = estimator_class(estimators=[RandomForestClassifier()])
+        elif estimator_class == StackedEnsembleRegressor:
+            estimator = estimator_class(estimators=[RandomForestRegressor()])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
     params = estimator._component_obj.get_params()

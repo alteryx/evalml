@@ -13,11 +13,7 @@ from evalml.pipelines.components import (
     RandomForestClassifier
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
-from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
-    _nonstackable_model_families
-)
-from evalml.pipelines.components.utils import _all_estimators
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import ProblemTypes
 
 
 def test_stacked_model_family():

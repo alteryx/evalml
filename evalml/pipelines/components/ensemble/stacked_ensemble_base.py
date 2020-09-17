@@ -34,10 +34,6 @@ class StackedEnsembleBase(Estimator):
         contains_non_stackable = [estimator for estimator in estimators if estimator.model_family in _nonstackable_model_families]
         if contains_non_stackable:
             raise ValueError("Estimators with any of the following model families cannot be used as base estimators: {}".format(_nonstackable_model_families))
-        component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
-        if component_without_obj:
-            raise ValueError("All estimators and final_estimator must have a valid ._component_obj")
-
         parameters = {
             "estimators": estimators,
             "final_estimator": final_estimator,
@@ -48,6 +44,9 @@ class StackedEnsembleBase(Estimator):
 
         if final_estimator is None:
             final_estimator = self._default_final_estimator()
+        component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
+        if component_without_obj:
+            raise ValueError("All estimators and final_estimator must have a valid ._component_obj")
         sklearn_parameters = {
             "estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator._component_obj,
