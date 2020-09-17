@@ -9,7 +9,7 @@ Release Notes
     * Testing Changes
 
 
-**v0.14.0 Sep. 17, 2020**
+**v0.13.2 Sep. 17, 2020**
     * Enhancements
         * Added `output_format` field to explain predictions functions :pr:`1107`
         * Modified `get_objective` and `get_objectives` to be able to return any objective in `evalml.objectives` :pr:`1132`
