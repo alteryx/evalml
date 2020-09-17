@@ -104,6 +104,18 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
     return random_state
 
 
+def check_random_state_equality(random_state, other_random_state):
+    """Method to check for equality of two numpy.random.RandomState objects"""
+    for self_rs_attr, other_rs_attr in zip(random_state.get_state(), other_random_state.get_state()):
+        if isinstance(self_rs_attr, np.ndarray) and isinstance(other_rs_attr, np.ndarray):
+            if not (self_rs_attr == other_rs_attr).all():
+                return False
+        else:
+            if not (self_rs_attr == other_rs_attr):
+                return False
+    return True
+
+
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
@@ -156,7 +168,7 @@ def _get_subclasses(base_class):
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
+                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline', 'LightGBMClassifier'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):

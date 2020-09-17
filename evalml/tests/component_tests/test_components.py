@@ -418,8 +418,12 @@ def test_components_init_kwargs():
 
         with patch(patched, new=all_init) as _:
             component = component_class(test_arg="test")
+            component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters['test_arg'] == "test"
             assert component._component_obj.test_arg == "test"
+            # Test equality of different components with same or different kwargs
+            assert component == component_class(test_arg="test")
+            assert component != component_with_different_kwargs
 
 
 def test_component_has_random_state():
@@ -781,3 +785,70 @@ def test_estimators_accept_all_kwargs(estimator_class):
         # Deleting because we call it random_state in our api
         del params["random_seed"]
     estimator_class(**params)
+
+
+def test_component_equality_different_classes():
+    # Tests that two classes which are equivalent are not equal
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockComponentWithADifferentName(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    assert MockComponent() != MockComponentWithADifferentName()
+
+
+def test_component_equality_subclasses():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+    class MockEstimatorSubclass(MockComponent):
+        pass
+    assert MockComponent() != MockEstimatorSubclass()
+
+
+def test_component_equality():
+    class MockComponent(ComponentBase):
+        name = "Mock Component"
+        model_family = ModelFamily.NONE
+
+        def __init__(self, param_1=0, param_2=0, random_state=0, **kwargs):
+            parameters = {"param_1": param_1,
+                          "param_2": param_2}
+            parameters.update(kwargs)
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_component = MockComponent()
+    assert mock_component == mock_component
+
+    # Test defaults
+    assert MockComponent() == MockComponent()
+
+    # Test random_state
+    assert MockComponent(random_state=10) == MockComponent(random_state=10)
+    assert MockComponent(random_state=10) != MockComponent(random_state=0)
+
+    # Test parameters
+    assert MockComponent(1, 2) == MockComponent(1, 2)
+    assert MockComponent(1, 2) != MockComponent(1, 0)
+    assert MockComponent(0, 2) != MockComponent(1, 2)
+
+    # Test fitted equality
+    mock_component.fit(pd.DataFrame({}))
+    assert mock_component != MockComponent()
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_equality_all_components(component_class):
+    component = component_class()
+    parameters = component.parameters
+    equal_component = component_class(**parameters)
+    assert component == equal_component
