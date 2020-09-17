@@ -1,7 +1,6 @@
 import inspect
 from unittest.mock import patch
 
-import pandas as pd
 import numpy as np
 import pytest
 
@@ -13,8 +12,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
-    import_or_raise,
-    detect_problem_type
+    import_or_raise
 )
 
 
@@ -192,46 +190,3 @@ def test_import_or_warn_errors(dummy_importlib):
         import_or_raise("_evalml", "Additional error message", warning=True)
     with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
         import_or_raise("attr_error_lib", warning=True)
-
-
-def test_detect_problem_type_error():
-    y_empty = pd.Series([])
-    y_one_value = pd.Series([1, 1, 1, 1, 1, 1])
-    y_nan = pd.Series([np.nan, np.nan, 1, 1, 1])
-
-    with pytest.raises(ValueError, match="Less than 2"):
-        detect_problem_type(y_empty)
-    with pytest.raises(ValueError, match="Less than 2"):
-        detect_problem_type(y_one_value)
-    with pytest.raises(ValueError, match="Less than 2"):
-        detect_problem_type(y_nan)
-
-
-def test_detect_problem_type_binary():
-    y_binary = pd.Series([1, 0, 1, 0, 0])
-    y_bool = pd.Series([True, False, True, True, True])
-    y_float = pd.Series([1.0, 0.0, 1.0, 1.0, 0.0, 0.0])
-    y_categorical = pd.Series(['yes', 'no', 'no', 'yes'])
-
-    assert detect_problem_type(y_binary) == 'binary'
-    assert detect_problem_type(y_bool) == 'binary'
-    assert detect_problem_type(y_float) == 'binary'
-    assert detect_problem_type(y_categorical) == 'binary'
-
-
-def test_detect_problem_type_multiclass():
-    y_multi = pd.Series([1, 2, 0, 2, 0, 0])
-    y_categorical = pd.Series(['yes', 'no', 'maybe', 'no'])
-    y_float = pd.Series([1, 2, 3.0, 2.0000, 1, 0, 0])
-
-    assert detect_problem_type(y_multi) == 'multiclass'
-    assert detect_problem_type(y_categorical) == 'multiclass'
-    assert detect_problem_type(y_float) == 'multiclass'
-
-
-def test_detect_problem_type_regression():
-    y_regress = pd.Series([1.0, 2.1, 1.2, 0.3, 3.0, 2.3])
-    y_mix = pd.Series([1, 0, 2, 3.000001])
-
-    assert detect_problem_type(y_regress) == 'regression'
-    assert detect_problem_type(y_mix) == 'regression'
