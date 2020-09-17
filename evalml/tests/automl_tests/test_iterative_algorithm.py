@@ -9,6 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_iterative_algorithm_init_iterative():
@@ -75,6 +76,7 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == 0
 
 
+
 def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes)
     assert algo.pipeline_number == 0
@@ -88,6 +90,8 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
     assert all([p.parameters == (p.__class__)({}).parameters for p in next_batch])
+    assert all([check_random_state_equality(p.random_state, algo.random_state) for p in next_batch])
+
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -103,6 +107,7 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
         assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
         assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + (algo.batch_number - 1) * algo.pipelines_per_batch
         assert algo.batch_number == last_batch_number + 1
+        assert all([check_random_state_equality(p.random_state, algo.random_state) for p in next_batch])
         last_batch_number = algo.batch_number
         print([p.parameters for p in next_batch])
         all_parameters.extend([p.parameters for p in next_batch])

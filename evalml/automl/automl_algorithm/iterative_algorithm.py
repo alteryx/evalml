@@ -50,14 +50,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
+            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_state=self.random_state)
                           for pipeline_class in self.allowed_pipelines]
         else:
             idx = (self._batch_number - 1) % len(self._first_batch_results)
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
-                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
+                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters), random_state=self.random_state))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
