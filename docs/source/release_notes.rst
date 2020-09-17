@@ -24,6 +24,7 @@ Release Notes
         * Removed duplicate `nbsphinx` dependency in `dev-requirements.txt` :pr:`1168`
         * Users can now pass in any valid kwargs to all estimators :pr:`1157`
         * Remove broken accessor `OneHotEncoder.get_feature_names` and unneeded base class :pr:`1179`
+        * Removed LightGBM Estimator from AutoML models :pr:`1186`
     * Changes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
         * Removed tqdm as a dependency :pr:`1177`
