@@ -1147,9 +1147,10 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
+        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
         parameters = {
             "Stacked Ensemble Classifier": {
-                "estimators": stackable_classifiers
+                "input_pipelines": input_pipelines
             }
         }
         graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
@@ -1158,9 +1159,10 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
+        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
         parameters = {
             "Stacked Ensemble Classifier": {
-                "estimators": stackable_classifiers,
+                "input_pipelines": input_pipelines
             }
         }
         graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
@@ -1170,9 +1172,10 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
+        input_pipelines = [make_pipeline_from_components([regressor], problem_type) for regressor in stackable_regressors]
         parameters = {
             "Stacked Ensemble Regressor": {
-                "estimators": stackable_regressors,
+                "input_pipelines": input_pipelines
             }
         }
         graph = ['Simple Imputer', 'Stacked Ensemble Regressor']

@@ -13,6 +13,7 @@ class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns."""
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
+    supported_problem_types = []
 
     def __init__(self, text_columns=None, random_state=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives

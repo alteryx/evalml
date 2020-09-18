@@ -4,16 +4,15 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from evalml.pipelines.utils import make_pipeline_from_components
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     BaselineRegressor,
-    Estimator,
     RandomForestRegressor
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -29,17 +28,18 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
 
 
 def test_stacked_ensemble_nonstackable_model_families():
-    with pytest.raises(ValueError, match="Estimators with any of the following model families cannot be used as base estimators"):
-        StackedEnsembleRegressor(input_pipelines=[BaselineRegressor()])
+    with pytest.raises(ValueError, match="Pipelines with any of the following model families cannot be used as base pipelines"):
+        StackedEnsembleRegressor(input_pipelines=[make_pipeline_from_components([BaselineRegressor()], ProblemTypes.REGRESSION)])
 
 
-def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression):
+def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression, linear_regression_pipeline_class):
     # Checks that it is okay to pass multiple of the same type of estimator
     X, y = X_y_regression
-    estimators = [RandomForestRegressor(), RandomForestRegressor()]
-    clf = StackedEnsembleRegressor(input_pipelines=estimators)
+    input_pipelines = [linear_regression_pipeline_class(parameters={}),
+                       linear_regression_pipeline_class(parameters={})]
+    clf = StackedEnsembleRegressor(input_pipelines=input_pipelines)
     expected_parameters = {
-        "estimators": estimators,
+        "input_pipelines": input_pipelines,
         "final_estimator": None,
         'cv': None,
         'n_jobs': -1
@@ -55,10 +55,8 @@ def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
     # checks passing a stacked ensemble classifier as a final estimator
     X = pd.DataFrame(np.random.rand(50, 5))
     y = pd.Series(np.random.rand(50,))
-    base = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={}),
-                                                     linear_regression_pipeline_class(parameters={})])
-    clf = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={}),
-                                                    linear_regression_pipeline_class(parameters={})],
+    base = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={})])
+    clf = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={})],
                                    final_estimator=base)
     clf.fit(X, y)
     y_pred = clf.predict(X)
@@ -91,7 +89,9 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
 def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    clf = StackedEnsembleRegressor(input_pipelines=stackable_regressors)
+    input_pipelines = [make_pipeline_from_components([regressor], ProblemTypes.REGRESSION)
+                       for regressor in stackable_regressors]
+    clf = StackedEnsembleRegressor(input_pipelines=input_pipelines)
     clf.fit(X, y)
     mock_fit.assert_called()
     clf._is_fitted = True

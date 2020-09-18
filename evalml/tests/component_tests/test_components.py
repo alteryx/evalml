@@ -47,6 +47,7 @@ from evalml.pipelines.components.utils import (
     _all_transformers,
     all_components
 )
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -764,32 +765,18 @@ def test_serialization(X_y_binary, tmpdir):
             component = component_class()
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
-                component = component_class(input_pipelines=[RandomForestClassifier(n_estimators=2)])
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])
             elif (component_class == StackedEnsembleRegressor):
-                component = component_class(input_pipelines=[RandomForestRegressor(n_estimators=2)])
-
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)])
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
             component.save(path, pickle_protocol=pickle_protocol)
             loaded_component = ComponentBase.load(path)
-            if isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor):
-                # test all parameters except "estimators"
-                params_without_estimators = {key: value for key, value in component.parameters.items() if key != "estimators"}
-                loaded_params_without_estimators = {key: value for key, value in loaded_component.parameters.items() if key != "estimators"}
-                assert params_without_estimators == loaded_params_without_estimators
-                estimators = component.parameters['estimators']
-                loaded_estimators = loaded_component.parameters['estimators']
-                # test equality for each estimator in estimators
-                for est, loaded_est in zip(estimators, loaded_estimators):
-                    assert est.parameters == loaded_est.parameters
-                    assert est.describe(return_dict=True) == loaded_est.describe(return_dict=True)
-
-            else:
-                assert component.parameters == loaded_component.parameters
-                assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
-                if issubclass(component_class, Estimator):
-                    assert (component.feature_importance == loaded_component.feature_importance).all()
+            assert component.parameters == loaded_component.parameters
+            assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
+            if (issubclass(component_class, Estimator) and not (isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor))):
+                assert (component.feature_importance == loaded_component.feature_importance).all()
 
 
 @patch('cloudpickle.dump')
