@@ -10,3 +10,4 @@ psutil>=5.6.3
 requirements-parser>=0.2.0
 shap>=0.35.0
 texttable>=1.6.2
+-e git+https://github.com/FeatureLabs/nlp_primitives.git@include_data#egg=nlp_primitives
