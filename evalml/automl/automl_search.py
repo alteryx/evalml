@@ -198,7 +198,7 @@ class AutoMLSearch:
             logger.warning("`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead.")
 
         self.max_iterations = max_iterations
-        if self.max_iterations is None and self.max_time is None and _max_batches is None:
+        if not self.max_iterations and not self.max_time and not _max_batches:
             self.max_iterations = 5
             logger.info("Using default limit of max_iterations=5.\n")
 
