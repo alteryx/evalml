@@ -166,12 +166,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
 
-    def get_feature_names(self, input_features):
+    def get_feature_names(self):
         """Return feature names for the input features after fitting.
 
-        Arguments:
-            input_features (list(str)): list of input feature names
         Returns:
             np.array: The feature names after encoding, provided in the same order as input_features.
         """
-        return self._encoder.get_feature_names(input_features)
+        return self._encoder.get_feature_names(self._cols_to_encode)

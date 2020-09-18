@@ -378,6 +378,6 @@ def test_ohe_get_feature_names():
                       'col_2': ['a'] * 3 + ['b'] * 3 + ['c'] * 2 + ['d'] * 2})
     ohe = OneHotEncoder(top_n=2)
     with pytest.raises(ComponentNotYetFittedError, match='This OneHotEncoder is not fitted yet. You must fit OneHotEncoder before calling get_feature_names.'):
-        ohe.get_feature_names(list(X.columns))
+        ohe.get_feature_names()
     ohe.fit(X)
-    np.testing.assert_array_equal(ohe.get_feature_names(list(X.columns)), np.array(['col_1_a', 'col_2_a', 'col_2_b']))
+    np.testing.assert_array_equal(ohe.get_feature_names(), np.array(['col_1_a', 'col_2_a', 'col_2_b']))
