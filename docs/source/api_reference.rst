@@ -407,6 +407,7 @@ Data Check Classes
     LabelLeakageDataCheck
     OutliersDataCheck
     NoVarianceDataCheck
+    ClassImbalanceDataCheck
 
 
 .. autosummary::
