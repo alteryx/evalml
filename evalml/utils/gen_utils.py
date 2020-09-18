@@ -3,7 +3,6 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
-import pandas as pd
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import MissingComponentError
@@ -22,7 +21,6 @@ datetime_dtypes = [np.datetime64]
 def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
     If the import fails, raises an ImportError or warning.
-
     Arguments:
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
@@ -73,7 +71,6 @@ SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**31 - 1
 
 def get_random_state(seed):
     """Generates a numpy.random.RandomState instance using seed.
-
     Arguments:
         seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
     """
@@ -84,14 +81,11 @@ def get_random_state(seed):
 
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
-
     To protect against invalid input to a particular library's random number generator, if an int value is provided, and it is outside the bounds "[min_bound, max_bound)", the value will be projected into the range between the min_bound (inclusive) and max_bound (exclusive) using modular arithmetic.
-
     Arguments:
         random_state (int, numpy.random.RandomState): random state
         min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive). Must be less than max_bound.
         max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive). Must be greater than min_bound.
-
     Returns:
         int: seed for random number generator
     """
@@ -121,7 +115,6 @@ class classproperty:
         Example:
         class LogisticRegressionBinaryPipeline(PipelineBase):
             component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
-
             @classproperty
             def summary(cls):
             summary = ""
@@ -129,7 +122,6 @@ class classproperty:
                 component = handle_component_class(component)
                 summary += component.name + " + "
             return summary
-
             assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
             assert LogisticRegressionBinaryPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
     """
@@ -143,10 +135,8 @@ class classproperty:
 
 def _get_subclasses(base_class):
     """Gets all of the leaf nodes in the hiearchy tree for a given base class.
-
     Arguments:
         base_class (abc.ABCMeta): Class to find all of the children for.
-
     Returns:
         subclasses (list): List of all children that are not base classes.
     """
@@ -174,7 +164,6 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
 def get_importable_subclasses(base_class, used_in_automl=True):
     """Get importable subclasses of a base class. Used to list all of our
     estimators, transformers, components and pipelines dynamically.
-
     Arguments:
         base_class (abc.ABCMeta): Base class to find all of the subclasses for.
         args (list): Args used to instantiate the subclass. [{}] for a pipeline, and [] for
@@ -182,7 +171,6 @@ def get_importable_subclasses(base_class, used_in_automl=True):
         used_in_automl: Not all components/pipelines/estimators are used in automl search. If True,
             only include those subclasses that are used in the search. This would mean excluding classes related to
             ExtraTrees, ElasticNet, and Baseline estimators.
-
     Returns:
         List of subclasses.
     """
@@ -207,13 +195,10 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 def _rename_column_names_to_numeric(X):
     """Used in XGBoost classifier and regressor classes to rename column names
         when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
-
     Arguments:
         X (pd.DataFrame): the input training data of shape [n_samples, n_features]
-
     Returns:
         Transformed X where column names are renamed to numerical values
-
     """
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
     return X.rename(columns=name_to_col_num, inplace=False)
@@ -221,10 +206,8 @@ def _rename_column_names_to_numeric(X):
 
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
-
     Arguments:
         None
-
     Returns:
         Boolean: True if Ipython, False otherwise
     """
@@ -233,28 +216,3 @@ def jupyter_check():
         return True
     except NameError:
         return False
-
-
-def detect_problem_type(y):
-    """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression)
-
-    Arguments:
-        y (pd.Series): the target labels to predict
-
-    Returns:
-        String: string representation for the problem type
-    """
-    y = pd.Series(y)
-    num_classes = y.nunique()
-    if num_classes < 2:
-        raise ValueError("Less than 2 classes detected!")
-    elif num_classes == 2:
-        return "binary"
-    else:
-        if pd.api.types.is_float_dtype(y):
-            y2 = y.copy().astype('int64')
-            if all(y == y2):
-                # if all floats are equivalent to their int counterpart (ie 1.0 == 1)
-                return 'multiclass'
-            return 'regression'
-        return 'multiclass'
