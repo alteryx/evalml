@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
+        * Added LightGBM to AutoML search :pr:``
     * Fixes
     * Changes
     * Documentation Changes
