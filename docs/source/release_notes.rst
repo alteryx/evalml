@@ -6,7 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
-        * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190`
+        * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
 
 
