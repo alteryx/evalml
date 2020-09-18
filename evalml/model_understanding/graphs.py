@@ -385,7 +385,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute scores
-        y (pd.Series): The target data
+        y (pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
