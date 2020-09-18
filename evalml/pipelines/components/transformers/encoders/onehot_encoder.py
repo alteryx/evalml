@@ -10,7 +10,7 @@ from evalml.pipelines.components import ComponentBaseMeta
 
 class OneHotEncoderMeta(ComponentBaseMeta):
     """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""
-    METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + ['categories']
+    METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + ['categories', 'get_feature_names']
 
 
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
@@ -166,3 +166,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         except Exception:
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
+
+    def get_feature_names(self):
+        """Return feature names for the input features after fitting.
+
+        Returns:
+            np.array: The feature names after encoding, provided in the same order as input_features.
+        """
+        return self._encoder.get_feature_names(self._cols_to_encode)
