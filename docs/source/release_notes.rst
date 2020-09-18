@@ -4,9 +4,11 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:``
+        * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
     * Changes
     * Documentation Changes
+        * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
 
 

@@ -11,3 +11,4 @@ from .id_columns_data_check import IDColumnsDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 from .outliers_data_check import OutliersDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
+from .class_imbalance_data_check import ClassImbalanceDataCheck

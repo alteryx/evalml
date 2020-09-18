@@ -55,7 +55,7 @@ def test_detect_problem_type_binary():
     y_bool = pd.Series([True, False, True, True, True])
     y_float = pd.Series([1.0, 0.0, 1.0, 1.0, 0.0, 0.0])
     y_categorical = pd.Series(['yes', 'no', 'no', 'yes'])
-    y_null = pd.Series([None, np.nan, np.nan, 1, 1, 1])
+    y_null = pd.Series([None, 0, 1, 1, 1])
 
     assert detect_problem_type(y_binary) == 'binary'
     assert detect_problem_type(y_bool) == 'binary'
@@ -66,35 +66,25 @@ def test_detect_problem_type_binary():
 
 def test_detect_problem_type_multiclass():
     y_multi = pd.Series([1, 2, 0, 2, 0, 0, 1])
-    y_categorical = pd.Series(['yes', 'no', 'maybe', 'no'])
+    y_categorical = pd.Series(['yes', 'no', 'maybe', 'no'], dtype='category')
     y_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9] * 5)
-    y_classes_na = pd.Series([1, 2, 3, 4, 5, 6, pd.NA] * 2)
-    y_classes_nan = pd.Series([1, 2, 3, 4, 5, 6, np.nan, None] * 2)
+    y_float = pd.Series([1.0, 2, 3])
+    y_obj = pd.Series(["y", "n", "m"])
 
     assert detect_problem_type(y_multi) == 'multiclass'
     assert detect_problem_type(y_categorical) == 'multiclass'
     assert detect_problem_type(y_classes) == 'multiclass'
-    assert detect_problem_type(y_classes_na) == 'multiclass'
-    assert detect_problem_type(y_classes_nan) == 'multiclass'
+    assert detect_problem_type(y_float) == 'multiclass'
+    assert detect_problem_type(y_obj) == 'multiclass'
 
 
 def test_detect_problem_type_regression():
-    y_regress = pd.Series([1.0, 1.1, 1.2, 1.3])
-    y_mix = pd.Series([1, 0, 2, 3.0])
-    y_more_than_half = pd.Series([1, 1, 1, 2, 3])
-    y_many_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 0] * 5)
-    y_nan = pd.Series([1.0, 2.1, 3, np.nan])
-    y_null_over = pd.Series([1, 3, np.nan, None, pd.NA])
-    y_mix_null_under = pd.Series([1, 3, 4.0, 5, np.nan, None, pd.NA])
+    y_values = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    y_float = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.0])
 
-    assert detect_problem_type(y_regress) == 'regression'
-    assert detect_problem_type(y_mix) == 'regression'
-    assert detect_problem_type(y_more_than_half) == 'regression'
-    assert detect_problem_type(y_many_classes) == 'regression'
-    assert detect_problem_type(y_nan) == 'regression'
-    assert detect_problem_type(y_null_over) == 'regression'
-    assert detect_problem_type(y_mix_null_under) == 'regression'
-
+    assert detect_problem_type(y_values) == 'regression'
+    assert detect_problem_type(y_float) == 'regression'
+    
 
 def test_nan_none_na():
     y_none = pd.Series([None])
