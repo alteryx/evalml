@@ -3,11 +3,16 @@ import inspect
 import pytest
 
 from evalml.exceptions import MissingComponentError
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import (
+    _all_estimators,
     all_components,
-    handle_component_class
+    handle_component_class,
+    scikit_learn_wrapped_estimator
 )
+from evalml.pipelines.utils import make_pipeline_from_components
+from evalml.problem_types import ProblemTypes
 
 
 def test_all_components(has_minimal_dependencies):
@@ -34,3 +39,21 @@ def test_handle_component_class_names():
         pass
     with pytest.raises(ValueError):
         handle_component_class(NonComponent())
+
+
+
+def test_scikit_learn_wrapper(X_y_regression, X_y_binary):
+    for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
+        if ProblemTypes.BINARY in estimator.supported_problem_types:
+            X, y = X_y_binary
+            evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.BINARY)
+            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.BINARY)
+            s.fit(X, y)
+            print (s.predict(X))
+        if ProblemTypes.REGRESSION in estimator.supported_problem_types:
+            X, y = X_y_regression
+            print ("ESTIMATOR:", estimator.name)
+            evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.REGRESSION)
+            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.REGRESSION)
+            s.fit(X, y)
+            print (s.predict(X))

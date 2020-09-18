@@ -55,3 +55,4 @@ def test_estimator_equality_different_supported_problem_types():
     mock_estimator = MockEstimator()
     mock_estimator.supported_problem_types = ['binary', 'multiclass']
     assert mock_estimator != MockEstimator()
+    assert 'Mock Estimator' != mock_estimator

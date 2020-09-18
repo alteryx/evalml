@@ -1,6 +1,10 @@
 # flake8:noqa
 import inspect
 
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
@@ -103,3 +107,44 @@ def handle_component_class(component_class):
         raise MissingComponentError('Component "{}" was not found'.format(component_class))
     component_class = component_classes[component_class]
     return component_class
+
+
+
+
+class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y)
+        self.classes_ = unique_labels(y)
+        self.X_ = X
+        self.y_ = y
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.pipeline.predict(X)
+
+
+
+class WrappedSKRegressor(BaseEstimator, RegressorMixin):
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y)
+        self.X_ = X
+        self.y_ = y
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.pipeline.predict(X)
+
+
+def scikit_learn_wrapped_estimator(evalml_pipeline, problem_type):
+    """Wrap an EvalML pipeline in a scikit-learn estimator."""
+    if problem_type == ProblemTypes.REGRESSION:
+        return WrappedSKRegressor(evalml_pipeline)
+    return WrappedSKClassifier(evalml_pipeline)
