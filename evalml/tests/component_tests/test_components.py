@@ -355,16 +355,17 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {'test': 'parameter'}
 
 
-def test_component_parameters_init():
+def test_component_parameters_init(logistic_regression_binary_pipeline_class,
+                                   linear_regression_pipeline_class):
     for component_class in all_components():
         print('Testing component {}'.format(component_class.name))
         try:
             component = component_class()
         except EnsembleMissingPipelinesError:
             if component_class == StackedEnsembleClassifier:
-                component = component_class(input_pipelines=[RandomForestClassifier()])
+                component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
             elif component_class == StackedEnsembleRegressor:
-                component = component_class(input_pipelines=[RandomForestRegressor()])
+                component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -808,14 +809,16 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
-def test_estimators_accept_all_kwargs(estimator_class):
+def test_estimators_accept_all_kwargs(estimator_class,
+                                      logistic_regression_binary_pipeline_class,
+                                      linear_regression_pipeline_class):
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:
         if estimator_class == StackedEnsembleClassifier:
-            estimator = estimator_class(input_pipelines=[RandomForestClassifier()])
+            estimator = estimator_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
         elif estimator_class == StackedEnsembleRegressor:
-            estimator = estimator_class(input_pipelines=[RandomForestRegressor()])
+            estimator = estimator_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
@@ -888,8 +891,15 @@ def test_component_equality():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_equality_all_components(component_class):
-    component = component_class()
+def test_component_equality_all_components(component_class,
+                                           logistic_regression_binary_pipeline_class,
+                                           linear_regression_pipeline_class):
+    if component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+    elif component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.REGRESSION]:
+        component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
+    else:
+        component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component

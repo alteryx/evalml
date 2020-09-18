@@ -4,6 +4,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from evalml.pipelines.utils import make_pipeline_from_components
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
@@ -50,12 +51,15 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression):
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_ensemble_multilevel():
+def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
     # checks passing a stacked ensemble classifier as a final estimator
     X = pd.DataFrame(np.random.rand(50, 5))
     y = pd.Series(np.random.rand(50,))
-    base = StackedEnsembleRegressor(input_pipelines=[RandomForestRegressor(), RandomForestRegressor()])
-    clf = StackedEnsembleRegressor(input_pipelines=[RandomForestRegressor(), RandomForestRegressor()], final_estimator=base)
+    base = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={}),
+                                                     linear_regression_pipeline_class(parameters={})])
+    clf = StackedEnsembleRegressor(input_pipelines=[linear_regression_pipeline_class(parameters={}),
+                                                    linear_regression_pipeline_class(parameters={})],
+                                   final_estimator=base)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
@@ -67,29 +71,17 @@ def test_stacked_problem_types():
     assert len(StackedEnsembleRegressor.supported_problem_types) == 1
 
 
-def test_stacked_ensemble_final_estimator_without_component_obj(stackable_regressors):
-    class MockRegressor(Estimator):
-        name = "Mock Regressor"
-        model_family = ModelFamily.RANDOM_FOREST
-        supported_problem_types = [ProblemTypes.REGRESSION]
-
-    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
-        StackedEnsembleRegressor(input_pipelines=stackable_regressors,
-                                 final_estimator=MockRegressor())
-    with pytest.raises(ValueError, match='All estimators and final_estimator must have a valid ._component_obj'):
-        StackedEnsembleRegressor(input_pipelines=[MockRegressor()],
-                                 final_estimator=RandomForestRegressor())
-
-
 def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    clf = StackedEnsembleRegressor(input_pipelines=stackable_regressors)
+    input_pipelines = [make_pipeline_from_components([regressor], ProblemTypes.REGRESSION)
+                       for regressor in stackable_regressors]
+    clf = StackedEnsembleRegressor(input_pipelines=input_pipelines)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
     assert not np.isnan(y_pred).all()
 
-    clf = StackedEnsembleRegressor(input_pipelines=stackable_regressors, final_estimator=RandomForestRegressor())
+    clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, final_estimator=RandomForestRegressor())
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
