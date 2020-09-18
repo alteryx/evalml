@@ -38,12 +38,9 @@ def test_featurizer_only_text(text_df):
                               'MEAN_CHARACTERS_PER_WORD(col_2)',
                               'POLARITY_SCORE(col_1)',
                               'POLARITY_SCORE(col_2)'])
-    for i in range(15):
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 40
+    assert len(X_t.columns) == 10
     assert X_t.dtypes.all() == np.float64
 
 
@@ -64,12 +61,9 @@ def test_featurizer_with_nontext(text_df):
                               'POLARITY_SCORE(col_1)',
                               'POLARITY_SCORE(col_2)',
                               'col_3'])
-    for i in range(15):
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 41
+    assert len(X_t.columns) == 11
     assert X_t.dtypes.all() == np.float64
 
 
@@ -99,12 +93,9 @@ def test_some_missing_col_names(text_df, caplog):
                               'MEAN_CHARACTERS_PER_WORD(col_2)',
                               'POLARITY_SCORE(col_1)',
                               'POLARITY_SCORE(col_2)'])
-    for i in range(15):
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_1)[{i}]')
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(col_2)[{i}]')
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 40
+    assert len(X_t.columns) == 10
     assert X_t.dtypes.all() == np.float64
 
 
@@ -169,12 +160,9 @@ def test_index_col_names():
                               'MEAN_CHARACTERS_PER_WORD(1)',
                               'POLARITY_SCORE(0)',
                               'POLARITY_SCORE(1)'])
-    for i in range(15):
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(0)[{i}]')
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(1)[{i}]')
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 40
+    assert len(X_t.columns) == 10
     assert X_t.dtypes.all() == np.float64
 
 
@@ -199,12 +187,9 @@ def test_int_col_names():
                               'MEAN_CHARACTERS_PER_WORD(-1)',
                               'POLARITY_SCORE(475)',
                               'POLARITY_SCORE(-1)'])
-    for i in range(15):
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(475)[{i}]')
-        expected_col_names.add(f'PART_OF_SPEECH_COUNT(-1)[{i}]')
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 40
+    assert len(X_t.columns) == 10
     assert X_t.dtypes.all() == np.float64
 
 
@@ -231,7 +216,7 @@ def test_diversity_primitive_output():
     tf = TextFeaturizer(text_columns=['diverse'])
     tf.fit(X)
 
-    expected_features = [1.0, 0.5, 0.75]
+    expected_features = [1.0, 0.5555556, 0.8]
     X_t = tf.transform(X)
     features = X_t['DIVERSITY_SCORE(diverse)']
     np.testing.assert_almost_equal(features, expected_features)
@@ -268,23 +253,6 @@ def test_mean_characters_primitive_output():
     np.testing.assert_almost_equal(features, expected_features)
 
 
-def test_part_of_speech_primitive_output():
-    X = pd.DataFrame(
-        {'part_of_speech': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
-                            'I dreamed a dream in days gone by, when hope was high and life worth living',
-                            'Red, the blood of angry men - black, the dark of ages past']})
-    tf = TextFeaturizer(text_columns=['part_of_speech'])
-    tf.fit(X)
-
-    expected_features = [[0, 0, 0, 0, 0, 2, 0, 0, 6, 0, 0, 0, 0, 2, 0],
-                         [0, 0, 0, 0, 1, 2, 0, 0, 3, 0, 0, 0, 0, 3, 0],
-                         [0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0]]
-    X_t = tf.transform(X)
-    cols = [col for col in X_t.columns if 'PART_OF_SPEECH' in col]
-    features = X_t[cols]
-    np.testing.assert_almost_equal(features, expected_features)
-
-
 def test_polarity_primitive_output():
     X = pd.DataFrame(
         {'polarity': ['This is neutral.',
@@ -293,7 +261,7 @@ def test_polarity_primitive_output():
     tf = TextFeaturizer(text_columns=['polarity'])
     tf.fit(X)
 
-    expected_features = [0.0, -0.214, 0.602]
+    expected_features = [0.0, -0.214, 0.57]
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
     np.testing.assert_almost_equal(features, expected_features)

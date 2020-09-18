@@ -125,4 +125,4 @@ def test_iterative_algorithm_instantiates_text():
     expected_params = {'text_columns': ['text_col_1', 'text_col_2']}
     assert pipeline.parameters['Text Featurization Component'] == expected_params
     assert isinstance(pipeline.component_graph[0], TextFeaturizer)
-    assert pipeline.component_graph[0]._text_col_names == ['text_col_1', 'text_col_2']
+    assert pipeline.component_graph[0]._all_text_columns == ['text_col_1', 'text_col_2']
