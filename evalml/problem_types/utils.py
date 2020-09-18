@@ -45,10 +45,13 @@ def detect_problem_type(y):
     else:
         if pd.api.types.is_numeric_dtype(y):
             # if we have too many classes or too many classes per length of data
+            print(y2.dtype)
             if (num_classes >= 10) or (num_classes > (0.5 * len(y))):
+                print(len(y), num_classes)
                 return 'regression'
             # else if remaining values are ints, is multiclass
             elif pd.api.types.is_float_dtype(y2):
+                print(y2.values)
                 if pd.api.types.is_integer_dtype(pd.Series(y2.values)):
                     return 'multiclass'
                 return 'regression'
