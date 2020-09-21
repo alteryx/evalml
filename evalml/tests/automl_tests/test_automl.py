@@ -788,7 +788,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     automl.describe_pipeline(0)
     out = caplog.text
     assert "Mode Baseline Binary Classification Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: Binary" in out
     assert "Model Family: Baseline" in out
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out

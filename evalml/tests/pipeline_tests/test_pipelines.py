@@ -386,7 +386,7 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: Binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
@@ -404,7 +404,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: Binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
