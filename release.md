@@ -6,7 +6,7 @@ Before starting the release process, verify the following:
 * [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/alteryx/evalml?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [release notes](https://evalml.featurelabs.com/en/latest/release_notes.html) includes the last change which was made on main.
-* The [performance tests](https://github.com/alteryx/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
+* The [performance tests](https://github.com/FeatureLabs/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
 * Get agreement on the version number to use for the release.
 
 #### Version Numbering
