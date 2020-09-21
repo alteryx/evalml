@@ -10,6 +10,7 @@ Release Notes
     * Documentation Changes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
+        * DO NOT MERGE :pr:`1206`
 
 
 **v0.13.2 Sep. 17, 2020**
