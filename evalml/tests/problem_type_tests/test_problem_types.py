@@ -40,7 +40,7 @@ def test_handle_incorrect_type():
 def test_detect_problem_type_error():
     y_empty = pd.Series([])
     y_one_value = pd.Series([1, 1, 1, 1, 1, 1])
-    y_nan = pd.Series([np.nan, np.nan])
+    y_nan = pd.Series([np.nan, np.nan, 0])
 
     with pytest.raises(ValueError, match="Less than 2"):
         detect_problem_type(y_empty)
@@ -67,24 +67,26 @@ def test_detect_problem_type_binary():
 def test_detect_problem_type_multiclass():
     y_multi = pd.Series([1, 2, 0, 2, 0, 0, 1])
     y_categorical = pd.Series(['yes', 'no', 'maybe', 'no'], dtype='category')
-    y_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9] * 5)
+    y_classes = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, pd.NA] * 5)
     y_float = pd.Series([1.0, 2, 3])
     y_obj = pd.Series(["y", "n", "m"])
+    y_neg = pd.Series([1, 2, -3])
 
     assert detect_problem_type(y_multi) == 'multiclass'
     assert detect_problem_type(y_categorical) == 'multiclass'
     assert detect_problem_type(y_classes) == 'multiclass'
     assert detect_problem_type(y_float) == 'multiclass'
     assert detect_problem_type(y_obj) == 'multiclass'
+    assert detect_problem_type(y_neg) == 'multiclass'
 
 
 def test_detect_problem_type_regression():
-    y_values = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+    y_values = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, np.nan])
     y_float = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.0])
 
     assert detect_problem_type(y_values) == 'regression'
     assert detect_problem_type(y_float) == 'regression'
-    
+
 
 def test_nan_none_na():
     y_none = pd.Series([None])
