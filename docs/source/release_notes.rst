@@ -4,9 +4,11 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
+        * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
     * Changes
     * Documentation Changes
+        * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
 
 
