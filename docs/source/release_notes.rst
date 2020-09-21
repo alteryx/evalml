@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:``
+        * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
     * Changes
