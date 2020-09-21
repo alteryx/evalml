@@ -3,8 +3,8 @@ from enum import Enum
 
 class ProblemTypes(Enum):
     """Enum for type of machine learning problem: BINARY, MULTICLASS, or REGRESSION."""
-    BINARY = 'binary'
-    MULTICLASS = 'multiclass'
+    BINARY = 'binary classification'
+    MULTICLASS = 'multiclass classification'
     REGRESSION = 'regression'
 
     def __str__(self):
