@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 from skopt.space import Integer, Real
 
+from evalml import AutoMLSearch
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     IllFormattedClassNameError,
@@ -242,7 +243,7 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components():
+def test_make_pipeline_from_components(X_y_binary):
     with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
         make_pipeline_from_components([Imputer], problem_type='binary')
 
@@ -278,6 +279,18 @@ def test_make_pipeline_from_components():
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
 
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type='binary', objective="Log Loss Binary", max_pipelines=5)
+    automl.search(X, y)
+    best_pipeline = automl.best_pipeline
+    new_pipeline = make_pipeline_from_components(best_pipeline.component_graph, ProblemTypes.BINARY)
+    assert best_pipeline.describe() == new_pipeline.describe()
+    best_pipeline.fit(X, y)
+    best_predictions = best_pipeline.predict(X)
+    new_pipeline.fit(X, y)
+    new_predictions = new_pipeline.predict(X)
+    assert np.array_equal(best_predictions, new_predictions)
+    assert np.array_equal(best_pipeline.feature_importance, new_pipeline.feature_importance)
 
 def test_required_fields():
     class TestPipelineWithoutComponentGraph(PipelineBase):

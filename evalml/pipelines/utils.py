@@ -119,6 +119,12 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     Returns:
         Pipeline instance with component instances and specified estimator
 
+    Example:
+        >>> components = [Imputer(), StandardScaler(), CatBoostClassifier()]
+        >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
+        >>> pipeline.describe()
+        >>> assert pipeline.components_graph == components
+
     """
     if not isinstance(component_instances[-1], Estimator):
         raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
@@ -129,7 +135,4 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-
-    pipeline_instance = TemplatedPipeline({})
-    pipeline_instance.component_graph = component_instances
-    return pipeline_instance
+    return TemplatedPipeline({c.name: c.parameters for c in component_instances})
