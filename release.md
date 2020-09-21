@@ -3,10 +3,10 @@
 ## 0. Pre-Release Checklist
 Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
-* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/FeatureLabs/evalml?branch=main).
+* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/alteryx/evalml?branch=main).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [release notes](https://evalml.featurelabs.com/en/latest/release_notes.html) includes the last change which was made on main.
-* The [performance tests](https://github.com/FeatureLabs/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
+* The [performance tests](https://github.com/alteryx/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
 * Get agreement on the version number to use for the release.
 
 #### Version Numbering
@@ -31,7 +31,7 @@ We need to upload an evalml package to test with the conda recipe
     ```
 2. Update version number in `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version and push your changes. 
 3. Publish a new release of evalml on Github.
-    1. Go to the [releases page](https://github.com/FeatureLabs/evalml/releases) on Github
+    1. Go to the [releases page](https://github.com/alteryx/evalml/releases) on Github
     2. Click "Draft a new release"
     3. For the target, choose the new branch (v0.12.2.dev0)
     4. For the tag, use the new version number (v0.12.2.dev0)
@@ -133,7 +133,7 @@ Create a release PR with the following changes:
 * Populate the release PR body with a copy of this release's release notes, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
 * Confirm that all release items are in the release notes under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
 
-An example can be found here: https://github.com/FeatureLabs/evalml/pull/163
+An example can be found here: https://github.com/alteryx/evalml/pull/163
 
 Checklist before merging:
 * PR has been reviewed and approved.

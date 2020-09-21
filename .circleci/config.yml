@@ -198,7 +198,7 @@ jobs:
           else
             echo This is a regular PR;
           fi
-          echo "${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}"
+          echo "${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}"
       - run: |
           # for release PRs: if the branch name matches a release regex, skip the check
           if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
@@ -206,7 +206,7 @@ jobs:
           elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             exit 0;
           fi
-          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/evalml/pull/}\`"
+          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}\`"
 
   build_docs:
     working_directory: ~/evalml/
