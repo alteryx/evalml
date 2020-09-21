@@ -123,7 +123,6 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         >>> components = [Imputer(), StandardScaler(), CatBoostClassifier()]
         >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
         >>> pipeline.describe()
-        >>> assert pipeline.component_graph == components
 
     """
     if not isinstance(component_instances[-1], Estimator):

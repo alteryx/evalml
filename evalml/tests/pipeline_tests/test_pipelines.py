@@ -292,6 +292,7 @@ def test_make_pipeline_from_components(X_y_binary):
     assert np.array_equal(best_predictions, new_predictions)
     assert np.array_equal(best_pipeline.feature_importance, new_pipeline.feature_importance)
 
+
 def test_required_fields():
     class TestPipelineWithoutComponentGraph(PipelineBase):
         pass
