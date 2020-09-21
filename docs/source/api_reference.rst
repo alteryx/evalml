@@ -351,6 +351,7 @@ Problem Types
     :nosignatures:
 
     handle_problem_types
+    detect_problem_type
 
 
 .. currentmodule:: evalml.model_family
