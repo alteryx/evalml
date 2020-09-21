@@ -1,6 +1,7 @@
 # flake8:noqa
 import inspect
 
+import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
@@ -124,8 +125,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        return self.pipeline.predict(X)
+        return np.array(self.pipeline.predict(X))
 
+    def predict_proba(self, X):
+        return np.array(self.pipeline.predict_proba(X))
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
@@ -140,7 +143,8 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        return self.pipeline.predict(X)
+        return np.array(self.pipeline.predict(X))
+
 
 
 def scikit_learn_wrapped_estimator(evalml_pipeline, problem_type):

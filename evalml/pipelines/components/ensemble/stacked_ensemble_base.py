@@ -1,6 +1,7 @@
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
 
 _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
@@ -44,12 +45,13 @@ class StackedEnsembleBase(Estimator):
 
         if final_estimator is None:
             final_estimator = self._default_final_estimator()
-        estimators = [pipeline.estimator for pipeline in input_pipelines]
-        component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
-        if component_without_obj:
-            raise ValueError("All estimators and final_estimator must have a valid ._component_obj")
+        # to do: need to check that all pipelines are the same
+        estimators = [scikit_learn_wrapped_estimator(pipeline, pipeline.problem_type) for pipeline in input_pipelines]
+        # component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
+        # if component_without_obj:
+            # raise ValueError("All estimators and final_estimator must have a valid ._component_obj")
         sklearn_parameters = {
-            "estimators": [(estimator.name + f"({idx})", estimator._component_obj) for idx, estimator in enumerate(estimators)],
+            "estimators": [(estimator.name + f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator._component_obj,
             "cv": cv,
             "n_jobs": n_jobs

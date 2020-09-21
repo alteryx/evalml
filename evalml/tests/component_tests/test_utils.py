@@ -41,15 +41,18 @@ def test_handle_component_class_names():
         handle_component_class(NonComponent())
 
 
+from sklearn.utils.estimator_checks import check_estimator
 
 def test_scikit_learn_wrapper(X_y_regression, X_y_binary):
     for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
         if ProblemTypes.BINARY in estimator.supported_problem_types:
             X, y = X_y_binary
             evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.BINARY)
-            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.BINARY)
+            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.BINARY) 
+            check_estimator(s)
             s.fit(X, y)
             print (s.predict(X))
+            print (s.predict_proba(X))
         if ProblemTypes.REGRESSION in estimator.supported_problem_types:
             X, y = X_y_regression
             print ("ESTIMATOR:", estimator.name)
