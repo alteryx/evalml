@@ -202,8 +202,8 @@ epub_exclude_files = ['search.html']
 
 # If evalml is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', '#'),
-    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', '#'),
+    'issue': ('https://github.com/alteryx/evalml/issues/%s', '#'),
+    'pr': ('https://github.com/alteryx/evalml/pull/%s', '#'),
     'user': ('https://github.com/%s', '@')
 }
 
