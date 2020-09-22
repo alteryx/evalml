@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
+        * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
