@@ -72,7 +72,7 @@ Pipeline Base Classes
 ~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
-    :template: class_with_properties.rst
+    :template: pipeline_base_class.rst
     :nosignatures:
 
     PipelineBase
