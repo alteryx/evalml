@@ -8,7 +8,7 @@ class ProblemTypes(Enum):
     REGRESSION = 'regression'
 
     def __str__(self):
-        problem_type_dict = {ProblemTypes.BINARY.name: "Binary",
-                             ProblemTypes.MULTICLASS.name: "Multiclass",
-                             ProblemTypes.REGRESSION.name: "Regression"}
+        problem_type_dict = {ProblemTypes.BINARY.name: "binary",
+                             ProblemTypes.MULTICLASS.name: "multiclass",
+                             ProblemTypes.REGRESSION.name: "regression"}
         return problem_type_dict[self.name]

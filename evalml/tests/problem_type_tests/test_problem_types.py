@@ -32,6 +32,6 @@ def test_handle_incorrect_type():
 
 
 def test_string_repr():
-    assert ProblemTypes.BINARY.value == ProblemTypes.BINARY.__str__().lower()
-    assert ProblemTypes.MULTICLASS.value == ProblemTypes.MULTICLASS.__str__().lower()
-    assert ProblemTypes.REGRESSION.value == ProblemTypes.REGRESSION.__str__().lower()
+    assert ProblemTypes.BINARY.value == ProblemTypes.BINARY.__str__()
+    assert ProblemTypes.MULTICLASS.value == ProblemTypes.MULTICLASS.__str__()
+    assert ProblemTypes.REGRESSION.value == ProblemTypes.REGRESSION.__str__()
