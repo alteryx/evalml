@@ -120,7 +120,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         Pipeline instance with component instances and specified estimator
 
     Example:
-        >>> components = [Imputer(), StandardScaler(), CatBoostClassifier()]
+        >>> components = [Imputer(), StandardScaler(), LogisticRegressionClassifier()]
         >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
         >>> pipeline.describe()
 
