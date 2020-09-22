@@ -20,7 +20,8 @@ class FeatureSelector(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
+            y (pd.Series, optional): Target data
+
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -46,7 +47,8 @@ class FeatureSelector(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Labels to fit and transform
+            y (pd.Series): Target data
+
         Returns:
             pd.DataFrame: Transformed X
         """
