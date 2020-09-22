@@ -8,7 +8,6 @@
    {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type',
                               'model_family', 'hyperparameters', 'custom_hyperparameters',
                               'default_parameters'] %}
-   {% set unavailable = ['summary'] %}
 
 
    {% block attributes %}
@@ -27,7 +26,7 @@
       :nosignatures:
 
    {% for item in attributes %}
-   {%- if item not in class_attributes and item not in unavailable %}
+   {%- if item not in class_attributes %}
       ~{{ name }}.{{ item }}
    {%- endif %}
    {%- endfor %}
