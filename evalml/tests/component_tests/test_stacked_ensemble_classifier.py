@@ -32,6 +32,13 @@ def test_stacked_ensemble_nonstackable_model_families():
         StackedEnsembleClassifier(input_pipelines=[make_pipeline_from_components([BaselineClassifier()], ProblemTypes.BINARY)])
 
 
+def test_stacked_different_input_pipelines_classification():
+    input_pipelines = [make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.MULTICLASS),
+                       make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)]
+    with pytest.raises(ValueError, match="All pipelines must have the same problem type."):
+        StackedEnsembleClassifier(input_pipelines=input_pipelines)
+
+
 def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logistic_regression_binary_pipeline_class):
     # Checks that it is okay to pass multiple of the same type of estimator
     X, y = X_y_binary
@@ -71,7 +78,7 @@ def test_stacked_problem_types():
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_stacked_fit_predict(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
+def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_classifiers, problem_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         num_classes = 2

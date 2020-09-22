@@ -9,6 +9,7 @@ from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     BaselineRegressor,
+    RandomForestClassifier,
     RandomForestRegressor
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
@@ -30,6 +31,13 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
 def test_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(ValueError, match="Pipelines with any of the following model families cannot be used as base pipelines"):
         StackedEnsembleRegressor(input_pipelines=[make_pipeline_from_components([BaselineRegressor()], ProblemTypes.REGRESSION)])
+
+
+def test_stacked_different_input_pipelines_regression():
+    input_pipelines = [make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION),
+                       make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)]
+    with pytest.raises(ValueError, match="All pipelines must have the same problem type."):
+        StackedEnsembleRegressor(input_pipelines=input_pipelines)
 
 
 def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression, linear_regression_pipeline_class):
