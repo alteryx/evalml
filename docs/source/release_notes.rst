@@ -6,6 +6,7 @@ Release Notes
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
         * Added LightGBM to AutoMLSearch :pr:`1199`
     * Fixes
+        * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
     * Changes
     * Documentation Changes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
