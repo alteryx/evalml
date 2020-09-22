@@ -21,9 +21,8 @@ class BaselineClassifier(Estimator):
         """Baseline classifier that uses a simple strategy to make predictions.
 
         Arguments:
-            strategy (str): method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (int, np.random.RandomState): seed for the random number generator
-
+            strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
+            random_state (int, np.random.RandomState): Seed for the random number generator
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
@@ -84,8 +83,7 @@ class BaselineClassifier(Estimator):
         """Returns importance associated with each feature. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.array (float): an array of zeroes
-
+            np.array (float): An array of zeroes
         """
         return np.zeros(self._num_features)
 
@@ -94,6 +92,6 @@ class BaselineClassifier(Estimator):
         """Returns class labels. Will return None before fitting.
 
         Returns:
-            list(str) or list(float) : class names
+            list(str) or list(float) : Class names
         """
         return self._classes

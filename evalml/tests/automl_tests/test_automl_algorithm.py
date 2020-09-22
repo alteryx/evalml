@@ -3,11 +3,6 @@ import pytest
 from evalml.automl.automl_algorithm import AutoMLAlgorithm
 
 
-def test_automl_algorithm_init_base():
-    with pytest.raises(TypeError, match="Can't instantiate abstract class AutoMLAlgorithm with abstract methods next_batch"):
-        AutoMLAlgorithm()
-
-
 class DummyAlgorithm(AutoMLAlgorithm):
     def __init__(self, dummy_pipelines=None):
         super().__init__()

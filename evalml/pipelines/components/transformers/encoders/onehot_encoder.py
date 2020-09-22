@@ -121,6 +121,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Arguments:
             X (pd.DataFrame): Dataframe of features.
             y (pd.Series): Ignored.
+
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
