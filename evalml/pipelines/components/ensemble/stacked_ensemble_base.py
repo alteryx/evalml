@@ -42,17 +42,16 @@ class StackedEnsembleBase(Estimator):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
+        estimators = [scikit_learn_wrapped_estimator(pipeline, pipeline.problem_type) for pipeline in input_pipelines]
 
         if final_estimator is None:
-            final_estimator = self._default_final_estimator()
+            final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), input_pipelines[0].problem_type)
+        else:
+            final_estimator = scikit_learn_wrapped_estimator(final_estimator, input_pipelines[0].problem_type)
         # to do: need to check that all pipelines are the same
-        estimators = [scikit_learn_wrapped_estimator(pipeline, pipeline.problem_type) for pipeline in input_pipelines]
-        # component_without_obj = [estimator for estimator in estimators + [final_estimator] if estimator._component_obj is None]
-        # if component_without_obj:
-            # raise ValueError("All estimators and final_estimator must have a valid ._component_obj")
         sklearn_parameters = {
-            "estimators": [(estimator.name + f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
-            "final_estimator": final_estimator._component_obj,
+            "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
+            "final_estimator": final_estimator,
             "cv": cv,
             "n_jobs": n_jobs
         }

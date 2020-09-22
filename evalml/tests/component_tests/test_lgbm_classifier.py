@@ -21,20 +21,6 @@ def test_problem_types():
     assert set(LightGBMClassifier.supported_problem_types) == {ProblemTypes.MULTICLASS, ProblemTypes.BINARY}
 
 
-def test_et_parameters():
-    clf = LightGBMClassifier(boosting_type="dart", learning_rate=0.5, n_estimators=20, max_depth=2, num_leaves=10, min_child_samples=10)
-    expected_parameters = {
-        "boosting_type": "dart",
-        "learning_rate": 0.5,
-        "n_estimators": 20,
-        "max_depth": 2,
-        "num_leaves": 10,
-        "min_child_samples": 10,
-        "n_jobs": -1
-    }
-    assert clf.parameters == expected_parameters
-
-
 def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):
     """ensure lightgbm's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_binary

@@ -121,10 +121,13 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         self.classes_ = unique_labels(y)
         self.X_ = X
         self.y_ = y
+        self.is_fitted_ = True
         self.pipeline.fit(X, y)
         return self
 
     def predict(self, X):
+        X = check_array(X)
+        check_is_fitted(self, 'is_fitted_')
         return np.array(self.pipeline.predict(X))
 
     def predict_proba(self, X):
@@ -144,7 +147,6 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
 
     def predict(self, X):
         return np.array(self.pipeline.predict(X))
-
 
 
 def scikit_learn_wrapped_estimator(evalml_pipeline, problem_type):

@@ -1,9 +1,11 @@
 import inspect
 
 import pytest
+from sklearn.utils.estimator_checks import check_estimator
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
 from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import (
     _all_estimators,
@@ -41,14 +43,21 @@ def test_handle_component_class_names():
         handle_component_class(NonComponent())
 
 
-from sklearn.utils.estimator_checks import check_estimator
+
 
 def test_scikit_learn_wrapper(X_y_regression, X_y_binary):
     for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
+
         if ProblemTypes.BINARY in estimator.supported_problem_types:
             X, y = X_y_binary
-            evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.BINARY)
-            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.BINARY) 
+
+            class TemplatedPipeline(BinaryClassificationPipeline):
+                component_graph = [estimator]
+
+            evalml_pipeline = TemplatedPipeline({})
+            # evalml_pipeline.component_graph = component_instances
+            # evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.BINARY)
+            s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.BINARY)
             check_estimator(s)
             s.fit(X, y)
             print (s.predict(X))
@@ -56,7 +65,14 @@ def test_scikit_learn_wrapper(X_y_regression, X_y_binary):
         if ProblemTypes.REGRESSION in estimator.supported_problem_types:
             X, y = X_y_regression
             print ("ESTIMATOR:", estimator.name)
-            evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.REGRESSION)
+
+            class TemplatedPipeline(RegressionPipeline):
+                component_graph = [estimator]
+
+            evalml_pipeline = TemplatedPipeline({})
+            # evalml_pipeline.component_graph = component_instances
+
+            # evalml_pipeline = make_pipeline_from_components([estimator()], ProblemTypes.REGRESSION)
             s = scikit_learn_wrapped_estimator(evalml_pipeline, ProblemTypes.REGRESSION)
             s.fit(X, y)
             print (s.predict(X))
