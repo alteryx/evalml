@@ -5,7 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class ClassImbalanceDataCheck(DataCheck):
-    """Classification problems, checks if any target labels are imbalanced beyond a threshold"""
+    """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems"""
 
     def validate(self, X, y, threshold=0.10):
         """Checks if any target labels are imbalanced beyond a threshold for binary and multiclass problems
