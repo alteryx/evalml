@@ -29,3 +29,9 @@ def test_handle_incorrect_type():
     error_msg = '`handle_problem_types` was not passed a str or ProblemTypes object'
     with pytest.raises(ValueError, match=error_msg):
         handle_problem_types(5)
+
+
+def test_string_repr():
+    assert ProblemTypes.BINARY.value == ProblemTypes.BINARY.__str__()
+    assert ProblemTypes.MULTICLASS.value == ProblemTypes.MULTICLASS.__str__()
+    assert ProblemTypes.REGRESSION.value == ProblemTypes.REGRESSION.__str__()

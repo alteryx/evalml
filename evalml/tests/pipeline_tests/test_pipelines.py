@@ -386,7 +386,7 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
@@ -404,7 +404,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
@@ -860,8 +860,8 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
         clf.fit(X, y)
         clf.score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
-        assert "Invalid objective AUC specified for problem type Regression" in e.message
-        assert "Invalid objective Precision specified for problem type Regression" in e.message
+        assert "Invalid objective AUC specified for problem type regression" in e.message
+        assert "Invalid objective Precision specified for problem type regression" in e.message
     mock_predict.assert_called()
 
 

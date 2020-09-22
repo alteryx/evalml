@@ -6,6 +6,7 @@ Release Notes
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
+        * Changed Problem Type enum to be more similar to the string name :pr:`1208`
     * Changes
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
