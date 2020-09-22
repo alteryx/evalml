@@ -25,7 +25,7 @@ class OutliersDataCheck(DataCheck):
         of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
 
         Arguments:
-            X (pd.DataFrame): features
+            X (pd.DataFrame): Features
             y: Ignored.
 
         Returns:

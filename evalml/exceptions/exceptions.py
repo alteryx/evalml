@@ -43,7 +43,7 @@ class PipelineScoreError(Exception):
 
     Arguments:
         exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
-        All of the objectives that errored will be stored here.
+            All of the objectives that errored will be stored here.
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
             that did not error will be stored here.
     """

@@ -8,6 +8,7 @@ Release Notes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
     * Changes
     * Documentation Changes
+        * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
 
