@@ -9,6 +9,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
+        * Add pipeline properties to API reference :pr:`1209`
     * Testing Changes
 
 
