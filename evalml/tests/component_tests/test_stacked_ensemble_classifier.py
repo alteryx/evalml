@@ -92,8 +92,11 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
+    assert isinstance(y_pred, pd.Series)
     assert not np.isnan(y_pred).all()
+
     y_pred_proba = clf.predict_proba(X)
+    assert isinstance(y_pred_proba, pd.DataFrame)
     assert y_pred_proba.shape == (len(y), num_classes)
     assert not np.isnan(y_pred_proba).all().all()
 
@@ -101,9 +104,12 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
+    assert isinstance(y_pred, pd.Series)
     assert not np.isnan(y_pred).all()
+
     y_pred_proba = clf.predict_proba(X)
     assert y_pred_proba.shape == (len(y), num_classes)
+    assert isinstance(y_pred_proba, pd.DataFrame)
     assert not np.isnan(y_pred_proba).all().all()
 
 

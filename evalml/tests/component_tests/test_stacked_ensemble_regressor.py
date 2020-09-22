@@ -85,13 +85,16 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
+    assert isinstance(y_pred, pd.Series)
     assert not np.isnan(y_pred).all()
 
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, final_estimator=RandomForestRegressor())
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
+    assert isinstance(y_pred, pd.Series)
     assert not np.isnan(y_pred).all()
+
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
