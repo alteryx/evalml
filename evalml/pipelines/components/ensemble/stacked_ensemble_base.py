@@ -58,7 +58,7 @@ class StackedEnsembleBase(Estimator):
             "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator,
             "cv": cv,
-            "n_jobs": 1
+            "n_jobs": n_jobs
         }
         sklearn_parameters.update(kwargs)
         super().__init__(parameters=parameters,
