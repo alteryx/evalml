@@ -5,8 +5,8 @@ Release Notes
     * Enhancements
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
-        * Changed Problem Type enum to be more similar to the string name :pr:`1208`
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
+        * Changed Problem Type enum to be more similar to the string name :pr:`1208`
     * Changes
     * Documentation Changes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
