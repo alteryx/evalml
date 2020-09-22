@@ -9,7 +9,7 @@ class DataChecks:
         A collection of data checks.
 
         Arguments:
-            data_checks (list (DataCheck)): list of DataCheck objects
+            data_checks (list (DataCheck)): List of DataCheck objects
         """
         if not isinstance(data_checks, list):
             raise ValueError(f"Parameter data_checks must be a list. Received {type(data_checks).__name__}.")
@@ -23,11 +23,11 @@ class DataChecks:
         Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
-            X (pd.DataFrame): the input data of shape [n_samples, n_features]
-            y (pd.Series): the target labels of length [n_samples]
+            X (pd.DataFrame): The input data of shape [n_samples, n_features]
+            y (pd.Series): The target data of length [n_samples]
 
         Returns:
-            list (DataCheckMessage): list containing DataCheckMessage objects
+            list (DataCheckMessage): List containing DataCheckMessage objects
 
         """
         messages = []

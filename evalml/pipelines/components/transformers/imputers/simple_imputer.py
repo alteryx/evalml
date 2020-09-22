@@ -36,7 +36,7 @@ class SimpleImputer(Transformer):
 
         Arguments:
             X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
+            y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -56,7 +56,8 @@ class SimpleImputer(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
+            y (pd.Series, optional): Ignored.
+
         Returns:
             pd.DataFrame: Transformed X
         """
@@ -78,9 +79,11 @@ class SimpleImputer(Transformer):
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
+
         Arguments:
             X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Labels to fit and transform
+            y (pd. DataFrame): Target data.
+
         Returns:
             pd.DataFrame: Transformed X
         """
