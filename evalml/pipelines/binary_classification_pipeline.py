@@ -12,7 +12,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
     @property
     def threshold(self):
-        """Dummy doc string here"""
+        """Threshold used to make a prediction. Defaults to None."""
         return self._threshold
 
     @threshold.setter
