@@ -96,7 +96,6 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     assert not np.isnan(y_pred).all()
 
 
-
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
 def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
     X, y = X_y_regression
