@@ -71,22 +71,22 @@ def time_elapsed(start_time):
         return '{0:02d}:{1:02d}'.format(m, s)
 
 
-def update_pipeline(logger, pipeline_name, current_iteration, max_pipelines, start_time):
+def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time):
     """Adds the next pipeline to be evaluated to the log along with how much time has elapsed.
 
     Arguments:
         logger (logging.Logger): Logger where we will record progress.
         pipeline_name (str): Name of next pipeline to be evaluated.
         current_iteration (int): How many pipelines have been evaluated during the search so far.
-        max_pipelines (int, None): Max number of pipelines to search.
+        max_iterations (int, None): Max number of iterations to search.
         start_time (int): Start time.
 
     Returns:
         None: logs progress to logger at info level.
     """
-    if max_pipelines:
-        status_update_format = "({current_iteration}/{max_pipelines}) {pipeline_name} Elapsed:{time_elapsed}"
-        format_params = {'max_pipelines': max_pipelines, 'current_iteration': current_iteration}
+    if max_iterations:
+        status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
+        format_params = {'max_iterations': max_iterations, 'current_iteration': current_iteration}
     else:
         status_update_format = "{pipeline_name} Elapsed: {time_elapsed}"
         format_params = {}

@@ -102,3 +102,9 @@ def test_nan_none_na():
         detect_problem_type(y_nan)
     with pytest.raises(ValueError, match="Less than 2"):
         detect_problem_type(y_all_null)
+
+
+def test_string_repr():
+    assert ProblemTypes.BINARY.value == ProblemTypes.BINARY.__str__()
+    assert ProblemTypes.MULTICLASS.value == ProblemTypes.MULTICLASS.__str__()
+    assert ProblemTypes.REGRESSION.value == ProblemTypes.REGRESSION.__str__()

@@ -5,10 +5,14 @@ Release Notes
     * Enhancements
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
+        * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
+        * Changed Problem Type enum to be more similar to the string name :pr:`1208`
     * Changes
     * Documentation Changes
+        * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
+        * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
     * Testing Changes
 
@@ -41,6 +45,7 @@ Release Notes
         * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
         * Removed tqdm as a dependency :pr:`1177`
         * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
+        * Rename `max_pipelines` to `max_iterations` :pr:`1169`
     * Documentation Changes
         * Fixed API docs for `AutoMLSearch` `add_result_callback` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
@@ -65,6 +70,7 @@ Release Notes
         * Deleted `OneHotEncoder.get_feature_names` method which had been broken for a while, in favor of pipelines' `input_feature_names` :pr:`1179`
         * Deleted empty base class `CategoricalEncoder` which `OneHotEncoder` component was inheriting from :pr:`1176`
         * Results from `roc_curve` will now return as a list of dictionaries with each dictionary representing a class :pr:`1164`
+        * `max_pipelines` now raises a `DeprecationWarning' and will be removed in the next release. `max_iterations` should be used instead. :pr:`1169`
 
 
 **v0.13.1 Aug. 25, 2020**

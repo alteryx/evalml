@@ -15,6 +15,7 @@ Demo Datasets
     load_wine
     load_breast_cancer
     load_diabetes
+    load_churn
 
 
 .. currentmodule:: evalml.preprocessing
@@ -29,7 +30,7 @@ Utilities to preprocess data before using evalml.
     :nosignatures:
 
     drop_nan_target_rows
-    label_distribution
+    target_distribution
     load_data
     number_of_features
     split_data
