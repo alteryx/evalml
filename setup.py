@@ -11,7 +11,7 @@ setup(
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/FeatureLabs/evalml/',
+    url='https://github.com/alteryx/evalml/',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
     tests_require=open('test-requirements.txt').readlines(),
     packages=find_packages(),

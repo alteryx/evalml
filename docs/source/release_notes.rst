@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
     * Fixes
+        * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
     * Changes
     * Documentation Changes
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
