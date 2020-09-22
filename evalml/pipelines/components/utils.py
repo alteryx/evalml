@@ -110,8 +110,6 @@ def handle_component_class(component_class):
     return component_class
 
 
-
-
 class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, pipeline):
         self.pipeline = pipeline
@@ -128,10 +126,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         X = check_array(X)
         check_is_fitted(self, 'is_fitted_')
-        return np.array(self.pipeline.predict(X))
+        return self.pipeline.predict(X).to_numpy()
 
     def predict_proba(self, X):
-        return np.array(self.pipeline.predict_proba(X))
+        return self.pipeline.predict_proba(X).to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
@@ -140,17 +138,24 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
 
     def fit(self, X, y):
         X, y = check_X_y(X, y)
-        self.X_ = X
-        self.y_ = y
         self.pipeline.fit(X, y)
         return self
 
     def predict(self, X):
-        return np.array(self.pipeline.predict(X))
+        return self.pipeline.predict(X).to_numpy()
 
 
-def scikit_learn_wrapped_estimator(evalml_pipeline, problem_type):
-    """Wrap an EvalML pipeline in a scikit-learn estimator."""
-    if problem_type == ProblemTypes.REGRESSION:
-        return WrappedSKRegressor(evalml_pipeline)
-    return WrappedSKClassifier(evalml_pipeline)
+def scikit_learn_wrapped_estimator(evalml_obj, is_pipeline=True):
+    """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
+    if is_pipeline:
+        if evalml_obj.problem_type == ProblemTypes.REGRESSION:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:
+            return WrappedSKClassifier(evalml_obj)
+    else:
+        # EvalML Estimator
+        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION]:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            return WrappedSKClassifier(evalml_obj)
+    raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")

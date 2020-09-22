@@ -42,13 +42,18 @@ class StackedEnsembleBase(Estimator):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
-        estimators = [scikit_learn_wrapped_estimator(pipeline, pipeline.problem_type) for pipeline in input_pipelines]
+
+        problem_type = input_pipelines[0].problem_type
+        if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
+            raise ValueError("All pipelines must have the same problem type.")
+
+        estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
 
         if final_estimator is None:
-            final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), input_pipelines[0].problem_type)
+            final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), is_pipeline=False)
         else:
-            final_estimator = scikit_learn_wrapped_estimator(final_estimator, input_pipelines[0].problem_type)
-        # to do: need to check that all pipelines are the same
+            final_estimator = scikit_learn_wrapped_estimator(final_estimator, is_pipeline=False)
+
         sklearn_parameters = {
             "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator,
