@@ -7,8 +7,17 @@ from evalml.problem_types import ProblemTypes
 
 class BinaryClassificationPipeline(ClassificationPipeline):
     """Pipeline subclass for all binary classification pipelines."""
-    threshold = None
+    _threshold = None
     problem_type = ProblemTypes.BINARY
+
+    @property
+    def threshold(self):
+        """Dummy doc string here"""
+        return self._threshold
+
+    @threshold.setter
+    def threshold(self, value):
+        self._threshold = value
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
