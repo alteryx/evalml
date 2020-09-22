@@ -61,6 +61,7 @@ def test_allowed_model_families(has_minimal_dependencies):
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
+        expected_model_families_binary.add(ModelFamily.LIGHTGBM)
         expected_model_families_regression.add(ModelFamily.CATBOOST)
         expected_model_families_regression.add(ModelFamily.XGBOOST)
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
@@ -71,7 +72,7 @@ def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 8
     else:
-        assert len(_all_estimators_used_in_search()) == 12
+        assert len(_all_estimators_used_in_search()) == 13
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -81,9 +82,9 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
         assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
     else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 6
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 6
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
         assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 6
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
