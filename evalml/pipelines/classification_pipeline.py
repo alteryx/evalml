@@ -16,7 +16,7 @@ class ClassificationPipeline(PipelineBase):
             component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
 
         Arguments:
-            parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
+            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
@@ -28,9 +28,9 @@ class ClassificationPipeline(PipelineBase):
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training labels of length [n_samples]
+            y (pd.Series): The target training labels of length [n_samples]
 
         Returns:
             self
@@ -70,11 +70,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to make predictions
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: estimated labels
+            pd.Series: Estimated labels
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -85,11 +85,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to make predictions
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series : estimated labels
+            pd.Series : Estimated labels
         """
         predictions = self._predict(X, objective)
         return pd.Series(self._decode_targets(predictions))
@@ -98,10 +98,10 @@ class ClassificationPipeline(PipelineBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: probability estimates
+            pd.DataFrame: Probability estimates
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -115,12 +115,12 @@ class ClassificationPipeline(PipelineBase):
         """Evaluate model performance on objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-            y (pd.Series): true labels of length [n_samples]
-            objectives (list): list of objectives to score
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            y (pd.Series): True labels of length [n_samples]
+            objectives (list): List of objectives to score
 
         Returns:
-            dict: ordered dictionary of objective scores
+            dict: Ordered dictionary of objective scores
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
