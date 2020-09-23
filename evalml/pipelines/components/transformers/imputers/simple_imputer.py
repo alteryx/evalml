@@ -47,6 +47,10 @@ class SimpleImputer(Transformer):
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+        if (X.dtypes == bool).all():
+            X = X.astype('category')
+
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
@@ -71,14 +75,23 @@ class SimpleImputer(Transformer):
         X = X.fillna(value=np.nan)
 
         X_null_dropped = X.copy()
+        all_bool = (X_null_dropped.dtypes == bool).all()
+        if all_bool:
+            X = X.astype('category')
+            X_null_dropped = X_null_dropped.astype('category')
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
         category_cols = X_null_dropped.select_dtypes(include=['category']).columns
         X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
-            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            if all_bool:
+                return pd.DataFrame(X_t, columns=X_null_dropped.columns, dtype=bool)
+            else:
+                return pd.DataFrame(X_t, columns=X_null_dropped.columns)
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         if len(category_cols) > 0:
             X_t[category_cols] = X_t[category_cols].astype('category')
+        if all_bool:
+            X_t = X_t.astype(bool)
         return X_t
 
     def fit_transform(self, X, y=None):

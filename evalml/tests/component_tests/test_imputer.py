@@ -291,3 +291,26 @@ def test_imputer_with_none():
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
     assert_frame_equal(transformed, expected, check_dtype=False)
+
+
+def test_imputer_all_bool():
+    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=bool)
+    y = pd.Series([1, 0, 0, 1, 0])
+    imputer = Imputer()
+    imputer.fit(X, y)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    X_t = imputer.transform(X)
+    assert_frame_equal(X_expected_arr, X_t)
+
+    X_multi = pd.DataFrame({
+        "bool with nan": pd.Series([True, np.nan, False, np.nan, False]),
+        "bool no nan": pd.Series([False, False, False, False, True]),
+    }, dtype=bool)
+    imputer = Imputer()
+    imputer.fit(X_multi, y)
+    X_multi_expected_arr = pd.DataFrame({
+        "bool with nan": pd.Series([True, True, False, True, False]),
+        "bool no nan": pd.Series([False, False, False, False, True]),
+    }, dtype=bool)
+    X_multi_t = imputer.transform(X_multi)
+    assert_frame_equal(X_multi_expected_arr, X_multi_t)
