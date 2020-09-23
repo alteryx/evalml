@@ -12,7 +12,7 @@ class StackedEnsembleBase(Estimator):
     _stacking_estimator_class = None
     _default_final_estimator = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-2, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-3, random_state=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
