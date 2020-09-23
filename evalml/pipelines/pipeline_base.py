@@ -318,7 +318,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by feature selection are excluded"""
+        """Return importance associated with each feature. Features dropped by feature selection are excluded.
+
+        Returns:
+            pd.DataFrame including feature names and their corresponding importance
+        """
         feature_names = self.input_feature_names[self.estimator.name]
         importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
         importance.sort(key=lambda x: -abs(x[1]))
