@@ -5,7 +5,7 @@ from evalml.utils import classproperty
 
 
 class ProblemTypes(Enum):
-    """Enum for type of machine learning problem: BINARY, MULTICLASS, or REGRESSION."""
+    """Enum defining the supported types of machine learning problems."""
     BINARY = 'binary'
     MULTICLASS = 'multiclass'
     REGRESSION = 'regression'
