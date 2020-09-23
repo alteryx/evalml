@@ -11,6 +11,7 @@ class StackedEnsembleBase(Estimator):
     model_family = ModelFamily.ENSEMBLE
     _stacking_estimator_class = None
     _default_final_estimator = None
+    __input_pipelines = None
 
     def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-1, random_state=0, **kwargs):
         """Stacked ensemble base class.
@@ -47,12 +48,15 @@ class StackedEnsembleBase(Estimator):
         if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
             raise ValueError("All pipelines must have the same problem type.")
 
-        estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
-
-        if final_estimator is None:
-            final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), is_pipeline=False)
-        else:
-            final_estimator = scikit_learn_wrapped_estimator(final_estimator, is_pipeline=False)
+        # estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
+        estimators = self._input_pipelines
+        # if final_estimator is None:
+            # final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), is_pipeline=False)
+        # else:
+            # final_estimator = scikit_learn_wrapped_estimator(final_estimator, is_pipeline=False)
+        final_estimator = self._default_final_estimator
+        # import pdb; pdb.set_trace()
+        print (estimators, final_estimator)
 
         sklearn_parameters = {
             "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],

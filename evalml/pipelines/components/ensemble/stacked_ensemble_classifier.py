@@ -1,4 +1,6 @@
-from sklearn.ensemble import StackingClassifier
+from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier, StackingClassifier
+from sklearn.linear_model import LogisticRegression as LogisticRegression
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
@@ -13,7 +15,10 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingClassifier
-    _default_final_estimator = LogisticRegressionClassifier
+    # _default_final_estimator = LogisticRegressionClassifier
+    _default_final_estimator = LogisticRegression()
+
+    _input_pipelines = [RandomForestClassifier(), LogisticRegression(), SKExtraTreesClassifier()]
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=-1, random_state=0, **kwargs):
@@ -34,6 +39,5 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        #  TODO: add check that all pipelines are of same subclass?
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
                          cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)

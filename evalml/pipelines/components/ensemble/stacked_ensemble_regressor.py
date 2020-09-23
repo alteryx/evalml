@@ -1,4 +1,6 @@
-from sklearn.ensemble import StackingRegressor
+from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
+from sklearn.ensemble import RandomForestRegressor, StackingRegressor
+from sklearn.linear_model import LinearRegression as SKLinearRegressor
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
@@ -13,7 +15,9 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.REGRESSION]
     hyperparameter_ranges = {}
-    _default_final_estimator = LinearRegressor
+    # _default_final_estimator = LinearRegressor
+    _default_final_estimator = SKLinearRegressor
+    _input_pipelines = [RandomForestRegressor(), SKLinearRegressor(), SKExtraTreesRegressor()]
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=-1, random_state=0, **kwargs):
