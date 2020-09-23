@@ -16,6 +16,7 @@
    .. autoattribute:: name
    .. autoattribute:: custom_name
    .. autoattribute:: problem_type
+   .. autoattribute:: feature_importance
 
    {% endblock %}
 
