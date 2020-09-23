@@ -151,3 +151,13 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        rpr = f"{(type(self).__name__)}("
+        for parameter, value in self.parameters.items():
+             rpr = rpr + f"{parameter}={value},"
+        rpr = rpr + ')'
+        return rpr

@@ -852,3 +852,19 @@ def test_component_equality_all_components(component_class):
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
+
+
+def test_component_str(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    assert str(MockComponent()) == 'Mock Component'
+    assert str(MockEstimator()) == 'Mock Estimator'
+    assert str(MockTransformer()) == 'Mock Transformer'
+
+
+def test_component_repr():
+    component =  MockFitComponent()
+    assert eval(repr(component)) == component
+
+    component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
+    assert eval(repr(component_with_params))  == component_with_params
