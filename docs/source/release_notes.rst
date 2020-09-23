@@ -39,6 +39,7 @@ Release Notes
         * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
         * Fixed bug in OHE where column names were not guaranteed to be unique :pr:`1349`
         * Fixed bug with percent improvement of ``ExpVariance`` objective on data with highly skewed target :pr:`1467`
+        * Added conversion of all bool to categories internally for imputers :pr:`1215`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
