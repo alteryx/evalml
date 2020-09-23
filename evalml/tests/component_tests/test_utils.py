@@ -10,11 +10,11 @@ from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
     handle_component_class,
-    scikit_learn_wrapped_estimator
+    # scikit_learn_wrapped_estimator
 )
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
-
+from evalml.pipelines.utils import scikit_learn_wrapped_estimator
 
 def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
@@ -48,6 +48,7 @@ def test_scikit_learn_wrapper_invalid_problem_type():
     with pytest.raises(ValueError, match="Could not wrap EvalML object in scikit-learn wrapper."):
         scikit_learn_wrapped_estimator(evalml_pipeline)
 
+from sklearn.utils.estimator_checks import check_estimator
 
 def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
     for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
@@ -60,9 +61,11 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
                 num_classes = 3
             elif problem_type == ProblemTypes.REGRESSION:
                 X, y = X_y_regression
+                
 
             evalml_pipeline = make_pipeline_from_components([estimator()], problem_type)
             scikit_estimator = scikit_learn_wrapped_estimator(evalml_pipeline)
+            check_estimator(scikit_estimator)
             scikit_estimator.fit(X, y)
             y_pred = scikit_estimator.predict(X)
             assert len(y_pred) == len(y)

@@ -4,6 +4,11 @@ from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, MetaEstimatorMixin
+from sklearn.ensemble import BaseEnsemble
+from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+
 from .regression_pipeline import RegressionPipeline
 
 from evalml.model_family import ModelFamily
@@ -129,7 +134,106 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-
+        # def __reduce__(self):
+        #     # return a class which can return this class when called with the 
+        #     # appropriate tuple of arguments
+        #     return (TemplatedPipeline, (self.parameters, self.random_state))
+        
+    TemplatedPipeline = globals()["TemplatedPipeline"]
     pipeline_instance = TemplatedPipeline({})
     pipeline_instance.component_graph = component_instances
     return pipeline_instance
+
+
+class WrappedSKClassifier(ClassifierMixin, BaseEnsemble):
+
+    requires_fit = True
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        self.pipeline_ = self.pipeline.clone()
+        X, y = check_X_y(X, y)
+        self.classes_ = unique_labels(y)
+        self.X_ = X
+        self.y_ = y
+        self.is_fitted_ = True
+        self.pipeline_.fit(X, y)
+        return self
+
+    def predict(self, X):
+        X = check_array(X)
+        check_is_fitted(self, 'is_fitted_')
+        return self.pipeline_.predict(X).to_numpy()
+
+    def predict_proba(self, X):
+        check_is_fitted(self, 'is_fitted_')
+        return self.pipeline_.predict_proba(X).to_numpy()
+
+
+    def get_params(self, deep=True):
+        return {"pipeline": self.pipeline}
+
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
+
+class WrappedSKRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
+
+    def __init__(self, pipeline):
+        print ("HELLO")
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        self.pipeline_ = self.pipeline.clone()
+
+        X, y = check_X_y(X, y)
+        self.pipeline_.fit(X, y)
+        self.is_fitted_ = True
+
+        return self
+
+    def predict(self, X):
+        X = check_array(X)
+        check_is_fitted(self, 'is_fitted_')
+        return self.pipeline_.predict(X).to_numpy()
+
+    def get_params(self, deep=True):
+        return {"pipeline": self.pipeline}
+
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
+
+
+from evalml.pipelines.components import RandomForestClassifier, RandomForestRegressor
+# class MockPipelineB(BinaryClassificationPipeline):
+#     component_graph = ['Imputer', 'Random Forest Classifier']
+# class MockPipelineM(MulticlassClassificationPipeline):
+#     component_graph = ['Imputer', 'Random Forest Classifier']
+# class MockPipelineR(RegressionPipeline):
+#     component_graph = ['Imputer', 'Random Forest Regressor']
+
+def scikit_learn_wrapped_estimator(evalml_obj, is_pipeline=True):
+    """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
+    if is_pipeline:
+        if evalml_obj.problem_type == ProblemTypes.REGRESSION:
+            evalml_obj = RandomForestRegressor()
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.problem_type == ProblemTypes.BINARY:
+            # evalml_obj = MockPipelineB(parameters={})
+            evalml_obj = RandomForestClassifier()
+            return WrappedSKClassifier(evalml_obj)        
+        elif evalml_obj.problem_type == ProblemTypes.MULTICLASS:
+            evalml_obj = RandomForestClassifier()
+            # evalml_obj = MockPipelineM(parameters={})
+            return WrappedSKClassifier(evalml_obj)
+    else:
+        # EvalML Estimator
+        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION]:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            return WrappedSKClassifier(evalml_obj)
+    raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")
