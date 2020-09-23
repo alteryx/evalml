@@ -1266,3 +1266,43 @@ def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_m
     pipeline_diff_data.fit(X, y)
 
     assert pipeline != pipeline_diff_data
+
+
+def test_pipeline_str():
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+    class MockMulticlassPipeline(MulticlassClassificationPipeline):
+        name = "Mock Multiclass Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    binary_pipeline = MockBinaryPipeline(parameters={})
+    multiclass_pipeline = MockMulticlassPipeline(parameters={})
+    regression_pipeline = MockRegressionPipeline(parameters={})
+
+    assert str(binary_pipeline) == "Mock Binary Pipeline"
+    assert str(multiclass_pipeline) == "Mock Multiclass Pipeline"
+    assert str(regression_pipeline) == "Mock Regression Pipeline"
+
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_repr(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    pipeline = MockPipeline(parameters={})
+    print(repr(pipeline))
+    assert eval(repr(pipeline)) == pipeline
+
+    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
+    assert eval(repr(pipeline_with_parameters)) == pipeline_with_parameters

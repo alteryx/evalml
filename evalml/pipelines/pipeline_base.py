@@ -487,3 +487,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        rpr = f"{(type(self).__name__)}(parameters={{"
+        for component, parameters in self.parameters.items():
+            rpr = rpr + f"'{component}':{{"
+            for parameter, value in parameters.items():
+                if type(value) == str:
+                    rpr = rpr + f"'{parameter}': '{value}', "
+                else:
+                    rpr = rpr + f"'{parameter}': {value}, "
+            rpr = rpr + "}, "
+        rpr = rpr + '})'
+        return rpr
