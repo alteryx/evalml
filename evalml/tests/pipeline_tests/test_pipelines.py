@@ -1269,12 +1269,15 @@ def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_m
 
 
 def test_pipeline_str():
+
     class MockBinaryPipeline(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
+
     class MockMulticlassPipeline(MulticlassClassificationPipeline):
         name = "Mock Multiclass Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
+
     class MockRegressionPipeline(RegressionPipeline):
         name = "Mock Regression Pipeline"
         component_graph = ['Imputer', 'Random Forest Regressor']
@@ -1286,7 +1289,6 @@ def test_pipeline_str():
     assert str(binary_pipeline) == "Mock Binary Pipeline"
     assert str(multiclass_pipeline) == "Mock Multiclass Pipeline"
     assert str(regression_pipeline) == "Mock Regression Pipeline"
-
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])

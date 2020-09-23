@@ -863,8 +863,8 @@ def test_component_str(test_classes):
 
 
 def test_component_repr():
-    component =  MockFitComponent()
+    component = MockFitComponent()
     assert eval(repr(component)) == component
 
     component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
-    assert eval(repr(component_with_params))  == component_with_params
+    assert eval(repr(component_with_params)) == component_with_params

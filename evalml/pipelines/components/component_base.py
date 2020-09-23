@@ -158,6 +158,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __repr__(self):
         rpr = f"{(type(self).__name__)}("
         for parameter, value in self.parameters.items():
-             rpr = rpr + f"{parameter}={value},"
+            rpr = rpr + f"{parameter}={value},"
         rpr = rpr + ')'
         return rpr
