@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression as LogisticRegression
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import LogisticRegressionClassifier
+# from evalml.pipelines.components import LogisticRegressionClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 

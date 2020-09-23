@@ -16,7 +16,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     supported_problem_types = [ProblemTypes.REGRESSION]
     hyperparameter_ranges = {}
     # _default_final_estimator = LinearRegressor
-    _default_final_estimator = SKLinearRegressor
+    _default_final_estimator = SKLinearRegressor()
     _input_pipelines = [RandomForestRegressor(), SKLinearRegressor(), SKExtraTreesRegressor()]
 
     def __init__(self, input_pipelines=None, final_estimator=None,
