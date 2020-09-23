@@ -134,12 +134,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-        # def __reduce__(self):
-        #     # return a class which can return this class when called with the 
-        #     # appropriate tuple of arguments
-        #     return (TemplatedPipeline, (self.parameters, self.random_state))
-        
-    TemplatedPipeline = globals()["TemplatedPipeline"]
+
     pipeline_instance = TemplatedPipeline({})
     pipeline_instance.component_graph = component_instances
     return pipeline_instance
