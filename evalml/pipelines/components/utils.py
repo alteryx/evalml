@@ -2,7 +2,7 @@
 import inspect
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin, MetaEstimatorMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
@@ -12,9 +12,7 @@ from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
-# from evalml.pipelines.utils import make_pipeline_from_components
 
-import pickle
 logger = get_logger(__file__)
 
 
@@ -110,3 +108,54 @@ def handle_component_class(component_class):
         raise MissingComponentError('Component "{}" was not found'.format(component_class))
     component_class = component_classes[component_class]
     return component_class
+
+
+class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y)
+        self.classes_ = unique_labels(y)
+        self.X_ = X
+        self.y_ = y
+        self.is_fitted_ = True
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        X = check_array(X)
+        check_is_fitted(self, 'is_fitted_')
+        return self.pipeline.predict(X).to_numpy()
+
+    def predict_proba(self, X):
+        return self.pipeline.predict_proba(X).to_numpy()
+
+
+class WrappedSKRegressor(BaseEstimator, RegressorMixin):
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y)
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.pipeline.predict(X).to_numpy()
+
+
+def scikit_learn_wrapped_estimator(evalml_obj, is_pipeline=True):
+    """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
+    if is_pipeline:
+        if evalml_obj.problem_type == ProblemTypes.REGRESSION:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:
+            return WrappedSKClassifier(evalml_obj)
+    else:
+        # EvalML Estimator
+        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION]:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            return WrappedSKClassifier(evalml_obj)
+    raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")

@@ -483,7 +483,3 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
-
-    def __hash__(self):
-        return 1
-    

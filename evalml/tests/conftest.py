@@ -16,18 +16,18 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     Estimator,
-    # StackedEnsembleClassifier,
-    # StackedEnsembleRegressor
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
-# from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
-#     _nonstackable_model_families
-# )
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    _nonstackable_model_families
+)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 _not_allowed_in_automl = AutoMLSearch._objectives_not_allowed_in_automl
 
-_nonstackable_model_families = []
+
 def create_mock_pipeline(estimator, problem_type):
     if problem_type == ProblemTypes.BINARY:
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
@@ -46,9 +46,7 @@ def create_mock_pipeline(estimator, problem_type):
 @pytest.fixture
 def all_pipeline_classes():
     all_possible_pipeline_classes = []
-    for estimator in [estimator for estimator in _all_estimators()]:
-
-    # for estimator in [estimator for estimator in _all_estimators() if estimator != StackedEnsembleClassifier and estimator != StackedEnsembleRegressor]:
+    for estimator in [estimator for estimator in _all_estimators() if estimator != StackedEnsembleClassifier and estimator != StackedEnsembleRegressor]:
         for problem_type in estimator.supported_problem_types:
             all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
     return all_possible_pipeline_classes
