@@ -429,30 +429,23 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
+    
+    attributes_added = []
+    attributes_modified = []
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
-    if pipeline.model_family == ModelFamily.CATBOOST:
-        pipeline.estimator._component_obj._fitted_ = True
-    elif X[feature].dtype not in numeric_dtypes:
+    if X[feature].dtype not in numeric_dtypes and pipeline.model_family != ModelFamily.CATBOOST:
         raise ValueError(f"Partial dependence is currently only supported for numeric columns for non-CatBoost pipelines.")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-
-    if pipeline.model_family == ModelFamily.XGBOOST:
-        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-            pipeline.estimator._estimator_type = "classifier"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.classes_ = pipeline.classes_
-        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-            pipeline.estimator._estimator_type = "regressor"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.feature_importances_ = pipeline.feature_importance
-        avg_pred, values = sk_partial_dependence(pipeline.estimator, X=pipeline._transform(X), features=[feature], grid_resolution=grid_resolution)
-    else:
-        avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=pipeline._transform(X), features=[feature], grid_resolution=grid_resolution)
+    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+        pipeline._estimator_type = "classifier"
+    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+        pipeline._estimator_type = "regressor"
+    pipeline.feature_importances_ = pipeline.feature_importance
+    avg_pred, values = sk_partial_dependence(pipeline, X=pipeline._transform(X), features=[feature], grid_resolution=grid_resolution)
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
-
 
 def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     """Create an one-way partial dependence plot.
