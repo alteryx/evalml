@@ -15,6 +15,7 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    LSA,
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
@@ -32,7 +33,6 @@ from evalml.pipelines.components import (
     LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
-    LSA,
     OneHotEncoder,
     PerColumnImputer,
     RandomForestClassifier,
@@ -124,23 +124,40 @@ def test_describe(test_classes):
 
 def test_describe_component():
     enc = OneHotEncoder()
-    imputer = SimpleImputer("mean")
+    imputer = Imputer()
+    simple_imputer = SimpleImputer("mean")
     column_imputer = PerColumnImputer({"a": "mean", "b": ("constant", 100)})
     scaler = StandardScaler()
-    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    feature_selection_clf = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    feature_selection_reg = RFRegressorSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
+    drop_null_transformer = DropNullColumns()
+    datetime = DateTimeFeaturizer()
+    text_featurizer = TextFeaturizer()
+    lsa = LSA()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'categories': None,
                                                                                         'drop': None,
                                                                                         'handle_unknown': 'ignore',
                                                                                         'handle_missing': 'error'}}
-    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
-    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
+    assert imputer.describe(return_dict=True) == {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': "most_frequent",
+                                                                                    'categorical_fill_value': None,
+                                                                                    'numeric_impute_strategy': "mean",
+                                                                                    'numeric_fill_value': None}}
+    assert simple_imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert column_imputer.describe(return_dict=True) == {'name': 'Per Column Imputer', 'parameters': {'impute_strategies': {'a': 'mean', 'b': ('constant', 100)}, 'default_impute_strategy': 'most_frequent'}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
-    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
+    assert feature_selection_clf.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
+    assert feature_selection_reg.describe(return_dict=True) == {'name': 'RF Regressor Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
     assert drop_col_transformer.describe(return_dict=True) == {'name': 'Drop Columns Transformer', 'parameters': {'columns': ['col_one', 'col_two']}}
+    assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
+    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component', 'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour']}}
+    assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
+    assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
 
     # testing estimators
+    base_classifier = BaselineClassifier()
+    base_regressor = BaselineRegressor()
     lr_classifier = LogisticRegressionClassifier()
     en_classifier = ElasticNetClassifier()
     en_regressor = ElasticNetRegressor()
@@ -149,6 +166,8 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
+    assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
+    assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1}}
     assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
     assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000, 'normalize': False}}
@@ -159,7 +178,16 @@ def test_describe_component():
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False, 'n_jobs': -1}}
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
+        xgb_regressor = XGBoostRegressor(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+        assert xgb_regressor.describe(return_dict=True) == {'name': 'XGBoost Regressor', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    except ImportError:
+        pass
+    try:
+        cb_classifier = CatBoostClassifier()
+        cb_regressor = CatBoostRegressor()
+        assert cb_classifier.describe(return_dict=True) == {'name': 'CatBoost Classifier', 'parameters': {'allow_writing_files': False, 'n_estimators': 10, 'eta': 0.03, 'max_depth': 6, 'bootstrap_type': None, 'silent': True}}
+        assert cb_regressor.describe(return_dict=True) == {'name': 'CatBoost Regressor', 'parameters': {'allow_writing_files': False, 'n_estimators': 10, 'eta': 0.03, 'max_depth': 6, 'bootstrap_type': None, 'silent': False}}
     except ImportError:
         pass
     try:
