@@ -21,6 +21,13 @@ def test_stacked_model_family():
     assert StackedEnsembleRegressor.model_family == ModelFamily.ENSEMBLE
 
 
+def test_stacked_default_parameters():
+    assert StackedEnsembleRegressor.default_parameters == {'final_estimator': None,
+                                                           'cv': None,
+                                                           'n_jobs': 1
+                                                           }
+
+
 def test_stacked_ensemble_init_with_invalid_estimators_parameter():
     with pytest.raises(EnsembleMissingPipelinesError, match='must not be None or an empty list.'):
         StackedEnsembleRegressor()

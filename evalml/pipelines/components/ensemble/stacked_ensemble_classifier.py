@@ -34,6 +34,5 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        #  TODO: add check that all pipelines are of same subclass?
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
                          cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)

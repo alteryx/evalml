@@ -2,6 +2,7 @@ from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
+from evalml.utils import classproperty
 
 _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
@@ -70,3 +71,15 @@ class StackedEnsembleBase(Estimator):
     @property
     def feature_importance(self):
         raise NotImplementedError("feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor")
+
+    @classproperty
+    def default_parameters(cls):
+        """Returns the default parameters for stacked ensemble classes.
+
+         Returns:
+             dict: default parameters for this component.
+        """
+        return {'final_estimator': None,
+                'cv': None,
+                'n_jobs': 1
+                }
