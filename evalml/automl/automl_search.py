@@ -697,7 +697,8 @@ class AutoMLSearch:
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
-            "percent_better_than_baseline": percent_better
+            "percent_better_than_baseline": percent_better,
+            "validation_score": cv_scores[0]
         }
         self._results['search_order'].append(pipeline_id)
 
@@ -844,8 +845,8 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "score", "percent_better_than_baseline",
-                              "high_variance_cv", "parameters"]
+        full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
+                              "percent_better_than_baseline", "high_variance_cv", "parameters"]
         if not self.has_searched:
             return pd.DataFrame(columns=full_rankings_cols)
 
