@@ -30,6 +30,7 @@ class StackedEnsembleBase(Estimator):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
+
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
         contains_non_stackable = [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]
@@ -42,7 +43,8 @@ class StackedEnsembleBase(Estimator):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
-
+        if n_jobs == -4:
+            n_jobs = (0 - len(input_pipelines))
         problem_type = input_pipelines[0].problem_type
         if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
             raise ValueError("All pipelines must have the same problem type.")
