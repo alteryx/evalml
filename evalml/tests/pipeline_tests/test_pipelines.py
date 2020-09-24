@@ -61,6 +61,7 @@ def test_allowed_model_families(has_minimal_dependencies):
     if not has_minimal_dependencies:
         expected_model_families_binary.add(ModelFamily.XGBOOST)
         expected_model_families_binary.add(ModelFamily.CATBOOST)
+        expected_model_families_binary.add(ModelFamily.LIGHTGBM)
         expected_model_families_regression.add(ModelFamily.CATBOOST)
         expected_model_families_regression.add(ModelFamily.XGBOOST)
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
@@ -71,7 +72,7 @@ def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 8
     else:
-        assert len(_all_estimators_used_in_search()) == 12
+        assert len(_all_estimators_used_in_search()) == 13
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -81,9 +82,9 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
         assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
     else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 6
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 6
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
         assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 6
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
@@ -386,7 +387,7 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
@@ -404,7 +405,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     lrp.describe()
     out = caplog.text
     assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: Binary Classification" in out
+    assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
@@ -837,11 +838,19 @@ def test_hyperparameters_override():
 
 
 def test_hyperparameters_none(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            super().__init__(parameters={}, component_obj=None, random_state=random_state)
 
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
 
+    assert MockPipelineNone.component_graph == [MockEstimator]
     assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
@@ -860,8 +869,8 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
         clf.fit(X, y)
         clf.score(X, y, ['precision', 'auc'])
     except PipelineScoreError as e:
-        assert "Invalid objective AUC specified for problem type Regression" in e.message
-        assert "Invalid objective Precision specified for problem type Regression" in e.message
+        assert "Invalid objective AUC specified for problem type regression" in e.message
+        assert "Invalid objective Precision specified for problem type regression" in e.message
     mock_predict.assert_called()
 
 
