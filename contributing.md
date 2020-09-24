@@ -16,7 +16,7 @@ More details about ZenHub and its best practices can be found [here](https://bit
 
 #### 1. Clone repo
 The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
-* clone with `git clone https://github.com/FeatureLabs/evalml.git`
+* clone with `git clone https://github.com/alteryx/evalml.git`
 * install in edit mode with:
     ```bash
     cd evalml  # move to directory

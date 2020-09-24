@@ -40,9 +40,11 @@ class DropNullColumns(Transformer):
 
     def transform(self, X, y=None):
         """Transforms data X by dropping columns that exceed the threshold of null values.
+
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Targets
+            y (pd.Series, optional): Ignored.
+
         Returns:
             pd.DataFrame: Transformed X
         """

@@ -27,8 +27,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred (pd.Series or np.array): predictions from a binary classifier.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred (pd.Series or np.array): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -51,7 +51,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (pd.DataFrame or np.array): confusion matrix to normalize.
+        conf_mat (pd.DataFrame or np.array): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -76,8 +76,8 @@ def precision_recall_curve(y_true, y_pred_proba):
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
@@ -99,9 +99,9 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """Generate and display a precision-recall plot.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        title_addition (str or None): if not None, append to plot title. Default None.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        title_addition (str or None): If not None, append to plot title. Default None.
 
     Returns:
         plotly.Figure representing the precision-recall plot generated
@@ -132,8 +132,8 @@ def roc_curve(y_true, y_pred_proba):
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
-        y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.DataFrame, pd.Series, or np.array): predictions from a classifier, before thresholding has been applied.
+        y_true (pd.Series or np.array): True labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -178,9 +178,9 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
-        y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
-        custom_class_labels (list or None): if not None, custom labels for classes. Default None.
+        y_true (pd.Series or np.array): True labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
+        custom_class_labels (list or None): If not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
@@ -223,8 +223,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred (pd.Series or np.array): predictions from a binary classifier.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred (pd.Series or np.array): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
         title_addition (str or None): if not None, append to plot title. Default None.
 
@@ -269,10 +269,10 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     """Calculates permutation importance for features.
 
     Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute permutation importance
-        y (pd.Series): the target labels
-        objective (str, ObjectiveBase): objective to score on
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target data
+        objective (str, ObjectiveBase): Objective to score on
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -304,7 +304,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target labels
+        y (pd.Series): The target data
         objective (str, ObjectiveBase): Objective to score on
         importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
@@ -353,10 +353,10 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
-        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
-        X (pd.DataFrame): the input data used to compute objective score
-        y (pd.Series): the target labels
-        objective (ObjectiveBase obj, str): objective used to score
+        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
+        X (pd.DataFrame): The input data used to compute objective score
+        y (pd.Series): The target labels
+        objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -384,10 +384,10 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute scores
-        y (pd.Series): the target labels
-        objective (ObjectiveBase obj, str): objective used to score, shown on the y-axis of the graph
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute scores
+        y (pd.Series): The target labels
+        objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -466,7 +466,7 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
             If feature is a string, it must be a valid column name in X.
 
     Returns:
-        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
 
     """
