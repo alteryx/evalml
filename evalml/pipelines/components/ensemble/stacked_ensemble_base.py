@@ -12,7 +12,7 @@ class StackedEnsembleBase(Estimator):
     _stacking_estimator_class = None
     _default_final_estimator = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-4, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=1, random_state=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
@@ -43,8 +43,6 @@ class StackedEnsembleBase(Estimator):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
-        if n_jobs == -4:
-            n_jobs = (0 - len(input_pipelines))
         problem_type = input_pipelines[0].problem_type
         if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
             raise ValueError("All pipelines must have the same problem type.")
