@@ -498,6 +498,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             for parameter, value in parameters.items():
                 if type(value) == str:
                     rpr = rpr + f"'{parameter}': '{value}', "
+                elif value == float('inf') or value == float('-inf'):
+                    rpr = rpr + f"'{parameter}': float('{value}'), "
                 else:
                     rpr = rpr + f"'{parameter}': {value}, "
             rpr = rpr + "}, "

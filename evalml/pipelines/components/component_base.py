@@ -158,6 +158,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __repr__(self):
         rpr = f"{(type(self).__name__)}("
         for parameter, value in self.parameters.items():
-            rpr = rpr + f"{parameter}={value},"
+            if type(value) == str:
+                rpr = rpr + f"{parameter}='{value}',"
+            elif value == float('inf') or value == float('-inf'):
+                rpr = rpr + f"{parameter}=float('{value}'),"
+            else:
+                rpr = rpr + f"{parameter}={value},"
         rpr = rpr + ')'
         return rpr

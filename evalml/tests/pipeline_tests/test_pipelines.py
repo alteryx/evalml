@@ -1308,3 +1308,6 @@ def test_pipeline_repr(pipeline_class):
 
     pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
     assert eval(repr(pipeline_with_parameters)) == pipeline_with_parameters
+
+    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf')}})
+    assert eval(repr(pipeline_with_inf_parameters)) == pipeline_with_inf_parameters
