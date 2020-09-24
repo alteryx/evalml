@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 from evalml.utils import classproperty
 
 
