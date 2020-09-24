@@ -16,7 +16,9 @@ from .estimators import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     BaselineClassifier,
-    BaselineRegressor
+    BaselineRegressor,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor
 )
 from .transformers import (
     Transformer,
