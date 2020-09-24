@@ -918,5 +918,4 @@ def test_component_str(component_class):
 @pytest.mark.parametrize("component_class", all_components())
 def test_component_repr(component_class):
     component = component_class()
-    print(repr(component))
     assert eval(repr(component)) == component
