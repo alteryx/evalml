@@ -29,7 +29,7 @@ class ModelFamily(Enum):
         return "ModelFamily." + self.name
 
     def is_tree_estimator(self):
-        """Checks whether the estimator's model family uses tree ensembles."""
+        """Checks whether the estimator's model family uses trees."""
         tree_estimators = {self.CATBOOST, self.EXTRA_TREES, self.RANDOM_FOREST,
-                           self.XGBOOST, self.LIGHTGBM}
+                           self.DECISION_TREE, self.XGBOOST, self.LIGHTGBM}
         return self in tree_estimators
