@@ -39,7 +39,7 @@ def detect_problem_type(y):
     Example:
         >>> y = pd.Series([0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1])
         >>> problem_type = detect_problem_type(y)
-        >>> assert problem_type == ProblemTypes.Binary
+        >>> assert problem_type == ProblemTypes.BINARY
     """
     y = pd.Series(y).dropna()
     num_classes = y.nunique()
