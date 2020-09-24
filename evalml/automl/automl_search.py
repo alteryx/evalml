@@ -103,6 +103,7 @@ class AutoMLSearch:
 
             objective (str, ObjectiveBase): The objective to optimize for. Used to select and rank models, but not for optimizing each model during fit-time.
                 When set to 'auto', chooses:
+
                 - LogLossBinary for binary classification problems,
                 - LogLossMulticlass for multiclass classification problems, and
                 - R2 for regression problems.
