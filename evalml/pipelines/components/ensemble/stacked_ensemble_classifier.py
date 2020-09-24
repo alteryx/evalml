@@ -16,7 +16,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     _default_final_estimator = LogisticRegressionClassifier
 
     def __init__(self, input_pipelines=None, final_estimator=None,
-                 cv=None, n_jobs=-1, random_state=0, **kwargs):
+                 cv=None, n_jobs=1, random_state=0, **kwargs):
         """Stacked ensemble classifier.
 
         Arguments:

@@ -12,7 +12,7 @@ class StackedEnsembleBase(Estimator):
     _stacking_estimator_class = None
     _default_final_estimator = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-3, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=None, random_state=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
@@ -28,6 +28,8 @@ class StackedEnsembleBase(Estimator):
                     - An iterable yielding (train, test) splits
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+                Defaults to None.
+                    - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
         if not input_pipelines:
@@ -58,7 +60,7 @@ class StackedEnsembleBase(Estimator):
             "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator,
             "cv": cv,
-            "n_jobs": 1
+            "n_jobs": n_jobs
         }
         sklearn_parameters.update(kwargs)
         super().__init__(parameters=parameters,
