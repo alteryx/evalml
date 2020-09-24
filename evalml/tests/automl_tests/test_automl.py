@@ -1080,3 +1080,34 @@ def test_max_batches_must_be_non_negative(max_batches):
 
 def test_can_print_out_automl_objective_names():
     AutoMLSearch.print_objective_names_allowed_in_automl()
+
+
+def test_data_split_binary(X_y_binary):
+    X, y = X_y_binary
+    y[:] = 0
+    y[0] = 1
+    automl = AutoMLSearch(problem_type='binary')
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y)
+
+    y[1] = 1
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y)
+
+
+def test_data_split_multi(X_y_multi):
+    X, y = X_y_multi
+    y[:] = 1
+    y[0] = 0
+    automl = AutoMLSearch(problem_type='multiclass')
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y)
+
+    y[1] = 2
+    with pytest.raises(Exception, match=r".+train.+test"):
+        automl.search(X, y)
+
+    y[1] = 0
+    y[2:4] = 2
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y)
