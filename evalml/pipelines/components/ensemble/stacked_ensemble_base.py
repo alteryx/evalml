@@ -12,7 +12,7 @@ class StackedEnsembleBase(Estimator):
     _stacking_estimator_class = None
     _default_final_estimator = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=1, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=-3, random_state=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
@@ -30,7 +30,6 @@ class StackedEnsembleBase(Estimator):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
         contains_non_stackable = [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]
@@ -43,6 +42,7 @@ class StackedEnsembleBase(Estimator):
             "n_jobs": n_jobs
         }
         parameters.update(kwargs)
+
         problem_type = input_pipelines[0].problem_type
         if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
             raise ValueError("All pipelines must have the same problem type.")
