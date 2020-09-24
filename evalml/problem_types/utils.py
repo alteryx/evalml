@@ -1,6 +1,7 @@
 import pandas as pd
 
 from .problem_types import ProblemTypes
+from evalml.utils import numeric_dtypes
 
 
 def handle_problem_types(problem_type):
@@ -31,21 +32,21 @@ def detect_problem_type(y):
         y (pd.Series): the target labels to predict
 
     Returns:
-        String: string representation for the problem type
+        ProblemType: ProblemType Enum
 
     Example:
         >>> y = pd.Series([0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1])
         >>> problem_type = detect_problem_type(y)
-        >>> assert problem_type == 'binary'
+        >>> assert problem_type == ProblemTypes.Binary
     """
     y = pd.Series(y).dropna()
     num_classes = y.nunique()
     if num_classes < 2:
-        raise ValueError("Less than 2 classes detected!")
+        raise ValueError("Less than 2 classes detected! Target unusable for modeling")
     elif num_classes == 2:
-        return "binary"
+        return ProblemTypes.BINARY
     else:
-        if pd.api.types.is_numeric_dtype(y):
+        if y.dtype in numeric_dtypes:
             if (num_classes > 10):
-                return 'regression'
-        return 'multiclass'
+                return ProblemTypes.REGRESSION
+        return ProblemTypes.MULTICLASS
