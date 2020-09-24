@@ -612,13 +612,13 @@ class AutoMLSearch:
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
-
-            diff_train = set(y).difference(set(y_train))
-            diff_test = set(y).difference(set(y_test))
-            diff_string = f"Missing target values in the training set: {diff_train}. " if diff_train else ""
-            diff_string += f"Missing target values in the test set: {diff_test}." if diff_test else ""
-            if diff_string:
-                raise Exception(diff_string)
+            if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+                diff_train = set(y).difference(set(y_train))
+                diff_test = set(y).difference(set(y_test))
+                diff_string = f"Missing target values in the training set: {diff_train}. " if diff_train else ""
+                diff_string += f"Missing target values in the test set: {diff_test}." if diff_test else ""
+                if diff_string:
+                    raise Exception(diff_string)
             objectives_to_score = [self.objective] + self.additional_objectives
             cv_pipeline = None
             try:
