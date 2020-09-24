@@ -706,11 +706,11 @@ def test_partial_dependence_nonsupported_dtypes(logistic_regression_binary_pipel
     y = pd.Series([1, 1, 0, 0, 1])
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Partial dependence is is currently only supported for numeric dtypes"):
+    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
         partial_dependence(pipeline, X, feature="categorical col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Partial dependence is is currently only supported for numeric dtypes"):
+    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
         partial_dependence(pipeline, X, feature="object col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Partial dependence is is currently only supported for numeric dtypes"):
+    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
         partial_dependence(pipeline, X, feature="bool col", grid_resolution=20)
 
 

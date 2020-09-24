@@ -434,7 +434,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     if pipeline.model_family == ModelFamily.CATBOOST:
         pipeline.estimator._component_obj._fitted_ = True
     elif X[feature].dtype not in numeric_dtypes:
-        raise ValueError(f"Partial dependence is is currently only supported for numeric dtypes for non-CatBoost pipelines.")
+        raise ValueError(f"Partial dependence is currently only supported for numeric columns for non-CatBoost pipelines.")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
