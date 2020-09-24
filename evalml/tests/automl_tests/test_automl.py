@@ -1086,28 +1086,42 @@ def test_data_split_binary(X_y_binary):
     X, y = X_y_binary
     y[:] = 0
     y[0] = 1
+
     automl = AutoMLSearch(problem_type='binary')
     with pytest.raises(Exception, match="Missing target values in the"):
         automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y, data_checks="disabled")
 
     y[1] = 1
     with pytest.raises(Exception, match="Missing target values in the"):
         automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y, data_checks="disabled")
 
 
 def test_data_split_multi(X_y_multi):
     X, y = X_y_multi
     y[:] = 1
     y[0] = 0
+
     automl = AutoMLSearch(problem_type='multiclass')
     with pytest.raises(Exception, match="Missing target values"):
         automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y, data_checks="disabled")
 
     y[1] = 2
-    with pytest.raises(Exception, match=r".+train.+test"):
+    with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
         automl.search(X, y)
+    with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
+        automl.search(X, y, data_checks="disabled")
 
     y[1] = 0
     y[2:4] = 2
     with pytest.raises(Exception, match="Missing target values"):
-        automl.search(X, y)
+        automl.search(X, y, data_checks="disabled")
+
+    y[4] = 2
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y, data_checks="disabled")
