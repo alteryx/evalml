@@ -14,7 +14,8 @@ Release Notes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
-        * Add pipeline properties to API reference :pr:`1209`
+        * Added pipeline properties to API reference :pr:`1209`
+        * Clarified what the objective parameter in AutoML is used for in AutoML API reference and AutoML user guide :pr:`1222`
     * Testing Changes
 
 

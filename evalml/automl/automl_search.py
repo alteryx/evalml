@@ -102,10 +102,10 @@ class AutoMLSearch:
             problem_type (str or ProblemTypes): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
 
             objective (str, ObjectiveBase): The objective to optimize for. Used to select and rank models, but not for optimizing each model during fit-time.
-                When set to auto, chooses:
-                    - LogLossBinary for binary classification problems,
-                    - LogLossMulticlass for multiclass classification problems, and
-                    - R2 for regression problems.
+                When set to 'auto', chooses:
+                - LogLossBinary for binary classification problems,
+                - LogLossMulticlass for multiclass classification problems, and
+                - R2 for regression problems.
 
             max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
