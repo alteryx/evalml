@@ -15,26 +15,37 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    BaselineClassifier,
+    BaselineRegressor,
+    CatBoostClassifier,
+    CatBoostRegressor,
     ComponentBase,
+    DateTimeFeaturizer,
     DropColumns,
+    DropNullColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    Imputer,
     LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
+    LSA,
     OneHotEncoder,
     PerColumnImputer,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    TextFeaturizer,
     Transformer,
-    XGBoostClassifier
+    XGBoostClassifier,
+    XGBoostRegressor
 )
 from evalml.pipelines.components.utils import (
     _all_estimators,
@@ -854,7 +865,7 @@ def test_component_equality_all_components(component_class):
     assert component == equal_component
 
 
-def test_component_str(test_classes):
+def test_mock_component_str(test_classes):
     MockComponent, MockEstimator, MockTransformer = test_classes
 
     assert str(MockComponent()) == 'Mock Component'
@@ -862,9 +873,22 @@ def test_component_str(test_classes):
     assert str(MockTransformer()) == 'Mock Transformer'
 
 
-def test_component_repr():
+def test_mock_component_repr():
     component = MockFitComponent()
     assert eval(repr(component)) == component
 
     component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
     assert eval(repr(component_with_params)) == component_with_params
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_str(component_class):
+    component = component_class()
+    assert str(component) == component.name
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_repr(component_class):
+    component = component_class()
+    print(repr(component))
+    assert eval(repr(component)) == component
