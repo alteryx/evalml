@@ -226,7 +226,7 @@ class AutoMLSearch:
         self._baseline_cv_score = None
 
         if _max_batches is not None and _max_batches <= 0:
-            raise ValueError("Parameter max batches must be None or non-negative. Received {max_batches}.")
+            raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
         self._max_batches = _max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
@@ -239,7 +239,7 @@ class AutoMLSearch:
         if isinstance(objective, type):
             if objective in non_core_objectives:
                 raise ValueError(f"{objective.name.lower()} is not allowed in AutoML! "
-                                 "Use evalml.objectives.utils() "
+                                 "Use evalml.objectives.utils.get_core_objective_names()"
                                  "to get all objective names allowed in automl.")
             return objective()
         return objective

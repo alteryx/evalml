@@ -1077,7 +1077,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
 @pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
 
-    with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
+    with pytest.raises(ValueError, match=f"Parameter max batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", _max_batches=max_batches)
 
 
