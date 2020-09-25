@@ -1099,6 +1099,9 @@ def test_data_split_binary(X_y_binary):
     with pytest.raises(Exception, match="Missing target values in the"):
         automl.search(X, y, data_checks="disabled")
 
+    y[2] = 1
+    automl.search(X, y, data_checks="disabled")
+
 
 def test_data_split_multi(X_y_multi):
     X, y = X_y_multi
@@ -1125,3 +1128,6 @@ def test_data_split_multi(X_y_multi):
     y[4] = 2
     with pytest.raises(Exception, match="Missing target values"):
         automl.search(X, y, data_checks="disabled")
+
+    y[5] = 0
+    automl.search(X, y, data_checks="disabled")
