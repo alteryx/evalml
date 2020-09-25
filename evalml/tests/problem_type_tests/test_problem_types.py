@@ -113,3 +113,12 @@ def test_string_repr():
     assert ProblemTypes.BINARY.value == ProblemTypes.BINARY.__str__()
     assert ProblemTypes.MULTICLASS.value == ProblemTypes.MULTICLASS.__str__()
     assert ProblemTypes.REGRESSION.value == ProblemTypes.REGRESSION.__str__()
+
+
+def test_all_problem_types():
+    expected = [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION
+    ]
+    assert ProblemTypes.all_problem_types == expected
