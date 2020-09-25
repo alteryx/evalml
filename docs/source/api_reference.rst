@@ -345,6 +345,7 @@ Objective Utils
     get_all_objective_names
     get_core_objectives
     get_core_objective_names
+    get_non_core_objectives
     get_objective
 
 
