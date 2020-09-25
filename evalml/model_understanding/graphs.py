@@ -20,7 +20,6 @@ from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, jupyter_check
-from evalml.utils.gen_utils import numeric_dtypes
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -429,13 +428,8 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
-    
-    attributes_added = []
-    attributes_modified = []
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
-    if X[feature].dtype not in numeric_dtypes and pipeline.model_family != ModelFamily.CATBOOST:
-        raise ValueError(f"Partial dependence is currently only supported for numeric columns for non-CatBoost pipelines.")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
     if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
@@ -443,9 +437,14 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
         pipeline._estimator_type = "regressor"
     pipeline.feature_importances_ = pipeline.feature_importance
-    avg_pred, values = sk_partial_dependence(pipeline, X=pipeline._transform(X), features=[feature], grid_resolution=grid_resolution)
+    avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+
+    # Delete scikit-learn attributes that were temporarily set
+    del pipeline._estimator_type
+    del pipeline.feature_importances_
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
+
 
 def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     """Create an one-way partial dependence plot.

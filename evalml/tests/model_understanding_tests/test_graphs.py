@@ -683,6 +683,10 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
     assert not part_dep.isnull().any(axis=None)
+    with pytest.raises(AttributeError):
+        pipeline._estimator_type
+    with pytest.raises(AttributeError):
+        pipeline.feature_importances_
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
@@ -696,24 +700,6 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
     assert not part_dep.isnull().any(axis=None)
 
 
-def test_partial_dependence_nonsupported_dtypes(logistic_regression_binary_pipeline_class):
-    X = pd.DataFrame({
-        "categorical col": pd.Series(["zero", "one", "two", "zero", "three"], dtype='category'),
-        "object col": ["b", "b", "a", "c", "d"],
-        "bool col": [True, False, False, True, True],
-        "int col": [0, 1, 2, 4, 3]
-    })
-    y = pd.Series([1, 1, 0, 0, 1])
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
-        partial_dependence(pipeline, X, feature="categorical col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
-        partial_dependence(pipeline, X, feature="object col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Partial dependence is currently only supported for numeric columns"):
-        partial_dependence(pipeline, X, feature="bool col", grid_resolution=20)
-
-
 def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
     X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
     y = [0, 0.2, 1.4, 1]
@@ -723,6 +709,12 @@ def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 4
     assert len(part_dep["feature_values"]) == 4
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, feature='string')
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 3
+    assert len(part_dep["feature_values"]) == 3
     assert not part_dep.isnull().any(axis=None)
 
 
