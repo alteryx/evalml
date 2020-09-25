@@ -8,6 +8,7 @@ from evalml.utils.gen_utils import _get_subclasses
 
 
 def get_non_core_objectives():
+    """Get non-core objective classes."""
     return [objectives.CostBenefitMatrix, objectives.FraudCost, objectives.LeadScoring,
             objectives.MeanSquaredLogError, objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
             objectives.RecallWeighted, objectives.RootMeanSquaredLogError]
