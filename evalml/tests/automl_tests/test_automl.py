@@ -621,15 +621,7 @@ def test_large_dataset_split_size(mock_score):
     X, y = generate_fake_dataset(under_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_TEST)
-
-    over_max_rows = int((automl._LARGE_DATA_ROW_THRESHOLD / automl._LARGE_DATA_PERCENT_TEST) + 10000)
-    X, y = generate_fake_dataset(over_max_rows)
-    automl.data_split = None
-    automl.search(X, y)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    percent_for_100k_rows = automl._MAX_TRAINING_ROWS / over_max_rows
-    assert automl.data_split.test_size == (percent_for_100k_rows)
+    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
