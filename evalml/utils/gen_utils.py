@@ -83,6 +83,7 @@ def get_random_state(seed):
 
 def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
+
     To protect against invalid input to a particular library's random number generator, if an int value is provided, and it is outside the bounds "[min_bound, max_bound)", the value will be projected into the range between the min_bound (inclusive) and max_bound (exclusive) using modular arithmetic.
 
     Arguments:
@@ -116,10 +117,10 @@ def check_random_state_equality(random_state, other_random_state):
 
 class classproperty:
     """Allows function to be accessed as a class level property.
-
         Example:
         class LogisticRegressionBinaryPipeline(PipelineBase):
             component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
+
             @classproperty
             def summary(cls):
             summary = ""
@@ -127,6 +128,7 @@ class classproperty:
                 component = handle_component_class(component)
                 summary += component.name + " + "
             return summary
+            
             assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
             assert LogisticRegressionBinaryPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
     """
