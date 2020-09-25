@@ -128,7 +128,7 @@ class classproperty:
                 component = handle_component_class(component)
                 summary += component.name + " + "
             return summary
-            
+
             assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
             assert LogisticRegressionBinaryPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
     """
