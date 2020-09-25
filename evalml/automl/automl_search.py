@@ -17,7 +17,12 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
-from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
+from evalml.data_checks import (
+    AutoMLDataChecks,
+    DataChecks,
+    DefaultDataChecks,
+    EmptyDataChecks
+)
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -314,7 +319,7 @@ class AutoMLSearch:
         if isinstance(data_checks, DataChecks):
             return data_checks
         elif isinstance(data_checks, list):
-            return DataChecks(data_checks)
+            return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
                 return DefaultDataChecks(problem_type=self.problem_type)

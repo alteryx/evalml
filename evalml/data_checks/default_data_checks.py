@@ -5,14 +5,14 @@ from .invalid_targets_data_check import InvalidTargetDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 
-_default_data_checks_classes = [HighlyNullDataCheck, IDColumnsDataCheck,
-                                LabelLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
-
 
 class DefaultDataChecks(DataChecks):
     """A collection of basic data checks that is used by AutoML by default.
     Includes HighlyNullDataCheck, IDColumnsDataCheck, LabelLeakageDataCheck, InvalidTargetDataCheck,
     and NoVarianceDataCheck."""
+
+    _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
+                                   LabelLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
 
     def __init__(self, problem_type):
         """
@@ -20,5 +20,5 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """
-        super().__init__(_default_data_checks_classes,
+        super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
                          data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})

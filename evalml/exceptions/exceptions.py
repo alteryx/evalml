@@ -64,4 +64,4 @@ class PipelineScoreError(Exception):
 
 
 class DataCheckInitError(Exception):
-    """Exception raised when a data check can't init with the parameters given."""
+    """Exception raised when a data check can't initialize with the parameters given."""

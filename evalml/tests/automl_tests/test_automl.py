@@ -341,7 +341,7 @@ class MockDataCheckErrorAndWarning(DataCheck):
 
 @pytest.mark.parametrize("data_checks",
                          [[MockDataCheckErrorAndWarning()],
-                          DataChecks([MockDataCheckErrorAndWarning()])])
+                          DataChecks([MockDataCheckErrorAndWarning])])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_data_checks_raises_error(mock_fit, mock_score, data_checks, caplog):
