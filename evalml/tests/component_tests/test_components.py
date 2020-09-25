@@ -855,7 +855,9 @@ def test_component_equality_all_components(component_class):
     assert component == equal_component
 
 
-def test_categorical_hyperparameters():
+def test_categorical_hyperparameters(X_y_binary):
+    X, y = X_y_binary
+
     class MockEstimator():
         def fit(self, X, y):
             pass
@@ -876,11 +878,13 @@ def test_categorical_hyperparameters():
                              component_obj=est,
                              random_state=0)
 
-    assert MockComponent(agg_type="mean")
-    assert MockComponent(agg_type="moat", category="blue")
+    assert MockComponent(agg_type="mean").fit(X, y)
+    assert MockComponent(agg_type="moat", category="blue").fit(X, y)
 
 
-def test_list_hyperparameters():
+def test_list_hyperparameters(X_y_binary):
+    X, y = X_y_binary
+
     class MockEstimator():
         def fit(self, X, y):
             pass
@@ -901,5 +905,5 @@ def test_list_hyperparameters():
                              component_obj=est,
                              random_state=0)
 
-    assert MockComponent(agg_type="mean")
-    assert MockComponent(agg_type="moat", lister="blue")
+    assert MockComponent(agg_type="mean").fit(X, y)
+    assert MockComponent(agg_type="moat", lister="blue").fit(X, y)
