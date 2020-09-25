@@ -1,9 +1,8 @@
 import pandas as pd
 
 from .problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    numeric_dtypes
-)
+
+from evalml.utils.gen_utils import numeric_dtypes
 
 
 def handle_problem_types(problem_type):

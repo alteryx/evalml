@@ -220,7 +220,7 @@ def jupyter_check():
 
     Arguments:
         None
-        
+
     Returns:
         Boolean: True if Ipython, False otherwise
     """
