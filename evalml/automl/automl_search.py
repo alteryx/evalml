@@ -30,21 +30,9 @@ from evalml.exceptions import (
     PipelineScoreError
 )
 from evalml.objectives import (
-    CostBenefitMatrix,
-    FraudCost,
-    LeadScoring,
-    MeanSquaredLogError,
-    Recall,
-    RecallMacro,
-    RecallMicro,
-    RecallWeighted,
-    RootMeanSquaredLogError,
-    get_objective,
-    get_objectives
-)
-from evalml.objectives.utils import (
-    _all_objectives_dict,
-    _print_objectives_in_table
+    get_core_objectives,
+    get_non_core_objectives,
+    get_objective
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -57,7 +45,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.gen_utils import classproperty
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -182,7 +169,7 @@ class AutoMLSearch:
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
-            additional_objectives = [obj for obj in get_objectives(self.problem_type) if obj not in self._objectives_not_allowed_in_automl]
+            additional_objectives = get_core_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
@@ -247,21 +234,12 @@ class AutoMLSearch:
 
         self._validate_problem_type()
 
-    @classproperty
-    def _objectives_not_allowed_in_automl(self):
-        return {CostBenefitMatrix, FraudCost, LeadScoring,
-                MeanSquaredLogError, Recall, RecallMacro, RecallMicro, RecallWeighted, RootMeanSquaredLogError}
-
-    @classmethod
-    def print_objective_names_allowed_in_automl(cls):
-        names = [name for name, value in _all_objectives_dict().items() if value not in cls._objectives_not_allowed_in_automl]
-        _print_objectives_in_table(names)
-
     def _validate_objective(self, objective):
+        non_core_objectives = get_non_core_objectives()
         if isinstance(objective, type):
-            if objective in self._objectives_not_allowed_in_automl:
-                raise ValueError(f"{objective.name} is not allowed in AutoML! "
-                                 "Use evalml.automl.AutoMLSearch.print_objective_names_allowed_in_automl() "
+            if objective in non_core_objectives:
+                raise ValueError(f"{objective.name.lower()} is not allowed in AutoML! "
+                                 "Use evalml.objectives.utils() "
                                  "to get all objective names allowed in automl.")
             return objective()
         return objective

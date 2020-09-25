@@ -19,8 +19,8 @@ from evalml.data_checks import (
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost
-from evalml.objectives.utils import _all_objectives_dict
+from evalml.objectives import CostBenefitMatrix, FraudCost
+from evalml.objectives.utils import get_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -964,22 +964,20 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
         assert np.isnan(pipeline['score'])
 
 
-@pytest.mark.parametrize("objective_tuple,pipeline_scores,baseline_score",
-                         product(_all_objectives_dict().items(),
+all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
+
+
+@pytest.mark.parametrize("objective,pipeline_scores,baseline_score",
+                         product(all_objectives + [CostBenefitMatrix],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
                                  [0.1, np.nan]))
-def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scores, baseline_score,
+def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score,
                                                   dummy_binary_pipeline_class, dummy_multiclass_pipeline_class,
                                                   dummy_regression_pipeline_class,
                                                   X_y_binary):
 
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = X_y_binary
-
-    name, objective = objective_tuple
-
-    if objective in AutoMLSearch._objectives_not_allowed_in_automl and name != "cost benefit matrix":
-        pytest.skip(f"Skipping because {name} is not allowed in automl as a string.")
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
@@ -1006,12 +1004,12 @@ def test_percent_better_than_baseline_in_rankings(objective_tuple, pipeline_scor
     Pipeline1.score = mock_score_1
     Pipeline2.score = mock_score_2
 
-    if name == "cost benefit matrix":
+    if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0))
     else:
         automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=name)
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         automl.search(X, y, data_checks=None)
@@ -1081,10 +1079,6 @@ def test_max_batches_must_be_non_negative(max_batches):
 
     with pytest.raises(ValueError, match="Parameter max batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", _max_batches=max_batches)
-
-
-def test_can_print_out_automl_objective_names():
-    AutoMLSearch.print_objective_names_allowed_in_automl()
 
 
 def test_data_split_binary(X_y_binary):

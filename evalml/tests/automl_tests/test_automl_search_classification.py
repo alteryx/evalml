@@ -16,8 +16,7 @@ from evalml.objectives import (
     Precision,
     PrecisionMicro,
     Recall,
-    get_objective,
-    get_objectives
+    get_objective
 )
 from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
@@ -100,7 +99,7 @@ def test_max_pipelines_deprecation(caplog):
 def test_recall_error(X_y_binary):
     X, y = X_y_binary
     # Recall is a valid objective but it's not allowed in AutoML so a ValueError is expected
-    error_msg = 'Recall is not allowed in AutoML!'
+    error_msg = 'recall is not allowed in AutoML!'
     with pytest.raises(ValueError, match=error_msg):
         AutoMLSearch(problem_type='binary', objective='recall', max_iterations=1)
 
@@ -124,7 +123,7 @@ def test_binary_auto(X_y_binary):
     assert len(np.unique(y_pred)) == 2
 
 
-def test_multi_auto(X_y_multi):
+def test_multi_auto(X_y_multi, multiclass_core_objectives):
     X, y = X_y_multi
     objective = PrecisionMicro()
     automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_iterations=5)
@@ -134,11 +133,10 @@ def test_multi_auto(X_y_multi):
     y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    expected_additional_objectives = [obj() for obj in get_objectives('multiclass') if obj not in automl._objectives_not_allowed_in_automl]
-    objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
-    expected_additional_objectives.remove(objective_in_additional_objectives)
+    objective_in_additional_objectives = next((obj for obj in multiclass_core_objectives if obj.name == objective.name), None)
+    multiclass_core_objectives.remove(objective_in_additional_objectives)
 
-    for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
+    for expected, additional in zip(multiclass_core_objectives, automl.additional_objectives):
         assert type(additional) is type(expected)
 
 

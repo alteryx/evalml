@@ -335,6 +335,19 @@ Regression Objectives
     RootMeanSquaredLogError
 
 
+Objective Utils
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_all_objective_names
+    get_core_objectives
+    get_core_objective_names
+    get_objective
+
+
 .. currentmodule:: evalml.problem_types
 
 Problem Types
