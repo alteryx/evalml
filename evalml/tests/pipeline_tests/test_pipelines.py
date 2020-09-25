@@ -445,7 +445,9 @@ def test_parameters(logistic_regression_binary_pipeline_class):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 3.0,
-            'n_jobs': -1
+            'n_jobs': -1,
+            'multi_class': 'auto',
+            'solver': 'lbfgs'
         }
     }
     assert lrp.parameters == expected_parameters
@@ -1065,7 +1067,9 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         'Logistic Regression Classifier': {
             'penalty': 'l2',
             'C': 1.0,
-            'n_jobs': -1
+            'n_jobs': -1,
+            'multi_class': 'auto',
+            'solver': 'lbfgs'
         }
     }
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
