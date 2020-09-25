@@ -7,10 +7,13 @@ Release Notes
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
         * Added `__str__` and `__repr__` for pipelines and components :pr:`1218`
+        * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
     * Changes
+        * Added `allow_writing_files` as a named argument to CatBoost estimators. :pr:`1202`
+        * Added `solver` and `multi_class` as named arguments to LogisticRegressionClassifier :pr:`1202`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
