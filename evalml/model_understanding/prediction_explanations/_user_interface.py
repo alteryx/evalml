@@ -212,7 +212,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     """
     if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe of one row.")
-    pipeline_features = pipeline._transform(input_features)
+    pipeline_features = pipeline.compute_estimator_features(input_features)
 
     shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
