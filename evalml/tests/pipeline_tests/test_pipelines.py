@@ -55,16 +55,12 @@ from evalml.utils.gen_utils import (
 
 
 def test_allowed_model_families(has_minimal_dependencies):
-    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL,
-                ModelFamily.EXTRA_TREES, ModelFamily.DECISION_TREE]
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.EXTRA_TREES]
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
-        expected_model_families_binary.add(ModelFamily.XGBOOST)
-        expected_model_families_binary.add(ModelFamily.CATBOOST)
-        expected_model_families_binary.add(ModelFamily.LIGHTGBM)
-        expected_model_families_regression.add(ModelFamily.CATBOOST)
-        expected_model_families_regression.add(ModelFamily.XGBOOST)
+        expected_model_families_binary.update([ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
+        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST])
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
@@ -78,15 +74,15 @@ def test_all_estimators(has_minimal_dependencies):
 
 def test_get_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 5
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 4
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 4
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
     else:
-        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
+        assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 7
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
-        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 6
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
