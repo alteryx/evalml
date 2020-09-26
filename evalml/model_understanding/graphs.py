@@ -415,7 +415,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
@@ -426,24 +426,22 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
-    if pipeline.model_family == ModelFamily.BASELINE:
-        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
-    if pipeline.model_family == ModelFamily.CATBOOST:
-        pipeline.estimator._component_obj._fitted_ = True
-    if pipeline.model_family == ModelFamily.XGBOOST:
-        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-            pipeline.estimator._estimator_type = "classifier"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.classes_ = pipeline.classes_
-        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-            pipeline.estimator._estimator_type = "regressor"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.feature_importances_ = pipeline.feature_importance
-        avg_pred, values = sk_partial_dependence(pipeline.estimator, X=X, features=[feature], grid_resolution=grid_resolution)
-    else:
-        avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+        pipeline._estimator_type = "classifier"
+    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+        pipeline._estimator_type = "regressor"
+    pipeline.feature_importances_ = pipeline.feature_importance
+    avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+
+    # Delete scikit-learn attributes that were temporarily set
+    del pipeline._estimator_type
+    del pipeline.feature_importances_
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
 
