@@ -1,4 +1,3 @@
-# flake8:noqa
 from .components import (
     Estimator,
     OneHotEncoder,
