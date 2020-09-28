@@ -5,9 +5,11 @@ Release Notes
     * Enhancements
         * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
+        * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
         * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
+        * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
@@ -20,7 +22,14 @@ Release Notes
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Add pipeline properties to API reference :pr:`1209`
+        * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
+        * Improved description of `max_iterations` in documentation :pr:`1212`
     * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * DefaultDataChecks now accepts a problem_type parameter that must be specified :pr:`1167`
 
 
 **v0.13.2 Sep. 17, 2020**
