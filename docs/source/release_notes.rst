@@ -20,6 +20,7 @@ Release Notes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Add pipeline properties to API reference :pr:`1209`
         * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
+        * Improved description of `max_iterations` in documentation :pr:`1212`
     * Testing Changes
 
 
