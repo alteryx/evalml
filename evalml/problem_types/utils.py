@@ -44,10 +44,9 @@ def detect_problem_type(y):
     num_classes = y.nunique()
     if num_classes < 2:
         raise ValueError("Less than 2 classes detected! Target unusable for modeling")
-    elif num_classes == 2:
+    if num_classes == 2:
         return ProblemTypes.BINARY
-    else:
-        if y.dtype in numeric_dtypes:
-            if (num_classes > 10):
-                return ProblemTypes.REGRESSION
-        return ProblemTypes.MULTICLASS
+    if y.dtype in numeric_dtypes:
+        if (num_classes > 10):
+            return ProblemTypes.REGRESSION
+    return ProblemTypes.MULTICLASS
