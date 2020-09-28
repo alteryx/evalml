@@ -11,8 +11,7 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert ProblemTypes.REGRESSION in ExtraTreesRegressor.supported_problem_types
-    assert len(ExtraTreesRegressor.supported_problem_types) == 1
+    assert set(ExtraTreesRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
 
 
 def test_et_parameters():

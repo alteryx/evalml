@@ -27,7 +27,3 @@ class RandomForestRegressor(Estimator):
         super().__init__(parameters=parameters,
                          component_obj=rf_regressor,
                          random_state=random_state)
-
-    @property
-    def feature_importance(self):
-        return self._component_obj.feature_importances_

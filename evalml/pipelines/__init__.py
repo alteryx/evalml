@@ -20,7 +20,9 @@ from .components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     ExtraTreesClassifier,
-    ExtraTreesRegressor
+    ExtraTreesRegressor,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor
 )
 
 from .pipeline_base import PipelineBase
