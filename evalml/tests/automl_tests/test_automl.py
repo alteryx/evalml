@@ -1117,6 +1117,9 @@ def test_data_split_multi(X_y_multi):
         automl.search(X, y, data_checks="disabled")
 
     y[1] = 2
+    # match based on regex, since data split doesn't have a random seed for reproducibility
+    # regex matches the set {} and expects either 2 sets (missing in both train and test)
+    #   or 1 set of multiple elements (both missing in train or both in test)
     with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
         automl.search(X, y)
     with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
