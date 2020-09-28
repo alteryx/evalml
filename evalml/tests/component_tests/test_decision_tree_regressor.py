@@ -11,8 +11,7 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert ProblemTypes.REGRESSION in DecisionTreeRegressor.supported_problem_types
-    assert len(DecisionTreeRegressor.supported_problem_types) == 1
+    assert set(DecisionTreeRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
 
 
 def test_fit_predict(X_y_regression):
