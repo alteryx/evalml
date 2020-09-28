@@ -260,4 +260,3 @@ def setup(app):
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('build-finished', build_finished)
