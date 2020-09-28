@@ -17,7 +17,12 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
-from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
+from evalml.data_checks import (
+    AutoMLDataChecks,
+    DataChecks,
+    DefaultDataChecks,
+    EmptyDataChecks
+)
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -101,7 +106,7 @@ class AutoMLSearch:
         Arguments:
             problem_type (str or ProblemTypes): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
 
-            objective (str, ObjectiveBase): The objective to optimize for. Used to select and rank models, but not for optimizing each model during fit-time.
+            objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
                 When set to 'auto', chooses:
 
                 - LogLossBinary for binary classification problems,
@@ -303,8 +308,7 @@ class AutoMLSearch:
 
         return search_desc + rankings_desc
 
-    @staticmethod
-    def _validate_data_checks(data_checks):
+    def _validate_data_checks(self, data_checks):
         """Validate data_checks parameter.
 
         Arguments:
@@ -317,10 +321,10 @@ class AutoMLSearch:
         if isinstance(data_checks, DataChecks):
             return data_checks
         elif isinstance(data_checks, list):
-            return DataChecks(data_checks)
+            return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks()
+                return DefaultDataChecks(problem_type=self.problem_type)
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:

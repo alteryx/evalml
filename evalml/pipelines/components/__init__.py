@@ -1,4 +1,3 @@
-# flake8:noqa
 from .component_base import ComponentBase, ComponentBaseMeta
 from .estimators import (
     Estimator,
@@ -34,4 +33,4 @@ from .transformers import (
     SelectColumns,
     TextFeaturizer,
     LSA,
-    )
+)

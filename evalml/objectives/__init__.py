@@ -1,4 +1,3 @@
-# flake8:noqa
 from .binary_classification_objective import BinaryClassificationObjective
 from .cost_benefit_matrix import CostBenefitMatrix
 from .fraud_cost import FraudCost
