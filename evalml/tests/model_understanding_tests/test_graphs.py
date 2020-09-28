@@ -689,6 +689,20 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
         pipeline.feature_importances_
 
 
+@patch('evalml.model_understanding.graphs.sk_partial_dependence')
+def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    mock_part_dep.side_effect = Exception()
+    with pytest.raises(Exception):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+    with pytest.raises(AttributeError):
+        pipeline._estimator_type
+    with pytest.raises(AttributeError):
+        pipeline.feature_importances_
+
+
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
     pipeline = logistic_regression_binary_pipeline_class(parameters={})

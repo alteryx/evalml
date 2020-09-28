@@ -1,4 +1,3 @@
-# flake8:noqa
 from .elasticnet_regressor import ElasticNetRegressor
 from .linear_regressor import LinearRegressor
 from .rf_regressor import RandomForestRegressor
