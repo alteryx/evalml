@@ -24,8 +24,7 @@ def test_en_parameters():
 
 
 def test_problem_types():
-    assert ProblemTypes.REGRESSION in ElasticNetRegressor.supported_problem_types
-    assert len(ElasticNetRegressor.supported_problem_types) == 1
+    assert set(ElasticNetRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
 
 
 def test_fit_predict(X_y_regression):
