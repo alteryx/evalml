@@ -14,6 +14,7 @@ Release Notes
     * Changes
         * Added `allow_writing_files` as a named argument to CatBoost estimators. :pr:`1202`
         * Added `solver` and `multi_class` as named arguments to LogisticRegressionClassifier :pr:`1202`
+        * Replaced pipeline's `.transform` method with public method to evaluate all the preprocessing steps of a pipeline :pr:`1231`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
