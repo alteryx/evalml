@@ -24,7 +24,6 @@ Release Notes
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Added pipeline properties to API reference :pr:`1209`
         * Clarified what the objective parameter in AutoML is used for in AutoML API reference and AutoML user guide :pr:`1222`
-        * Add pipeline properties to API reference :pr:`1209`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
         * Removed unused code from sphinx conf :pr:`1235`
