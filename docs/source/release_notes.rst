@@ -14,6 +14,7 @@ Release Notes
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
+        * Wrapped call to scikit-learn's partial dependence method in a `try`/`finally` block :pr:`1232`
     * Changes
         * Added `allow_writing_files` as a named argument to CatBoost estimators. :pr:`1202`
         * Added `solver` and `multi_class` as named arguments to LogisticRegressionClassifier :pr:`1202`
