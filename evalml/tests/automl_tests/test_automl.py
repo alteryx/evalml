@@ -374,6 +374,8 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(X, y, data_checks="default")
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         automl.search(X, y, data_checks=[DataChecks([]), 1])
+    with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
+        automl.search(X, y, data_checks=[MockDataCheckErrorAndWarning])
 
 
 def test_automl_str_no_param_search():
