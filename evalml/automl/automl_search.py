@@ -56,6 +56,22 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
+def get_default_primary_search_objective(problem_type):
+    """Get the default primary search objective for a problem type.
+
+    Arguments:
+        problem_type (str or ProblemType): problem type of interest.
+
+    Returns:
+        ObjectiveBase: primary objective instance for the problem type.
+    """
+    problem_type = handle_problem_types(problem_type)
+    objective_name = {'binary': 'Log Loss Binary',
+                      'multiclass': 'Log Loss Multiclass',
+                      'regression': 'R2'}[problem_type.value]
+    return get_objective(objective_name, return_instance=True)
+
+
 class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
@@ -63,10 +79,6 @@ class AutoMLSearch:
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
-
-    _DEFAULT_OBJECTIVES = {'binary': 'Log Loss Binary',
-                           'multiclass': 'Log Loss Multiclass',
-                           'regression': 'R2'}
 
     def __init__(self,
                  problem_type=None,
@@ -161,7 +173,7 @@ class AutoMLSearch:
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         if objective == 'auto':
-            objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
+            objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):

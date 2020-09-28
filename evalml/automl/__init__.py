@@ -1,2 +1,2 @@
-from .automl_search import AutoMLSearch
+from .automl_search import AutoMLSearch, get_default_primary_search_objective
 from .data_splitters import TrainingValidationSplit

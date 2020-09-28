@@ -9,7 +9,10 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.automl import TrainingValidationSplit
+from evalml.automl import (
+    TrainingValidationSplit,
+    get_default_primary_search_objective
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -19,7 +22,13 @@ from evalml.data_checks import (
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost
+from evalml.objectives import (
+    R2,
+    CostBenefitMatrix,
+    FraudCost,
+    LogLossBinary,
+    LogLossMulticlass
+)
 from evalml.objectives.utils import get_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -1133,3 +1142,14 @@ def test_data_split_multi(X_y_multi):
 
     y[5] = 0
     automl.search(X, y, data_checks="disabled")
+
+
+def test_get_default_primary_search_objective():
+    assert isinstance(get_default_primary_search_objective("binary"), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.BINARY), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective("multiclass"), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective("regression"), R2)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
+        get_default_primary_search_objective("auto")
