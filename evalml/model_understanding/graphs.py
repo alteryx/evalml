@@ -437,11 +437,12 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
         pipeline._estimator_type = "regressor"
     pipeline.feature_importances_ = pipeline.feature_importance
-    avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
-
-    # Delete scikit-learn attributes that were temporarily set
-    del pipeline._estimator_type
-    del pipeline.feature_importances_
+    try:
+        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+    finally:
+        # Delete scikit-learn attributes that were temporarily set
+        del pipeline._estimator_type
+        del pipeline.feature_importances_
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
 
