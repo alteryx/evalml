@@ -855,7 +855,16 @@ def test_component_equality_all_components(component_class):
     assert component == equal_component
 
 
-def test_categorical_hyperparameters(X_y_binary):
+@pytest.mark.parametrize("categorical", [{
+    "type": Categorical(["mean", "median", "mode"]),
+    "categories": Categorical(["blue", "green"])
+},
+    {
+    "type": ["mean", "median", "mode"],
+    "categories": ["blue", "green"]
+}
+])
+def test_categorical_hyperparameters(X_y_binary, categorical):
     X, y = X_y_binary
 
     class MockEstimator():
@@ -866,10 +875,7 @@ def test_categorical_hyperparameters(X_y_binary):
         name = 'Mock Estimator'
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
-        hyperparameter_ranges = {
-            "type": Categorical(["mean", "median", "mode"]),
-            "categories": Categorical(["blue", "green"])
-        }
+        hyperparameter_ranges = categorical
 
         def __init__(self, agg_type, category="green"):
             parameters = {"type": agg_type, "categories": category}
@@ -880,30 +886,3 @@ def test_categorical_hyperparameters(X_y_binary):
 
     assert MockComponent(agg_type="mean").fit(X, y)
     assert MockComponent(agg_type="moat", category="blue").fit(X, y)
-
-
-def test_list_hyperparameters(X_y_binary):
-    X, y = X_y_binary
-
-    class MockEstimator():
-        def fit(self, X, y):
-            pass
-
-    class MockComponent(Estimator):
-        name = 'Mock Estimator'
-        model_family = ModelFamily.LINEAR_MODEL
-        supported_problem_types = ['binary']
-        hyperparameter_ranges = {
-            "type": ["mean", "median", "mode"],
-            "lister": ["blue", "green"]
-        }
-
-        def __init__(self, agg_type, lister="green"):
-            parameters = {"type": agg_type, "lister": lister}
-            est = MockEstimator()
-            super().__init__(parameters=parameters,
-                             component_obj=est,
-                             random_state=0)
-
-    assert MockComponent(agg_type="mean").fit(X, y)
-    assert MockComponent(agg_type="moat", lister="blue").fit(X, y)
