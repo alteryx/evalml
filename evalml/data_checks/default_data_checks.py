@@ -8,17 +8,17 @@ from .no_variance_data_check import NoVarianceDataCheck
 
 class DefaultDataChecks(DataChecks):
     """A collection of basic data checks that is used by AutoML by default.
-
     Includes HighlyNullDataCheck, IDColumnsDataCheck, LabelLeakageDataCheck, InvalidTargetDataCheck,
     and NoVarianceDataCheck."""
 
-    def __init__(self, data_checks=None):
+    _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
+                                   LabelLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
+
+    def __init__(self, problem_type):
         """
         A collection of basic data checks.
-
         Arguments:
-            data_checks (list (DataCheck)): Ignored.
+            problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """
-        self.data_checks = [HighlyNullDataCheck(), IDColumnsDataCheck(),
-                            LabelLeakageDataCheck(), InvalidTargetDataCheck(),
-                            NoVarianceDataCheck()]
+        super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
+                         data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
