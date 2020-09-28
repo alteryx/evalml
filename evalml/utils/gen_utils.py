@@ -240,5 +240,5 @@ def safe_repr(value):
         if pd.isna(value):
             return 'np.nan'
         if np.isinf(value):
-            return f'float("{repr(value)}")'
+            return f"float('{repr(value)}')"
     return repr(value)
