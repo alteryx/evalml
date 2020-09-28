@@ -7,14 +7,16 @@ from .multiclass_classification_pipeline import (
 from .regression_pipeline import RegressionPipeline
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import (
+from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
+    ComponentBase,
     DateTimeFeaturizer,
     DropNullColumns,
     Estimator,
     Imputer,
     OneHotEncoder,
+    RandomForestClassifier,
     StandardScaler
 )
 from evalml.pipelines.components.utils import get_estimators
@@ -107,9 +109,10 @@ def make_pipeline(X, y, estimator, problem_type):
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None):
-    """Given a list of component instances and the problem type, a pipeline instance is generated with the component instances.
-    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. A custom name for
-    the pipeline can optionally be specified; otherwise the default pipeline name will be 'Templated Pipeline'.
+    """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
+    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
+    untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
+    otherwise the default pipeline name will be 'Templated Pipeline'.
 
    Arguments:
         component_instances (list): a list of all of the components to include in the pipeline
@@ -120,14 +123,19 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         Pipeline instance with component instances and specified estimator
 
     Example:
-        >>> components = [Imputer(), StandardScaler(), Estimator()]
+        >>> components = [Imputer(), StandardScaler(), RandomForestClassifier()]
         >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
         >>> pipeline.describe()
 
     """
-    if not isinstance(component_instances[-1], Estimator):
-        raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
+    for i, component in enumerate(component_instances):
+        if not isinstance(component, ComponentBase):
+            raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
+        if i == len(component_instances) - 1 and not isinstance(component, Estimator):
+            raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
 
+    if custom_name and not isinstance(custom_name, str):
+        raise TypeError("Custom pipeline name must be a string")
     pipeline_name = custom_name
     problem_type = handle_problem_types(problem_type)
 
