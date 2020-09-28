@@ -682,10 +682,14 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
+    with pytest.raises(AttributeError):
+        pipeline._estimator_type
+    with pytest.raises(AttributeError):
+        pipeline.feature_importances_
 
 
-def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_class):
+def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
@@ -693,12 +697,30 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_partial_dependence_baseline(mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
+    X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+    y = [0, 0.2, 1.4, 1]
+    pipeline = linear_regression_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature='numeric')
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 4
+    assert len(part_dep["feature_values"]) == 4
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, feature='string')
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 3
+    assert len(part_dep["feature_values"]) == 3
+    assert not part_dep.isnull().any(axis=None)
+
+
+def test_partial_dependence_baseline():
+    X = pd.DataFrame([[1, 0], [0, 1]])
+    y = pd.Series([0, 1])
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
         component_graph = ["Baseline Classifier"]
@@ -716,7 +738,22 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
             component_graph = ["CatBoost Classifier"]
         pipeline = CatBoostTestPipeline({})
         pipeline.fit(X, y)
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+        assert len(part_dep["partial_dependence"]) == 20
+        assert len(part_dep["feature_values"]) == 20
+        assert not part_dep.isnull().all().all()
+
+        # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
+        X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
+        y = ['a', 'b', 'a']
+        pipeline = CatBoostTestPipeline({})
+        pipeline.fit(X, y)
+        part_dep = partial_dependence(pipeline, X, feature='string')
+        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+        assert len(part_dep["partial_dependence"]) == 3
+        assert len(part_dep["feature_values"]) == 3
+        assert not part_dep.isnull().all().all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])

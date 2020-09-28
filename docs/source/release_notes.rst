@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
@@ -19,6 +20,7 @@ Release Notes
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Add pipeline properties to API reference :pr:`1209`
+        * Improved description of `max_iterations` in documentation :pr:`1212`
     * Testing Changes
 
 
