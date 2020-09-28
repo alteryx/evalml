@@ -24,6 +24,7 @@ Release Notes
         * Add pipeline properties to API reference :pr:`1209`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
+        * Remove unused code from sphinx conf :pr:`1235`
     * Testing Changes
 
 .. warning::
