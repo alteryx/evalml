@@ -1307,11 +1307,14 @@ def test_pipeline_repr(pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
     pipeline = MockPipeline(parameters={})
-    print(repr(pipeline))
     assert eval(repr(pipeline)) == pipeline
 
     pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
     assert eval(repr(pipeline_with_parameters)) == pipeline_with_parameters
 
-    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf')}})
+    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
     assert eval(repr(pipeline_with_inf_parameters)) == pipeline_with_inf_parameters
+
+    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    print(repr(pipeline_with_nan_parameters))
+    assert eval(repr(pipeline_with_nan_parameters)) == pipeline_with_nan_parameters

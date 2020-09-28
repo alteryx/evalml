@@ -908,6 +908,12 @@ def test_mock_component_repr():
     component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
     assert eval(repr(component_with_params)) == component_with_params
 
+    component_with_nan = MockFitComponent(param_a=np.nan, param_b=float('nan'))
+    assert eval(repr(component_with_nan)) == component_with_nan
+
+    component_with_inf = MockFitComponent(param_a=np.inf, param_b=float('-inf'))
+    assert eval(repr(component_with_inf)) == component_with_inf
+
 
 @pytest.mark.parametrize("component_class", all_components())
 def test_component_str(component_class):
@@ -918,4 +924,5 @@ def test_component_str(component_class):
 @pytest.mark.parametrize("component_class", all_components())
 def test_component_repr(component_class):
     component = component_class()
+    print(repr(component))
     assert eval(repr(component)) == component

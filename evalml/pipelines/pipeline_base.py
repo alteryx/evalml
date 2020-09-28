@@ -27,7 +27,8 @@ from evalml.utils import (
     import_or_raise,
     jupyter_check,
     log_subtitle,
-    log_title
+    log_title,
+    safe_repr
 )
 
 logger = get_logger(__file__)
@@ -492,16 +493,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.name
 
     def __repr__(self):
-        rpr = f"{(type(self).__name__)}(parameters={{"
-        for component, parameters in self.parameters.items():
-            rpr = rpr + f"'{component}':{{"
-            for parameter, value in parameters.items():
-                if type(value) == str:
-                    rpr = rpr + f"'{parameter}': '{value}', "
-                elif value == float('inf') or value == float('-inf'):
-                    rpr = rpr + f"'{parameter}': float('{value}'), "
-                else:
-                    rpr = rpr + f"'{parameter}': {value}, "
-            rpr = rpr + "}, "
-        rpr = rpr + '})'
-        return rpr
+
+        def repr_component(parameters):
+            return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
+
+        parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
+        return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'

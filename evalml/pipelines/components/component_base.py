@@ -10,7 +10,8 @@ from evalml.utils import (
     classproperty,
     get_logger,
     get_random_state,
-    log_subtitle
+    log_subtitle,
+    safe_repr
 )
 
 logger = get_logger(__file__)
@@ -156,13 +157,15 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return self.name
 
     def __repr__(self):
-        rpr = f"{(type(self).__name__)}("
-        for parameter, value in self.parameters.items():
-            if type(value) == str:
-                rpr = rpr + f"{parameter}='{value}',"
-            elif value == float('inf') or value == float('-inf'):
-                rpr = rpr + f"{parameter}=float('{value}'),"
-            else:
-                rpr = rpr + f"{parameter}={value},"
-        rpr = rpr + ')'
-        return rpr
+        # rpr = f"{(type(self).__name__)}("
+        # for parameter, value in self.parameters.items():
+        #     if type(value) == str:
+        #         rpr = rpr + f"{parameter}='{value}',"
+        #     elif value == float('inf') or value == float('-inf'):
+        #         rpr = rpr + f"{parameter}=float('{value}'),"
+        #     else:
+        #         rpr = rpr + f"{parameter}={value},"
+        # rpr = rpr + ')'
+        # return rpr
+        parameters_repr = ', '.join([f'{key}={safe_repr(value)}' for key, value in self.parameters.items()])
+        return f'{(type(self).__name__)}({parameters_repr})'
