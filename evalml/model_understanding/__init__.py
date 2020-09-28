@@ -1,4 +1,3 @@
-# flake8:noqa
 from .graphs import (
     precision_recall_curve,
     graph_precision_recall_curve,
