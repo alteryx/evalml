@@ -1163,18 +1163,26 @@ def test_percent_better_than_baseline_computed_for_all_objectives(problem_type,
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
-def test_percent_better_than_baseline_scores_different_folds(fold_scores,
+@patch("evalml.pipelines.ModeBaselineBinaryPipeline.score", return_value={'Log Loss Binary': 1, 'F1': 1})
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_percent_better_than_baseline_scores_different_folds(mock_fit,
+                                                             mock_score,
+                                                             mock_baseline_score,
+                                                             fold_scores,
+                                                             dummy_binary_pipeline_class,
                                                              X_y_binary):
 
+    # Test that percent-better-than-baseline is correctly computed when scores differ across folds
     X, y = X_y_binary
 
-    class DummyPipeline(BinaryClassificationPipeline):
+    mock_score.side_effect = [{"Log Loss Binary": 1, "F1": val} for val in fold_scores]
+
+    class DummyPipeline(dummy_binary_pipeline_class):
         name = "Dummy 1"
         problem_type = ProblemTypes.BINARY
-        component_graph = ["Logistic Regression Classifier"]
 
     f1 = get_objective("f1")()
-    log_loss = get_objective("log loss binary")()
 
     if np.isnan(fold_scores[0]):
         answer = np.nan
@@ -1182,16 +1190,12 @@ def test_percent_better_than_baseline_scores_different_folds(fold_scores,
         answer = f1.calculate_percent_difference(4, 1)
 
     automl = AutoMLSearch(problem_type="binary", max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective=log_loss, additional_objectives=[f1])
+                          allowed_pipelines=[DummyPipeline], objective="log loss binary", additional_objectives=["f1"])
 
-    with patch("evalml.pipelines.ModeBaselineBinaryPipeline.score", return_value={'Log Loss Binary': 1, 'F1': 1}):
-        with patch.object(f1, "score") as mock_f1_score:
-            mock_f1_score.side_effect = fold_scores
-            with patch.object(log_loss, "score", return_value=1):
-                automl.search(X, y, data_checks=None)
-                assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
-                pipeline_results = automl.results['pipeline_results'][1]
-                np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
+    automl.search(X, y, data_checks=None)
+    assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
+    pipeline_results = automl.results['pipeline_results'][1]
+    np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
