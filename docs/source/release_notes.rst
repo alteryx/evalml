@@ -224,13 +224,13 @@ Release Notes
     * Fixes
         * Makes automl results a read-only property :pr:`919`
     * Changes
-        * Deleted static pipelines and refactored tests involving static pipelines, removed ``all_pipelines()` and ``get_pipelines()` :pr:`904`
+        * Deleted static pipelines and refactored tests involving static pipelines, removed ``all_pipelines()`` and ``get_pipelines()`` :pr:`904`
         * Moved ``list_model_families`` to ``evalml.model_family.utils`` :pr:`903`
         * Updated ``all_pipelines``, ``all_estimators``, ``all_components`` to use the same mechanism for dynamically generating their elements :pr:`898`
         * Rename ``master`` branch to ``main`` :pr:`918`
         * Add pypi release github action :pr:`923`
         * Updated AutoMLSearch.search stdout output and logging and removed tqdm progress bar :pr:`921`
-        * Moved automl config checks previously in ``search()` to init :pr:`933`
+        * Moved automl config checks previously in ``search()`` to init :pr:`933`
     * Documentation Changes
         * Reorganized and rewrote documentation :pr:`937`
         * Updated to use pydata sphinx theme :pr:`937`
@@ -377,7 +377,7 @@ Release Notes
         * Removed direct access to ``cls.component_graph`` :pr:`595`
         * Add testing files to .gitignore :pr:`625`
         * Remove circular dependencies from `Makefile`` :pr:`637`
-        * Add error case for ``normalize_confusion_matrix()` :pr:`640`
+        * Add error case for ``normalize_confusion_matrix()`` :pr:`640`
         * Fixed XGBoostClassifier and XGBoostRegressor bug with feature names that contain [, ], or < :pr:`659`
         * Update make_pipeline_graph to not accidentally create empty file when testing if path is valid :pr:`649`
         * Fix pip installation warning about docsutils version, from boto dependency :pr:`664`
