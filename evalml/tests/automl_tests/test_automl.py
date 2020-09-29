@@ -548,10 +548,10 @@ def test_large_dataset_binary(mock_score):
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.get_n_splits() == 1
-
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+        assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
@@ -569,6 +569,7 @@ def test_large_dataset_multiclass(mock_score):
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+        assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
@@ -586,6 +587,7 @@ def test_large_dataset_regression(mock_score):
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
+        assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
