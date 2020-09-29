@@ -21,4 +21,4 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-__version__ = '0.13.2'
+__version__ = '0.14.dev0'
