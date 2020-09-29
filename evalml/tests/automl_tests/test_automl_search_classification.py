@@ -620,7 +620,7 @@ def test_categorical_hyperparam(X_y_multi):
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
         custom_hyperparameters = {
             'Simple Imputer': {
-                'impute_strategy': Categorical(['most_frequent'])
+                'impute_strategy': Categorical(['mean', 'most_frequent'])
             }
         }
 
