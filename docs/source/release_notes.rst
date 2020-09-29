@@ -8,7 +8,8 @@ Release Notes
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
-        * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
+        * Added `DecisionTreeClassifier` and `DecisionTreeRegressor` classes :pr:`1223`
+        * Added `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
     * Fixes
