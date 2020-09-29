@@ -1,4 +1,3 @@
-# flake8:noqa
 from .components import (
     Estimator,
     OneHotEncoder,
@@ -21,7 +20,9 @@ from .components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     ExtraTreesClassifier,
-    ExtraTreesRegressor
+    ExtraTreesRegressor,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor
 )
 
 from .pipeline_base import PipelineBase

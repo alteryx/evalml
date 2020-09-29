@@ -8,6 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
@@ -890,3 +891,36 @@ def test_component_equality_all_components(component_class,
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
+
+
+@pytest.mark.parametrize("categorical", [{
+    "type": Categorical(["mean", "median", "mode"]),
+    "categories": Categorical(["blue", "green"])
+},
+    {
+    "type": ["mean", "median", "mode"],
+    "categories": ["blue", "green"]
+}
+])
+def test_categorical_hyperparameters(X_y_binary, categorical):
+    X, y = X_y_binary
+
+    class MockEstimator():
+        def fit(self, X, y):
+            pass
+
+    class MockComponent(Estimator):
+        name = 'Mock Estimator'
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+        hyperparameter_ranges = categorical
+
+        def __init__(self, agg_type, category="green"):
+            parameters = {"type": agg_type, "categories": category}
+            est = MockEstimator()
+            super().__init__(parameters=parameters,
+                             component_obj=est,
+                             random_state=0)
+
+    assert MockComponent(agg_type="mean").fit(X, y)
+    assert MockComponent(agg_type="moat", category="blue").fit(X, y)

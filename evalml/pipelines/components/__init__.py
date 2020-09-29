@@ -1,4 +1,3 @@
-# flake8:noqa
 from .component_base import ComponentBase, ComponentBaseMeta
 from .estimators import (
     Estimator,
@@ -16,7 +15,9 @@ from .estimators import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     BaselineClassifier,
-    BaselineRegressor
+    BaselineRegressor,
+    DecisionTreeClassifier,
+    DecisionTreeRegressor
 )
 from .transformers import (
     Transformer,
@@ -34,7 +35,7 @@ from .transformers import (
     SelectColumns,
     TextFeaturizer,
     LSA,
-    )
+)
 from .ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
