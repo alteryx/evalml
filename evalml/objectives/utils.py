@@ -14,7 +14,7 @@ def get_non_core_objectives():
     before using them in AutoMLSearch.
 
     Returns:
-        List of Objectivebase classes
+        List of ObjectiveBase classes
     """
     return [objectives.CostBenefitMatrix, objectives.FraudCost, objectives.LeadScoring,
             objectives.MeanSquaredLogError, objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
