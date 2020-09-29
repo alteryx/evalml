@@ -953,4 +953,3 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
 
     assert MockComponent(agg_type="mean").fit(X, y)
     assert MockComponent(agg_type="moat", category="blue").fit(X, y)
-
