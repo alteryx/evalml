@@ -1267,3 +1267,54 @@ def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_m
     pipeline_diff_data.fit(X, y)
 
     assert pipeline != pipeline_diff_data
+
+
+def test_pipeline_str():
+
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockMulticlassPipeline(MulticlassClassificationPipeline):
+        name = "Mock Multiclass Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    binary_pipeline = MockBinaryPipeline(parameters={})
+    multiclass_pipeline = MockMulticlassPipeline(parameters={})
+    regression_pipeline = MockRegressionPipeline(parameters={})
+
+    assert str(binary_pipeline) == "Mock Binary Pipeline"
+    assert str(multiclass_pipeline) == "Mock Multiclass Pipeline"
+    assert str(regression_pipeline) == "Mock Regression Pipeline"
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_repr(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    pipeline = MockPipeline(parameters={})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline) == expected_repr
+
+    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_parameters) == expected_repr
+
+    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_inf_parameters) == expected_repr
+
+    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_nan_parameters) == expected_repr
