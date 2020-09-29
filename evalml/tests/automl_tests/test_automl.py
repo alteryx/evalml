@@ -37,7 +37,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
     categorical_dtypes,
@@ -65,7 +65,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
         assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', 'score', 'high_variance_cv', 'training_time',
-                                  'cv_data', 'percent_better_than_baseline', 'validation_score'}
+                                  'cv_data', 'percent_better_than_baseline_all_objectives',
+                                  'percent_better_than_baseline', 'validation_score'}
         assert results['id'] == pipeline_id
         assert isinstance(results['pipeline_name'], str)
         assert issubclass(results['pipeline_class'], expected_pipeline_class)
@@ -511,11 +512,24 @@ def test_automl_serialization(X_y_binary, tmpdir):
     automl.search(X, y)
     automl.save(path)
     loaded_automl = automl.load(path)
+
     for i in range(num_max_iterations):
         assert automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
         assert automl.get_pipeline(i).parameters == loaded_automl.get_pipeline(i).parameters
-        assert automl.results == loaded_automl.results
-        pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
+
+        for id_, pipeline_results in automl.results['pipeline_results'].items():
+            loaded_ = loaded_automl.results['pipeline_results'][id_]
+            for name in pipeline_results:
+                # Use np to check percent_better_than_baseline because of (possible) nans
+                if name == 'percent_better_than_baseline_all_objectives':
+                    for objective_name, value in pipeline_results[name].items():
+                        np.testing.assert_almost_equal(value, loaded_[name][objective_name])
+                elif name == 'percent_better_than_baseline':
+                    np.testing.assert_almost_equal(pipeline_results[name], loaded_[name])
+                else:
+                    assert pipeline_results[name] == loaded_[name]
+
+    pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
 
 @patch('cloudpickle.dump')
@@ -1084,10 +1098,12 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0))
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
+                              additional_objectives=[])
     else:
         automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective)
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              additional_objectives=[])
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         automl.search(X, y, data_checks=None)
@@ -1098,6 +1114,53 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                    baseline_name: round(objective.calculate_percent_difference(baseline_score, baseline_score), 2)}
         for name in answers:
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
+
+
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_percent_better_than_baseline_computed_for_all_objectives(problem_type,
+                                                                  dummy_binary_pipeline_class,
+                                                                  dummy_multiclass_pipeline_class,
+                                                                  dummy_regression_pipeline_class,
+                                                                  X_y_binary):
+
+    # Ok to only use binary labels since score and fit methods are mocked
+    X, y = X_y_binary
+
+    problem_type_enum = handle_problem_types(problem_type)
+
+    pipeline_class = {"binary": dummy_binary_pipeline_class,
+                      "multiclass": dummy_multiclass_pipeline_class,
+                      "regression": dummy_regression_pipeline_class}[problem_type]
+    baseline_pipeline_class = {"binary": "evalml.pipelines.ModeBaselineBinaryPipeline",
+                               "multiclass": "evalml.pipelines.ModeBaselineMulticlassPipeline",
+                               "regression": "evalml.pipelines.MeanBaselineRegressionPipeline",
+                               }[problem_type]
+
+    class DummyPipeline(pipeline_class):
+        name = "Dummy 1"
+        problem_type = problem_type_enum
+
+        def fit(self, *args, **kwargs):
+            """Mocking fit"""
+
+    core_objectives = get_core_objectives(problem_type)
+    mock_scores = {obj.name: i for i, obj in enumerate(core_objectives)}
+    mock_baseline_scores = {obj.name: i + 1 for i, obj in enumerate(core_objectives)}
+    answer = {obj.name: obj.calculate_percent_difference(mock_scores[obj.name],
+                                                         mock_baseline_scores[obj.name]) for obj in core_objectives}
+
+    mock_score_1 = MagicMock(return_value=mock_scores)
+    DummyPipeline.score = mock_score_1
+
+    automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
+                          allowed_pipelines=[DummyPipeline], objective="auto")
+
+    with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
+        automl.search(X, y, data_checks=None)
+        assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
+        pipeline_results = automl.results['pipeline_results'][1]
+        assert pipeline_results["percent_better_than_baseline_all_objectives"] == answer
+        assert pipeline_results['percent_better_than_baseline'] == pipeline_results["percent_better_than_baseline_all_objectives"][automl.objective.name]
 
 
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
