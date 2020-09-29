@@ -8,7 +8,14 @@ from evalml.utils.gen_utils import _get_subclasses
 
 
 def get_non_core_objectives():
-    """Get non-core objective classes."""
+    """Get non-core objective classes.
+
+    Non-core objectives are objectives that are domain-specific. Users typically need to configure these objectives
+    before using them in AutoMLSearch.
+
+    Returns:
+        List of Objectivebase classes
+    """
     return [objectives.CostBenefitMatrix, objectives.FraudCost, objectives.LeadScoring,
             objectives.MeanSquaredLogError, objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
             objectives.RecallWeighted, objectives.RootMeanSquaredLogError]
@@ -25,17 +32,21 @@ def _all_objectives_dict():
 
 
 def get_all_objective_names():
-    """Get all valid objective names in a list.
+    """Get a list of the names of all objectives.
 
     Returns:
-        None
+        list (str): Objective names
     """
     all_objectives_dict = _all_objectives_dict()
     return list(all_objectives_dict.keys())
 
 
 def get_core_objective_names():
-    """Get a list of all valid core objectives."""
+    """Get a list of all valid core objectives.
+
+    Returns:
+        list(str): Objective names.
+    """
     all_objectives = _all_objectives_dict()
     non_core = get_non_core_objectives()
     return [name for name, class_name in all_objectives.items() if class_name not in non_core]
@@ -80,6 +91,8 @@ def get_objective(objective, return_instance=False, **kwargs):
 
 def get_core_objectives(problem_type):
     """Returns all core objective instances associated with the given problem type.
+
+    Core objectives are designed to work out-of-the-box for any dataset.
 
     Arguments:
         problem_type (str/ProblemTypes): Type of problem
