@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.14.1 Sep. 29, 2020**
+    * Enhancements
         * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
@@ -41,7 +49,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * DefaultDataChecks now accepts a problem_type parameter that must be specified :pr:`1167`
+        * `DefaultDataChecks` now accepts a `problem_type` parameter that must be specified :pr:`1167`
         * Pipeline's `._transform` method to evaluate all the preprocessing steps of a pipeline has been replaced with `.compute_estimator_features` :pr:`1231`
         * `get_objectives` has been renamed to `get_core_objectives`. This function will now return a list of valid objective instances :pr:`1230`
 
