@@ -27,11 +27,12 @@ Release Notes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
-        * Add pipeline properties to API reference :pr:`1209`
+        * Added pipeline properties to API reference :pr:`1209`
+        * Clarified what the objective parameter in AutoML is used for in AutoML API reference and AutoML user guide :pr:`1222`
         * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
-        * Remove unused code from sphinx conf :pr:`1235`
+        * Removed unused code from sphinx conf :pr:`1235`
     * Testing Changes
 
 .. warning::
