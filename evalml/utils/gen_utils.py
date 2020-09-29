@@ -236,6 +236,14 @@ def jupyter_check():
 
 
 def safe_repr(value):
+    """Convert the given value into a string that can safely be used for repr
+
+    Arguments:
+        value: the item to convert
+
+    Returns:
+        String representation of the value
+    """
     if isinstance(value, float):
         if pd.isna(value):
             return 'np.nan'
