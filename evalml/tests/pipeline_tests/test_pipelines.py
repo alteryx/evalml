@@ -59,11 +59,8 @@ def test_allowed_model_families(has_minimal_dependencies):
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
-        expected_model_families_binary.add(ModelFamily.XGBOOST)
-        expected_model_families_binary.add(ModelFamily.CATBOOST)
-        expected_model_families_binary.add(ModelFamily.LIGHTGBM)
-        expected_model_families_regression.add(ModelFamily.CATBOOST)
-        expected_model_families_regression.add(ModelFamily.XGBOOST)
+        expected_model_families_binary.update([ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
+        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST])
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
