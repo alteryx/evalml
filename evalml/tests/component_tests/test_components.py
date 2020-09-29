@@ -810,7 +810,7 @@ def test_estimators_accept_all_kwargs(estimator_class,
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
-        params = estimator._parameters
+        params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
     if estimator_class.model_family == ModelFamily.CATBOOST:
@@ -891,6 +891,19 @@ def test_component_equality_all_components(component_class,
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
+
+
+def test_component_equality_with_subclasses(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    mock_component = MockComponent()
+    mock_estimator = MockEstimator()
+    mock_transformer = MockTransformer()
+    assert mock_component != mock_estimator
+    assert mock_component != mock_transformer
+    assert mock_estimator != mock_component
+    assert mock_estimator != mock_transformer
+    assert mock_transformer != mock_component
+    assert mock_transformer != mock_estimator
 
 
 @pytest.mark.parametrize("categorical", [{

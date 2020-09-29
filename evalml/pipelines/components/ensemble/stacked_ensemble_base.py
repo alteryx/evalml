@@ -17,7 +17,7 @@ class StackedEnsembleBase(Estimator):
         """Stacked ensemble base class.
 
         Arguments:
-            input_pipelines (list(PipelineBase or subclass)): List of PipelineBase objects to use as the base estimators.
+            input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The estimator used to combine the base estimators.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
@@ -35,9 +35,9 @@ class StackedEnsembleBase(Estimator):
         """
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
-        contains_non_stackable = [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]
-        if contains_non_stackable:
+        if [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]:
             raise ValueError("Pipelines with any of the following model families cannot be used as base pipelines: {}".format(_nonstackable_model_families))
+
         parameters = {
             "input_pipelines": input_pipelines,
             "final_estimator": final_estimator,
@@ -46,17 +46,11 @@ class StackedEnsembleBase(Estimator):
         }
         parameters.update(kwargs)
 
-        problem_type = input_pipelines[0].problem_type
-        if not all(pipeline.problem_type == problem_type for pipeline in input_pipelines):
+        if len(set([pipeline.problem_type for pipeline in input_pipelines])) > 1:
             raise ValueError("All pipelines must have the same problem type.")
 
         estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
-
-        if final_estimator is None:
-            final_estimator = scikit_learn_wrapped_estimator(self._default_final_estimator(), is_pipeline=False)
-        else:
-            final_estimator = scikit_learn_wrapped_estimator(final_estimator, is_pipeline=False)
-
+        final_estimator = scikit_learn_wrapped_estimator(final_estimator or self._default_final_estimator())
         sklearn_parameters = {
             "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
             "final_estimator": final_estimator,
@@ -81,5 +75,5 @@ class StackedEnsembleBase(Estimator):
         """
         return {'final_estimator': None,
                 'cv': None,
-                'n_jobs': 1
+                'n_jobs': 1,
                 }

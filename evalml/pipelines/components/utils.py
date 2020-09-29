@@ -8,7 +8,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.problem_types import handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
@@ -144,9 +144,11 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         return self.pipeline.predict(X).to_numpy()
 
 
-def scikit_learn_wrapped_estimator(evalml_obj, is_pipeline=True):
+def scikit_learn_wrapped_estimator(evalml_obj):
+    from evalml.pipelines.pipeline_base import PipelineBase
+
     """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
-    if is_pipeline:
+    if isinstance(evalml_obj, PipelineBase):
         if evalml_obj.problem_type == ProblemTypes.REGRESSION:
             return WrappedSKRegressor(evalml_obj)
         elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:

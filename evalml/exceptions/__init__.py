@@ -9,5 +9,6 @@ from .exceptions import (
     PipelineNotYetFittedError,
     AutoMLSearchException,
     PipelineScoreError,
-    DataCheckInitError
+    DataCheckInitError,
+    EnsembleMissingPipelinesError
 )

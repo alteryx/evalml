@@ -7,12 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class StackedEnsembleRegressor(StackedEnsembleBase):
-    _stacking_estimator_class = StackingRegressor
     """Stacked Ensemble Regressor."""
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
     supported_problem_types = [ProblemTypes.REGRESSION]
     hyperparameter_ranges = {}
+    _stacking_estimator_class = StackingRegressor
     _default_final_estimator = LinearRegressor
 
     def __init__(self, input_pipelines=None, final_estimator=None,
@@ -20,7 +20,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
         """Stacked ensemble regressor.
 
         Arguments:
-            input_pipelines (list(PipelineBase or subclass)): List of PipelineBase objects to use as the base estimators.
+            input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.

@@ -20,7 +20,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         """Stacked ensemble classifier.
 
         Arguments:
-            input_pipelines (list(PipelineBase or subclass)): List of PipelineBase objects to use as the base estimators.
+            input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The classifier used to combine the base estimators. If None, uses LogisticRegressionClassifier.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
