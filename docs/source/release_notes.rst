@@ -139,7 +139,7 @@ Release Notes
         * Made slight tweaks to how ``TextFeaturizer`` uses ``featuretools``, and did some refactoring of that and of LSA :pr:`1090`
         * Changed ``show_all_features`` parameter into ``importance_threshold``, which allows for thresholding feature importance :pr:`1097`, :pr:`1103`
     * Documentation Changes
-        * Update setup.py URL to point to the github repo :pr:`1037`
+        * Update ``setup.py`` URL to point to the github repo :pr:`1037`
         * Added tutorial for using the cost-benefit matrix objective :pr:`1088`
         * Updated ``model_understanding.ipynb`` to include documentation for using plotly on Jupyter Lab :pr:`1108`
     * Testing Changes
