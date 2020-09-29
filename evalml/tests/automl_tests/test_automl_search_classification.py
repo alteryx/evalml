@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+from skopt.space import Categorical
 
 from evalml import AutoMLSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
@@ -18,7 +19,11 @@ from evalml.objectives import (
     get_objective,
     get_objectives
 )
-from evalml.pipelines import ModeBaselineBinaryPipeline, PipelineBase
+from evalml.pipelines import (
+    ModeBaselineBinaryPipeline,
+    MulticlassClassificationPipeline,
+    PipelineBase
+)
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
@@ -606,3 +611,18 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
+
+
+def test_categorical_hyperparam(X_y_multi):
+    X, y = X_y_multi
+
+    class CustomPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+        custom_hyperparameters = {
+            'Simple Imputer': {
+                'impute_strategy': Categorical(['mean', 'most_frequent'])
+            }
+        }
+
+    automl = AutoMLSearch(problem_type="multiclass", allowed_pipelines=[CustomPipeline])
+    automl.search(X, y)

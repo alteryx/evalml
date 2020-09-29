@@ -27,6 +27,7 @@ Release Notes
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Add pipeline properties to API reference :pr:`1209`
+        * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
         * Remove unused code from sphinx conf :pr:`1235`
