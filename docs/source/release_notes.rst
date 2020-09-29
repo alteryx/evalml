@@ -8,6 +8,7 @@ Release Notes
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
+        * Added `__str__` and `__repr__` for pipelines and components :pr:`1218`
         * Included internal target check for both training and validation data in AutoMLSearch :pr:`1226`
         * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * Added `DecisionTreeClassifier` and `DecisionTreeRegressor` classes :pr:`1223`
@@ -27,11 +28,12 @@ Release Notes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
-        * Add pipeline properties to API reference :pr:`1209`
+        * Added pipeline properties to API reference :pr:`1209`
+        * Clarified what the objective parameter in AutoML is used for in AutoML API reference and AutoML user guide :pr:`1222`
         * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
-        * Remove unused code from sphinx conf :pr:`1235`
+        * Removed unused code from sphinx conf :pr:`1235`
     * Testing Changes
 
 .. warning::
