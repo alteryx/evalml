@@ -13,6 +13,7 @@ Release Notes
         * Added `DecisionTreeClassifier` and `DecisionTreeRegressor` classes :pr:`1223`
         * Added `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
+        * Added first CV fold score as validation score in `AutoMLSearch.rankings` :pr:`1221`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
