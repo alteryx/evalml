@@ -968,8 +968,14 @@ def test_mock_component_repr():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_str(component_class):
-    component = component_class()
+def test_component_str(component_class, logistic_regression_binary_pipeline_class, linear_regression_pipeline_class):
+    try:
+        component = component_class()
+    except EnsembleMissingPipelinesError:
+        if component_class == StackedEnsembleClassifier:
+            component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+        elif component_class == StackedEnsembleRegressor:
+            component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     assert str(component) == component.name
 
 
