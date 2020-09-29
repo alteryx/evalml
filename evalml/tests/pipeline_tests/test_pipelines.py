@@ -244,9 +244,21 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components():
+def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
     with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
-        make_pipeline_from_components([Imputer], problem_type='binary')
+        make_pipeline_from_components([Imputer()], problem_type='binary')
+
+    with pytest.raises(KeyError, match="Problem type 'invalid_type' does not exist"):
+        make_pipeline_from_components([RandomForestClassifier()], problem_type='invalid_type')
+
+    with pytest.raises(TypeError, match="Custom pipeline name must be a string"):
+        make_pipeline_from_components([RandomForestClassifier()], problem_type='binary', custom_name=True)
+
+    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
+        make_pipeline_from_components([RandomForestClassifier], problem_type='binary')
+
+    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
+        make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
     imp = Imputer(numeric_impute_strategy='median')
     est = RandomForestClassifier()
@@ -279,6 +291,21 @@ def test_make_pipeline_from_components():
     assert isinstance(components_list[0], DummyEstimator)
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
+
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    new_pipeline = make_pipeline_from_components(pipeline.component_graph, ProblemTypes.BINARY)
+    pipeline.fit(X, y)
+    predictions = pipeline.predict(X)
+    new_pipeline.fit(X, y)
+    new_predictions = new_pipeline.predict(X)
+    assert np.array_equal(predictions, new_predictions)
+    assert np.array_equal(pipeline.feature_importance, new_pipeline.feature_importance)
+    assert new_pipeline.name == 'Templated Pipeline'
+    assert pipeline.parameters == new_pipeline.parameters
+    for component, new_component in zip(pipeline.component_graph, new_pipeline.component_graph):
+        assert isinstance(new_component, type(component))
+    assert pipeline.describe() == new_pipeline.describe()
 
 
 def test_required_fields():
@@ -1324,3 +1351,54 @@ def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_m
     pipeline_diff_data.fit(X, y)
 
     assert pipeline != pipeline_diff_data
+
+
+def test_pipeline_str():
+
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockMulticlassPipeline(MulticlassClassificationPipeline):
+        name = "Mock Multiclass Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    binary_pipeline = MockBinaryPipeline(parameters={})
+    multiclass_pipeline = MockMulticlassPipeline(parameters={})
+    regression_pipeline = MockRegressionPipeline(parameters={})
+
+    assert str(binary_pipeline) == "Mock Binary Pipeline"
+    assert str(multiclass_pipeline) == "Mock Multiclass Pipeline"
+    assert str(regression_pipeline) == "Mock Regression Pipeline"
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_pipeline_repr(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+    pipeline = MockPipeline(parameters={})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline) == expected_repr
+
+    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_parameters) == expected_repr
+
+    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_inf_parameters) == expected_repr
+
+    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_nan_parameters) == expected_repr

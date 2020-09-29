@@ -1,6 +1,5 @@
 import inspect
 
-import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
@@ -117,7 +116,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             and returns a scikit-learn classifier class wrapping that pipeline.
 
         Arguments:
-            pipeline (PipelineBase or subclass obj): EvalML pipeline    
+            pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
 
@@ -172,7 +171,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             and returns a scikit-learn regressor class wrapping that pipeline.
 
         Arguments:
-            pipeline (PipelineBase or subclass obj): EvalML pipeline    
+            pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
 

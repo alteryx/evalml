@@ -9,6 +9,7 @@ Release Notes
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
+        * Added `__str__` and `__repr__` for pipelines and components :pr:`1218`
         * Included internal target check for both training and validation data in AutoMLSearch :pr:`1226`
         * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * Added `DecisionTreeClassifier` and `DecisionTreeRegressor` classes :pr:`1223`
@@ -16,6 +17,7 @@ Release Notes
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
         * Added first CV fold score as validation score in `AutoMLSearch.rankings` :pr:`1221`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
+        * Refined `make_pipeline_from_components` implementation :pr:`1204`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
@@ -23,21 +25,26 @@ Release Notes
     * Changes
         * Added `allow_writing_files` as a named argument to CatBoost estimators. :pr:`1202`
         * Added `solver` and `multi_class` as named arguments to LogisticRegressionClassifier :pr:`1202`
+        * Replaced pipeline's `._transform` method to evaluate all the preprocessing steps of a pipeline with `.compute_estimator_features` :pr:`1231`
+        * Changed default large dataset train/test splitting behavior :pr:`1205`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
-        * Add pipeline properties to API reference :pr:`1209`
+        * Added pipeline properties to API reference :pr:`1209`
+        * Clarified what the objective parameter in AutoML is used for in AutoML API reference and AutoML user guide :pr:`1222`
         * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
-        * Remove unused code from sphinx conf :pr:`1235`
+        * Removed unused code from sphinx conf :pr:`1235`
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
         * DefaultDataChecks now accepts a problem_type parameter that must be specified :pr:`1167`
+        * Pipeline's `._transform` method to evaluate all the preprocessing steps of a pipeline has been replaced with `.compute_estimator_features` :pr:`1231`
+        * `get_objectives` has been renamed to `get_core_objectives`. This function will now return a list of valid objective instances :pr:`1230`
 
 
 **v0.13.2 Sep. 17, 2020**

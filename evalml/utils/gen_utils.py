@@ -3,6 +3,7 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
+import pandas as pd
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -236,3 +237,20 @@ def jupyter_check():
         return True
     except NameError:
         return False
+
+
+def safe_repr(value):
+    """Convert the given value into a string that can safely be used for repr
+
+    Arguments:
+        value: the item to convert
+
+    Returns:
+        String representation of the value
+    """
+    if isinstance(value, float):
+        if pd.isna(value):
+            return 'np.nan'
+        if np.isinf(value):
+            return f"float('{repr(value)}')"
+    return repr(value)
