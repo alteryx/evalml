@@ -124,6 +124,7 @@ Pipeline Utils
     :nosignatures:
 
     make_pipeline
+    make_pipeline_from_components
 
 
 .. currentmodule:: evalml.pipelines.components

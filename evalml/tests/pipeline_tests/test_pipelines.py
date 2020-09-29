@@ -242,9 +242,21 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components():
+def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
     with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
-        make_pipeline_from_components([Imputer], problem_type='binary')
+        make_pipeline_from_components([Imputer()], problem_type='binary')
+
+    with pytest.raises(KeyError, match="Problem type 'invalid_type' does not exist"):
+        make_pipeline_from_components([RandomForestClassifier()], problem_type='invalid_type')
+
+    with pytest.raises(TypeError, match="Custom pipeline name must be a string"):
+        make_pipeline_from_components([RandomForestClassifier()], problem_type='binary', custom_name=True)
+
+    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
+        make_pipeline_from_components([RandomForestClassifier], problem_type='binary')
+
+    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
+        make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
     imp = Imputer(numeric_impute_strategy='median')
     est = RandomForestClassifier()
@@ -277,6 +289,21 @@ def test_make_pipeline_from_components():
     assert isinstance(components_list[0], DummyEstimator)
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
+
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    new_pipeline = make_pipeline_from_components(pipeline.component_graph, ProblemTypes.BINARY)
+    pipeline.fit(X, y)
+    predictions = pipeline.predict(X)
+    new_pipeline.fit(X, y)
+    new_predictions = new_pipeline.predict(X)
+    assert np.array_equal(predictions, new_predictions)
+    assert np.array_equal(pipeline.feature_importance, new_pipeline.feature_importance)
+    assert new_pipeline.name == 'Templated Pipeline'
+    assert pipeline.parameters == new_pipeline.parameters
+    for component, new_component in zip(pipeline.component_graph, new_pipeline.component_graph):
+        assert isinstance(new_component, type(component))
+    assert pipeline.describe() == new_pipeline.describe()
 
 
 def test_required_fields():

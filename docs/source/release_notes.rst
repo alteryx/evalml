@@ -16,9 +16,7 @@ Release Notes
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
         * Added first CV fold score as validation score in `AutoMLSearch.rankings` :pr:`1221`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
-        * Add `get_all_objective_names`, `get_core_objective_names`, and `get_non_core_objectives` util functions :pr:`1230`
-        * All functions in `evaml.objectives.utils` now show up in the api reference :pr:`1230`
-        * Added `get_default_primary_search_objective` to get the default objective for each problem type :pr:`1230`
+        * Refined `make_pipeline_from_components` implementation :pr:`1204`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
