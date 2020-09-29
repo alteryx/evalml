@@ -31,7 +31,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X_t = self._transform(X)
+        X_t = self.compute_estimator_features(X)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)

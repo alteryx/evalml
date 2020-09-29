@@ -59,7 +59,7 @@ def test_binary_classification_pipeline_predict(mock_predict, mock_predict_proba
     mock_obj_decision.assert_called()
 
 
-@patch('evalml.pipelines.PipelineBase._transform')
+@patch('evalml.pipelines.PipelineBase.compute_estimator_features')
 def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={})
