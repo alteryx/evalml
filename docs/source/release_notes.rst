@@ -9,9 +9,12 @@ Release Notes
         * Added LightGBM to AutoMLSearch :pr:`1199`
         * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
         * Added `__str__` and `__repr__` for pipelines and components :pr:`1218`
+        * Included internal target check for both training and validation data in AutoMLSearch :pr:`1226`
+        * Add `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * Added `DecisionTreeClassifier` and `DecisionTreeRegressor` classes :pr:`1223`
         * Added `ProblemTypes.all_problem_types` helper to get list of supported problem types :pr:`1219`
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
+        * Added first CV fold score as validation score in `AutoMLSearch.rankings` :pr:`1221`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
@@ -25,6 +28,7 @@ Release Notes
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
         * Added Class Imbalance Data Check to `api_reference.rst` :pr:`1190` :pr:`1200`
         * Add pipeline properties to API reference :pr:`1209`
+        * Updated API docs to include `skopt.space.Categorical` option for component hyperparameter range definition :pr:`1228`
         * Added install documentation for `libomp` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of `max_iterations` in documentation :pr:`1212`
         * Remove unused code from sphinx conf :pr:`1235`
