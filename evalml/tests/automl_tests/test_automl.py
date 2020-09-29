@@ -1085,3 +1085,57 @@ def test_max_batches_must_be_non_negative(max_batches):
 
 def test_can_print_out_automl_objective_names():
     AutoMLSearch.print_objective_names_allowed_in_automl()
+
+
+def test_data_split_binary(X_y_binary):
+    X, y = X_y_binary
+    y[:] = 0
+    y[0] = 1
+
+    automl = AutoMLSearch(problem_type='binary')
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[1] = 1
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values in the"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[2] = 1
+    automl.search(X, y, data_checks="disabled")
+
+
+def test_data_split_multi(X_y_multi):
+    X, y = X_y_multi
+    y[:] = 1
+    y[0] = 0
+
+    automl = AutoMLSearch(problem_type='multiclass')
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y)
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[1] = 2
+    # match based on regex, since data split doesn't have a random seed for reproducibility
+    # regex matches the set {} and expects either 2 sets (missing in both train and test)
+    #   or 1 set of multiple elements (both missing in train or both in test)
+    with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
+        automl.search(X, y)
+    with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[1] = 0
+    y[2:4] = 2
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[4] = 2
+    with pytest.raises(Exception, match="Missing target values"):
+        automl.search(X, y, data_checks="disabled")
+
+    y[5] = 0
+    automl.search(X, y, data_checks="disabled")

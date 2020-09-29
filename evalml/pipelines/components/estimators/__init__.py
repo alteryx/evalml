@@ -1,4 +1,3 @@
-# flake8:noqa
 from .estimator import Estimator
 from .classifiers import (LogisticRegressionClassifier,
                           RandomForestClassifier,
@@ -7,11 +6,13 @@ from .classifiers import (LogisticRegressionClassifier,
                           CatBoostClassifier,
                           ElasticNetClassifier,
                           ExtraTreesClassifier,
-                          BaselineClassifier)
+                          BaselineClassifier,
+                          DecisionTreeClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
                          XGBoostRegressor,
                          ElasticNetRegressor,
                          ExtraTreesRegressor,
-                         BaselineRegressor)
+                         BaselineRegressor,
+                         DecisionTreeRegressor)
