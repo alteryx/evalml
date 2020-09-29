@@ -495,36 +495,36 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_objectives_allowed_in_automl):
+                                           binary_core_objectives):
     X, y = X_y_binary
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y = pd.Series(y)
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in binary_objectives_allowed_in_automl:
+    for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
 def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
-                                               multiclass_objectives_allowed_in_automl):
+                                               multiclass_core_objectives):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in multiclass_objectives_allowed_in_automl:
+    for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
 def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
-                                               regression_objectives_allowed_in_automl):
+                                               regression_core_objectives):
     X, y = X_y_regression
     pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in regression_objectives_allowed_in_automl:
+    for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()

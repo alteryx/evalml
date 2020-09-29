@@ -51,6 +51,15 @@ AutoML Search Classes
     AutoMLSearch
 
 
+AutoML Utils
+~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_default_primary_search_objective
+
+
 .. currentmodule:: evalml.automl.automl_algorithm
 
 AutoML Algorithm Classes
@@ -333,6 +342,20 @@ Regression Objectives
     ExpVariance
     RootMeanSquaredError
     RootMeanSquaredLogError
+
+
+Objective Utils
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_all_objective_names
+    get_core_objectives
+    get_core_objective_names
+    get_non_core_objectives
+    get_objective
 
 
 .. currentmodule:: evalml.problem_types
