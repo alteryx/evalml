@@ -14,16 +14,16 @@ Release Notes
         * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
         * Added ``get_feature_names`` on ``OneHotEncoder`` :pr:`1193`
         * Added ``detect_problem_type`` to ``problem_type/utils.py`` to automatically detect the problem type given targets :pr:`1194`
-        * Added LightGBM to AutoMLSearch :pr:`1199`
-        * Updates scikit-learn and scikit-optimize to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
-        * Added `__str__` and `__repr__` for pipelines and components :pr:`1218`
-        * Included internal target check for both training and validation data in AutoMLSearch :pr:`1226`
-        * Add ``ProblemTypes.all_problem_types`` helper to get list of supported problem types :pr:`1219`
+        * Added LightGBM to ``AutoMLSearch`` :pr:`1199`
+        * Updated ``scikit-learn`` and ``scikit-optimize`` to use latest versions - 0.23.2 and 0.8.1 respectively :pr:`1141`
+        * Added ``__str__`` and ``__repr__`` for pipelines and components :pr:`1218`
+        * Included internal target check for both training and validation data in ``AutoMLSearch`` :pr:`1226`
+        * Added ``ProblemTypes.all_problem_types`` helper to get list of supported problem types :pr:`1219`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` classes :pr:`1223`
         * Added ``ProblemTypes.all_problem_types`` helper to get list of supported problem types :pr:`1219`
         * ``DataChecks`` can now be parametrized by passing a list of ``DataCheck`` classes and a parameter dictionary :pr:`1167`
-        * Added first CV fold score as validation score in ```AutoMLSearch.rankings`` :pr:`1221`
-        * Updated ``flake8` configuration to enable linting on `__init__.py`` files :pr:`1234`
+        * Added first CV fold score as validation score in ``AutoMLSearch.rankings`` :pr:`1221`
+        * Updated ``flake8` configuration to enable linting on ``__init__.py`` files :pr:`1234`
         * Refined ``make_pipeline_from_components`` implementation :pr:`1204`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
@@ -32,7 +32,7 @@ Release Notes
     * Changes
         * Added ``allow_writing_files`` as a named argument to CatBoost estimators. :pr:`1202`
         * Added ``solver`` and ``multi_class`` as named arguments to LogisticRegressionClassifier :pr:`1202`
-        * Replaced pipeline's `._transform`` method to evaluate all the preprocessing steps of a pipeline with `.compute_estimator_features`` :pr:`1231`
+        * Replaced pipeline's ``._transform`` method to evaluate all the preprocessing steps of a pipeline with ``.compute_estimator_features`` :pr:`1231`
         * Changed default large dataset train/test splitting behavior :pr:`1205`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
@@ -50,7 +50,7 @@ Release Notes
 
     **Breaking Changes**
         * ``DefaultDataChecks`` now accepts a ``problem_type`` parameter that must be specified :pr:`1167`
-        * Pipeline's `._transform`` method to evaluate all the preprocessing steps of a pipeline has been replaced with `.compute_estimator_features`` :pr:`1231`
+        * Pipeline's ``._transform`` method to evaluate all the preprocessing steps of a pipeline has been replaced with ``.compute_estimator_features`` :pr:`1231`
         * ``get_objectives`` has been renamed to ``get_core_objectives``. This function will now return a list of valid objective instances :pr:`1230`
 
 
@@ -64,27 +64,27 @@ Release Notes
         * Added labels for the row index of confusion matrix :pr:`1154`
         * Added AutoMLSearch object as another parameter in search callbacks :pr:`1156`
         * Added the corresponding probability threshold for each point displayed in ``graph_roc_curve`` :pr:`1161`
-        * Added `__eq__` for ``ComponentBase`` and ``PipelineBase`` :pr:`1178`
+        * Added ``__eq__`` for ``ComponentBase`` and ``PipelineBase`` :pr:`1178`
         * Added support for multiclass classification for ``roc_curve`` :pr:`1164`
         * Added ``categories`` accessor to ``OneHotEncoder`` for listing the categories associated with a feature :pr:`1182`
         * Added utility function to create pipeline instances from a list of component instances :pr:`1176`
     * Fixes
         * Fixed XGBoost column names for partial dependence methods :pr:`1104`
         * Removed dead code validating column type from ``TextFeaturizer`` :pr:`1122`
-        * Fixed issue where Imputer cannot fit when there is None in a categorical or boolean column :pr:`1144`
-        * OneHotEncoder preserves the custom index in the input data :pr:`1146`
+        * Fixed issue where ``Imputer`` cannot fit when there is None in a categorical or boolean column :pr:`1144`
+        * ``OneHotEncoder`` preserves the custom index in the input data :pr:`1146`
         * Fixed representation for ``ModelFamily`` :pr:`1165`
         * Removed duplicate ``nbsphinx`` dependency in ``dev-requirements.txt`` :pr:`1168`
         * Users can now pass in any valid kwargs to all estimators :pr:`1157`
         * Remove broken accessor ``OneHotEncoder.get_feature_names`` and unneeded base class :pr:`1179`
         * Removed LightGBM Estimator from AutoML models :pr:`1186`
     * Changes
-        * Pinned scikit-optimize version to 0.7.4 :pr:`1136`
-        * Removed tqdm as a dependency :pr:`1177`
+        * Pinned ``scikit-optimize`` version to 0.7.4 :pr:`1136`
+        * Removed ``tqdm`` as a dependency :pr:`1177`
         * Added lightgbm version 3.0.0 to latest_dependency_versions.txt :pr:`1185`
         * Rename ``max_pipelines`` to ``max_iterations`` :pr:`1169`
     * Documentation Changes
-        * Fixed API docs for ```AutoMLSearch`` ``add_result_callback`` :pr:`1113`
+        * Fixed API docs for ``AutoMLSearch`` ``add_result_callback`` :pr:`1113`
         * Added a step to our release process for pushing our latest version to conda-forge :pr:`1118`
         * Added warning for missing ipywidgets dependency for using ``PipelineSearchPlots`` on Jupyterlab :pr:`1145`
         * Updated README.md example to load demo dataset :pr:`1151`
@@ -101,7 +101,7 @@ Release Notes
         * Deleted ``OPTIONS` dictionary in ``evalml.objectives.utils.py`` :pr:`1132`
         * If specifying an objective by string, the string must now match the objective's name field, case-insensitive :pr:`1132`
         * Passing "Cost Benefit Matrix", "Fraud Cost", "Lead Scoring", "Mean Squared Log Error",
-            "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to ```AutoMLSearch`` will now result in a ``ValueError``
+            "Recall", "Recall Macro", "Recall Micro", "Recall Weighted", or "Root Mean Squared Log Error" to ``AutoMLSearch`` will now result in a ``ValueError``
             rather than an ``ObjectiveNotFoundError`` :pr:`1132`
         * Search callbacks ``start_iteration_callback`` and ``add_results_callback`` have changed to include a copy of the AutoMLSearch object as a third parameter :pr:`1156`
         * Deleted ``OneHotEncoder.get_feature_names`` method which had been broken for a while, in favor of pipelines' ``input_feature_names`` :pr:`1179`
@@ -125,7 +125,7 @@ Release Notes
         * Added LightGBM classification estimator :pr:`1082`, :pr:`1114`
         * Added ``max_batches`` parameter to AutoMLSearch :pr:`1087`
     * Fixes
-        * Updated TextFeaturizer component to no longer require an internet connection to run :pr:`1022`
+        * Updated ``TextFeaturizer`` component to no longer require an internet connection to run :pr:`1022`
         * Fixed non-deterministic element of TextFeaturizer transformations :pr:`1022`
         * Added a StandardScaler to all ElasticNet pipelines :pr:`1065`
         * Updated cost-benefit matrix to normalize score :pr:`1099`
@@ -136,7 +136,7 @@ Release Notes
         * Remove maximum version limit for SciPy dependency :pr:`1051`
         * Moved ``all_components`` and other component importers into runtime methods :pr:`1045`
         * Consolidated graphing utility methods under ``evalml.utils.graph_utils`` :pr:`1060`
-        * Made slight tweaks to how TextFeaturizer uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
+        * Made slight tweaks to how ``TextFeaturizer`` uses featuretools, and did some refactoring of that and of LSA :pr:`1090`
         * Changed ``show_all_features`` parameter into ``importance_threshold``, which allows for thresholding feature importance :pr:`1097`, :pr:`1103`
     * Documentation Changes
         * Update setup.py URL to point to the github repo :pr:`1037`
@@ -173,14 +173,14 @@ Release Notes
         * Added string and categorical targets support for binary and multiclass pipelines and check for numeric targets for ``DetectLabelLeakage`` data check :pr:`932`
         * Added clear exception for regression pipelines if target datatype is string or categorical :pr:`960`
         * Added target column names and class labels in ``predict`` and ``predict_proba`` output for pipelines :pr:`951`
-        * Added `_compute_shap_values`` and ``normalize_values`` to ``pipelines/explanations`` module :pr:`958`
+        * Added ``_compute_shap_values`` and ``normalize_values`` to ``pipelines/explanations`` module :pr:`958`
         * Added ``explain_prediction`` feature which explains single predictions with SHAP :pr:`974`
         * Added Imputer to allow different imputation strategies for numerical and categorical dtypes :pr:`991`
         * Added support for configuring logfile path using env var, and don't create logger if there are filesystem errors :pr:`975`
         * Updated catboost estimators' default parameters and automl hyperparameter ranges to speed up fit time :pr:`998`
     * Fixes
         * Fixed ReadtheDocs warning failure regarding embedded gif :pr:`943`
-        * Removed incorrect parameter passed to pipeline classes in `_add_baseline_pipelines`` :pr:`941`
+        * Removed incorrect parameter passed to pipeline classes in ``_add_baseline_pipelines`` :pr:`941`
         * Added universal error for calling ``predict``, ``predict_proba``, ``transform``, and ``feature_importances`` before fitting :pr:`969`, :pr:`994`
         * Made ``TextFeaturizer`` component and pip dependencies ``featuretools`` and ``nlp_primitives`` optional :pr:`976`
         * Updated imputation strategy in automl to no longer limit impute strategy to ``most_frequent`` for all features if there are any categorical columns :pr:`991`
@@ -211,8 +211,8 @@ Release Notes
         * ``get_estimators`` has been moved to ``evalml.pipelines.components.utils`` (previously was under ``evalml.pipelines.utils``) :pr:`934`
         * Removed the ``raise_errors`` flag in AutoML search. All errors during pipeline evaluation will be caught and logged. :pr:`936`
         * ``evalml.model_families.list_model_families`` has been moved to ``evalml.pipelines.components.allowed_model_families`` :pr:`959`
-        * ```TextFeaturizer``: the ``featuretools`` and ``nlp_primitives`` packages must be installed after installing evalml in order to use this component :pr:`976`
-        * Renamed ```DateTimeFeaturization`` to ```DateTimeFeaturizer`` :pr:`977`
+        * ``TextFeaturizer``: the ``featuretools`` and ``nlp_primitives`` packages must be installed after installing evalml in order to use this component :pr:`976`
+        * Renamed ``DateTimeFeaturization`` to ``DateTimeFeaturizer`` :pr:`977`
 
 
 **v0.11.2 July 16, 2020**
@@ -262,13 +262,13 @@ Release Notes
         * Added utility methods to calculate and graph permutation importances :pr:`860`, :pr:`880`
         * Added new utility functions necessary for generating dynamic preprocessing pipelines :pr:`852`
         * Added kwargs to all components :pr:`863`
-        * Updated ```AutoSearchBase`` to use dynamically generated preprocessing pipelines :pr:`870`
+        * Updated ``AutoSearchBase`` to use dynamically generated preprocessing pipelines :pr:`870`
         * Added SelectColumns transformer :pr:`873`
         * Added ability to evaluate additional pipelines for automl search :pr:`874`
         * Added ``default_parameters`` class property to components and pipelines :pr:`879`
         * Added better support for disabling data checks in automl search :pr:`892`
         * Added ability to save and load AutoML objects to file :pr:`888`
-        * Updated ```AutoSearchBase.get_pipelines`` to return an untrained pipeline instance :pr:`876`
+        * Updated ``AutoSearchBase.get_pipelines`` to return an untrained pipeline instance :pr:`876`
         * Saved learned binary classification thresholds in automl results cv data dict :pr:`876`
     * Fixes
         * Fixed bug where SimpleImputer cannot handle dropped columns :pr:`846`
@@ -281,29 +281,29 @@ Release Notes
         * Update ``all_pipelines`` and ``all_components`` to try initializing pipelines/components, and on failure exclude them :pr:`849`
         * Refactor ``handle_components`` to ``handle_components_class``, standardize to ``ComponentBase`` subclass instead of instance :pr:`850`
         * Refactor "blacklist"/"whitelist" to "allow"/"exclude" lists :pr:`854`
-        * Replaced ```AutoClassificationSearch`` and ```AutoRegressionSearch`` with ```AutoMLSearch`` :pr:`871`
+        * Replaced ``AutoClassificationSearch`` and ``AutoRegressionSearch`` with ``AutoMLSearch`` :pr:`871`
         * Renamed feature_importances and permutation_importances methods to use singular names (feature_importance and permutation_importance) :pr:`883`
         * Updated ``automl`` default data splitter to train/validation split for large datasets :pr:`877`
         * Added open source license, update some repo metadata :pr:`887`
-        * Removed dead code in `_get_preprocessing_components`` :pr:`896`
+        * Removed dead code in ``_get_preprocessing_components`` :pr:`896`
     * Documentation Changes
         * Fix some typos and update the EvalML logo :pr:`872`
     * Testing Changes
         * Update the changelog check job to expect the new branching pattern for the deps update bot :pr:`836`
         * Check that all components output pandas datastructures, and can accept either pandas or numpy :pr:`853`
-        * Replaced ```AutoClassificationSearch`` and ```AutoRegressionSearch`` with ```AutoMLSearch`` :pr:`871`
+        * Replaced ``AutoClassificationSearch`` and ``AutoRegressionSearch`` with ``AutoMLSearch`` :pr:`871`
 
 
 .. warning::
 
     **Breaking Changes**
-        * Pipelines' static ``component_graph`` field must contain either ```ComponentBase`` subclasses or ``str``, instead of ```ComponentBase`` subclass instances :pr:`850`
-        * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ```ComponentBase`` subclasses instead of ```ComponentBase`` subclass instances :pr:`850`
+        * Pipelines' static ``component_graph`` field must contain either ``ComponentBase`` subclasses or ``str``, instead of ``ComponentBase`` subclass instances :pr:`850`
+        * Rename ``handle_component`` to ``handle_component_class``. Now standardizes to ``ComponentBase`` subclasses instead of ``ComponentBase`` subclass instances :pr:`850`
         * Renamed automl's ``cv`` argument to ``data_split`` :pr:`877`
         * Pipelines' and classifiers' ``feature_importances`` is renamed ``feature_importance``, ``graph_feature_importances`` is renamed ``graph_feature_importance`` :pr:`883`
         * Passing ``data_checks=None`` to automl search will not perform any data checks as opposed to default checks. :pr:`892`
         * Pipelines to search for in AutoML are now determined automatically, rather than using the statically-defined pipeline classes. :pr:`870`
-        * Updated ````AutoSearchBase.get_pipelines`` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
+        * Updated ```AutoSearchBase.get_pipelines`` to return an untrained pipeline instance, instead of one which happened to be trained on the final cross-validation fold :pr:`876`
 
 
 **v0.10.0 May 29, 2020**
@@ -315,7 +315,7 @@ Release Notes
         * Added new Pipeline option ``ExtraTrees`` :pr:`790`
         * Added precicion-recall curve metrics and plot for binary classification problems in ``evalml.pipeline.graph_utils`` :pr:`794`
         * Update the default automl algorithm to search in batches, starting with default parameters for each pipeline and iterating from there :pr:`793`
-        * Added ```AutoMLAlgorithm`` class and ``IterativeAlgorithm`` impl, separated from ```AutoSearchBase`` :pr:`793`
+        * Added ``AutoMLAlgorithm`` class and ``IterativeAlgorithm`` impl, separated from ``AutoSearchBase`` :pr:`793`
     * Fixes
         * Update pipeline ``score`` to return ``nan`` score for any objective which throws an exception during scoring :pr:`787`
         * Fixed bug introduced in :pr:`787` where binary classification metrics requiring predicted probabilities error in scoring :pr:`798`
@@ -325,10 +325,10 @@ Release Notes
         * Remove ``pass`` for abstract methods for codecov :pr:`730`
         * Added __str__ for AutoSearch object :pr:`675`
         * Add util methods to graph ROC and confusion matrix :pr:`720`
-        * Refactor ```AutoBase`` to ```AutoSearchBase`` :pr:`758`
+        * Refactor ``AutoBase`` to ``AutoSearchBase`` :pr:`758`
         * Updated AutoBase with ``data_checks`` parameter, removed previous ``detect_label_leakage`` parameter, and added functionality to run data checks before search in AutoML :pr:`765`
         * Updated our logger to use Python's logging utils :pr:`763`
-        * Refactor most of ```AutoSearchBase._do_iteration`` impl into ```AutoSearchBase._evaluate`` :pr:`762`
+        * Refactor most of ``AutoSearchBase._do_iteration`` impl into ``AutoSearchBase._evaluate`` :pr:`762`
         * Port over all guardrails to use the new DataCheck API :pr:`789`
         * Expanded ``import_or_raise`` to catch all exceptions :pr:`759`
         * Adds RMSE, MSLE, RMSLE as standard metrics :pr:`788`
@@ -355,13 +355,13 @@ Release Notes
     **Breaking Changes**
         * The ``detect_label_leakage`` parameter for AutoML classes has been removed and replaced by a ``data_checks`` parameter :pr:`765`
         * Moved ROC and confusion matrix methods from ``evalml.pipeline.plot_utils`` to ``evalml.pipeline.graph_utils`` :pr:`720`
-        * ```Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
-        * ```Tuner.propose`` and ```Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
-        * ```PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
+        * ``Tuner`` classes require a pipeline hyperparameter range dict as an init arg instead of a space definition :pr:`779`
+        * ``Tuner.propose`` and ``Tuner.add`` work directly with pipeline parameters dicts instead of flat parameter lists :pr:`779`
+        * ``PipelineBase.hyperparameters`` and ``custom_hyperparameters`` use pipeline parameters dict format instead of being represented as a flat list :pr:`779`
         * All guardrail functions previously under ``evalml.guardrails.utils`` will be removed and replaced by data checks :pr:`789`
         * ``Recall`` disallowed as an objective for AutoML :pr:`784`
-        * ````AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
-        * ````AutoSearchBase`` parameter ``possible_pipelines`` and ``possible_model_families`` have been renamed to ``allowed_pipelines`` and ``allowed_model_families`` :pr:`793`
+        * ```AutoSearchBase`` parameter ``tuner`` has been renamed to ``tuner_class`` :pr:`793`
+        * ```AutoSearchBase`` parameter ``possible_pipelines`` and ``possible_model_families`` have been renamed to ``allowed_pipelines`` and ``allowed_model_families`` :pr:`793`
 
 
 **v0.9.0 Apr. 27, 2020**
@@ -371,7 +371,7 @@ Release Notes
         * Added Balanced Accuracy metric for binary, multiclass :pr:`612` :pr:`661`
         * Added XGBoost regressor and XGBoost regression pipeline :pr:`666`
         * Added Accuracy metric for multiclass :pr:`672`
-        * Added objective name in ```AutoBase.describe_pipeline`` :pr:`686`
+        * Added objective name in ``AutoBase.describe_pipeline`` :pr:`686`
         * Added ``DataCheck`` and ``DataChecks``, ``Message`` classes and relevant subclasses :pr:`739`
     * Fixes
         * Removed direct access to ``cls.component_graph`` :pr:`595`
@@ -393,7 +393,7 @@ Release Notes
         * Set ``raise_error`` to default to True for AutoML classes :pr:`638`
         * Remove unnecessary "u" prefixes on some unicode strings :pr:`641`
         * Changed one-hot encoder to return uint8 dtypes instead of ints :pr:`653`
-        * Pipeline `_name`` field changed to ``custom_name`` :pr:`650`
+        * Pipeline ``_name`` field changed to ``custom_name`` :pr:`650`
         * Removed ``graphs.py`` and moved methods into ``PipelineBase`` :pr:`657`, :pr:`665`
         * Remove s3fs as a dev dependency :pr:`664`
         * Changed requirements-parser to be a core dependency :pr:`673`
@@ -444,13 +444,13 @@ Release Notes
     * ``fit()`` and ``predict()`` now use an optional ``objective`` parameter, which is only used in binary classification pipelines to fit for a specific objective.
     * ``score()`` will now use a required ``objectives`` parameter that is used to determine all the objectives to score on. This differs from the previous behavior, where the pipeline's objective was scored on regardless.
     * ``score()`` will now return one dictionary of all objective scores.
-    * ```ROC`` and ```ConfusionMatrix`` plot methods via ````Auto(*).plot`` have been removed by :pr:`615` and are replaced by ``roc_curve`` and ``confusion_matrix`` in ``evamlm.pipelines.plot_utils`` in :pr:`704`
+    * ``ROC`` and ``ConfusionMatrix`` plot methods via ```Auto(*).plot`` have been removed by :pr:`615` and are replaced by ``roc_curve`` and ``confusion_matrix`` in ``evamlm.pipelines.plot_utils`` in :pr:`704`
     * ``normalize_confusion_matrix`` has been moved to ``evalml.pipelines.plot_utils`` :pr:`704`
     * Pipelines ``_name`` field changed to ``custom_name``
     * Pipelines ``supported_problem_types`` field is removed because it is no longer necessary :pr:`678`
     * Updated argument order of objectives' ``objective_function`` to align with sklearn :pr:`698`
     * ``pipeline.feature_importance_graph`` has been renamed to ``pipeline.graph_feature_importances`` in :pr:`700`
-    * Removed unsupported ```MSLE`` objective :pr:`704`
+    * Removed unsupported ``MSLE`` objective :pr:`704`
 
 
 **v0.8.0 Apr. 1, 2020**
@@ -490,13 +490,13 @@ Release Notes
 
     **Breaking Changes**
 
-    * ````AutoClassificationSearch`` and ````AutoRegressionSearch``'s ``model_types`` parameter has been refactored into ``allowed_model_families``
-    * ```ModelTypes`` enum has been changed to ```ModelFamily``
+    * ```AutoClassificationSearch`` and ```AutoRegressionSearch``'s ``model_types`` parameter has been refactored into ``allowed_model_families``
+    * ``ModelTypes`` enum has been changed to ``ModelFamily``
     * Components and Pipelines now have a ``model_family`` field instead of ``model_type``
     * ``get_pipelines`` utility function now accepts ``model_families`` as an argument instead of ``model_types``
-    * ```PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ```PipelineBase.summary``
-    * ```PipelineBase.problem_types`` and ```Estimator.problem_types`` has been renamed to ``supported_problem_types``
-    * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ```PipelineBase.save`` and ```PipelineBase.load``
+    * ``PipelineBase.name`` no longer returns structure of pipeline and has been replaced by ``PipelineBase.summary``
+    * ``PipelineBase.problem_types`` and ``Estimator.problem_types`` has been renamed to ``supported_problem_types``
+    * ``pipelines/utils.save_pipeline`` and ``pipelines/utils.load_pipeline`` moved to ``PipelineBase.save`` and ``PipelineBase.load``
 
 
 **v0.7.0 Mar. 9, 2020**
@@ -517,7 +517,7 @@ Release Notes
         * Remove extraneous parameter component_type from all components :pr:`361`
         * Remove unused rankings.csv file :pr:`397`
         * Downloaded demo and test datasets so unit tests can run offline :pr:`408`
-        * Remove `_needs_fitting`` attribute from Components :pr:`398`
+        * Remove ``_needs_fitting`` attribute from Components :pr:`398`
         * Changed plot.feature_importance to show only non-zero feature importances by default, added optional parameter to show all :pr:`413`
         * Refactored ``PipelineBase`` to take in parameter dictionary and moved pipeline metadata to class attribute :pr:`421`
         * Dropped support for Python 3.5 :pr:`438`
@@ -573,11 +573,11 @@ Release Notes
 
     **Breaking Changes**
 
-    * The ``fit()`` method for ````AutoClassifier`` and ````AutoRegressor`` has been renamed to ``search()``.
-    * ````AutoClassifier`` has been renamed to ````AutoClassificationSearch``
-    * ````AutoRegressor`` has been renamed to ````AutoRegressionSearch``
-    * ````AutoClassificationSearch.results`` and ````AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas, ``search_order`` returns a list of the search order in terms of ``pipeline_id``.
-    * Pipelines now require an estimator as the last component in ``component_list``. Slicing pipelines now throws an ```NotImplementedError`` to avoid returning pipelines without an estimator.
+    * The ``fit()`` method for ```AutoClassifier`` and ```AutoRegressor`` has been renamed to ``search()``.
+    * ```AutoClassifier`` has been renamed to ```AutoClassificationSearch``
+    * ```AutoRegressor`` has been renamed to ```AutoRegressionSearch``
+    * ```AutoClassificationSearch.results`` and ```AutoRegressionSearch.results`` now is a dictionary with ``pipeline_results`` and ``search_order`` keys. ``pipeline_results`` can be used to access a dictionary that is identical to the old ``.results`` dictionary. Whereas, ``search_order`` returns a list of the search order in terms of ``pipeline_id``.
+    * Pipelines now require an estimator as the last component in ``component_list``. Slicing pipelines now throws an ``NotImplementedError`` to avoid returning pipelines without an estimator.
 
 **v0.5.2 Nov. 18, 2019**
     * Enhancements
