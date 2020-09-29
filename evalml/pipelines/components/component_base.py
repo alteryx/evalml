@@ -10,7 +10,8 @@ from evalml.utils import (
     classproperty,
     get_logger,
     get_random_state,
-    log_subtitle
+    log_subtitle,
+    safe_repr
 )
 
 logger = get_logger(__file__)
@@ -151,3 +152,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        parameters_repr = ', '.join([f'{key}={safe_repr(value)}' for key, value in self.parameters.items()])
+        return f'{(type(self).__name__)}({parameters_repr})'
