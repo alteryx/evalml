@@ -166,7 +166,7 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'DecisionTreeClassifier', 'DecisionTreeRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
@@ -213,7 +213,6 @@ def _rename_column_names_to_numeric(X):
 
     Returns:
         Transformed X where column names are renamed to numerical values
-
     """
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
     return X.rename(columns=name_to_col_num, inplace=False)

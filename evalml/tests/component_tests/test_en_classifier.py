@@ -27,9 +27,7 @@ def test_en_parameters():
 
 
 def test_problem_types():
-    assert ProblemTypes.BINARY in ElasticNetClassifier.supported_problem_types
-    assert ProblemTypes.MULTICLASS in ElasticNetClassifier.supported_problem_types
-    assert len(ElasticNetClassifier.supported_problem_types) == 2
+    assert set(ElasticNetClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS}
 
 
 def test_fit_predict_binary(X_y_binary):
