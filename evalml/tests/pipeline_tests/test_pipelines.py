@@ -35,6 +35,8 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
     StandardScaler,
     Transformer
 )
@@ -1157,40 +1159,30 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
+        stacking_component_name = StackedEnsembleClassifier.name
         input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
-        parameters = {
-            "Stacked Ensemble Classifier": {
-                "input_pipelines": input_pipelines
-            }
-        }
-        graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
         comparison_pipeline_class = logistic_regression_binary_pipeline_class
         objective = 'Log Loss Binary'
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
+        stacking_component_name = StackedEnsembleClassifier.name
         input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
-        parameters = {
-            "Stacked Ensemble Classifier": {
-                "input_pipelines": input_pipelines
-            }
-        }
-        graph = ['Simple Imputer', 'Stacked Ensemble Classifier']
         comparison_pipeline_class = logistic_regression_multiclass_pipeline_class
         objective = 'Log Loss Multiclass'
-
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
+        stacking_component_name = StackedEnsembleRegressor.name
         input_pipelines = [make_pipeline_from_components([regressor], problem_type) for regressor in stackable_regressors]
-        parameters = {
-            "Stacked Ensemble Regressor": {
-                "input_pipelines": input_pipelines
-            }
-        }
-        graph = ['Simple Imputer', 'Stacked Ensemble Regressor']
         comparison_pipeline_class = linear_regression_pipeline_class
         objective = 'R2'
+    parameters = {
+        stacking_component_name: {
+            "input_pipelines": input_pipelines
+        }
+    }
+    graph = ['Simple Imputer', stacking_component_name]
 
     class StackedPipeline(base_pipeline_class):
         component_graph = graph

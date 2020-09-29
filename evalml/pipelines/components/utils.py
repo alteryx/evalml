@@ -110,10 +110,27 @@ def handle_component_class(component_class):
 
 
 class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
+    """Scikit-learn classifier wrapper class."""
+
     def __init__(self, pipeline):
+        """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input
+            and returns a scikit-learn classifier class wrapping that pipeline.
+
+        Arguments:
+            pipeline (PipelineBase or subclass obj): EvalML pipeline    
+        """
         self.pipeline = pipeline
 
     def fit(self, X, y):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
         X, y = check_X_y(X, y)
         self.classes_ = unique_labels(y)
         self.X_ = X
@@ -123,24 +140,65 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
         X = check_array(X)
         check_is_fitted(self, 'is_fitted_')
         return self.pipeline.predict(X).to_numpy()
 
     def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.DataFrame: Probability estimates
+        """
         return self.pipeline.predict_proba(X).to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
+    """Scikit-learn regressor wrapper class."""
+
     def __init__(self, pipeline):
+        """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input
+            and returns a scikit-learn regressor class wrapping that pipeline.
+
+        Arguments:
+            pipeline (PipelineBase or subclass obj): EvalML pipeline    
+        """
         self.pipeline = pipeline
 
     def fit(self, X, y):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
         X, y = check_X_y(X, y)
         self.pipeline.fit(X, y)
         return self
 
     def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
         return self.pipeline.predict(X).to_numpy()
 
 
