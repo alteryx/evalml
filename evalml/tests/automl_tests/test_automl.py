@@ -599,6 +599,38 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_large_dataset_split_size(mock_fit, mock_score):
+    def generate_fake_dataset(rows):
+        X = pd.DataFrame({'col_0': [i for i in range(rows)]})
+        y = pd.Series([i % 2 for i in range(rows)])
+        return X, y
+
+    fraud_objective = FraudCost(amount_col='col_0')
+
+    automl = AutoMLSearch(problem_type='binary',
+                          objective=fraud_objective,
+                          additional_objectives=['auc', 'f1', 'precision'],
+                          max_time=1,
+                          max_pipelines=1,
+                          optimize_thresholds=True)
+    mock_score.return_value = {automl.objective.name: 1.234}
+    assert automl.data_split is None
+
+    under_max_rows = automl._LARGE_DATA_ROW_THRESHOLD - 1
+    X, y = generate_fake_dataset(under_max_rows)
+    automl.search(X, y)
+    assert isinstance(automl.data_split, StratifiedKFold)
+
+    automl.data_split = None
+    over_max_rows = automl._LARGE_DATA_ROW_THRESHOLD + 1
+    X, y = generate_fake_dataset(over_max_rows)
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
+
+
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
     # checks that not setting allowed_pipelines does not error out
     AutoMLSearch(problem_type='binary')

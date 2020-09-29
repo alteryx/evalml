@@ -61,6 +61,7 @@ class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
     _LARGE_DATA_ROW_THRESHOLD = int(1e5)
+    _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
@@ -379,7 +380,7 @@ class AutoMLSearch:
             default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
 
         if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=0.25)
+            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION)
 
         self.data_split = self.data_split or default_data_split
 
