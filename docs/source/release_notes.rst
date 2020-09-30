@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added DecisionTree estimators to API Reference :pr:`1246`
     * Testing Changes
 
 
