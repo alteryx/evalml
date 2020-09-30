@@ -2,8 +2,6 @@
 
 .. currentmodule:: {{ module }}
 
-.. inheritance-diagram:: {{ objname }}
-
 .. autoclass:: {{ objname }}
    {% block methods %}
    {% if methods %}
@@ -18,3 +16,8 @@
    {%- endfor %}
    {% endif %}
    {% endblock %}
+
+Class Inheritance
+^^^^^^^^^^^^^^^^^
+
+.. inheritance-diagram:: {{ objname }}
