@@ -1,7 +1,7 @@
 import copy
 import time
 import warnings
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import cloudpickle
 import numpy as np
@@ -31,6 +31,7 @@ from evalml.exceptions import (
     PipelineScoreError
 )
 from evalml.objectives import (
+    get_all_objective_names,
     get_core_objectives,
     get_non_core_objectives,
     get_objective
@@ -594,13 +595,12 @@ class AutoMLSearch:
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data):
-        scores = {}
+        scores = defaultdict(int)
+        objective_names = set([name.lower() for name in get_all_objective_names()])
         n_folds = len(cv_data)
         for fold_data in cv_data:
             for field, value in fold_data['all_objective_scores'].items():
-                if field not in {'# Training', '# Testing'}:
-                    if field not in scores:
-                        scores[field] = 0
+                if field.lower() in objective_names:
                     scores[field] += value
         return {objective_name: score / n_folds for objective_name, score in scores.items()}
 
