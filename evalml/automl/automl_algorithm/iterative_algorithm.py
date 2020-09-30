@@ -2,9 +2,18 @@ import inspect
 from operator import itemgetter
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
-
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import handle_component_class
+from evalml.problem_types import ProblemTypes
 
+from evalml.pipelines.utils import make_pipeline_from_components
+from evalml.pipelines.components import StackedEnsembleClassifier, StackedEnsembleRegressor
+
+def make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
+    else:
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")
 
 class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
@@ -57,7 +66,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
-                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
+                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters))) 
+            ensembler = make_stacked_ensemble_pipeline(next_batch, pipeline_class.problem_type)
+            # import pdb; pdb.set_trace()
+            next_batch.insert(0, ensembler)
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -69,7 +81,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
-        super().add_result(score_to_minimize, pipeline)
+        if pipeline.model_family != ModelFamily.ENSEMBLE:
+            super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 

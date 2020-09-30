@@ -451,6 +451,7 @@ class AutoMLSearch:
                         if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
                             raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
+                        import pdb; pdb.set_trace()
                         current_batch_pipeline_scores = []
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
