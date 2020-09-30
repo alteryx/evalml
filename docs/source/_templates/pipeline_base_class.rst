@@ -45,6 +45,6 @@
    {% endblock %}
 
 Class Inheritance
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 
 .. inheritance-diagram:: {{ objname }}

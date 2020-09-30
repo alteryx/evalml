@@ -212,10 +212,10 @@ templates_path = ["_templates"]
 
 html_show_sphinx = False
 nbsphinx_execute = 'always'
-nbsphinx_timeout = 600  # sphinx defaults each cell to 30 seconds so we need to override here
+nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
 inheritance_graph_attrs = dict(rankdir="TB", dpi=384.0, ranksep=0.02)
-inheritance_node_attrs = dict(fontsize=6, height=0.15, width=4, fixedsize=True)
+inheritance_node_attrs = dict(fontsize=7, height=0.15, width=5, fixedsize=True, center=False)
 inheritance_edge_attrs = dict(arrowsize=0.1)
 
 class AccessorLevelDocumenter(Documenter):
@@ -225,7 +225,6 @@ class AccessorLevelDocumenter(Documenter):
     Referenced pandas-sphinx-theme (https://github.com/pandas-dev/pandas-sphinx-theme)
     and sphinx-doc (https://github.com/sphinx-doc/sphinx/blob/8c7faed6fcbc6b7d40f497698cb80fc10aee1ab3/sphinx/ext/autodoc/__init__.py#L846)
     """
-
     def resolve_name(self, modname, parents, path, base):
         modname = 'evalml'
         mod_cls = path.rstrip('.')
