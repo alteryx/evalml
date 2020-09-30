@@ -6,7 +6,7 @@ Release Notes
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
     * Fixes
     * Changes
-        * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:``
+        * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
     * Testing Changes
 
