@@ -9,6 +9,7 @@ Release Notes
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
+        * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
 
 
@@ -47,7 +48,6 @@ Release Notes
         * Added install documentation for ``libomp`` in order to use LightGBM on Mac :pr:`1233`
         * Improved description of ``max_iterations`` in documentation :pr:`1212`
         * Removed unused code from sphinx conf :pr:`1235`
-        * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
 
 .. warning::
