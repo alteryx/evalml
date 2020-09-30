@@ -3,6 +3,15 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.14.1 Sep. 29, 2020**
+    * Enhancements
         * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
         * Added `get_feature_names` on `OneHotEncoder` :pr:`1193`
         * Added `detect_problem_type` to `problem_type/utils.py` to automatically detect the problem type given targets :pr:`1194`
@@ -16,6 +25,7 @@ Release Notes
         * `DataChecks` can now be parametrized by passing a list of `DataCheck` classes and a parameter dictionary :pr:`1167`
         * Added first CV fold score as validation score in `AutoMLSearch.rankings` :pr:`1221`
         * Updated `flake8` configuration to enable linting on `__init__.py` files :pr:`1234`
+        * Refined `make_pipeline_from_components` implementation :pr:`1204`
     * Fixes
         * Updated GitHub URL after migration to Alteryx GitHub org :pr:`1207`
         * Changed Problem Type enum to be more similar to the string name :pr:`1208`
@@ -23,6 +33,8 @@ Release Notes
     * Changes
         * Added `allow_writing_files` as a named argument to CatBoost estimators. :pr:`1202`
         * Added `solver` and `multi_class` as named arguments to LogisticRegressionClassifier :pr:`1202`
+        * Replaced pipeline's `._transform` method to evaluate all the preprocessing steps of a pipeline with `.compute_estimator_features` :pr:`1231`
+        * Changed default large dataset train/test splitting behavior :pr:`1205`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
@@ -39,7 +51,9 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * DefaultDataChecks now accepts a problem_type parameter that must be specified :pr:`1167`
+        * `DefaultDataChecks` now accepts a `problem_type` parameter that must be specified :pr:`1167`
+        * Pipeline's `._transform` method to evaluate all the preprocessing steps of a pipeline has been replaced with `.compute_estimator_features` :pr:`1231`
+        * `get_objectives` has been renamed to `get_core_objectives`. This function will now return a list of valid objective instances :pr:`1230`
 
 
 **v0.13.2 Sep. 17, 2020**

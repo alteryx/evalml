@@ -78,7 +78,7 @@ class ClassificationPipeline(PipelineBase):
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        X_t = self._transform(X)
+        X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
     def predict(self, X, objective=None):
@@ -106,7 +106,7 @@ class ClassificationPipeline(PipelineBase):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X = self._transform(X)
+        X = self.compute_estimator_features(X)
         proba = self.estimator.predict_proba(X)
         proba.columns = self._encoder.classes_
         return proba

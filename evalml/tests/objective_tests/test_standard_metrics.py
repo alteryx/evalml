@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
-from evalml.automl import AutoMLSearch
 from evalml.objectives import (
     F1,
     MSE,
@@ -33,11 +32,14 @@ from evalml.objectives import (
     RootMeanSquaredError,
     RootMeanSquaredLogError
 )
-from evalml.objectives.utils import _all_objectives_dict
+from evalml.objectives.utils import (
+    _all_objectives_dict,
+    get_non_core_objectives
+)
 
 EPS = 1e-5
 all_automl_objectives = _all_objectives_dict()
-all_automl_objectives = {name: class_() for name, class_ in all_automl_objectives.items() if class_ not in AutoMLSearch._objectives_not_allowed_in_automl}
+all_automl_objectives = {name: class_() for name, class_ in all_automl_objectives.items() if class_ not in get_non_core_objectives()}
 
 
 def test_input_contains_nan():

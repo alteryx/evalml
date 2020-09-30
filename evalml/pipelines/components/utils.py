@@ -1,9 +1,13 @@
 import inspect
 
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.problem_types import handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import get_importable_subclasses
 
@@ -102,3 +106,114 @@ def handle_component_class(component_class):
         raise MissingComponentError('Component "{}" was not found'.format(component_class))
     component_class = component_classes[component_class]
     return component_class
+
+
+class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
+    """Scikit-learn classifier wrapper class."""
+
+    def __init__(self, pipeline):
+        """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input
+            and returns a scikit-learn classifier class wrapping that pipeline.
+
+        Arguments:
+            pipeline (PipelineBase or subclass obj): EvalML pipeline
+        """
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        X, y = check_X_y(X, y)
+        self.classes_ = unique_labels(y)
+        self.X_ = X
+        self.y_ = y
+        self.is_fitted_ = True
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
+        X = check_array(X)
+        check_is_fitted(self, 'is_fitted_')
+        return self.pipeline.predict(X).to_numpy()
+
+    def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.DataFrame: Probability estimates
+        """
+        return self.pipeline.predict_proba(X).to_numpy()
+
+
+class WrappedSKRegressor(BaseEstimator, RegressorMixin):
+    """Scikit-learn regressor wrapper class."""
+
+    def __init__(self, pipeline):
+        """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input
+            and returns a scikit-learn regressor class wrapping that pipeline.
+
+        Arguments:
+            pipeline (PipelineBase or subclass obj): EvalML pipeline
+        """
+        self.pipeline = pipeline
+
+    def fit(self, X, y):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        X, y = check_X_y(X, y)
+        self.pipeline.fit(X, y)
+        return self
+
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
+        return self.pipeline.predict(X).to_numpy()
+
+
+def scikit_learn_wrapped_estimator(evalml_obj):
+    from evalml.pipelines.pipeline_base import PipelineBase
+
+    """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
+    if isinstance(evalml_obj, PipelineBase):
+        if evalml_obj.problem_type == ProblemTypes.REGRESSION:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:
+            return WrappedSKClassifier(evalml_obj)
+    else:
+        # EvalML Estimator
+        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION]:
+            return WrappedSKRegressor(evalml_obj)
+        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            return WrappedSKClassifier(evalml_obj)
+    raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")

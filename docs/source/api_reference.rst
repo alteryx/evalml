@@ -51,6 +51,15 @@ AutoML Search Classes
     AutoMLSearch
 
 
+AutoML Utils
+~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_default_primary_search_objective
+
+
 .. currentmodule:: evalml.automl.automl_algorithm
 
 AutoML Algorithm Classes
@@ -115,6 +124,7 @@ Pipeline Utils
     :nosignatures:
 
     make_pipeline
+    make_pipeline_from_components
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -192,6 +202,7 @@ Classifiers are components that output a predicted class label.
     LogisticRegressionClassifier
     XGBoostClassifier
     BaselineClassifier
+    StackedEnsembleClassifier
 
 Regressors
 -----------
@@ -210,6 +221,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
+    StackedEnsembleRegressor
 
 .. currentmodule:: evalml.model_understanding
 
@@ -333,6 +345,20 @@ Regression Objectives
     ExpVariance
     RootMeanSquaredError
     RootMeanSquaredLogError
+
+
+Objective Utils
+~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    get_all_objective_names
+    get_core_objectives
+    get_core_objective_names
+    get_non_core_objectives
+    get_objective
 
 
 .. currentmodule:: evalml.problem_types
