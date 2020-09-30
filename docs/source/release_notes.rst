@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed and updated code blocks in Release Notes :pr:`1243`
     * Testing Changes
 
 
