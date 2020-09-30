@@ -52,8 +52,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 0:
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
+        elif (self._batch_number - 1) % len(self._first_batch_results) + 1 == (self._batch_number - 1):
+            # do this each time after another `1 + len(self._first_batch_results)` batches have passed
+            next_batch = [
+                self._make_ensemble() # returns pipeline instance containing ensemble
+            ]
         else:
-            idx = (self._batch_number - 1) % len(self._first_batch_results)
+            idx = (self._batch_number - 1) % len(self._first_batch_results) + 1
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
