@@ -35,6 +35,8 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
     StandardScaler,
     Transformer
 )
@@ -1172,6 +1174,61 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
             clf.predict(X)
             mock_predict.assert_called()
     clf.feature_importance
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                       stackable_classifiers,
+                                       stackable_regressors,
+                                       logistic_regression_binary_pipeline_class,
+                                       logistic_regression_multiclass_pipeline_class,
+                                       linear_regression_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        base_pipeline_class = BinaryClassificationPipeline
+        stacking_component_name = StackedEnsembleClassifier.name
+        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        comparison_pipeline_class = logistic_regression_binary_pipeline_class
+        objective = 'Log Loss Binary'
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        base_pipeline_class = MulticlassClassificationPipeline
+        stacking_component_name = StackedEnsembleClassifier.name
+        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        comparison_pipeline_class = logistic_regression_multiclass_pipeline_class
+        objective = 'Log Loss Multiclass'
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        base_pipeline_class = RegressionPipeline
+        stacking_component_name = StackedEnsembleRegressor.name
+        input_pipelines = [make_pipeline_from_components([regressor], problem_type) for regressor in stackable_regressors]
+        comparison_pipeline_class = linear_regression_pipeline_class
+        objective = 'R2'
+    parameters = {
+        stacking_component_name: {
+            "input_pipelines": input_pipelines
+        }
+    }
+    graph = ['Simple Imputer', stacking_component_name]
+
+    class StackedPipeline(base_pipeline_class):
+        component_graph = graph
+        model_family = ModelFamily.ENSEMBLE
+
+    pipeline = StackedPipeline(parameters=parameters)
+    pipeline.fit(X, y)
+    comparison_pipeline = comparison_pipeline_class(parameters={})
+    comparison_pipeline.fit(X, y)
+    assert not np.isnan(pipeline.predict(X)).values.any()
+
+    pipeline_score = pipeline.score(X, y, [objective])[objective]
+    comparison_pipeline_score = comparison_pipeline.score(X, y, [objective])[objective]
+
+    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
+        assert not np.isnan(pipeline.predict_proba(X)).values.any()
+        assert (pipeline_score <= comparison_pipeline_score)
+    else:
+        assert (pipeline_score >= comparison_pipeline_score)
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])

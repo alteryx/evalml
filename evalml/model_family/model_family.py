@@ -9,6 +9,7 @@ class ModelFamily(Enum):
     LINEAR_MODEL = 'linear_model'
     CATBOOST = 'catboost'
     EXTRA_TREES = 'extra_trees'
+    ENSEMBLE = 'ensemble',
     DECISION_TREE = 'decision_tree'
     BASELINE = 'baseline'
     NONE = 'none'
@@ -22,6 +23,7 @@ class ModelFamily(Enum):
                              ModelFamily.EXTRA_TREES.name: "Extra Trees",
                              ModelFamily.DECISION_TREE.name: "Decision Tree",
                              ModelFamily.BASELINE.name: "Baseline",
+                             ModelFamily.ENSEMBLE.name: "Ensemble",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
 
