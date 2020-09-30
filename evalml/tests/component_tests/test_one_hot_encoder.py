@@ -401,8 +401,9 @@ def test_ohe_features_to_encode_col_missing():
     X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0],
                       "col_2": ['a', 'b', 'a', 'c', 'd']})
 
-    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_3'])
-    with pytest.raises(ValueError):
+    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_3', 'col_4'])
+
+    with pytest.raises(ValueError, match="Could not find and encode"):
         encoder.fit(X)
 
 

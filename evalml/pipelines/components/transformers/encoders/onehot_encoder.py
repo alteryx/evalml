@@ -87,8 +87,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X_t)
-        if not set(self.features_to_encode).issubset(list(X.columns)):
-            raise ValueError()
+        invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
+        if len(invalid_features) > 0:
+            raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
 
         if self.parameters['handle_missing'] == "as_category":
             X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
