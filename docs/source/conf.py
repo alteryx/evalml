@@ -215,7 +215,7 @@ nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
 inheritance_graph_attrs = dict(rankdir="TB", dpi=192.0, ranksep=0.02)
-inheritance_node_attrs = dict(fontsize=6, height=0.15, width=5, fixedsize=True, label=r"\l")
+inheritance_node_attrs = dict(fontsize=6, height=0.15, width=5, fixedsize=True)
 inheritance_edge_attrs = dict(arrowsize=0.1)
 
 class AccessorLevelDocumenter(Documenter):
