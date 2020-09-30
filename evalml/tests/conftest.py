@@ -13,9 +13,16 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.components import Estimator
+from evalml.pipelines.components import (
+    Estimator,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    _nonstackable_model_families
+)
 from evalml.pipelines.components.utils import _all_estimators
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def create_mock_pipeline(estimator, problem_type):
@@ -36,7 +43,7 @@ def create_mock_pipeline(estimator, problem_type):
 @pytest.fixture
 def all_pipeline_classes():
     all_possible_pipeline_classes = []
-    for estimator in _all_estimators():
+    for estimator in [estimator for estimator in _all_estimators() if estimator != StackedEnsembleClassifier and estimator != StackedEnsembleRegressor]:
         for problem_type in estimator.supported_problem_types:
             all_possible_pipeline_classes.append(create_mock_pipeline(estimator, problem_type))
     return all_possible_pipeline_classes
@@ -254,3 +261,27 @@ def multiclass_core_objectives():
 @pytest.fixture
 def regression_core_objectives():
     return get_core_objectives(ProblemTypes.REGRESSION)
+
+
+@pytest.fixture
+def stackable_classifiers():
+    stackable_classifiers = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
+            estimator_class.model_family not in _nonstackable_model_families and
+                estimator_class.model_family != ModelFamily.ENSEMBLE):
+            stackable_classifiers.append(estimator_class())
+    return stackable_classifiers
+
+
+@pytest.fixture
+def stackable_regressors():
+    stackable_regressors = []
+    for estimator_class in _all_estimators():
+        supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
+        if (set(supported_problem_types) == {ProblemTypes.REGRESSION} and
+            estimator_class.model_family not in _nonstackable_model_families and
+                estimator_class.model_family != ModelFamily.ENSEMBLE):
+            stackable_regressors.append(estimator_class())
+    return stackable_regressors

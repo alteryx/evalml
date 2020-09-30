@@ -36,3 +36,7 @@ from .transformers import (
     TextFeaturizer,
     LSA,
 )
+from .ensemble import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)

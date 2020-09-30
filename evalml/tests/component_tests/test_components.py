@@ -12,6 +12,7 @@ from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
+    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
@@ -48,12 +49,17 @@ from evalml.pipelines.components import (
     XGBoostClassifier,
     XGBoostRegressor
 )
+from evalml.pipelines.components.ensemble import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_estimators_used_in_search,
     _all_transformers,
     all_components
 )
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -390,10 +396,17 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {'test': 'parameter'}
 
 
-def test_component_parameters_init():
+def test_component_parameters_init(logistic_regression_binary_pipeline_class,
+                                   linear_regression_pipeline_class):
     for component_class in all_components():
         print('Testing component {}'.format(component_class.name))
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            if component_class == StackedEnsembleClassifier:
+                component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+            elif component_class == StackedEnsembleRegressor:
+                component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -443,7 +456,10 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            continue
         if component._component_obj is None:
             continue
 
@@ -560,13 +576,12 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters(cls):
-
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters_raise_no_warnings(cls):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -745,7 +760,8 @@ def test_all_transformers_check_fit(X_y_binary):
 
 def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in _all_estimators() + [test_estimator_needs_fitting_false]:
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
@@ -783,11 +799,15 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
-
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
-
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            if (component_class == StackedEnsembleClassifier):
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])
+            elif (component_class == StackedEnsembleRegressor):
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)])
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
@@ -795,7 +815,7 @@ def test_serialization(X_y_binary, tmpdir):
             loaded_component = ComponentBase.load(path)
             assert component.parameters == loaded_component.parameters
             assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
-            if issubclass(component_class, Estimator):
+            if (issubclass(component_class, Estimator) and not (isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor))):
                 assert (component.feature_importance == loaded_component.feature_importance).all()
 
 
@@ -816,11 +836,22 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
-def test_estimators_accept_all_kwargs(estimator_class):
-    estimator = estimator_class()
+def test_estimators_accept_all_kwargs(estimator_class,
+                                      logistic_regression_binary_pipeline_class,
+                                      linear_regression_pipeline_class):
+    try:
+        estimator = estimator_class()
+    except EnsembleMissingPipelinesError:
+        if estimator_class == StackedEnsembleClassifier:
+            estimator = estimator_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+        elif estimator_class == StackedEnsembleRegressor:
+            estimator = estimator_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
-    params = estimator._component_obj.get_params()
+    if estimator_class.model_family == ModelFamily.ENSEMBLE:
+        params = estimator.parameters
+    else:
+        params = estimator._component_obj.get_params()
     if estimator_class.model_family == ModelFamily.CATBOOST:
         # Deleting because we call it random_state in our api
         del params["random_seed"]
@@ -887,11 +918,31 @@ def test_component_equality():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_equality_all_components(component_class):
-    component = component_class()
+def test_component_equality_all_components(component_class,
+                                           logistic_regression_binary_pipeline_class,
+                                           linear_regression_pipeline_class):
+    if component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+    elif component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.REGRESSION]:
+        component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
+    else:
+        component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
+
+
+def test_component_equality_with_subclasses(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    mock_component = MockComponent()
+    mock_estimator = MockEstimator()
+    mock_transformer = MockTransformer()
+    assert mock_component != mock_estimator
+    assert mock_component != mock_transformer
+    assert mock_estimator != mock_component
+    assert mock_estimator != mock_transformer
+    assert mock_transformer != mock_component
+    assert mock_transformer != mock_estimator
 
 
 def test_mock_component_str(test_classes):
@@ -917,8 +968,14 @@ def test_mock_component_repr():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_str(component_class):
-    component = component_class()
+def test_component_str(component_class, logistic_regression_binary_pipeline_class, linear_regression_pipeline_class):
+    try:
+        component = component_class()
+    except EnsembleMissingPipelinesError:
+        if component_class == StackedEnsembleClassifier:
+            component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+        elif component_class == StackedEnsembleRegressor:
+            component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     assert str(component) == component.name
 
 
