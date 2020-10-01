@@ -602,7 +602,7 @@ class AutoMLSearch:
             for field, value in fold_data['all_objective_scores'].items():
                 if field.lower() in objective_names:
                     scores[field] += value
-        return {objective_name: score / n_folds for objective_name, score in scores.items()}
+        return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
 
     def _compute_cv_scores(self, pipeline, X, y):
         start = time.time()
@@ -675,7 +675,6 @@ class AutoMLSearch:
             if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
                 evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
             cv_data.append(evaluation_entry)
-
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
         cv_score_mean = cv_scores.mean()

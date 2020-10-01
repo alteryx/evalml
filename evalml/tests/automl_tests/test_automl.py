@@ -1117,7 +1117,13 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
-def test_percent_better_than_baseline_computed_for_all_objectives(problem_type,
+@patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
+@patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
+@patch("evalml.pipelines.MeanBaselineRegressionPipeline.fit")
+def test_percent_better_than_baseline_computed_for_all_objectives(mock_baseline_regression_fit,
+                                                                  mock_baseline_multiclass_fit,
+                                                                  mock_baseline_binary_fit,
+                                                                  problem_type,
                                                                   dummy_binary_pipeline_class,
                                                                   dummy_multiclass_pipeline_class,
                                                                   dummy_regression_pipeline_class,
