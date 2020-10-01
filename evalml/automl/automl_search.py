@@ -1,6 +1,5 @@
 import copy
 import time
-import warnings
 from collections import OrderedDict
 
 import cloudpickle
@@ -22,7 +21,8 @@ from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
-    EmptyDataChecks
+    EmptyDataChecks,
+    HighVarianceCVDataCheck
 )
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
@@ -666,15 +666,18 @@ class AutoMLSearch:
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
         percent_better = self.objective.calculate_percent_difference(cv_score, self._baseline_cv_score)
-        # calculate high_variance_cv
-        # if the coefficient of variance is greater than .2
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
 
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self._results['pipeline_results'])
+
+        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
+        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
+        high_variance_cv = False
+
+        if len(high_variance_cv_check_results) > 0:
+            logger.warning(high_variance_cv_check_results[0])
+            high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
@@ -755,10 +758,6 @@ class AutoMLSearch:
 
         logger.info("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         log_subtitle(logger, "Cross Validation", underline="-")
-
-        if pipeline_results["high_variance_cv"]:
-            logger.warning("High variance within cross validation scores. " +
-                           "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)

@@ -18,10 +18,11 @@ class HighVarianceCVDataCheck(DataCheck):
             raise ValueError(f"Provided threshold {threshold} needs to be greater than 0.")
         self.threshold = threshold
 
-    def validate(self, cv_scores):
+    def validate(self, pipeline_name, cv_scores):
         """Checks cross-validation scores and issues an warning if variance is higher than specified threshhold.
 
         Arguments:
+            pipeline_name (str): name of pipeline that produced cv_scores
             cv_scores (pd.Series, np.array, list): list of scores of each cross-validation fold
 
         Returns:
@@ -30,7 +31,7 @@ class HighVarianceCVDataCheck(DataCheck):
         Example:
             >>> cv_scores = pd.Series([0, 1, 1, 1])
             >>> target_check = HighVarianceCVDataCheck(threshold=0.10)
-            >>> assert target_check.validate(cv_scores) == [DataCheckWarning("High variance (variance >= 0.2) within cross validation scores. Model may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
+            >>> assert target_check.validate("LogisticRegressionPipeline", cv_scores) == [DataCheckWarning("High variance (variance >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
         """
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
@@ -39,6 +40,6 @@ class HighVarianceCVDataCheck(DataCheck):
         high_variance_cv = (cv_scores.std() / cv_scores.mean()) > self.threshold
         # if there are items that occur less than the threshold, add them to the list of messages
         if high_variance_cv:
-            warning_msg = f"High variance (variance >= {self.threshold}) within cross validation scores. Model may not perform as estimated on unseen data."
+            warning_msg = f"High variance (variance >= {self.threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data."
             messages.append(DataCheckWarning(warning_msg, self.name))
         return messages
