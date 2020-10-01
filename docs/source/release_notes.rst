@@ -7,9 +7,11 @@ Release Notes
         * Added stacked ensemble components to AutoMLSearch :pr:`1253`
     * Fixes
     * Changes
+        * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
+        * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
 
 
