@@ -138,9 +138,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        cat_cols = self._get_cat_cols(X)
-        if self.features_to_encode != cat_cols:
-            cat_cols = [col for col in self.features_to_encode if col in cat_cols]
+        cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":
             X[cat_cols] = X[cat_cols].replace(np.nan, "nan")

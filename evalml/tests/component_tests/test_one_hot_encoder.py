@@ -394,7 +394,19 @@ def test_ohe_features_to_encode():
     encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1'])
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert X.equals(X_t)
+    expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2', 'col_2'])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])
+
+    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1', 'col_2'])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2',
+                              'col_2_a', 'col_2_b', 'col_2_c', 'col_2_d'])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])
 
 
 def test_ohe_features_to_encode_col_missing():
