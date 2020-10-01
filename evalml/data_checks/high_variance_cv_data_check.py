@@ -14,8 +14,8 @@ class HighVarianceCVDataCheck(DataCheck):
             threshold (float): The minimum threshold allowed for high variance before a warning is raised.
                 Defaults to 0.2 and must be above 0.
         """
-        if threshold <= 0:
-            raise ValueError(f"Provided threshold {threshold} is greater than 0.")
+        if threshold < 0:
+            raise ValueError(f"Provided threshold {threshold} needs to be greater than 0.")
         self.threshold = threshold
 
     def validate(self, cv_scores):
@@ -38,7 +38,7 @@ class HighVarianceCVDataCheck(DataCheck):
         messages = []
         high_variance_cv = (cv_scores.std() / cv_scores.mean()) > self.threshold
         # if there are items that occur less than the threshold, add them to the list of messages
-        if len(high_variance_cv):
-            warning_msg = "High variance (variance >= {self.threshhold}) within cross validation scores. Model may not perform as estimated on unseen data."
+        if high_variance_cv:
+            warning_msg = f"High variance (variance >= {self.threshold}) within cross validation scores. Model may not perform as estimated on unseen data."
             messages.append(DataCheckWarning(warning_msg, self.name))
         return messages
