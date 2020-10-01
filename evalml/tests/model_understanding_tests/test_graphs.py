@@ -23,7 +23,8 @@ from evalml.model_understanding.graphs import (
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    graph_prediction_vs_actual
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -834,7 +835,7 @@ def test_graph_partial_dependence(test_pipeline):
 
 @patch('evalml.model_understanding.graphs.jupyter_check')
 @patch('evalml.model_understanding.graphs.import_or_raise')
-def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
+def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regression, test_pipeline):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
     clf = test_pipeline
@@ -877,3 +878,45 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
+
+    Xr, yr = X_y_regression
+    with pytest.warms(None) as graph_valid:
+        rs = np.random.RandomState(42)
+        y_preds = yr * rs.random(yr.shape)
+        graph_prediction_vs_actual(yr, y_preds)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+
+
+def test_graph_prediction_vs_actual():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
+
+    with pytest.raises(ValueError, match="Threshold must be positive!"):
+        graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=-1)
+
+    fig = graph_prediction_vs_actual(y_true, y_pred)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 1
+    assert fig_dict['data'][0]['fillcolor'] == '#0000ff'
+
+    y_true = pd.Series(y_true)
+    y_pred = pd.Series(y_pred)
+    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][0]['fillcolor'] == '#0000ff'
+    assert len(fig_dict['data'][0]['x']) == 10
+    assert len(fig_dict['data'][0]['y']) == 10
+    assert fig_dict['data'][1]['fillcolor'] == '#ffff00'
+    assert len(fig_dict['data'][1]['x']) == 2
+    assert len(fig_dict['data'][1]['y']) == 2
