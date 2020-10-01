@@ -222,7 +222,7 @@ class AutoMLSearch:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._start = None
-        self._baseline_cv_scores = None
+        self._baseline_cv_scores = {}
 
         if _max_batches is not None and _max_batches <= 0:
             raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
@@ -688,8 +688,10 @@ class AutoMLSearch:
         mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data)
         for obj_name in mean_cv_all_objectives:
             objective_class = get_objective(obj_name)
+            # In the event add_to_rankings is called before search _baseline_cv_scores will be empty so we will return
+            # nan for the base score.
             percent_better = objective_class.calculate_percent_difference(mean_cv_all_objectives[obj_name],
-                                                                          self._baseline_cv_scores[obj_name])
+                                                                          self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
         # calculate high_variance_cv
