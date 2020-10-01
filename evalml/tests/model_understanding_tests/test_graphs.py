@@ -19,12 +19,12 @@ from evalml.model_understanding.graphs import (
     graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
+    graph_prediction_vs_actual,
     graph_roc_curve,
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve,
-    graph_prediction_vs_actual
+    roc_curve
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
