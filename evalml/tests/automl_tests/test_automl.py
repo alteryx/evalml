@@ -707,8 +707,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+def test_add_to_rankings_no_search(mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
 
@@ -723,8 +722,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
-@patch('evalml.pipelines.RegressionPipeline.fit')
-def test_add_to_rankings_regression_large(mock_fit, mock_score, dummy_regression_pipeline_class):
+def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_class):
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
@@ -740,8 +738,7 @@ def test_add_to_rankings_regression_large(mock_fit, mock_score, dummy_regression
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
-@patch('evalml.pipelines.RegressionPipeline.fit')
-def test_add_to_rankings_regression(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
+def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
     automl = AutoMLSearch(problem_type='regression', max_time=1, max_iterations=1)
