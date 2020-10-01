@@ -707,9 +707,10 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-def test_add_to_rankings_no_search(mock_score, dummy_binary_pipeline_class, X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -719,6 +720,8 @@ def test_add_to_rankings_no_search(mock_score, dummy_binary_pipeline_class, X_y_
     assert isinstance(automl.data_split, StratifiedKFold)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
+    automl.search(X, y)
+    assert len(automl.rankings) == 2
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
