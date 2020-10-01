@@ -1,5 +1,5 @@
 import inspect
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import numpy as np
 import pytest
@@ -13,7 +13,8 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
-    import_or_raise
+    import_or_raise,
+    jupyter_check
 )
 
 
@@ -214,3 +215,25 @@ def test_check_random_state_equality():
     rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
     rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
     assert not check_random_state_equality(rs_1, rs_2)
+
+
+@patch('evalml.utils.gen_utils.import_or_raise')
+def test_jupyter_check_errors(mock_import_or_raise):
+    mock_import_or_raise.side_effect = ImportError
+    assert not jupyter_check()
+
+    mock_import_or_raise.side_effect = Exception
+    assert not jupyter_check()
+
+
+@patch('evalml.utils.gen_utils.import_or_raise')
+@patch('IPython.core.getipython.get_ipython')
+def test_jupyter_check(mock_ipython, mock_import_or_raise):
+    mock_import_or_raise.return_value = MagicMock()
+    mock_ipython.return_value = True
+    assert jupyter_check()
+
+    mock_ipython.return_value = False
+    assert not jupyter_check()
+    mock_ipython.return_value = None
+    assert not jupyter_check()
