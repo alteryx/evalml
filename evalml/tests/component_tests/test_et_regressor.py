@@ -11,21 +11,7 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert ProblemTypes.REGRESSION in ExtraTreesRegressor.supported_problem_types
-    assert len(ExtraTreesRegressor.supported_problem_types) == 1
-
-
-def test_et_parameters():
-    clf = ExtraTreesRegressor(n_estimators=20, max_features="auto", max_depth=5, random_state=2)
-    expected_parameters = {
-        "n_estimators": 20,
-        "max_features": "auto",
-        "max_depth": 5,
-        "min_samples_split": 2,
-        "min_weight_fraction_leaf": 0.0,
-        "n_jobs": -1
-    }
-    assert clf.parameters == expected_parameters
+    assert set(ExtraTreesRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
 
 
 def test_fit_predict(X_y_regression):

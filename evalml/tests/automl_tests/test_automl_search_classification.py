@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+from skopt.space import Categorical
 
 from evalml import AutoMLSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
@@ -15,10 +16,13 @@ from evalml.objectives import (
     Precision,
     PrecisionMicro,
     Recall,
-    get_objective,
-    get_objectives
+    get_objective
 )
-from evalml.pipelines import ModeBaselineBinaryPipeline, PipelineBase
+from evalml.pipelines import (
+    ModeBaselineBinaryPipeline,
+    MulticlassClassificationPipeline,
+    PipelineBase
+)
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
@@ -95,7 +99,7 @@ def test_max_pipelines_deprecation(caplog):
 def test_recall_error(X_y_binary):
     X, y = X_y_binary
     # Recall is a valid objective but it's not allowed in AutoML so a ValueError is expected
-    error_msg = 'Recall is not allowed in AutoML!'
+    error_msg = 'recall is not allowed in AutoML!'
     with pytest.raises(ValueError, match=error_msg):
         AutoMLSearch(problem_type='binary', objective='recall', max_iterations=1)
 
@@ -119,7 +123,7 @@ def test_binary_auto(X_y_binary):
     assert len(np.unique(y_pred)) == 2
 
 
-def test_multi_auto(X_y_multi):
+def test_multi_auto(X_y_multi, multiclass_core_objectives):
     X, y = X_y_multi
     objective = PrecisionMicro()
     automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_iterations=5)
@@ -129,11 +133,10 @@ def test_multi_auto(X_y_multi):
     y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
-    expected_additional_objectives = [obj() for obj in get_objectives('multiclass') if obj not in automl._objectives_not_allowed_in_automl]
-    objective_in_additional_objectives = next((obj for obj in expected_additional_objectives if obj.name == objective.name), None)
-    expected_additional_objectives.remove(objective_in_additional_objectives)
+    objective_in_additional_objectives = next((obj for obj in multiclass_core_objectives if obj.name == objective.name), None)
+    multiclass_core_objectives.remove(objective_in_additional_objectives)
 
-    for expected, additional in zip(expected_additional_objectives, automl.additional_objectives):
+    for expected, additional in zip(multiclass_core_objectives, automl.additional_objectives):
         assert type(additional) is type(expected)
 
 
@@ -606,3 +609,18 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
+
+
+def test_categorical_hyperparam(X_y_multi):
+    X, y = X_y_multi
+
+    class CustomPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+        custom_hyperparameters = {
+            'Simple Imputer': {
+                'impute_strategy': Categorical(['mean', 'most_frequent'])
+            }
+        }
+
+    automl = AutoMLSearch(problem_type="multiclass", allowed_pipelines=[CustomPipeline])
+    automl.search(X, y)

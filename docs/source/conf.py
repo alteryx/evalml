@@ -214,8 +214,9 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
-inheritance_graph_attrs = dict(rankdir="LR", size='"1000, 333"',
-                               fontsize=30, labelfontsize=30, ratio='compress', dpi=960)
+inheritance_graph_attrs = dict(rankdir="TB", dpi=192.0, ranksep=0.02)
+inheritance_node_attrs = dict(fontsize=6, height=0.15, width=5, fixedsize=True)
+inheritance_edge_attrs = dict(arrowsize=0.1)
 
 class AccessorLevelDocumenter(Documenter):
     """
@@ -255,14 +256,8 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     priority = 0.6
 
 
-def build_finished(app, Exception):
-    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
-
-
-
 def setup(app):
     app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('build-finished', build_finished)

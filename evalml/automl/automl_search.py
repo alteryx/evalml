@@ -17,7 +17,13 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.data_splitters import TrainingValidationSplit
-from evalml.data_checks import DataChecks, DefaultDataChecks, EmptyDataChecks
+from evalml.automl.utils import get_default_primary_search_objective
+from evalml.data_checks import (
+    AutoMLDataChecks,
+    DataChecks,
+    DefaultDataChecks,
+    EmptyDataChecks
+)
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -25,21 +31,9 @@ from evalml.exceptions import (
     PipelineScoreError
 )
 from evalml.objectives import (
-    CostBenefitMatrix,
-    FraudCost,
-    LeadScoring,
-    MeanSquaredLogError,
-    Recall,
-    RecallMacro,
-    RecallMicro,
-    RecallWeighted,
-    RootMeanSquaredLogError,
-    get_objective,
-    get_objectives
-)
-from evalml.objectives.utils import (
-    _all_objectives_dict,
-    _print_objectives_in_table
+    get_core_objectives,
+    get_non_core_objectives,
+    get_objective
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -52,7 +46,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.gen_utils import classproperty
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -68,13 +61,10 @@ class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
     _LARGE_DATA_ROW_THRESHOLD = int(1e5)
+    _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
-
-    _DEFAULT_OBJECTIVES = {'binary': 'Log Loss Binary',
-                           'multiclass': 'Log Loss Multiclass',
-                           'regression': 'R2'}
 
     def __init__(self,
                  problem_type=None,
@@ -101,10 +91,12 @@ class AutoMLSearch:
         Arguments:
             problem_type (str or ProblemTypes): Choice of 'regression', 'binary', or 'multiclass', depending on the desired problem type.
 
-            objective (str, ObjectiveBase): The objective to optimize for. When set to auto, chooses:
-                LogLossBinary for binary classification problems,
-                LogLossMulticlass for multiclass classification problems, and
-                R2 for regression problems.
+            objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+                When set to 'auto', chooses:
+
+                - LogLossBinary for binary classification problems,
+                - LogLossMulticlass for multiclass classification problems, and
+                - R2 for regression problems.
 
             max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
                 max_time is not set, then max_pipelines will default to max_pipelines of 5.
@@ -167,7 +159,7 @@ class AutoMLSearch:
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         if objective == 'auto':
-            objective = self._DEFAULT_OBJECTIVES[self.problem_type.value]
+            objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
@@ -175,7 +167,7 @@ class AutoMLSearch:
         if self.problem_type != self.objective.problem_type:
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
-            additional_objectives = [obj for obj in get_objectives(self.problem_type) if obj not in self._objectives_not_allowed_in_automl]
+            additional_objectives = get_core_objectives(self.problem_type)
             # if our main objective is part of default set of objectives for problem_type, remove it
             existing_main_objective = next((obj for obj in additional_objectives if obj.name == self.objective.name), None)
             if existing_main_objective is not None:
@@ -232,7 +224,7 @@ class AutoMLSearch:
         self._baseline_cv_score = None
 
         if _max_batches is not None and _max_batches <= 0:
-            raise ValueError("Parameter max batches must be None or non-negative. Received {max_batches}.")
+            raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
         self._max_batches = _max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
@@ -240,21 +232,12 @@ class AutoMLSearch:
 
         self._validate_problem_type()
 
-    @classproperty
-    def _objectives_not_allowed_in_automl(self):
-        return {CostBenefitMatrix, FraudCost, LeadScoring,
-                MeanSquaredLogError, Recall, RecallMacro, RecallMicro, RecallWeighted, RootMeanSquaredLogError}
-
-    @classmethod
-    def print_objective_names_allowed_in_automl(cls):
-        names = [name for name, value in _all_objectives_dict().items() if value not in cls._objectives_not_allowed_in_automl]
-        _print_objectives_in_table(names)
-
     def _validate_objective(self, objective):
+        non_core_objectives = get_non_core_objectives()
         if isinstance(objective, type):
-            if objective in self._objectives_not_allowed_in_automl:
-                raise ValueError(f"{objective.name} is not allowed in AutoML! "
-                                 "Use evalml.automl.AutoMLSearch.print_objective_names_allowed_in_automl() "
+            if objective in non_core_objectives:
+                raise ValueError(f"{objective.name.lower()} is not allowed in AutoML! "
+                                 "Use evalml.objectives.utils.get_core_objective_names()"
                                  "to get all objective names allowed in automl.")
             return objective()
         return objective
@@ -301,8 +284,7 @@ class AutoMLSearch:
 
         return search_desc + rankings_desc
 
-    @staticmethod
-    def _validate_data_checks(data_checks):
+    def _validate_data_checks(self, data_checks):
         """Validate data_checks parameter.
 
         Arguments:
@@ -315,10 +297,10 @@ class AutoMLSearch:
         if isinstance(data_checks, DataChecks):
             return data_checks
         elif isinstance(data_checks, list):
-            return DataChecks(data_checks)
+            return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks()
+                return DefaultDataChecks(problem_type=self.problem_type)
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -354,6 +336,22 @@ class AutoMLSearch:
                 return [pipeline] + current_batch_pipelines
             else:
                 leading_char = ""
+
+    def _set_data_split(self, X):
+        """Sets the data split method for AutoMLSearch
+
+        Arguments:
+            X (DataFrame): Input dataframe to split
+        """
+        if self.problem_type == ProblemTypes.REGRESSION:
+            default_data_split = KFold(n_splits=3, random_state=self.random_state)
+        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
+
+        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
+            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION)
+
+        self.data_split = self.data_split or default_data_split
 
     def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
         """Find the best pipeline for the data set.
@@ -391,16 +389,7 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        # Set the default data splitter
-        if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state)
-        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
-
-        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=0.25)
-
-        self.data_split = self.data_split or default_data_split
+        self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
@@ -611,6 +600,13 @@ class AutoMLSearch:
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
+            if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+                diff_train = set(np.setdiff1d(y, y_train))
+                diff_test = set(np.setdiff1d(y, y_test))
+                diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
+                diff_string += f"Missing target values in the test set after data split: {diff_test}." if diff_test else ""
+                if diff_string:
+                    raise Exception(diff_string)
             objectives_to_score = [self.objective] + self.additional_objectives
             cv_pipeline = None
             try:
@@ -697,7 +693,8 @@ class AutoMLSearch:
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
-            "percent_better_than_baseline": percent_better
+            "percent_better_than_baseline": percent_better,
+            "validation_score": cv_scores[0]
         }
         self._results['search_order'].append(pipeline_id)
 
@@ -808,8 +805,7 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        if not self.has_searched:
-            raise RuntimeError("Please run automl search before calling `add_to_rankings()`")
+        self._set_data_split(X)
 
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
         for parameter in pipeline_rows['parameters']:
@@ -844,8 +840,8 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "score", "percent_better_than_baseline",
-                              "high_variance_cv", "parameters"]
+        full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
+                              "percent_better_than_baseline", "high_variance_cv", "parameters"]
         if not self.has_searched:
             return pd.DataFrame(columns=full_rankings_cols)
 

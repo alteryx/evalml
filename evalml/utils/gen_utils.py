@@ -3,13 +3,16 @@ import warnings
 from collections import namedtuple
 
 import numpy as np
+import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import (
+    EnsembleMissingPipelinesError,
+    MissingComponentError
+)
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-
 
 numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
@@ -166,6 +169,8 @@ def _get_subclasses(base_class):
 
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
+                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
+                       'DecisionTreeClassifier', 'DecisionTreeRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
@@ -196,7 +201,8 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')
-
+        except EnsembleMissingPipelinesError:
+            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
@@ -212,7 +218,6 @@ def _rename_column_names_to_numeric(X):
 
     Returns:
         Transformed X where column names are renamed to numerical values
-
     """
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
     return X.rename(columns=name_to_col_num, inplace=False)
@@ -232,3 +237,20 @@ def jupyter_check():
         return True
     except NameError:
         return False
+
+
+def safe_repr(value):
+    """Convert the given value into a string that can safely be used for repr
+
+    Arguments:
+        value: the item to convert
+
+    Returns:
+        String representation of the value
+    """
+    if isinstance(value, float):
+        if pd.isna(value):
+            return 'np.nan'
+        if np.isinf(value):
+            return f"float('{repr(value)}')"
+    return repr(value)

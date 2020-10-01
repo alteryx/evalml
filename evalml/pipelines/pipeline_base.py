@@ -27,7 +27,8 @@ from evalml.utils import (
     import_or_raise,
     jupyter_check,
     log_subtitle,
-    log_title
+    log_title,
+    safe_repr
 )
 
 logger = get_logger(__file__)
@@ -174,14 +175,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             logger.info(component_string)
             component.describe(print_name=False)
 
-    def _transform(self, X):
+    def compute_estimator_features(self, X):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            pd.DataFrame - New dataframe.
+            pd.DataFrame - New transformed features.
         """
         X_t = X
         for component in self.component_graph[:-1]:
@@ -225,7 +226,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X_t = self._transform(X)
+        X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
     @abstractmethod
@@ -487,3 +488,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+
+        def repr_component(parameters):
+            return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
+
+        parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
+        return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'

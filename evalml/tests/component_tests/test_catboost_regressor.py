@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 from pytest import importorskip
 
 from evalml.pipelines.components import CatBoostRegressor
@@ -42,14 +41,3 @@ def test_catboost_regressor_random_state_bounds_rng(X_y_regression):
     rng = make_mock_random_state(CatBoostRegressor.SEED_MAX)
     clf = CatBoostRegressor(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
-
-
-def test_overwrite_allow_writing_files_parameter_in_kwargs():
-
-    with pytest.warns(expected_warning=UserWarning) as warnings:
-        cb = CatBoostRegressor(allow_writing_files=True)
-
-    assert len(warnings) == 1
-    # check that the message matches
-    assert warnings[0].message.args[0] == "Parameter allow_writing_files is being set to False in CatBoostRegressor"
-    assert not cb.parameters['allow_writing_files']
