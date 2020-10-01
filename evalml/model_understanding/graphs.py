@@ -537,6 +537,6 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
         data.append(_go.Scatter(x=outlier_group['prediction'],
                                 y=outlier_group['actual'],
                                 mode='markers',
-                                fillcolor=color, 
+                                fillcolor=color,
                                 name=name))
     return _go.Figure(layout=layout, data=data)
