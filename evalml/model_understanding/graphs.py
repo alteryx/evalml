@@ -505,7 +505,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
     Arguments:
         y_true (pd.Series): The real target values of the data
         y_pred (pd.Series): The predicted values outputted by the regression model.
-        outlier_threshold (int): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
+        outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to 100
 
@@ -533,8 +533,10 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
                         yaxis={'title': 'Actual', 'range': _calculate_axis_range(df['actual'])})
 
     for color, outlier_group in df.groupby('outlier'):
+        name = "< outlier_threshold" if color == "#0000ff" else ">= outlier_threshold"
         data.append(_go.Scatter(x=outlier_group['prediction'],
                                 y=outlier_group['actual'],
                                 mode='markers',
-                                fillcolor=color))
+                                fillcolor=color, 
+                                name=name))
     return _go.Figure(layout=layout, data=data)

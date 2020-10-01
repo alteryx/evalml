@@ -907,7 +907,7 @@ def test_graph_prediction_vs_actual():
 
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
-    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6)
+    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
@@ -917,6 +917,8 @@ def test_graph_prediction_vs_actual():
     assert fig_dict['data'][0]['fillcolor'] == '#0000ff'
     assert len(fig_dict['data'][0]['x']) == 10
     assert len(fig_dict['data'][0]['y']) == 10
+    assert fig_dict['data'][0]['name'] == "< outlier_threshold"
     assert fig_dict['data'][1]['fillcolor'] == '#ffff00'
     assert len(fig_dict['data'][1]['x']) == 2
     assert len(fig_dict['data'][1]['y']) == 2
+    assert fig_dict['data'][1]['name'] == ">= outlier_threshold"
