@@ -734,6 +734,8 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     assert isinstance(automl.data_split, StratifiedKFold)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
+    assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
+    assert all(np.isnan(res) for res in automl.results['pipeline_results'][0]['percent_better_than_baseline_all_objectives'].values())
     automl.search(X, y)
     assert len(automl.rankings) == 2
 
