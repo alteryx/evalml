@@ -6,11 +6,13 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import (
+    EnsembleMissingPipelinesError,
+    MissingComponentError
+)
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-
 
 numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
@@ -166,7 +168,9 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'DecisionTreeClassifier', 'DecisionTreeRegressor',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
+                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
+                       'DecisionTreeClassifier', 'DecisionTreeRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
@@ -197,7 +201,8 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
             logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')
-
+        except EnsembleMissingPipelinesError:
+            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 

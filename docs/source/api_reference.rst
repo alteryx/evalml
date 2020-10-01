@@ -202,6 +202,8 @@ Classifiers are components that output a predicted class label.
     LogisticRegressionClassifier
     XGBoostClassifier
     BaselineClassifier
+    StackedEnsembleClassifier
+    DecisionTreeClassifier
 
 Regressors
 -----------
@@ -220,6 +222,8 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
+    StackedEnsembleRegressor
+    DecisionTreeRegressor
 
 .. currentmodule:: evalml.model_understanding
 

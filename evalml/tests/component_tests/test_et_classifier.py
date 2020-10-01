@@ -14,19 +14,6 @@ def test_problem_types():
     assert set(ExtraTreesClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS}
 
 
-def test_et_parameters():
-    clf = ExtraTreesClassifier(n_estimators=20, max_features="auto", max_depth=5, random_state=2)
-    expected_parameters = {
-        "n_estimators": 20,
-        "max_features": "auto",
-        "max_depth": 5,
-        "min_samples_split": 2,
-        "min_weight_fraction_leaf": 0.0,
-        "n_jobs": -1
-    }
-    assert clf.parameters == expected_parameters
-
-
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 

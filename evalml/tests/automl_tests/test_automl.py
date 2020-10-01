@@ -6,7 +6,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
 from evalml.automl import (
@@ -711,12 +711,49 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
-    with pytest.raises(RuntimeError, match="Please run automl"):
-        automl.add_to_rankings(test_pipeline, X, y)
+    assert automl.data_split is None
+
+    automl.add_to_rankings(test_pipeline, X, y)
+    assert isinstance(automl.data_split, StratifiedKFold)
+    assert len(automl.rankings) == 1
+    assert 0.1234 in automl.rankings['score'].values
+    automl.search(X, y)
+    assert len(automl.rankings) == 2
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_class):
+    X = pd.DataFrame({'col_0': [i for i in range(101000)]})
+    y = pd.Series([i for i in range(101000)])
+
+    automl = AutoMLSearch(problem_type='regression', max_time=1, max_iterations=1)
+    test_pipeline = dummy_regression_pipeline_class(parameters={})
+    mock_score.return_value = {automl.objective.name: 0.1234}
+    assert automl.data_split is None
+
+    automl.add_to_rankings(test_pipeline, X, y)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert len(automl.rankings) == 1
+    assert 0.1234 in automl.rankings['score'].values
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
+    X, y = X_y_regression
+
+    automl = AutoMLSearch(problem_type='regression', max_time=1, max_iterations=1)
+    test_pipeline = dummy_regression_pipeline_class(parameters={})
+    mock_score.return_value = {automl.objective.name: 0.1234}
+    assert automl.data_split is None
+
+    automl.add_to_rankings(test_pipeline, X, y)
+    assert isinstance(automl.data_split, KFold)
+    assert len(automl.rankings) == 1
+    assert 0.1234 in automl.rankings['score'].values
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
