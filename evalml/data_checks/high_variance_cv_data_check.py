@@ -30,8 +30,8 @@ class HighVarianceCVDataCheck(DataCheck):
 
         Example:
             >>> cv_scores = pd.Series([0, 1, 1, 1])
-            >>> target_check = HighVarianceCVDataCheck(threshold=0.10)
-            >>> assert target_check.validate("LogisticRegressionPipeline", cv_scores) == [DataCheckWarning("High variance (variance >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
+            >>> check = HighVarianceCVDataCheck(threshold=0.10)
+            >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == [DataCheckWarning("High variance (variance >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
         """
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
