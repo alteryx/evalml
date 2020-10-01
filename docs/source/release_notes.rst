@@ -6,6 +6,7 @@ Release Notes
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
     * Fixes
     * Changes
+        * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
