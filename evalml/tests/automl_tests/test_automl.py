@@ -72,7 +72,6 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         assert isinstance(results['pipeline_summary'], str)
         assert isinstance(results['parameters'], dict)
         assert isinstance(results['score'], float)
-        print(results['high_variance_cv'])
         assert isinstance(results['high_variance_cv'], bool) or isinstance(results['high_variance_cv'], DataCheckWarning)
         assert isinstance(results['cv_data'], list)
         for cv_result in results['cv_data']:
