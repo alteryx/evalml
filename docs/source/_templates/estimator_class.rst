@@ -2,8 +2,6 @@
 
 .. currentmodule:: {{ module }}
 
-.. inheritance-diagram:: {{ objname }}
-
 .. autoclass:: {{ objname }}
    {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges', 'supported_problem_types',
                               'default_parameters'] %}
@@ -43,3 +41,8 @@
    {%- endfor %}
    {% endif %}
    {% endblock %}
+
+Class Inheritance
+"""""""""""""""""
+
+.. inheritance-diagram:: {{ objname }}
