@@ -231,9 +231,12 @@ def test_jupyter_check_errors(mock_import_or_raise):
 def test_jupyter_check(mock_ipython, mock_import_or_raise):
     mock_import_or_raise.return_value = MagicMock()
     mock_ipython.return_value = True
+    mock_import_or_raise.core.getipython.get_ipython().return_value = True
     assert jupyter_check()
 
     mock_ipython.return_value = False
+    mock_import_or_raise.core.getipython.get_ipython().return_value = False
     assert not jupyter_check()
+    mock_import_or_raise.core.getipython.get_ipython().return_value = None
     mock_ipython.return_value = None
     assert not jupyter_check()
