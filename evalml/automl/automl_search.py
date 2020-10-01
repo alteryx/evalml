@@ -228,7 +228,7 @@ class AutoMLSearch:
         self._max_batches = _max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
+        self._pipelines_per_batch = 3
 
         self._validate_problem_type()
 
