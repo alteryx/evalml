@@ -67,7 +67,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
         elif (self._batch_number) % (len(self._first_batch_results) + 1) == 0:
-            # time for an ensemble!
             input_pipelines = []
             for i in range(len(self._first_batch_results)):
                 pipeline_class = self._first_batch_results[i][1]

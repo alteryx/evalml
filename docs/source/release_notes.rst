@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added stacked ensemble components to AutoMLSearch :pr:`1253`
     * Fixes
     * Changes
     * Documentation Changes
