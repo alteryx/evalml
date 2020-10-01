@@ -10,6 +10,7 @@ Release Notes
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
+        * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
 
 
