@@ -4,7 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
-        * Added ``graph_prediction_vs_actual``  in ``model_understanding`` for regression problems :pr:``
+        * Added ``graph_prediction_vs_actual``  in ``model_understanding`` for regression problems :pr:`1252`
     * Fixes
     * Changes
     * Documentation Changes
