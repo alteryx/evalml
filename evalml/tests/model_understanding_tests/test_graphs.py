@@ -880,7 +880,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         import_check.assert_called_with('ipywidgets', warning=True)
 
     Xr, yr = X_y_regression
-    with pytest.warms(None) as graph_valid:
+    with pytest.warns(None) as graph_valid:
         rs = np.random.RandomState(42)
         y_preds = yr * rs.random(yr.shape)
         graph_prediction_vs_actual(yr, y_preds)
