@@ -4,6 +4,8 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
+        * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
     * Fixes
     * Changes
