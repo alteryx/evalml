@@ -170,6 +170,7 @@ def _get_subclasses(base_class):
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
                        'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
+                       'DecisionTreeClassifier', 'DecisionTreeRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
 
