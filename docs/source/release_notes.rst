@@ -14,6 +14,7 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
+        * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
 
 
 **v0.14.1 Sep. 29, 2020**
