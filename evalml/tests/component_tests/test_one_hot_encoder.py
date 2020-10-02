@@ -8,11 +8,12 @@ from evalml.utils import get_random_state
 
 
 def test_init():
-    parameters = {"top_n": 10,
-                  "categories": None,
-                  "drop": None,
-                  "handle_unknown": "ignore",
-                  "handle_missing": "error"}
+    parameters = {'top_n': 10,
+                  'features_to_encode': None,
+                  'categories': None,
+                  'drop': None,
+                  'handle_unknown': 'ignore',
+                  'handle_missing': 'error'}
     encoder = OneHotEncoder()
     assert encoder.parameters == parameters
 
@@ -21,6 +22,7 @@ def test_parameters():
     encoder = OneHotEncoder(top_n=123)
     expected_parameters = {
         'top_n': 123,
+        'features_to_encode': None,
         'categories': None,
         'drop': None,
         'handle_unknown': 'ignore',
@@ -381,3 +383,48 @@ def test_ohe_get_feature_names():
         ohe.get_feature_names()
     ohe.fit(X)
     np.testing.assert_array_equal(ohe.get_feature_names(), np.array(['col_1_a', 'col_2_a', 'col_2_b']))
+
+
+def test_ohe_features_to_encode():
+    # Test feature that doesn't need encoding and
+    # feature that needs encoding but is not specified remain untouched
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0],
+                      "col_2": ['a', 'b', 'a', 'c', 'd']})
+
+    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1'])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2', 'col_2'])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])
+
+    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1', 'col_2'])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2',
+                              'col_2_a', 'col_2_b', 'col_2_c', 'col_2_d'])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])
+
+
+def test_ohe_features_to_encode_col_missing():
+    X = pd.DataFrame({"col_1": [2, 0, 1, 0, 0],
+                      "col_2": ['a', 'b', 'a', 'c', 'd']})
+
+    encoder = OneHotEncoder(top_n=5, features_to_encode=['col_3', 'col_4'])
+
+    with pytest.raises(ValueError, match="Could not find and encode"):
+        encoder.fit(X)
+
+
+def test_ohe_features_to_encode_no_col_names():
+    X = pd.DataFrame([["b", 0], ["a", 1]])
+    encoder = OneHotEncoder(top_n=5, features_to_encode=[0])
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    expected_col_names = set([1, "0_a", "0_b"])
+    col_names = set(X_t.columns)
+    assert (col_names == expected_col_names)
+    assert ([X_t[col].dtype == "uint8" for col in X_t])

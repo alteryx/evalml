@@ -7,3 +7,4 @@ codecov==2.1.0
 category_encoders>=2.0.0
 featuretools
 nlp_primitives>=1.0.0
+PyYAML==5.3.1
