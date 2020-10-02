@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
+        * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
     * Fixes
     * Changes
