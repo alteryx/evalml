@@ -394,7 +394,7 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
 
-        if len(data_check_results) > 0:
+        if data_check_results:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
                 if message.message_type == DataCheckMessageType.WARNING:
@@ -682,7 +682,7 @@ class AutoMLSearch:
         high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
         high_variance_cv = False
 
-        if len(high_variance_cv_check_results) > 0:
+        if high_variance_cv_check_results:
             logger.warning(high_variance_cv_check_results[0])
             high_variance_cv = True
 
