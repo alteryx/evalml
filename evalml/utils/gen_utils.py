@@ -237,8 +237,6 @@ def jupyter_check():
         if (ipy.core.getipython.get_ipython()):
             return True
         return False
-    except ImportError:
-        return False
     except Exception:
         return False
 
