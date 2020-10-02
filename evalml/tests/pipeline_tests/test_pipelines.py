@@ -479,6 +479,7 @@ def test_parameters(logistic_regression_binary_pipeline_class):
         },
         'One Hot Encoder': {
             'top_n': 10,
+            'features_to_encode': None,
             'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',
@@ -1101,6 +1102,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         },
         'One Hot Encoder': {
             'top_n': 10,
+            'features_to_encode': None,
             'categories': None,
             'drop': None,
             'handle_unknown': 'ignore',

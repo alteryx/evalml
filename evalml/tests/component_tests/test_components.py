@@ -143,6 +143,7 @@ def test_describe_component():
     text_featurizer = TextFeaturizer()
     lsa = LSA()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
+                                                                                        'features_to_encode': None,
                                                                                         'categories': None,
                                                                                         'drop': None,
                                                                                         'handle_unknown': 'ignore',
