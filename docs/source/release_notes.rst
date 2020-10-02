@@ -12,7 +12,7 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
-        * Added tests for ``jupyter_check`` to handle IPython :pr:``
+        * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
 
 
 **v0.14.1 Sep. 29, 2020**
