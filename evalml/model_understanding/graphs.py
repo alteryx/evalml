@@ -509,7 +509,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         y_true (pd.Series): The real target values of the data
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
-                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
+                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be orange.
                                  Defaults to None
 
     Returns:

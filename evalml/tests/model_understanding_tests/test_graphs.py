@@ -903,6 +903,7 @@ def test_graph_prediction_vs_actual_default():
     assert fig_dict['data'][0]['name'] == 'y = x line'
     assert fig_dict['data'][0]['x'] == fig_dict['data'][0]['y']
     assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+    assert fig_dict['data'][1]['name'] == "Values"
 
 
 def test_graph_prediction_vs_actual():
