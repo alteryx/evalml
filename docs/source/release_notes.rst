@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
+        * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
     * Fixes
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
