@@ -4,7 +4,12 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+<<<<<<< HEAD
         * Added ``graph_prediction_vs_actual``  in ``model_understanding`` for regression problems :pr:`1252`
+=======
+        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
+        * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
+>>>>>>> main
     * Fixes
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
