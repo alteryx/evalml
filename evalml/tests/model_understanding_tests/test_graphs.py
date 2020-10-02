@@ -888,6 +888,23 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         import_check.assert_called_with('ipywidgets', warning=True)
 
 
+def test_graph_prediction_vs_actual_default():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
+
+    fig = graph_prediction_vs_actual(y_true, y_pred)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][0]['name'] == 'y = x line'
+    assert fig_dict['data'][0]['x'] == fig_dict['data'][0]['y']
+    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+
+
 def test_graph_prediction_vs_actual():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -896,14 +913,14 @@ def test_graph_prediction_vs_actual():
     with pytest.raises(ValueError, match="Threshold must be positive!"):
         graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=-1)
 
-    fig = graph_prediction_vs_actual(y_true, y_pred)
+    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
     assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
     assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
-    assert len(fig_dict['data']) == 1
-    assert fig_dict['data'][0]['fillcolor'] == '#0000ff'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
 
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
@@ -913,12 +930,12 @@ def test_graph_prediction_vs_actual():
     assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
     assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
     assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
-    assert len(fig_dict['data']) == 2
-    assert fig_dict['data'][0]['fillcolor'] == '#0000ff'
-    assert len(fig_dict['data'][0]['x']) == 10
-    assert len(fig_dict['data'][0]['y']) == 10
-    assert fig_dict['data'][0]['name'] == "< outlier_threshold"
-    assert fig_dict['data'][1]['fillcolor'] == '#ffff00'
-    assert len(fig_dict['data'][1]['x']) == 2
-    assert len(fig_dict['data'][1]['y']) == 2
-    assert fig_dict['data'][1]['name'] == ">= outlier_threshold"
+    assert len(fig_dict['data']) == 3
+    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+    assert len(fig_dict['data'][1]['x']) == 10
+    assert len(fig_dict['data'][1]['y']) == 10
+    assert fig_dict['data'][1]['name'] == "< outlier_threshold"
+    assert fig_dict['data'][2]['fillcolor'] == '#ffff00'
+    assert len(fig_dict['data'][2]['x']) == 2
+    assert len(fig_dict['data'][2]['y']) == 2
+    assert fig_dict['data'][2]['name'] == ">= outlier_threshold"

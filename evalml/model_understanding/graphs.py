@@ -495,11 +495,14 @@ def _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold):
     data = pd.concat([pd.Series(predictions),
                       pd.Series(actual)], axis=1)
     data.columns = ['prediction', 'actual']
-    data['outlier'] = np.where((abs(data['prediction'] - data['actual']) >= outlier_threshold), "#ffff00", "#0000ff")
+    if outlier_threshold:
+        data['outlier'] = np.where((abs(data['prediction'] - data['actual']) >= outlier_threshold), "#ffff00", "#0000ff")
+    else:
+        data['outlier'] = '#0000ff'
     return data
 
 
-def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
+def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
 
     Arguments:
@@ -507,7 +510,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to 100
+                                 Defaults to None
 
     Returns:
         plotly.Figure representing the predicted vs. actual values graph
@@ -517,7 +520,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
-    if outlier_threshold <= 0:
+    if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
     if not isinstance(y_true, pd.Series):
@@ -527,13 +530,22 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100):
 
     df = _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
     data = []
+
+    x_axis = _calculate_axis_range(df['prediction'])
+    y_axis = _calculate_axis_range(df['actual'])
+    x_y_line = [min(x_axis[0], y_axis[0]), max(x_axis[1], y_axis[1])]
+    data.append(_go.Scatter(x=x_y_line, y=x_y_line, name="y = x line"))
+
     title = 'Predicted vs Actual Values Scatter Plot'
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Prediction', 'range': _calculate_axis_range(df['prediction'])},
-                        yaxis={'title': 'Actual', 'range': _calculate_axis_range(df['actual'])})
+                        xaxis={'title': 'Prediction', 'range': x_axis},
+                        yaxis={'title': 'Actual', 'range': y_axis})
 
     for color, outlier_group in df.groupby('outlier'):
-        name = "< outlier_threshold" if color == "#0000ff" else ">= outlier_threshold"
+        if outlier_threshold:
+            name = "< outlier_threshold" if color == "#0000ff" else ">= outlier_threshold"
+        else:
+            name = "Values"
         data.append(_go.Scatter(x=outlier_group['prediction'],
                                 y=outlier_group['actual'],
                                 mode='markers',
