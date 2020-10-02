@@ -15,6 +15,7 @@ Release Notes
         * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
+        * Added a test to check conda build after merge to main :pr:`1247`
 
 
 **v0.14.1 Sep. 29, 2020**
