@@ -20,6 +20,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def __init__(self,
                  top_n=10,
+                 features_to_encode=None,
                  categories=None,
                  drop=None,
                  handle_unknown="ignore",
@@ -31,6 +32,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Arguments:
             top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
                 Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
+            features_to_encode (list(str)): List of columns to encode. All other columns will remain untouched.
+                If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
             drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
@@ -44,6 +47,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 values encountered will raise an error. Defaults to "error".
         """
         parameters = {"top_n": top_n,
+                      "features_to_encode": features_to_encode,
                       "categories": categories,
                       "drop": drop,
                       "handle_unknown": handle_unknown,
@@ -60,7 +64,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if top_n is not None and categories is not None:
             raise ValueError("Cannot use categories and top_n arguments simultaneously")
 
-        self._cols_to_encode = None
+        self.features_to_encode = features_to_encode
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -80,24 +84,29 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X_t = X
-        self._cols_to_encode = self._get_cat_cols(X_t)
+
+        if self.features_to_encode is None:
+            self.features_to_encode = self._get_cat_cols(X_t)
+        invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
+        if len(invalid_features) > 0:
+            raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
 
         if self.parameters['handle_missing'] == "as_category":
-            X_t[self._cols_to_encode] = X_t[self._cols_to_encode].replace(np.nan, "nan")
+            X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
 
-        if len(self._cols_to_encode) == 0:
+        if len(self.features_to_encode) == 0:
             categories = 'auto'
 
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
-            if len(categories) != len(self._cols_to_encode) or not isinstance(categories[0], list):
+            if len(categories) != len(self.features_to_encode) or not isinstance(categories[0], list):
                 raise ValueError('Categories argument must contain a list of categories for each categorical feature')
 
         else:
             categories = []
-            for col in X_t[self._cols_to_encode]:
+            for col in X_t[self.features_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
@@ -112,7 +121,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._encoder = SKOneHotEncoder(categories=categories,
                                         drop=self.parameters['drop'],
                                         handle_unknown=self.parameters['handle_unknown'])
-        self._encoder.fit(X_t[self._cols_to_encode])
+        self._encoder.fit(X_t[self.features_to_encode])
         return self
 
     def transform(self, X, y=None):
@@ -128,7 +137,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        cat_cols = self._get_cat_cols(X)
+
+        cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":
             X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
@@ -162,7 +172,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             np.array: the unique categories, in the same dtype as they were provided during fit
         """
         try:
-            index = self._cols_to_encode.index(feature_name)
+            index = self.features_to_encode.index(feature_name)
         except Exception:
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
@@ -173,4 +183,4 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             np.array: The feature names after encoding, provided in the same order as input_features.
         """
-        return self._encoder.get_feature_names(self._cols_to_encode)
+        return self._encoder.get_feature_names(self.features_to_encode)

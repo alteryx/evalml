@@ -17,7 +17,9 @@ from evalml.pipelines.components import (  # noqa: F401
     Imputer,
     OneHotEncoder,
     RandomForestClassifier,
-    StandardScaler
+    StandardScaler,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -143,3 +145,10 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
     return TemplatedPipeline({c.name: c.parameters for c in component_instances})
+
+
+def make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
+    else:
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")

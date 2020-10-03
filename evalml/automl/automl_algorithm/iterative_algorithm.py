@@ -9,15 +9,8 @@ from evalml.pipelines.components import (
     StackedEnsembleRegressor
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.pipelines.utils import make_pipeline_from_components
+from evalml.pipelines.utils import make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
-
-
-def make_stacked_ensemble_pipeline(input_pipelines, problem_type):
-    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
-    else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -63,17 +56,25 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             self._first_batch_results = sorted(self._first_batch_results, key=itemgetter(0))
 
         next_batch = []
+        
+        # for i in range(len(self._first_batch_results)):
+        #     pipeline_class = self._first_batch_results[i][1]
+        #     if pipeline_class.model_family != ModelFamily.NONE and pipeline_class.model_famiy != ModelFamily.BASELINE
+        # has_stackable = [self._first_batch_results[i][1].model_family for i in self._first_batch_results if ]
+        # print ("mod math:", self.batch_number, (self._batch_number) % (len(self._first_batch_results) + 1) )
         if self._batch_number == 0:
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
-        elif (self._batch_number) % (len(self._first_batch_results) + 1) == 0:
+
+        # One after training all pipelines one round
+        elif len(self._first_batch_results) > 1 and self._batch_number != 1 and (self._batch_number) % (len(self._first_batch_results) + 1) == 1:
             input_pipelines = []
             for i in range(len(self._first_batch_results)):
                 pipeline_class = self._first_batch_results[i][1]
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
-            ensembler = make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
-            next_batch.append(ensembler)
+            ensemble = make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
+            next_batch.append(ensemble)
         else:
             idx = (self._batch_number - 1) % len(self._first_batch_results)
             pipeline_class = self._first_batch_results[idx][1]

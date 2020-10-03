@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from evalml.tuners import SKOptTuner
 from evalml.utils import get_random_state
 
-from evalml.problem_types import ProblemTypes
+
 class AutoMLAlgorithmException(Exception):
     """Exception raised when an error is encountered during the computation of the automl algorithm"""
     pass

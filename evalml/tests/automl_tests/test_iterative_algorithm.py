@@ -34,7 +34,7 @@ def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeli
 def dummy_binary_pipeline_classes():
     class MockEstimator(Estimator):
         name = "Mock Classifier"
-        model_family = ModelFamily.NONE
+        model_family = ModelFamily.RANDOM_FOREST
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
 
@@ -96,17 +96,69 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
     all_parameters = []
-    while algo.batch_number < 10:
+    for i in range(1,3):
+        for _ in range(len(dummy_binary_pipeline_classes)):
+            next_batch = algo.next_batch()
+            assert len(next_batch) == algo.pipelines_per_batch
+            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % len(dummy_binary_pipeline_classes)]
+            assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
+            assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + (algo.batch_number - 1) * algo.pipelines_per_batch
+            assert algo.batch_number == last_batch_number + 1
+            last_batch_number = algo.batch_number
+            print([p.parameters for p in next_batch])
+            all_parameters.extend([p.parameters for p in next_batch])
+            scores = -np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline)
+        assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
+
+        # check next batch is stacking ensemble batch
+        assert algo.batch_number == (len(dummy_binary_pipeline_classes) + 1) * i
         next_batch = algo.next_batch()
-        assert len(next_batch) == algo.pipelines_per_batch
-        cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % len(dummy_binary_pipeline_classes)]
-        assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
-        assert algo.pipeline_number == len(dummy_binary_pipeline_classes) + (algo.batch_number - 1) * algo.pipelines_per_batch
         assert algo.batch_number == last_batch_number + 1
         last_batch_number = algo.batch_number
-        print([p.parameters for p in next_batch])
-        all_parameters.extend([p.parameters for p in next_batch])
-        scores = -np.arange(0, len(next_batch))
+        assert len(next_batch) == 1
+        scores = np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline)
-    assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
+        assert pipeline.model_family == ModelFamily.ENSEMBLE
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY])
+def test_iterative_algorithm_stacked_ensemble(problem_type, all_binary_pipeline_classes):
+    all_pipeline_classes = [pipeline for pipeline in all_binary_pipeline_classes if pipeline.model_family != ModelFamily.BASELINE and pipeline.problem_type == problem_type]
+    algo = IterativeAlgorithm(allowed_pipelines=all_pipeline_classes)
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert algo.allowed_pipelines == all_pipeline_classes
+
+    # First initial batch
+    next_batch = algo.next_batch()
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+    next_batch = algo.next_batch()
+
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+
+    print (algo.batch_number, next_batch)
+    for i in range(1,5):
+        # loop through each pipeline class
+        for _ in range(len(all_pipeline_classes)):
+            next_batch = algo.next_batch()
+            scores = np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline)
+
+
+        # check next batch is stacking ensemble batch
+        assert algo.batch_number == (len(all_pipeline_classes) + 1) * i + 1
+        next_batch = algo.next_batch()
+        print (next_batch[0])
+        assert len(next_batch) == 1
+        scores = np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline)
+        assert pipeline.model_family == ModelFamily.ENSEMBLE
