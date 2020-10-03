@@ -56,7 +56,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             self._first_batch_results = sorted(self._first_batch_results, key=itemgetter(0))
 
         next_batch = []
-        
+
         # for i in range(len(self._first_batch_results)):
         #     pipeline_class = self._first_batch_results[i][1]
         #     if pipeline_class.model_family != ModelFamily.NONE and pipeline_class.model_famiy != ModelFamily.BASELINE
@@ -67,7 +67,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
-        elif len(self._first_batch_results) > 1 and self._batch_number != 1 and (self._batch_number) % (len(self._first_batch_results) + 1) == 1:
+        elif len(self._first_batch_results) > 1 and self._batch_number != 1 and (self._batch_number) % (len(self._first_batch_results) + 1) == 0:
             input_pipelines = []
             for i in range(len(self._first_batch_results)):
                 pipeline_class = self._first_batch_results[i][1]

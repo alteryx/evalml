@@ -96,7 +96,7 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
     all_parameters = []
-    for i in range(1,3):
+    for i in range(1, 5):
         for _ in range(len(dummy_binary_pipeline_classes)):
             next_batch = algo.next_batch()
             assert len(next_batch) == algo.pipelines_per_batch
@@ -115,13 +115,12 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
         # check next batch is stacking ensemble batch
         assert algo.batch_number == (len(dummy_binary_pipeline_classes) + 1) * i
         next_batch = algo.next_batch()
-        assert algo.batch_number == last_batch_number + 1
-        last_batch_number = algo.batch_number
         assert len(next_batch) == 1
         scores = np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline)
         assert pipeline.model_family == ModelFamily.ENSEMBLE
+
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY])
 def test_iterative_algorithm_stacked_ensemble(problem_type, all_binary_pipeline_classes):
@@ -133,18 +132,12 @@ def test_iterative_algorithm_stacked_ensemble(problem_type, all_binary_pipeline_
 
     # First initial batch
     next_batch = algo.next_batch()
-    scores = np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
-    next_batch = algo.next_batch()
-
+    assert algo.batch_number == 1
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
 
-
-    print (algo.batch_number, next_batch)
-    for i in range(1,5):
+    for i in range(1, 5):
         # loop through each pipeline class
         for _ in range(len(all_pipeline_classes)):
             next_batch = algo.next_batch()
@@ -152,11 +145,9 @@ def test_iterative_algorithm_stacked_ensemble(problem_type, all_binary_pipeline_
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
 
-
         # check next batch is stacking ensemble batch
-        assert algo.batch_number == (len(all_pipeline_classes) + 1) * i + 1
+        assert algo.batch_number == (len(all_pipeline_classes) + 1) * i
         next_batch = algo.next_batch()
-        print (next_batch[0])
         assert len(next_batch) == 1
         scores = np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
