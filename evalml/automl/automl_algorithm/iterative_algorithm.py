@@ -56,18 +56,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             self._first_batch_results = sorted(self._first_batch_results, key=itemgetter(0))
 
         next_batch = []
-
-        # for i in range(len(self._first_batch_results)):
-        #     pipeline_class = self._first_batch_results[i][1]
-        #     if pipeline_class.model_family != ModelFamily.NONE and pipeline_class.model_famiy != ModelFamily.BASELINE
-        # has_stackable = [self._first_batch_results[i][1].model_family for i in self._first_batch_results if ]
-        # print ("mod math:", self.batch_number, (self._batch_number) % (len(self._first_batch_results) + 1) )
         if self._batch_number == 0:
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
-        elif len(self._first_batch_results) > 1 and self._batch_number != 1 and (self._batch_number) % (len(self._first_batch_results) + 1) == 0:
+        elif (len(self._first_batch_results) > 1 and
+            self._batch_number != 1 and
+            (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
             for i in range(len(self._first_batch_results)):
                 pipeline_class = self._first_batch_results[i][1]
