@@ -32,16 +32,16 @@ win-circleci-test:
 
 .PHONY: installdeps
 installdeps:
-	pip install --upgrade pip
-	pip install -e .
+	pip install --upgrade pip -q
+	pip install -e . -q
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -r test-requirements.txt
+	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -r dev-requirements.txt
+	pip install -r dev-requirements.txt -q
 
 .PHONY: dependenciesfile
 dependenciesfile:
