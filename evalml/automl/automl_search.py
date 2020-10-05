@@ -1,7 +1,7 @@
 import copy
 import time
 import warnings
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import cloudpickle
 import numpy as np
@@ -31,6 +31,7 @@ from evalml.exceptions import (
     PipelineScoreError
 )
 from evalml.objectives import (
+    get_all_objective_names,
     get_core_objectives,
     get_non_core_objectives,
     get_objective
@@ -221,7 +222,7 @@ class AutoMLSearch:
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._start = None
-        self._baseline_cv_score = None
+        self._baseline_cv_scores = {}
 
         if _max_batches is not None and _max_batches <= 0:
             raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
@@ -575,7 +576,7 @@ class AutoMLSearch:
                                 self._start)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)
-                self._baseline_cv_score = baseline_results["cv_score_mean"]
+                self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(baseline_results["cv_data"])
                 self._add_result(trained_pipeline=baseline,
                                  parameters=baseline.parameters,
                                  training_time=baseline_results['training_time'],
@@ -587,6 +588,17 @@ class AutoMLSearch:
                     return True
 
         return False
+
+    @staticmethod
+    def _get_mean_cv_scores_for_all_objectives(cv_data):
+        scores = defaultdict(int)
+        objective_names = set([name.lower() for name in get_all_objective_names()])
+        n_folds = len(cv_data)
+        for fold_data in cv_data:
+            for field, value in fold_data['all_objective_scores'].items():
+                if field.lower() in objective_names:
+                    scores[field] += value
+        return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
 
     def _compute_cv_scores(self, pipeline, X, y):
         start = time.time()
@@ -659,7 +671,6 @@ class AutoMLSearch:
             if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
                 evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
             cv_data.append(evaluation_entry)
-
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
         cv_score_mean = cv_scores.mean()
@@ -668,7 +679,17 @@ class AutoMLSearch:
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
-        percent_better = self.objective.calculate_percent_difference(cv_score, self._baseline_cv_score)
+
+        percent_better_than_baseline = {}
+        mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data)
+        for obj_name in mean_cv_all_objectives:
+            objective_class = get_objective(obj_name)
+            # In the event add_to_rankings is called before search _baseline_cv_scores will be empty so we will return
+            # nan for the base score.
+            percent_better = objective_class.calculate_percent_difference(mean_cv_all_objectives[obj_name],
+                                                                          self._baseline_cv_scores.get(obj_name, np.nan))
+            percent_better_than_baseline[obj_name] = percent_better
+
         # calculate high_variance_cv
         # if the coefficient of variance is greater than .2
         with warnings.catch_warnings():
@@ -689,7 +710,8 @@ class AutoMLSearch:
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
-            "percent_better_than_baseline": percent_better,
+            "percent_better_than_baseline_all_objectives": percent_better_than_baseline,
+            "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
         self._results['search_order'].append(pipeline_id)
