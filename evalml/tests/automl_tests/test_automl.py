@@ -1227,12 +1227,12 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         n_automl_pipelines = 1 + len(automl.allowed_pipelines)
         num_ensemble_batches = 0
     else:
-        # So that the test does not break when new estimator classes are added
-        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
         # automl algorithm does not know about the additional stacked ensemble pipelines
         num_ensemble_batches = max_batches // ensemble_nth_batch
-        n_automl_pipelines = n_results + num_ensemble_batches
-    assert automl._automl_algorithm.batch_number == max_batches + num_ensemble_batches
+        # So that the test does not break when new estimator classes are added
+        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
+        n_automl_pipelines = n_results
+    assert automl._automl_algorithm.batch_number == max_batches
     # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
     assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     assert len(automl.results["pipeline_results"]) == n_results
