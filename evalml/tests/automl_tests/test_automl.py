@@ -627,7 +627,7 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           objective=fraud_objective,
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
-                          max_pipelines=1,
+                          max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
