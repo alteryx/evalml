@@ -509,7 +509,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         y_true (pd.Series): The real target values of the data
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
-                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be orange.
+                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
 
     Returns:
@@ -534,12 +534,12 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     x_axis = _calculate_axis_range(df['prediction'])
     y_axis = _calculate_axis_range(df['actual'])
     x_y_line = [min(x_axis[0], y_axis[0]), max(x_axis[1], y_axis[1])]
-    data.append(_go.Scatter(x=x_y_line, y=x_y_line, name="y = x line"))
+    data.append(_go.Scatter(x=x_y_line, y=x_y_line, name="y = x line", line_color='grey'))
 
     title = 'Predicted vs Actual Values Scatter Plot'
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Prediction', 'range': x_axis},
-                        yaxis={'title': 'Actual', 'range': y_axis})
+                        xaxis={'title': 'Prediction', 'range': x_y_line},
+                        yaxis={'title': 'Actual', 'range': x_y_line})
 
     for color, outlier_group in df.groupby('outlier'):
         if outlier_threshold:
@@ -549,6 +549,6 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         data.append(_go.Scatter(x=outlier_group['prediction'],
                                 y=outlier_group['actual'],
                                 mode='markers',
-                                fillcolor=color,
+                                marker=_go.scatter.Marker(color=color),
                                 name=name))
     return _go.Figure(layout=layout, data=data)

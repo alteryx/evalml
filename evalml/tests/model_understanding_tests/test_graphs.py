@@ -902,7 +902,7 @@ def test_graph_prediction_vs_actual_default():
     assert len(fig_dict['data']) == 2
     assert fig_dict['data'][0]['name'] == 'y = x line'
     assert fig_dict['data'][0]['x'] == fig_dict['data'][0]['y']
-    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
     assert fig_dict['data'][1]['name'] == "Values"
 
 
@@ -921,7 +921,7 @@ def test_graph_prediction_vs_actual():
     assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
     assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
     assert len(fig_dict['data']) == 2
-    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
 
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
@@ -932,11 +932,11 @@ def test_graph_prediction_vs_actual():
     assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
     assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
     assert len(fig_dict['data']) == 3
-    assert fig_dict['data'][1]['fillcolor'] == '#0000ff'
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
     assert len(fig_dict['data'][1]['x']) == 10
     assert len(fig_dict['data'][1]['y']) == 10
     assert fig_dict['data'][1]['name'] == "< outlier_threshold"
-    assert fig_dict['data'][2]['fillcolor'] == '#ffff00'
+    assert fig_dict['data'][2]['marker']['color'] == '#ffff00'
     assert len(fig_dict['data'][2]['x']) == 2
     assert len(fig_dict['data'][2]['y']) == 2
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
