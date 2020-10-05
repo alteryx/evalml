@@ -1217,6 +1217,7 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
     automl.search(X, y, data_checks=None)
     # every nth batch a stacked ensemble will be trained
     ensemble_nth_batch = len(automl.allowed_pipelines) + 1
+
     if max_batches is None:
         n_results = 5
         max_batches = 1
@@ -1224,18 +1225,21 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         # if they are not searched over. That is why n_automl_pipelines does not equal
         # n_results when max_iterations and max_batches are None
         n_automl_pipelines = 1 + len(automl.allowed_pipelines)
+        num_ensemble_batches = 0
     else:
         # So that the test does not break when new estimator classes are added
         n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
         # automl algorithm does not know about the additional stacked ensemble pipelines
-        additional_ensemble_pipelines = max_batches // ensemble_nth_batch
-        n_automl_pipelines = n_results + additional_ensemble_pipelines
-    import pdb; pdb.set_trace()
-    assert automl._automl_algorithm.batch_number == max_batches + additional_ensemble_pipelines
+        num_ensemble_batches = max_batches // ensemble_nth_batch
+        n_automl_pipelines = n_results + num_ensemble_batches
+    assert automl._automl_algorithm.batch_number == max_batches + num_ensemble_batches
     # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
     assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     assert len(automl.results["pipeline_results"]) == n_results
-    assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results) # add two for baseline and stacked ensemble
+    if num_ensemble_batches == 0:
+        assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)  # add one for baseline
+    else:
+        assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results)  # add two for baseline and stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
 
 

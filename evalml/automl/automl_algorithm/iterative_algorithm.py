@@ -4,13 +4,8 @@ from operator import itemgetter
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import (
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor
-)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import make_stacked_ensemble_pipeline
-from evalml.problem_types import ProblemTypes
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -62,8 +57,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         # One after training all pipelines one round
         elif (len(self._first_batch_results) > 1 and
-            self._batch_number != 1 and
-            (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
+              self._batch_number != 1 and
+              (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
             for i in range(len(self._first_batch_results)):
                 pipeline_class = self._first_batch_results[i][1]
