@@ -902,7 +902,7 @@ def test_graph_prediction_vs_actual_default():
     assert len(fig_dict['data']) == 2
     assert fig_dict['data'][0]['name'] == 'y = x line'
     assert fig_dict['data'][0]['x'] == fig_dict['data'][0]['y']
-    assert fig_dict['data'][0]['x'] == len(y_true)
+    assert len(fig_dict['data'][1]['x']) == len(y_true)
     assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
     assert fig_dict['data'][1]['name'] == "Values"
 
