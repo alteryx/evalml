@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 class DecisionTreeClassifier(Estimator):
     """Decision Tree Classifier."""
-    name = "Decision Tree Classifier."
+    name = "Decision Tree Classifier"
     hyperparameter_ranges = {
         "criterion": ["gini", "entropy"],
         "max_features": ["auto", "sqrt", "log2"],
