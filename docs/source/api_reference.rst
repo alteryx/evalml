@@ -247,6 +247,7 @@ Graph Utils
     graph_permutation_importance
     binary_objective_vs_threshold
     graph_binary_objective_vs_threshold
+    graph_prediction_vs_actual
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
 

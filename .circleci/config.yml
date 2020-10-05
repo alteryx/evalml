@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   windows: circleci/windows@2.2.0
+  shellcheck: circleci/shellcheck@2.0.0
 
 executors:
   python:
@@ -47,8 +48,42 @@ commands:
             # "!" negates return code. exit nonzero if any of these deps are found
             ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets"
             exit $?
+  build_pkg:
+    steps:
+      - run: |
+            git clone https://github.com/conda-forge/evalml-core-feedstock
+            source test_python/bin/activate
+            mkdir evalml-core-feedstock/evalml
+            cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
+            python .circleci/conda_config.py "$(python setup.py --version)"
+            cd evalml-core-feedstock
+            echo "$DOCKER_HUB_PASS" | docker login -u psalter --password-stdin
+            export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-comp7)"
+            echo "Created container ${DOCKER_CONTAINERID}"
+            chmod -R 777 ./
+            docker cp . ${DOCKER_CONTAINERID}:/home/conda/feedstock_root/
+            docker cp ./recipe/. ${DOCKER_CONTAINERID}:/home/conda/recipe_root/
+            echo "COMMITING UPDATED IMAGE"
+            docker commit ${DOCKER_CONTAINERID} psalter/build:latest
+            docker stop ${DOCKER_CONTAINERID}
+            export CONFIG=linux_64_
+            export UPLOAD_PACKAGES=False
+            export HOST_USER_ID=$(id -u)
+            export FEEDSTOCK_NAME=evalml-core-feedstock
+            docker run -t -e CONFIG -e HOST_USER_ID -e UPLOAD_PACKAGES -e GIT_BRANCH -e UPLOAD_ON_BRANCH -e CI -e FEEDSTOCK_NAME -e CPU_COUNT -e BINSTAR_TOKEN -e FEEDSTOCK_TOKEN -e STAGING_BINSTAR_TOKEN psalter/build:latest bash /home/conda/feedstock_root/.scripts/build_steps.sh
 
 jobs:
+  build_conda_pkg:
+    working_directory: ~/evalml/
+    executor:
+      name: python
+      python_version: "3.6"
+    steps:
+      - checkout
+      - install_dependencies_test
+      - setup_remote_docker:
+          version: 19.03.12
+      - build_pkg
   lint_test:
       parameters:
         python_version:
@@ -298,3 +333,12 @@ workflows:
                 core_dependencies: [false, true]
                 codecov: [true]
             name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
+  build_conda_pkg:
+    jobs:
+      - shellcheck/check
+      - build_conda_pkg:
+          requires:
+            - shellcheck/check
+          filters:
+            branches:
+              only: main
