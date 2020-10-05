@@ -11,6 +11,7 @@ Release Notes
     * Fixes
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
+        * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
@@ -18,6 +19,12 @@ Release Notes
     * Testing Changes
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
 
 
 **v0.14.1 Sep. 29, 2020**
