@@ -1,7 +1,6 @@
 -r core-requirements.txt
 plotly>=4.2.1
 ipywidgets>=7.5
-IPython>=3.2.1
 xgboost>=0.82
 catboost>=0.20
 lightgbm>=2.3.1
