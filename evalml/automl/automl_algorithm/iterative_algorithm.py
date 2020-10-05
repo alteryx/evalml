@@ -5,7 +5,7 @@ from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.pipelines.utils import make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -64,7 +64,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = self._first_batch_results[i][1]
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
-            ensemble = make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
+            ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:
             idx = (self._batch_number - 1) % len(self._first_batch_results)

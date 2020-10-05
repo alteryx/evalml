@@ -147,7 +147,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     return TemplatedPipeline({c.name: c.parameters for c in component_instances})
 
 
-def make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
         return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
     else:
