@@ -22,7 +22,6 @@ class SKOptTuner(Tuner):
             random_state (int, np.random.RandomState): The random state
         """
         super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
-        self.curr_params = None
         self.opt = Optimizer(self._search_space_ranges, "ET", acq_optimizer="sampling", random_state=random_state)
 
     def add(self, pipeline_parameters, score):
@@ -60,6 +59,4 @@ class SKOptTuner(Tuner):
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
             flat_parameters = self.opt.ask()
-            converted_params = self._convert_to_pipeline_parameters(flat_parameters)
-            self.curr_params = converted_params
-            return converted_params
+            return self._convert_to_pipeline_parameters(flat_parameters)
