@@ -45,7 +45,7 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils import convert_to_seconds, get_random_state, jupyter_check
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -376,11 +376,7 @@ class AutoMLSearch:
             self
         """
         # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot:
-            try:
-                get_ipython
-            except NameError:
-                show_iteration_plot = False
+        show_iteration_plot = jupyter_check()
 
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
