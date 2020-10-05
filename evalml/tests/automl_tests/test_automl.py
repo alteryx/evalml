@@ -1206,7 +1206,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
     np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
-@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
@@ -1224,16 +1224,15 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         # _automl_algorithm will include all allowed_pipelines in the first batch even
         # if they are not searched over. That is why n_automl_pipelines does not equal
         # n_results when max_iterations and max_batches are None
-        n_automl_pipelines = 1 + len(automl.allowed_pipelines)
+        n_automl_pipelines = len(automl.allowed_pipelines) + 1
         num_ensemble_batches = 0
     else:
         # automl algorithm does not know about the additional stacked ensemble pipelines
-        num_ensemble_batches = max_batches // ensemble_nth_batch
+        num_ensemble_batches = (max_batches - 1) // ensemble_nth_batch
         # So that the test does not break when new estimator classes are added
-        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
+        n_results = len(automl.allowed_pipelines) + 1 + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
         n_automl_pipelines = n_results
     assert automl._automl_algorithm.batch_number == max_batches
-    # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
     assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     assert len(automl.results["pipeline_results"]) == n_results
     if num_ensemble_batches == 0:
