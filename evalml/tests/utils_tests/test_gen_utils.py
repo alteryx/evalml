@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-from pytest import importorskip
 
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
@@ -220,7 +219,6 @@ def test_check_random_state_equality():
 
 @patch('evalml.utils.gen_utils.import_or_raise')
 def test_jupyter_check_errors(mock_import_or_raise):
-    importorskip('ipython', reason='Skipping test because ipython not installed')
     mock_import_or_raise.side_effect = ImportError
     assert not jupyter_check()
 
@@ -230,7 +228,6 @@ def test_jupyter_check_errors(mock_import_or_raise):
 
 @patch('evalml.utils.gen_utils.import_or_raise')
 def test_jupyter_check(mock_import_or_raise):
-    importorskip('ipython', reason='Skipping test because ipython not installed')
     mock_import_or_raise.return_value = MagicMock()
     mock_import_or_raise().core.getipython.get_ipython.return_value = True
     assert jupyter_check()
