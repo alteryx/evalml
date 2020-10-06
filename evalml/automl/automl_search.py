@@ -6,14 +6,13 @@ from collections import OrderedDict, defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import (
     BaseCrossValidator,
     KFold,
     StratifiedKFold,
     train_test_split
 )
-
-from imblearn.under_sampling import RandomUnderSampler
 
 from .pipeline_search_plots import PipelineSearchPlots
 

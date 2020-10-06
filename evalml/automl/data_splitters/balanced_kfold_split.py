@@ -1,6 +1,5 @@
-from sklearn.model_selection import BaseCrossValidator, StratifiedKFold
-
 from imblearn.under_sampling import RandomUnderSampler
+from sklearn.model_selection import BaseCrossValidator, StratifiedKFold
 
 
 class BalancedKFoldSplit(BaseCrossValidator):
