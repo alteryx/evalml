@@ -234,9 +234,7 @@ def jupyter_check():
     """
     try:
         ipy = import_or_raise("IPython")
-        if (ipy.core.getipython.get_ipython()):
-            return True
-        return False
+        return ipy.core.getipython.get_ipython()
     except Exception:
         return False
 
