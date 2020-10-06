@@ -338,21 +338,25 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
+    @classmethod
+    def _get_default_data_split(cls, X, problem_type, random_state):
+        if problem_type == ProblemTypes.REGRESSION:
+            default_data_split = KFold(n_splits=3, random_state=random_state)
+        elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            default_data_split = StratifiedKFold(n_splits=3, random_state=random_state)
+
+        if X.shape[0] > cls._LARGE_DATA_ROW_THRESHOLD:
+            default_data_split = TrainingValidationSplit(test_size=cls._LARGE_DATA_PERCENT_VALIDATION)
+
+        return default_data_split
+
     def _set_data_split(self, X):
         """Sets the data split method for AutoMLSearch
 
         Arguments:
             X (DataFrame): Input dataframe to split
         """
-        if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state)
-        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
-
-        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION)
-
-        self.data_split = self.data_split or default_data_split
+        self.data_split = self.data_split or AutoMLSearch._get_default_data_split(X, self.problem_type, self.random_state)
 
     def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
         """Find the best pipeline for the data set.
