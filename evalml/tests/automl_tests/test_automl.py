@@ -666,9 +666,9 @@ def test_data_split_shuffle():
     assert automl.results['search_order'] == [0]
     assert len(automl.results['pipeline_results'][0]['cv_data']) == 3
     for fold in range(3):
-        np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['cv_data'][fold]['score'], 0.0, decimal=5)
-    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['score'], 0.0, decimal=5)
-    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['validation_score'], 0.0, decimal=5)
+        np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['cv_data'][fold]['score'], 0.0, decimal=4)
+    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['score'], 0.0, decimal=4)
+    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['validation_score'], 0.0, decimal=4)
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):
