@@ -10,6 +10,7 @@ Release Notes
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added class downsampling to balance classes for classification problems :pr:`1266`
     * Fixes
+        * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
