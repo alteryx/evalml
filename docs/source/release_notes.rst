@@ -17,6 +17,7 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
+        * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
 
