@@ -1,14 +1,14 @@
-import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import is_all_numeric
 
 
 class PCA(Transformer):
     """Reduces the number of features by using Principal Component Analysis"""
-    name = 'PCA'
+    name = 'PCA Transformer'
     hyperparameter_ranges = {
         "variance": Real(0.01, 1)}
 
@@ -26,3 +26,30 @@ class PCA(Transformer):
         super().__init__(parameters=parameters,
                          component_obj=pca,
                          random_state=random_state)
+
+    def fit(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not is_all_numeric(X):
+            raise ValueError("PCA input must be numeric")
+
+        self._component_obj.fit(X)
+        return self
+
+    def transform(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not is_all_numeric(X):
+            raise ValueError("PCA input must be numeric")
+
+        X_t = self._component_obj.transform(X)
+        return pd.DataFrame(X_t, index=X.index)
+
+    def fit_transform(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not is_all_numeric(X):
+            raise ValueError("PCA input must be numeric")
+
+        X_t = self._component_obj.fit_transform(X, y)
+        return pd.DataFrame(X_t, index=X.index)
