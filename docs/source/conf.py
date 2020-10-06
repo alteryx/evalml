@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.abspath(path))
 # -- Project information -----------------------------------------------------
 
 project = 'EvalML'
-copyright = '2019, Alteryx, Inc.'
+copyright = '2020, Alteryx, Inc.'
 author = 'Alteryx Innovation Labs'
 
 # The short X.Y version
