@@ -912,6 +912,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     caplog.clear()
     automl.describe_pipeline(0)
     out = caplog.text
+    print(out)
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: binary" in out
     assert "Model Family: Baseline" in out
@@ -919,8 +920,8 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Testing" in out
     assert "0                      1.000     66.000    34.000" in out
-    assert "1                      1.000     67.000    33.000" in out
-    assert "2                      1.000     67.000    33.000" in out
+    assert "1                      1.000     66.000    33.000" in out
+    assert "2                      1.000     66.000    33.000" in out
     assert "mean                   1.000          -         -" in out
     assert "std                    0.000          -         -" in out
     assert "coef of var            0.000          -         -" in out
