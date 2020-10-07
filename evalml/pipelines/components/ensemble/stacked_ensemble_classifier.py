@@ -1,4 +1,5 @@
 from sklearn.ensemble import StackingClassifier
+from sklearn.model_selection import StratifiedKFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
@@ -37,4 +38,4 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
             random_state (int, np.random.RandomState): seed for the random number generator
         """
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
-                         cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)
+                         cv=StratifiedKFold(n_splits=3, random_state=random_state), n_jobs=n_jobs, random_state=random_state, **kwargs)

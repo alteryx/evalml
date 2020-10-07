@@ -1,4 +1,5 @@
 from sklearn.ensemble import StackingRegressor
+from sklearn.model_selection import KFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
@@ -36,5 +37,5 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
             random_state (int, np.random.RandomState): Seed for the random number generator
         """
-        super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator, cv=cv,
+        super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator, cv=KFold(n_splits=3, random_state=random_state),
                          n_jobs=n_jobs, random_state=random_state, **kwargs)
