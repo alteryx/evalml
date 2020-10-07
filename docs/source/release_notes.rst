@@ -10,6 +10,7 @@ Release Notes
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
     * Fixes
+        * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
@@ -17,6 +18,7 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
     * Testing Changes
+        * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
 
