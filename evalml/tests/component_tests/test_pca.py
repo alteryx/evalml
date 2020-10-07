@@ -34,7 +34,8 @@ def test_pca_array():
                                  [-3.954182, 0.429071],
                                  [-4.079174, -0.252790],
                                  [-0.112877, -0.755922]])
-    X_t = pd.DataFrame(pca.fit_transform(X))
+    pca.fit(X)
+    X_t = pd.DataFrame(pca.transform(X))
     assert_frame_equal(X_t, expected_X_t)
 
 
@@ -55,4 +56,4 @@ def test_pca_invalid():
                       [0, 2, 2, 5]])
     pca = PCA()
     with pytest.raises(ValueError, match="must be numeric"):
-        pca.fit(X)
+        pca.fit_transform(X)
