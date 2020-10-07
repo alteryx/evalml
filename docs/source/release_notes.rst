@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
         * Added ``graph_prediction_vs_actual`` in ``model_understanding`` for regression problems :pr:`1252`
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
