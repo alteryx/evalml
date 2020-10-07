@@ -10,7 +10,7 @@ class PCA(Transformer):
     """Reduces the number of features by using Principal Component Analysis"""
     name = 'PCA Transformer'
     hyperparameter_ranges = {
-        "variance": Real(0.01, 1)}
+        "variance": Real(0.25, 1)}
 
     def __init__(self, variance=0.95, n_components=None, random_state=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
