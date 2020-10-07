@@ -302,7 +302,7 @@ workflows:
         - win_unit_tests:
             matrix:
               parameters:
-                python_version: ["3.6", "3.7", "3.8"]
+                python_version: ["3.6", "3.7", "3.8", "3.9"]
             name: "windows python << matrix.python_version >> unit tests"
   check_dependencies_updated_linux:
     jobs:
@@ -317,12 +317,12 @@ workflows:
         - lint_test:
             matrix:
               parameters:
-                python_version: ["3.6", "3.7", "3.8"]
+                python_version: ["3.6", "3.7", "3.8", "3.9"]
             name: "python << matrix.python_version >> lint test"
         - unit_tests:
             matrix:
               parameters:
-                python_version: ["3.6", "3.7"]
+                python_version: ["3.6", "3.7", "3.9"]
                 core_dependencies: [false]
                 codecov: [false]
             name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
