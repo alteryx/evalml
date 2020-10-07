@@ -232,9 +232,9 @@ def jupyter_check():
         Boolean: True if Ipython, False otherwise
     """
     try:
-        get_ipython()
-        return True
-    except NameError:
+        ipy = import_or_raise("IPython")
+        return ipy.core.getipython.get_ipython()
+    except Exception:
         return False
 
 
