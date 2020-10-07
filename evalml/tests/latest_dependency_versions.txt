@@ -1,4 +1,4 @@
-catboost==0.24.1
+catboost==0.24.2
 cloudpickle==1.6.0
 lightgbm==3.0.0
 numpy==1.19.2
