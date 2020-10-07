@@ -30,6 +30,7 @@ from evalml.exceptions import (
     PipelineNotFoundError,
     PipelineScoreError
 )
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_all_objective_names,
     get_core_objectives,
@@ -229,7 +230,7 @@ class AutoMLSearch:
         self._max_batches = _max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
+        self._pipelines_per_batch = 1
 
         self._validate_problem_type()
 
@@ -685,6 +686,53 @@ class AutoMLSearch:
         logger.info(f"\tFinished cross validation - mean {self.objective.name}: {cv_score_mean:.3f}")
         return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
 
+    def _compute_ensemble_scores(self, pipeline, X, y):
+        start = time.time()
+        cv_data = []
+        ts = TrainingValidationSplit()
+        train, test = ts.split(X, y)[0]
+        X_train, X_test = X.iloc[train], X.iloc[test]
+        y_train, y_test = y.iloc[train], y.iloc[test]
+        logger.info("\tStarting ensemble training")
+        objectives_to_score = [self.objective] + self.additional_objectives
+        cv_pipeline = None
+        try:
+            cv_pipeline = pipeline.clone()
+            cv_pipeline.fit(X_train, y_train)
+            scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
+            score = scores[self.objective.name]
+        except Exception as e:
+            if isinstance(e, PipelineScoreError):
+                logger.info(f"\t\t\tEncountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
+                logger.info(f"\t\t\tThe scores for these objectives will be replaced with nan.")
+                logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                logger.debug(f"\t\t\tHyperparameters:\n\t{pipeline.hyperparameters}")
+                logger.debug(f"\t\t\tException during automl search: {str(e)}")
+                nan_scores = {objective: np.nan for objective in e.exceptions}
+                scores = {**nan_scores, **e.scored_successfully}
+                scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
+                score = scores[self.objective.name]
+            else:
+                logger.info(f"\t\t\tEncountered an error.")
+                logger.info(f"\t\t\tAll scores will be replaced with nan.")
+                logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                logger.debug(f"\t\t\tHyperparameters:\n\t{pipeline.hyperparameters}")
+                logger.debug(f"\t\t\tException during automl search: {str(e)}")
+                score = np.nan
+                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+
+        ordered_scores = OrderedDict()
+        ordered_scores.update({self.objective.name: score})
+        ordered_scores.update(scores)
+
+        evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
+        cv_data.append(evaluation_entry)
+        training_time = time.time() - start
+        cv_scores = pd.Series([fold['score'] for fold in cv_data])
+        cv_score_mean = cv_scores.mean()
+        logger.info(f"\tFinished - mean {self.objective.name}: {cv_score_mean:.3f}")
+        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
+
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
 
@@ -729,6 +777,19 @@ class AutoMLSearch:
 
     def _evaluate(self, pipeline, X, y):
         parameters = pipeline.parameters
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            evaluation_results = self._compute_ensemble_scores(pipeline, X, y)
+            logger.debug('Adding results for ensemble {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+            self._add_result(trained_pipeline=pipeline,
+                             parameters=parameters,
+                             training_time=evaluation_results['training_time'],
+                             cv_data=evaluation_results['cv_data'],
+                             cv_scores=evaluation_results['cv_scores'])
+
+            logger.debug('Adding results complete')
+            return evaluation_results
+
         evaluation_results = self._compute_cv_scores(pipeline, X, y)
         logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 

@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
@@ -77,3 +79,26 @@ class StackedEnsembleBase(Estimator):
                 'cv': None,
                 'n_jobs': 1,
                 }
+
+    def fit(self, X, y=None):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        if isinstance(y, pd.Series):
+            y = y.to_numpy()
+        self._component_obj.fit(X, y)
+        return self
+
+    def predict(self, X):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        predictions = self._component_obj.predict(X)
+        predictions = pd.Series(predictions)
+        return predictions
+
+    def predict_proba(self, X):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        pred_proba = self._component_obj.predict_proba(X)
+        if not isinstance(pred_proba, pd.DataFrame):
+            pred_proba = pd.DataFrame(pred_proba)
+        return pred_proba
