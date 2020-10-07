@@ -4,6 +4,7 @@ import warnings
 from collections import OrderedDict
 
 import cloudpickle
+from dask.distributed import as_completed, wait
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import (
@@ -85,7 +86,8 @@ class AutoMLSearch:
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False,
-                 _max_batches=None):
+                 _max_batches=None,
+                 _batch_size=5):
         """Automated pipeline search
 
         Arguments:
@@ -228,7 +230,7 @@ class AutoMLSearch:
         self._max_batches = _max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
+        self._pipelines_per_batch = _batch_size
 
         self._validate_problem_type()
 
@@ -337,7 +339,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True):
+    def search(self, X, y, data_checks="auto", feature_types=None, show_iteration_plot=True, dask_parallel=None):
         """Find the best pipeline for the data set.
 
         Arguments:
@@ -444,8 +446,11 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
-        while self._check_stopping_condition(self._start):
-            try:
+
+        if dask_parallel:
+            # Parallel search
+            print("Using Dask!")
+            while self._check_stopping_condition(self._start):
                 if len(current_batch_pipelines) == 0:
                     try:
                         if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
@@ -455,33 +460,73 @@ class AutoMLSearch:
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
                         break
-                pipeline = current_batch_pipelines.pop(0)
-                parameters = pipeline.parameters
-                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
-                logger.debug('Pipeline parameters: {}'.format(parameters))
 
-                if self.start_iteration_callback:
-                    self.start_iteration_callback(pipeline.__class__, parameters, self)
-                desc = f"{pipeline.name}"
-                if len(desc) > self._MAX_NAME_LEN:
-                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-                desc = desc.ljust(self._MAX_NAME_LEN)
+                for pipeline in current_batch_pipelines:
+                    parameters = pipeline.parameters
+                    if self.start_iteration_callback:
+                        self.start_iteration_callback(pipeline.__class__, parameters, self)
+                    desc = f"{pipeline.name}"
+                    if len(desc) > self._MAX_NAME_LEN:
+                        desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                    desc = desc.ljust(self._MAX_NAME_LEN)
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+                    X_future = dask_parallel.scatter(X)
+                    y_future = dask_parallel.scatter(y)
+                pipeline_futures = dask_parallel.map(self._evaluate, current_batch_pipelines, X=X_future, y=y_future, parallel=True)
+                for pipeline_future in as_completed(pipeline_futures):
+                    fitted_pipeline, evaluation_results = pipeline_future.result()
+                    self._add_result(trained_pipeline=fitted_pipeline,
+                                    parameters=pipeline.parameters,
+                                    training_time=evaluation_results['training_time'],
+                                    cv_data=evaluation_results['cv_data'],
+                                    cv_scores=evaluation_results['cv_scores'])
+                    score = evaluation_results['cv_score_mean']
+                    score_to_minimize = -score if self.objective.greater_is_better else score
+                    current_batch_pipeline_scores.append(score_to_minimize)
+                    self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
-
-                evaluation_results = self._evaluate(pipeline, X, y)
-                score = evaluation_results['cv_score_mean']
-                score_to_minimize = -score if self.objective.greater_is_better else score
-                current_batch_pipeline_scores.append(score_to_minimize)
-                self._automl_algorithm.add_result(score_to_minimize, pipeline)
-
+                wait(pipeline_futures)
                 if search_iteration_plot:
                     search_iteration_plot.update()
+        else:
+            while self._check_stopping_condition(self._start):
+                try:
+                    if len(current_batch_pipelines) == 0:
+                        try:
+                            if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
+                                raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
+                            current_batch_pipelines = self._automl_algorithm.next_batch()
+                            current_batch_pipeline_scores = []
+                        except StopIteration:
+                            logger.info('AutoML Algorithm out of recommendations, ending')
+                            break
+                    pipeline = current_batch_pipelines.pop(0)
+                    parameters = pipeline.parameters
+                    logger.debug('Evaluating pipeline {}'.format(pipeline.name))
+                    logger.debug('Pipeline parameters: {}'.format(parameters))
 
-            except KeyboardInterrupt:
-                current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_batch_pipelines)
-                if not current_batch_pipelines:
-                    return
+                    if self.start_iteration_callback:
+                        self.start_iteration_callback(pipeline.__class__, parameters, self)
+                    desc = f"{pipeline.name}"
+                    if len(desc) > self._MAX_NAME_LEN:
+                        desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                    desc = desc.ljust(self._MAX_NAME_LEN)
+
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+
+                    _, evaluation_results = self._evaluate(pipeline, X, y)
+                    score = evaluation_results['cv_score_mean']
+                    score_to_minimize = -score if self.objective.greater_is_better else score
+                    current_batch_pipeline_scores.append(score_to_minimize)
+                    self._automl_algorithm.add_result(score_to_minimize, pipeline)
+
+                    if search_iteration_plot:
+                        search_iteration_plot.update()
+
+                except KeyboardInterrupt:
+                    current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_batch_pipelines)
+                    if not current_batch_pipelines:
+                        return
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
@@ -694,19 +739,18 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
 
-    def _evaluate(self, pipeline, X, y):
+    def _evaluate(self, pipeline, X, y, parallel=False):
         parameters = pipeline.parameters
         evaluation_results = self._compute_cv_scores(pipeline, X, y)
         logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
-
-        self._add_result(trained_pipeline=pipeline,
-                         parameters=parameters,
-                         training_time=evaluation_results['training_time'],
-                         cv_data=evaluation_results['cv_data'],
-                         cv_scores=evaluation_results['cv_scores'])
-
+        if not parallel:
+            self._add_result(trained_pipeline=pipeline,
+                            parameters=parameters,
+                            training_time=evaluation_results['training_time'],
+                            cv_data=evaluation_results['cv_data'],
+                            cv_scores=evaluation_results['cv_scores'])
         logger.debug('Adding results complete')
-        return evaluation_results
+        return pipeline, evaluation_results
 
     def get_pipeline(self, pipeline_id, random_state=0):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
