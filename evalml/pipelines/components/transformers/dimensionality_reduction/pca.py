@@ -12,17 +12,22 @@ class PCA(Transformer):
     hyperparameter_ranges = {
         "variance": Real(0.01, 1)}
 
-    def __init__(self, variance=0.95, random_state=0, **kwargs):
+    def __init__(self, variance=0.95, n_components=None, random_state=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
             variance (float): the percentage of the original data variance that should be preserved when reducing the
                               number of features.
+            n_components (int): the number of features to maintain after computing SVD. Defaults to None, but will override
+                                variance variable if set.
         """
-        parameters = {"variance": variance}
+        parameters = {"variance": variance,
+                      "n_components": n_components}
         parameters.update(kwargs)
-        pca = SkPCA(n_components=variance,
-                    **kwargs)
+        if n_components:
+            pca = SkPCA(n_components=n_components, **kwargs)
+        else:
+            pca = SkPCA(n_components=variance, **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=pca,
                          random_state=random_state)
