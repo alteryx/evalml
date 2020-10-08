@@ -616,7 +616,7 @@ class AutoMLSearch:
 
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
                 try:
-                    rus = RandomUnderSampler(sampling_strategy='not minority' ,random_state=self.random_state, replacement=False)
+                    rus = RandomUnderSampler(sampling_strategy='not minority', random_state=self.random_state, replacement=False)
                     X_train, y_train = rus.fit_resample(X_train, y_train)
                 except ValueError:
                     logger.warning(f"\t\t\tFold {i}: could not downsample to balance classification")
