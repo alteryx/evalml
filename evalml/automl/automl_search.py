@@ -691,6 +691,7 @@ class AutoMLSearch:
         cv_data = []
         ts = TrainingValidationSplit()
         train, test = ts.split(X, y)[0]
+        print (train, test)
         X_train, X_test = X.iloc[train], X.iloc[test]
         y_train, y_test = y.iloc[train], y.iloc[test]
         logger.info("\tStarting ensemble training")
