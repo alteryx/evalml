@@ -689,6 +689,7 @@ class AutoMLSearch:
     def _compute_ensemble_scores(self, pipeline, X, y):
         start = time.time()
         cv_data = []
+        X.reset_index(drop=True, inplace=True)
         ts = TrainingValidationSplit()
         train, test = ts.split(X, y)[0]
         print ("length:", len(X), len(y))
