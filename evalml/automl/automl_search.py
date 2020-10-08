@@ -345,12 +345,12 @@ class AutoMLSearch:
             X (DataFrame): Input dataframe to split
         """
         if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state)
+            default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
         elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
+            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
 
         if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION)
+            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
 
         self.data_split = self.data_split or default_data_split
 
