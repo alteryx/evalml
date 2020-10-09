@@ -1,6 +1,5 @@
 import copy
 import time
-import warnings
 from collections import OrderedDict, defaultdict
 
 import cloudpickle
@@ -22,7 +21,8 @@ from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
-    EmptyDataChecks
+    EmptyDataChecks,
+    HighVarianceCVDataCheck
 )
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
@@ -345,12 +345,12 @@ class AutoMLSearch:
             X (DataFrame): Input dataframe to split
         """
         if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state)
+            default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
         elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state)
+            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
 
         if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION)
+            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
 
         self.data_split = self.data_split or default_data_split
 
@@ -395,7 +395,7 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
 
-        if len(data_check_results) > 0:
+        if data_check_results:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
                 if message.message_type == DataCheckMessageType.WARNING:
@@ -694,15 +694,17 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        # calculate high_variance_cv
-        # if the coefficient of variance is greater than .2
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
-
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self._results['pipeline_results'])
+
+        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
+        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
+        high_variance_cv = False
+
+        if high_variance_cv_check_results:
+            logger.warning(high_variance_cv_check_results[0])
+            high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
@@ -784,10 +786,6 @@ class AutoMLSearch:
 
         logger.info("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         log_subtitle(logger, "Cross Validation", underline="-")
-
-        if pipeline_results["high_variance_cv"]:
-            logger.warning("High variance within cross validation scores. " +
-                           "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
