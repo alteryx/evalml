@@ -18,6 +18,7 @@ Release Notes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
+        * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
         * Miscellaneous doc updates :pr:`1269`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
