@@ -35,7 +35,6 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -44,6 +43,7 @@ from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
 )
+
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):

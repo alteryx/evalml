@@ -1429,9 +1429,6 @@ def test_make_pipeline_custom_hyperparameters(problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     custom_hyperparameters = {'Imputer': {
         'numeric_impute_strategy': ['median']
-    },
-        'CatBoost': {
-        'max_depth': [6, 7]
     }}
 
     y = pd.Series([0, 0, 1, 0, 0])

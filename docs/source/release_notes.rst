@@ -8,7 +8,7 @@ Release Notes
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
-        * Added ability to freeze hyperparameters for AutoMLSearch :pr:``
+        * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
