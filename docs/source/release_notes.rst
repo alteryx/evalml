@@ -19,10 +19,13 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
+        * Added ``evalml info`` command to documentation :pr:`1293`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
+        * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
+
 
 
 **v0.14.1 Sep. 29, 2020**
