@@ -73,7 +73,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         assert isinstance(results['pipeline_summary'], str)
         assert isinstance(results['parameters'], dict)
         assert isinstance(results['score'], float)
-        assert isinstance(results['high_variance_cv'], np.bool_)
+        assert isinstance(results['high_variance_cv'], bool)
         assert isinstance(results['cv_data'], list)
         for cv_result in results['cv_data']:
             assert cv_result.keys() == expected_cv_data_keys
@@ -643,6 +643,32 @@ def test_large_dataset_split_size(mock_fit, mock_score):
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
+
+
+def test_data_split_shuffle():
+    # this test checks that the default data split strategy should shuffle data. it creates a target which
+    # increases monotonically from 0 to n-1.
+    #
+    # if shuffle is enabled, the baseline model, which predicts the mean of the training data, should accurately
+    # predict the mean of the validation data, because the training split in each CV fold will contain a mix of
+    # values from across the target range, thus yielding an R^2 of close to 0.
+    #
+    # if shuffle is disabled, the mean value learned on each CV fold's training data will be incredible inaccurate,
+    # thus yielding an R^2 well below 0.
+
+    n = 100000
+    X = pd.DataFrame({'col_0': np.random.random(n)})
+    y = pd.Series(np.arange(n), name='target')
+    automl = AutoMLSearch(problem_type='regression',
+                          max_time=1,
+                          max_pipelines=1)
+    automl.search(X, y)
+    assert automl.results['search_order'] == [0]
+    assert len(automl.results['pipeline_results'][0]['cv_data']) == 3
+    for fold in range(3):
+        np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['cv_data'][fold]['score'], 0.0, decimal=4)
+    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['score'], 0.0, decimal=4)
+    np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['validation_score'], 0.0, decimal=4)
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class):

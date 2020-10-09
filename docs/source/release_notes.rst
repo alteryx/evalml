@@ -4,11 +4,14 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
         * Added ``graph_prediction_vs_actual`` in ``model_understanding`` for regression problems :pr:`1252`
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
+        * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
     * Fixes
+        * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
@@ -17,6 +20,7 @@ Release Notes
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
     * Testing Changes
+        * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
 
