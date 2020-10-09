@@ -13,7 +13,7 @@ class PCA(Transformer):
         "variance": Real(0.25, 1)}
 
     def __init__(self, variance=0.95, n_components=None, random_state=0, **kwargs):
-        """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
+        """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
             variance (float): the percentage of the original data variance that should be preserved when reducing the
@@ -48,7 +48,7 @@ class PCA(Transformer):
             raise ValueError("PCA input must be numeric")
 
         X_t = self._component_obj.transform(X)
-        return pd.DataFrame(X_t, index=X.index)
+        return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
 
     def fit_transform(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
@@ -57,4 +57,4 @@ class PCA(Transformer):
             raise ValueError("PCA input must be numeric")
 
         X_t = self._component_obj.fit_transform(X, y)
-        return pd.DataFrame(X_t, index=X.index)
+        return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])

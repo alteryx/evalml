@@ -17,7 +17,8 @@ def test_pca_numeric():
                                  [4.969987, -0.702976],
                                  [-3.954182, 0.429071],
                                  [-4.079174, -0.252790],
-                                 [-0.112877, -0.755922]])
+                                 [-0.112877, -0.755922]],
+                                 columns=[f"component_{i}" for i in range(2)])
     X_t = pd.DataFrame(pca.fit_transform(X))
     assert_frame_equal(X_t, expected_X_t)
 
@@ -33,7 +34,8 @@ def test_pca_array():
                                  [4.969987, -0.702976],
                                  [-3.954182, 0.429071],
                                  [-4.079174, -0.252790],
-                                 [-0.112877, -0.755922]])
+                                 [-0.112877, -0.755922]],
+                                 columns=[f"component_{i}" for i in range(2)])
     pca.fit(X)
     X_t = pd.DataFrame(pca.transform(X))
     assert_frame_equal(X_t, expected_X_t)
@@ -80,7 +82,8 @@ def test_variance():
                                  [-6.961064, -5.026062, -3.170519, -0.624576],
                                  [-1.352624, 7.778657, -0.778879, -1.554429],
                                  [7.067179, 0.645894, -2.633617, 2.159135],
-                                 [6.828241, -3.867796, 2.597358, -1.740404]])
+                                 [6.828241, -3.867796, 2.597358, -1.740404]],
+                                 columns=[f"component_{i}" for i in range(4)])
     X_t_90 = pd.DataFrame(pca.fit_transform(X))
     assert_frame_equal(X_t_90, expected_X_t)
 
