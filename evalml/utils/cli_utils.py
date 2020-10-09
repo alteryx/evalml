@@ -7,6 +7,7 @@ import sys
 import pkg_resources
 import psutil
 import requirements
+from importlib_metadata import files
 from psutil._common import bytes2human
 
 import evalml
@@ -15,13 +16,14 @@ from evalml.utils import get_logger
 logger = get_logger(__file__)
 
 
+
 def get_core_requirements():
-    reqs_path = os.path.join(os.path.dirname(evalml.__file__), '../core-requirements.txt')
-    lines = open(reqs_path, 'r').readlines()
-    lines = [line for line in lines if '-r ' not in line]
-    reqs = requirements.parse(''.join(lines))
-    reqs_names = [req.name for req in reqs]
-    return reqs_names
+    util = [p for p in files('evalml') if 'core-requirements.txt' in str(p)]
+    a = util[0].read_text().splitlines()
+    l = []
+    for b in a:
+        l.append(b.partition(">")[0]);
+    return l
 
 
 def print_info():
