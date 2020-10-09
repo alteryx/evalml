@@ -12,6 +12,7 @@ import evalml.problem_types
 import evalml.utils
 import evalml.data_checks
 from evalml.automl import AutoMLSearch
+import evalml.automl.engines
 from evalml.utils import print_info
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
