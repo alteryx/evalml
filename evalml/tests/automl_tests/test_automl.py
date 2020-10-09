@@ -1393,7 +1393,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
     X, y = X_y_multi
     custom_hyperparameters = {
         "Imputer": {
-            "numeric_impute_strategy": ["most_frequent", "mean"]
+            "numeric_impute_strategy": ["mean"]
         }
     }
     larger_custom = {
@@ -1410,7 +1410,10 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
 
     automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=pipelines)
     automl.search(X, y)
+    assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["mean"]
 
     invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_custom) for estimator in estimators]
     automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     automl.search(X, y)
+
+    assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["most_frequent", "mean"]
