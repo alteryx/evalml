@@ -73,7 +73,7 @@ def _get_pipeline_base_class(problem_type):
         return RegressionPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type):
+def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -94,7 +94,7 @@ def make_pipeline(X, y, estimator, problem_type):
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
-    hyperparameters = None
+    hyperparameters = custom_hyperparameters
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 

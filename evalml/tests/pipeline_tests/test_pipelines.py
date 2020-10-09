@@ -1420,3 +1420,27 @@ def test_pipeline_repr(pipeline_class):
     pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
     assert repr(pipeline_with_nan_parameters) == expected_repr
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_make_pipeline_custom_hyperparameters(problem_type):
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    custom_hyperparameters = {'Imputer': {
+        'numeric_impute_strategy': ['median']
+    },
+        'CatBoost': {
+        'max_depth': [6, 7]
+    }}
+
+    y = pd.Series([0, 0, 1, 0, 0])
+    estimators = get_estimators(problem_type=problem_type)
+
+    for estimator_class in estimators:
+        for problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, custom_hyperparameters)
+            assert pipeline.custom_hyperparameters == custom_hyperparameters
+
+            pipeline2 = make_pipeline(X, y, estimator_class, problem_type)
+            assert not pipeline2.custom_hyperparameters
