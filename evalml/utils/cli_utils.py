@@ -19,7 +19,9 @@ logger = get_logger(__file__)
 
 def get_core_requirements():
     util = [p for p in files('evalml') if 'core-requirements.txt' in str(p)]
-    a = util[0].read_text().splitlines()
+    print (util)
+    a = util[0]
+    a = a.read_text().splitlines()
     l = []
     for b in a:
         l.append(b.partition(">")[0]);
