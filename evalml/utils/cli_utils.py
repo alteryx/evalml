@@ -16,7 +16,7 @@ logger = get_logger(__file__)
 
 
 def get_core_requirements():
-    reqs_path = os.path.join(os.path.dirname(evalml.__file__), 'evalml/requirements/core-requirements.txt')
+    reqs_path = os.path.join(os.path.dirname(evalml.__file__), 'core-requirements.txt')
     lines = open(reqs_path, 'r').readlines()
     lines = [line for line in lines if '-r ' not in line]
     reqs = requirements.parse(''.join(lines))
