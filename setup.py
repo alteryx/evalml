@@ -27,6 +27,6 @@ setup(
         
     package_data = {
         # If any package contains *.txt or *.rst files, include them:
-        '': ['core-requirements.txt'],
+        '': ['../core-requirements.txt'],
     },
 )
