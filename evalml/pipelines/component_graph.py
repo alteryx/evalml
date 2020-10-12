@@ -2,10 +2,13 @@ import graphviz
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
 
+from evalml.exceptions import MissingComponentError
+from evalml.model_family import ModelFamily
+from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import handle_component_class
 
 class ComponentGraph:
-    def  __init__(self, component_names=None, edges=None, self.random_state=0):
+    def  __init__(self, component_names=None, edges=None, random_state=0):
         """ Initializes a component graph for a pipeline as a DAG.
         
         Arguments:
@@ -23,6 +26,7 @@ class ComponentGraph:
         if edges:
             self._component_graph.add_edges_from(edges)
         self._compute_order = topological_sort(self._component_graph)
+        self.random_state = random_state
 
     def from_list(self, component_list):
         """Constructs a linear graph from a given list
@@ -35,15 +39,11 @@ class ComponentGraph:
             component_class = handle_component_class(component)
             component_name = component_class.name
 
-            parent = None
             child = None
-            if idx != 0:
-                parent = [handle_component_class(component_list[idx-1]).name]
             if idx != len(component_list)-1:
                 child = [handle_component_class(component_list[idx+1]).name]
-            self.add_node(component_name, component_class, parents=parent, children=child)
+            self.add_node(component_name, component_class, children=child)
         return self
-                
 
     def instantiate(self, parameters):
         """Instantiates all components within the graph using the given parameters
@@ -53,6 +53,8 @@ class ComponentGraph:
                                An empty dictionary {} implies using all default values for component parameters.
         """
         for component_name, component_class in self.component_names.items():
+            if isinstance(component_class, ComponentBase):
+                raise ValueError(f'Cannot instantiate already instantiated component {component_name}')
 
             try:
                 component_class = handle_component_class(component_class)
@@ -82,10 +84,10 @@ class ComponentGraph:
         self.component_names[component_name] = component_obj
         if parents:
             for parent in parents:
-                self._component_graph.add_edge((parent, component_name))
+                self._component_graph.add_edge(parent, component_name)
         if children:
             for child in children:
-                self._component_graph.add_edge((component_name, child))
+                self._component_graph.add_edge(component_name, child)
         self._recompute_order()
         return self
 
@@ -99,7 +101,7 @@ class ComponentGraph:
         """
         if from_component not in self.component_names.keys() or to_component not in self.component_names.keys():
             raise ValueError("Cannot add an edge for a component not in the graph yet")
-        self._component_graph.add_edge((from_component, to_component))
+        self._component_graph.add_edge(from_component, to_component)
         self._recompute_order()
         return self
 
@@ -127,7 +129,10 @@ class ComponentGraph:
         Returns:
             ComponentBase object
         """
-        return self.component_names[component_name]
+        try:
+            return self.component_names[component_name]
+        except KeyError:
+            raise ValueError(f'Component {component_name} is not in the graph')
 
     def get_estimators(self):
         """Gets a list of all the estimator components within this graph
@@ -150,8 +155,9 @@ class ComponentGraph:
         Returns:
             iterator of parent component names
         """
+        if component_name not in self.component_names.keys():
+            raise ValueError(f'Component {component_name} is not in the graph')
         return self._component_graph.predecessors(component_name)
-
 
     def graph(self, name, format):
         # TODO: Come back and make this pretty
@@ -172,6 +178,6 @@ class ComponentGraph:
         try:
             component = next(self._compute_order)
             return component, self.component_names[component]
-         except StopIteration:
+        except StopIteration:
             self._recompute_order() # Reset the generator
             raise StopIteration
