@@ -1422,6 +1422,17 @@ def test_pipeline_repr(pipeline_class):
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
+def test_make_pipeline_error():
+    X = pd.DataFrame([[0, 1], [1, 0]])
+    y = pd.Series([1, 0])
+    estimators = get_estimators(problem_type="binary")
+    custom_hyperparameters = [{"Imputer": {"numeric_imput_strategy": ["median"]}}, {"One Hot Encoder": {"value1": ["value2"]}}]
+
+    for estimator in estimators:
+        with pytest.raises(ValueError, match="if custom_hyperparameters provided, must be dictionary"):
+            make_pipeline(X, y, estimator, "binary", custom_hyperparameters)
+
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_make_pipeline_custom_hyperparameters(problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],

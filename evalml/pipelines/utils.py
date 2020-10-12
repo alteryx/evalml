@@ -83,6 +83,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         y (pd.Series): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
+            with component name as key and dictionary of parameters as the value
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
@@ -93,6 +95,10 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
+
+    if custom_hyperparameters:
+        if not isinstance(custom_hyperparameters, dict):
+            raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
     hyperparameters = custom_hyperparameters
     if not isinstance(X, pd.DataFrame):
