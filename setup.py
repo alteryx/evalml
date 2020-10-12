@@ -26,6 +26,6 @@ setup(
                 ('evalml', ['core-requirements.txt'])],
         
     package_data = {
-        '': ['../core-requirements.txt'],
+        'evalml': ['../core-requirements.txt'],
     },
 )
