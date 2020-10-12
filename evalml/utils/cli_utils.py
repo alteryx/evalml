@@ -23,6 +23,7 @@ def get_core_requirements():
     reqs_names = [req.name for req in reqs]
     return reqs_names
 
+
 def print_info():
     """Prints information about the system, evalml, and dependencies of evalml.
 
