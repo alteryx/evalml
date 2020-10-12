@@ -86,7 +86,7 @@ class AutoMLSearch:
                  n_jobs=-1,
                  tuner_class=None,
                  verbose=True,
-                 optimize_thresholds=True,
+                 optimize_thresholds=False,
                  _max_batches=None):
         """Automated pipeline search
 
