@@ -36,7 +36,7 @@ class PCA(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not is_all_numeric(X):
-            raise ValueError("PCA input must be numeric")
+            raise ValueError("PCA input must be all numeric")
 
         self._component_obj.fit(X)
         return self
@@ -45,7 +45,7 @@ class PCA(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not is_all_numeric(X):
-            raise ValueError("PCA input must be numeric")
+            raise ValueError("PCA input must be all numeric")
 
         X_t = self._component_obj.transform(X)
         return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
@@ -54,7 +54,7 @@ class PCA(Transformer):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not is_all_numeric(X):
-            raise ValueError("PCA input must be numeric")
+            raise ValueError("PCA input must be all numeric")
 
         X_t = self._component_obj.fit_transform(X, y)
         return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])

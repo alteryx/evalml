@@ -526,7 +526,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, PCA):
                 assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] < X.shape[1]
+                assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
@@ -540,7 +540,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, PCA):
                 assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] < X.shape[1]
+                assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape

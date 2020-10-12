@@ -48,7 +48,7 @@ def test_pca_invalid():
                       [10, 2, 2, np.nan],
                       [None, 2, 2, 5]])
     pca = PCA()
-    with pytest.raises(ValueError, match="must be numeric"):
+    with pytest.raises(ValueError, match="must be all numeric"):
         pca.fit(X)
 
     X = pd.DataFrame([[3, 0, 1, 6],
@@ -57,7 +57,7 @@ def test_pca_invalid():
                       [10, 2, 2, 23],
                       [0, 2, 2, 5]])
     pca = PCA()
-    with pytest.raises(ValueError, match="must be numeric"):
+    with pytest.raises(ValueError, match="must be all numeric"):
         pca.fit_transform(X)
 
     X_ok = pd.DataFrame([[3, 0, 1, 6],
@@ -67,7 +67,7 @@ def test_pca_invalid():
                          [6, 2, 2, 5]])
     pca = PCA()
     pca.fit(X_ok)
-    with pytest.raises(ValueError, match="must be numeric"):
+    with pytest.raises(ValueError, match="must be all numeric"):
         pca.transform(X)
 
 
