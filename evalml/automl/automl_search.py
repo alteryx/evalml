@@ -385,17 +385,18 @@ class AutoMLSearch:
 
         # make everything ww objects
         if not isinstance(X, ww.DataTable):
+            if isinstance(X, np.ndarray):
+                X = pd.DataFrame(X)
             X = ww.DataTable(X)
 
-        if not isinstance(y, pd.DataColumn):
+        if not isinstance(y, ww.DataColumn):
+            if isinstance(y, np.ndarray):
+                y = pd.Series(y)
             y = ww.DataColumn(y)
 
-        # make everything pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = X.to_pandas()
+        y = y.to_pandas()
 
         self._set_data_split(X)
 
@@ -403,6 +404,7 @@ class AutoMLSearch:
         data_check_results = data_checks.validate(X, y)
 
         if data_check_results:
+            import pdb; pdb.set_trace()
             self._data_check_results = data_check_results
             for message in self._data_check_results:
                 if message.message_type == DataCheckMessageType.WARNING:
