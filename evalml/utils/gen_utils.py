@@ -253,3 +253,20 @@ def safe_repr(value):
         if np.isinf(value):
             return f"float('{repr(value)}')"
     return repr(value)
+
+
+def is_all_numeric(df):
+    """Checks if the given DataFrame contains only numeric values
+
+    Arguments:
+        df (DataFrame): The DataFrame to check datatypes of
+
+    Returns:
+        True if all the DataFrame columns are numeric and are not missing any values, False otherwise
+    """
+    if df.isnull().any().any():
+        return False
+    for dtype in df.dtypes:
+        if dtype not in numeric_and_boolean_dtypes:
+            return False
+    return True
