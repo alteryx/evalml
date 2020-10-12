@@ -25,7 +25,7 @@ setup(
                 ('evalml/tests/data', ['evalml/tests/data/tips.csv', 'evalml/tests/data/titanic.csv']),
                 ('', ['core-requirements.txt'])],
         
-    package_data = {
-        '': ['../core-requirements.txt'],
-    },
+    # package_data = {
+    #     '': ['../core-requirements.txt'],
+    # },
 )
