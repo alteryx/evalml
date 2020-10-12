@@ -23,9 +23,9 @@ setup(
     },
     data_files=[('evalml/demos/data', ['evalml/demos/data/fraud_transactions.csv.tar.gz', 'evalml/demos/data/churn.csv']),
                 ('evalml/tests/data', ['evalml/tests/data/tips.csv', 'evalml/tests/data/titanic.csv']),
-                ('', ['core-requirements.txt'])],
+                ],
         
-    # package_data = {
-    #     '': ['../core-requirements.txt'],
-    # },
+    package_data = {
+        '': ['../core-requirements.txt'],
+    },
 )
