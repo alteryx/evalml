@@ -383,12 +383,12 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        # make everything pandas objects
+        # make everything ww objects
         if not isinstance(X, ww.DataTable):
             X = ww.DataTable(X)
 
         if not isinstance(y, pd.DataColumn):
-            y = pd.DataColumn(y)
+            y = ww.DataColumn(y)
 
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
