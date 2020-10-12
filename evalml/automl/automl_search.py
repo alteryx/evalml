@@ -1,7 +1,7 @@
 import copy
 import time
 from collections import OrderedDict, defaultdict
-
+import woodwork as ww
 import cloudpickle
 import numpy as np
 import pandas as pd
@@ -382,6 +382,13 @@ class AutoMLSearch:
                 get_ipython
             except NameError:
                 show_iteration_plot = False
+
+        # make everything pandas objects
+        if not isinstance(X, ww.DataTable):
+            X = ww.DataTable(X)
+
+        if not isinstance(y, pd.DataColumn):
+            y = pd.DataColumn(y)
 
         # make everything pandas objects
         if not isinstance(X, pd.DataFrame):
