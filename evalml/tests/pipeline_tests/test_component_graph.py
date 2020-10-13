@@ -114,6 +114,12 @@ def test_invalid_instantiate():
     with pytest.raises(MissingComponentError):
         component_graph.instantiate(parameters={})
 
+    components = {'Imputer': 'Imputer', 'OneHot': 'One Hot Encoder', 'Estimator': ElasticNetClassifier}
+    edges = [('Imputer', 'OneHot'), ('OneHot', 'Estimator')]
+    component_graph = ComponentGraph(components, edges)
+    with pytest.raises(ValueError, match='Error received when instantiating component'):
+        component_graph.instantiate(parameters={'Estimator': {'max_iter': 100, 'fake_param': None}})
+
 
 def test_add_node():
     component_graph = ComponentGraph()
