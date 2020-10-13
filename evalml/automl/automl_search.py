@@ -617,6 +617,7 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
+        # import pdb; pdb.set_trace()
         for i, (train, test) in enumerate(self.data_split.split(X, y)):
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]

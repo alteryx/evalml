@@ -15,7 +15,7 @@ import pandas as pd
 
 logger = get_logger(__file__)
 
-numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', pd.Int64Dtype]
+numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
 boolean = ['bool']
 numeric_and_boolean_dtypes = numeric_dtypes + boolean
 categorical_dtypes = ['object', 'category']
