@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest import importorskip
-import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
@@ -291,14 +291,14 @@ def test_binary_rf(X_y_binary):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
         clf.fit(X, y)
 
-    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction <=1.0"):
+    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=1.01)
         clf.fit(X, y)
 
-    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction <=1.0"):
+    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0, bagging_fraction=1.01)
         clf.fit(X, y)
-    
+
     clf = LightGBMClassifier(boosting_type="rf")
     clf.fit(X, y)
 
