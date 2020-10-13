@@ -13,6 +13,7 @@ Release Notes
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
+        * Fixed ``boosting type='rf'`` for LightGBM Classifier :pr:``
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes

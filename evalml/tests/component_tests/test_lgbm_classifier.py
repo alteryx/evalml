@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest import importorskip
+import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
@@ -281,3 +282,25 @@ def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     assert_series_equal(y_arg, y_numeric)
 
     clf.predict(X)
+
+
+def test_binary_rf(X_y_binary):
+    X, y = X_y_binary
+
+    with pytest.raises(lgbm.basic.LightGBMError, match="config->bagging_freq > 0"):
+        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
+        clf.fit(X, y)
+
+    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction <=1.0"):
+        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=1.01)
+        clf.fit(X, y)
+
+    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction <=1.0"):
+        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0, bagging_fraction=1.01)
+        clf.fit(X, y)
+    
+    clf = LightGBMClassifier(boosting_type="rf")
+    clf.fit(X, y)
+
+    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=0.5)
+    clf.fit(X, y)
