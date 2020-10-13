@@ -5,7 +5,7 @@ from sklearn.model_selection._split import BaseCrossValidator
 class TrainingValidationSplit(BaseCrossValidator):
     """Split the training data into training and validation sets"""
 
-    def __init__(self, test_size=None, train_size=None, shuffle=True, stratify=None, random_state=0):
+    def __init__(self, test_size=None, train_size=None, shuffle=False, stratify=None, random_state=0):
         """Create a TrainingValidation instance
 
         Arguments:
