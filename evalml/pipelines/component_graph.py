@@ -1,4 +1,3 @@
-import graphviz
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
 
@@ -6,6 +5,7 @@ from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import handle_component_class
+from evalml.utils import import_or_raise
 
 class ComponentGraph:
     def  __init__(self, component_names=None, edges=None, random_state=0):
@@ -159,13 +159,42 @@ class ComponentGraph:
             raise ValueError(f'Component {component_name} is not in the graph')
         return self._component_graph.predecessors(component_name)
 
-    def graph(self, name, format):
-        # TODO: Come back and make this pretty
-        visual = graphviz.Digraph(name=name, format=format)
-        for node in self._component_graph.nodes:
-            visual.node(node)
-        visual.edges(self._component_graph.edges)
-        return visual
+    def graph(self, name, graph_format):       
+        """Generate an image representing the pipeline graph
+
+        Arguments:
+            filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+        Returns:
+            graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+        """
+        graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
+
+        # Try rendering a dummy graph to see if a working backend is installed
+        try:
+            graphviz.Digraph().pipe()
+        except graphviz.backend.ExecutableNotFound:
+            raise RuntimeError(
+                "To graph entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz\n"
+            )
+
+        graph = graphviz.Digraph(name=name, format=graph_format,
+                                 graph_attr={'splines': 'ortho'})
+        graph.attr(rankdir='LR')
+        for component_name, component_class in self.component_names.items():
+            label = '%s\l' % (component_name)  # noqa: W605
+            if isinstance(component_class, ComponentBase):
+                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
+                                        else key + ' : ' + str(val)
+                                        for key, val in component_class.parameters.items()])  # noqa: W605
+                label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
+            graph.node(component_name, shape='record', label=label)
+        graph.edges(self._component_graph.edges)
+        return graph
 
     def _recompute_order(self):
         """Regenerated the topologically sorted order of the graph"""

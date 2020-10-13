@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from skopt.space import Real
 
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
 
 @pytest.fixture
@@ -35,6 +35,24 @@ def test_pipeline():
     return TestPipeline(parameters={})
 
 
+@pytest.fixture
+def test_component_graph():    
+    components = {'Imputer': 'Imputer',
+                  'OneHot_RandomForest': 'One Hot Encoder',
+                  'OneHot_CatBoost': 'One Hot Encoder',
+                  'Random Forest': 'Random Forest Classifier',
+                  'CatBoost': 'CatBoost Classifier',
+                  'Logistic Regression': 'Logistic Regression Classifier'}
+    edges = [('Imputer', 'OneHot_RandomForest'),
+             ('Imputer', 'OneHot_CatBoost'),
+             ('OneHot_RandomForest', 'Random Forest'),
+             ('OneHot_CatBoost', 'CatBoost'),
+             ('Random Forest', 'Logistic Regression'),
+             ('CatBoost', 'Logistic Regression')]
+    component_graph = ComponentGraph(components, edges)
+    return component_graph
+
+
 @patch('graphviz.Digraph.pipe')
 def test_backend(mock_func, test_pipeline):
     mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
@@ -43,9 +61,33 @@ def test_backend(mock_func, test_pipeline):
         clf.graph()
 
 
+@patch('graphviz.Digraph.pipe')
+def test_backend_comp_graph(mock_func, test_component_graph):
+    mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+    comp = test_component_graph
+    with pytest.raises(RuntimeError):
+        comp.graph('test', 'png')
+
+
 def test_returns_digraph_object(test_pipeline):
     clf = test_pipeline
     graph = clf.graph()
+    assert isinstance(graph, graphviz.Digraph)
+
+
+def test_returns_digraph_object_comp_graph(test_component_graph):
+    comp = test_component_graph
+    graph = comp.graph('test', 'png')
+    assert isinstance(graph, graphviz.Digraph)
+
+
+def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
+    comp = test_component_graph
+    parameters = {'OneHot_RandomForest': {'top_n': 3},
+                  'OneHot_CatBoost': {'top_n': 5},
+                  'CatBoost': {'n_estimators': 12}}
+    comp.instantiate(parameters)
+    graph = comp.graph('test', 'png')
     assert isinstance(graph, graphviz.Digraph)
 
 
