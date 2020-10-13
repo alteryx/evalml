@@ -9,12 +9,9 @@ Release Notes
         * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
-<<<<<<< HEAD
-        * Added `ComponentGraph` class for future implementation of pipelines as directed, acyclic graphs :pr:`1300`
-=======
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
->>>>>>> main
+        * Added `ComponentGraph` class for future implementation of pipelines as directed, acyclic graphs :pr:`1300`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
