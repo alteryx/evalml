@@ -694,13 +694,13 @@ class AutoMLSearch:
         train, test = ts.split(X, y)[0]
         X_train, X_test = X.iloc[train], X.iloc[test]
         y_train, y_test = y.iloc[train], y.iloc[test]
-        logger.info("\tStarting ensemble training")
+        logger.info("\tStarting ensemble pipeline training")
         objectives_to_score = [self.objective] + self.additional_objectives
-        cv_pipeline = None
+        stacked_pipeline = None
         try:
-            cv_pipeline = pipeline.clone()
-            cv_pipeline.fit(X_train, y_train)
-            scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
+            stacked_pipeline = pipeline.clone()
+            stacked_pipeline.fit(X_train, y_train)
+            scores = stacked_pipeline.score(X_test, y_test, objectives=objectives_to_score)
             score = scores[self.objective.name]
         except Exception as e:
             if isinstance(e, PipelineScoreError):
@@ -778,28 +778,19 @@ class AutoMLSearch:
 
     def _evaluate(self, pipeline, X, y):
         parameters = pipeline.parameters
-
         if pipeline.model_family == ModelFamily.ENSEMBLE:
             evaluation_results = self._compute_ensemble_scores(pipeline, X, y)
-            logger.debug('Adding results for ensemble {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
-            self._add_result(trained_pipeline=pipeline,
-                             parameters=parameters,
-                             training_time=evaluation_results['training_time'],
-                             cv_data=evaluation_results['cv_data'],
-                             cv_scores=evaluation_results['cv_scores'])
+            logger.debug('Adding results for ensemble pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 
-            logger.debug('Adding results complete')
-            return evaluation_results
-
-        evaluation_results = self._compute_cv_scores(pipeline, X, y)
-        logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+        else:
+            evaluation_results = self._compute_cv_scores(pipeline, X, y)
+            logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
 
         self._add_result(trained_pipeline=pipeline,
                          parameters=parameters,
                          training_time=evaluation_results['training_time'],
                          cv_data=evaluation_results['cv_data'],
                          cv_scores=evaluation_results['cv_scores'])
-
         logger.debug('Adding results complete')
         return evaluation_results
 

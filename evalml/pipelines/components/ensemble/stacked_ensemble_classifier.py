@@ -27,8 +27,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The classifier used to combine the base estimators. If None, uses LogisticRegressionClassifier.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used.
-                In all other cases, KFold is used. Defaults to None.
+                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. Defaults to None.
                 Possible inputs for cv are:
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold

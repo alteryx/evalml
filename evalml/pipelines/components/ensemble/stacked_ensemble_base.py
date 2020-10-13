@@ -51,7 +51,7 @@ class StackedEnsembleBase(Estimator):
 
         if len(set([pipeline.problem_type for pipeline in input_pipelines])) > 1:
             raise ValueError("All pipelines must have the same problem type.")
-        
+
         cv = cv or self._default_cv(n_splits=3, random_state=random_state)
         estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
         final_estimator = scikit_learn_wrapped_estimator(final_estimator or self._default_final_estimator())

@@ -26,7 +26,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
+                For int/None inputs, KFold is used. Defaults to None.
                 Possible inputs for cv are:
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
@@ -38,5 +38,5 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
             random_state (int, np.random.RandomState): Seed for the random number generator
         """
-        super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator, cv=KFold(n_splits=3, random_state=random_state),
+        super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator, cv=cv,
                          n_jobs=n_jobs, random_state=random_state, **kwargs)
