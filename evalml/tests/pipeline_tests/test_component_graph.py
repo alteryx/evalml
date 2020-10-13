@@ -3,11 +3,11 @@ import pytest
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
-    Imputer,
-    OneHotEncoder,
-    RandomForestClassifier,
     CatBoostClassifier,
-    LogisticRegressionClassifier
+    Imputer,
+    LogisticRegressionClassifier,
+    OneHotEncoder,
+    RandomForestClassifier
 )
 
 
