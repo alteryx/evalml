@@ -21,7 +21,7 @@ class LightGBMClassifier(Estimator):
         "boosting_type": ["gbdt", "dart", "goss", "rf"],
         "n_estimators": Integer(10, 100),
         "max_depth": Integer(0, 10),
-        "num_leaves": Integer(1, 100),
+        "num_leaves": Integer(2, 100),
         "min_child_samples": Integer(1, 100)
     }
     model_family = ModelFamily.LIGHTGBM
