@@ -161,10 +161,11 @@ class ComponentGraph:
         return self._component_graph.predecessors(component_name)
 
     def graph(self, name, graph_format):
-        """Generate an image representing the pipeline graph
+        """Generate an image representing the component graph
 
         Arguments:
-            filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+            name (str): Name of the graph
+            graph_format (str): file format to save the graph in
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
