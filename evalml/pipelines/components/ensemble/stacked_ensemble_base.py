@@ -94,11 +94,3 @@ class StackedEnsembleBase(Estimator):
         predictions = self._component_obj.predict(X)
         predictions = pd.Series(predictions)
         return predictions
-
-    def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        pred_proba = self._component_obj.predict_proba(X)
-        if not isinstance(pred_proba, pd.DataFrame):
-            pred_proba = pd.DataFrame(pred_proba)
-        return pred_proba

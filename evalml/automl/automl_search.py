@@ -1,6 +1,5 @@
 import copy
 import time
-import warnings
 from collections import OrderedDict, defaultdict
 
 import cloudpickle
@@ -22,7 +21,8 @@ from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
-    EmptyDataChecks
+    EmptyDataChecks,
+    HighVarianceCVDataCheck
 )
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
@@ -396,7 +396,7 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
 
-        if len(data_check_results) > 0:
+        if data_check_results:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
                 if message.message_type == DataCheckMessageType.WARNING:
@@ -692,8 +692,6 @@ class AutoMLSearch:
         X.reset_index(drop=True, inplace=True)
         ts = TrainingValidationSplit()
         train, test = ts.split(X, y)[0]
-        print ("length:", len(X), len(y))
-        print (train, test)
         X_train, X_test = X.iloc[train], X.iloc[test]
         y_train, y_test = y.iloc[train], y.iloc[test]
         logger.info("\tStarting ensemble training")
@@ -709,8 +707,6 @@ class AutoMLSearch:
                 logger.info(f"\t\t\tEncountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
                 logger.info(f"\t\t\tThe scores for these objectives will be replaced with nan.")
                 logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                logger.debug(f"\t\t\tHyperparameters:\n\t{pipeline.hyperparameters}")
-                logger.debug(f"\t\t\tException during automl search: {str(e)}")
                 nan_scores = {objective: np.nan for objective in e.exceptions}
                 scores = {**nan_scores, **e.scored_successfully}
                 scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
@@ -749,15 +745,17 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        # calculate high_variance_cv
-        # if the coefficient of variance is greater than .2
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            high_variance_cv = (cv_scores.std() / cv_scores.mean()) > .2
-
         pipeline_name = trained_pipeline.name
         pipeline_summary = trained_pipeline.summary
         pipeline_id = len(self._results['pipeline_results'])
+
+        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
+        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
+        high_variance_cv = False
+
+        if high_variance_cv_check_results:
+            logger.warning(high_variance_cv_check_results[0])
+            high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
@@ -852,10 +850,6 @@ class AutoMLSearch:
 
         logger.info("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
         log_subtitle(logger, "Cross Validation", underline="-")
-
-        if pipeline_results["high_variance_cv"]:
-            logger.warning("High variance within cross validation scores. " +
-                           "Model may not perform as estimated on unseen data.")
 
         all_objective_scores = [fold["all_objective_scores"] for fold in pipeline_results["cv_data"]]
         all_objective_scores = pd.DataFrame(all_objective_scores)
