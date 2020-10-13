@@ -39,16 +39,16 @@ def test_pipeline():
 def test_component_graph():
     components = {'Imputer': 'Imputer',
                   'OneHot_RandomForest': 'One Hot Encoder',
-                  'OneHot_CatBoost': 'One Hot Encoder',
+                  'OneHot_ElasticNet': 'One Hot Encoder',
                   'Random Forest': 'Random Forest Classifier',
-                  'CatBoost': 'CatBoost Classifier',
+                  'Elastic Net': 'Elastic Net Classifier',
                   'Logistic Regression': 'Logistic Regression Classifier'}
     edges = [('Imputer', 'OneHot_RandomForest'),
-             ('Imputer', 'OneHot_CatBoost'),
+             ('Imputer', 'OneHot_ElasticNet'),
              ('OneHot_RandomForest', 'Random Forest'),
-             ('OneHot_CatBoost', 'CatBoost'),
+             ('OneHot_ElasticNet', 'Elastic Net'),
              ('Random Forest', 'Logistic Regression'),
-             ('CatBoost', 'Logistic Regression')]
+             ('Elastic Net', 'Logistic Regression')]
     component_graph = ComponentGraph(components, edges)
     return component_graph
 
@@ -84,8 +84,8 @@ def test_returns_digraph_object_comp_graph(test_component_graph):
 def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
     comp = test_component_graph
     parameters = {'OneHot_RandomForest': {'top_n': 3},
-                  'OneHot_CatBoost': {'top_n': 5},
-                  'CatBoost': {'n_estimators': 12}}
+                  'OneHot_ElasticNet': {'top_n': 5},
+                  'Elastic Net': {'max_iter': 100}}
     comp.instantiate(parameters)
     graph = comp.graph('test', 'png')
     assert isinstance(graph, graphviz.Digraph)

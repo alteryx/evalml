@@ -3,7 +3,7 @@ import pytest
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
-    CatBoostClassifier,
+    ElasticNetClassifier,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -15,16 +15,16 @@ from evalml.pipelines.components import (
 def example_graph():
     components = {'Imputer': Imputer,
                   'OneHot_RandomForest': OneHotEncoder,
-                  'OneHot_CatBoost': OneHotEncoder,
+                  'OneHot_ElasticNet': OneHotEncoder,
                   'Random Forest': RandomForestClassifier,
-                  'CatBoost': CatBoostClassifier,
+                  'Elastic Net': ElasticNetClassifier,
                   'Logistic Regression': LogisticRegressionClassifier}
     edges = [('Imputer', 'OneHot_RandomForest'),
-             ('Imputer', 'OneHot_CatBoost'),
+             ('Imputer', 'OneHot_ElasticNet'),
              ('OneHot_RandomForest', 'Random Forest'),
-             ('OneHot_CatBoost', 'CatBoost'),
+             ('OneHot_ElasticNet', 'Elastic Net'),
              ('Random Forest', 'Logistic Regression'),
-             ('CatBoost', 'Logistic Regression')]
+             ('Elastic Net', 'Logistic Regression')]
     return components, edges
 
 
@@ -37,7 +37,7 @@ def test_init(example_graph):
     assert len(comp_graph.component_names) == 6
 
     order = [comp_name for comp_name, _ in comp_graph]
-    expected_order = ['Imputer', 'OneHot_CatBoost', 'CatBoost', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
+    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
     assert order == expected_order
 
 
@@ -67,19 +67,19 @@ def test_instantiate_with_parameters(example_graph):
     component_graph = ComponentGraph(components, edges)
 
     assert not isinstance(component_graph.get_component('Imputer'), Imputer)
-    assert not isinstance(component_graph.get_component('CatBoost'), CatBoostClassifier)
+    assert not isinstance(component_graph.get_component('Elastic Net'), ElasticNetClassifier)
 
     parameters = {'OneHot_RandomForest': {'top_n': 3},
-                  'OneHot_CatBoost': {'top_n': 5},
-                  'CatBoost': {'n_estimators': 12}}
+                  'OneHot_ElasticNet': {'top_n': 5},
+                  'Elastic Net': {'max_iter': 100}}
     component_graph.instantiate(parameters)
 
     assert isinstance(component_graph.get_component('Imputer'), Imputer)
     assert isinstance(component_graph.get_component('Random Forest'), RandomForestClassifier)
     assert isinstance(component_graph.get_component('Logistic Regression'), LogisticRegressionClassifier)
     assert component_graph.get_component('OneHot_RandomForest').parameters['top_n'] == 3
-    assert component_graph.get_component('OneHot_CatBoost').parameters['top_n'] == 5
-    assert component_graph.get_component('CatBoost').parameters['n_estimators'] == 12
+    assert component_graph.get_component('OneHot_ElasticNet').parameters['top_n'] == 5
+    assert component_graph.get_component('Elastic Net').parameters['max_iter'] == 100
 
 
 def test_instantiate_without_parameters(example_graph):
@@ -87,8 +87,8 @@ def test_instantiate_without_parameters(example_graph):
     component_graph = ComponentGraph(components, edges)
     component_graph.instantiate({})
     assert component_graph.get_component('OneHot_RandomForest').parameters['top_n'] == 10
-    assert component_graph.get_component('OneHot_CatBoost').parameters['top_n'] == 10
-    assert component_graph.get_component('OneHot_RandomForest') is not component_graph.get_component('OneHot_CatBoost')
+    assert component_graph.get_component('OneHot_ElasticNet').parameters['top_n'] == 10
+    assert component_graph.get_component('OneHot_RandomForest') is not component_graph.get_component('OneHot_ElasticNet')
 
 
 def test_instantiate_from_list():
@@ -108,7 +108,7 @@ def test_invalid_instantiate():
     with pytest.raises(ValueError, match='Cannot instantiate already instantiated component'):
         component_graph.instantiate({'OneHot': {'top_n': 3}})
 
-    components = {'Imputer': 'Imputer', 'Fake': 'Fake Component', 'Estimator': CatBoostClassifier}
+    components = {'Imputer': 'Imputer', 'Fake': 'Fake Component', 'Estimator': ElasticNetClassifier}
     edges = [('Imputer', 'Fake'), ('Fake', 'Estimator')]
     component_graph = ComponentGraph(components, edges)
     with pytest.raises(MissingComponentError):
@@ -173,8 +173,8 @@ def test_add_invalid_edge():
 def test_merge_graph():
     component_graph = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_RandomForest': OneHotEncoder, 'Random Forest': RandomForestClassifier},
                                      edges=[('Imputer', 'OneHot_RandomForest'), ('OneHot_RandomForest', 'Random Forest')])
-    component_graph_2 = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_CatBoost': OneHotEncoder, 'CatBoost': CatBoostClassifier},
-                                       edges=[('Imputer', 'OneHot_CatBoost'), ('OneHot_CatBoost', 'CatBoost')])
+    component_graph_2 = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_ElasticNet': OneHotEncoder, 'ElasticNet': ElasticNetClassifier},
+                                       edges=[('Imputer', 'OneHot_ElasticNet'), ('OneHot_ElasticNet', 'ElasticNet')])
 
     assert len(component_graph.component_names) == 3
     assert len([comp_name for comp_name, _ in component_graph]) == 3
@@ -182,20 +182,20 @@ def test_merge_graph():
     assert len(component_graph.component_names) == 5
     assert len([comp_name for comp_name, _ in component_graph]) == 5
     order = [comp_name for comp_name, _ in component_graph]
-    expected_order = ['Imputer', 'OneHot_CatBoost', 'CatBoost', 'OneHot_RandomForest', 'Random Forest']
+    expected_order = ['Imputer', 'OneHot_ElasticNet', 'ElasticNet', 'OneHot_RandomForest', 'Random Forest']
     assert order == expected_order
 
     parameters = {'OneHot_RandomForest': {'top_n': 3},
-                  'OneHot_CatBoost': {'top_n': 5}}
+                  'OneHot_ElasticNet': {'top_n': 5}}
     component_graph.instantiate(parameters)
-    assert component_graph.get_component('OneHot_RandomForest') != component_graph.get_component('OneHot_CatBoost')
+    assert component_graph.get_component('OneHot_RandomForest') != component_graph.get_component('OneHot_ElasticNet')
 
 
 def test_get_component(example_graph):
     components, edges = example_graph
     component_graph = ComponentGraph(components, edges)
 
-    assert component_graph.get_component('OneHot_CatBoost') == OneHotEncoder
+    assert component_graph.get_component('OneHot_ElasticNet') == OneHotEncoder
     assert component_graph.get_component('Logistic Regression') == LogisticRegressionClassifier
 
     with pytest.raises(ValueError, match='not in the graph'):
@@ -211,7 +211,7 @@ def test_get_estimators(example_graph):
     assert component_graph.get_estimators() == []
 
     component_graph = ComponentGraph(example_graph[0], example_graph[1])
-    assert component_graph.get_estimators() == [RandomForestClassifier, CatBoostClassifier, LogisticRegressionClassifier]
+    assert component_graph.get_estimators() == [RandomForestClassifier, ElasticNetClassifier, LogisticRegressionClassifier]
 
 
 def test_parents(example_graph):
@@ -220,10 +220,10 @@ def test_parents(example_graph):
 
     assert list(component_graph.parents('Imputer')) == []
     assert list(component_graph.parents('OneHot_RandomForest')) == ['Imputer']
-    assert list(component_graph.parents('OneHot_CatBoost')) == ['Imputer']
+    assert list(component_graph.parents('OneHot_ElasticNet')) == ['Imputer']
     assert list(component_graph.parents('Random Forest')) == ['OneHot_RandomForest']
-    assert list(component_graph.parents('CatBoost')) == ['OneHot_CatBoost']
-    assert list(component_graph.parents('Logistic Regression')) == ['Random Forest', 'CatBoost']
+    assert list(component_graph.parents('Elastic Net')) == ['OneHot_ElasticNet']
+    assert list(component_graph.parents('Logistic Regression')) == ['Random Forest', 'Elastic Net']
 
     with pytest.raises(ValueError, match='not in the graph'):
         component_graph.parents('Fake component')
