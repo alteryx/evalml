@@ -217,3 +217,35 @@ def scikit_learn_wrapped_estimator(evalml_obj):
         elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             return WrappedSKClassifier(evalml_obj)
     raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")
+
+
+def generate_component_code(element):
+    """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
+
+    Arguments:
+        element (component instance): The instance of the component to generate code for
+
+    Returns:
+        String representation of Python code that can be run separately in order to recreate the component instance.
+            Does not include code for custom component implementation.
+    """
+    component_names = [c.name for c in all_components()]
+    # hold the imports needed and add code to end
+    code_strings = []
+    base_string = "def make_component_instance():\n"
+
+    if isinstance(element, ComponentBase):
+        if element.__class__.name in component_names:
+            code_strings.append("from {} import {}".format(element.__class__.__module__, element.__class__.__name__))
+        component_parameters = element.parameters
+        name = element.name[0].lower() + element.name[1:].replace(' ', '')
+        base_string += "    {0} = {1}(**{2})\n" \
+                       "    return {0}" \
+                       .format(name,
+                               element.__class__.__name__,
+                               component_parameters)
+
+        code_strings.append(base_string)
+    else:
+        raise ValueError("Element must be a component instance, received {}".format(type(element)))
+    return "\n".join(code_strings)

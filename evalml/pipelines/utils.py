@@ -7,6 +7,7 @@ from .multiclass_classification_pipeline import (
 from .regression_pipeline import RegressionPipeline
 
 from evalml.model_family import ModelFamily
+from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -19,7 +20,10 @@ from evalml.pipelines.components import (  # noqa: F401
     RandomForestClassifier,
     StandardScaler
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    get_estimators,
+    all_components
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import categorical_dtypes, datetime_dtypes
@@ -143,3 +147,50 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
     return TemplatedPipeline({c.name: c.parameters for c in component_instances})
+
+
+def generate_pipeline_code(element):
+    """Creates and returns a string that contains the Python imports and code required for running the pipeline.
+
+    Arguments:
+        element (pipeline instance): The instance of the pipeline to generate code for
+
+    Returns:
+        String representation of Python code that can be run separately in order to recreate the pipeline instance.
+            Does not include code for custom component implementation
+    """
+    component_names = [c.name for c in all_components()]
+    # hold the imports needed and add code to end
+    import_strings = []
+    code_strings = []
+    base_string = "def make_pipeline_instance():\n"
+
+    # check if pipeline
+    if isinstance(element, PipelineBase):
+        component_graph = []
+        custom_components = []
+        for com in element.component_graph:
+            component_graph.append(com.name)
+            if com.name not in component_names:
+                custom_components.append((com.__class__.__name__, com.name))
+            else:
+                import_strings.append(com.__class__.__name__)
+        code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
+        code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
+
+        base_string += "    class {0}({1}):\n" \
+                       "        component_graph = {2}\n" \
+                       "    parameters = {3}\n" \
+                       "    return {0}(parameters) " \
+                       .format(element.__class__.__name__,
+                               element.__class__.__bases__[0].__name__,
+                               component_graph,
+                               element.parameters)
+        if custom_components:
+            for class_name, c in custom_components:
+                idx = base_string.find(c)
+                base_string = base_string[:idx - 1] + class_name + base_string[idx + len(c) + 1:]
+        code_strings.append(base_string)
+    else:
+        raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
+    return "\n".join(code_strings)
