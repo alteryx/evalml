@@ -404,7 +404,6 @@ class AutoMLSearch:
         data_check_results = data_checks.validate(X, y)
 
         if data_check_results:
-            import pdb; pdb.set_trace()
             self._data_check_results = data_check_results
             for message in self._data_check_results:
                 if message.message_type == DataCheckMessageType.WARNING:
