@@ -686,51 +686,131 @@ class AutoMLSearch:
         logger.info(f"\tFinished cross validation - mean {self.objective.name}: {cv_score_mean:.3f}")
         return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
 
+
     def _compute_ensemble_scores(self, pipeline, X, y):
         start = time.time()
         cv_data = []
-        # X.reset_index(drop=True, inplace=True)
-        ts = TrainingValidationSplit()
-        train, test = ts.split(X, y)[0]
-        X_train, X_test = X.iloc[train], X.iloc[test]
-        y_train, y_test = y.iloc[train], y.iloc[test]
-        logger.info("\tStarting ensemble pipeline training")
-        objectives_to_score = [self.objective] + self.additional_objectives
-        stacked_pipeline = None
-        try:
-            stacked_pipeline = pipeline.clone()
-            stacked_pipeline.fit(X_train, y_train)
-            scores = stacked_pipeline.score(X_test, y_test, objectives=objectives_to_score)
-            score = scores[self.objective.name]
-        except Exception as e:
-            if isinstance(e, PipelineScoreError):
-                logger.info(f"\t\t\tEncountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
-                logger.info(f"\t\t\tThe scores for these objectives will be replaced with nan.")
-                logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                nan_scores = {objective: np.nan for objective in e.exceptions}
-                scores = {**nan_scores, **e.scored_successfully}
-                scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
+        logger.info("\tStarting cross validation")
+        ensemble_data_split = TrainingValidationSplit()
+        for i, (train, test) in enumerate(ensemble_data_split.split(X, y)):
+            logger.debug(f"\t\tTraining and scoring on fold {i}")
+            X_train, X_test = X.iloc[train], X.iloc[test]
+            y_train, y_test = y.iloc[train], y.iloc[test]
+            if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+                diff_train = set(np.setdiff1d(y, y_train))
+                diff_test = set(np.setdiff1d(y, y_test))
+                diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
+                diff_string += f"Missing target values in the test set after data split: {diff_test}." if diff_test else ""
+                if diff_string:
+                    raise Exception(diff_string)
+            objectives_to_score = [self.objective] + self.additional_objectives
+            cv_pipeline = None
+            try:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+                cv_pipeline = pipeline.clone()
+                logger.debug(f"\t\t\tFold {i}: starting training")
+                cv_pipeline.fit(X_train, y_train)
+                logger.debug(f"\t\t\tFold {i}: finished training")
+                if self.objective.problem_type == ProblemTypes.BINARY:
+                    cv_pipeline.threshold = 0.5
+                    if self.optimize_thresholds and self.objective.can_optimize_threshold:
+                        logger.debug(f"\t\t\tFold {i}: Optimizing threshold for {self.objective.name}")
+                        y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
+                        if isinstance(y_predict_proba, pd.DataFrame):
+                            y_predict_proba = y_predict_proba.iloc[:, 1]
+                        else:
+                            y_predict_proba = y_predict_proba[:, 1]
+                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+                logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
+                scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
+                logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
-            else:
-                logger.info(f"\t\t\tEncountered an error.")
-                logger.info(f"\t\t\tAll scores will be replaced with nan.")
-                logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                logger.debug(f"\t\t\tHyperparameters:\n\t{pipeline.hyperparameters}")
-                logger.debug(f"\t\t\tException during automl search: {str(e)}")
-                score = np.nan
-                scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+            except Exception as e:
+                if isinstance(e, PipelineScoreError):
+                    logger.info(f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
+                    logger.info(f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan.")
+                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
+                    nan_scores = {objective: np.nan for objective in e.exceptions}
+                    scores = {**nan_scores, **e.scored_successfully}
+                    scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
+                    score = scores[self.objective.name]
+                else:
+                    logger.info(f"\t\t\tFold {i}: Encountered an error.")
+                    logger.info(f"\t\t\tFold {i}: All scores will be replaced with nan.")
+                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
+                    score = np.nan
+                    scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
-        ordered_scores = OrderedDict()
-        ordered_scores.update({self.objective.name: score})
-        ordered_scores.update(scores)
+            ordered_scores = OrderedDict()
+            ordered_scores.update({self.objective.name: score})
+            ordered_scores.update(scores)
+            ordered_scores.update({"# Training": len(y_train)})
+            ordered_scores.update({"# Testing": len(y_test)})
 
-        evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
-        cv_data.append(evaluation_entry)
+            evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
+            if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
+                evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
+            cv_data.append(evaluation_entry)
         training_time = time.time() - start
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
         cv_score_mean = cv_scores.mean()
-        logger.info(f"\tFinished - mean {self.objective.name}: {cv_score_mean:.3f}")
+        logger.info(f"\tFinished cross validation - mean {self.objective.name}: {cv_score_mean:.3f}")
         return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
+
+
+    # def _compute_ensemble_scores(self, pipeline, X, y):
+    #     start = time.time()
+    #     cv_data = []
+    #     # X.reset_index(drop=True, inplace=True)
+    #     ts = TrainingValidationSplit()
+    #     train, test = ts.split(X, y)[0]
+    #     X_train, X_test = X.iloc[train], X.iloc[test]
+    #     y_train, y_test = y.iloc[train], y.iloc[test]
+    #     logger.info("\tStarting ensemble pipeline training")
+    #     objectives_to_score = [self.objective] + self.additional_objectives
+    #     stacked_pipeline = None
+    #     try:
+    #         stacked_pipeline = pipeline.clone()
+    #         stacked_pipeline.fit(X_train, y_train)
+    #         scores = stacked_pipeline.score(X_test, y_test, objectives=objectives_to_score)
+    #         score = scores[self.objective.name]
+    #     except Exception as e:
+    #         if isinstance(e, PipelineScoreError):
+    #             logger.info(f"\t\t\tEncountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
+    #             logger.info(f"\t\t\tThe scores for these objectives will be replaced with nan.")
+    #             logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+    #             nan_scores = {objective: np.nan for objective in e.exceptions}
+    #             scores = {**nan_scores, **e.scored_successfully}
+    #             scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
+    #             score = scores[self.objective.name]
+    #         else:
+    #             logger.info(f"\t\t\tEncountered an error.")
+    #             logger.info(f"\t\t\tAll scores will be replaced with nan.")
+    #             logger.info(f"\t\t\tPlease check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+    #             logger.debug(f"\t\t\tHyperparameters:\n\t{pipeline.hyperparameters}")
+    #             logger.debug(f"\t\t\tException during automl search: {str(e)}")
+    #             score = np.nan
+    #             scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
+
+    #     ordered_scores = OrderedDict()
+    #     ordered_scores.update({self.objective.name: score})
+    #     ordered_scores.update(scores)
+
+    #     evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
+    #     cv_data.append(evaluation_entry)
+    #     training_time = time.time() - start
+    #     cv_scores = pd.Series([fold['score'] for fold in cv_data])
+    #     cv_score_mean = cv_scores.mean()
+    #     logger.info(f"\tFinished - mean {self.objective.name}: {cv_score_mean:.3f}")
+    #     return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
 
     def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
         cv_score = cv_scores.mean()
