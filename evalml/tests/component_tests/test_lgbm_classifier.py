@@ -301,6 +301,14 @@ def test_binary_rf(X_y_binary):
 
     clf = LightGBMClassifier(boosting_type="rf")
     clf.fit(X, y)
+    assert clf.parameters['bagging_freq'] == 1
+    assert clf.parameters['bagging_fraction'] == 0.9
 
     clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=0.5)
     clf.fit(X, y)
+    assert clf.parameters['bagging_freq'] == 1
+    assert clf.parameters['bagging_fraction'] == 0.5
+
+    clf = LightGBMClassifier(bagging_freq=1, bagging_fraction=0.5)
+    assert 'bagging_freq' not in list(clf.parameters.keys())
+    assert 'bagging_fraction' not in list(clf.parameters.keys())
