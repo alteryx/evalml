@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (

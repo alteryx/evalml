@@ -15,6 +15,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingRegressor
     _default_final_estimator = LinearRegressor
+    _default_cv = KFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=1, random_state=0, **kwargs):

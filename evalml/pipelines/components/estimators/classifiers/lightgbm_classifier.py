@@ -18,7 +18,7 @@ class LightGBMClassifier(Estimator):
     name = "LightGBM Classifier"
     hyperparameter_ranges = {
         "learning_rate": Real(0.000001, 1),
-        "boosting_type": ["gbdt", "dart", "goss"],
+        "boosting_type": ["gbdt", "dart", "goss", "rf"],
         "n_estimators": Integer(10, 100),
         "max_depth": Integer(0, 10),
         "num_leaves": Integer(1, 100),

@@ -16,6 +16,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingClassifier
     _default_final_estimator = LogisticRegressionClassifier
+    _default_cv = StratifiedKFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=1, random_state=0, **kwargs):
@@ -40,7 +41,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
             random_state (int, np.random.RandomState): seed for the random number generator
         """
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
-                         cv=StratifiedKFold(n_splits=3, random_state=random_state), n_jobs=n_jobs, random_state=random_state, **kwargs)
+                         cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)
 
     def predict_proba(self, X):
         if isinstance(X, pd.DataFrame):
