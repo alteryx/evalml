@@ -7,17 +7,18 @@ from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import import_or_raise
 
+
 class ComponentGraph:
-    def  __init__(self, component_names=None, edges=None, random_state=0):
+    def __init__(self, component_names=None, edges=None, random_state=0):
         """ Initializes a component graph for a pipeline as a DAG.
-        
+
         Arguments:
             component_names (dict): Of the form {name: component} pairs, where
                              `name` is a unique string for that component and
                              `component` is either a string component name
                              as recognized by evalml or a direct evalml
                              component class
-            edges (list): A list of tuples of the form (from_component, 
+            edges (list): A list of tuples of the form (from_component,
                           to_component), referring to the components by the
                           names as represented in the `component_names` dict
         """
@@ -32,7 +33,7 @@ class ComponentGraph:
         """Constructs a linear graph from a given list
 
         Arguments:
-            component_list (list): String names or ComponentBase subclasses in 
+            component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
         for idx, component in enumerate(component_list):
@@ -40,8 +41,8 @@ class ComponentGraph:
             component_name = component_class.name
 
             child = None
-            if idx != len(component_list)-1:
-                child = [handle_component_class(component_list[idx+1]).name]
+            if idx != len(component_list) - 1:
+                child = [handle_component_class(component_list[idx + 1]).name]
             self.add_node(component_name, component_class, children=child)
         return self
 
@@ -106,9 +107,9 @@ class ComponentGraph:
         return self
 
     def merge_graph(self, other_graph):
-        """Add all components and edges from another `ComponentGraph` object to this one. 
+        """Add all components and edges from another `ComponentGraph` object to this one.
         Components with unique names will be added as unique nodes, even if the component object
-        is the same type as another. Components with identical names will be considered the 
+        is the same type as another. Components with identical names will be considered the
         same node, and the object from the incoming graph will be saved as that component.
 
         Arguments:
@@ -159,7 +160,7 @@ class ComponentGraph:
             raise ValueError(f'Component {component_name} is not in the graph')
         return self._component_graph.predecessors(component_name)
 
-    def graph(self, name, graph_format):       
+    def graph(self, name, graph_format):
         """Generate an image representing the pipeline graph
 
         Arguments:
@@ -208,5 +209,5 @@ class ComponentGraph:
             component = next(self._compute_order)
             return component, self.component_names[component]
         except StopIteration:
-            self._recompute_order() # Reset the generator
+            self._recompute_order()  # Reset the generator
             raise StopIteration

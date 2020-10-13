@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 import pytest
 
 from evalml.exceptions import MissingComponentError
@@ -11,6 +9,7 @@ from evalml.pipelines.components import (
     CatBoostClassifier,
     LogisticRegressionClassifier
 )
+
 
 @pytest.fixture
 def example_graph():
@@ -38,7 +37,7 @@ def test_init(example_graph):
     assert len(comp_graph.component_names) == 6
 
     order = [comp_name for comp_name, _ in comp_graph]
-    expected_order = ['Imputer', 'OneHot_CatBoost', 'CatBoost', 'OneHot_RandomForest', 'Random Forest',  'Logistic Regression']
+    expected_order = ['Imputer', 'OneHot_CatBoost', 'CatBoost', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
     assert order == expected_order
 
 
@@ -185,7 +184,7 @@ def test_merge_graph():
     order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['Imputer', 'OneHot_CatBoost', 'CatBoost', 'OneHot_RandomForest', 'Random Forest']
     assert order == expected_order
-    
+
     parameters = {'OneHot_RandomForest': {'top_n': 3},
                   'OneHot_CatBoost': {'top_n': 5}}
     component_graph.instantiate(parameters)
@@ -201,6 +200,7 @@ def test_get_component(example_graph):
 
     with pytest.raises(ValueError, match='not in the graph'):
         component_graph.get_component('Fake Component')
+
 
 def test_get_estimators(example_graph):
     component_graph = ComponentGraph()

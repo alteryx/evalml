@@ -36,7 +36,7 @@ def test_pipeline():
 
 
 @pytest.fixture
-def test_component_graph():    
+def test_component_graph():
     components = {'Imputer': 'Imputer',
                   'OneHot_RandomForest': 'One Hot Encoder',
                   'OneHot_CatBoost': 'One Hot Encoder',
