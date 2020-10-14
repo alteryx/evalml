@@ -1356,6 +1356,26 @@ def test_get_default_primary_search_objective():
         get_default_primary_search_objective("auto")
 
 
+@patch('evalml.tuners.skopt_tuner.SKOptTuner.add')
+def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors(mock_add, X_y_multi):
+    X, y = X_y_multi
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "mean"]
+        }
+    }
+    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
+
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=pipelines)
+
+    mock_add.side_effect = ValueError("Alternate error that can be thrown")
+    with pytest.raises(ValueError) as error:
+        automl.search(X, y)
+        assert "Alternate error that can be thrown" in error.value
+        assert "Default parameters for components" not in error.value
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_fit, mock_score, X_y_multi):

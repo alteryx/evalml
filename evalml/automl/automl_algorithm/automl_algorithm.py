@@ -56,7 +56,10 @@ class AutoMLAlgorithm(ABC):
             try:
                 self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
             except ValueError as e:
-                raise ValueError("Default parameters for components not in the hyperparameter ranges: {}".format(e))
+                if 'is not within the bounds of the space' in str(e):
+                    raise ValueError("Default parameters for components not in the hyperparameter ranges: {}".format(e))
+                else:
+                    raise(e)
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property
