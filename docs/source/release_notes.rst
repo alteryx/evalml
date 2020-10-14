@@ -11,6 +11,7 @@ Release Notes
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
+        * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
@@ -20,6 +21,8 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
+        * Miscellaneous doc updates :pr:`1269`
+        * Removed conda pre-release testing from the release process document :pr:`1282`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
