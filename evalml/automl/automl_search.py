@@ -691,7 +691,7 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-        ensemble_data_split = TrainingValidationSplit()
+        ensemble_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
         for i, (train, test) in enumerate(ensemble_data_split.split(X, y)):
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]
