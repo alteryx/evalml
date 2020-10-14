@@ -102,12 +102,19 @@ def test_instantiate_from_list():
     assert component_graph.get_component('One Hot Encoder').parameters['top_n'] == 7
 
 
-def test_invalid_instantiate():
+def test_instantiate_mixed():
     component = OneHotEncoder()
     component_graph = ComponentGraph(component_names={'OneHot': component})
-    with pytest.raises(ValueError, match='Cannot instantiate already instantiated component'):
-        component_graph.instantiate({'OneHot': {'top_n': 3}})
+    component_graph.instantiate({})
+    assert isinstance(component_graph.get_component('OneHot'), OneHotEncoder)
 
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer(numeric_impute_strategy="most_frequent"), 'OneHot': OneHotEncoder})
+    component_graph.instantiate({'OneHot': {'top_n': 7}})
+    assert component_graph.get_component('Imputer').parameters['numeric_impute_strategy'] == 'most_frequent'
+    assert component_graph.get_component('OneHot').parameters['top_n'] == 7
+
+
+def test_invalid_instantiate():
     components = {'Imputer': 'Imputer', 'Fake': 'Fake Component', 'Estimator': ElasticNetClassifier}
     edges = [('Imputer', 'Fake'), ('Fake', 'Estimator')]
     component_graph = ComponentGraph(components, edges)
@@ -119,6 +126,15 @@ def test_invalid_instantiate():
     component_graph = ComponentGraph(components, edges)
     with pytest.raises(ValueError, match='Error received when instantiating component'):
         component_graph.instantiate(parameters={'Estimator': {'max_iter': 100, 'fake_param': None}})
+
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer(numeric_impute_strategy='constant', numeric_fill_value=0)})
+    with pytest.raises(ValueError, match='component already instantiated'):
+        component_graph.instantiate({'Imputer': {'numeric_fill_value': 1}})
+
+    component = OneHotEncoder()
+    component_graph = ComponentGraph(component_names={'OneHot': component})
+    with pytest.raises(ValueError, match='component already instantiated'):
+        component_graph.instantiate({'OneHot': {'top_n': 3}})
 
 
 def test_add_node():
@@ -137,6 +153,20 @@ def test_add_node():
     order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['Imputer', 'OneHot_2', 'OneHot', 'Random Forest']
     assert order == expected_order
+
+
+def test_add_node_invalid():
+    component_graph = ComponentGraph()
+    with pytest.raises(ValueError, match='Cannot add parent that is not yet in the graph'):
+        component_graph.add_node('OneHot', OneHotEncoder, parents=['Imputer'])
+
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer})
+    with pytest.raises(ValueError, match='Cannot add child that is not yet in the graph'):
+        component_graph.add_node('OneHot', OneHotEncoder, children=['Imputer', 'Random Forest'])
+
+    component_graph = ComponentGraph(component_names={'OneHot': OneHotEncoder})
+    with pytest.raises(ValueError, match='Cannot add a component that already exists'):
+        component_graph.add_node('OneHot', OneHotEncoder)
 
 
 def test_add_edge():
@@ -190,11 +220,55 @@ def test_merge_graph():
     order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['Imputer', 'OneHot_ElasticNet', 'ElasticNet', 'OneHot_RandomForest', 'Random Forest']
     assert order == expected_order
+    assert component_graph.get_component('Imputer') is component_graph_2.get_component('Imputer')
 
     parameters = {'OneHot_RandomForest': {'top_n': 3},
                   'OneHot_ElasticNet': {'top_n': 5}}
     component_graph.instantiate(parameters)
     assert component_graph.get_component('OneHot_RandomForest') != component_graph.get_component('OneHot_ElasticNet')
+
+
+def test_merge_graph_empty():
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_RandomForest': OneHotEncoder, 'Random Forest': RandomForestClassifier},
+                                     edges=[('Imputer', 'OneHot_RandomForest'), ('OneHot_RandomForest', 'Random Forest')])
+    component_graph_2 = ComponentGraph()
+    component_graph.merge_graph(component_graph_2)
+    assert len(component_graph.component_names) == 3
+    order = [comp_name for comp_name, _ in component_graph]
+    expected_order = ['Imputer', 'OneHot_RandomForest', 'Random Forest']
+    assert order == expected_order
+
+    component_graph = ComponentGraph()
+    component_graph_2 = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_RandomForest': OneHotEncoder, 'Random Forest': RandomForestClassifier},
+                                       edges=[('Imputer', 'OneHot_RandomForest'), ('OneHot_RandomForest', 'Random Forest')])
+    component_graph.merge_graph(component_graph_2)
+    assert len(component_graph.component_names) == 3
+    order = [comp_name for comp_name, _ in component_graph]
+    expected_order = ['Imputer', 'OneHot_RandomForest', 'Random Forest']
+    assert order == expected_order
+
+
+def test_merge_graph_identical():
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_RandomForest': OneHotEncoder, 'Random Forest': RandomForestClassifier},
+                                     edges=[('Imputer', 'OneHot_RandomForest'), ('OneHot_RandomForest', 'Random Forest')])
+    component_graph_2 = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot_RandomForest': OneHotEncoder, 'Random Forest': RandomForestClassifier},
+                                       edges=[('Imputer', 'OneHot_RandomForest'), ('OneHot_RandomForest', 'Random Forest')])
+    component_graph.merge_graph(component_graph_2)
+    assert len(component_graph.component_names) == 3
+    order = [comp_name for comp_name, _ in component_graph]
+    expected_order = ['Imputer', 'OneHot_RandomForest', 'Random Forest']
+    assert order == expected_order
+
+
+def test_merge_graph_post_instantiation():
+    component_graph = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot': OneHotEncoder, 'Random Forest': RandomForestClassifier},
+                                     edges=[('Imputer', 'OneHot'), ('OneHot', 'Random Forest')])
+    component_graph_2 = ComponentGraph(component_names={'Imputer': Imputer, 'OneHot': OneHotEncoder, 'ElasticNet': ElasticNetClassifier},
+                                       edges=[('Imputer', 'OneHot'), ('OneHot', 'ElasticNet')])
+    component_graph.instantiate({'OneHot': {'top_n': 5}})
+    component_graph_2.instantiate({'OneHot': {'top_n': 7}})
+    component_graph.merge_graph(component_graph_2)
+    assert component_graph.get_component('OneHot').parameters['top_n'] == 7
 
 
 def test_get_component(example_graph):

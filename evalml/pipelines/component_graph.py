@@ -1,7 +1,6 @@
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
 
-from evalml.exceptions import MissingComponentError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.pipelines.components.utils import handle_component_class
@@ -40,31 +39,30 @@ class ComponentGraph:
             component_class = handle_component_class(component)
             component_name = component_class.name
 
-            child = None
-            if idx != len(component_list) - 1:
-                child = [handle_component_class(component_list[idx + 1]).name]
-            self.add_node(component_name, component_class, children=child)
+            parent = None
+            if idx != 0:
+                parent = [handle_component_class(component_list[idx - 1]).name]
+            self.add_node(component_name, component_class, parents=parent)
         return self
 
     def instantiate(self, parameters):
-        """Instantiates all components within the graph using the given parameters
+        """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
+        raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                                An empty dictionary {} implies using all default values for component parameters.
         """
         for component_name, component_class in self.component_names.items():
+            component_parameters = parameters.get(component_name, {})
             if isinstance(component_class, ComponentBase):
-                raise ValueError(f'Cannot instantiate already instantiated component {component_name}')
+                if component_parameters != {}:
+                    raise ValueError(f"Attempting to instantiate component {component_name} with parameters {component_parameters} when component already instantiated")
+                continue
+
+            component_class = handle_component_class(component_class)
 
             try:
-                component_class = handle_component_class(component_class)
-            except MissingComponentError as e:
-                err = "Error recieved when retrieving class for component '{}'".format(component_class)
-                raise MissingComponentError(err) from e
-
-            try:
-                component_parameters = parameters.get(component_name, {})
                 new_component = component_class(**component_parameters, random_state=self.random_state)
             except (ValueError, TypeError) as e:
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
@@ -82,12 +80,18 @@ class ComponentGraph:
             parents (list): A list of parents of this new node. Defaults to None.
             children (list): A list of children of this new node. Defaults to  None.
         """
+        if component_name in self.component_names.keys():
+            raise ValueError('Cannot add a component that already exists')
         self.component_names[component_name] = component_obj
         if parents:
             for parent in parents:
+                if parent not in self.component_names.keys():
+                    raise ValueError('Cannot add parent that is not yet in the graph')
                 self._component_graph.add_edge(parent, component_name)
         if children:
             for child in children:
+                if child not in self.component_names.keys():
+                    raise ValueError('Cannot add child that is not yet in the graph')
                 self._component_graph.add_edge(component_name, child)
         self._recompute_order()
         return self
@@ -160,12 +164,12 @@ class ComponentGraph:
             raise ValueError(f'Component {component_name} is not in the graph')
         return self._component_graph.predecessors(component_name)
 
-    def graph(self, name, graph_format):
+    def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph
 
         Arguments:
-            name (str): Name of the graph
-            graph_format (str): file format to save the graph in
+            name (str): Name of the graph. Defaults to None.
+            graph_format (str): file format to save the graph in. Defaults to None.
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
