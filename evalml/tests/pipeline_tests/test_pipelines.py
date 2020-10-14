@@ -42,6 +42,7 @@ from evalml.pipelines.components.utils import (
     allowed_model_families
 )
 from evalml.pipelines.utils import (
+    generate_pipeline_code,
     get_estimators,
     make_pipeline,
     make_pipeline_from_components
@@ -1420,3 +1421,81 @@ def test_pipeline_repr(pipeline_class):
     pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
     assert repr(pipeline_with_nan_parameters) == expected_repr
+
+
+def test_generate_code_pipeline_errors():
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockMulticlassPipeline(MulticlassClassificationPipeline):
+        name = "Mock Multiclass Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockBinaryPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockMulticlassPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockRegressionPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer])
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer, LogisticRegressionClassifier])
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer(), LogisticRegressionClassifier()])
+
+
+def test_generate_code_pipeline():
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    mock_binary_pipeline = MockBinaryPipeline({})
+    expected_code = "from evalml.pipelines.components import (" \
+                    "\n\tImputer," \
+                    "\n\tRandomForestClassifier\n)" \
+                    "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline" \
+                    "\n\nclass MockBinaryPipeline(BinaryClassificationPipeline):"\
+                    "\n    component_graph = ['Imputer', 'Random Forest Classifier']\n" \
+                    "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Classifier': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
+                    "\npipeline = MockBinaryPipeline(parameters)"
+    pipeline_code = generate_pipeline_code(mock_binary_pipeline)
+    assert expected_code == pipeline_code
+
+    mock_regression_pipeline = MockRegressionPipeline({})
+    expected_code = "from evalml.pipelines.components import (" \
+                    "\n\tImputer," \
+                    "\n\tRandomForestRegressor\n)" \
+                    "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline" \
+                    "\n\nclass MockRegressionPipeline(RegressionPipeline):" \
+                    "\n    component_graph = ['Imputer', 'Random Forest Regressor']" \
+                    "\n\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
+                    "\npipeline = MockRegressionPipeline(parameters)"
+    pipeline = generate_pipeline_code(mock_regression_pipeline)
+    assert pipeline == expected_code
+
+    mock_regression_pipeline_params = MockRegressionPipeline({"Imputer": {"numeric_impute_strategy": "most_frequent"}, "Random Forest Regressor": {"n_estimators": 50}})
+    expected_code_params = "from evalml.pipelines.components import (" \
+        "\n\tImputer," \
+        "\n\tRandomForestRegressor\n)" \
+        "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline" \
+        "\n\nclass MockRegressionPipeline(RegressionPipeline):" \
+        "\n    component_graph = ['Imputer', 'Random Forest Regressor']" \
+        "\n\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}" \
+        "\npipeline = MockRegressionPipeline(parameters)"
+    pipeline = generate_pipeline_code(mock_regression_pipeline_params)
+    assert pipeline == expected_code_params

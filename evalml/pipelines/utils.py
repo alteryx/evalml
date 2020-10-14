@@ -20,10 +20,7 @@ from evalml.pipelines.components import (  # noqa: F401
     RandomForestClassifier,
     StandardScaler
 )
-from evalml.pipelines.components.utils import (
-    get_estimators,
-    all_components
-)
+from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import categorical_dtypes, datetime_dtypes
@@ -163,7 +160,7 @@ def generate_pipeline_code(element):
     # hold the imports needed and add code to end
     import_strings = []
     code_strings = []
-    base_string = "\ndef make_pipeline_instance():\n"
+    base_string = "\n"
 
     # check if pipeline
     if isinstance(element, PipelineBase):
@@ -177,12 +174,12 @@ def generate_pipeline_code(element):
                 import_strings.append(com.__class__.__name__)
         code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
         code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-        custom_hyperparams = "custom_hyperparameters = {}".format(element.custom_hyperparameters) if element.custom_hyperparameters else ""
-        base_string += "    class {0}({1}):\n" \
-                       "        component_graph = {2}\n" \
-                       "        {3}\n" \
-                       "\n    parameters = {4}\n" \
-                       "    return {0}(parameters) " \
+        custom_hyperparams = "    custom_hyperparameters = {}\n".format(element.custom_hyperparameters) if element.custom_hyperparameters else ""
+        base_string += "class {0}({1}):\n" \
+                       "    component_graph = {2}\n" \
+                       "{3}" \
+                       "\nparameters = {4}\n" \
+                       "pipeline = {0}(parameters)" \
                        .format(element.__class__.__name__,
                                element.__class__.__bases__[0].__name__,
                                component_graph,
