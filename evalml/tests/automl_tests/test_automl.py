@@ -1372,8 +1372,8 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     mock_add.side_effect = ValueError("Alternate error that can be thrown")
     with pytest.raises(ValueError) as error:
         automl.search(X, y)
-        assert "Alternate error that can be thrown" in error.value
-        assert "Default parameters for components" not in error.value
+    assert "Alternate error that can be thrown" in str(error.value)
+    assert "Default parameters for components" not in str(error.value)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
