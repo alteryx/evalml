@@ -284,20 +284,25 @@ def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     clf.predict(X)
 
 
-def test_binary_rf(X_y_binary):
+def test_binary_rf_not_defaults(X_y_binary):
     X, y = X_y_binary
-
-    with pytest.raises(lgbm.basic.LightGBMError, match="config->bagging_freq > 0"):
-        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
-        clf.fit(X, y)
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=1.01)
         clf.fit(X, y)
 
-    with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):
-        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0, bagging_fraction=1.01)
-        clf.fit(X, y)
+    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
+    clf.fit(X, y)
+    assert clf.parameters['bagging_freq'] == 1
+    assert clf.parameters['bagging_fraction'] == 0.9
+
+
+def test_binary_rf(X_y_binary):
+    X, y = X_y_binary
+
+    clf = LightGBMClassifier()
+    assert clf.parameters['bagging_freq'] == 0
+    assert clf.parameters['bagging_fraction'] == 0.9
 
     clf = LightGBMClassifier(boosting_type="rf")
     clf.fit(X, y)
@@ -310,5 +315,5 @@ def test_binary_rf(X_y_binary):
     assert clf.parameters['bagging_fraction'] == 0.5
 
     clf = LightGBMClassifier(bagging_freq=1, bagging_fraction=0.5)
-    assert 'bagging_freq' not in list(clf.parameters.keys())
-    assert 'bagging_fraction' not in list(clf.parameters.keys())
+    assert clf.parameters['bagging_freq'] == 1
+    assert clf.parameters['bagging_fraction'] == 0.5
