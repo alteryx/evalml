@@ -15,115 +15,7 @@ EvalML uses [semantic versioning](https://semver.org/). Every release has a majo
 
 If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, *not* `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/evalml/) instead of to [pypi.org](https://pypi.org/project/evalml).
 
-## 1. Test conda version before releasing on PyPI
-Evalml has two conda packages: `evalml` and `evalml-core`. These packages are created according to the [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml) listed in our conda [feedstock](https://github.com/conda-forge/evalml-core-feedstock) repo.
-
-The `source` field in the recipe points to the latest release of `evalml` on PyPI. Whenever a new version of `evalml` is uploaded to PyPI, a bot will automatically update the recipe in our feedstock and create new conda packages.
-
-There is a risk that even though our CI tests pass, conda will fail to build our packages. This can happen when a new dependency is not listed in conda, for example.
-To mitigate this risk, we will test if conda can build our latest release by first uploading a test release to PyPI and telling conda to build from this test release. 
-
-#### Upload evalml release to PyPI's test server
-We need to upload an evalml package to test with the conda recipe
-1. Make a new development release branch on evalml (in this example we'll be testing the 0.12.2 release)
-    ```bash
-    git checkout -b release_v0.12.2.dev0
-    ```
-2. Update version number in `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version and push your changes. 
-3. Publish a new release of evalml on Github.
-    1. Go to the [releases page](https://github.com/alteryx/evalml/releases) on Github
-    2. Click "Draft a new release"
-    3. For the target, choose the new branch (v0.12.2.dev0)
-    4. For the tag, use the new version number (v0.12.2.dev0)
-    5. For the release title, use the new version number (v0.12.2.dev0)
-    6. For the release description, write "Development release for testing purposes"
-    7. Check the "This is a pre-release" box
-    8. Publish the release
-4. The new release will be uploaded to [TestPyPI](https://test.pypi.org/project/evalml/) automatically.
-
-#### Set up fork of our conda-forge repo
-Branches on the conda-forge evalml repo are automatically built and the packages are uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
-
-5. Fork conda-forge/evalml-core-feedstock: visit https://github.com/conda-forge/evalml-core-feedstock and click fork
-6. Clone forked repo locally
-7. Add conda-forge repo as the 'upstream' repository
-    ```bash
-    git remote add upstream https://github.com/conda-forge/evalml-core-feedstock.git 
-    ```
-8. If you made the fork previously and its master branch is missing commits, update it with any changes from upstream
-    ```bash
-    git fetch upstream
-    git checkout master
-    git merge upstream/master
-    git push origin master
-    ```
-9. Make a branch with the version you want to release
-    ```bash
-    git checkout -b new-evalml-version
-    ```
-
-#### Update conda recipe to use TestPyPI release of evalml 
-Fields to update in `recipe/meta.yaml` of feedstock repo:
-* Always update:
-    * Set the new release number (e.g. v0.12.2.dev0)
-        ```
-        {% set version = "0.12.2.dev0" %}
-        ```
-    * Source fields
-        * url - visit https://test.pypi.org/project/evalml/, find correct release, go to download files page, and copy link location of the tar.gz file
-        * sha256 - from the download files page, click the view hashes button for the tar.gz file and copy the sha256 digest
-        ```
-        source:
-          url: <fill-this-in> 
-          sha256: <fill-this-in> 
-       ```
-* Update if dependencies have changed.
-    * Update the run requirements section for evalml-core if core dependencies have changed.
-    For example, if numpy got updated to version `1.16.4` and we wanted to use the latest version:
-        ```
-        requirements:
-          host:
-            - python >=3.6
-            - pip
-          run:
-            - numpy >=1.16.4
-            - pandas >=0.25.0
-        ```
-    * Update the run requirements section for evalml if non-core dependencies have changed.
-    * Update the test requirements section for evalml-core and evalml if test dependencies have changed.
-       For example, if we wanted to use version `0.9.3` of nbval.
-        ```
-        test:
-          imports:
-            - evalml
-          requires:
-            - pytest >= 4.4.*
-            - nbval ==0.9.3
-            - python-graphviz >=0.8.4
-            - category_encoders >=2.0.0
-        ```
-
-#### Test with conda-forge CI
-10. Install conda
-    1. If using pyenv, `pyenv install miniconda3-latest`
-    2. Otherwise follow instructions in [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
-11. Install conda-smithy (conda-forge tool to update boilerplate in repo)
-    ```bash
-    conda install -n root -c conda-forge conda-smithy
-    ```
-12. Run conda-smithy on feedstock
-    ```bash
-    cd /path/to/feedstock/repo
-    conda-smithy rerender --commit auto
-    ```
-13. Push updated branch to the forked feedstock repo
-14. Make a PR on conda-forge/evalml-core-feedstock from the forked repo and let CI tests run - add "[DO NOT MERGE]" to the PR name to indicate this PR should not be merged in
-15. Close the PR without merging after the tests pass.
-
-Congratulations! If the test on the PR pass, then we can build a conda package from our latest release and we
-can now upload our package to PyPI instead of TestPyPI. The next steps will cover how to do this. 
-
-## 2. Create release PR to update version and release notes
+## 1. Create release PR to update version and release notes
 Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 Create a release PR with the following changes:
@@ -143,7 +35,7 @@ Checklist before merging:
 
 After merging, verify again that ReadtheDocs "latest" is correct.
 
-## 3. Create GitHub Release
+## 2. Create GitHub Release
 After the release pull request has been merged into the main branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that. Include the following when creating the release:
 * The target should be the main branch, which is the default value.
 * The tag should be the version number with a "v" prefix (e.g. "vX.X.X").
@@ -156,7 +48,7 @@ Save the release as a draft and make sure it looks correct. You could start the 
 
 When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version. This will also deploy the release [to pypi](https://pypi.org/project/evalml/), making it publicly accessible!
 
-## 4. Make Documentation Public for Release Version
+## 3. Make Documentation Public for Release Version
 Creating the GitHub release should have updated the default `stable` docs branch to point at the new version. You'll now need to activate the new release version on ReadtheDocs so its publicly visible in the list of versions. This is important so users can view old documentation versions which match their installed version.
 
 Please do the following:
@@ -166,7 +58,7 @@ Please do the following:
 * Verify "vX.X.X" is now visible as a version on our ReadtheDocs page. You may have to do an "empty cache and hard reset" in your browser to see updates.
 * Verify "stable" corresponds with the new version, which should've been done in step 2.
 
-## 5. Verify the release package has been deployed
+## 4. Verify the release package has been deployed
 Now that the release has been made in the repo, to pypi and in our documentation, the final step is making sure the new release is publicly pip-installable via pypi.
 
 In a fresh virtualenv, install evalml via pip and ensure it installs successfully:
@@ -183,16 +75,22 @@ pip freeze | grep evalml
 
 Note: make sure when you do this that you're in a virtualenv, your current working directory isn't in the evalml repo, and that you haven't added your repo to the `PYTHONPATH`, because in both cases python could pick up the repo instead, even in a virtualenv.
 
-## 6. Publish Our New Conda Package
+## 5. Publish Our New Conda Package
 
 A couple of hours after you publish the GitHub release, a bot will open a PR to our [feedstock](https://github.com/conda-forge/evalml-core-feedstock) that automatically
 bumps the recipe to use the latest version of the package.
+In order to publish our latest conda package, we need to make some changes to the bot's PR and merge it.
 
-If you had to modify the recipe in Step 1 (most common case is when dependencies are updated), then make those changes and push to the bot's PR. For help on how to push changes to the
-bot's PR please read this [document.](https://conda-forge.org/docs/maintainer/updating_pkgs.html#pushing-to-regro-cf-autotick-bot-branch)
-If you did not have to modify the recipe in Step 1, the bot's PR should be good to merge as-is.
-In either case, wait for the CI tests to pass before merging.
-This is just to be extra careful because you already ran the CI in Step 1!
+The bot's PR will will remove the quotes around the version tag in the recipe.
+Removing these quotes will break our `build_conda_pkg` CI job so add them back in and push your changes to the bot's PR. 
+For example, lines 3-5 of the [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml) should look like the following:
+```yaml
+package:
+  name: evalml-core
+  version: '{{ version }}'
+```
+For help on how to push changes to the bot's PR please read this [document.](https://conda-forge.org/docs/maintainer/updating_pkgs.html#pushing-to-regro-cf-autotick-bot-branch)
+If the `build_conda_pkg` job passed on the `main` branch before the release, then no further changes are needed and you can merge the bot's PR once the tests pass.
 
 After you merge the PR, our latest package will be deployed to conda-forge! To verify, run this in a fresh conda environment:
 
