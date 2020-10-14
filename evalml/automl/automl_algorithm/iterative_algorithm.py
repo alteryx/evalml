@@ -36,6 +36,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._first_batch_results = []
+        self._results = {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -71,7 +72,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         """
         super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
-            self._first_batch_results.append((score_to_minimize, pipeline.__class__))
+            self._first_batch_results.append((score_to_minimize, pipeline.__class__, pipeline.parameters))
+        old_score = self._results[pipeline.model_family]['score']
+        if score < old_score:
+            self._results[pipeline.model_family] = {'score': score_to_minimize, 'pipeline_class': pipeline.__class__, 'parameters': pipeline.parameters}
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
@@ -88,3 +92,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['number_features'] = self.number_features
             parameters[component_class.name] = component_parameters
         return parameters
+
+    def results(self):
+        return self._results
