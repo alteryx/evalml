@@ -87,6 +87,7 @@ class AutoMLSearch:
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False,
+                 ensembling=True,
                  _max_batches=None):
         """Automated pipeline search
 
@@ -160,6 +161,7 @@ class AutoMLSearch:
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
+        self.ensembling = ensembling
         if objective == 'auto':
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
