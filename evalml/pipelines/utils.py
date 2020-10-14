@@ -163,7 +163,7 @@ def generate_pipeline_code(element):
     # hold the imports needed and add code to end
     import_strings = []
     code_strings = []
-    base_string = "def make_pipeline_instance():\n"
+    base_string = "\ndef make_pipeline_instance():\n"
 
     # check if pipeline
     if isinstance(element, PipelineBase):
@@ -177,14 +177,16 @@ def generate_pipeline_code(element):
                 import_strings.append(com.__class__.__name__)
         code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
         code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-
+        custom_hyperparams = "custom_hyperparameters = {}".format(element.custom_hyperparameters) if element.custom_hyperparameters else ""
         base_string += "    class {0}({1}):\n" \
                        "        component_graph = {2}\n" \
-                       "    parameters = {3}\n" \
+                       "        {3}\n" \
+                       "\n    parameters = {4}\n" \
                        "    return {0}(parameters) " \
                        .format(element.__class__.__name__,
                                element.__class__.__bases__[0].__name__,
                                component_graph,
+                               custom_hyperparams,
                                element.parameters)
         if custom_components:
             for class_name, c in custom_components:
