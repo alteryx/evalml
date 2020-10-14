@@ -4,6 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -11,7 +12,6 @@ from evalml.exceptions import (
     MissingComponentError
 )
 from evalml.utils import get_logger
-import pandas as pd
 
 logger = get_logger(__file__)
 
@@ -271,3 +271,16 @@ def is_all_numeric(df):
         if dtype not in numeric_and_boolean_dtypes:
             return False
     return True
+
+
+
+def _nullable_types_to_numpy_wrapper(pd_data):
+    """
+    Arguments:
+        df 
+    """
+    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64'}
+    if isinstance(pd_data, pd.Series):
+        if type(pd_data.dtype) in nullable_to_numpy_mapping:
+            pd_data = pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    return pd_data
