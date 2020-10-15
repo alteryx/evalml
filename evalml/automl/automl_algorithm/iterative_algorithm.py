@@ -65,6 +65,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
+                print (pipeline_params)
+
             # for i in range(len(self._first_batch_results)):
             #     pipeline_class = self._first_batch_results[i][1]
             #     proposed_parameters = self._tuners[pipeline_class.name].propose()

@@ -92,7 +92,7 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
-
+ 
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
     last_pipeline_number = algo.pipeline_number
