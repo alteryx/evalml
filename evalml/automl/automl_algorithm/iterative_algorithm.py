@@ -61,16 +61,16 @@ class IterativeAlgorithm(AutoMLAlgorithm):
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
-            for pipeline_dict in self._best_pipeline_params.values():
-                pipeline_class = pipeline_dict['pipeline_class']
-                pipeline_params = pipeline_dict['parameters']
-                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
-                print (pipeline_params)
+            # for pipeline_dict in self._best_pipeline_params.values():
+            #     pipeline_class = pipeline_dict['pipeline_class']
+            #     pipeline_params = pipeline_dict['parameters']
+            #     input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
+            #     print (pipeline_params)
 
-            # for i in range(len(self._first_batch_results)):
-            #     pipeline_class = self._first_batch_results[i][1]
-            #     proposed_parameters = self._tuners[pipeline_class.name].propose()
-            #     input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
+            for i in range(len(self._first_batch_results)):
+                pipeline_class = self._first_batch_results[i][1]
+                proposed_parameters = self._tuners[pipeline_class.name].propose()
+                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:
