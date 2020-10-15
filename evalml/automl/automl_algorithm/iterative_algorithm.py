@@ -99,7 +99,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                                                                        'parameters': pipeline.parameters}})
         else:
             current_best = self._best_pipeline_params[pipeline.model_family]['score']
-            if score_to_minimize < current_best:
+            if score_to_minimize is not None and score_to_minimize < current_best:
                 self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
                                                                            'pipeline_class': pipeline.__class__,
                                                                            'parameters': pipeline.parameters}
