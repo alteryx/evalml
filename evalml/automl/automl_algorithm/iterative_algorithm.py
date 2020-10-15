@@ -38,6 +38,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._first_batch_results = []
+        self._best_pipeline_params = {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -60,10 +61,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
-            for i in range(len(self._first_batch_results)):
-                pipeline_class = self._first_batch_results[i][1]
-                proposed_parameters = self._tuners[pipeline_class.name].propose()
-                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
+            for pipeline_dict in self._best_pipeline_params.values():
+                pipeline_class = pipeline_dict['pipeline_class']
+                pipeline_params = pipeline_dict['parameters']
+                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
+            # for i in range(len(self._first_batch_results)):
+            #     pipeline_class = self._first_batch_results[i][1]
+            #     proposed_parameters = self._tuners[pipeline_class.name].propose()
+            #     input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:
@@ -87,6 +92,18 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
+
+        if pipeline.model_family not in self._best_pipeline_params:
+            self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
+                                                                       'pipeline_class': pipeline.__class__,
+                                                                       'parameters': pipeline.parameters}})
+        else:
+            current_best = self._best_pipeline_params[pipeline.model_family]['score']
+            if score_to_minimize < current_best:
+                self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
+                                                                           'pipeline_class': pipeline.__class__,
+                                                                           'parameters': pipeline.parameters}
+                                                  })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
