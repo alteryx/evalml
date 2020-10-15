@@ -23,6 +23,7 @@ Release Notes
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
         * Added ``evalml info`` command to documentation :pr:`1293`
         * Miscellaneous doc updates :pr:`1269`
+        * Removed conda pre-release testing from the release process document :pr:`1282`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
