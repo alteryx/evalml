@@ -93,7 +93,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
-        if pipeline.model_family not in self._best_pipeline_params:
+        if pipeline.model_family not in self._best_pipeline_params and score_to_minimize is not None:
             self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
                                                                        'pipeline_class': pipeline.__class__,
                                                                        'parameters': pipeline.parameters}})
