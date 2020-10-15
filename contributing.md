@@ -23,7 +23,7 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
     make installdeps-dev # installs the repo in edit mode, meaning changes to any files will be picked up in python. also installs all depenedencies.
     ```
 
-Note that if you're on mac, there are a few extra steps you'll want to keep track of.
+Note that if you're on Mac, there are a few extra steps you'll want to keep track of.
 * In order to run on Mac, [LightGBM requires the OpenMP library to be installed](https://evalml.alteryx.com/en/stable/install.html#Mac), which can be done with HomeBrew by running `brew install libomp`
 * We've seen some installs get the following warning when importing evalml: "UserWarning: Could not import the lzma module. Your installed Python is incomplete. Attempting to use lzma compression will result in a RuntimeError". [A known workaround](https://stackoverflow.com/a/61531555/841003) is to run `brew reinstall readline xz` before installing the python version you're using via pyenv. If you've already installed a python version in pyenv, consider deleting it and reinstalling. v3.8.2 is known to work.
 
