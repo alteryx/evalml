@@ -27,7 +27,8 @@ def get_encoding_pipelines(problem_type):
 
     pipelines = []
     encoders = ["One Hot Encoder", "Ordinal Encoder", "Binary Encoder", "Sum Encoder"]
-    estimators = ["Random Forest Classifier", "XGBoost Classifier", "Logistic Regression Classifier"]
+    estimators = ["Random Forest Classifier", "XGBoost Classifier", "Logistic Regression Classifier",
+                  "Extra Trees Classifier", "Elastic Net Classifier"]
     for encoder, estimator in product(encoders, estimators):
         pipelines.append(_make_encoding_pipeline(pipeline_class, encoder, estimator))
 
