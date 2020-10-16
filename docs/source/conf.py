@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 project = 'EvalML'
 copyright = '2020, Alteryx, Inc.'
-author = 'Alteryx Innovation Labs'
+author = 'Alteryx, Inc.'
 
 # The short X.Y version
 version = evalml.__version__
@@ -154,7 +154,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'EvalML.tex', 'EvalML Documentation',
-     author, 'manual'),
+     'Alteryx, Inc.', 'manual'),
 ]
 
 
@@ -202,9 +202,11 @@ epub_exclude_files = ['search.html']
 
 # If evalml is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/alteryx/evalml/issues/%s', '#'),
-    'pr': ('https://github.com/alteryx/evalml/pull/%s', '#'),
-    'user': ('https://github.com/%s', '@')
+    "github_url": "https://github.com/FeatureLabs/compose#readme",
+    "twitter_url": "https://twitter.com/alteryx?lang=en",
+    "issue": ("https://github.com/alteryx/evalml/issues/%s", "#"),
+    "pr": ("https://github.com/alteryx/evalml/pull/%s", "#"),
+    "user": ("https://github.com/%s", "@")
 }
 
 autosummary_generate = ["api_reference.rst"]
