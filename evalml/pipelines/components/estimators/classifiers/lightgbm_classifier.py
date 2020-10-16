@@ -3,9 +3,9 @@ import copy
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
-
+from category_encoders import OrdinalEncoder
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
@@ -80,9 +80,13 @@ class LightGBMClassifier(Estimator):
         return y1
 
     def fit(self, X, y=None):
+        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
-        return super().fit(X2, y2)
+        cat_cols = X.select_dtypes(["object", "category"]).columns
+
+        self._component_obj.fit(X2, y2, categorical_feature=list(cat_cols),
+                                feature_name=list(X.columns))
 
     def predict(self, X):
         X2 = self._encode_categories(X)

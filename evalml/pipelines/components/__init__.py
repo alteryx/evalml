@@ -22,6 +22,9 @@ from .estimators import (
 from .transformers import (
     Transformer,
     OneHotEncoder,
+    BinaryEncoder,
+    SumEncoder,
+    OrdinalEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,

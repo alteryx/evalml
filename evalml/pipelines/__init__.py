@@ -1,6 +1,9 @@
 from .components import (
     Estimator,
     OneHotEncoder,
+    BinaryEncoder,
+    SumEncoder,
+    OrdinalEncoder,
     SimpleImputer,
     PerColumnImputer,
     StandardScaler,
