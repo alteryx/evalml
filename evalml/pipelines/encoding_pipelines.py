@@ -10,7 +10,6 @@ def _make_encoding_pipeline(pipeline_class, encoder, estimator):
     pipeline_name = f"{estimator} with {encoder}"
 
     c_graph = [encoder, estimator] if encoder else [estimator]
-    c_graph = ["Imputer"]
 
     class EncodingPipeline(pipeline_class):
         custom_name = pipeline_name
