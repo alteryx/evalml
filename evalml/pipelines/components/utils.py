@@ -234,17 +234,17 @@ def generate_component_code(element):
     code_strings = []
     base_string = "\n"
 
-    if isinstance(element, ComponentBase):
-        if element.__class__.name in component_names:
-            code_strings.append("from {} import {}".format(element.__class__.__module__, element.__class__.__name__))
-        component_parameters = element.parameters
-        name = element.name[0].lower() + element.name[1:].replace(' ', '')
-        base_string += "{0} = {1}(**{2})" \
-                       .format(name,
-                               element.__class__.__name__,
-                               component_parameters)
-
-        code_strings.append(base_string)
-    else:
+    if not isinstance(element, ComponentBase):
         raise ValueError("Element must be a component instance, received {}".format(type(element)))
+
+    if element.__class__.name in component_names:
+        code_strings.append("from {} import {}".format(element.__class__.__module__, element.__class__.__name__))
+    component_parameters = element.parameters
+    name = element.name[0].lower() + element.name[1:].replace(' ', '')
+    base_string += "{0} = {1}(**{2})" \
+                   .format(name,
+                           element.__class__.__name__,
+                           component_parameters)
+
+    code_strings.append(base_string)
     return "\n".join(code_strings).lstrip("\n")

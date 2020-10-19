@@ -161,46 +161,45 @@ def generate_pipeline_code(element):
     import_strings = []
     code_strings = []
     base_string = "\n"
-
     # check if pipeline
-    if isinstance(element, PipelineBase):
-        component_graph = []
-        custom_components = []
-        for com in element.component_graph:
-            component_graph.append(com.name)
-            if com.name not in component_names:
-                custom_components.append((com.__class__.__name__, com.name))
-            else:
-                import_strings.append(com.__class__.__name__)
-        if import_strings:
-            code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
-        code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-
-        # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
-        pipeline_string = []
-        for k, v in sorted(list(filter(lambda x: x[0][0] != '_', element.__class__.__dict__.items())), key=lambda item: item[0]):
-            if k != 'component_graph':
-                if isinstance(v, str):
-                    pipeline_string.append("{} = '{}'".format(k, v))
-                else:
-                    pipeline_string.append("{} = {}".format(k, v))
-        pipeline_string = "\t" + "\n\t".join(pipeline_string) + "\n" if len(pipeline_string) else ""
-
-        base_string += "class {0}({1}):\n" \
-                       "\tcomponent_graph = {2}\n" \
-                       "{3}" \
-                       "\nparameters = {4}\n" \
-                       "pipeline = {0}(parameters)" \
-                       .format(element.__class__.__name__,
-                               element.__class__.__bases__[0].__name__,
-                               component_graph,
-                               pipeline_string,
-                               element.parameters)
-        if custom_components:
-            for class_name, c in custom_components:
-                idx = base_string.find(c)
-                base_string = base_string[:idx - 1] + class_name + base_string[idx + len(c) + 1:]
-        code_strings.append(base_string)
-    else:
+    if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
+
+    component_graph = []
+    custom_components = []
+    for com in element.component_graph:
+        component_graph.append(com.name)
+        if com.name not in component_names:
+            custom_components.append((com.__class__.__name__, com.name))
+        else:
+            import_strings.append(com.__class__.__name__)
+    if import_strings:
+        code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
+    code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
+    # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
+    pipeline_string = []
+    for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
+        if k != 'component_graph':
+            if isinstance(v, str):
+                pipeline_string.append("{} = '{}'".format(k, v))
+            else:
+                pipeline_string.append("{} = {}".format(k, v))
+    pipeline_string = "\t" + "\n\t".join(pipeline_string) + "\n" if len(pipeline_string) else ""
+    # create the base string for the pipeline
+    base_string += "class {0}({1}):\n" \
+                   "\tcomponent_graph = {2}\n" \
+                   "{3}" \
+                   "\nparameters = {4}\n" \
+                   "pipeline = {0}(parameters)" \
+                   .format(element.__class__.__name__,
+                           element.__class__.__bases__[0].__name__,
+                           component_graph,
+                           pipeline_string,
+                           element.parameters)
+    # remove quotes from custom components
+    if custom_components:
+        for class_name, c in custom_components:
+            idx = base_string.find(c)
+            base_string = base_string[:idx - 1] + class_name + base_string[idx + len(c) + 1:]
+    code_strings.append(base_string)
     return "\n".join(code_strings)
