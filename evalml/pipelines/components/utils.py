@@ -223,11 +223,11 @@ def generate_component_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
     Arguments:
-        element (component instance): The instance of the component to generate code for
+        element (component instance): The instance of the component to generate string Python code for
 
     Returns:
         String representation of Python code that can be run separately in order to recreate the component instance.
-            Does not include code for custom component implementation.
+        Does not include code for custom component implementation.
     """
     component_names = [c.name for c in all_components()]
     # hold the imports needed and add code to end

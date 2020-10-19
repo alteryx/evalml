@@ -147,14 +147,14 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
 
 
 def generate_pipeline_code(element):
-    """Creates and returns a string that contains the Python imports and code required for running the pipeline.
+    """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
     Arguments:
-        element (pipeline instance): The instance of the pipeline to generate code for
+        element (pipeline instance): The instance of the pipeline to generate string Python code for
 
     Returns:
         String representation of Python code that can be run separately in order to recreate the pipeline instance.
-            Does not include code for custom component implementation
+        Does not include code for custom component implementation
     """
     component_names = [c.name for c in all_components()]
     # hold the imports needed and add code to end
