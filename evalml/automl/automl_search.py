@@ -360,9 +360,9 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Arguments:
-            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training data of length [n_samples]
+            y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
 
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
