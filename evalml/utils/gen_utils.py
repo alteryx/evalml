@@ -273,14 +273,17 @@ def is_all_numeric(df):
     return True
 
 
-
 def _nullable_types_to_numpy_wrapper(pd_data):
     """
     Arguments:
         df 
     """
-    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64'}
+    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64', pd.CategoricalDtype: 'category'}
     if isinstance(pd_data, pd.Series):
         if type(pd_data.dtype) in nullable_to_numpy_mapping:
             pd_data = pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    if isinstance(pd_data, pd.DataFrame):
+        for col_name, col in pd_data.iteritems():
+            if type(col.dtype) in nullable_to_numpy_mapping:
+                pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
     return pd_data
