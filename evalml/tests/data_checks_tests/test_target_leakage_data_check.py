@@ -5,7 +5,7 @@ from evalml.data_checks.data_check_message import DataCheckWarning
 from evalml.data_checks.target_leakage_data_check import TargetLeakageDataCheck
 
 
-def test_label_leakage_data_check_init():
+def test_target_leakage_data_check_init():
     target_leakage_check = TargetLeakageDataCheck()
     assert target_leakage_check.pct_corr_threshold == 0.95
 
@@ -24,7 +24,7 @@ def test_label_leakage_data_check_init():
         TargetLeakageDataCheck(pct_corr_threshold=1.1)
 
 
-def test_label_leakage_data_check_warnings():
+def test_target_leakage_data_check_warnings():
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["a"] = y * 3
@@ -41,7 +41,7 @@ def test_label_leakage_data_check_warnings():
                                             DataCheckWarning("Column 'd' is 50.0% or more correlated with the target", "TargetLeakageDataCheck")]
 
 
-def test_label_leakage_data_check_input_formats():
+def test_target_leakage_data_check_input_formats():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
 
     # test empty pd.DataFrame, empty pd.Series
