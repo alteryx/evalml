@@ -4,7 +4,6 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -278,10 +277,11 @@ def _nullable_types_to_numpy_wrapper(pd_data):
     Arguments:
         df 
     """
-    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64', pd.CategoricalDtype: 'category'}
-    if isinstance(pd_data, pd.Series):
-        if type(pd_data.dtype) in nullable_to_numpy_mapping:
-            pd_data = pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64', pd.CategoricalDtype: 'category', pd.BooleanDtype: 'bool'}
+    if isinstance(pd_data, pd.api.extensions.ExtensionArray):
+        return pd.Series(pd_data).astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
+        return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
