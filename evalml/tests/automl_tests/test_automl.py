@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
 
@@ -945,10 +946,10 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
-
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification(automl_type, target_type):
+def test_targets_data_types_classification(data_type, automl_type, target_type):
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
         if target_type == "bool":
@@ -965,6 +966,13 @@ def test_targets_data_types_classification(automl_type, target_type):
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
     automl = AutoMLSearch(problem_type=automl_type, max_iterations=3)
     automl.search(X, y)
