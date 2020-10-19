@@ -22,6 +22,8 @@ Release Notes
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
         * Miscellaneous doc updates :pr:`1269`
+        * Removed conda pre-release testing from the release process document :pr:`1282`
+        * Updates to contributing guide :pr:`1310`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
