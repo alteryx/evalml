@@ -125,6 +125,7 @@ Pipeline Utils
 
     make_pipeline
     make_pipeline_from_components
+    generate_pipeline_code
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -155,6 +156,7 @@ Component Utils
 
     allowed_model_families
     get_estimators
+    generate_component_code
 
 
 .. currentmodule:: evalml.pipelines.components
