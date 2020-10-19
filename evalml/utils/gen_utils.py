@@ -272,12 +272,19 @@ def is_all_numeric(df):
     return True
 
 
-def _nullable_types_to_numpy_wrapper(pd_data):
+def _convert_nullable_types_wrapper(pd_data):
     """
+    Converts a pandas data structure that may have extension or nullable dtypes to dtypes that numpy can understand and handle.
+
     Arguments:
-        df 
+        pd_data (pd.Series, pd.DataFrame, pd.ExtensionArray): Pandas data structure
+
+    Returns:
+        New pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
     """
-    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64', pd.CategoricalDtype: 'category', pd.BooleanDtype: 'bool'}
+    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
+                                 pd.CategoricalDtype: 'category',
+                                 pd.BooleanDtype: 'bool'}
     if isinstance(pd_data, pd.api.extensions.ExtensionArray):
         return pd.Series(pd_data).astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
