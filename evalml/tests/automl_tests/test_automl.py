@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 import cloudpickle
 import numpy as np
 import pandas as pd
-import woodwork as ww
 import pytest
+import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -945,6 +945,7 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
 
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
+
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
