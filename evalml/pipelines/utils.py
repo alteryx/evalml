@@ -176,14 +176,14 @@ def generate_pipeline_code(element):
             code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
         code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
 
-        pipeline_string = ""
-        for k, v in list(filter(lambda x: x[0][0] != '_', element.__class__.__dict__.items())):
+        pipeline_string = []
+        for k, v in sorted(list(filter(lambda x: x[0][0] != '_', element.__class__.__dict__.items())), key=lambda item: item[0]):
             if k != 'component_graph':
                 if isinstance(v, str):
-                    pipeline_string += "{} = '{}'".format(k, v)
+                    pipeline_string.append("{} = '{}'".format(k, v))
                 else:
-                    pipeline_string += "{} = '{}'".format(k, v)
-        pipeline_string = "\t" + pipeline_string + "\n" if len(pipeline_string) else ""
+                    pipeline_string.append("{} = {}".format(k, v))
+        pipeline_string = "\t" + "\n\t".join(pipeline_string) + "\n" if len(pipeline_string) else ""
 
         base_string += "class {0}({1}):\n" \
                        "\tcomponent_graph = {2}\n" \

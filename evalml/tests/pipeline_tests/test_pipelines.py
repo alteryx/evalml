@@ -1458,6 +1458,11 @@ def test_generate_code_pipeline_errors():
 def test_generate_code_pipeline():
     class MockBinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Random Forest Classifier']
+        custom_hyperparameters = {
+            "Imputer": {
+                "numeric_impute_strategy": "most_frequent"
+            }
+        }
 
     class MockRegressionPipeline(RegressionPipeline):
         name = "Mock Regression Pipeline"
@@ -1469,7 +1474,8 @@ def test_generate_code_pipeline():
                     "\n\tRandomForestClassifier\n)" \
                     "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
                     "\nclass MockBinaryPipeline(BinaryClassificationPipeline):" \
-                    "\n\tcomponent_graph = ['Imputer', 'Random Forest Classifier']\n" \
+                    "\n\tcomponent_graph = ['Imputer', 'Random Forest Classifier']" \
+                    "\n\tcustom_hyperparameters = {'Imputer': {'numeric_impute_strategy': 'most_frequent'}}\n" \
                     "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Classifier': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
                     "\npipeline = MockBinaryPipeline(parameters)"
     pipeline_code = generate_pipeline_code(mock_binary_pipeline)
@@ -1534,6 +1540,11 @@ def test_generate_code_pipeline_custom():
     class MockBinaryPipelineEstimator(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline with Estimator"
         component_graph = ['Imputer', CustomEstimator]
+        custom_hyperparameters = {
+            'Imputer': {
+                'numeric_impute_strategy': 'most_frequent'
+            }
+        }
 
     class MockAllCustom(BinaryClassificationPipeline):
         name = "Mock All Custom Pipeline"
@@ -1557,6 +1568,7 @@ def test_generate_code_pipeline_custom():
         "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
         "\nclass MockBinaryPipelineEstimator(BinaryClassificationPipeline):" \
         "\n\tcomponent_graph = ['Imputer', CustomEstimator]" \
+        "\n\tcustom_hyperparameters = {'Imputer': {'numeric_impute_strategy': 'most_frequent'}}" \
         "\n\tname = 'Mock Binary Pipeline with Estimator'\n" \
         "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}" \
         "\npipeline = MockBinaryPipelineEstimator(parameters)"

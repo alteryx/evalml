@@ -1040,9 +1040,9 @@ def test_generate_code_errors():
 
 
 def test_generate_code():
-    expected_code = "from evalml.pipelines.components.estimators.classifiers.lightgbm_classifier import LightGBMClassifier" \
-                    "\n\nlightGBMClassifier = LightGBMClassifier(**{'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 0, 'num_leaves': 31, 'min_child_samples': 20, 'n_jobs': -1})"
-    component_code = generate_component_code(LightGBMClassifier())
+    expected_code = "from evalml.pipelines.components.estimators.classifiers.logistic_regression import LogisticRegressionClassifier" \
+                    "\n\nlogisticRegressionClassifier = LogisticRegressionClassifier(**{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'})"
+    component_code = generate_component_code(LogisticRegressionClassifier())
     assert component_code == expected_code
 
     expected_code = "from evalml.pipelines.components.estimators.regressors.et_regressor import ExtraTreesRegressor" \
