@@ -48,7 +48,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.gen_utils import _nullable_types_to_numpy_wrapper
+from evalml.utils.gen_utils import _convert_nullable_types_wrapper
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -396,8 +396,8 @@ class AutoMLSearch:
                 y = pd.Series(y)
             y = ww.DataColumn(y)
 
-        X = _nullable_types_to_numpy_wrapper(X.to_pandas())
-        y = _nullable_types_to_numpy_wrapper(y.to_pandas())
+        X = _convert_nullable_types_wrapper(X.to_pandas())
+        y = _convert_nullable_types_wrapper(y.to_pandas())
 
         self._set_data_split(X)
 
