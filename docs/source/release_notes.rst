@@ -29,6 +29,11 @@ Release Notes
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
 
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
+
 
 **v0.14.1 Sep. 29, 2020**
     * Enhancements
