@@ -11,7 +11,7 @@ Release Notes
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
-        * Added ``generate_pipeline_code`` and ``generate_component_code`` to allow for code generation given a pipeline or component instance :pr:``
+        * Added ``generate_pipeline_code`` and ``generate_component_code`` to allow for code generation given a pipeline or component instance :pr:`1306`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
     * Changes
