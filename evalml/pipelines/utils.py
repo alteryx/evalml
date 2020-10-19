@@ -172,18 +172,28 @@ def generate_pipeline_code(element):
                 custom_components.append((com.__class__.__name__, com.name))
             else:
                 import_strings.append(com.__class__.__name__)
-        code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
+        if import_strings:
+            code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
         code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-        custom_hyperparams = "    custom_hyperparameters = {}\n".format(element.custom_hyperparameters) if element.custom_hyperparameters else ""
+
+        pipeline_string = ""
+        for k, v in list(filter(lambda x: x[0][0] != '_', element.__class__.__dict__.items())):
+            if k != 'component_graph':
+                if isinstance(v, str):
+                    pipeline_string += "{} = '{}'".format(k, v)
+                else:
+                    pipeline_string += "{} = '{}'".format(k, v)
+        pipeline_string = "\t" + pipeline_string + "\n" if len(pipeline_string) else ""
+
         base_string += "class {0}({1}):\n" \
-                       "    component_graph = {2}\n" \
+                       "\tcomponent_graph = {2}\n" \
                        "{3}" \
                        "\nparameters = {4}\n" \
                        "pipeline = {0}(parameters)" \
                        .format(element.__class__.__name__,
                                element.__class__.__bases__[0].__name__,
                                component_graph,
-                               custom_hyperparams,
+                               pipeline_string,
                                element.parameters)
         if custom_components:
             for class_name, c in custom_components:

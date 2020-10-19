@@ -1457,7 +1457,6 @@ def test_generate_code_pipeline_errors():
 
 def test_generate_code_pipeline():
     class MockBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Binary Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
 
     class MockRegressionPipeline(RegressionPipeline):
@@ -1468,9 +1467,9 @@ def test_generate_code_pipeline():
     expected_code = "from evalml.pipelines.components import (" \
                     "\n\tImputer," \
                     "\n\tRandomForestClassifier\n)" \
-                    "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline" \
-                    "\n\nclass MockBinaryPipeline(BinaryClassificationPipeline):"\
-                    "\n    component_graph = ['Imputer', 'Random Forest Classifier']\n" \
+                    "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
+                    "\nclass MockBinaryPipeline(BinaryClassificationPipeline):" \
+                    "\n\tcomponent_graph = ['Imputer', 'Random Forest Classifier']\n" \
                     "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Classifier': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
                     "\npipeline = MockBinaryPipeline(parameters)"
     pipeline_code = generate_pipeline_code(mock_binary_pipeline)
@@ -1480,10 +1479,11 @@ def test_generate_code_pipeline():
     expected_code = "from evalml.pipelines.components import (" \
                     "\n\tImputer," \
                     "\n\tRandomForestRegressor\n)" \
-                    "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline" \
-                    "\n\nclass MockRegressionPipeline(RegressionPipeline):" \
-                    "\n    component_graph = ['Imputer', 'Random Forest Regressor']" \
-                    "\n\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
+                    "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline\n" \
+                    "\nclass MockRegressionPipeline(RegressionPipeline):" \
+                    "\n\tcomponent_graph = ['Imputer', 'Random Forest Regressor']" \
+                    "\n\tname = 'Mock Regression Pipeline'\n" \
+                    "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
                     "\npipeline = MockRegressionPipeline(parameters)"
     pipeline = generate_pipeline_code(mock_regression_pipeline)
     assert pipeline == expected_code
@@ -1492,10 +1492,83 @@ def test_generate_code_pipeline():
     expected_code_params = "from evalml.pipelines.components import (" \
         "\n\tImputer," \
         "\n\tRandomForestRegressor\n)" \
-        "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline" \
-        "\n\nclass MockRegressionPipeline(RegressionPipeline):" \
-        "\n    component_graph = ['Imputer', 'Random Forest Regressor']" \
-        "\n\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}" \
+        "\nfrom evalml.pipelines.regression_pipeline import RegressionPipeline\n" \
+        "\nclass MockRegressionPipeline(RegressionPipeline):" \
+        "\n\tcomponent_graph = ['Imputer', 'Random Forest Regressor']" \
+        "\n\tname = 'Mock Regression Pipeline'\n" \
+        "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, 'Random Forest Regressor': {'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}" \
         "\npipeline = MockRegressionPipeline(parameters)"
     pipeline = generate_pipeline_code(mock_regression_pipeline_params)
     assert pipeline == expected_code_params
+
+
+def test_generate_code_pipeline_custom():
+    class CustomTransformer(Transformer):
+        name = "My Custom Transformer"
+        hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            parameters = {}
+
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    class CustomEstimator(Estimator):
+        name = "My Custom Estimator"
+        hyperparameter_ranges = {}
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        model_family = ModelFamily.NONE
+
+        def __init__(self, random_state=0):
+            parameters = {}
+
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline with Transformer"
+        component_graph = [CustomTransformer, 'Random Forest Classifier']
+
+    class MockBinaryPipelineEstimator(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline with Estimator"
+        component_graph = ['Imputer', CustomEstimator]
+
+    class MockAllCustom(BinaryClassificationPipeline):
+        name = "Mock All Custom Pipeline"
+        component_graph = [CustomTransformer, CustomEstimator]
+
+    mockBinaryTransformer = MockBinaryPipelineTransformer({})
+    expected_code = "from evalml.pipelines.components import (" \
+        "\n\tRandomForestClassifier\n)" \
+        "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
+        "\nclass MockBinaryPipelineTransformer(BinaryClassificationPipeline):" \
+        "\n\tcomponent_graph = [CustomTransformer, 'Random Forest Classifier']" \
+        "\n\tname = 'Mock Binary Pipeline with Transformer'\n" \
+        "\nparameters = {'Random Forest Classifier': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}" \
+        "\npipeline = MockBinaryPipelineTransformer(parameters)"
+    pipeline = generate_pipeline_code(mockBinaryTransformer)
+    assert pipeline == expected_code
+
+    mockBinaryPipeline = MockBinaryPipelineEstimator({})
+    expected_code = "from evalml.pipelines.components import (" \
+        "\n\tImputer\n)" \
+        "\nfrom evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
+        "\nclass MockBinaryPipelineEstimator(BinaryClassificationPipeline):" \
+        "\n\tcomponent_graph = ['Imputer', CustomEstimator]" \
+        "\n\tname = 'Mock Binary Pipeline with Estimator'\n" \
+        "\nparameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}" \
+        "\npipeline = MockBinaryPipelineEstimator(parameters)"
+    pipeline = generate_pipeline_code(mockBinaryPipeline)
+    assert pipeline == expected_code
+
+    mockAllCustom = MockAllCustom({})
+    expected_code = "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
+        "\nclass MockAllCustom(BinaryClassificationPipeline):" \
+        "\n\tcomponent_graph = [CustomTransformer, CustomEstimator]" \
+        "\n\tname = 'Mock All Custom Pipeline'\n" \
+        "\nparameters = {}\n" \
+        "pipeline = MockAllCustom(parameters)"
+    pipeline = generate_pipeline_code(mockAllCustom)
+    assert pipeline == expected_code
