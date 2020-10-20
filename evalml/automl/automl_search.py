@@ -481,6 +481,8 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
+        if self.max_batches:
+            self.current_batch = 0
         while self._check_stopping_condition(self._start):
             try:
                 if len(current_batch_pipelines) == 0:
@@ -489,6 +491,8 @@ class AutoMLSearch:
                             raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
                         current_batch_pipeline_scores = []
+                        if self.max_batches:
+                            self.current_batch += 1
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
                         break
@@ -504,7 +508,10 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+                if self.max_batches:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self.current_batch)
+                else:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
 
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']

@@ -71,7 +71,7 @@ def time_elapsed(start_time):
         return '{0:02d}:{1:02d}'.format(m, s)
 
 
-def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time):
+def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time, current_batch=None):
     """Adds the next pipeline to be evaluated to the log along with how much time has elapsed.
 
     Arguments:
@@ -85,8 +85,11 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
         None: logs progress to logger at info level.
     """
     if max_iterations:
-        status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
-        format_params = {'max_iterations': max_iterations, 'current_iteration': current_iteration}
+        if current_batch:
+            status_update_format = "({current_batch}: {current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
+        else:
+            status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
+        format_params = {'current_batch': current_batch, 'max_iterations': max_iterations, 'current_iteration': current_iteration}
     else:
         status_update_format = "{pipeline_name} Elapsed: {time_elapsed}"
         format_params = {}

@@ -1334,6 +1334,8 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
     assert automl.full_rankings.shape[0] == n_results
     if check_output:
         assert f"Searching up to {max_batches} batches for a total of {n_automl_pipelines} pipelines." in caplog.text
+        for i in range(1, max_batches):
+            assert f"({i}: " in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
