@@ -19,6 +19,7 @@ from evalml.model_understanding.graphs import (
     graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
+    graph_prediction_vs_actual,
     graph_roc_curve,
     normalize_confusion_matrix,
     partial_dependence,
@@ -495,36 +496,36 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
 def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_objectives_allowed_in_automl):
+                                           binary_core_objectives):
     X, y = X_y_binary
     if data_type == 'pd':
         X = pd.DataFrame(X)
         y = pd.Series(y)
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in binary_objectives_allowed_in_automl:
+    for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
 def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
-                                               multiclass_objectives_allowed_in_automl):
+                                               multiclass_core_objectives):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in multiclass_objectives_allowed_in_automl:
+    for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
 
 def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
-                                               regression_objectives_allowed_in_automl):
+                                               regression_core_objectives):
     X, y = X_y_regression
     pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
-    for objective in regression_objectives_allowed_in_automl:
+    for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -682,10 +683,28 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
+    with pytest.raises(AttributeError):
+        pipeline._estimator_type
+    with pytest.raises(AttributeError):
+        pipeline.feature_importances_
 
 
-def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_class):
+@patch('evalml.model_understanding.graphs.sk_partial_dependence')
+def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    mock_part_dep.side_effect = Exception()
+    with pytest.raises(Exception):
+        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+    with pytest.raises(AttributeError):
+        pipeline._estimator_type
+    with pytest.raises(AttributeError):
+        pipeline.feature_importances_
+
+
+def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
@@ -693,12 +712,30 @@ def test_partial_dependence_string_feature(logistic_regression_binary_pipeline_c
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
-    assert not part_dep.isnull().all().all()
+    assert not part_dep.isnull().any(axis=None)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_partial_dependence_baseline(mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
+    X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+    y = [0, 0.2, 1.4, 1]
+    pipeline = linear_regression_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, feature='numeric')
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 4
+    assert len(part_dep["feature_values"]) == 4
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, feature='string')
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+    assert len(part_dep["partial_dependence"]) == 3
+    assert len(part_dep["feature_values"]) == 3
+    assert not part_dep.isnull().any(axis=None)
+
+
+def test_partial_dependence_baseline():
+    X = pd.DataFrame([[1, 0], [0, 1]])
+    y = pd.Series([0, 1])
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
         component_graph = ["Baseline Classifier"]
@@ -716,7 +753,22 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
             component_graph = ["CatBoost Classifier"]
         pipeline = CatBoostTestPipeline({})
         pipeline.fit(X, y)
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+        assert len(part_dep["partial_dependence"]) == 20
+        assert len(part_dep["feature_values"]) == 20
+        assert not part_dep.isnull().all().all()
+
+        # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
+        X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
+        y = ['a', 'b', 'a']
+        pipeline = CatBoostTestPipeline({})
+        pipeline.fit(X, y)
+        part_dep = partial_dependence(pipeline, X, feature='string')
+        assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
+        assert len(part_dep["partial_dependence"]) == 3
+        assert len(part_dep["feature_values"]) == 3
+        assert not part_dep.isnull().all().all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -783,7 +835,7 @@ def test_graph_partial_dependence(test_pipeline):
 
 @patch('evalml.model_understanding.graphs.jupyter_check')
 @patch('evalml.model_understanding.graphs.import_or_raise')
-def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
+def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regression, test_pipeline):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
     clf = test_pipeline
@@ -826,3 +878,66 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
+
+    Xr, yr = X_y_regression
+    with pytest.warns(None) as graph_valid:
+        rs = np.random.RandomState(42)
+        y_preds = yr * rs.random(yr.shape)
+        graph_prediction_vs_actual(yr, y_preds)
+        assert len(graph_valid) == 0
+        import_check.assert_called_with('ipywidgets', warning=True)
+
+
+def test_graph_prediction_vs_actual_default():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
+
+    fig = graph_prediction_vs_actual(y_true, y_pred)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][0]['name'] == 'y = x line'
+    assert fig_dict['data'][0]['x'] == fig_dict['data'][0]['y']
+    assert len(fig_dict['data'][1]['x']) == len(y_true)
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
+    assert fig_dict['data'][1]['name'] == "Values"
+
+
+def test_graph_prediction_vs_actual():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
+
+    with pytest.raises(ValueError, match="Threshold must be positive!"):
+        graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=-1)
+
+    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=100)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
+
+    y_true = pd.Series(y_true)
+    y_pred = pd.Series(y_pred)
+    fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
+    assert isinstance(fig, type(go.Figure()))
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Predicted vs Actual Values Scatter Plot'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Prediction'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Actual'
+    assert len(fig_dict['data']) == 3
+    assert fig_dict['data'][1]['marker']['color'] == '#0000ff'
+    assert len(fig_dict['data'][1]['x']) == 10
+    assert len(fig_dict['data'][1]['y']) == 10
+    assert fig_dict['data'][1]['name'] == "< outlier_threshold"
+    assert fig_dict['data'][2]['marker']['color'] == '#ffff00'
+    assert len(fig_dict['data'][2]['x']) == 2
+    assert len(fig_dict['data'][2]['y']) == 2
+    assert fig_dict['data'][2]['name'] == ">= outlier_threshold"

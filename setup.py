@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setup(
     name='evalml',
-    version='0.13.2',
+    version='0.14.1',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/FeatureLabs/evalml/',
+    url='https://github.com/alteryx/evalml/',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
     tests_require=open('test-requirements.txt').readlines(),
     packages=find_packages(),

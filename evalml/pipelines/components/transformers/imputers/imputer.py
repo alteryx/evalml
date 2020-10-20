@@ -24,7 +24,7 @@ class Imputer(Transformer):
 
         Arguments:
             categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
-            numeric_impute_strategy (string): Impute strategy to use for numeric dtypes. Valid values include "mean", "median", "most_frequent", and "constant".
+            numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "mean", "median", "most_frequent", and "constant".
             categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
             numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with 0.
         """
@@ -56,8 +56,8 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
+            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -86,7 +86,8 @@ class Imputer(Transformer):
 
         Arguments:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Input Labels
+            y (pd.Series, optional): Ignored.
+
         Returns:
             pd.DataFrame: Transformed X
         """

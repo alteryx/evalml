@@ -1,4 +1,3 @@
-# flake8:noqa
 from .binary_classification_objective import BinaryClassificationObjective
 from .cost_benefit_matrix import CostBenefitMatrix
 from .fraud_cost import FraudCost
@@ -43,4 +42,5 @@ from .standard_metrics import (
     RecallMicro,
     RecallWeighted
 )
-from .utils import get_objective, get_objectives, print_all_objective_names
+from .utils import get_objective, get_core_objectives, get_all_objective_names, get_non_core_objectives,\
+    get_core_objective_names

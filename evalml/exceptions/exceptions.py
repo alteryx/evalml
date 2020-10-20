@@ -38,12 +38,17 @@ class AutoMLSearchException(Exception):
     pass
 
 
+class EnsembleMissingPipelinesError(Exception):
+    """An exception raised when an ensemble is missing `estimators` (list) as a parameter."""
+    pass
+
+
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
     Arguments:
         exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
-        All of the objectives that errored will be stored here.
+            All of the objectives that errored will be stored here.
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
             that did not error will be stored here.
     """
@@ -61,3 +66,7 @@ class PipelineScoreError(Exception):
 
         self.message = message
         super().__init__(message)
+
+
+class DataCheckInitError(Exception):
+    """Exception raised when a data check can't initialize with the parameters given."""

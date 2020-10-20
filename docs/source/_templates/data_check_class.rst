@@ -2,8 +2,6 @@
 
 .. currentmodule:: {{ module }}
 
-.. inheritance-diagram:: {{ objname }}
-
 .. autoclass:: {{ objname }}
    {% set class_attributes = ['name'] %}
 
@@ -41,3 +39,8 @@
    {%- endfor %}
    {% endif %}
    {% endblock %}
+
+Class Inheritance
+"""""""""""""""""
+
+.. inheritance-diagram:: {{ objname }}

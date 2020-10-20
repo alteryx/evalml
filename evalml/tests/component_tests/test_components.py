@@ -8,20 +8,31 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
+    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    LSA,
+    PCA,
+    BaselineClassifier,
+    BaselineRegressor,
+    CatBoostClassifier,
+    CatBoostRegressor,
     ComponentBase,
+    DateTimeFeaturizer,
     DropColumns,
+    DropNullColumns,
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    Imputer,
     LightGBMClassifier,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -30,11 +41,18 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    TextFeaturizer,
     Transformer,
-    XGBoostClassifier
+    XGBoostClassifier,
+    XGBoostRegressor
+)
+from evalml.pipelines.components.ensemble import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 from evalml.pipelines.components.utils import (
     _all_estimators,
@@ -42,6 +60,7 @@ from evalml.pipelines.components.utils import (
     _all_transformers,
     all_components
 )
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -113,23 +132,43 @@ def test_describe(test_classes):
 
 def test_describe_component():
     enc = OneHotEncoder()
-    imputer = SimpleImputer("mean")
+    imputer = Imputer()
+    simple_imputer = SimpleImputer("mean")
     column_imputer = PerColumnImputer({"a": "mean", "b": ("constant", 100)})
     scaler = StandardScaler()
-    feature_selection = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    feature_selection_clf = RFClassifierSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    feature_selection_reg = RFRegressorSelectFromModel(n_estimators=10, number_features=5, percent_features=0.3, threshold=-np.inf)
+    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
+    drop_null_transformer = DropNullColumns()
+    datetime = DateTimeFeaturizer()
+    text_featurizer = TextFeaturizer()
+    lsa = LSA()
+    pca = PCA()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
+                                                                                        'features_to_encode': None,
                                                                                         'categories': None,
                                                                                         'drop': None,
                                                                                         'handle_unknown': 'ignore',
                                                                                         'handle_missing': 'error'}}
-    drop_col_transformer = DropColumns(columns=['col_one', 'col_two'])
-    assert imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
+    assert imputer.describe(return_dict=True) == {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': "most_frequent",
+                                                                                    'categorical_fill_value': None,
+                                                                                    'numeric_impute_strategy': "mean",
+                                                                                    'numeric_fill_value': None}}
+    assert simple_imputer.describe(return_dict=True) == {'name': 'Simple Imputer', 'parameters': {'impute_strategy': 'mean', 'fill_value': None}}
     assert column_imputer.describe(return_dict=True) == {'name': 'Per Column Imputer', 'parameters': {'impute_strategies': {'a': 'mean', 'b': ('constant', 100)}, 'default_impute_strategy': 'most_frequent'}}
     assert scaler.describe(return_dict=True) == {'name': 'Standard Scaler', 'parameters': {}}
-    assert feature_selection.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
+    assert feature_selection_clf.describe(return_dict=True) == {'name': 'RF Classifier Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
+    assert feature_selection_reg.describe(return_dict=True) == {'name': 'RF Regressor Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
     assert drop_col_transformer.describe(return_dict=True) == {'name': 'Drop Columns Transformer', 'parameters': {'columns': ['col_one', 'col_two']}}
+    assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
+    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component', 'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour']}}
+    assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
+    assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
+    assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
 
     # testing estimators
+    base_classifier = BaselineClassifier()
+    base_regressor = BaselineRegressor()
     lr_classifier = LogisticRegressionClassifier()
     en_classifier = ElasticNetClassifier()
     en_regressor = ElasticNetRegressor()
@@ -138,7 +177,9 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
-    assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1}}
+    assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
+    assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
+    assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
     assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
     assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000, 'normalize': False}}
     assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
@@ -148,7 +189,16 @@ def test_describe_component():
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False, 'n_jobs': -1}}
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
+        xgb_regressor = XGBoostRegressor(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         assert xgb_classifier.describe(return_dict=True) == {'name': 'XGBoost Classifier', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+        assert xgb_regressor.describe(return_dict=True) == {'name': 'XGBoost Regressor', 'parameters': {'eta': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 75}}
+    except ImportError:
+        pass
+    try:
+        cb_classifier = CatBoostClassifier()
+        cb_regressor = CatBoostRegressor()
+        assert cb_classifier.describe(return_dict=True) == {'name': 'CatBoost Classifier', 'parameters': {'allow_writing_files': False, 'n_estimators': 10, 'eta': 0.03, 'max_depth': 6, 'bootstrap_type': None, 'silent': True}}
+        assert cb_regressor.describe(return_dict=True) == {'name': 'CatBoost Regressor', 'parameters': {'allow_writing_files': False, 'n_estimators': 10, 'eta': 0.03, 'max_depth': 6, 'bootstrap_type': None, 'silent': False}}
     except ImportError:
         pass
     try:
@@ -350,10 +400,17 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {'test': 'parameter'}
 
 
-def test_component_parameters_init():
+def test_component_parameters_init(logistic_regression_binary_pipeline_class,
+                                   linear_regression_pipeline_class):
     for component_class in all_components():
         print('Testing component {}'.format(component_class.name))
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            if component_class == StackedEnsembleClassifier:
+                component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+            elif component_class == StackedEnsembleRegressor:
+                component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -403,7 +460,10 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            continue
         if component._component_obj is None:
             continue
 
@@ -464,6 +524,10 @@ def test_transformer_transform_output_type(X_y_binary):
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, PCA):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] <= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
                 assert (transform_output.columns == X_cols_expected).all()
@@ -473,6 +537,10 @@ def test_transformer_transform_output_type(X_y_binary):
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
+                assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, PCA):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
@@ -520,13 +588,12 @@ def test_estimator_predict_output_type(X_y_binary):
             assert (predict_proba_output.columns == y_cols_expected).all()
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters(cls):
-
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
 
 
-@pytest.mark.parametrize("cls", all_components())
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters_raise_no_warnings(cls):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -705,7 +772,8 @@ def test_all_transformers_check_fit(X_y_binary):
 
 def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    for component_class in _all_estimators() + [test_estimator_needs_fitting_false]:
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
@@ -743,11 +811,15 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
-
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
-
-        component = component_class()
+        try:
+            component = component_class()
+        except EnsembleMissingPipelinesError:
+            if (component_class == StackedEnsembleClassifier):
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])
+            elif (component_class == StackedEnsembleRegressor):
+                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)])
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
@@ -755,7 +827,7 @@ def test_serialization(X_y_binary, tmpdir):
             loaded_component = ComponentBase.load(path)
             assert component.parameters == loaded_component.parameters
             assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
-            if issubclass(component_class, Estimator):
+            if (issubclass(component_class, Estimator) and not (isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor))):
                 assert (component.feature_importance == loaded_component.feature_importance).all()
 
 
@@ -776,11 +848,22 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
-def test_estimators_accept_all_kwargs(estimator_class):
-    estimator = estimator_class()
+def test_estimators_accept_all_kwargs(estimator_class,
+                                      logistic_regression_binary_pipeline_class,
+                                      linear_regression_pipeline_class):
+    try:
+        estimator = estimator_class()
+    except EnsembleMissingPipelinesError:
+        if estimator_class == StackedEnsembleClassifier:
+            estimator = estimator_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+        elif estimator_class == StackedEnsembleRegressor:
+            estimator = estimator_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     if estimator._component_obj is None:
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
-    params = estimator._component_obj.get_params()
+    if estimator_class.model_family == ModelFamily.ENSEMBLE:
+        params = estimator.parameters
+    else:
+        params = estimator._component_obj.get_params()
     if estimator_class.model_family == ModelFamily.CATBOOST:
         # Deleting because we call it random_state in our api
         del params["random_seed"]
@@ -847,8 +930,95 @@ def test_component_equality():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_equality_all_components(component_class):
-    component = component_class()
+def test_component_equality_all_components(component_class,
+                                           logistic_regression_binary_pipeline_class,
+                                           linear_regression_pipeline_class):
+    if component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+    elif component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.REGRESSION]:
+        component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
+    else:
+        component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
+
+
+def test_component_equality_with_subclasses(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+    mock_component = MockComponent()
+    mock_estimator = MockEstimator()
+    mock_transformer = MockTransformer()
+    assert mock_component != mock_estimator
+    assert mock_component != mock_transformer
+    assert mock_estimator != mock_component
+    assert mock_estimator != mock_transformer
+    assert mock_transformer != mock_component
+    assert mock_transformer != mock_estimator
+
+
+def test_mock_component_str(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    assert str(MockComponent()) == 'Mock Component'
+    assert str(MockEstimator()) == 'Mock Estimator'
+    assert str(MockTransformer()) == 'Mock Transformer'
+
+
+def test_mock_component_repr():
+    component = MockFitComponent()
+    assert repr(component) == 'MockFitComponent(param_a=2, param_b=10)'
+
+    component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
+    assert repr(component_with_params) == 'MockFitComponent(param_a=29, param_b=None)'
+
+    component_with_nan = MockFitComponent(param_a=np.nan, param_b=float('nan'))
+    assert repr(component_with_nan) == 'MockFitComponent(param_a=np.nan, param_b=np.nan)'
+
+    component_with_inf = MockFitComponent(param_a=np.inf, param_b=float('-inf'))
+    assert repr(component_with_inf) == "MockFitComponent(param_a=float('inf'), param_b=float('-inf'))"
+
+
+@pytest.mark.parametrize("component_class", all_components())
+def test_component_str(component_class, logistic_regression_binary_pipeline_class, linear_regression_pipeline_class):
+    try:
+        component = component_class()
+    except EnsembleMissingPipelinesError:
+        if component_class == StackedEnsembleClassifier:
+            component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+        elif component_class == StackedEnsembleRegressor:
+            component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
+    assert str(component) == component.name
+
+
+@pytest.mark.parametrize("categorical", [{
+    "type": Categorical(["mean", "median", "mode"]),
+    "categories": Categorical(["blue", "green"])
+},
+    {
+    "type": ["mean", "median", "mode"],
+    "categories": ["blue", "green"]
+}
+])
+def test_categorical_hyperparameters(X_y_binary, categorical):
+    X, y = X_y_binary
+
+    class MockEstimator():
+        def fit(self, X, y):
+            pass
+
+    class MockComponent(Estimator):
+        name = 'Mock Estimator'
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+        hyperparameter_ranges = categorical
+
+        def __init__(self, agg_type, category="green"):
+            parameters = {"type": agg_type, "categories": category}
+            est = MockEstimator()
+            super().__init__(parameters=parameters,
+                             component_obj=est,
+                             random_state=0)
+
+    assert MockComponent(agg_type="mean").fit(X, y)
+    assert MockComponent(agg_type="moat", category="blue").fit(X, y)

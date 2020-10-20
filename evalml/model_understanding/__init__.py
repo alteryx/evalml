@@ -1,4 +1,3 @@
-# flake8:noqa
 from .graphs import (
     precision_recall_curve,
     graph_precision_recall_curve,
@@ -12,6 +11,7 @@ from .graphs import (
     binary_objective_vs_threshold,
     graph_binary_objective_vs_threshold,
     partial_dependence,
-    graph_partial_dependence
+    graph_partial_dependence,
+    graph_prediction_vs_actual
 )
 from .prediction_explanations import explain_prediction, explain_predictions_best_worst, explain_predictions

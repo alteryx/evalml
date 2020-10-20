@@ -16,27 +16,30 @@ More details about ZenHub and its best practices can be found [here](https://bit
 
 #### 1. Clone repo
 The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
-* clone with `git clone https://github.com/FeatureLabs/evalml.git`
+* clone with `git clone https://github.com/alteryx/evalml.git`
 * install in edit mode with:
     ```bash
     cd evalml  # move to directory
-    make installdeps # install in edit mode
+    make installdeps-dev # installs the repo in edit mode, meaning changes to any files will be picked up in python. also installs all depenedencies.
     ```
 
+Note that if you're on Mac, there are a few extra steps you'll want to keep track of.
+* In order to run on Mac, [LightGBM requires the OpenMP library to be installed](https://evalml.alteryx.com/en/stable/install.html#Mac), which can be done with HomeBrew by running `brew install libomp`
+* We've seen some installs get the following warning when importing evalml: "UserWarning: Could not import the lzma module. Your installed Python is incomplete. Attempting to use lzma compression will result in a RuntimeError". [A known workaround](https://stackoverflow.com/a/61531555/841003) is to run `brew reinstall readline xz` before installing the python version you're using via pyenv. If you've already installed a python version in pyenv, consider deleting it and reinstalling. v3.8.2 is known to work.
 
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.
 * Before submitting to GitHub, verify the tests run and the code lints properly
   ```bash
-  # runs test
-  make test
-
   # runs linting
   make lint
 
-  # will fix some common linting issues automatically
+  # will fix some common linting issues automatically, if the above command failed
   make lint-fix
+
+  # runs all the unit tests locally
+  make test
   ```
 * If you made changes to the documentation, build the documentation to view locally.
   ```bash

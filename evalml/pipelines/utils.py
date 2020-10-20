@@ -7,16 +7,18 @@ from .multiclass_classification_pipeline import (
 from .regression_pipeline import RegressionPipeline
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import (
+from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
+    ComponentBase,
     DateTimeFeaturizer,
     DropNullColumns,
     Estimator,
     Imputer,
     OneHotEncoder,
-    StandardScaler,
-    TextFeaturizer
+    TextFeaturizer,
+    RandomForestClassifier,
+    StandardScaler
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -30,14 +32,14 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
-        X (pd.DataFrame): the input data of shape [n_samples, n_features]
-        y (pd.Series): the target labels of length [n_samples]
-        problem_type (ProblemTypes or str): problem type
+        X (pd.DataFrame): The input data of shape [n_samples, n_features]
+        y (pd.Series): The target data of length [n_samples]
+        problem_type (ProblemTypes or str): Problem type
         text_columns (list): feature names which should be treated as text features
-        estimator_class (class):A class which subclasses Estimator estimator for pipeline
+        estimator_class (class): A class which subclasses Estimator estimator for pipeline
 
     Returns:
-        list[Transformer]: a list of applicable preprocessing components to use with the estimator
+        list[Transformer]: A list of applicable preprocessing components to use with the estimator
     """
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
@@ -82,10 +84,10 @@ def make_pipeline(X, y, estimator, problem_type, text_columns=None):
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
    Arguments:
-        X (pd.DataFrame): the input data of shape [n_samples, n_features]
-        y (pd.Series): the target labels of length [n_samples]
-        estimator (Estimator): estimator for pipeline
-        problem_type (ProblemTypes or str): problem type for pipeline to generate
+        X (pd.DataFrame): The input data of shape [n_samples, n_features]
+        y (pd.Series): The target data of length [n_samples]
+        estimator (Estimator): Estimator for pipeline
+        problem_type (ProblemTypes or str): Problem type for pipeline to generate
         text_columns (list): feature names which should be treated as text features. Defaults to None.
 
     Returns:
@@ -113,9 +115,10 @@ def make_pipeline(X, y, estimator, problem_type, text_columns=None):
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None):
-    """Given a list of component instances and the problem type, a pipeline instance is generated with the component instances.
-    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. A custom name for
-    the pipeline can optionally be specified; otherwise the default pipeline name will be 'Templated Pipeline'.
+    """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
+    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
+    untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
+    otherwise the default pipeline name will be 'Templated Pipeline'.
 
    Arguments:
         component_instances (list): a list of all of the components to include in the pipeline
@@ -125,17 +128,24 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     Returns:
         Pipeline instance with component instances and specified estimator
 
-    """
-    if not isinstance(component_instances[-1], Estimator):
-        raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
+    Example:
+        >>> components = [Imputer(), StandardScaler(), RandomForestClassifier()]
+        >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
+        >>> pipeline.describe()
 
+    """
+    for i, component in enumerate(component_instances):
+        if not isinstance(component, ComponentBase):
+            raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
+        if i == len(component_instances) - 1 and not isinstance(component, Estimator):
+            raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
+
+    if custom_name and not isinstance(custom_name, str):
+        raise TypeError("Custom pipeline name must be a string")
     pipeline_name = custom_name
     problem_type = handle_problem_types(problem_type)
 
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-
-    pipeline_instance = TemplatedPipeline({})
-    pipeline_instance.component_graph = component_instances
-    return pipeline_instance
+    return TemplatedPipeline({c.name: c.parameters for c in component_instances})

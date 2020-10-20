@@ -1,4 +1,3 @@
-
 import copy
 import warnings
 
@@ -26,8 +25,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred (pd.Series or np.array): predictions from a binary classifier.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred (pd.Series or np.array): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -50,7 +49,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (pd.DataFrame or np.array): confusion matrix to normalize.
+        conf_mat (pd.DataFrame or np.array): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -75,8 +74,8 @@ def precision_recall_curve(y_true, y_pred_proba):
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
@@ -98,9 +97,9 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """Generate and display a precision-recall plot.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred_proba (pd.Series or np.array): predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        title_addition (str or None): if not None, append to plot title. Default None.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        title_addition (str or None): If not None, append to plot title. Default None.
 
     Returns:
         plotly.Figure representing the precision-recall plot generated
@@ -131,8 +130,8 @@ def roc_curve(y_true, y_pred_proba):
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
-        y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.DataFrame, pd.Series, or np.array): predictions from a classifier, before thresholding has been applied.
+        y_true (pd.Series or np.array): True labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -177,9 +176,9 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
-        y_true (pd.Series or np.array): true labels.
-        y_pred_proba (pd.Series or np.array): predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
-        custom_class_labels (list or None): if not None, custom labels for classes. Default None.
+        y_true (pd.Series or np.array): True labels.
+        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
+        custom_class_labels (list or None): If not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
     Returns:
@@ -222,8 +221,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
 
     Arguments:
-        y_true (pd.Series or np.array): true binary labels.
-        y_pred (pd.Series or np.array): predictions from a binary classifier.
+        y_true (pd.Series or np.array): True binary labels.
+        y_pred (pd.Series or np.array): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
         title_addition (str or None): if not None, append to plot title. Default None.
 
@@ -268,10 +267,10 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     """Calculates permutation importance for features.
 
     Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute permutation importance
-        y (pd.Series): the target labels
-        objective (str, ObjectiveBase): objective to score on
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target data
+        objective (str, ObjectiveBase): Objective to score on
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -303,7 +302,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target labels
+        y (pd.Series): The target data
         objective (str, ObjectiveBase): Objective to score on
         importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
@@ -352,10 +351,10 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
-        pipeline (BinaryClassificationPipeline obj): fitted binary classification pipeline
-        X (pd.DataFrame): the input data used to compute objective score
-        y (pd.Series): the target labels
-        objective (ObjectiveBase obj, str): objective used to score
+        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
+        X (pd.DataFrame): The input data used to compute objective score
+        y (pd.Series): The target labels
+        objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -383,10 +382,10 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
-        pipeline (PipelineBase or subclass): fitted pipeline
-        X (pd.DataFrame): the input data used to score and compute scores
-        y (pd.Series): the target labels
-        objective (ObjectiveBase obj, str): objective used to score, shown on the y-axis of the graph
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute scores
+        y (pd.Series): The target labels
+        objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
     Returns:
@@ -415,7 +414,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
@@ -426,24 +425,23 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
-    if pipeline.model_family == ModelFamily.BASELINE:
-        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
-    if pipeline.model_family == ModelFamily.CATBOOST:
-        pipeline.estimator._component_obj._fitted_ = True
-    if pipeline.model_family == ModelFamily.XGBOOST:
-        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-            pipeline.estimator._estimator_type = "classifier"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.classes_ = pipeline.classes_
-        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-            pipeline.estimator._estimator_type = "regressor"
-            # set arbitrary attribute that ends in underscore to pass scikit-learn check for is_fitted
-            pipeline.estimator.feature_importances_ = pipeline.feature_importance
-        avg_pred, values = sk_partial_dependence(pipeline.estimator, X=X, features=[feature], grid_resolution=grid_resolution)
-    else:
-        avg_pred, values = sk_partial_dependence(pipeline.estimator._component_obj, X=X, features=[feature], grid_resolution=grid_resolution)
+    if pipeline.model_family == ModelFamily.BASELINE:
+        raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+        pipeline._estimator_type = "classifier"
+    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+        pipeline._estimator_type = "regressor"
+    pipeline.feature_importances_ = pipeline.feature_importance
+    try:
+        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+    finally:
+        # Delete scikit-learn attributes that were temporarily set
+        del pipeline._estimator_type
+        del pipeline.feature_importances_
     return pd.DataFrame({"feature_values": values[0],
                          "partial_dependence": avg_pred[0]})
 
@@ -453,14 +451,14 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, npermutation importance.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.array): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
 
     Returns:
-        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
 
     """
@@ -488,3 +486,69 @@ def _calculate_axis_range(arr):
     min_value = arr.min()
     margins = abs(max_value - min_value) * 0.05
     return [min_value - margins, max_value + margins]
+
+
+def _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold):
+    """Helper method to help calculate the y_true and y_pred dataframe, with a column for outliers"""
+    predictions = y_pred.reset_index(drop=True)
+    actual = y_true.reset_index(drop=True)
+    data = pd.concat([pd.Series(predictions),
+                      pd.Series(actual)], axis=1)
+    data.columns = ['prediction', 'actual']
+    if outlier_threshold:
+        data['outlier'] = np.where((abs(data['prediction'] - data['actual']) >= outlier_threshold), "#ffff00", "#0000ff")
+    else:
+        data['outlier'] = '#0000ff'
+    return data
+
+
+def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
+    """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
+
+    Arguments:
+        y_true (pd.Series): The real target values of the data
+        y_pred (pd.Series): The predicted values outputted by the regression model.
+        outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
+                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
+                                 Defaults to None
+
+    Returns:
+        plotly.Figure representing the predicted vs. actual values graph
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    if outlier_threshold and outlier_threshold <= 0:
+        raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
+
+    if not isinstance(y_true, pd.Series):
+        y_true = pd.Series(y_true)
+    if not isinstance(y_pred, pd.Series):
+        y_pred = pd.Series(y_pred)
+
+    df = _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
+    data = []
+
+    x_axis = _calculate_axis_range(df['prediction'])
+    y_axis = _calculate_axis_range(df['actual'])
+    x_y_line = [min(x_axis[0], y_axis[0]), max(x_axis[1], y_axis[1])]
+    data.append(_go.Scatter(x=x_y_line, y=x_y_line, name="y = x line", line_color='grey'))
+
+    title = 'Predicted vs Actual Values Scatter Plot'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Prediction', 'range': x_y_line},
+                        yaxis={'title': 'Actual', 'range': x_y_line})
+
+    for color, outlier_group in df.groupby('outlier'):
+        if outlier_threshold:
+            name = "< outlier_threshold" if color == "#0000ff" else ">= outlier_threshold"
+        else:
+            name = "Values"
+        data.append(_go.Scatter(x=outlier_group['prediction'],
+                                y=outlier_group['actual'],
+                                mode='markers',
+                                marker=_go.scatter.Marker(color=color),
+                                name=name))
+    return _go.Figure(layout=layout, data=data)

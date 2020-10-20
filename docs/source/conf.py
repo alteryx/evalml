@@ -28,8 +28,8 @@ sys.path.insert(0, os.path.abspath(path))
 # -- Project information -----------------------------------------------------
 
 project = 'EvalML'
-copyright = '2019, Alteryx, Inc.'
-author = 'Alteryx Innovation Labs'
+copyright = '2020, Alteryx, Inc.'
+author = 'Alteryx, Inc.'
 
 # The short X.Y version
 version = evalml.__version__
@@ -202,8 +202,8 @@ epub_exclude_files = ['search.html']
 
 # If evalml is open-sourced: replace github specific style.css
 extlinks = {
-    'issue': ('https://github.com/Featurelabs/evalml/issues/%s', '#'),
-    'pr': ('https://github.com/Featurelabs/evalml/pull/%s', '#'),
+    'issue': ('https://github.com/alteryx/evalml/issues/%s', '#'),
+    'pr': ('https://github.com/alteryx/evalml/pull/%s', '#'),
     'user': ('https://github.com/%s', '@')
 }
 
@@ -214,8 +214,9 @@ html_show_sphinx = False
 nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
-inheritance_graph_attrs = dict(rankdir="LR", size='"1000, 333"',
-                               fontsize=30, labelfontsize=30, ratio='compress', dpi=960)
+inheritance_graph_attrs = dict(rankdir="TB", dpi=192.0, ranksep=0.02)
+inheritance_node_attrs = dict(fontsize=6, height=0.15, width=5, fixedsize=True)
+inheritance_edge_attrs = dict(arrowsize=0.1)
 
 class AccessorLevelDocumenter(Documenter):
     """
@@ -255,14 +256,8 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     priority = 0.6
 
 
-def build_finished(app, Exception):
-    subprocess.run(['sed', '-i', '-e', 's/require/require_rtd/g', "{}/_static/js/theme.js".format(app.outdir)])
-
-
-
 def setup(app):
     app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('build-finished', build_finished)

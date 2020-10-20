@@ -27,11 +27,11 @@ class Estimator(ComponentBase):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Args:
-            X (pd.DataFrame): features
+        Arguments:
+            X (pd.DataFrame): Features
 
         Returns:
-            pd.Series: estimated labels
+            pd.Series: Predicted values
         """
         try:
             predictions = self._component_obj.predict(X)
@@ -44,11 +44,11 @@ class Estimator(ComponentBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Args:
-            X (pd.DataFrame): features
+        Arguments:
+            X (pd.DataFrame): Features
 
         Returns:
-            pd.DataFrame: probability estimates
+            pd.DataFrame: Probability estimates
         """
         try:
             pred_proba = self._component_obj.predict_proba(X)
@@ -63,7 +63,7 @@ class Estimator(ComponentBase):
         """Returns importance associated with each feature.
 
         Returns:
-            list(float): importance associated with each feature
+            list(float): Importance associated with each feature
         """
         try:
             return self._component_obj.feature_importances_
@@ -71,4 +71,4 @@ class Estimator(ComponentBase):
             raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
 
     def __eq__(self, other):
-        return self.supported_problem_types == other.supported_problem_types and super().__eq__(other)
+        return super().__eq__(other) and self.supported_problem_types == other.supported_problem_types

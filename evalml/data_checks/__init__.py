@@ -1,6 +1,5 @@
-# flake8:noqas
 from .data_check import DataCheck
-from .data_checks import DataChecks
+from .data_checks import AutoMLDataChecks, DataChecks
 from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckError
 from .data_check_message_type import DataCheckMessageType
 from .default_data_checks import DefaultDataChecks
@@ -11,3 +10,5 @@ from .id_columns_data_check import IDColumnsDataCheck
 from .label_leakage_data_check import LabelLeakageDataCheck
 from .outliers_data_check import OutliersDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
+from .class_imbalance_data_check import ClassImbalanceDataCheck
+from .high_variance_cv_data_check import HighVarianceCVDataCheck

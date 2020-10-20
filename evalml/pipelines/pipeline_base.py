@@ -27,7 +27,8 @@ from evalml.utils import (
     import_or_raise,
     jupyter_check,
     log_subtitle,
-    log_title
+    log_title,
+    safe_repr
 )
 
 logger = get_logger(__file__)
@@ -43,7 +44,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns list of components representing pipeline graph structure
 
         Returns:
-            list(str / ComponentBase subclass): list of ComponentBase subclasses or strings denotes graph structure of this pipeline
+            list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline
         """
 
     custom_hyperparameters = None
@@ -57,7 +58,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
 
         Arguments:
-            parameters (dict): dictionary with component names as keys and dictionary of that component's parameters as values.
+            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
@@ -143,10 +144,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns component by name
 
         Arguments:
-            name (str): name of component
+            name (str): Name of component
 
         Returns:
-            Component: component to return
+            Component: Component to return
 
         """
         return next((component for component in self.component_graph if component.name == name), None)
@@ -158,7 +159,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
 
         Returns:
-            dict: dictionary of all component parameters if return_dict is True, else None
+            dict: Dictionary of all component parameters if return_dict is True, else None
         """
         log_title(logger, self.name)
         logger.info("Problem Type: {}".format(self.problem_type))
@@ -174,14 +175,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             logger.info(component_string)
             component.describe(print_name=False)
 
-    def _transform(self, X):
+    def compute_estimator_features(self, X):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            pd.DataFrame - New dataframe.
+            pd.DataFrame - New transformed features.
         """
         X_t = X
         for component in self.component_graph[:-1]:
@@ -203,9 +204,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training labels of length [n_samples]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns:
             self
@@ -216,16 +217,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-            objective (Object or string): the objective to use to make predictions
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: estimated labels
+            pd.Series: Predicted values.
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        X_t = self._transform(X)
+        X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
     @abstractmethod
@@ -233,12 +234,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): data of shape [n_samples, n_features]
-            y (pd.Series): true labels of length [n_samples]
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            y (pd.Series): Target data of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
-            dict: ordered dictionary of objective scores
+            dict: Ordered dictionary of objective scores
         """
 
     @staticmethod
@@ -251,7 +252,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Will raise a PipelineScoreError if any objectives fail.
         Arguments:
             X (pd.DataFrame): The feature matrix.
-            y (pd.Series): The labels.
+            y (pd.Series): The target data.
             y_pred (pd.Series): The pipeline predictions.
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
@@ -298,7 +299,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns parameter dictionary for this pipeline
 
         Returns:
-            dict: dictionary of all component parameters
+            dict: Dictionary of all component parameters
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
@@ -307,7 +308,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns the default parameter dictionary for this pipeline.
 
         Returns:
-            dict: dictionary of all component default parameters.
+            dict: Dictionary of all component default parameters.
         """
         defaults = {}
         for c in cls.component_graph:
@@ -318,7 +319,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by feature selection are excluded"""
+        """Return importance associated with each feature. Features dropped by feature selection are excluded.
+
+        Returns:
+            pd.DataFrame including feature names and their corresponding importance
+        """
         feature_names = self.input_feature_names[self.estimator.name]
         importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
         importance.sort(key=lambda x: -abs(x[1]))
@@ -483,3 +488,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+
+        def repr_component(parameters):
+            return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
+
+        parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
+        return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
