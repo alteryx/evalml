@@ -435,7 +435,7 @@ Data Check Classes
     InvalidTargetDataCheck
     HighlyNullDataCheck
     IDColumnsDataCheck
-    LabelLeakageDataCheck
+    TargetLeakageDataCheck
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck
