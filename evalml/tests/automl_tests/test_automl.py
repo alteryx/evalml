@@ -946,31 +946,41 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     automl.results['pipeline_results'][0]['score'] = 2.0
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
-nullable = ['Int64', 'boolean']
+
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + nullable)
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
 def test_targets_data_types_classification(data_type, automl_type, target_type):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
+
     elif automl_type == ProblemTypes.MULTICLASS:
+        if "bool" in target_type:
+            pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
+
+    # Update target types as necessary
     if target_type == "category":
         y = pd.Categorical(y)
-    elif "int" in target_type:
+    elif "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
+    y = y.astype(target_type)
     unique_vals = y.unique()
 
     if data_type == 'np':
         X = X.to_numpy()
         y = y.to_numpy()
+
     elif data_type == 'ww':
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
