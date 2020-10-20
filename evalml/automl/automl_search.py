@@ -387,11 +387,13 @@ class AutoMLSearch:
 
         # make everything ww objects
         if not isinstance(X, ww.DataTable):
+            logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             if isinstance(X, np.ndarray):
                 X = pd.DataFrame(X)
             X = ww.DataTable(X)
 
         if not isinstance(y, ww.DataColumn):
+            logger.warning("`y` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             if isinstance(y, np.ndarray):
                 y = pd.Series(y)
             y = ww.DataColumn(y)
