@@ -430,7 +430,8 @@ def test_ohe_features_to_encode_no_col_names():
 
 
 def test_ohe_top_n_categories_always_the_same():
-    df = pd.DataFrame({"categories": ["cat_1"] * 5 + ["cat_2"] * 4 + ["cat_3"] * 3 + ["cat_4"] * 3 + ["cat_5"] * 3})
+    df = pd.DataFrame({"categories": ["cat_1"] * 5 + ["cat_2"] * 4 + ["cat_3"] * 3 + ["cat_4"] * 3 + ["cat_5"] * 3,
+                       "numbers": range(18)})
 
     def check_df_equality(random_state):
         ohe = OneHotEncoder(top_n=4, random_state=random_state)
