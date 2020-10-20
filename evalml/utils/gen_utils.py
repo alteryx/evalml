@@ -283,11 +283,10 @@ def _convert_woodwork_types_wrapper(pd_data):
         New pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
     """
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
-                                 pd.CategoricalDtype: 'category',
                                  pd.BooleanDtype: 'bool',
                                  pd.StringDtype: 'object'}
     if isinstance(pd_data, pd.api.extensions.ExtensionArray):
-        return pd.Series(pd_data).astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+        pd_data = pd.Series(pd_data)
     if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
         return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.DataFrame):
