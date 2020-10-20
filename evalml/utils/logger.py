@@ -80,6 +80,7 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
         current_iteration (int): How many pipelines have been evaluated during the search so far.
         max_iterations (int, None): Max number of iterations to search.
         start_time (int): Start time.
+        current_batch (int, optional): If using batches, includes the current batch number for pipeline in output.
 
     Returns:
         None: logs progress to logger at info level.
