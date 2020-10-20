@@ -64,7 +64,7 @@ def test_default_data_checks_classification():
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks("binary")
 
-    leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "LabelLeakageDataCheck")]
+    leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "TargetLeakageDataCheck")]
 
     assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:]
 
