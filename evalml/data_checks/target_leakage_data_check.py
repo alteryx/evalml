@@ -6,7 +6,7 @@ from .data_check_message import DataCheckWarning
 from evalml.utils.gen_utils import numeric_and_boolean_dtypes
 
 
-class LabelLeakageDataCheck(DataCheck):
+class TargetLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target."""
 
     def __init__(self, pct_corr_threshold=0.95):
@@ -32,7 +32,7 @@ class LabelLeakageDataCheck(DataCheck):
             y (pd.Series): The target data
 
         Returns:
-            list (DataCheckWarning): List with a DataCheckWarning if there is label leakage detected.
+            list (DataCheckWarning): List with a DataCheckWarning if target leakage is detected.
 
         Example:
             >>> X = pd.DataFrame({
@@ -41,8 +41,8 @@ class LabelLeakageDataCheck(DataCheck):
             ...    'y': [12, 5, 13, 74, 24],
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
-            >>> label_leakage_check = LabelLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert label_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "LabelLeakageDataCheck")]
+            >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+            >>> assert target_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "TargetLeakageDataCheck")]
         """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

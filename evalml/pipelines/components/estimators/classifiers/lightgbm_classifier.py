@@ -45,7 +45,7 @@ class LightGBMClassifier(Estimator):
                       "bagging_fraction": bagging_fraction}
         parameters.update(kwargs)
 
-        # if the boosting type is random forest, we want to change the bagging_freq to 1 so that we avoid errors
+        # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf" and not bagging_freq:
             parameters.update({'bagging_freq': 1})
 

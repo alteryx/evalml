@@ -287,12 +287,12 @@ class _ClassificationPredictedValues(_SectionMaker):
         pred_value = [f"{col_name}: {pred}" for col_name, pred in
                       zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
         pred_value = "[" + ", ".join(pred_value) + "]"
-        true_value = y_true[index]
+        true_value = y_true.iloc[index]
 
         return [f"\t\tPredicted Probabilities: {pred_value}\n",
                 f"\t\tPredicted Value: {self.predicted_values[index]}\n",
                 f"\t\tTarget Value: {true_value}\n",
-                f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
+                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n\n"]
 
     def make_dict(self, index, y_pred, y_true, scores):
         """Makes the predicted values section for classification problem best/worst reports formatted as dictionary."""
@@ -300,9 +300,9 @@ class _ClassificationPredictedValues(_SectionMaker):
 
         return {"probabilities": pred_values,
                 "predicted_value": _make_json_serializable(self.predicted_values[index]),
-                "target_value": _make_json_serializable(y_true[index]),
+                "target_value": _make_json_serializable(y_true.iloc[index]),
                 "error_name": self.error_name,
-                "error_value": _make_json_serializable(scores[index])}
+                "error_value": _make_json_serializable(scores.iloc[index])}
 
 
 class _RegressionPredictedValues(_SectionMaker):
@@ -315,14 +315,14 @@ class _RegressionPredictedValues(_SectionMaker):
     def make_text(self, index, y_pred, y_true, scores):
         """Makes the predicted values section for regression problem best/worst reports formatted as text."""
         return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
-                f"\t\tTarget Value: {round(y_true[index], 3)}\n",
-                f"\t\t{self.error_name}: {round(scores[index], 3)}\n\n"]
+                f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
+                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n\n"]
 
     def make_dict(self, index, y_pred, y_true, scores):
         """Makes the predicted values section for regression problem best/worst reports formatted as a dictionary."""
         return {"probabilities": None, "predicted_value": round(y_pred.iloc[index], 3),
-                "target_value": round(y_true[index], 3), "error_name": self.error_name,
-                "error_value": round(scores[index], 3)}
+                "target_value": round(y_true.iloc[index], 3), "error_name": self.error_name,
+                "error_value": round(scores.iloc[index], 3)}
 
 
 class _SHAPTable(_SectionMaker):
