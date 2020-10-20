@@ -272,7 +272,7 @@ def is_all_numeric(df):
     return True
 
 
-def _convert_nullable_types_wrapper(pd_data):
+def _convert_woodwork_types_wrapper(pd_data):
     """
     Converts a pandas data structure that may have extension or nullable dtypes to dtypes that numpy can understand and handle.
 
@@ -284,7 +284,8 @@ def _convert_nullable_types_wrapper(pd_data):
     """
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
                                  pd.CategoricalDtype: 'category',
-                                 pd.BooleanDtype: 'bool'}
+                                 pd.BooleanDtype: 'bool',
+                                 pd.StringDtype: 'object'}
     if isinstance(pd_data, pd.api.extensions.ExtensionArray):
         return pd.Series(pd_data).astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
