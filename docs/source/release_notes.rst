@@ -14,6 +14,7 @@ Release Notes
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`
+        * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
