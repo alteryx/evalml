@@ -1382,7 +1382,7 @@ def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binar
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y)
     assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
 
     caplog.clear()
     X = pd.DataFrame(X)
@@ -1390,4 +1390,4 @@ def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binar
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y)
     assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
