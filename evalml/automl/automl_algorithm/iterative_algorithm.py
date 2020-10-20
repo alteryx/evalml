@@ -18,7 +18,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  random_state=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
-                 number_features=None):  # TODO remove
+                 number_features=None,  # TODO remove
+                 ensembling=True):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -39,6 +40,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.number_features = number_features
         self._first_batch_results = []
         self._best_pipeline_params = {}
+        self.ensembling = ensembling
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -57,7 +59,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
-        elif (len(self._first_batch_results) > 1 and
+        elif (self.ensembling and
+              len(self._first_batch_results) > 1 and
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
@@ -65,12 +68,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
-                print (pipeline_params)
-
-            # for i in range(len(self._first_batch_results)):
-            #     pipeline_class = self._first_batch_results[i][1]
-            #     proposed_parameters = self._tuners[pipeline_class.name].propose()
-            #     input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:

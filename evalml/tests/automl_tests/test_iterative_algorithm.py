@@ -75,8 +75,9 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
     assert algo.pipeline_number == 0
 
 
-def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes)
+@pytest.mark.parametrize("ensembling_value", [True, False])
+def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_classes):
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == dummy_binary_pipeline_classes
@@ -92,7 +93,7 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
- 
+
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
     last_pipeline_number = algo.pipeline_number
@@ -116,15 +117,16 @@ def test_iterative_algorithm_results(dummy_binary_pipeline_classes):
                 algo.add_result(score, pipeline)
         assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
 
-        # check next batch is stacking ensemble batch
-        assert algo.batch_number == (len(dummy_binary_pipeline_classes) + 1) * i
-        next_batch = algo.next_batch()
-        assert len(next_batch) == 1
-        assert algo.batch_number == last_batch_number + 1
-        last_batch_number = algo.batch_number
-        assert algo.pipeline_number == last_pipeline_number + 1
-        last_pipeline_number = algo.pipeline_number
-        scores = np.arange(0, len(next_batch))
-        for score, pipeline in zip(scores, next_batch):
-            algo.add_result(score, pipeline)
-        assert pipeline.model_family == ModelFamily.ENSEMBLE
+        if ensembling_value:
+            # check next batch is stacking ensemble batch
+            assert algo.batch_number == (len(dummy_binary_pipeline_classes) + 1) * i
+            next_batch = algo.next_batch()
+            assert len(next_batch) == 1
+            assert algo.batch_number == last_batch_number + 1
+            last_batch_number = algo.batch_number
+            assert algo.pipeline_number == last_pipeline_number + 1
+            last_pipeline_number = algo.pipeline_number
+            scores = np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline)
+            assert pipeline.model_family == ModelFamily.ENSEMBLE

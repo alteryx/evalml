@@ -417,12 +417,14 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         if self._max_batches and self.max_iterations is None:
-            ensemble_nth_batch = len(self.allowed_pipelines) + 1
-            num_ensemble_batches = (self._max_batches - 1) // ensemble_nth_batch
-            self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                   self._pipelines_per_batch * (self._max_batches - 1 - num_ensemble_batches) +
-                                   num_ensemble_batches)
-
+            if self.ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self._max_batches - 1) // ensemble_nth_batch
+                self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                       self._pipelines_per_batch * (self._max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
+            else:
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -435,7 +437,8 @@ class AutoMLSearch:
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch
+            pipelines_per_batch=self._pipelines_per_batch,
+            ensembling=self.ensembling
         )
 
         log_title(logger, "Beginning pipeline search")
