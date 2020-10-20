@@ -1360,3 +1360,16 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary', max_iterations=100, ensembling=False)
+    automl.search(X, y)
+    pipeline_names = automl.rankings['pipeline_name']
+    for name in pipeline_names:
+        assert 'Ensemble' not in name
