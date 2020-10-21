@@ -1379,6 +1379,9 @@ def test_get_default_primary_search_objective():
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binary):
     X, y = X_y_binary
+    assert isinstance(X, np.ndarray)
+    assert isinstance(y, np.ndarray)
+
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y)
     assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text

@@ -42,8 +42,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
-
-
+        * ``AutoMLSearch.search()` will now log a warning if the input is not a Woodwork data structure (pandas, numpy) :pr:`1299`
 **v0.14.1 Sep. 29, 2020**
     * Enhancements
         * Updated partial dependence methods to support calculating numeric columns in a dataset with non-numeric columns :pr:`1150`
