@@ -396,7 +396,7 @@ Model Family
     handle_model_family
 
 
-.. automodule:: ModelFamily
+.. automodule:: evalml.model_family
    :members:
    :undoc-members:
 
