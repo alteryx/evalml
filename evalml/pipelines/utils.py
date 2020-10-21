@@ -148,6 +148,17 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
 
 
 def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+    """
+    Creates a pipeline with a stacked ensemble estimator.
+
+    Arguments:
+        input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
+            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
+        problem_type (ProblemType): problem type of pipeline
+
+    Returns:
+        Pipeline with appropriate stacked ensemble estimator.
+    """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
     else:

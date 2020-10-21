@@ -1251,14 +1251,44 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
     np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
-@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
+def _get_first_stacked_classifier_no():
+    """Gets the number of iterations necessary before the stacked ensemble will be used."""
+    num_classifiers = len(get_estimators(ProblemTypes.BINARY))
+    # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
+    return 1 + num_classifiers + num_classifiers * 5 + 1
+
+
+@pytest.mark.parametrize("max_iterations", [None, 1, 8, 10, _get_first_stacked_classifier_no(), _get_first_stacked_classifier_no() + 2])
+@pytest.mark.parametrize("use_ensembling", [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
+def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score, max_iterations, use_ensembling, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, objective="Log Loss Binary", ensembling=use_ensembling)
+    automl.search(X, y, data_checks=None)
+    # every nth batch a stacked ensemble will be trained
+    if max_iterations is None:
+        max_iterations = 5  # Default value for max_iterations
+
+    pipeline_names = automl.rankings['pipeline_name']
+    if max_iterations < _get_first_stacked_classifier_no():
+        assert not pipeline_names.str.contains('Ensemble').any()
+    elif use_ensembling:
+        assert pipeline_names.str.contains('Ensemble').any()
+    else:
+        assert not pipeline_names.str.contains('Ensemble').any()
+
+
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
+@pytest.mark.parametrize("use_ensembling", [True, False])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, use_ensembling, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type="binary", max_iterations=None,
-                          _max_batches=max_batches, objective="Log Loss Binary")
+                          _max_batches=max_batches, objective="Log Loss Binary", ensembling=use_ensembling)
     automl.search(X, y, data_checks=None)
     # every nth batch a stacked ensemble will be trained
     ensemble_nth_batch = len(automl.allowed_pipelines) + 1
@@ -1273,7 +1303,7 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         num_ensemble_batches = 0
     else:
         # automl algorithm does not know about the additional stacked ensemble pipelines
-        num_ensemble_batches = (max_batches - 1) // ensemble_nth_batch
+        num_ensemble_batches = (max_batches - 1) // ensemble_nth_batch if use_ensembling else 0
         # So that the test does not break when new estimator classes are added
         n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
         n_automl_pipelines = n_results

@@ -68,6 +68,7 @@ class StackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
+        """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"""
         raise NotImplementedError("feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor")
 
     @classproperty
@@ -83,6 +84,15 @@ class StackedEnsembleBase(Estimator):
                 }
 
     def fit(self, X, y=None):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
         if isinstance(y, pd.Series):
@@ -91,6 +101,14 @@ class StackedEnsembleBase(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
         predictions = self._component_obj.predict(X)

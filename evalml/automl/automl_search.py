@@ -89,7 +89,7 @@ class AutoMLSearch:
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False,
-                 ensembling=True,
+                 ensembling=False,
                  _max_batches=None):
         """Automated pipeline search
 
@@ -149,7 +149,7 @@ class AutoMLSearch:
 
             verbose (boolean): If True, turn verbosity on. Defaults to True.
 
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to True.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
 
             _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
@@ -633,6 +633,8 @@ class AutoMLSearch:
         logger.info("\tStarting cross validation")
         for i, (train, test) in enumerate(self.data_split.split(X, y)):
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
+                # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
+                logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]

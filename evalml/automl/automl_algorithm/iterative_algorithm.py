@@ -1,6 +1,8 @@
 import inspect
 from operator import itemgetter
 
+import numpy as np
+
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
@@ -19,7 +21,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
-                 ensembling=True):
+                 ensembling=False):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -30,7 +32,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to True.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
@@ -40,7 +42,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._first_batch_results = []
-        self._best_pipeline_params = {}
+        self._best_pipeline_info = {}
         self.ensembling = ensembling
 
     def next_batch(self):
@@ -65,7 +67,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
-            for pipeline_dict in self._best_pipeline_params.values():
+            for pipeline_dict in self._best_pipeline_info.values():
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
@@ -93,17 +95,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
-        if pipeline.model_family not in self._best_pipeline_params and score_to_minimize is not None:
-            self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
-                                                                       'pipeline_class': pipeline.__class__,
-                                                                       'parameters': pipeline.parameters}})
-        else:
-            current_best = self._best_pipeline_params[pipeline.model_family]['score']
-            if score_to_minimize is not None and score_to_minimize < current_best:
-                self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
-                                                                           'pipeline_class': pipeline.__class__,
-                                                                           'parameters': pipeline.parameters}
-                                                   })
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
+        if score_to_minimize is not None and score_to_minimize < current_best_score:
+            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
+                                                                     'pipeline_class': pipeline.__class__,
+                                                                     'parameters': pipeline.parameters}
+                                             })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""

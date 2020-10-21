@@ -43,6 +43,14 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                          cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)
 
     def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.DataFrame: Probability estimates
+        """
         if isinstance(X, pd.DataFrame):
             X = X.to_numpy()
         pred_proba = self._component_obj.predict_proba(X)
