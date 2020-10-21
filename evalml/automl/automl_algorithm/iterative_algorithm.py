@@ -102,7 +102,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self._best_pipeline_params.update({pipeline.model_family: {'score': score_to_minimize,
                                                                            'pipeline_class': pipeline.__class__,
                                                                            'parameters': pipeline.parameters}
-                                                  })
+                                                   })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
