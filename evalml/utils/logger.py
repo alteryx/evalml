@@ -87,7 +87,9 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
     """
     if max_iterations:
         if current_batch:
-            status_update_format = "({current_batch}: {current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
+            if current_batch != 'Baseline':
+                current_batch = 'Batch ' + str(current_batch)
+            status_update_format = "{current_batch} | Iteration {current_iteration}/{max_iterations}: {pipeline_name} Elapsed:{time_elapsed}"
         else:
             status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
         format_params = {'current_batch': current_batch, 'max_iterations': max_iterations, 'current_iteration': current_iteration}
