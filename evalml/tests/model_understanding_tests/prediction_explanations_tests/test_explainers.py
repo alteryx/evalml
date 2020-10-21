@@ -393,23 +393,36 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
 """.format(multiclass_table=multiclass_table)
 
 
-@pytest.mark.parametrize("problem_type,output_format,answer,explain_predictions_answer",
-                         [(ProblemTypes.REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer),
-                          (ProblemTypes.REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict),
-                          (ProblemTypes.BINARY, "text", binary_best_worst_answer, no_best_worst_answer),
-                          (ProblemTypes.BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict),
-                          (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer),
-                          (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict)])
+@pytest.mark.parametrize("problem_type,output_format,answer,explain_predictions_answer,custom_index",
+                         [(ProblemTypes.REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [4, 23]),
+                          (ProblemTypes.REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [4, 10]),
+                          (ProblemTypes.REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, ["foo", "bar"]),
+                          (ProblemTypes.REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, ["foo", "bar"]),
+                          (ProblemTypes.BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [7, 11]),
+                          (ProblemTypes.BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [7, 11]),
+                          (ProblemTypes.BINARY, "text", binary_best_worst_answer, no_best_worst_answer, ["first", "second"]),
+                          (ProblemTypes.BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, ["first", "second"]),
+                          (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [19, 103]),
+                          (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [17, 235]),
+                          (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
+                          (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"])
+                          ])
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table, mock_default_metrics,
                                                                 problem_type, output_format, answer,
-                                                                explain_predictions_answer):
+                                                                explain_predictions_answer, custom_index):
 
     mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanations": ["explanation_dictionary_goes_here"]}
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
-    input_features = pd.DataFrame({"a": [3, 4]})
+    input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
 
@@ -418,7 +431,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = pd.Series([2, 1])
-        y_true = pd.Series([3, 2])
+        y_true = pd.Series([3, 2], index=custom_index)
     elif problem_type == ProblemTypes.BINARY:
         pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
@@ -426,7 +439,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
-        y_true = pd.Series(["malignant", "benign"])
+        y_true = pd.Series(["malignant", "benign"], index=custom_index)
     else:
         # Multiclass text output is formatted slightly different so need to account for that
         if output_format == "text":
@@ -438,7 +451,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
                                                             "virginica": [0.1, 0.05]})
         pipeline.predict.return_value = ["setosa", "versicolor"]
-        y_true = pd.Series(["setosa", "versicolor"])
+        y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
 
     best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
                                                        num_to_explain=1, output_format=output_format)
