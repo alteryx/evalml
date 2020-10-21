@@ -22,7 +22,9 @@ from .components import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     DecisionTreeClassifier,
-    DecisionTreeRegressor
+    DecisionTreeRegressor,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 
 from .pipeline_base import PipelineBase
