@@ -20,6 +20,7 @@ Release Notes
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
+        * Include editable installs in all install make targets :pr:`1335`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
