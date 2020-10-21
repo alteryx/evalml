@@ -30,6 +30,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to True.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
