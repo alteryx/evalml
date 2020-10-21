@@ -17,7 +17,7 @@ Release Notes
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
-        * Remove Graphviz from test-requirements to add to requirements.txt :pr:``
+        * Remove Graphviz from test-requirements to add to requirements.txt :pr:`1327`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
