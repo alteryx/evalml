@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
 
-import graphviz
+# import graphviz
 import numpy as np
 import pandas as pd
 import pytest
@@ -37,6 +37,7 @@ def test_pipeline():
 
 @patch('graphviz.Digraph.pipe')
 def test_backend(mock_func, test_pipeline):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
     clf = test_pipeline
     with pytest.raises(RuntimeError):
@@ -44,6 +45,7 @@ def test_backend(mock_func, test_pipeline):
 
 
 def test_returns_digraph_object(test_pipeline):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     clf = test_pipeline
     graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
