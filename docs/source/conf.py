@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 project = 'EvalML'
 copyright = '2020, Alteryx, Inc.'
-author = 'Alteryx Innovation Labs'
+author = 'Alteryx, Inc.'
 
 # The short X.Y version
 version = evalml.__version__
