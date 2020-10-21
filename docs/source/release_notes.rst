@@ -37,11 +37,6 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
-
-
-.. warning::
-
-    **Breaking Changes**
         * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
 
 
