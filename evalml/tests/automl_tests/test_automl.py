@@ -6,6 +6,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -946,25 +947,43 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification(automl_type, target_type):
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+def test_targets_data_types_classification(data_type, automl_type, target_type):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
-        if target_type == "bool":
+        if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
+
     elif automl_type == ProblemTypes.MULTICLASS:
+        if "bool" in target_type:
+            pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
+
+    # Update target types as necessary
     if target_type == "category":
         y = pd.Categorical(y)
-    elif "int" in target_type:
+    elif "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
+    y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
     automl = AutoMLSearch(problem_type=automl_type, max_iterations=3)
     automl.search(X, y)
@@ -1354,3 +1373,24 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
+    assert isinstance(X, np.ndarray)
+    assert isinstance(y, np.ndarray)
+
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y)
+    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+
+    caplog.clear()
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y)
+    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
