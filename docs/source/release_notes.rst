@@ -12,8 +12,10 @@ Release Notes
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
+        * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
+        * Fixed broken ``evalml info`` CLI command :pr:`1293`
         * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
@@ -24,6 +26,7 @@ Release Notes
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
+        * Added ``evalml info`` command to documentation :pr:`1293`
         * Miscellaneous doc updates :pr:`1269`
         * Removed conda pre-release testing from the release process document :pr:`1282`
         * Updates to contributing guide :pr:`1310`
@@ -33,11 +36,14 @@ Release Notes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
+        * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
+
 
 .. warning::
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
+        * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
 
 
 **v0.14.1 Sep. 29, 2020**
