@@ -389,10 +389,9 @@ Problem Types
 Model Family
 ============
 
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
+.. automodule:: ModelFamily
+   :members:
+   :undoc-members:
 
     ModelFamily
 
