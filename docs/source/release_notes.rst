@@ -15,6 +15,7 @@ Release Notes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
+        * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
     * Documentation Changes
