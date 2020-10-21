@@ -1368,7 +1368,7 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(problem_type='binary', max_iterations=100, ensembling=False)
+    automl = AutoMLSearch(problem_type='binary', ensembling=False)
     automl.search(X, y)
     pipeline_names = automl.rankings['pipeline_name']
     for name in pipeline_names:
