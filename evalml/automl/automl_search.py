@@ -238,13 +238,14 @@ class AutoMLSearch:
         if isinstance(objective, type):
             if objective in non_core_objectives:
                 raise ValueError(f"{objective.name.lower()} is not allowed in AutoML! "
-                                 "Use evalml.objectives.utils.get_core_objective_names()"
+                                 "Use evalml.objectives.utils.get_core_objective_names() "
                                  "to get all objective names allowed in automl.")
             return objective()
         return objective
 
     @property
     def data_check_results(self):
+        """If there are data checks, return any error messages that are found"""
         return self._data_check_results
 
     def __str__(self):
