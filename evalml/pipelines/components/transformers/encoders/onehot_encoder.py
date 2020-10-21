@@ -112,8 +112,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
-                    self.random_state.set_state(self._initial_state)
-                    value_counts = value_counts.sample(frac=1, random_state=self.random_state)
+                    new_random_state = np.random.RandomState()
+                    new_random_state.set_state(self._initial_state)
+                    value_counts = value_counts.sample(frac=1, random_state=new_random_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
