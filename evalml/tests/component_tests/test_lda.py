@@ -74,9 +74,9 @@ def test_lda_invalid():
         lda.transform(X)
 
 
-def test_invalid_solver(): 
+def test_invalid_solver():
     with pytest.raises(ValueError, match='is not valid'):
-        lda = LDA(solver='fake')
+        LDA(solver='fake')
 
 
 def test_n_components():

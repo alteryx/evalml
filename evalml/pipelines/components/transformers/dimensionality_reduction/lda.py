@@ -16,7 +16,7 @@ class LDA(Transformer):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
 
         Arguments:
-            solver (string): One of `svd` (singular value decomposition) or `eigen` (eigenvalue decomposition), 
+            solver (string): One of `svd` (singular value decomposition) or `eigen` (eigenvalue decomposition),
                              the solver to use.
             n_components (int): the number of features to maintain after computationn. Defaults to None.
         """
