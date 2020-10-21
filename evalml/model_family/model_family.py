@@ -3,7 +3,7 @@ from enum import Enum
 
 class ModelFamily(Enum):
     """Enum for family of machine learning models."""
-    RANDOM_FOREST = 'random_forest'  # : doc
+    RANDOM_FOREST = 'random_forest'
     XGBOOST = 'xgboost'
     LIGHTGBM = 'lightgbm'
     LINEAR_MODEL = 'linear_model'

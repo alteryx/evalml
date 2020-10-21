@@ -391,16 +391,16 @@ Model Family
 
 .. autosummary::
     :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    ModelFamily
+
+.. autosummary::
+    :toctree: generated
     :nosignatures:
 
     handle_model_family
-
-
-.. automodule:: evalml.model_family
-   :members:
-   :undoc-members:
-
-    ModelFamily
 
 
 .. currentmodule:: evalml.tuners
