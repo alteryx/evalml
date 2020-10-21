@@ -145,7 +145,9 @@ class AutoMLSearch:
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
-            verbose (boolean): If True, turn verbosity on. Defaults to True
+            verbose (boolean): If True, turn verbosity on. Defaults to True.
+
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to True.
 
             _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
