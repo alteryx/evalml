@@ -5,6 +5,7 @@ from collections import OrderedDict, defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.model_selection import (
     BaseCrossValidator,
     KFold,
@@ -47,6 +48,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -359,9 +361,9 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Arguments:
-            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training data of length [n_samples]
+            y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
 
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
@@ -384,18 +386,26 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        # make everything pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        # make everything ww objects
+        if not isinstance(X, ww.DataTable):
+            logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
+            if isinstance(X, np.ndarray):
+                X = pd.DataFrame(X)
+            X = ww.DataTable(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if not isinstance(y, ww.DataColumn):
+            logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
+            if isinstance(y, np.ndarray):
+                y = pd.Series(y)
+            y = ww.DataColumn(y)
+
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
-
         if data_check_results:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
