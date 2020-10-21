@@ -389,17 +389,18 @@ Problem Types
 Model Family
 ============
 
-.. automodule:: ModelFamily
-   :members:
-   :undoc-members:
-
-    ModelFamily
-
 .. autosummary::
     :toctree: generated
     :nosignatures:
 
     handle_model_family
+
+
+.. automodule:: ModelFamily
+   :members:
+   :undoc-members:
+
+    ModelFamily
 
 
 .. currentmodule:: evalml.tuners
