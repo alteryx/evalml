@@ -294,3 +294,7 @@ def _convert_woodwork_types_wrapper(pd_data):
             if type(col.dtype) in nullable_to_numpy_mapping:
                 pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
     return pd_data
+
+
+def extra_util_function():
+    return 2 + 2
