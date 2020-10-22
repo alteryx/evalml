@@ -8,6 +8,13 @@ import pandas as pd
 import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator, KFold, StratifiedKFold
 
+from evalml.problem_types import ProblemTypes
+from sklearn.model_selection import train_test_split
+from evalml.exceptions import PipelineScoreError
+from collections import OrderedDict
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline
+
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
@@ -493,8 +500,7 @@ class AutoMLSearch:
             current_batch_size = len(current_batch_pipelines)
             current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, engine=engine)
 
-            # Different size indicates early stopping
-            if len(current_batch_pipeline_scores) != current_batch_size:
+            if current_batch_pipeline_scores is False:
                 break
 
         self.search_duration = time.time() - self._start
@@ -508,7 +514,7 @@ class AutoMLSearch:
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
-    def _check_stopping_condition(self, start):
+    def _check_stopping_condition(self, start, current_pipeline_count=None):
         should_continue = True
         num_pipelines = len(self._results['pipeline_results'])
 
@@ -519,6 +525,8 @@ class AutoMLSearch:
         # check max_time and max_iterations
         elapsed = time.time() - start
         if self.max_time and elapsed >= self.max_time:
+            return False
+        if current_pipeline_count and self.max_iterations and current_pipeline_count >= self.max_iterations:
             return False
         elif self.max_iterations and num_pipelines >= self.max_iterations:
             return False
