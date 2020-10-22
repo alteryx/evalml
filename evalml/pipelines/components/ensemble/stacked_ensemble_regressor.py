@@ -1,4 +1,5 @@
 from sklearn.ensemble import StackingRegressor
+from sklearn.model_selection import KFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
@@ -14,6 +15,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingRegressor
     _default_final_estimator = LinearRegressor
+    _default_cv = KFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=1, random_state=0, **kwargs):
@@ -24,9 +26,9 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
+                For int/None inputs, KFold is used. Defaults to None.
                 Possible inputs for cv are:
-                - None: 5-fold cross validation
+                - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
                 - An iterable yielding (train, test) splits

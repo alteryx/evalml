@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
@@ -12,6 +14,7 @@ class StackedEnsembleBase(Estimator):
     model_family = ModelFamily.ENSEMBLE
     _stacking_estimator_class = None
     _default_final_estimator = None
+    _default_cv = None
 
     def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=None, random_state=0, **kwargs):
         """Stacked ensemble base class.
@@ -49,6 +52,7 @@ class StackedEnsembleBase(Estimator):
         if len(set([pipeline.problem_type for pipeline in input_pipelines])) > 1:
             raise ValueError("All pipelines must have the same problem type.")
 
+        cv = cv or self._default_cv(n_splits=3, random_state=random_state)
         estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
         final_estimator = scikit_learn_wrapped_estimator(final_estimator or self._default_final_estimator())
         sklearn_parameters = {
@@ -64,6 +68,7 @@ class StackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
+        """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"""
         raise NotImplementedError("feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor")
 
     @classproperty
@@ -77,3 +82,35 @@ class StackedEnsembleBase(Estimator):
                 'cv': None,
                 'n_jobs': 1,
                 }
+
+    def fit(self, X, y=None):
+        """Fits component to data
+
+        Arguments:
+            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        if isinstance(y, pd.Series):
+            y = y.to_numpy()
+        self._component_obj.fit(X, y)
+        return self
+
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.Series: Predicted values
+        """
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        predictions = self._component_obj.predict(X)
+        predictions = pd.Series(predictions)
+        return predictions
