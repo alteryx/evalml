@@ -22,7 +22,7 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """
-        if handle_problem_type(problem_type) == ProblemTypes.REGRESSION:
+        if handle_problem_types(problem_type) == ProblemTypes.REGRESSION:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
                              data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
         else:
