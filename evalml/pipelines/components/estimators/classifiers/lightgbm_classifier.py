@@ -42,13 +42,12 @@ class LightGBMClassifier(Estimator):
                       "num_leaves": num_leaves,
                       "min_child_samples": min_child_samples,
                       "n_jobs": n_jobs,
-                      "bagging_freq": bagging_freq,
-                      "bagging_fraction": bagging_fraction}
+                      'verbose': -1}
         parameters.update(kwargs)
 
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
-        if boosting_type == "rf" and not bagging_freq:
-            parameters.update({'bagging_freq': 1})
+        if boosting_type == "rf":
+            parameters.update({'bagging_freq': 1, 'bagging_fraction': bagging_fraction})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
@@ -89,12 +88,22 @@ class LightGBMClassifier(Estimator):
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
-        warnings.filterwarnings(action='ignore', message=r'(bagging_freq is set)|(bagging_fraction is set)')
-        return super().fit(X2, y2)
+        # with warnings.catch_warnings(record=True) as w:
+            # warnings.simplefilter("always")
+            # model = self._component_obj.fit(X2, y2, verbose=-1)
+        #     # warnings.filterwarnings(action='ignore', message=r'(bagging_freq is set)|(bagging_fraction is set)')
+        #     s = super().fit(X2, y2)
+        # print("WARNINGS", w)
+        # return s
+        model = self._component_obj.fit(X2, y2, verbose=False)
+        # print(model)
+        return model
 
     def predict(self, X):
         X2 = self._encode_categories(X)
-        predictions = super().predict(X2)
+        # predictions = super().predict(X2)
+        predictions = self._component_obj.predict(X2)[0]
+        # print(predictions)
         if self._label_encoder:
             predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return predictions
@@ -102,3 +111,8 @@ class LightGBMClassifier(Estimator):
     def predict_proba(self, X):
         X2 = self._encode_categories(X)
         return super().predict_proba(X2)
+        # return pd.Series(self._component_obj.predict_proba(X2))[0]
+
+    # @property
+    # def feature_importance(self):
+        # return self._component_obj.get_feature_importance()

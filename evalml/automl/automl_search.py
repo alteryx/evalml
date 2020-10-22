@@ -12,6 +12,7 @@ from sklearn.model_selection import (
     StratifiedKFold,
     train_test_split
 )
+import warnings
 
 from .pipeline_search_plots import PipelineSearchPlots
 
@@ -490,7 +491,6 @@ class AutoMLSearch:
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
-
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
                 score_to_minimize = -score if self.objective.greater_is_better else score
