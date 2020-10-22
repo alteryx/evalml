@@ -1,5 +1,4 @@
 import pickle
-import time
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -91,31 +90,6 @@ def test_callback(X_y_regression):
     assert counts["add_result_callback"] == max_iterations
 
 
-def test_early_stopping(caplog, linear_regression_pipeline_class, X_y_regression):
-    X, y = X_y_regression
-    tolerance = 0.005
-    patience = 2
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='mse', max_time='60 seconds',
-                          patience=patience, tolerance=tolerance,
-                          allowed_model_families=['linear_model'], random_seed=0, n_jobs=1)
-
-    mock_results = {
-        'search_order': [0, 1, 2],
-        'pipeline_results': {}
-    }
-
-    scores = [150, 200, 195]
-    for id in mock_results['search_order']:
-        mock_results['pipeline_results'][id] = {}
-        mock_results['pipeline_results'][id]['score'] = scores[id]
-        mock_results['pipeline_results'][id]['pipeline_class'] = linear_regression_pipeline_class
-
-    automl._results = mock_results
-    automl._check_stopping_condition(time.time())
-    out = caplog.text
-    assert "2 iterations without improvement. Stopping search early." in out
-
-
 def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependencies):
     X, y = X_y_regression
 
@@ -175,10 +149,8 @@ def test_log_metrics_only_passed_directly(X_y_regression):
 
 def test_automl_allowed_pipelines_no_allowed_pipelines(X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=None, allowed_model_families=[])
-    assert automl.allowed_pipelines is None
     with pytest.raises(ValueError, match="No allowed pipelines to search"):
-        automl.search()
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=None, allowed_model_families=[])
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
@@ -190,7 +162,7 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines(mock_fit, mock_sco
     expected_pipelines = [dummy_regression_pipeline_class]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
-    assert automl.allowed_model_families is None
+    assert automl.allowed_model_families == [ModelFamily.NONE]
 
     automl.search()
     mock_fit.assert_called()
@@ -206,11 +178,9 @@ def test_automl_allowed_pipelines_specified_allowed_model_families(mock_fit, moc
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.REGRESSION) for estimator in get_estimators(ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
-
-    automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -218,11 +188,9 @@ def test_automl_allowed_pipelines_specified_allowed_model_families(mock_fit, moc
     mock_score.reset_mock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=None, allowed_model_families=['random_forest'])
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.REGRESSION) for estimator in get_estimators(ProblemTypes.REGRESSION, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
-
-    automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -234,11 +202,9 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=None, allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.REGRESSION) for estimator in get_estimators(ProblemTypes.REGRESSION, model_families=None)]
-    assert automl.allowed_pipelines is None
-
-    automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -250,12 +216,9 @@ def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_sco
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_regression_pipeline_class]
-    assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
-
-    automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -311,10 +274,12 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
         assert result['parameters']['pipeline'] == configuration
 
 
-@patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
-def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression_fit, X_y_regression):
-    class RegressionPipelineCustoms(RegressionPipeline):
+@patch('evalml.pipelines.RegressionPipeline.fit')
+def test_automl_pickle_generated_pipeline(mock_regression_fit, mock_regression_score, X_y_regression):
+    mock_regression_score.return_value = {"R2": 1.0}
+
+    class RegressionPipelineCustom(RegressionPipeline):
         custom_name = "Custom Regression Name"
         component_graph = ["Imputer", "Linear Regressor"]
         custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
@@ -322,24 +287,28 @@ def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression
     X, y = X_y_regression
     pipeline = GeneratedPipelineRegression
 
-    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    allowed_estimators = get_estimators('regression')
+    allowed_pipelines = [make_pipeline(X, y, estimator, problem_type='regression') for estimator in allowed_estimators]
+    allowed_pipelines.append(RegressionPipelineCustom)
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=allowed_pipelines)
     a.search()
-    a.add_to_rankings(RegressionPipelineCustoms({}))
+    a.add_to_rankings(RegressionPipelineCustom({}))
     seen_name = False
     for i, row in a.rankings.iterrows():
         automl_pipeline = a.get_pipeline(row['id'])
         assert automl_pipeline.__class__ == pipeline
         assert pickle.loads(pickle.dumps(automl_pipeline))
-        if automl_pipeline.custom_name == RegressionPipelineCustoms.custom_name:
+        if automl_pipeline.custom_name == RegressionPipelineCustom.custom_name:
             seen_name = True
-            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustoms.custom_hyperparameters
-            assert automl_pipeline.component_graph == RegressionPipelineCustoms.component_graph
+            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustom.custom_hyperparameters
+            assert automl_pipeline.component_graph == RegressionPipelineCustom.component_graph
     assert seen_name
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 def test_automl_time_series_regression_pickle_generated_pipeline(mock_fit, mock_score, X_y_regression):
+    mock_score.return_value = {"R2": 1.0}
     X, y = X_y_regression
     configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
     a = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration)
