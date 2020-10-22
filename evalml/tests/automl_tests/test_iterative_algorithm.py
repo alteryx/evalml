@@ -132,4 +132,3 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
             assert pipeline.model_family == ModelFamily.ENSEMBLE
-            #assert check_random_state_equality(pipeline.random_state, algo.random_state)

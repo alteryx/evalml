@@ -1462,6 +1462,7 @@ def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binar
     assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
 
 
+<<<<<<< HEAD
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
