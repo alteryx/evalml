@@ -74,7 +74,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:
-            idx = (self._batch_number - 1) % len(self._first_batch_results)
+            num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
+            idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()

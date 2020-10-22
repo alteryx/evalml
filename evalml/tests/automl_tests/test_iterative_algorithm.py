@@ -103,8 +103,8 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
         for _ in range(len(dummy_binary_pipeline_classes)):
             next_batch = algo.next_batch()
             assert len(next_batch) == algo.pipelines_per_batch
-
-            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % len(dummy_binary_pipeline_classes)]
+            num_pipelines_classes = (len(dummy_binary_pipeline_classes) + 1) if ensembling_value else len(dummy_binary_pipeline_classes)
+            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
             assert algo.pipeline_number == last_pipeline_number + len(next_batch)
             last_pipeline_number = algo.pipeline_number
