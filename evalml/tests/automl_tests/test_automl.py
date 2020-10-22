@@ -1064,7 +1064,6 @@ dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
 def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
                                   when_to_interrupt, user_input, number_results,
                                   X_y_binary):
-
     mock_input.side_effect = user_input
     X, y = X_y_binary
     callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
@@ -1102,7 +1101,7 @@ def test_pipelines_in_batch_return_none(mock_evaluate_pipelines, mock_next_batch
         automl.search(X, y)
 
 
-@patch('evalml.automl.automl_search.train_test_split')
+@patch('evalml.automl.engines.engine_base.train_test_split')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_split, X_y_binary):
