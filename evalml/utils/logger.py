@@ -85,18 +85,10 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
     Returns:
         None: logs progress to logger at info level.
     """
-    if max_iterations:
-        if current_batch:
-            if current_batch != 'Baseline':
-                current_batch = 'Batch ' + str(current_batch)
-            status_update_format = "{current_batch} | Iteration {current_iteration}/{max_iterations}: {pipeline_name} Elapsed:{time_elapsed}"
-        else:
-            status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
-        format_params = {'current_batch': current_batch, 'max_iterations': max_iterations, 'current_iteration': current_iteration}
-    else:
-        status_update_format = "{pipeline_name} Elapsed: {time_elapsed}"
-        format_params = {}
-
     elapsed_time = time_elapsed(start_time)
-    format_params.update({'pipeline_name': pipeline_name, 'time_elapsed': elapsed_time})
-    logger.info(status_update_format.format(**format_params))
+    if current_batch is not None:
+        logger.info(f"Batch {current_batch}: ({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
+    elif max_iterations is not None:
+        logger.info(f"{current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
+    else:
+        logger.info(f"{pipeline_name} Elapsed: {elapsed_time}")

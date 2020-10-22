@@ -89,8 +89,7 @@ class AutoMLSearch:
                  verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
-                 max_batches=None,
-                 _max_batches=None):
+                 max_batches=None):
         """Automated pipeline search
 
         Arguments:
@@ -150,8 +149,6 @@ class AutoMLSearch:
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
-
-            _max_batches (int): Same functionality as `max_batches`. Will be removed in the next release.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -191,22 +188,12 @@ class AutoMLSearch:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
-        if _max_batches:
-            if not max_batches:
-                max_batches = _max_batches
-            logger.warning("`_max_batches` will be deprecated in the next release. Use `max_batches` instead.")
-
         if max_batches is not None and max_batches <= 0:
             raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
         self.max_batches = max_batches
         # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
         # the behavior of max_batches does not break if IterativeAlgorithm is changed.
         self._pipelines_per_batch = 5
-
-        if max_pipelines:
-            if not max_iterations:
-                max_iterations = max_pipelines
-            logger.warning("`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead.")
 
         self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not self.max_batches:
@@ -481,8 +468,6 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
-        if self.max_batches:
-            self.current_batch = 0
         while self._check_stopping_condition(self._start):
             try:
                 if len(current_batch_pipelines) == 0:
@@ -491,8 +476,6 @@ class AutoMLSearch:
                             raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                         current_batch_pipelines = self._automl_algorithm.next_batch()
                         current_batch_pipeline_scores = []
-                        if self.max_batches:
-                            self.current_batch += 1
                     except StopIteration:
                         logger.info('AutoML Algorithm out of recommendations, ending')
                         break
@@ -509,7 +492,7 @@ class AutoMLSearch:
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
                 if self.max_batches:
-                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self.current_batch)
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self._automl_algorithm.batch_number)
                 else:
                     update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
 
