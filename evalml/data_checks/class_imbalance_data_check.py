@@ -40,8 +40,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert target_check.validate(X, y) == [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck"),
-                                                       DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]
+            >>> assert target_check.validate(X, y) == [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck"), DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]
         """
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
