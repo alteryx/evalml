@@ -10,6 +10,7 @@ from evalml.utils.gen_utils import (
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
+    extra_util_function,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
@@ -235,3 +236,7 @@ def test_jupyter_check(mock_import_or_raise):
     assert not jupyter_check()
     mock_import_or_raise().core.getipython.get_ipython.return_value = None
     assert not jupyter_check()
+
+
+def test_extra_function():
+    extra_util_function()
