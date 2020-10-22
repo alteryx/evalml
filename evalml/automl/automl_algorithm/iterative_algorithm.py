@@ -1,9 +1,13 @@
 import inspect
 from operator import itemgetter
 
+import numpy as np
+
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import handle_component_class
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -16,7 +20,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  random_state=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
-                 number_features=None):  # TODO remove
+                 number_features=None,  # TODO remove
+                 ensembling=False):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -27,6 +32,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
@@ -36,6 +42,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._first_batch_results = []
+        self._best_pipeline_info = {}
+        self.ensembling = ensembling
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -52,8 +60,22 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 0:
             next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
                           for pipeline_class in self.allowed_pipelines]
+
+        # One after training all pipelines one round
+        elif (self.ensembling and
+              len(self._first_batch_results) > 1 and
+              self._batch_number != 1 and
+              (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
+            input_pipelines = []
+            for pipeline_dict in self._best_pipeline_info.values():
+                pipeline_class = pipeline_dict['pipeline_class']
+                pipeline_params = pipeline_dict['parameters']
+                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
+            ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
+            next_batch.append(ensemble)
         else:
-            idx = (self._batch_number - 1) % len(self._first_batch_results)
+            num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
+            idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
@@ -69,9 +91,17 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
-        super().add_result(score_to_minimize, pipeline)
+        if pipeline.model_family != ModelFamily.ENSEMBLE:
+            super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
+
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
+        if score_to_minimize is not None and score_to_minimize < current_best_score:
+            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
+                                                                     'pipeline_class': pipeline.__class__,
+                                                                     'parameters': pipeline.parameters}
+                                             })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
