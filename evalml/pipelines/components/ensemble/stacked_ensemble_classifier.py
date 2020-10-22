@@ -1,4 +1,6 @@
+import pandas as pd
 from sklearn.ensemble import StackingClassifier
+from sklearn.model_selection import StratifiedKFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
@@ -14,6 +16,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingClassifier
     _default_final_estimator = LogisticRegressionClassifier
+    _default_cv = StratifiedKFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
                  cv=None, n_jobs=1, random_state=0, **kwargs):
@@ -24,9 +27,9 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The classifier used to combine the base estimators. If None, uses LogisticRegressionClassifier.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
+                For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. Defaults to None.
                 Possible inputs for cv are:
-                - None: 5-fold cross validation
+                - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
                 - An iterable yielding (train, test) splits
@@ -38,3 +41,19 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         """
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
                          cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)
+
+    def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Arguments:
+            X (pd.DataFrame): Features
+
+        Returns:
+            pd.DataFrame: Probability estimates
+        """
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+        pred_proba = self._component_obj.predict_proba(X)
+        if not isinstance(pred_proba, pd.DataFrame):
+            pred_proba = pd.DataFrame(pred_proba)
+        return pred_proba

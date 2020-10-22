@@ -18,6 +18,8 @@ from evalml.pipelines.components import (  # noqa: F401
     Imputer,
     OneHotEncoder,
     RandomForestClassifier,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
     StandardScaler
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
@@ -193,3 +195,22 @@ def generate_pipeline_code(element):
             base_string = base_string[:idx - 1] + class_name + base_string[idx + len(c) + 1:]
     code_strings.append(base_string)
     return "\n".join(code_strings)
+
+
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+    """
+    Creates a pipeline with a stacked ensemble estimator.
+
+    Arguments:
+        input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
+            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
+        problem_type (ProblemType): problem type of pipeline
+
+    Returns:
+        Pipeline with appropriate stacked ensemble estimator.
+    """
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
+    else:
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")
+

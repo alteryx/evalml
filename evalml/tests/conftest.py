@@ -28,14 +28,17 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 def create_mock_pipeline(estimator, problem_type):
     if problem_type == ProblemTypes.BINARY:
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockRegressionPipelineWithOnlyEstimator
 

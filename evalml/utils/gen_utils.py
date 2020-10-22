@@ -270,3 +270,27 @@ def is_all_numeric(df):
         if dtype not in numeric_and_boolean_dtypes:
             return False
     return True
+
+
+def _convert_woodwork_types_wrapper(pd_data):
+    """
+    Converts a pandas data structure that may have extension or nullable dtypes to dtypes that numpy can understand and handle.
+
+    Arguments:
+        pd_data (pd.Series, pd.DataFrame, pd.ExtensionArray): Pandas data structure
+
+    Returns:
+        New pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
+    """
+    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
+                                 pd.BooleanDtype: 'bool',
+                                 pd.StringDtype: 'object'}
+    if isinstance(pd_data, pd.api.extensions.ExtensionArray):
+        pd_data = pd.Series(pd_data)
+    if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
+        return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    if isinstance(pd_data, pd.DataFrame):
+        for col_name, col in pd_data.iteritems():
+            if type(col.dtype) in nullable_to_numpy_mapping:
+                pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
+    return pd_data

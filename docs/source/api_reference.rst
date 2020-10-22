@@ -29,9 +29,9 @@ Utilities to preprocess data before using evalml.
     :toctree: generated
     :nosignatures:
 
+    load_data
     drop_nan_target_rows
     target_distribution
-    load_data
     number_of_features
     split_data
 

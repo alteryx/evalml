@@ -73,11 +73,10 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
 
 
 def number_of_features(dtypes):
-    """Get the number of features for specific dtypes.
+    """Get the number of features of each specific dtype in a DataFrame.
 
     Arguments:
-
-        dtypes (pd.Series): dtypes to get the number of features for
+        dtypes (pd.Series): DataFrame.dtypes to get the number of features for
 
     Returns:
         pd.Series: dtypes and the number of features for each input type

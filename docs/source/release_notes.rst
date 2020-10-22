@@ -4,37 +4,51 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added stacked ensemble components to ``AutoMLSearch`` :pr:`1253`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
         * Added ``graph_prediction_vs_actual`` in ``model_understanding`` for regression problems :pr:`1252`
-        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
         * Added ``generate_pipeline_code`` and ``generate_component_code`` to allow for code generation given a pipeline or component instance :pr:`1306`
+        * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
+        * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
+        * Fixed broken ``evalml info`` CLI command :pr:`1293`
+        * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
+        * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
+        * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
+        * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
         * Changed class inheritance display to flow vertically :pr:`1248`
         * Updated cost-benefit tutorial to use a holdout/test set :pr:`1159`
+        * Added ``evalml info`` command to documentation :pr:`1293`
         * Miscellaneous doc updates :pr:`1269`
         * Removed conda pre-release testing from the release process document :pr:`1282`
         * Updates to contributing guide :pr:`1310`
         * Added Alteryx footer to docs with Twitter and Github link :pr:`1312`
+        * Added documentation changes to make the API Docs easier to understand :pr:`1323`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
+        * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
+        * Codecov: round coverage up instead of down :pr:`1334`
+
 
 .. warning::
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
+        * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
+        * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
 
 
 **v0.14.1 Sep. 29, 2020**
