@@ -18,6 +18,7 @@ Release Notes
         * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
+        * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
@@ -37,6 +38,7 @@ Release Notes
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
         * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
+        * Codecov: round coverage up instead of down :pr:`1334`
 
 
 .. warning::
