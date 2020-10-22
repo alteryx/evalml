@@ -21,6 +21,7 @@ Release Notes
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
+        * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
