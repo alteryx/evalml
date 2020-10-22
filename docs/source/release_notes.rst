@@ -33,6 +33,7 @@ Release Notes
         * Removed conda pre-release testing from the release process document :pr:`1282`
         * Updates to contributing guide :pr:`1310`
         * Added Alteryx footer to docs with Twitter and Github link :pr:`1312`
+        * Added documentation for evalml installation for Python 3.6 :pr:`1322`
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
