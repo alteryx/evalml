@@ -213,4 +213,3 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
         return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
     else:
         return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")
-
