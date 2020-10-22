@@ -596,7 +596,7 @@ class AutoMLSearch:
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                self._start, 'Baseline')
+                                self._start, '1')
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)
                 self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(baseline_results["cv_data"])
