@@ -17,6 +17,7 @@ Release Notes
         * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
+        * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
