@@ -628,7 +628,7 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           objective=fraud_objective,
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
-                          max_pipelines=1,
+                          max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
@@ -662,7 +662,7 @@ def test_data_split_shuffle():
     y = pd.Series(np.arange(n), name='target')
     automl = AutoMLSearch(problem_type='regression',
                           max_time=1,
-                          max_pipelines=1)
+                          max_iterations=1)
     automl.search(X, y)
     assert automl.results['search_order'] == [0]
     assert len(automl.results['pipeline_results'][0]['cv_data']) == 3

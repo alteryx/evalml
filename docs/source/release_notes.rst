@@ -7,11 +7,10 @@ Release Notes
         * Added stacked ensemble components to ``AutoMLSearch`` :pr:`1253`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
         * Added ``graph_prediction_vs_actual`` in ``model_understanding`` for regression problems :pr:`1252`
-        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
-        * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
+        * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
@@ -21,6 +20,7 @@ Release Notes
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
+        * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
@@ -43,6 +43,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
+        * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
         * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
 
 

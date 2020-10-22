@@ -73,7 +73,6 @@ class AutoMLSearch:
     def __init__(self,
                  problem_type=None,
                  objective='auto',
-                 max_pipelines=None,
                  max_iterations=None,
                  max_time=None,
                  patience=None,
@@ -102,9 +101,6 @@ class AutoMLSearch:
                 - LogLossBinary for binary classification problems,
                 - LogLossMulticlass for multiclass classification problems, and
                 - R2 for regression problems.
-
-            max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
-                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
             max_iterations (int): Maximum number of iterations to search. If max_iterations and
                 max_time is not set, then max_iterations will default to max_iterations of 5.
@@ -191,11 +187,6 @@ class AutoMLSearch:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-
-        if max_pipelines:
-            if not max_iterations:
-                max_iterations = max_pipelines
-            logger.warning("`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead.")
 
         self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not _max_batches:
