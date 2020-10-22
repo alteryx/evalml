@@ -1,7 +1,6 @@
 import os
 from unittest.mock import patch
 
-# import graphviz
 import numpy as np
 import pandas as pd
 import pytest
@@ -35,13 +34,13 @@ def test_pipeline():
     return TestPipeline(parameters={})
 
 
-@patch('graphviz.Digraph.pipe')
-def test_backend(mock_func, test_pipeline):
+def test_backend(test_pipeline):
     graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
-    mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
-    clf = test_pipeline
-    with pytest.raises(RuntimeError):
-        clf.graph()
+    with patch('graphviz.Digraph.pipe') as mock_func:
+        mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+        clf = test_pipeline
+        with pytest.raises(RuntimeError):
+            clf.graph()
 
 
 def test_returns_digraph_object(test_pipeline):
@@ -52,6 +51,7 @@ def test_returns_digraph_object(test_pipeline):
 
 
 def test_saving_png_file(tmpdir, test_pipeline):
+    pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     filepath = os.path.join(str(tmpdir), 'pipeline.png')
     pipeline = test_pipeline
     pipeline.graph(filepath=filepath)
@@ -59,6 +59,7 @@ def test_saving_png_file(tmpdir, test_pipeline):
 
 
 def test_missing_file_extension(tmpdir, test_pipeline):
+    pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     filepath = os.path.join(str(tmpdir), 'test1')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
@@ -66,6 +67,7 @@ def test_missing_file_extension(tmpdir, test_pipeline):
 
 
 def test_invalid_format(tmpdir, test_pipeline):
+    pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     filepath = os.path.join(str(tmpdir), 'test1.xyz')
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
@@ -73,6 +75,7 @@ def test_invalid_format(tmpdir, test_pipeline):
 
 
 def test_invalid_path(tmpdir, test_pipeline):
+    pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'pipeline.png')
     assert not os.path.exists(filepath)
     pipeline = test_pipeline
