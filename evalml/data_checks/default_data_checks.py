@@ -5,6 +5,7 @@ from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_targets_data_check import InvalidTargetDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 class DefaultDataChecks(DataChecks):
@@ -21,7 +22,7 @@ class DefaultDataChecks(DataChecks):
         Arguments:
             problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """
-        if problem_type == 'regression':
+        if handle_problem_type(problem_type) == ProblemTypes.REGRESSION:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
                              data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
         else:
