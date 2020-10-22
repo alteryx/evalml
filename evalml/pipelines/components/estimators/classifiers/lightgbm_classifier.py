@@ -5,6 +5,7 @@ import pandas as pd
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from skopt.space import Integer, Real
+import warnings
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -88,6 +89,7 @@ class LightGBMClassifier(Estimator):
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
+        warnings.filterwarnings(action='ignore', message=r'(bagging_freq is set)|(bagging_fraction is set)')
         return super().fit(X2, y2)
 
     def predict(self, X):
