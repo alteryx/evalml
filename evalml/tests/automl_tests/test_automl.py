@@ -1282,13 +1282,22 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
 
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
 @pytest.mark.parametrize("use_ensembling", [True, False])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
+@patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, use_ensembling, X_y_binary):
-    X, y = X_y_binary
+def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        automl = AutoMLSearch(problem_type="binary", max_iterations=None,
+                              _max_batches=max_batches, ensembling=use_ensembling)
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        automl = AutoMLSearch(problem_type="regression", max_iterations=None,
+                              _max_batches=max_batches, ensembling=use_ensembling)
 
-    automl = AutoMLSearch(problem_type="binary", max_iterations=None,
-                          _max_batches=max_batches, objective="Log Loss Binary", ensembling=use_ensembling)
     automl.search(X, y, data_checks=None)
     # every nth batch a stacked ensemble will be trained
     ensemble_nth_batch = len(automl.allowed_pipelines) + 1
@@ -1419,9 +1428,7 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
 
     automl = AutoMLSearch(problem_type='binary', max_time='60 seconds', _max_batches=20, ensembling=False)
     automl.search(X, y)
-    pipeline_names = automl.rankings['pipeline_name']
-    for name in pipeline_names:
-        assert 'Ensemble' not in name
+    assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
