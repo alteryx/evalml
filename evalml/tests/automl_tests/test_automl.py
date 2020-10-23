@@ -1288,7 +1288,7 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
-                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression):
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression, caplog):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         automl = AutoMLSearch(problem_type="binary", max_iterations=None,
@@ -1324,6 +1324,27 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     else:
         assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results)  # add two for baseline and stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
+
+    output = caplog.text
+    for batch_number in range(1, max_batches):
+        assert output.count(f"Batch {batch_number}: ") == len(get_estimators(self.problem_type)) + 1 if batch_number == 1 else automl._pipelines_per_batch
+
+
+@pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_binary, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=None, max_batches=max_batches)
+    automl.search(X, y, data_checks=None)
+
+    output = caplog.text
+    for batch_number in range(max_batches + 1):
+        if batch_number == 1:
+            correct_output = len(automl.allowed_pipelines) + 1
+        else:
+            correct_output = automl._pipelines_per_batch
+        assert output.count(f"Batch {batch_number}: ") == correct_output
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
