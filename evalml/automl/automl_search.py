@@ -727,7 +727,8 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
+                                self._start, 1 if baseline else self._automl_algorithm.batch_number)
 
                 evaluation_results = self._compute_cv_scores(pipeline, X, y)
                 parameters = pipeline.parameters
