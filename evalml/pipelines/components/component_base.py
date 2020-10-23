@@ -52,6 +52,15 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Returns the parameters which were used to initialize the component"""
         return copy.copy(self._parameters)
 
+    @property
+    @abstractmethod
+    def feature_importance(self):
+        """Returns importance associated with each feature.
+
+        Returns:
+            list(float): Importance associated with each feature
+        """
+
     @classproperty
     def default_parameters(cls):
         """Returns the default parameters for this component.
