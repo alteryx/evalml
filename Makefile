@@ -37,10 +37,12 @@ installdeps:
 
 .PHONY: installdeps-test
 installdeps-test:
+	pip install -e . -q
 	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
 installdeps-dev:
+	pip install -e . -q
 	pip install -r dev-requirements.txt -q
 
 .PHONY: dependenciesfile
