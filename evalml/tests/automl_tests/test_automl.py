@@ -1503,14 +1503,16 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
     class DummyPipeline(BinaryClassificationPipeline):
         component_graph = [dummy_classifier_estimator_class]
         num_pipelines_different_seed = 0
+        num_pipelines_init = 0
 
         def __init__(self, parameters, random_state):
             random_state = get_random_state(random_state)
             is_diff_random_state = not check_random_state_equality(random_state, expected_random_state)
+            self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_state
             super().__init__(parameters, random_state)
 
     automl = AutoMLSearch(problem_type="binary", allowed_pipelines=[DummyPipeline],
-                          random_state=expected_random_state)
+                          random_state=expected_random_state, max_iterations=10)
     automl.search(X, y)
-    assert DummyPipeline.num_pipelines_different_seed == 0
+    assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
