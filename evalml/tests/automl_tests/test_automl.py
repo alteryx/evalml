@@ -628,7 +628,7 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           objective=fraud_objective,
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
-                          max_pipelines=1,
+                          max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
@@ -662,7 +662,7 @@ def test_data_split_shuffle():
     y = pd.Series(np.arange(n), name='target')
     automl = AutoMLSearch(problem_type='regression',
                           max_time=1,
-                          max_pipelines=1)
+                          max_iterations=1)
     automl.search(X, y)
     assert automl.results['search_order'] == [0]
     assert len(automl.results['pipeline_results'][0]['cv_data']) == 3
@@ -1251,15 +1251,56 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
     np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
-@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
+def _get_first_stacked_classifier_no():
+    """Gets the number of iterations necessary before the stacked ensemble will be used."""
+    num_classifiers = len(get_estimators(ProblemTypes.BINARY))
+    # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
+    return 1 + num_classifiers + num_classifiers * 5 + 1
+
+
+@pytest.mark.parametrize("max_iterations", [None, 1, 8, 10, _get_first_stacked_classifier_no(), _get_first_stacked_classifier_no() + 2])
+@pytest.mark.parametrize("use_ensembling", [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
+def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score, max_iterations, use_ensembling, X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type="binary", max_iterations=None,
-                          _max_batches=max_batches, objective="Log Loss Binary")
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, objective="Log Loss Binary", ensembling=use_ensembling)
     automl.search(X, y, data_checks=None)
+    # every nth batch a stacked ensemble will be trained
+    if max_iterations is None:
+        max_iterations = 5  # Default value for max_iterations
+
+    pipeline_names = automl.rankings['pipeline_name']
+    if max_iterations < _get_first_stacked_classifier_no():
+        assert not pipeline_names.str.contains('Ensemble').any()
+    elif use_ensembling:
+        assert pipeline_names.str.contains('Ensemble').any()
+    else:
+        assert not pipeline_names.str.contains('Ensemble').any()
+
+
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
+@pytest.mark.parametrize("use_ensembling", [True, False])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        automl = AutoMLSearch(problem_type="binary", max_iterations=None,
+                              _max_batches=max_batches, ensembling=use_ensembling)
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        automl = AutoMLSearch(problem_type="regression", max_iterations=None,
+                              _max_batches=max_batches, ensembling=use_ensembling)
+
+    automl.search(X, y, data_checks=None)
+    # every nth batch a stacked ensemble will be trained
+    ensemble_nth_batch = len(automl.allowed_pipelines) + 1
 
     if max_batches is None:
         n_results = 5
@@ -1268,16 +1309,20 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         # if they are not searched over. That is why n_automl_pipelines does not equal
         # n_results when max_iterations and max_batches are None
         n_automl_pipelines = 1 + len(automl.allowed_pipelines)
+        num_ensemble_batches = 0
     else:
+        # automl algorithm does not know about the additional stacked ensemble pipelines
+        num_ensemble_batches = (max_batches - 1) // ensemble_nth_batch if use_ensembling else 0
         # So that the test does not break when new estimator classes are added
-        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
+        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
         n_automl_pipelines = n_results
-
     assert automl._automl_algorithm.batch_number == max_batches
-    # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
     assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     assert len(automl.results["pipeline_results"]) == n_results
-    assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)
+    if num_ensemble_batches == 0:
+        assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)  # add one for baseline
+    else:
+        assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results)  # add two for baseline and stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
 
 
@@ -1364,6 +1409,17 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary', max_time='60 seconds', _max_batches=20, ensembling=False)
+    automl.search(X, y)
+    assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})

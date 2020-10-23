@@ -31,6 +31,7 @@ from evalml.exceptions import (
     PipelineNotFoundError,
     PipelineScoreError
 )
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_all_objective_names,
     get_core_objectives,
@@ -72,7 +73,6 @@ class AutoMLSearch:
     def __init__(self,
                  problem_type=None,
                  objective='auto',
-                 max_pipelines=None,
                  max_iterations=None,
                  max_time=None,
                  patience=None,
@@ -88,6 +88,7 @@ class AutoMLSearch:
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False,
+                 ensembling=False,
                  _max_batches=None):
         """Automated pipeline search
 
@@ -100,9 +101,6 @@ class AutoMLSearch:
                 - LogLossBinary for binary classification problems,
                 - LogLossMulticlass for multiclass classification problems, and
                 - R2 for regression problems.
-
-            max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
-                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
             max_iterations (int): Maximum number of iterations to search. If max_iterations and
                 max_time is not set, then max_iterations will default to max_iterations of 5.
@@ -145,7 +143,9 @@ class AutoMLSearch:
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
-            verbose (boolean): If True, turn verbosity on. Defaults to True
+            verbose (boolean): If True, turn verbosity on. Defaults to True.
+
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
 
             _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
@@ -161,6 +161,7 @@ class AutoMLSearch:
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
+        self.ensembling = ensembling
         if objective == 'auto':
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
@@ -186,11 +187,6 @@ class AutoMLSearch:
             self.max_time = convert_to_seconds(max_time)
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-
-        if max_pipelines:
-            if not max_iterations:
-                max_iterations = max_pipelines
-            logger.warning("`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead.")
 
         self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not _max_batches:
@@ -425,8 +421,14 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         if self._max_batches and self.max_iterations is None:
-            self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
-
+            if self.ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self._max_batches - 1) // ensemble_nth_batch
+                self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                       self._pipelines_per_batch * (self._max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
+            else:
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -439,7 +441,8 @@ class AutoMLSearch:
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch
+            pipelines_per_batch=self._pipelines_per_batch,
+            ensembling=self.ensembling
         )
 
         log_title(logger, "Beginning pipeline search")
@@ -620,6 +623,10 @@ class AutoMLSearch:
         cv_data = []
         logger.info("\tStarting cross validation")
         for i, (train, test) in enumerate(self.data_split.split(X, y)):
+            if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
+                # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
+                logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
+                break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
@@ -746,7 +753,6 @@ class AutoMLSearch:
                          training_time=evaluation_results['training_time'],
                          cv_data=evaluation_results['cv_data'],
                          cv_scores=evaluation_results['cv_scores'])
-
         logger.debug('Adding results complete')
         return evaluation_results
 
