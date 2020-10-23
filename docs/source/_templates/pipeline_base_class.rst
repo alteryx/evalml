@@ -22,6 +22,7 @@
 
    .. autosummary::
       :nosignatures:
+      :toctree: attributes
 
    {% for item in attributes %}
    {% if item not in class_attributes %}
