@@ -12,7 +12,6 @@ from sklearn.model_selection import (
     StratifiedKFold,
     train_test_split
 )
-import warnings
 
 from .pipeline_search_plots import PipelineSearchPlots
 

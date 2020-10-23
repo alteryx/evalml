@@ -5,7 +5,6 @@ import pandas as pd
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from skopt.space import Integer, Real
-import warnings
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -41,20 +40,19 @@ class LightGBMClassifier(Estimator):
                       "max_depth": max_depth,
                       "num_leaves": num_leaves,
                       "min_child_samples": min_child_samples,
-                      "n_jobs": n_jobs,
-                      'verbose': -1}
+                      "n_jobs": n_jobs}
         parameters.update(kwargs)
-
+        lg_parameters = copy.copy(parameters)
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf":
-            parameters.update({'bagging_freq': 1, 'bagging_fraction': bagging_fraction})
+            lg_parameters.update({'bagging_freq': 1, 'bagging_fraction': bagging_fraction, 'subsample': None, 'subsample_freq': None})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
         self._ordinal_encoder = None
         self._label_encoder = None
 
-        lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **parameters)
+        lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **lg_parameters)
 
         super().__init__(parameters=parameters,
                          component_obj=lgbm_classifier,
@@ -88,22 +86,11 @@ class LightGBMClassifier(Estimator):
     def fit(self, X, y=None):
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
-        # with warnings.catch_warnings(record=True) as w:
-            # warnings.simplefilter("always")
-            # model = self._component_obj.fit(X2, y2, verbose=-1)
-        #     # warnings.filterwarnings(action='ignore', message=r'(bagging_freq is set)|(bagging_fraction is set)')
-        #     s = super().fit(X2, y2)
-        # print("WARNINGS", w)
-        # return s
-        model = self._component_obj.fit(X2, y2, verbose=False)
-        # print(model)
-        return model
+        return super().fit(X2, y2)
 
     def predict(self, X):
         X2 = self._encode_categories(X)
-        # predictions = super().predict(X2)
-        predictions = self._component_obj.predict(X2)[0]
-        # print(predictions)
+        predictions = super().predict(X2)
         if self._label_encoder:
             predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return predictions
@@ -111,8 +98,3 @@ class LightGBMClassifier(Estimator):
     def predict_proba(self, X):
         X2 = self._encode_categories(X)
         return super().predict_proba(X2)
-        # return pd.Series(self._component_obj.predict_proba(X2))[0]
-
-    # @property
-    # def feature_importance(self):
-        # return self._component_obj.get_feature_importance()
