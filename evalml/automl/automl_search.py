@@ -513,13 +513,15 @@ class AutoMLSearch:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
 
-            current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, add_to_algorithm=True, search_iteration_plot=search_iteration_plot)
-
-            if current_batch_pipeline_scores is False:
-                break
+            current_batch_size = len(current_batch_pipelines)
+            current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, search_iteration_plot=search_iteration_plot)
 
             if search_iteration_plot:
                 search_iteration_plot.update()
+
+            # Different size indicates early stopping
+            if len(current_batch_pipeline_scores) != current_batch_size:
+                break
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
@@ -735,14 +737,14 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
 
-    def _evaluate_pipelines(self, current_pipeline_batch, X, y, add_to_algorithm=False, baseline=False, search_iteration_plot=None):
+    def _evaluate_pipelines(self, current_pipeline_batch, X, y, baseline=False, search_iteration_plot=None):
         current_batch_pipeline_scores = []
         if isinstance(current_pipeline_batch, PipelineBase):
             current_pipeline_batch = [current_pipeline_batch]
 
-        while len(current_pipeline_batch) > 0:
+        while len(current_pipeline_batch) > 0 and len(self._results['pipeline_results']) < self.max_iterations:
+            pipeline = current_pipeline_batch.pop()
             try:
-                pipeline = current_pipeline_batch.pop()
                 parameters = pipeline.parameters
                 logger.debug('Evaluating pipeline {}'.format(pipeline.name))
                 logger.debug('Pipeline parameters: {}'.format(parameters))
@@ -770,7 +772,7 @@ class AutoMLSearch:
                                  cv_scores=evaluation_results['cv_scores'])
                 logger.debug('Adding results complete')
 
-                if add_to_algorithm:
+                if not baseline:
                     score = evaluation_results['cv_score_mean']
                     score_to_minimize = -score if self.objective.greater_is_better else score
                     current_batch_pipeline_scores.append(score_to_minimize)
@@ -780,9 +782,9 @@ class AutoMLSearch:
                     search_iteration_plot.update()
 
             except KeyboardInterrupt:
-                current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_pipeline_batch)
-                if not current_batch_pipelines:
-                    return False
+                current_pipeline_batch = self._handle_keyboard_interrupt(pipeline, current_pipeline_batch)
+                if current_pipeline_batch == []:
+                    return current_batch_pipeline_scores
 
         return current_batch_pipeline_scores
 
