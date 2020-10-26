@@ -475,6 +475,6 @@ def test_ohe_column_names_unique():
     df_transformed = OneHotEncoder().fit_transform(df)
     assert set(df_transformed.columns) == set(["A_x_y", "A_x_y_1"])
 
-    df = pd.DataFrame({"A": ["x_y", "z"], "A_x": ["y_1", "y"]})
+    df = pd.DataFrame({"A": ["x_y", "z"], "A_x": ["y_1", "y"], "A_x_y": ["1", "y"]})
     df_transformed = OneHotEncoder().fit_transform(df)
-    assert set(df_transformed.columns) == set(["A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1"])
+    assert set(df_transformed.columns) == set(["A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_1_2", "A_x_y_y"])

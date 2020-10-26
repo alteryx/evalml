@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
@@ -184,6 +185,16 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
 
+    @staticmethod
+    def _make_name_unique(name, seen_before):
+        if name not in seen_before:
+            return name
+        i = 1
+        while name in seen_before:
+            name = f"{name}_{i}"
+            i += 1
+        return name
+
     def get_feature_names(self):
         """Return feature names for the input features after fitting.
 
@@ -201,11 +212,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     continue
 
                 # Follow sklearn naming convention but if name has been seen before
-                # then add "1" to make it unique
+                # then add an int to make it unique
                 proposed_name = f"{col}_{category}"
-
                 if proposed_name in seen_before:
-                    proposed_name = f"{col}_{category}_1"
+                    proposed_name = self._make_name_unique(proposed_name, seen_before)
                 unique_names.append(proposed_name)
                 seen_before.add(proposed_name)
         return unique_names
