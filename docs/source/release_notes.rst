@@ -12,6 +12,7 @@ Release Notes
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
+        * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
