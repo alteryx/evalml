@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
@@ -73,6 +72,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          component_obj=None,
                          random_state=random_state)
         self._initial_state = self.random_state.get_state()
+        self.drop = drop
 
     @staticmethod
     def _get_cat_cols(X):
@@ -152,8 +152,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
-            cat_cols_str = [str(c) for c in self.features_to_encode]
-            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
+            X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
         return X_t
@@ -191,4 +190,22 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
-        return self._encoder.get_feature_names(self.features_to_encode)
+        unique_names = []
+        seen_before = set([])
+        for col in self.features_to_encode:
+            column_categories = self.categories(col)
+            for i, category in enumerate(column_categories):
+                drop_when_binary = self.drop == "if_binary" and len(column_categories) == 2
+                drop_when_first = self.drop == "first"
+                if i == 0 and (drop_when_binary or drop_when_first):
+                    continue
+
+                # Follow sklearn naming convention but if name has been seen before
+                # then add "1" to make it unique
+                proposed_name = f"{col}_{category}"
+
+                if proposed_name in seen_before:
+                    proposed_name = f"{col}_{category}_1"
+                unique_names.append(proposed_name)
+                seen_before.add(proposed_name)
+        return unique_names
