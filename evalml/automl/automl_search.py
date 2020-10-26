@@ -397,16 +397,16 @@ class AutoMLSearch:
 
             y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
 
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
-                Disabled by default in non-Jupyter enviroments.
-
             data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
                 automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no `data checks will be done.
+                search begins. If "disabled" or None, `no` data checks will be done.
                 If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
-        Returns:
-            self
+            feature_types (list, optional): list of feature types, either numerical or categorical.
+                Categorical features will automatically be encoded
+
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+                Disabled by default in non-Jupyter enviroments.
         """
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
@@ -744,7 +744,6 @@ class AutoMLSearch:
             current_pipeline_batch = [current_pipeline_batch]
             add_single_pipeline = True
 
-        # while len(current_pipeline_batch) > 0 and (add_single_pipeline or len(self._results['pipeline_results']) < self.max_iterations):
         while len(current_pipeline_batch) > 0 and (add_single_pipeline or baseline or self._check_stopping_condition(self._start)):
             pipeline = current_pipeline_batch.pop()
             try:
