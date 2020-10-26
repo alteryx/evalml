@@ -1288,15 +1288,15 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
-                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression):
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression, caplog):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         automl = AutoMLSearch(problem_type="binary", max_iterations=None,
-                              _max_batches=max_batches, ensembling=use_ensembling)
+                              max_batches=max_batches, ensembling=use_ensembling)
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         automl = AutoMLSearch(problem_type="regression", max_iterations=None,
-                              _max_batches=max_batches, ensembling=use_ensembling)
+                              max_batches=max_batches, ensembling=use_ensembling)
 
     automl.search(X, y, data_checks=None)
     # every nth batch a stacked ensemble will be trained
@@ -1326,6 +1326,23 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     assert automl.full_rankings.shape[0] == n_results
 
 
+@pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_binary, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=None, max_batches=max_batches)
+    automl.search(X, y, data_checks=None)
+
+    output = caplog.text
+    for batch_number in range(1, max_batches + 1):
+        if batch_number == 1:
+            correct_output = len(automl.allowed_pipelines) + 1
+        else:
+            correct_output = automl._pipelines_per_batch
+        assert output.count(f"Batch {batch_number}: ") == correct_output
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_score, X_y_binary):
@@ -1337,7 +1354,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     assert len(automl.results["pipeline_results"]) == 5
 
     # Use max_iterations when both max_iterations and max_batches are set
-    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", _max_batches=10,
+    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", max_batches=10,
                           max_iterations=6)
     automl.search(X, y, data_checks=None)
     assert len(automl.results["pipeline_results"]) == 6
@@ -1352,7 +1369,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
 def test_max_batches_must_be_non_negative(max_batches):
 
     with pytest.raises(ValueError, match=f"Parameter max batches must be None or non-negative. Received {max_batches}."):
-        AutoMLSearch(problem_type="binary", _max_batches=max_batches)
+        AutoMLSearch(problem_type="binary", max_batches=max_batches)
 
 
 def test_data_split_binary(X_y_binary):
@@ -1417,7 +1434,7 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(problem_type='binary', max_time='60 seconds', _max_batches=20, ensembling=False)
+    automl = AutoMLSearch(problem_type='binary', max_time='60 seconds', max_batches=20, ensembling=False)
     automl.search(X, y)
     assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
 

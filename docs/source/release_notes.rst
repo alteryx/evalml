@@ -13,6 +13,7 @@ Release Notes
         * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
         * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
+        * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`
@@ -51,7 +52,7 @@ Release Notes
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
         * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
         * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
-
+        * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
 
 **v0.14.1 Sep. 29, 2020**
     * Enhancements

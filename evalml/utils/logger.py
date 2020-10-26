@@ -71,7 +71,7 @@ def time_elapsed(start_time):
         return '{0:02d}:{1:02d}'.format(m, s)
 
 
-def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time):
+def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time, current_batch=None):
     """Adds the next pipeline to be evaluated to the log along with how much time has elapsed.
 
     Arguments:
@@ -80,17 +80,15 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
         current_iteration (int): How many pipelines have been evaluated during the search so far.
         max_iterations (int, None): Max number of iterations to search.
         start_time (int): Start time.
+        current_batch (int, optional): If using batches, includes the current batch number for pipeline in output.
 
     Returns:
         None: logs progress to logger at info level.
     """
-    if max_iterations:
-        status_update_format = "({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{time_elapsed}"
-        format_params = {'max_iterations': max_iterations, 'current_iteration': current_iteration}
-    else:
-        status_update_format = "{pipeline_name} Elapsed: {time_elapsed}"
-        format_params = {}
-
     elapsed_time = time_elapsed(start_time)
-    format_params.update({'pipeline_name': pipeline_name, 'time_elapsed': elapsed_time})
-    logger.info(status_update_format.format(**format_params))
+    if current_batch is not None:
+        logger.info(f"Batch {current_batch}: ({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
+    elif max_iterations is not None:
+        logger.info(f"{current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
+    else:
+        logger.info(f"{pipeline_name} Elapsed: {elapsed_time}")
