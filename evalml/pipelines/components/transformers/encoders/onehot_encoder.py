@@ -186,8 +186,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     @staticmethod
     def _make_name_unique(name, seen_before):
-        if name not in seen_before:
-            return name
+        """Helper to make the name unique."""
         i = 1
         while name in seen_before:
             name = f"{name}_{i}"
