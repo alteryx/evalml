@@ -37,7 +37,7 @@ class HighVarianceCVDataCheck(DataCheck):
             cv_scores = pd.Series(cv_scores)
 
         messages = []
-        if cv_scores.mean() == 0 and cv_scores.std() == 0:
+        if cv_scores.mean() == 0:
             high_variance_cv = 0
         else:
             high_variance_cv = abs(cv_scores.std() / cv_scores.mean()) > self.threshold
