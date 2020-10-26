@@ -1,6 +1,6 @@
 import os
 from itertools import product
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, PropertyMock
 
 import cloudpickle
 import numpy as np
@@ -1076,19 +1076,27 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
-@patch('evalml.automl.AutoMLSearch._evaluate')
-def test_pipelines_in_batch_return_nan(mock_evaluate, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
+@patch('evalml.automl.AutoMLSearch._evaluate_pipelines')
+def test_pipelines_in_batch_return_nan(mock_evaluate_pipelines, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
-    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': np.nan}]
+    mock_evaluate_pipelines.return_value = [0, np.nan]
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})]]
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
-    automl.search(X, y)
+    # Mock rankings so `best_pipeline` setting does not error out
+    with patch('evalml.automl.AutoMLSearch.rankings', new_callable=PropertyMock) as mock_rankings:
+        mock_rankings.return_value = pd.DataFrame({'pipeline_name': ['Dummy Pipeline'],
+                                                   'score': [0],
+                                                   'validation_score': [0],
+                                                   'percent_better_than_baseline': [np.nan],
+                                                   'high_variance_cv': [False],
+                                                   'parameters': [{}]})
+        automl.search(X, y)
 
-    mock_evaluate.reset_mock()
+    mock_evaluate_pipelines.reset_mock()
     mock_next_batch.reset_mock()
-    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': 0},  # first batch
-                                 {'cv_score_mean': 0}, {'cv_score_mean': np.nan},  # second batch
-                                 {'cv_score_mean': np.nan}, {'cv_score_mean': np.nan}]  # third batch, should raise error
+    mock_evaluate_pipelines.side_effect = [[0, 0],  # first batch
+                                           [0, np.nan],  # second batch
+                                           [np.nan, np.nan]]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
@@ -1096,12 +1104,12 @@ def test_pipelines_in_batch_return_nan(mock_evaluate, mock_next_batch, X_y_binar
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
-@patch('evalml.automl.AutoMLSearch._evaluate')
-def test_pipelines_in_batch_return_none(mock_evaluate, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
+@patch('evalml.automl.AutoMLSearch._evaluate_pipelines')
+def test_pipelines_in_batch_return_none(mock_evaluate_pipelines, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
-    mock_evaluate.side_effect = [{'cv_score_mean': 0}, {'cv_score_mean': 0},  # first batch
-                                 {'cv_score_mean': 0}, {'cv_score_mean': np.nan},  # second batch
-                                 {'cv_score_mean': None}, {'cv_score_mean': None}]  # third batch, should raise error
+    mock_evaluate_pipelines.side_effect = [[0, 0],  # first batch
+                                           [0, np.nan],  # second batch
+                                           [None, None]]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
     automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
