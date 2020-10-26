@@ -1,3 +1,5 @@
+import numpy as np
+
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
@@ -41,5 +43,5 @@ class TrainingValidationSplit(BaseCrossValidator):
             Returns:
                 list: indices to split data into training and test set
         """
-        train, test = train_test_split(X.index, test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_state)
+        train, test = train_test_split(np.arange(X.shape[0]), test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_state)
         return [(train, test)]
