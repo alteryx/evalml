@@ -30,7 +30,7 @@ class LightGBMClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
+    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, **kwargs):
         # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
 
@@ -45,7 +45,11 @@ class LightGBMClassifier(Estimator):
         lg_parameters = copy.copy(parameters)
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf":
-            lg_parameters.update({'bagging_freq': 1, 'bagging_fraction': bagging_fraction, 'subsample': None, 'subsample_freq': None})
+            # bagging_fraction could be passed in as a kwarg, which we wouldn't want to overwrite
+            if 'bagging_fraction' not in lg_parameters.keys():
+                lg_parameters.update({'bagging_freq': 1, 'bagging_fraction': 0.9, 'subsample': None, 'subsample_freq': None})
+            else:
+                lg_parameters.update({'bagging_freq': 1, 'subsample': None, 'subsample_freq': None})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
