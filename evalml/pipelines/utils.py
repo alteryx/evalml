@@ -16,11 +16,11 @@ from evalml.pipelines.components import (  # noqa: F401
     Estimator,
     Imputer,
     OneHotEncoder,
-    TextFeaturizer,
     RandomForestClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
-    StandardScaler
+    StandardScaler,
+    TextFeaturizer
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types

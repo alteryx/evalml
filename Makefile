@@ -40,11 +40,13 @@ installdeps:
 installdeps-test:
 	pip install -e . -q
 	pip install -r test-requirements.txt -q
+	pip install git+https://github.com/FeatureLabs/nlp_primitives.git@master
 
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install -e . -q
 	pip install -r dev-requirements.txt -q
+	pip install git+https://github.com/FeatureLabs/nlp_primitives.git@master
 
 .PHONY: dependenciesfile
 dependenciesfile:
