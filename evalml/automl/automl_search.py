@@ -5,6 +5,7 @@ from collections import OrderedDict, defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.model_selection import (
     BaseCrossValidator,
     KFold,
@@ -30,6 +31,7 @@ from evalml.exceptions import (
     PipelineNotFoundError,
     PipelineScoreError
 )
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_all_objective_names,
     get_core_objectives,
@@ -47,6 +49,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -70,7 +73,6 @@ class AutoMLSearch:
     def __init__(self,
                  problem_type=None,
                  objective='auto',
-                 max_pipelines=None,
                  max_iterations=None,
                  max_time=None,
                  patience=None,
@@ -86,7 +88,8 @@ class AutoMLSearch:
                  tuner_class=None,
                  verbose=True,
                  optimize_thresholds=False,
-                 _max_batches=None):
+                 ensembling=False,
+                 max_batches=None):
         """Automated pipeline search
 
         Arguments:
@@ -98,9 +101,6 @@ class AutoMLSearch:
                 - LogLossBinary for binary classification problems,
                 - LogLossMulticlass for multiclass classification problems, and
                 - R2 for regression problems.
-
-            max_pipelines (int): Will be deprecated in the next release. Maximum number of pipelines to search. If max_pipelines and
-                max_time is not set, then max_pipelines will default to max_pipelines of 5.
 
             max_iterations (int): Maximum number of iterations to search. If max_iterations and
                 max_time is not set, then max_iterations will default to max_iterations of 5.
@@ -143,9 +143,11 @@ class AutoMLSearch:
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
-            verbose (boolean): If True, turn verbosity on. Defaults to True
+            verbose (boolean): If True, turn verbosity on. Defaults to True.
 
-            _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
+
+            max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
         """
         try:
@@ -159,6 +161,7 @@ class AutoMLSearch:
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
+        self.ensembling = ensembling
         if objective == 'auto':
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
@@ -185,13 +188,15 @@ class AutoMLSearch:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
-        if max_pipelines:
-            if not max_iterations:
-                max_iterations = max_pipelines
-            logger.warning("`max_pipelines` will be deprecated in the next release. Use `max_iterations` instead.")
+        if max_batches is not None and max_batches <= 0:
+            raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
+        self.max_batches = max_batches
+        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
+        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
+        self._pipelines_per_batch = 5
 
         self.max_iterations = max_iterations
-        if not self.max_iterations and not self.max_time and not _max_batches:
+        if not self.max_iterations and not self.max_time and not self.max_batches:
             self.max_iterations = 5
             logger.info("Using default limit of max_iterations=5.\n")
 
@@ -224,13 +229,6 @@ class AutoMLSearch:
         self._start = None
         self._baseline_cv_scores = {}
 
-        if _max_batches is not None and _max_batches <= 0:
-            raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
-        self._max_batches = _max_batches
-        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
-        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
-
         self._validate_problem_type()
 
     def _validate_objective(self, objective):
@@ -238,13 +236,14 @@ class AutoMLSearch:
         if isinstance(objective, type):
             if objective in non_core_objectives:
                 raise ValueError(f"{objective.name.lower()} is not allowed in AutoML! "
-                                 "Use evalml.objectives.utils.get_core_objective_names()"
+                                 "Use evalml.objectives.utils.get_core_objective_names() "
                                  "to get all objective names allowed in automl.")
             return objective()
         return objective
 
     @property
     def data_check_results(self):
+        """If there are data checks, return any error messages that are found"""
         return self._data_check_results
 
     def __str__(self):
@@ -358,9 +357,9 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Arguments:
-            X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
 
-            y (pd.Series): the target training data of length [n_samples]
+            y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
 
             text_columns (list, optional): list of feature names which should be treated as text features.
                 Text columns will be automatically converted into a set of numerical features.
@@ -383,18 +382,26 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        # make everything pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        # make everything ww objects
+        if not isinstance(X, ww.DataTable):
+            logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
+            if isinstance(X, np.ndarray):
+                X = pd.DataFrame(X)
+            X = ww.DataTable(X)
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if not isinstance(y, ww.DataColumn):
+            logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
+            if isinstance(y, np.ndarray):
+                y = pd.Series(y)
+            y = ww.DataColumn(y)
+
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
         data_check_results = data_checks.validate(X, y)
-
         if data_check_results:
             self._data_check_results = data_check_results
             for message in self._data_check_results:
@@ -413,9 +420,15 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
-        if self._max_batches and self.max_iterations is None:
-            self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
-
+        if self.max_batches and self.max_iterations is None:
+            if self.ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
+            else:
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -429,14 +442,17 @@ class AutoMLSearch:
             random_state=self.random_state,
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch
+            pipelines_per_batch=self._pipelines_per_batch,
+            ensembling=self.ensembling
         )
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
 
-        if self.max_iterations is not None:
+        if self.max_batches is not None:
+            logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
+        elif self.max_iterations is not None:
             logger.info("Searching up to %s pipelines. " % self.max_iterations)
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
@@ -476,7 +492,10 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+                if self.max_batches:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self._automl_algorithm.batch_number)
+                else:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
 
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
@@ -578,7 +597,7 @@ class AutoMLSearch:
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                self._start)
+                                self._start, 1)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)
                 self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(baseline_results["cv_data"])
@@ -610,6 +629,10 @@ class AutoMLSearch:
         cv_data = []
         logger.info("\tStarting cross validation")
         for i, (train, test) in enumerate(self.data_split.split(X, y)):
+            if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
+                # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
+                logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
+                break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
@@ -736,7 +759,6 @@ class AutoMLSearch:
                          training_time=evaluation_results['training_time'],
                          cv_data=evaluation_results['cv_data'],
                          cv_scores=evaluation_results['cv_scores'])
-
         logger.debug('Adding results complete')
         return evaluation_results
 

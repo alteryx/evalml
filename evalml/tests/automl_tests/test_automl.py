@@ -6,6 +6,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -627,7 +628,7 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           objective=fraud_objective,
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
-                          max_pipelines=1,
+                          max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
@@ -661,7 +662,7 @@ def test_data_split_shuffle():
     y = pd.Series(np.arange(n), name='target')
     automl = AutoMLSearch(problem_type='regression',
                           max_time=1,
-                          max_pipelines=1)
+                          max_iterations=1)
     automl.search(X, y)
     assert automl.results['search_order'] == [0]
     assert len(automl.results['pipeline_results'][0]['cv_data']) == 3
@@ -946,25 +947,43 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification(automl_type, target_type):
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+def test_targets_data_types_classification(data_type, automl_type, target_type):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if automl_type == ProblemTypes.BINARY:
         X, y = load_breast_cancer()
-        if target_type == "bool":
+        if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
+
     elif automl_type == ProblemTypes.MULTICLASS:
+        if "bool" in target_type:
+            pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
+
+    # Update target types as necessary
     if target_type == "category":
         y = pd.Categorical(y)
-    elif "int" in target_type:
+    elif "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
+    y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
     automl = AutoMLSearch(problem_type=automl_type, max_iterations=3)
     automl.search(X, y)
@@ -1232,15 +1251,56 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
     np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
-@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12])
+def _get_first_stacked_classifier_no():
+    """Gets the number of iterations necessary before the stacked ensemble will be used."""
+    num_classifiers = len(get_estimators(ProblemTypes.BINARY))
+    # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
+    return 1 + num_classifiers + num_classifiers * 5 + 1
+
+
+@pytest.mark.parametrize("max_iterations", [None, 1, 8, 10, _get_first_stacked_classifier_no(), _get_first_stacked_classifier_no() + 2])
+@pytest.mark.parametrize("use_ensembling", [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binary):
+def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score, max_iterations, use_ensembling, X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type="binary", max_iterations=None,
-                          _max_batches=max_batches, objective="Log Loss Binary")
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, objective="Log Loss Binary", ensembling=use_ensembling)
     automl.search(X, y, data_checks=None)
+    # every nth batch a stacked ensemble will be trained
+    if max_iterations is None:
+        max_iterations = 5  # Default value for max_iterations
+
+    pipeline_names = automl.rankings['pipeline_name']
+    if max_iterations < _get_first_stacked_classifier_no():
+        assert not pipeline_names.str.contains('Ensemble').any()
+    elif use_ensembling:
+        assert pipeline_names.str.contains('Ensemble').any()
+    else:
+        assert not pipeline_names.str.contains('Ensemble').any()
+
+
+@pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
+@pytest.mark.parametrize("use_ensembling", [True, False])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression, caplog):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        automl = AutoMLSearch(problem_type="binary", max_iterations=None,
+                              max_batches=max_batches, ensembling=use_ensembling)
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        automl = AutoMLSearch(problem_type="regression", max_iterations=None,
+                              max_batches=max_batches, ensembling=use_ensembling)
+
+    automl.search(X, y, data_checks=None)
+    # every nth batch a stacked ensemble will be trained
+    ensemble_nth_batch = len(automl.allowed_pipelines) + 1
 
     if max_batches is None:
         n_results = 5
@@ -1249,17 +1309,38 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, max_batches, X_y_binar
         # if they are not searched over. That is why n_automl_pipelines does not equal
         # n_results when max_iterations and max_batches are None
         n_automl_pipelines = 1 + len(automl.allowed_pipelines)
+        num_ensemble_batches = 0
     else:
+        # automl algorithm does not know about the additional stacked ensemble pipelines
+        num_ensemble_batches = (max_batches - 1) // ensemble_nth_batch if use_ensembling else 0
         # So that the test does not break when new estimator classes are added
-        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1))
+        n_results = 1 + len(automl.allowed_pipelines) + (5 * (max_batches - 1 - num_ensemble_batches)) + num_ensemble_batches
         n_automl_pipelines = n_results
-
     assert automl._automl_algorithm.batch_number == max_batches
-    # We add 1 to pipeline_number because _automl_algorithm does not know about the baseline
     assert automl._automl_algorithm.pipeline_number + 1 == n_automl_pipelines
     assert len(automl.results["pipeline_results"]) == n_results
-    assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)
+    if num_ensemble_batches == 0:
+        assert automl.rankings.shape[0] == min(1 + len(automl.allowed_pipelines), n_results)  # add one for baseline
+    else:
+        assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results)  # add two for baseline and stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
+
+
+@pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_binary, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=None, max_batches=max_batches)
+    automl.search(X, y, data_checks=None)
+
+    output = caplog.text
+    for batch_number in range(1, max_batches + 1):
+        if batch_number == 1:
+            correct_output = len(automl.allowed_pipelines) + 1
+        else:
+            correct_output = automl._pipelines_per_batch
+        assert output.count(f"Batch {batch_number}: ") == correct_output
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1273,7 +1354,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     assert len(automl.results["pipeline_results"]) == 5
 
     # Use max_iterations when both max_iterations and max_batches are set
-    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", _max_batches=10,
+    automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", max_batches=10,
                           max_iterations=6)
     automl.search(X, y, data_checks=None)
     assert len(automl.results["pipeline_results"]) == 6
@@ -1288,7 +1369,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
 def test_max_batches_must_be_non_negative(max_batches):
 
     with pytest.raises(ValueError, match=f"Parameter max batches must be None or non-negative. Received {max_batches}."):
-        AutoMLSearch(problem_type="binary", _max_batches=max_batches)
+        AutoMLSearch(problem_type="binary", max_batches=max_batches)
 
 
 def test_data_split_binary(X_y_binary):
@@ -1354,3 +1435,35 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(problem_type='binary', max_time='60 seconds', max_batches=20, ensembling=False)
+    automl.search(X, y)
+    assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binary):
+    X, y = X_y_binary
+    assert isinstance(X, np.ndarray)
+    assert isinstance(y, np.ndarray)
+
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y)
+    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+
+    caplog.clear()
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y)
+    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
+    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text

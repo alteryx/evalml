@@ -38,8 +38,7 @@ class InvalidTargetDataCheck(DataCheck):
         null_rows = y.isnull()
         if null_rows.any():
             messages.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
-        valid_target_types = numeric_and_boolean_dtypes + categorical_dtypes
-
+        valid_target_types = [dtype for dtype in numeric_and_boolean_dtypes + categorical_dtypes]
         if y.dtype.name not in valid_target_types:
             messages.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
 
