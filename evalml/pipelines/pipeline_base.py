@@ -303,18 +303,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
-    @property
-    def feature_importance(self):
-        """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
-
-        Returns:
-            pd.DataFrame including feature names and their corresponding importance
-        """
-        feature_names = self.input_feature_names[self.estimator.name]
-        importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
-        importance.sort(key=lambda x: -abs(x[1]))
-        df = pd.DataFrame(importance, columns=["feature", "importance"])
-        return df
 
     @classproperty
     def default_parameters(cls):
@@ -329,6 +317,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if component.default_parameters:
                 defaults[component.name] = component.default_parameters
         return defaults
+
+    @property
+    def feature_importance(self):
+        """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
+
+        Returns:
+            pd.DataFrame including feature names and their corresponding importance
+        """
+        feature_names = self.input_feature_names[self.estimator.name]
+        importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
+        importance.sort(key=lambda x: -abs(x[1]))
+        df = pd.DataFrame(importance, columns=["feature", "importance"])
+        return df
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph
