@@ -436,6 +436,12 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
         pipeline._estimator_type = "regressor"
     pipeline.feature_importances_ = pipeline.feature_importance
+    if isinstance(feature, int):
+        if X.iloc[:, feature].isnull().sum():
+            warnings.warn("There are null values in the features, which will cause NaN values in the partial dependency. Fill in these values to remove the NaN values.")
+    if isinstance(feature, str):
+        if X[feature].isnull().sum():
+            warnings.warn("There are null values in the features, which will cause NaN values in the partial dependency. Fill in these values to remove the NaN values.")
     try:
         avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
     finally:
