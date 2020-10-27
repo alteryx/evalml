@@ -140,6 +140,18 @@ def test_drop_binary():
     assert col_names == expected_col_names
 
 
+def test_drop_parameter_is_array():
+    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown='error')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = {"col_1_a", "col_2_a", "col_2_b"}
+    assert col_names == expected_col_names
+
+
 def test_handle_unknown():
     X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
@@ -473,8 +485,8 @@ def test_ohe_top_n_categories_always_the_same():
 def test_ohe_column_names_unique():
     df = pd.DataFrame({"A": ["x_y"], "A_x": ["y"]})
     df_transformed = OneHotEncoder().fit_transform(df)
-    assert set(df_transformed.columns) == set(["A_x_y", "A_x_y_1"])
+    assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1"}
 
     df = pd.DataFrame({"A": ["x_y", "z"], "A_x": ["y_1", "y"], "A_x_y": ["1", "y"]})
     df_transformed = OneHotEncoder().fit_transform(df)
-    assert set(df_transformed.columns) == set(["A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_1_2", "A_x_y_y"])
+    assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_1_2", "A_x_y_y"}

@@ -38,7 +38,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
-            drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
+            drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
                 a list specifying which method to use for each feature. Defaults to None.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
@@ -201,13 +201,14 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """
         unique_names = []
         seen_before = set([])
-        for col in self.features_to_encode:
+        for col_index, col in enumerate(self.features_to_encode):
             column_categories = self.categories(col)
-            for i, category in enumerate(column_categories):
-                drop_when_binary = self.drop == "if_binary" and len(column_categories) == 2
-                drop_when_first = self.drop == "first"
-                if i == 0 and (drop_when_binary or drop_when_first):
-                    continue
+            for cat_index, category in enumerate(column_categories):
+
+                # Drop categories specified by the user
+                if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
+                    if cat_index == self._encoder.drop_idx_[col_index]:
+                        continue
 
                 # Follow sklearn naming convention but if name has been seen before
                 # then add an int to make it unique
