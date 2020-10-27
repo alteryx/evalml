@@ -1,6 +1,6 @@
 import os
 from itertools import product
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import cloudpickle
 import numpy as np
@@ -1079,19 +1079,6 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
 @patch('evalml.automl.AutoMLSearch._evaluate_pipelines')
 def test_pipelines_in_batch_return_nan(mock_evaluate_pipelines, mock_next_batch, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
-    mock_evaluate_pipelines.return_value = [0, np.nan]
-    mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})]]
-    automl = AutoMLSearch(problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class])
-    # Mock rankings so `best_pipeline` setting does not error out
-    with patch('evalml.automl.AutoMLSearch.rankings', new_callable=PropertyMock) as mock_rankings:
-        mock_rankings.return_value = pd.DataFrame({'pipeline_name': ['Dummy Pipeline'],
-                                                   'score': [0],
-                                                   'validation_score': [0],
-                                                   'percent_better_than_baseline': [np.nan],
-                                                   'high_variance_cv': [False],
-                                                   'parameters': [{}]})
-        automl.search(X, y)
-
     mock_evaluate_pipelines.reset_mock()
     mock_next_batch.reset_mock()
     mock_evaluate_pipelines.side_effect = [[0, 0],  # first batch

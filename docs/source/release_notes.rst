@@ -60,6 +60,7 @@ Release Notes
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
         * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
         * Update ``AutoMLSearch`` to default to ``max_batches=1`` instead of ``max_iterations=5`` :pr:`1452`
+        * Updated _evaluate_pipelines to consolidate side effects :pr:`1410`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
@@ -118,7 +119,6 @@ Release Notes
         * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
         * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
         * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
-        * Updated _evaluate_pipelines to consolidate side effects :pr:`1337`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
