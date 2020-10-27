@@ -303,7 +303,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
-
     @classproperty
     def default_parameters(cls):
         """Returns the default parameter dictionary for this pipeline.
@@ -320,7 +319,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
+        """Return importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
             pd.DataFrame including feature names and their corresponding importance
