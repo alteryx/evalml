@@ -174,7 +174,7 @@ def generate_pipeline_code(element):
     for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
         if k == 'component_graph':
             continue
-        pipeline_list.append["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
+        pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
     # create the base string for the pipeline
