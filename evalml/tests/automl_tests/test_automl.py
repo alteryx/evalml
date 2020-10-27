@@ -1481,3 +1481,33 @@ def test_search_with_text(mock_fit, mock_score):
     automl = AutoMLSearch(problem_type='binary')
     automl.search(X, y, data_checks='disabled')  # DataChecks disabled since the data is small
     assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
+    def total_pipelines(automl, num_batches, batch_size):
+        total = 1 + len(automl.allowed_pipelines)
+        total += ((num_batches - 1) * batch_size)
+        return total
+
+    X, y = X_y_binary
+
+    # Checking for default of _pipelines_per_batch
+    automl = AutoMLSearch(problem_type='binary', max_batches=2)
+    automl.search(X, y)
+    assert automl._pipelines_per_batch == 5
+    assert automl._automl_algorithm.pipelines_per_batch == 5
+    assert total_pipelines(automl, 2, 5) == len(automl.full_rankings)
+
+    automl = AutoMLSearch(problem_type='binary', max_batches=1, _pipelines_per_batch=2)
+    automl.search(X, y)
+    assert automl._pipelines_per_batch == 2
+    assert automl._automl_algorithm.pipelines_per_batch == 2
+    assert total_pipelines(automl, 1, 2) == len(automl.full_rankings)
+
+    automl = AutoMLSearch(problem_type='binary', max_batches=2, _pipelines_per_batch=10)
+    automl.search(X, y)
+    assert automl._pipelines_per_batch == 10
+    assert automl._automl_algorithm.pipelines_per_batch == 10
+    assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
