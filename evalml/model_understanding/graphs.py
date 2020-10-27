@@ -15,6 +15,7 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
+from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
@@ -436,12 +437,9 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
         pipeline._estimator_type = "regressor"
     pipeline.feature_importances_ = pipeline.feature_importance
-    if isinstance(feature, int):
-        if X.iloc[:, feature].isnull().sum():
-            warnings.warn("There are null values in the features, which will cause NaN values in the partial dependency. Fill in these values to remove the NaN values.")
-    if isinstance(feature, str):
-        if X[feature].isnull().sum():
-            warnings.warn("There are null values in the features, which will cause NaN values in the partial dependency. Fill in these values to remove the NaN values.")
+    if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or
+        (isinstance(feature, str) and X[feature].isnull().sum())):
+        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependency. Fill in these values to remove the NaN values.", NullsInColumnWarning)
     try:
         avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
     finally:

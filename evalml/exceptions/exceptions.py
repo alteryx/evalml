@@ -70,3 +70,7 @@ class PipelineScoreError(Exception):
 
 class DataCheckInitError(Exception):
     """Exception raised when a data check can't initialize with the parameters given."""
+
+
+class NullsInColumnWarning(UserWarning):
+    """Warning thrown when there are null values in the column of interest"""
