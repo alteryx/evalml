@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml.automl import TrainingValidationSplit
 
@@ -15,8 +16,8 @@ def test_tvsplit_default():
     splits = splitter.split(X, y=y)
     assert len(splits) == 1 and len(splits[0]) == 2
     # sklearn train_test_split will do a 75/25 split by default
-    pd.testing.assert_index_equal(splits[0][0], pd.Int64Index([0, 1, 2, 3, 4, 5, 6], dtype='int64'))
-    pd.testing.assert_index_equal(splits[0][1], pd.Int64Index([7, 8, 9], dtype='int64'))
+    np.testing.assert_equal(splits[0][0], [0, 1, 2, 3, 4, 5, 6])
+    np.testing.assert_equal(splits[0][1], [7, 8, 9])
 
 
 def test_tvsplit_size():
@@ -25,14 +26,14 @@ def test_tvsplit_size():
     splitter = TrainingValidationSplit(test_size=0.2, train_size=0.3)
     splits = splitter.split(X, y=y)
     assert len(splits) == 1 and len(splits[0]) == 2
-    pd.testing.assert_index_equal(splits[0][0], pd.Int64Index([0, 1, 2], dtype='int64'))
-    pd.testing.assert_index_equal(splits[0][1], pd.Int64Index([3, 4], dtype='int64'))
+    np.testing.assert_equal(splits[0][0], [0, 1, 2])
+    np.testing.assert_equal(splits[0][1], [3, 4])
 
     splitter = TrainingValidationSplit(test_size=2, train_size=3)
     splits = splitter.split(X, y=y)
     assert len(splits) == 1 and len(splits[0]) == 2
-    pd.testing.assert_index_equal(splits[0][0], pd.Int64Index([0, 1, 2], dtype='int64'))
-    pd.testing.assert_index_equal(splits[0][1], pd.Int64Index([3, 4], dtype='int64'))
+    np.testing.assert_equal(splits[0][0], [0, 1, 2])
+    np.testing.assert_equal(splits[0][1], [3, 4])
 
 
 def test_tvsplit_shuffle():
@@ -41,8 +42,8 @@ def test_tvsplit_shuffle():
     splitter = TrainingValidationSplit(shuffle=True, random_state=0)
     splits = splitter.split(X, y=y)
     assert len(splits) == 1 and len(splits[0]) == 2
-    pd.testing.assert_index_equal(splits[0][0], pd.Int64Index([9, 1, 6, 7, 3, 0, 5], dtype='int64'))
-    pd.testing.assert_index_equal(splits[0][1], pd.Int64Index([2, 8, 4], dtype='int64'))
+    np.testing.assert_equal(splits[0][0], [9, 1, 6, 7, 3, 0, 5])
+    np.testing.assert_equal(splits[0][1], [2, 8, 4])
 
 
 def test_tvsplit_stratify():
@@ -51,5 +52,15 @@ def test_tvsplit_stratify():
     splitter = TrainingValidationSplit(train_size=5, test_size=5, shuffle=True, stratify=y, random_state=0)
     splits = splitter.split(X, y=y)
     assert len(splits) == 1 and len(splits[0]) == 2
-    pd.testing.assert_index_equal(splits[0][0], pd.Int64Index([1, 4, 2, 8, 7], dtype='int64'))
-    pd.testing.assert_index_equal(splits[0][1], pd.Int64Index([3, 6, 9, 0, 5], dtype='int64'))
+    np.testing.assert_equal(splits[0][0], [1, 4, 2, 8, 7])
+    np.testing.assert_equal(splits[0][1], [3, 6, 9, 0, 5])
+
+
+@pytest.mark.parametrize("random_state", [0, 11, 57, 99, 1000])
+def test_tvsplit_always_within_bounds_with_custom_index(random_state):
+    N = 11000
+    X = pd.DataFrame({'col1': np.arange(0, N)}, index=np.arange(20000, 20000 + N))
+    splitter = TrainingValidationSplit(train_size=0.75, shuffle=True, random_state=random_state)
+    splits = splitter.split(X, y=None)
+    assert np.all(np.logical_and(splits[0][0] < N, splits[0][0] >= 0))
+    assert np.all(np.logical_and(splits[0][1] < N, splits[0][1] >= 0))
