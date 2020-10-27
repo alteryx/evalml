@@ -6,9 +6,6 @@ import pytest
 
 from evalml.pipelines.components import TextFeaturizer
 
-pytest.importorskip('featuretools', reason='Skipping test because featuretools not installed')
-pytest.importorskip('nlp_primitives', reason='Skipping test because nlp_primitives not installed')
-
 
 @pytest.fixture()
 def text_df():

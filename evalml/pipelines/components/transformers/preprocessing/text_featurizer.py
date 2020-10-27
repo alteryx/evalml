@@ -1,5 +1,7 @@
 import string
 
+import featuretools as ft
+import nlp_primitives
 import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
@@ -22,11 +24,9 @@ class TextFeaturizer(TextTransformer):
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
-        self._ft = import_or_raise("featuretools", error_msg="Package featuretools is not installed. Please install using `pip install featuretools[nlp_primitives].`")
-        self._nlp_primitives = import_or_raise("nlp_primitives", error_msg="Package nlp_primitives is not installed. Please install using `pip install featuretools[nlp_primitives].`")
-        self._trans = [self._nlp_primitives.DiversityScore,
-                       self._nlp_primitives.MeanCharactersPerWord,
-                       self._nlp_primitives.PolarityScore]
+        self._trans = [nlp_primitives.DiversityScore,
+                       nlp_primitives.MeanCharactersPerWord,
+                       nlp_primitives.PolarityScore]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
         super().__init__(text_columns=text_columns,
@@ -54,7 +54,7 @@ class TextFeaturizer(TextTransformer):
         X_text.rename(columns=str, inplace=True)
         all_text_variable_types = {col_name: 'text' for col_name in X_text.columns}
 
-        es = self._ft.EntitySet()
+        es = ft.EntitySet()
         es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
                                  variable_types=all_text_variable_types)
         return es
@@ -76,10 +76,10 @@ class TextFeaturizer(TextTransformer):
 
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
-        self._features = self._ft.dfs(entityset=es,
-                                      target_entity='X',
-                                      trans_primitives=self._trans,
-                                      features_only=True)
+        self._features = ft.dfs(entityset=es,
+                                target_entity='X',
+                                trans_primitives=self._trans,
+                                features_only=True)
         self._lsa.fit(X)
         return self
 
@@ -100,7 +100,7 @@ class TextFeaturizer(TextTransformer):
 
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
-        X_nlp_primitives = self._ft.calculate_feature_matrix(features=self._features, entityset=es)
+        X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
