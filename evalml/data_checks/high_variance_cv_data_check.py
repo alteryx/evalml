@@ -37,7 +37,10 @@ class HighVarianceCVDataCheck(DataCheck):
             cv_scores = pd.Series(cv_scores)
 
         messages = []
-        high_variance_cv = abs(cv_scores.std() / cv_scores.mean()) > self.threshold
+        if cv_scores.mean() == 0:
+            high_variance_cv = 0
+        else:
+            high_variance_cv = abs(cv_scores.std() / cv_scores.mean()) > self.threshold
         # if there are items that occur less than the threshold, add them to the list of messages
         if high_variance_cv:
             warning_msg = f"High coefficient of variation (cv >= {self.threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data."
