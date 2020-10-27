@@ -45,10 +45,12 @@ class LightGBMClassifier(Estimator):
                       "bagging_fraction": bagging_fraction}
         parameters.update(kwargs)
         lg_parameters = copy.copy(parameters)
-        lg_parameters.update({'subsample': None, 'subsample_freq': None})
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf":
             lg_parameters['bagging_freq'] = 1
+        # avoid lightgbm warnings having to do with parameter aliases
+        if lg_parameters['bagging_freq']:
+            lg_parameters.update({'subsample': None, 'subsample_freq': None})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
