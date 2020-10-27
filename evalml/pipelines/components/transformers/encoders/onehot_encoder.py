@@ -72,7 +72,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          component_obj=None,
                          random_state=random_state)
         self._initial_state = self.random_state.get_state()
-        self.drop = drop
 
     @staticmethod
     def _get_cat_cols(X):
