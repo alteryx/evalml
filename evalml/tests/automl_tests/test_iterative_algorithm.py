@@ -31,16 +31,6 @@ def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeli
     assert algo.allowed_pipelines == allowed_pipelines
 
 
-class MockEstimator(Estimator):
-    name = "Mock Classifier"
-    model_family = ModelFamily.NONE
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-    hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
-
-    def __init__(self, dummy_parameter='default', random_state=0):
-        super().__init__(parameters={'dummy_parameter': dummy_parameter}, component_obj=None, random_state=random_state)
-
-
 @pytest.fixture
 def dummy_binary_pipeline_classes():
     class MockEstimator(Estimator):
@@ -143,10 +133,9 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
             assert pipeline.model_family == ModelFamily.ENSEMBLE
 
 
-def test_iterative_algorithm_instantiates_text():
+def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class):
     class MockTextClassificationPipeline(BinaryClassificationPipeline):
-        estimator = MockEstimator
-        component_graph = [TextFeaturizer, MockEstimator]
+        component_graph = [TextFeaturizer, dummy_classifier_estimator_class]
 
     algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline], text_columns=['text_col_1', 'text_col_2'])
     pipeline = algo.next_batch()[0]

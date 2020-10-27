@@ -1479,5 +1479,5 @@ def test_search_with_text(mock_fit, mock_score):
          })
     y = [0, 1, 1, 0, 1, 0]
     automl = AutoMLSearch(problem_type='binary')
-    automl.search(X, y, data_checks='disabled')
+    automl.search(X, y, data_checks='disabled')  # DataChecks disabled since the data is small
     assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
