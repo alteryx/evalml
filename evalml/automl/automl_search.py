@@ -89,7 +89,8 @@ class AutoMLSearch:
                  verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
-                 _max_batches=None):
+                 max_batches=None,
+                 _pipelines_per_batch=5):
         """Automated pipeline search
 
         Arguments:
@@ -147,8 +148,11 @@ class AutoMLSearch:
 
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
 
-            _max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+            max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
+
+            _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
+                The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -188,8 +192,13 @@ class AutoMLSearch:
         else:
             raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
 
+        if max_batches is not None and max_batches <= 0:
+            raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
+        self.max_batches = max_batches
+        self._pipelines_per_batch = _pipelines_per_batch
+
         self.max_iterations = max_iterations
-        if not self.max_iterations and not self.max_time and not _max_batches:
+        if not self.max_iterations and not self.max_time and not self.max_batches:
             self.max_iterations = 5
             logger.info("Using default limit of max_iterations=5.\n")
 
@@ -221,13 +230,6 @@ class AutoMLSearch:
         self._automl_algorithm = None
         self._start = None
         self._baseline_cv_scores = {}
-
-        if _max_batches is not None and _max_batches <= 0:
-            raise ValueError(f"Parameter max batches must be None or non-negative. Received {_max_batches}.")
-        self._max_batches = _max_batches
-        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
-        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
 
         self._validate_problem_type()
 
@@ -420,15 +422,15 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
-        if self._max_batches and self.max_iterations is None:
+        if self.max_batches and self.max_iterations is None:
             if self.ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self._max_batches - 1) // ensemble_nth_batch
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                       self._pipelines_per_batch * (self._max_batches - 1 - num_ensemble_batches) +
+                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
                                        num_ensemble_batches)
             else:
-                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self._max_batches - 1))
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -449,7 +451,9 @@ class AutoMLSearch:
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
 
-        if self.max_iterations is not None:
+        if self.max_batches is not None:
+            logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
+        elif self.max_iterations is not None:
             logger.info("Searching up to %s pipelines. " % self.max_iterations)
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
@@ -489,7 +493,10 @@ class AutoMLSearch:
                     desc = desc[:self._MAX_NAME_LEN - 3] + "..."
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
+                if self.max_batches:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self._automl_algorithm.batch_number)
+                else:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
 
                 evaluation_results = self._evaluate(pipeline, X, y)
                 score = evaluation_results['cv_score_mean']
@@ -591,7 +598,7 @@ class AutoMLSearch:
                 desc = desc.ljust(self._MAX_NAME_LEN)
 
                 update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                self._start)
+                                self._start, 1)
 
                 baseline_results = self._compute_cv_scores(baseline, X, y)
                 self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(baseline_results["cv_data"])

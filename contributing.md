@@ -19,8 +19,10 @@ The code is hosted on GitHub, so you will need to use Git to clone the project a
 * clone with `git clone https://github.com/alteryx/evalml.git`
 * install in edit mode with:
     ```bash
-    cd evalml  # move to directory
-    make installdeps-dev # installs the repo in edit mode, meaning changes to any files will be picked up in python. also installs all depenedencies.
+    # move into the repo
+    cd evalml
+    # installs the repo in edit mode, meaning changes to any files will be picked up in python. also installs all dependencies.
+    make installdeps-dev
     ```
 
 Note that if you're on Mac, there are a few extra steps you'll want to keep track of.
