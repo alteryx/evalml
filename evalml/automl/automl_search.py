@@ -390,7 +390,6 @@ class AutoMLSearch:
         text_columns = list(text_column_vals.to_pandas().columns)
         if len(text_columns) == 0:
             text_columns = None
-        print('TEXT COLUMNS ARE HERE', text_columns)
 
         if not isinstance(y, ww.DataColumn):
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")

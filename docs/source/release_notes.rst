@@ -22,13 +22,14 @@ Release Notes
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
-        * Updated TextFeaturizer to no longer output NaNs :pr:`1062`
         * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
         * Include editable installs in all install make targets :pr:`1335`
+        * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
+        * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
@@ -82,8 +83,6 @@ Release Notes
         * Added ``solver`` and ``multi_class`` as named arguments to ``LogisticRegressionClassifier`` :pr:`1202`
         * Replaced pipeline's ``._transform`` method to evaluate all the preprocessing steps of a pipeline with ``.compute_estimator_features`` :pr:`1231`
         * Changed default large dataset train/test splitting behavior :pr:`1205`
-        * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
-        * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`
