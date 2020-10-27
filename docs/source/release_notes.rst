@@ -14,6 +14,7 @@ Release Notes
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
         * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Added ``_pipelines_per_batch`` as a private argument to ``AutoMLSearch`` :pr:`1355`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`
@@ -22,6 +23,7 @@ Release Notes
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
         * Fixed LightGBM warning messages during AutoMLSearch :pr:`1342`
+        * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
