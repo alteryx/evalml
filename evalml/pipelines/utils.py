@@ -172,7 +172,7 @@ def generate_pipeline_code(element):
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
     for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
-        if k = 'component_graph':
+        if k == 'component_graph':
             continue
         pipeline_list.append["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
