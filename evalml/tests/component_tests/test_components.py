@@ -1028,7 +1028,7 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
 
 def test_generate_code_errors():
     with pytest.raises(ValueError, match="Element must be a component instance"):
-        generate_component_code(LinearRegressor().__class__)
+        generate_component_code(make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY))
 
     with pytest.raises(ValueError, match="Element must be a component instance"):
         generate_component_code(LinearRegressor)

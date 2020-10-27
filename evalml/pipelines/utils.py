@@ -158,41 +158,36 @@ def generate_pipeline_code(element):
         String representation of Python code that can be run separately in order to recreate the pipeline instance.
         Does not include code for custom component implementation
     """
-    component_names = [c.name for c in all_components()]
     # hold the imports needed and add code to end
     code_strings = []
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
 
-    component_graph = [com.name for com in element.component_graph]
-    custom_components = [(com.__class__.__name__, com.name) for com in element.component_graph if com.name not in component_names]
-    import_strings = [com.__class__.__name__ for com in element.component_graph if com.name in component_names]
+    component_graph_string = ', '.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element.component_graph])
+    custom_components = [(com.__class__.__name__, com.name) for com in element.component_graph if com.__class__ not in all_components()]
+    import_strings = [com.__class__.__name__ for com in element.component_graph if com.__class__ in all_components()]
     if import_strings:
         code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
     for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
-        if k != 'component_graph':
-            pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
+        if k = 'component_graph':
+            continue
+        pipeline_list.append["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
     # create the base string for the pipeline
     base_string = "\nclass {0}({1}):\n" \
-                  "\tcomponent_graph = {2}\n" \
+                  "\tcomponent_graph = [{2}]\n" \
                   "{3}" \
                   "\nparameters = {4}\n" \
                   "pipeline = {0}(parameters)" \
                   .format(element.__class__.__name__,
                           element.__class__.__bases__[0].__name__,
-                          component_graph,
+                          component_graph_string,
                           pipeline_string,
                           element.parameters)
-    # remove quotes from custom components
-    if custom_components:
-        for class_name, c in custom_components:
-            idx = base_string.find(c)
-            base_string = base_string[:idx - 1] + class_name + base_string[idx + len(c) + 1:]
     code_strings.append(base_string)
     return "\n".join(code_strings)
 
