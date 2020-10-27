@@ -353,16 +353,13 @@ class AutoMLSearch:
 
         self.data_split = self.data_split or default_data_split
 
-    def search(self, X, y, data_checks="auto", text_columns=None, show_iteration_plot=True):
+    def search(self, X, y, data_checks="auto", show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
             X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
 
             y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
-
-            text_columns (list, optional): list of feature names which should be treated as text features.
-                Text columns will be automatically converted into a set of numerical features.
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
@@ -389,9 +386,15 @@ class AutoMLSearch:
                 X = pd.DataFrame(X)
             X = ww.DataTable(X)
 
+        text_column_vals = X.select('natural_language')
+        text_columns = list(text_column_vals.to_pandas().columns)
+        if len(text_columns) == 0:
+            text_columns = None
+        print('TEXT COLUMNS ARE HERE', text_columns)
+
         if not isinstance(y, ww.DataColumn):
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            if isinstance(y, np.ndarray):
+            if isinstance(y, np.ndarray) or isinstance(y, list):
                 y = pd.Series(y)
             y = ww.DataColumn(y)
 
