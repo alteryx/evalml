@@ -12,6 +12,7 @@ Release Notes
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
+        * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
         * Included TextFeaturizer in options for automl search :pr:`1062`
     * Fixes
@@ -22,6 +23,7 @@ Release Notes
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
         * Updated TextFeaturizer to no longer output NaNs :pr:`1062`
+        * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`

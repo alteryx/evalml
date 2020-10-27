@@ -65,17 +65,19 @@ def test_default_data_checks_classification():
     data_checks = DefaultDataChecks("binary")
 
     leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "TargetLeakageDataCheck")]
+    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]", "ClassImbalanceDataCheck")]
 
-    assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:]
+    assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:] + imbalance
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "binary"}})
     assert data_checks.validate(X, y) == messages[:3] + leakage + messages[3:]
 
+    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]", "ClassImbalanceDataCheck")]
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
     data_checks = DefaultDataChecks("multiclass")
-    assert data_checks.validate(X, y) == messages
+    assert data_checks.validate(X, y) == messages + imbalance
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
