@@ -295,6 +295,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return hyperparameter_ranges
 
     @property
+    def parameters(self):
+        """Returns parameter dictionary for this pipeline
+
+        Returns:
+            dict: Dictionary of all component parameters
+        """
+        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+
+    @property
     def feature_importance(self):
         """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
 
@@ -306,15 +315,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         importance.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
-
-    @property
-    def parameters(self):
-        """Returns parameter dictionary for this pipeline
-
-        Returns:
-            dict: Dictionary of all component parameters
-        """
-        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
 
     @classproperty
     def default_parameters(cls):
