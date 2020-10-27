@@ -231,6 +231,7 @@ class AutoMLSearch:
         self._automl_algorithm = None
         self._start = None
         self._baseline_cv_scores = {}
+        self.show_batch_output = False
 
         self._validate_problem_type()
 
@@ -426,6 +427,7 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
             if self.ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
@@ -731,7 +733,7 @@ class AutoMLSearch:
 
                 if not add_single_pipeline:
                     update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                    self._start, 1 if baseline else self._automl_algorithm.batch_number)
+                                    self._start, 1 if baseline else self._automl_algorithm.batch_number, self.show_batch_output)
 
                 evaluation_results = self._compute_cv_scores(pipeline, X, y)
                 parameters = pipeline.parameters
