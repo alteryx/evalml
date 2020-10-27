@@ -822,10 +822,10 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     y = pd.Series([0, 1, 0, 1])
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
-    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependency"):
+    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
-    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependency"):
+    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, feature='a', grid_resolution=20)
 
 
