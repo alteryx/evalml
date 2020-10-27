@@ -14,6 +14,7 @@ Release Notes
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
         * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Added ``_pipelines_per_batch`` as a private argument to ``AutoMLSearch`` :pr:`1355`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`

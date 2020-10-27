@@ -89,7 +89,8 @@ class AutoMLSearch:
                  verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
-                 max_batches=None):
+                 max_batches=None,
+                 _pipelines_per_batch=5):
         """Automated pipeline search
 
         Arguments:
@@ -149,6 +150,9 @@ class AutoMLSearch:
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
+
+            _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
+                The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
         """
         try:
             self.problem_type = handle_problem_types(problem_type)
@@ -191,9 +195,7 @@ class AutoMLSearch:
         if max_batches is not None and max_batches <= 0:
             raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
         self.max_batches = max_batches
-        # This is the default value for IterativeAlgorithm - setting this explicitly makes sure that
-        # the behavior of max_batches does not break if IterativeAlgorithm is changed.
-        self._pipelines_per_batch = 5
+        self._pipelines_per_batch = _pipelines_per_batch
 
         self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not self.max_batches:
