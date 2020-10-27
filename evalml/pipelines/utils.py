@@ -164,7 +164,6 @@ def generate_pipeline_code(element):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
 
     component_graph_string = ', '.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element.component_graph])
-    custom_components = [(com.__class__.__name__, com.name) for com in element.component_graph if com.__class__ not in all_components()]
     import_strings = [com.__class__.__name__ for com in element.component_graph if com.__class__ in all_components()]
     if import_strings:
         code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
