@@ -35,6 +35,7 @@ Release Notes
         * Added Alteryx footer to docs with Twitter and Github link :pr:`1312`
         * Added documentation for evalml installation for Python 3.6 :pr:`1322`
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
+        * Fixed documentation for ``feature_importance`` :pr:``
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`

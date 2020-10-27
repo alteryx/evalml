@@ -295,19 +295,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return hyperparameter_ranges
 
     @property
-    def feature_importances(self):
-        """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
-
-        Returns:
-            pd.DataFrame including feature names and their corresponding importance
-        """
-        feature_names = self.input_feature_names[self.estimator.name]
-        importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
-        importance.sort(key=lambda x: -abs(x[1]))
-        df = pd.DataFrame(importance, columns=["feature", "importance"])
-        return df
-
-    @property
     def feature_importance(self):
         """Returns importance associated with each feature. Features dropped by the feature selection are excluded.
 
