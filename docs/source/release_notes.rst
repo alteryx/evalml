@@ -29,6 +29,7 @@ Release Notes
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
         * Include editable installs in all install make targets :pr:`1335`
+        * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
