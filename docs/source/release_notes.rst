@@ -80,6 +80,8 @@ Release Notes
         * Added ``solver`` and ``multi_class`` as named arguments to ``LogisticRegressionClassifier`` :pr:`1202`
         * Replaced pipeline's ``._transform`` method to evaluate all the preprocessing steps of a pipeline with ``.compute_estimator_features`` :pr:`1231`
         * Changed default large dataset train/test splitting behavior :pr:`1205`
+        * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
+        * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
     * Documentation Changes
         * Included description of how to access the component instances and features for pipeline user guide :pr:`1163`
         * Updated API docs to refer to target as "target" instead of "labels" for non-classification tasks and minor docs cleanup :pr:`1160`

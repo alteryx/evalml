@@ -8,7 +8,6 @@ from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
-from evalml.utils import import_or_raise
 
 
 class TextFeaturizer(TextTransformer):
@@ -38,7 +37,7 @@ class TextFeaturizer(TextTransformer):
 
         def normalize(text):
             text = text.translate(str.maketrans('', '', string.punctuation))
-            return text  # .lower()
+            return text.lower()
 
         for col_name in X.columns:
             # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.

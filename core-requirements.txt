@@ -12,4 +12,4 @@ shap>=0.35.0
 texttable>=1.6.2
 woodwork>=0.0.3
 featuretools
-nlp_primitives>=1.1.0
+nlp-primitives>=1.1.0
