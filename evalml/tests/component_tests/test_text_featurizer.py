@@ -213,7 +213,7 @@ def test_diversity_primitive_output():
     tf = TextFeaturizer(text_columns=['diverse'])
     tf.fit(X)
 
-    expected_features = [1.0, 0.5555556, 0.8]
+    expected_features = [1.0, 0.5, 0.75]
     X_t = tf.transform(X)
     features = X_t['DIVERSITY_SCORE(diverse)']
     np.testing.assert_almost_equal(features, expected_features)
@@ -258,7 +258,7 @@ def test_polarity_primitive_output():
     tf = TextFeaturizer(text_columns=['polarity'])
     tf.fit(X)
 
-    expected_features = [0.0, -0.214, 0.57]
+    expected_features = [0.0, -0.214, 0.602]
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
     np.testing.assert_almost_equal(features, expected_features)
