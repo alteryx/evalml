@@ -35,7 +35,6 @@ class LogisticRegressionClassifier(Estimator):
 
     @property
     def feature_importance(self):
-        """Something here"""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
