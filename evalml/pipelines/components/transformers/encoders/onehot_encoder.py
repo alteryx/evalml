@@ -187,8 +187,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def _make_name_unique(name, seen_before):
         """Helper to make the name unique."""
         i = 1
+        name = f"{name}_{i}"
         while name in seen_before:
-            name = f"{name}_{i}"
+            name = f"{name[:name.rindex('_')]}_{i}"
             i += 1
         return name
 
