@@ -58,7 +58,8 @@ from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_estimators_used_in_search,
     _all_transformers,
-    all_components
+    all_components,
+    generate_component_code
 )
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
@@ -1023,3 +1024,50 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
 
     assert MockComponent(agg_type="mean").fit(X, y)
     assert MockComponent(agg_type="moat", category="blue").fit(X, y)
+
+
+def test_generate_code_errors():
+    with pytest.raises(ValueError, match="Element must be a component instance"):
+        generate_component_code(make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY))
+
+    with pytest.raises(ValueError, match="Element must be a component instance"):
+        generate_component_code(LinearRegressor)
+
+    with pytest.raises(ValueError, match="Element must be a component instance"):
+        generate_component_code(Imputer)
+
+    with pytest.raises(ValueError, match="Element must be a component instance"):
+        generate_component_code(ComponentBase)
+
+
+def test_generate_code():
+    expected_code = "from evalml.pipelines.components.estimators.classifiers.logistic_regression import LogisticRegressionClassifier" \
+                    "\n\nlogisticRegressionClassifier = LogisticRegressionClassifier(**{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'})"
+    component_code = generate_component_code(LogisticRegressionClassifier())
+    assert component_code == expected_code
+
+    expected_code = "from evalml.pipelines.components.estimators.regressors.et_regressor import ExtraTreesRegressor" \
+                    "\n\nextraTreesRegressor = ExtraTreesRegressor(**{'n_estimators': 50, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1})"
+    component_code = generate_component_code(ExtraTreesRegressor(n_estimators=50))
+    assert component_code == expected_code
+
+    expected_code = "from evalml.pipelines.components.transformers.imputers.imputer import Imputer" \
+                    "\n\nimputer = Imputer(**{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None})"
+    component_code = generate_component_code(Imputer())
+    assert component_code == expected_code
+
+
+def test_generate_code_custom(test_classes):
+    MockComponent, MockEstimator, MockTransformer = test_classes
+
+    expected_code = "mockComponent = MockComponent(**{})"
+    component_code = generate_component_code(MockComponent())
+    assert component_code == expected_code
+
+    expected_code = "mockEstimator = MockEstimator(**{})"
+    component_code = generate_component_code(MockEstimator())
+    assert component_code == expected_code
+
+    expected_code = "mockTransformer = MockTransformer(**{})"
+    component_code = generate_component_code(MockTransformer())
+    assert component_code == expected_code

@@ -10,6 +10,8 @@ Release Notes
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
+        * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
+        * Added ``generate_pipeline_code`` and ``generate_component_code`` to allow for code generation given a pipeline or component instance :pr:`1306`
         * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
         * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
@@ -24,11 +26,13 @@ Release Notes
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
         * Fixed LightGBM warning messages during AutoMLSearch :pr:`1342`
         * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
+        * Fixed bug where TrainingValidationSplit would return invalid location indices for dataframes with a custom index :pr:`1348`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
         * Include editable installs in all install make targets :pr:`1335`
+        * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
@@ -41,6 +45,7 @@ Release Notes
         * Added Alteryx footer to docs with Twitter and Github link :pr:`1312`
         * Added documentation for evalml installation for Python 3.6 :pr:`1322`
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
+        * Fixed documentation for ``feature_importance`` :pr:`1353`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
