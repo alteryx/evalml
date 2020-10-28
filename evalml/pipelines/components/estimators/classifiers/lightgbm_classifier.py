@@ -22,7 +22,9 @@ class LightGBMClassifier(Estimator):
         "n_estimators": Integer(10, 100),
         "max_depth": Integer(0, 10),
         "num_leaves": Integer(2, 100),
-        "min_child_samples": Integer(1, 100)
+        "min_child_samples": Integer(1, 100),
+        "bagging_fraction": Real(0.000001, 1),
+        "bagging_freq": Integer(0, 1)
     }
     model_family = ModelFamily.LIGHTGBM
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
