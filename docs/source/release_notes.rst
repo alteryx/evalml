@@ -24,6 +24,7 @@ Release Notes
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
         * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
+        * Fixed LightGBM warning messages during AutoMLSearch :pr:`1342`
         * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
         * Fixed bug where TrainingValidationSplit would return invalid location indices for dataframes with a custom index :pr:`1348`
     * Changes
