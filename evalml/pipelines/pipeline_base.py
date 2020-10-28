@@ -319,7 +319,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by feature selection are excluded.
+        """Return importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
             pd.DataFrame including feature names and their corresponding importance

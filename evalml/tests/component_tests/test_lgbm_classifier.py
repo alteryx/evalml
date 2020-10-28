@@ -291,10 +291,26 @@ def test_binary_rf_not_defaults(X_y_binary):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=1.01)
         clf.fit(X, y)
 
-    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
-    clf.fit(X, y)
-    assert clf.parameters['bagging_freq'] == 1
-    assert clf.parameters['bagging_fraction'] == 0.9
+    with pytest.warns(None) as warnings:
+        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
+        clf.fit(X, y)
+        assert clf.parameters['bagging_freq'] == 0
+        assert clf.parameters['bagging_fraction'] == 0.9
+    assert len(warnings) == 0
+
+    with pytest.warns(None) as warnings:
+        clf = LightGBMClassifier(boosting_type="gbdt", bagging_freq=0)
+        clf.fit(X, y)
+        assert clf.parameters['bagging_freq'] == 0
+        assert clf.parameters['bagging_fraction'] == 0.9
+    assert len(warnings) == 0
+
+    with pytest.warns(None) as warnings:
+        clf = LightGBMClassifier(boosting_type="gbdt", bagging_freq=1)
+        clf.fit(X, y)
+        assert clf.parameters['bagging_freq'] == 1
+        assert clf.parameters['bagging_fraction'] == 0.9
+    assert len(warnings) == 0
 
 
 def test_binary_rf(X_y_binary):
@@ -305,15 +321,17 @@ def test_binary_rf(X_y_binary):
     assert clf.parameters['bagging_freq'] == 0
     assert clf.parameters['bagging_fraction'] == 0.9
 
-    clf = LightGBMClassifier(boosting_type="rf")
-    clf.fit(X, y)
-    assert clf.parameters['bagging_freq'] == 1
-    assert clf.parameters['bagging_fraction'] == 0.9
+    with pytest.warns(None) as warnings:
+        clf = LightGBMClassifier(boosting_type="rf")
+        clf.fit(X, y)
+    assert len(warnings) == 0
 
-    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=0.5)
-    clf.fit(X, y)
-    assert clf.parameters['bagging_freq'] == 1
-    assert clf.parameters['bagging_fraction'] == 0.5
+    with pytest.warns(None) as warnings:
+        clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=0.5)
+        clf.fit(X, y)
+        assert clf.parameters['bagging_freq'] == 1
+        assert clf.parameters['bagging_fraction'] == 0.5
+    assert len(warnings) == 0
 
     clf = LightGBMClassifier(bagging_freq=1, bagging_fraction=0.5)
     clf.fit(X, y)
