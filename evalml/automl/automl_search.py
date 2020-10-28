@@ -386,7 +386,7 @@ class AutoMLSearch:
             logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             if isinstance(X, np.ndarray):
                 X = pd.DataFrame(X)
-            X = ww.DataTable(X)
+            X = ww.DataTable(X, copy_dataframe=True)
 
         text_column_vals = X.select('natural_language')
         text_columns = list(text_column_vals.to_pandas().columns)
