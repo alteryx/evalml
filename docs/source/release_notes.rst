@@ -27,6 +27,7 @@ Release Notes
         * Fixed LightGBM warning messages during AutoMLSearch :pr:`1342`
         * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
         * Fixed bug where TrainingValidationSplit would return invalid location indices for dataframes with a custom index :pr:`1348`
+        * Fixed bug where the AutoMLSearch ``random_state`` was not being passed to the created pipelines :pr:`1321`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`

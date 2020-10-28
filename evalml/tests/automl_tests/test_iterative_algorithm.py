@@ -9,6 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import check_random_state_equality
 
 
 def test_iterative_algorithm_init_iterative():
@@ -106,6 +107,7 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
             num_pipelines_classes = (len(dummy_binary_pipeline_classes) + 1) if ensembling_value else len(dummy_binary_pipeline_classes)
             cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
+            assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
             assert algo.pipeline_number == last_pipeline_number + len(next_batch)
             last_pipeline_number = algo.pipeline_number
             assert algo.batch_number == last_batch_number + 1
