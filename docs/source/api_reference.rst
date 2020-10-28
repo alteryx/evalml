@@ -29,9 +29,9 @@ Utilities to preprocess data before using evalml.
     :toctree: generated
     :nosignatures:
 
+    load_data
     drop_nan_target_rows
     target_distribution
-    load_data
     number_of_features
     split_data
 
@@ -125,6 +125,7 @@ Pipeline Utils
 
     make_pipeline
     make_pipeline_from_components
+    generate_pipeline_code
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -155,6 +156,7 @@ Component Utils
 
     allowed_model_families
     get_estimators
+    generate_component_code
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -435,7 +437,7 @@ Data Check Classes
     InvalidTargetDataCheck
     HighlyNullDataCheck
     IDColumnsDataCheck
-    LabelLeakageDataCheck
+    TargetLeakageDataCheck
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck

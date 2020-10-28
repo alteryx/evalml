@@ -4,3 +4,4 @@ ipywidgets>=7.5
 xgboost>=0.82
 catboost>=0.20
 lightgbm>=2.3.1
+graphviz>=0.13

@@ -30,5 +30,6 @@ class BaseMeta(ABCMeta):
                 property_orig = dct[attribute]
                 dct[attribute] = property(cls.check_for_fit(property_orig.__get__),
                                           property_orig.__set__,
-                                          property_orig.__delattr__)
+                                          property_orig.__delattr__,
+                                          property_orig.__doc__)
         return super().__new__(cls, name, bases, dct)
