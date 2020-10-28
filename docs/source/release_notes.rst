@@ -16,6 +16,7 @@ Release Notes
         * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
         * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Added text support to automl search :pr:`1062`
         * Added ``_pipelines_per_batch`` as a private argument to ``AutoMLSearch`` :pr:`1355`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
@@ -33,6 +34,8 @@ Release Notes
         * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
         * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
         * Include editable installs in all install make targets :pr:`1335`
+        * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
+        * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
         * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
@@ -62,6 +65,7 @@ Release Notes
         * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
         * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Removed unused argument `feature_types` from AutoMLSearch.search :pr:`1062`
 
 **v0.14.1 Sep. 29, 2020**
     * Enhancements

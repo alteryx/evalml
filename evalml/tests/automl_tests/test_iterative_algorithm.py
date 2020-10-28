@@ -8,6 +8,7 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
 from evalml.utils import check_random_state_equality
 
@@ -132,3 +133,15 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
             assert pipeline.model_family == ModelFamily.ENSEMBLE
+
+
+def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class):
+    class MockTextClassificationPipeline(BinaryClassificationPipeline):
+        component_graph = [TextFeaturizer, dummy_classifier_estimator_class]
+
+    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline], text_columns=['text_col_1', 'text_col_2'])
+    pipeline = algo.next_batch()[0]
+    expected_params = {'text_columns': ['text_col_1', 'text_col_2']}
+    assert pipeline.parameters['Text Featurization Component'] == expected_params
+    assert isinstance(pipeline.component_graph[0], TextFeaturizer)
+    assert pipeline.component_graph[0]._all_text_columns == ['text_col_1', 'text_col_2']
