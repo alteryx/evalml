@@ -51,6 +51,8 @@ Release Notes
         * Added documentation for evalml installation for Python 3.6 :pr:`1322`
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
         * Fixed documentation for ``feature_importance`` :pr:`1353`
+        * Added tutorial for running `AutoML` with text data :pr:`1357`
+        * Added documentation for woodwork integration with automl search :pr:`1361`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
@@ -58,7 +60,7 @@ Release Notes
         * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
         * Codecov: round coverage up instead of down :pr:`1334`
         * Add DockerHub credentials to CI testing environment :pr:`1356`
-
+        * Add DockerHub credentials to conda testing environment :pr:`1363`
 
 .. warning::
 

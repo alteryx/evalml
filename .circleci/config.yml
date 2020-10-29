@@ -59,7 +59,7 @@ commands:
             cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
             python .circleci/conda_config.py "$(python setup.py --version)"
             cd evalml-core-feedstock
-            echo "$DOCKER_HUB_PASS" | docker login -u psalter --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login -u $DOCKERHUB_USERNAME --password-stdin
             export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-comp7)"
             echo "Created container ${DOCKER_CONTAINERID}"
             chmod -R 777 ./
