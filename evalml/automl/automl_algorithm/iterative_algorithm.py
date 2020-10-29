@@ -98,8 +98,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 except ValueError as e:
                     if 'is not within the bounds of the space' in str(e):
                         raise ValueError("Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(pipeline.name, e))
-                else:
-                    raise(e)
+                    else:
+                        raise(e)
             else:
                 super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
