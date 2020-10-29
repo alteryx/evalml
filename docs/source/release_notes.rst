@@ -57,6 +57,7 @@ Release Notes
         * Added a test to check conda build after merge to main :pr:`1247`
         * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
         * Codecov: round coverage up instead of down :pr:`1334`
+        * Add DockerHub credentials to CI testing environment :pr:`1356`
 
 
 .. warning::

@@ -13,6 +13,9 @@ executors:
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
         environment:
           OMP_NUM_THREADS: 8
 
@@ -222,6 +225,9 @@ jobs:
     working_directory: ~/evalml
     docker:
       - image: busybox:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: | # debugging info
