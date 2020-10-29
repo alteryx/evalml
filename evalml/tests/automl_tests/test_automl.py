@@ -42,6 +42,8 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
     categorical_dtypes,
+    check_random_state_equality,
+    get_random_state,
     numeric_and_boolean_dtypes
 )
 
@@ -1545,6 +1547,29 @@ def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binar
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_search_with_text(mock_fit, mock_score):
+    X = pd.DataFrame(
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!'],
+         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
+         })
+    y = [0, 1, 1, 0, 1, 0]
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y, data_checks='disabled')  # DataChecks disabled since the data is small
+    assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
     def total_pipelines(automl, num_batches, batch_size):
         total = 1 + len(automl.allowed_pipelines)
@@ -1571,3 +1596,28 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
     assert automl._pipelines_per_batch == 10
     assert automl._automl_algorithm.pipelines_per_batch == 10
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
+
+    expected_random_state = get_random_state(42)
+    X, y = X_y_binary
+
+    class DummyPipeline(BinaryClassificationPipeline):
+        component_graph = [dummy_classifier_estimator_class]
+        num_pipelines_different_seed = 0
+        num_pipelines_init = 0
+
+        def __init__(self, parameters, random_state):
+            random_state = get_random_state(random_state)
+            is_diff_random_state = not check_random_state_equality(random_state, expected_random_state)
+            self.__class__.num_pipelines_init += 1
+            self.__class__.num_pipelines_different_seed += is_diff_random_state
+            super().__init__(parameters, random_state)
+
+    automl = AutoMLSearch(problem_type="binary", allowed_pipelines=[DummyPipeline],
+                          random_state=expected_random_state, max_iterations=10)
+    automl.search(X, y)
+    assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
