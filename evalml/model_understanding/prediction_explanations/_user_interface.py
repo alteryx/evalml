@@ -26,12 +26,16 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
           list(str)
     """
     tuples = [(value[0], feature_name) for feature_name, value in normalized_values.items()]
-    tuples = sorted(tuples)
 
-    if len(tuples) <= 2 * top_k:
-        features_to_display = reversed(tuples)
-    else:
-        features_to_display = tuples[-top_k:][::-1] + tuples[:top_k][::-1]
+    def _neg_shap_value_magnitude(shap_tuple):
+        return -abs(shap_tuple[0])
+
+    # Get sort the features s.t the top_k w the largest shap values are the firt
+    # top_k elements
+    tuples = sorted(tuples, key=_neg_shap_value_magnitude)
+
+    # Then sort s.t the SHAP values go from most positive to most negative
+    features_to_display = reversed(sorted(tuples[:top_k]))
 
     rows = []
     for value, feature_name in features_to_display:
