@@ -57,7 +57,7 @@ Release Notes
         * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
         * Codecov: round coverage up instead of down :pr:`1334`
         * Add DockerHub credentials to CI testing environment :pr:`1356`
-
+        * Add DockerHub credentials to conda testing environment :pr:`1363`
 
 .. warning::
 
