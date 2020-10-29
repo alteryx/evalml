@@ -22,9 +22,7 @@ class LightGBMClassifier(Estimator):
         "n_estimators": Integer(10, 100),
         "max_depth": Integer(0, 10),
         "num_leaves": Integer(2, 100),
-        "min_child_samples": Integer(1, 100),
-        "bagging_fraction": Real(0.000001, 1),
-        "bagging_freq": Integer(0, 1)
+        "min_child_samples": Integer(1, 100)
     }
     model_family = ModelFamily.LIGHTGBM
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -32,7 +30,7 @@ class LightGBMClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
+    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, **kwargs):
         # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
 
@@ -42,16 +40,15 @@ class LightGBMClassifier(Estimator):
                       "max_depth": max_depth,
                       "num_leaves": num_leaves,
                       "min_child_samples": min_child_samples,
-                      "n_jobs": n_jobs,
-                      "bagging_freq": bagging_freq,
-                      "bagging_fraction": bagging_fraction}
+                      "n_jobs": n_jobs}
         parameters.update(kwargs)
         lg_parameters = copy.copy(parameters)
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf":
             lg_parameters['bagging_freq'] = 1
-        # avoid lightgbm warnings having to do with parameter aliases
-        if lg_parameters['bagging_freq']:
+            if 'bagging_fraction' not in lg_parameters.keys():
+                lg_parameters['bagging_fraction'] = 0.9
+            # avoid lightgbm warnings having to do with parameter aliases
             lg_parameters.update({'subsample': None, 'subsample_freq': None})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."

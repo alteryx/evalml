@@ -295,21 +295,21 @@ def test_binary_rf_not_defaults(X_y_binary):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
         clf.fit(X, y)
         assert clf.parameters['bagging_freq'] == 0
-        assert clf.parameters['bagging_fraction'] == 0.9
+        assert 'bagging_fraction' not in clf.parameters.keys()
     assert len(warnings) == 0
 
     with pytest.warns(None) as warnings:
         clf = LightGBMClassifier(boosting_type="gbdt", bagging_freq=0)
         clf.fit(X, y)
         assert clf.parameters['bagging_freq'] == 0
-        assert clf.parameters['bagging_fraction'] == 0.9
+        assert 'bagging_fraction' not in clf.parameters.keys()
     assert len(warnings) == 0
 
     with pytest.warns(None) as warnings:
         clf = LightGBMClassifier(boosting_type="gbdt", bagging_freq=1)
         clf.fit(X, y)
         assert clf.parameters['bagging_freq'] == 1
-        assert clf.parameters['bagging_fraction'] == 0.9
+        assert 'bagging_fraction' not in clf.parameters.keys()
     assert len(warnings) == 0
 
 
@@ -318,8 +318,8 @@ def test_binary_rf(X_y_binary):
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
-    assert clf.parameters['bagging_freq'] == 0
-    assert clf.parameters['bagging_fraction'] == 0.9
+    assert 'bagging_freq' not in clf.parameters.keys()
+    assert 'bagging_fraction' not in clf.parameters.keys()
 
     with pytest.warns(None) as warnings:
         clf = LightGBMClassifier(boosting_type="rf")
