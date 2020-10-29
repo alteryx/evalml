@@ -51,6 +51,7 @@ Release Notes
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
         * Fixed documentation for ``feature_importance`` :pr:`1353`
         * Added tutorial for running `AutoML` with text data :pr:`1357`
+        * Added documentation for woodwork integration with automl search :pr:`1361`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
