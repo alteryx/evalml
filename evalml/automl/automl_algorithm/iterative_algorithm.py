@@ -17,6 +17,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  allowed_pipelines=None,
                  max_iterations=None,
                  tuner_class=None,
+                 text_columns=None,
                  random_state=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
@@ -41,6 +42,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
+        self._text_columns = text_columns
         self._first_batch_results = []
         self._best_pipeline_info = {}
         self.ensembling = ensembling
@@ -58,7 +60,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}))
+            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_state=self.random_state)
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
@@ -79,7 +81,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
-                next_batch.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, proposed_parameters)))
+                pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
+                next_batch.append(pipeline_class(parameters=pl_parameters, random_state=self.random_state))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -119,6 +122,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters
+
+            # Add the text columns parameter if the component is a TextFeaturizer
+            if component_class.name == "Text Featurization Component":
+                component_parameters['text_columns'] = self._text_columns
 
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:
