@@ -653,10 +653,8 @@ class AutoMLSearch:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
-                print('training cv')
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                print('finish training')
                 if self.objective.problem_type == ProblemTypes.BINARY:
                     cv_pipeline.threshold = 0.5
                     if self.optimize_thresholds and self.objective.can_optimize_threshold:

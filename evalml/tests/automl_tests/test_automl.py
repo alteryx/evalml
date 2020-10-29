@@ -1470,12 +1470,12 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_
 
     invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', invalid_custom_hyperparameters) for estimator in estimators]
     automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
-    with pytest.raises(ValueError, match="Default parameters for components not in the hyperparameter"):
+    with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search(X, y)
 
     invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_invalid) for estimator in estimators]
     automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
-    with pytest.raises(ValueError, match="Default parameters for components not in the hyperparameter"):
+    with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search(X, y)
 
 

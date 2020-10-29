@@ -52,14 +52,6 @@ class AutoMLAlgorithm(ABC):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
-        if self.batch_number == 1:
-            try:
-                self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
-            except ValueError as e:
-                if 'is not within the bounds of the space' in str(e):
-                    raise ValueError("Default parameters for components not in the hyperparameter ranges: {}".format(e))
-                else:
-                    raise(e)
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property

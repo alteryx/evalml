@@ -99,9 +99,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
-    if custom_hyperparameters:
-        if not isinstance(custom_hyperparameters, dict):
-            raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
+    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
+        raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
     hyperparameters = custom_hyperparameters
     if not isinstance(X, pd.DataFrame):

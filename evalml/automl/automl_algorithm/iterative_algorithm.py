@@ -92,7 +92,16 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
-            super().add_result(score_to_minimize, pipeline)
+            if self.batch_number == 1:
+                try:
+                    super().add_result(score_to_minimize, pipeline)
+                except ValueError as e:
+                    if 'is not within the bounds of the space' in str(e):
+                        raise ValueError("Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(pipeline.name, e))
+                else:
+                    raise(e)
+            else:
+                super().add_result(score_to_minimize, pipeline)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
