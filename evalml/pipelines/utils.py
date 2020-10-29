@@ -63,6 +63,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
 
     # DateTimeFeaturizer can create categorical columns
     categorical_cols = X.select_dtypes(include=categorical_dtypes)
+    categorical_cols.drop(text_columns, inplace=True, errors='ignore', axis=1)
     if (add_datetime_featurizer or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
