@@ -367,7 +367,7 @@ class AutoMLSearch:
 
             data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
                 automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no` data checks will be done.
+                search begins. If "disabled" or None, no data checks will be done.
                 If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
             feature_types (list, optional): list of feature types, either numerical or categorical.
