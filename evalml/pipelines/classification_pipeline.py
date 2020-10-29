@@ -42,7 +42,9 @@ class ClassificationPipeline(PipelineBase):
             y = pd.Series(y)
         self._encoder.fit(y)
         y = self._encode_targets(y)
+        print("start fitting")
         self._fit(X, y)
+        print("done fitting")
         return self
 
     def _encode_targets(self, y):
