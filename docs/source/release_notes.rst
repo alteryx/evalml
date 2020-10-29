@@ -29,6 +29,7 @@ Release Notes
         * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
         * Added text support to automl search :pr:`1062`
         * Added ``_pipelines_per_batch`` as a private argument to ``AutoMLSearch`` :pr:`1355`
+        * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`
