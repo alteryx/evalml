@@ -22,4 +22,4 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings('ignore', 'The following selectors were not present in your DataTable')
 
 
-__version__ = '0.14.1'
+__version__ = '0.15.0'
