@@ -22,7 +22,9 @@ class LightGBMClassifier(Estimator):
         "n_estimators": Integer(10, 100),
         "max_depth": Integer(0, 10),
         "num_leaves": Integer(2, 100),
-        "min_child_samples": Integer(1, 100)
+        "min_child_samples": Integer(1, 100),
+        "bagging_fraction": Real(0.000001, 1),
+        "bagging_freq": Integer(0, 1)
     }
     model_family = ModelFamily.LIGHTGBM
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
@@ -44,17 +46,20 @@ class LightGBMClassifier(Estimator):
                       "bagging_freq": bagging_freq,
                       "bagging_fraction": bagging_fraction}
         parameters.update(kwargs)
-
+        lg_parameters = copy.copy(parameters)
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
-        if boosting_type == "rf" and not bagging_freq:
-            parameters.update({'bagging_freq': 1})
+        if boosting_type == "rf":
+            lg_parameters['bagging_freq'] = 1
+        # avoid lightgbm warnings having to do with parameter aliases
+        if lg_parameters['bagging_freq']:
+            lg_parameters.update({'subsample': None, 'subsample_freq': None})
 
         lgbm_error_msg = "LightGBM is not installed. Please install using `pip install lightgbm`."
         lgbm = import_or_raise("lightgbm", error_msg=lgbm_error_msg)
         self._ordinal_encoder = None
         self._label_encoder = None
 
-        lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **parameters)
+        lgbm_classifier = lgbm.sklearn.LGBMClassifier(random_state=random_seed, **lg_parameters)
 
         super().__init__(parameters=parameters,
                          component_obj=lgbm_classifier,

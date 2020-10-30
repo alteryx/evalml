@@ -224,18 +224,17 @@ def test_more_top_n_unique_values():
                       "col_4": [2, 0, 1, 3, 0, 1, 2]})
 
     random_seed = 2
-    test_random_state = get_random_state(random_seed)
 
     encoder = OneHotEncoder(top_n=5, random_state=random_seed)
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
-    col_1_counts = col_1_counts.sample(frac=1, random_state=test_random_state)
+    col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
     col_1_samples = col_1_counts.head(encoder.parameters['top_n']).index.tolist()
 
     col_2_counts = X["col_2"].value_counts(dropna=False).to_frame()
-    col_2_counts = col_2_counts.sample(frac=1, random_state=test_random_state)
+    col_2_counts = col_2_counts.sample(frac=1, random_state=random_seed)
     col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False, kind='mergesort')
     col_2_samples = col_2_counts.head(encoder.parameters['top_n']).index.tolist()
 
@@ -428,3 +427,17 @@ def test_ohe_features_to_encode_no_col_names():
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
     assert ([X_t[col].dtype == "uint8" for col in X_t])
+
+
+def test_ohe_top_n_categories_always_the_same():
+    df = pd.DataFrame({"categories": ["cat_1"] * 5 + ["cat_2"] * 4 + ["cat_3"] * 3 + ["cat_4"] * 3 + ["cat_5"] * 3,
+                       "numbers": range(18)})
+
+    def check_df_equality(random_state):
+        ohe = OneHotEncoder(top_n=4, random_state=random_state)
+        df1 = ohe.fit_transform(df)
+        df2 = ohe.fit_transform(df)
+        pd.testing.assert_frame_equal(df1, df2)
+
+    check_df_equality(5)
+    check_df_equality(get_random_state(5))
