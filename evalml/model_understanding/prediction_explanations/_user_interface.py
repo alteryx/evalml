@@ -30,11 +30,11 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
     def _neg_shap_value_magnitude(shap_tuple):
         return -abs(shap_tuple[0])
 
-    # Get sort the features s.t the top_k w the largest shap values are the firt
+    # Sort the features s.t the top_k w the largest shap values are the firt
     # top_k elements
     tuples = sorted(tuples, key=_neg_shap_value_magnitude)
 
-    # Then sort s.t the SHAP values go from most positive to most negative
+    # Then sort such that the SHAP values go from most positive to most negative
     features_to_display = reversed(sorted(tuples[:top_k]))
 
     rows = []
