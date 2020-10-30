@@ -81,7 +81,7 @@ def _get_pipeline_base_class(problem_type):
         return RegressionPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, text_columns=None):
+def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -91,6 +91,8 @@ def make_pipeline(X, y, estimator, problem_type, text_columns=None):
         y (pd.Series): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
+            with component name as key and dictionary of parameters as the value
         text_columns (list): feature names which should be treated as text features. Defaults to None.
 
     Returns:
@@ -103,7 +105,10 @@ def make_pipeline(X, y, estimator, problem_type, text_columns=None):
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
-    hyperparameters = None
+    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
+        raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
+
+    hyperparameters = custom_hyperparameters
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 

@@ -1430,6 +1430,89 @@ def test_get_default_primary_search_objective():
         get_default_primary_search_objective("auto")
 
 
+@patch('evalml.tuners.skopt_tuner.SKOptTuner.add')
+def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors(mock_add, X_y_multi):
+    X, y = X_y_multi
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "mean"]
+        }
+    }
+    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
+
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=pipelines)
+
+    mock_add.side_effect = ValueError("Alternate error that can be thrown")
+    with pytest.raises(ValueError) as error:
+        automl.search(X, y)
+    assert "Alternate error that can be thrown" in str(error.value)
+    assert "Default parameters for components" not in str(error.value)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_fit, mock_score, X_y_multi):
+    X, y = X_y_multi
+    invalid_custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "median"]
+        }
+    }
+    larger_invalid = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "mean"]
+        },
+        "Extra Trees Classifier": {
+            "max_depth": [4, 5, 6, 7],
+            "max_features": ["sqrt", "log2"]
+        }
+    }
+    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
+
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', invalid_custom_hyperparameters) for estimator in estimators]
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
+    with pytest.raises(ValueError, match="Default parameters for components"):
+        automl.search(X, y)
+
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_invalid) for estimator in estimators]
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
+    with pytest.raises(ValueError, match="Default parameters for components"):
+        automl.search(X, y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mock_score, X_y_multi):
+    X, y = X_y_multi
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ["mean"]
+        }
+    }
+    larger_custom = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "mean"]
+        },
+        "Extra Trees Classifier": {
+            "max_depth": [4, 5, 6, 7],
+            "max_features": ["auto", "log2"]
+        }
+    }
+    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=pipelines)
+    automl.search(X, y)
+    assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["mean"]
+
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_custom) for estimator in estimators]
+    automl = AutoMLSearch(problem_type='multiclass', allowed_pipelines=invalid_pipelines)
+    automl.search(X, y)
+
+    assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["most_frequent", "mean"]
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
