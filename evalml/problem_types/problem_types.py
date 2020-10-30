@@ -11,11 +11,14 @@ class ProblemTypes(Enum):
     """Multiclass classification problem."""
     REGRESSION = 'regression'
     """Regression problem."""
+    TIME_SERIES_REGRESSION = 'time_series_regression'
+    """Time series regression problem."""
 
     def __str__(self):
         problem_type_dict = {ProblemTypes.BINARY.name: "binary",
                              ProblemTypes.MULTICLASS.name: "multiclass",
-                             ProblemTypes.REGRESSION.name: "regression"}
+                             ProblemTypes.REGRESSION.name: "regression",
+                             ProblemTypes.TIME_SERIES_REGRESSION.name: "time_series_regression"}
         return problem_type_dict[self.name]
 
     @classproperty

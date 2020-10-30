@@ -28,7 +28,9 @@ from evalml.objectives import (
     CostBenefitMatrix,
     FraudCost,
     LogLossBinary,
-    LogLossMulticlass
+    LogLossMulticlass,
+    MulticlassClassificationObjective,
+    RegressionObjective
 )
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
@@ -1120,16 +1122,22 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = X_y_binary
 
+    objective_type = ProblemTypes.BINARY
+    if isinstance(objective, RegressionObjective):
+        objective_type = ProblemTypes.REGRESSION
+    elif isinstance(objective, MulticlassClassificationObjective):
+        objective_type = ProblemTypes.MULTICLASS
+
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
-                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[objective.problem_type]
+                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[objective_type]
     baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
                                ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
                                ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               }[objective.problem_type]
+                               }[objective_type]
 
     class DummyPipeline(pipeline_class):
-        problem_type = objective.problem_type
+        problem_type = objective_type
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
@@ -1146,11 +1154,11 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     Pipeline2.score = mock_score_2
 
     if objective.name.lower() == "cost benefit matrix":
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=objective_type, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
                               additional_objectives=[])
     else:
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=objective_type, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
                               additional_objectives=[])
 

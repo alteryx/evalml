@@ -9,5 +9,5 @@ class RegressionObjective(ObjectiveBase):
     problem_type (ProblemTypes): Type of problem this objective is. Set to ProblemTypes.REGRESSION.
     """
 
-    problem_type = ProblemTypes.REGRESSION
+    problem_type = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
     score_needs_proba = False

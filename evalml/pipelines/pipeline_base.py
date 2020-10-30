@@ -262,7 +262,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         exceptions = OrderedDict()
         for objective in objectives:
             try:
-                if self.problem_type != objective.problem_type:
+                if self.problem_type not in objective.problem_type:
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
                 scored_successfully.update({objective.name: score})

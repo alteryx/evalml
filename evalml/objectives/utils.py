@@ -102,5 +102,5 @@ def get_core_objectives(problem_type):
     """
     problem_type = handle_problem_types(problem_type)
     all_objectives_dict = _all_objectives_dict()
-    objectives = [obj() for obj in all_objectives_dict.values() if obj.problem_type == problem_type and obj not in get_non_core_objectives()]
+    objectives = [obj() for obj in all_objectives_dict.values() if problem_type in obj.problem_type and obj not in get_non_core_objectives()]
     return objectives

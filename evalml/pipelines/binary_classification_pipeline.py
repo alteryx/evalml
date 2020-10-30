@@ -35,7 +35,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
-            if objective.problem_type != self.problem_type:
+            if self.problem_type not in objective.problem_type:
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:

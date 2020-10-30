@@ -281,7 +281,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         Mean feature importance scores over 5 shuffles.
     """
     objective = get_objective(objective, return_instance=True)
-    if objective.problem_type != pipeline.problem_type:
+    if pipeline.problem_type not in objective.problem_type:
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
     def scorer(pipeline, X, y):
@@ -363,7 +363,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     """
     objective = get_objective(objective, return_instance=True)
-    if objective.problem_type != ProblemTypes.BINARY:
+    if ProblemTypes.BINARY not in objective.problem_type:
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
     if objective.score_needs_proba:
         raise ValueError("Objective `score_needs_proba` must be False")
