@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
     * Changes
     * Documentation Changes
