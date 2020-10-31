@@ -4,13 +4,10 @@ from enum import Enum
 class ModelFamily(Enum):
     """
     Enum for family of machine learning models.
+
     .. data:: RANDOM_FOREST
 
-        Indicates some unknown error.
-
     .. data:: XGBOOST
-
-        Indicates that the request was bad in some way.
 
     .. data:: LINEAR_MODEL
 
