@@ -1,10 +1,15 @@
 
+import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import numeric_dtypes
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    numeric_dtypes
+)
 
 
 class RegressionPipeline(PipelineBase):
@@ -22,10 +27,18 @@ class RegressionPipeline(PipelineBase):
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if not isinstance(X, ww.DataTable):
+            if isinstance(X, np.ndarray):
+                X = pd.DataFrame(X)
+            X = ww.DataTable(X)
+
+        if not isinstance(y, ww.DataColumn):
+            if isinstance(y, np.ndarray) or isinstance(y, list):
+                y = pd.Series(y)
+            y = ww.DataColumn(y)
+
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         if y.dtype not in numeric_dtypes:
             raise ValueError(f"Regression pipeline cannot handle targets with dtype: {y.dtype}")
