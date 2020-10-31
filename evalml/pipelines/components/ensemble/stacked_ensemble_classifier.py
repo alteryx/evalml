@@ -51,8 +51,6 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         Returns:
             pd.DataFrame: Probability estimates
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
         pred_proba = self._component_obj.predict_proba(X)
         if not isinstance(pred_proba, pd.DataFrame):
             pred_proba = pd.DataFrame(pred_proba)

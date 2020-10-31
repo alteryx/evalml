@@ -130,7 +130,6 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             self
         """
-        X, y = check_X_y(X, y)
         self.classes_ = unique_labels(y)
         self.X_ = X
         self.y_ = y
