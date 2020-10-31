@@ -4,19 +4,12 @@ from enum import Enum
 class ModelFamily(Enum):
     """
     Enum for family of machine learning models.
-
-    .. data:: RANDOM_FOREST
-
-    .. data:: XGBOOST
-
-    .. data:: LINEAR_MODEL
-
     """
 
-    """Random Forest."""
     RANDOM_FOREST = 'random_forest'
-    """XGBoost"""
+    """Random Forest."""
     XGBOOST = 'xgboost'
+    """XGBoost"""
     LIGHTGBM = 'lightgbm'
     LINEAR_MODEL = 'linear_model'
     CATBOOST = 'catboost'
