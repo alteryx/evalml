@@ -2,22 +2,37 @@ from enum import Enum
 
 
 class ModelFamily(Enum):
-    """
-    Enum for family of machine learning models.
-    """
+    """Enum for family of machine learning models."""
 
     RANDOM_FOREST = 'random_forest'
     """Random Forest."""
+
     XGBOOST = 'xgboost'
     """XGBoost"""
+
     LIGHTGBM = 'lightgbm'
+    """LIGHTGBM"""
+
     LINEAR_MODEL = 'linear_model'
+    """linear model"""
+
     CATBOOST = 'catboost'
+    """catboost"""
+
     EXTRA_TREES = 'extra_trees'
+    """extra trees"""
+
     ENSEMBLE = 'ensemble',
+    """ensemble"""
+
     DECISION_TREE = 'decision_tree'
+    """decision tree"""
+
     BASELINE = 'baseline'
+    """baseline"""
+
     NONE = 'none'
+    """None"""
 
     def __str__(self):
         model_family_dict = {ModelFamily.RANDOM_FOREST.name: "Random Forest",

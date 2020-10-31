@@ -373,15 +373,9 @@ Problem Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
     :nosignatures:
 
     ProblemTypes
-
-.. autosummary::
-    :toctree: generated
-    :nosignatures:
-
     handle_problem_types
     detect_problem_type
 
