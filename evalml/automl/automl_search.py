@@ -674,7 +674,6 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                raise e
                 if isinstance(e, PipelineScoreError):
                     logger.info(f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
                     logger.info(f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan.")
