@@ -378,10 +378,8 @@ Problem Types
     handle_problem_types
     detect_problem_type
 
-.. autosummary::
-    :toctree: generated
+
     :template: enum_class.rst
-    :nosignatures:
 
     ProblemTypes
 
