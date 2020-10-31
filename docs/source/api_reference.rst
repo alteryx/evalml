@@ -396,11 +396,6 @@ Model Family
     :nosignatures:
 
     handle_model_family
-
-
-.. automodule:: evalml.model_family
-   :members:
-
     ModelFamily
 
 
