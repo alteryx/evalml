@@ -2,8 +2,23 @@ from enum import Enum
 
 
 class ModelFamily(Enum):
-    """Enum for family of machine learning models."""
-    RANDOM_FOREST = 'random_forest'  # : doc
+    """
+    Enum for family of machine learning models.
+    .. data:: RANDOM_FOREST
+
+        Indicates some unknown error.
+
+    .. data:: XGBOOST
+
+        Indicates that the request was bad in some way.
+
+    .. data:: LINEAR_MODEL
+
+    """
+
+    """Random Forest."""
+    RANDOM_FOREST = 'random_forest'
+    """XGBoost"""
     XGBOOST = 'xgboost'
     LIGHTGBM = 'lightgbm'
     LINEAR_MODEL = 'linear_model'

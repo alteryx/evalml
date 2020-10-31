@@ -400,7 +400,6 @@ Model Family
 
 .. automodule:: evalml.model_family
    :members:
-   :undoc-members:
 
     ModelFamily
 
