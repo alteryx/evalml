@@ -972,6 +972,8 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
     # Update target types as necessary
     if target_type in categorical_dtypes:
         y = y.map({unique_vals[i]: f"{i}" for i in range(len(unique_vals))})
+        if target_type == "category":
+            y = pd.Categorical(y)
     elif "int" in target_type.lower():
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
