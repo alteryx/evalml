@@ -50,7 +50,7 @@ class LightGBMClassifier(Estimator):
         # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
         if boosting_type == "rf":
             lg_parameters['bagging_freq'] = 1
-        # when boosting type is random forest (rf), LightGBM requires bagging_freq == 1 and  0 < bagging_fraction < 1.0
+        # when boosting type is goss, LightGBM requires bagging_fraction == 1
         elif boosting_type == "goss":
             lg_parameters['bagging_fraction'] = 1
         # avoid lightgbm warnings having to do with parameter aliases
