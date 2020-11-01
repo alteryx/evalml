@@ -23,13 +23,13 @@ class ModelFamily(Enum):
     """extra trees"""
 
     ENSEMBLE = 'ensemble',
-    """ensemble"""
+    """Ensemble"""
 
     DECISION_TREE = 'decision_tree'
-    """decision tree"""
+    """Decision Tree"""
 
     BASELINE = 'baseline'
-    """baseline"""
+    """Baseline"""
 
     NONE = 'none'
     """None"""

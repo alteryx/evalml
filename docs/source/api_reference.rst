@@ -378,7 +378,6 @@ Problem Types
     handle_problem_types
     detect_problem_type
 
-
     :template: enum_class.rst
 
     ProblemTypes
@@ -395,6 +394,9 @@ Model Family
     :nosignatures:
 
     handle_model_family
+
+    :template: enum_class.rst
+
     ModelFamily
 
 
@@ -462,7 +464,7 @@ Data Check Message Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: enum_class.rst
     :nosignatures:
 
     DataCheckMessageType
