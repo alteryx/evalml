@@ -5,31 +5,31 @@ class ModelFamily(Enum):
     """Enum for family of machine learning models."""
 
     RANDOM_FOREST = 'random_forest'
-    """Random Forest."""
+    """Random Forest model family."""
 
     XGBOOST = 'xgboost'
-    """XGBoost"""
+    """XGBoost model family."""
 
     LIGHTGBM = 'lightgbm'
-    """LIGHTGBM"""
+    """LightGBM model family."""
 
     LINEAR_MODEL = 'linear_model'
-    """linear model"""
+    """Linear model family."""
 
     CATBOOST = 'catboost'
-    """catboost"""
+    """CatBoost model family."""
 
     EXTRA_TREES = 'extra_trees'
-    """extra trees"""
+    """Extra Trees model family."""
 
     ENSEMBLE = 'ensemble',
-    """Ensemble"""
+    """Ensemble model family."""
 
     DECISION_TREE = 'decision_tree'
-    """Decision Tree"""
+    """Decision Tree model family."""
 
     BASELINE = 'baseline'
-    """Baseline"""
+    """Baseline model family."""
 
     NONE = 'none'
     """None"""
