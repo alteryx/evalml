@@ -3,10 +3,12 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
 
 **v0.15.0 Oct. 29, 2020**
     * Enhancements
