@@ -8,7 +8,7 @@ from evalml.demos import load_breast_cancer, load_diabetes, load_wine
 def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipeline_class):
     X, y = load_wine()
     if target_type == "categorical":
-        y = pd.Categorical(y)
+        y = pd.Series(y).astype("category")
     if target_type == "bool":
         X, y = load_breast_cancer()
         y = y.map({"malignant": False, "benign": True})

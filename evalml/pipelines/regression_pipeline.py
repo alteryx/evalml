@@ -31,7 +31,6 @@ class RegressionPipeline(PipelineBase):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_pandas())
         y = _convert_woodwork_types_wrapper(y.to_pandas())
-
         if y.dtype not in numeric_dtypes:
             raise ValueError(f"Regression pipeline cannot handle targets with dtype: {y.dtype}")
         self._fit(X, y)

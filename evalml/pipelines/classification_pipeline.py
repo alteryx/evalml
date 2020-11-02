@@ -4,6 +4,10 @@ from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class ClassificationPipeline(PipelineBase):
@@ -28,18 +32,18 @@ class ClassificationPipeline(PipelineBase):
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
 
-            y (pd.Series): The target training labels of length [n_samples]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)

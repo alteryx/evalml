@@ -49,7 +49,10 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -384,9 +387,7 @@ class AutoMLSearch:
         # make everything ww objects
         if not isinstance(X, ww.DataTable):
             logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            if isinstance(X, np.ndarray):
-                X = pd.DataFrame(X)
-            X = ww.DataTable(X)
+            X = _convert_to_woodwork_structure(X)
 
         text_column_vals = X.select('natural_language')
         text_columns = list(text_column_vals.to_pandas().columns)
@@ -395,9 +396,7 @@ class AutoMLSearch:
 
         if not isinstance(y, ww.DataColumn):
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            if isinstance(y, np.ndarray) or isinstance(y, list):
-                y = pd.Series(y)
-            y = ww.DataColumn(y)
+            y = _convert_to_woodwork_structure(y)
 
         X = _convert_woodwork_types_wrapper(X.to_pandas())
         y = _convert_woodwork_types_wrapper(y.to_pandas())
