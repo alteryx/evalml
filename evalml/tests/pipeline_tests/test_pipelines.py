@@ -5,6 +5,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
@@ -1143,32 +1144,45 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
         X, y = load_breast_cancer()
-        if target_type == "bool":
+        if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
-        if target_type == "bool":
+        if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
 
-    if target_type == "category":
-        y = pd.Categorical(y)
-    elif "int" in target_type:
+    # Update target types as necessary
+    if "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
+    y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     for pipeline_class in pipeline_classes:
         pipeline = pipeline_class(parameters={})
         pipeline.fit(X, y)
