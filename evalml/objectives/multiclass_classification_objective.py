@@ -9,4 +9,4 @@ class MulticlassClassificationObjective(ObjectiveBase):
     problem_type (ProblemTypes): Type of problem this objective is. Set to ProblemTypes.MULTICLASS.
     """
 
-    problem_type = [ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.MULTICLASS]
