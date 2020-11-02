@@ -425,7 +425,7 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         if self.max_batches and self.max_iterations is None:
-            if self.ensembling:
+            if self.ensembling and len(self.allowed_pipelines) > 1:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 self.max_iterations = (1 + len(self.allowed_pipelines) +

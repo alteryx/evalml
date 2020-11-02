@@ -1328,6 +1328,27 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     assert automl.full_rankings.shape[0] == n_results
 
 
+@pytest.mark.parametrize("max_iterations", [None, 1, 8])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock_score, max_iterations, X_y_binary, logistic_regression_binary_pipeline_class):
+    # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    if max_iterations is None:
+        max_iterations = 5  # Default value for max_iterations
+    pipeline_names = automl.rankings['pipeline_name']
+    assert not pipeline_names.str.contains('Ensemble').any()
+
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    if max_iterations is None:
+        max_iterations = 5  # Default value for max_iterations
+    pipeline_names = automl.rankings['pipeline_name']
+    assert not pipeline_names.str.contains('Ensemble').any()
+
+
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')

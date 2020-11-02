@@ -53,6 +53,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
+        run_ensembling = self.ensembling and len(self.allowed_pipelines) > 1
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
                 raise AutoMLAlgorithmException('No results were reported from the first batch')
@@ -64,8 +65,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
-        elif (self.ensembling and
-              len(self._first_batch_results) > 1 and
+        elif (run_ensembling and
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
@@ -76,7 +76,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
             next_batch.append(ensemble)
         else:
-            num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
+            num_pipeline_classes = (len(self._first_batch_results) + 1) if run_ensembling else len(self._first_batch_results)
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
