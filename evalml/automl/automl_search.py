@@ -146,7 +146,8 @@ class AutoMLSearch:
 
             verbose (boolean): If True, turn verbosity on. Defaults to True.
 
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
+                Defaults to False. If the number of unique pipelines to search over per batch is one, ensembling will not run.
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
@@ -424,8 +425,14 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            logger.warning("Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run.")
+            run_ensembling = False
+
         if self.max_batches and self.max_iterations is None:
-            if self.ensembling and len(self.allowed_pipelines) > 1:
+            if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 self.max_iterations = (1 + len(self.allowed_pipelines) +

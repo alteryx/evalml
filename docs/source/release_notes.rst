@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
+        * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
     * Changes
     * Documentation Changes
     * Testing Changes
