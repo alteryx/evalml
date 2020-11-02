@@ -8,25 +8,14 @@ from evalml.utils import import_or_raise
 
 
 class ComponentGraph:
-    def __init__(self, component_names=None, edges=None, random_state=0):
+    def __init__(self, component_dict=None, random_state=0):
         """ Initializes a component graph for a pipeline as a DAG.
-
-        Arguments:
-            component_names (dict): Of the form {name: component} pairs, where
-                             `name` is a unique string for that component and
-                             `component` is either a string component name
-                             as recognized by evalml or a direct evalml
-                             component class
-            edges (list): A list of tuples of the form (from_component,
-                          to_component), referring to the components by the
-                          names as represented in the `component_names` dict
         """
-        self.component_names = component_names or {}
-        self.edges = edges or []
-        for edge in self.edges:
-            if edge[0] not in self.component_names.keys() or edge[1] not in self.component_names.keys():
-                raise ValueError(f'Edge {edge} contains a component not defined in component_names')
-        self._compute_order = None
+        self.component_dict = component_dict or {}
+        for key, value in self.component_dict.items():
+            if not isinstance(value, list):
+                self.component_dict[key] = [value]
+        self._compute_order = []
         self._recompute_order()
         self.random_state = random_state
 
@@ -43,9 +32,10 @@ class ComponentGraph:
 
             parent = None
             if idx != 0:
-                parent = [handle_component_class(component_list[idx - 1]).name]
+                parent = [f"{handle_component_class(component_list[idx - 1]).name}.x"]
             self.add_node(component_name, component_class, parents=parent)
         return self
+
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
@@ -55,8 +45,9 @@ class ComponentGraph:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                                An empty dictionary {} implies using all default values for component parameters.
         """
-        for component_name, component_class in self.component_names.items():
+        for component_name, component_info in self.component_dict.items():
             component_parameters = parameters.get(component_name, {})
+            component_class = component_info[0]
             if isinstance(component_class, ComponentBase):
                 if component_parameters != {}:
                     raise ValueError(f"Attempting to instantiate component {component_name} with parameters {component_parameters} when component already instantiated")
@@ -71,31 +62,26 @@ class ComponentGraph:
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
                 raise ValueError(err) from e
 
-            self.component_names[component_name] = new_component
+            self.component_dict[component_name][0] = new_component
         return self
 
-    def add_node(self, component_name, component_obj, parents=None, children=None):
+    def add_node(self, component_name, component_obj, parents=None):
         """Add a node to the component graph.
 
         Arguments:
             component_name (str or int): The name or ID of the component to add
             component_obj (Object or string): The component to add
             parents (list): A list of parents of this new node. Defaults to None.
-            children (list): A list of children of this new node. Defaults to  None.
         """
-        if component_name in self.component_names.keys():
+        if component_name in self.component_dict.keys():
             raise ValueError('Cannot add a component that already exists')
-        self.component_names[component_name] = component_obj
+        self.component_dict[component_name] = [component_obj]
+        valid_parents = self.component_dict.keys()
         if parents:
             for parent in parents:
-                if parent not in self.component_names.keys():
+                if parent[:-2] not in valid_parents and parent not in valid_parents:
                     raise ValueError('Cannot add parent that is not yet in the graph')
-                self.edges.append((parent, component_name))
-        if children:
-            for child in children:
-                if child not in self.component_names.keys():
-                    raise ValueError('Cannot add child that is not yet in the graph')
-                self.edges.append((component_name, child))
+                self.component_dict[component_name].append(parent)
         self._recompute_order()
         return self
 
@@ -107,27 +93,9 @@ class ComponentGraph:
             from_component (str or int): The parent node, to be computed first
             to_component (str or int): The child node, to be computed after the parent
         """
-        if from_component not in self.component_names.keys() or to_component not in self.component_names.keys():
+        if from_component not in self.component_dict.keys() or to_component not in self.component_dict.keys():
             raise ValueError("Cannot add an edge for a component not in the graph yet")
-        self.edges.append((from_component, to_component))
-        self._recompute_order()
-        return self
-
-    def merge_graph(self, other_graph):
-        """Add all components and edges from another `ComponentGraph` object to this one.
-        Components with unique names will be added as unique nodes, even if the component object
-        is the same type as another. Components with identical names will be considered the
-        same node, and the object from the incoming graph will be saved as that component.
-
-        Arguments:
-            other_graph (ComponentGraph): The other graph to combine with this graph
-        """
-        for component_name, component in other_graph.component_names.items():
-            self.component_names[component_name] = component
-        for edge in other_graph.edges:
-            if edge in self.edges:
-                continue
-            self.edges.append(edge)
+        self.component_dict[to_component].append(from_component)
         self._recompute_order()
         return self
 
@@ -141,7 +109,7 @@ class ComponentGraph:
             ComponentBase object
         """
         try:
-            return self.component_names[component_name]
+            return self.component_dict[component_name][0]
         except KeyError:
             raise ValueError(f'Component {component_name} is not in the graph')
 
@@ -152,7 +120,8 @@ class ComponentGraph:
             list: all estimator objects within the graph
         """
         estimators = []
-        for component in self.component_names.values():
+        for component_info in self.component_dict.values():
+            component = component_info[0]
             if component.model_family is not ModelFamily.NONE:
                 estimators.append(component)
         return estimators
@@ -166,11 +135,14 @@ class ComponentGraph:
         Returns:
             iterator of parent component names
         """
-        if component_name not in self.component_names.keys():
-            raise ValueError(f'Component {component_name} is not in the graph')
-        digraph = nx.DiGraph()
-        digraph.add_edges_from(self.edges)
-        return digraph.predecessors(component_name)
+        try:
+            component_info = self.component_dict[component_name]
+        except KeyError:
+            raise ValueError(f"Component {component_name} not in the graph")
+        if isinstance(component_info, list):
+            if len(component_info) > 1:
+                return component_info[1:]
+        return []
 
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph
@@ -210,10 +182,20 @@ class ComponentGraph:
         graph.edges(self.edges)
         return graph
 
+    def _get_edges(self):
+        edges = []
+        for component_name, component_info in self.component_dict.items():
+            if len(component_info) > 1:
+                for parent in component_info[1:]:
+                    if parent[-2:] == '.x' or parent[-2:] == '.y':
+                        parent = parent[:-2]
+                    edges.append((parent, component_name))
+        return edges
+
     def _recompute_order(self):
         """Regenerated the topologically sorted order of the graph"""
         digraph = nx.DiGraph()
-        digraph.add_edges_from(self.edges)
+        digraph.add_edges_from(self._get_edges())
         self._compute_order = topological_sort(digraph)
 
     def __iter__(self):
@@ -222,7 +204,9 @@ class ComponentGraph:
     def __next__(self):
         try:
             component = next(self._compute_order)
-            return component, self.component_names[component]
+            if component[-2:] == '.x' or component[-2:] == '.y':
+                component = component[:-2]
+            return component, self.component_dict[component][0]
         except StopIteration:
             self._recompute_order()  # Reset the generator
             raise StopIteration
