@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
+    DelayedFeaturesTransformer,
     DropColumns,
     DropNullColumns,
     ElasticNetClassifier,
@@ -530,6 +531,10 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, DelayedFeaturesTransformer):
+                # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
+                # The dataframe shape and index are checked in test_delayed_features_transformer.py
+                continue
             else:
                 assert transform_output.shape == X.shape
                 assert (transform_output.columns == X_cols_expected).all()
@@ -748,7 +753,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
 
 def test_all_transformers_needs_fitting():
     for component_class in _all_transformers() + _all_estimators():
-        if component_class.__name__ in ['DropColumns', 'SelectColumns']:
+        if component_class.__name__ in ['DropColumns', 'SelectColumns', 'DelayedFeaturesTransformer']:
             assert not component_class.needs_fitting
         else:
             assert component_class.needs_fitting
@@ -807,7 +812,7 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
             if issubclass(component_class, Estimator):
                 component.predict(X)
             else:
-                component.transform(X)
+                component.transform(X, y)
 
 
 def test_serialization(X_y_binary, tmpdir):

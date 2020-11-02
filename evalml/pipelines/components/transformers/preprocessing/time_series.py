@@ -6,6 +6,7 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 class DelayedFeaturesTransformer(Transformer):
     name = "Delayed Features Transformer"
     hyperparameter_ranges = {}
+    needs_fitting = False
 
     def __init__(self, max_delay=2, random_state=0, **kwargs):
 
