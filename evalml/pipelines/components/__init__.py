@@ -25,6 +25,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
+    DelayedFeaturesTransformer,
     SimpleImputer,
     Imputer,
     StandardScaler,
