@@ -966,9 +966,7 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
-
     unique_vals = y.unique()
-
     # Update target types as necessary
     if target_type in categorical_dtypes:
         y = y.map({unique_vals[i]: f"{i}" for i in range(len(unique_vals))})
