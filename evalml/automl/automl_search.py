@@ -570,9 +570,7 @@ class AutoMLSearch:
 
         pipelines = [baseline]
         scores = self._evaluate_pipelines(pipelines, X, y, baseline=True)
-        if scores == []:
-            return True
-        return False
+        return len(scores) == 0
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data):
