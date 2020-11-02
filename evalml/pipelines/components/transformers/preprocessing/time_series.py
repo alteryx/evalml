@@ -19,7 +19,21 @@ class DelayedFeaturesTransformer(Transformer):
         """Fits the LaggedFeatureExtractor."""
 
     def transform(self, X, y=None):
-        """Transforms the input data."""
+        """Computes the delayed features for all features in X and y.
+
+        For each feature in X, it will add a column to the output dataframe for each
+        delay in the (inclusive) range [1, max_delay]. The values would correspond to the
+        value of the feature 'delay' time-steps in the past.
+
+        If y is not None, it will also compute the delayed values for the target variable.
+
+        Arguments:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            pd.DataFrame: Transformed X.
+        """
         if not isinstance(X, pd.DataFrame):
             if y is None:
                 X = pd.DataFrame(X, columns=["target"])
