@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
+        * Updated enum classes to show possible enum values as attributes :pr:`1369`
     * Changes
     * Documentation Changes
     * Testing Changes
