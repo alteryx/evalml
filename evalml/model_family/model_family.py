@@ -3,16 +3,36 @@ from enum import Enum
 
 class ModelFamily(Enum):
     """Enum for family of machine learning models."""
+
     RANDOM_FOREST = 'random_forest'
+    """Random Forest model family."""
+
     XGBOOST = 'xgboost'
+    """XGBoost model family."""
+
     LIGHTGBM = 'lightgbm'
+    """LightGBM model family."""
+
     LINEAR_MODEL = 'linear_model'
+    """Linear model family."""
+
     CATBOOST = 'catboost'
+    """CatBoost model family."""
+
     EXTRA_TREES = 'extra_trees'
+    """Extra Trees model family."""
+
     ENSEMBLE = 'ensemble',
+    """Ensemble model family."""
+
     DECISION_TREE = 'decision_tree'
+    """Decision Tree model family."""
+
     BASELINE = 'baseline'
+    """Baseline model family."""
+
     NONE = 'none'
+    """None"""
 
     def __str__(self):
         model_family_dict = {ModelFamily.RANDOM_FOREST.name: "Random Forest",
