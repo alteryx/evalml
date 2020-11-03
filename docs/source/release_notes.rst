@@ -3,7 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
+        * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
+        * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
