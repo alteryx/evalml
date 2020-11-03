@@ -1,5 +1,3 @@
-import pandas as pd
-
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
