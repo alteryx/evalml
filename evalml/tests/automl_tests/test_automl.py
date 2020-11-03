@@ -1353,8 +1353,6 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     caplog.clear()
     automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
     automl.search(X, y, data_checks=None)
-    if max_iterations is None:
-        max_iterations = 5  # Default value for max_iterations
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run." not in caplog.text
