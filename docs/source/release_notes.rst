@@ -6,6 +6,7 @@ Release Notes
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
+        * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
     * Documentation Changes
     * Testing Changes

@@ -373,17 +373,15 @@ Problem Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ProblemTypes
-
-.. autosummary::
-    :toctree: generated
     :nosignatures:
 
     handle_problem_types
     detect_problem_type
+
+    :template: enum_class.rst
+
+    ProblemTypes
+
 
 
 .. currentmodule:: evalml.model_family
@@ -393,16 +391,13 @@ Model Family
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ModelFamily
-
-.. autosummary::
-    :toctree: generated
     :nosignatures:
 
     handle_model_family
+
+    :template: enum_class.rst
+
+    ModelFamily
 
 
 .. currentmodule:: evalml.tuners
@@ -469,7 +464,7 @@ Data Check Message Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: enum_class.rst
     :nosignatures:
 
     DataCheckMessageType
