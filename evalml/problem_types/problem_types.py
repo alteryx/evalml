@@ -6,8 +6,11 @@ from evalml.utils import classproperty
 class ProblemTypes(Enum):
     """Enum defining the supported types of machine learning problems."""
     BINARY = 'binary'
+    """Binary classification problem."""
     MULTICLASS = 'multiclass'
+    """Multiclass classification problem."""
     REGRESSION = 'regression'
+    """Regression problem."""
 
     def __str__(self):
         problem_type_dict = {ProblemTypes.BINARY.name: "binary",
