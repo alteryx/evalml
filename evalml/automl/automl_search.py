@@ -139,7 +139,7 @@ class AutoMLSearch:
                 Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             error_callback (callable): Function called when `search()` errors and raises an Exception.
-                Passed two parameters: The Exception raised and the AutoMLSearch object.
+                Passed two positional parameters: The Exception raised and the AutoMLSearch object. Accepts kwargs.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
