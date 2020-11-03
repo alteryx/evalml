@@ -82,6 +82,7 @@ class AutoMLSearch:
                  allowed_model_families=None,
                  start_iteration_callback=None,
                  add_result_callback=None,
+                 error_callback=None,
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
@@ -126,15 +127,18 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            data_split (sklearn.model_selection.BaseCrossValidator): data splitting method to use. Defaults to StratifiedKFold.
+            data_split (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
-            tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
+            tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
-            start_iteration_callback (callable): function called before each pipeline training iteration.
-                Passed three parameters: pipeline_class, parameters, and the AutoMLSearch object.
+            start_iteration_callback (callable): Function called before each pipeline training iteration.
+                Passed three parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
 
-            add_result_callback (callable): function called after each pipeline training iteration.
+            add_result_callback (callable): Function called after each pipeline training iteration.
                 Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
+
+            error_callback (callable): Function called when `search()` errors and raises an Exception.
+                Passed two parameters: The Exception raised and the AutoMLSearch object.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
@@ -162,6 +166,7 @@ class AutoMLSearch:
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
+        self.error_callback = error_callback
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
