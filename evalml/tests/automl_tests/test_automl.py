@@ -1654,7 +1654,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl = AutoMLSearch(problem_type="binary", error_callback=raise_error_callback)
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search(X, y)
-        assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
 
     caplog.clear()
     automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
@@ -1667,7 +1667,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl = AutoMLSearch(problem_type="binary", error_callback=raise_and_save_error_callback)
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search(X, y)
-        assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
-        assert msg in caplog.text
-        for e in automl._results['errors']:
-            assert str(e) == msg
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert msg in caplog.text
+    for e in automl._results['errors']:
+        assert str(e) == msg
