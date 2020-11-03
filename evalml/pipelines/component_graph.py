@@ -1,5 +1,6 @@
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
+import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
@@ -36,7 +37,6 @@ class ComponentGraph:
             self.add_node(component_name, component_class, parents=parent)
         return self
 
-
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
         raised if a component is already instantiated but the parameters dict contains arguments for that component.
@@ -64,6 +64,84 @@ class ComponentGraph:
 
             self.component_dict[component_name][0] = new_component
         return self
+
+    def fit(self, X, y):
+        """ Fit each component in the component graph
+
+        Arguments:
+            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
+        """
+        output_cache = {}
+        for component_name in list(self._compute_order):
+            component_class = self.component_dict[component_name][0]
+            x_inputs = []
+            y_input = None
+            for parent_input in self.parents(component_name):
+                if parent_input[-2:] == '.y':
+                    y_input = output_cache[parent_input]
+                else:
+                    x_inputs.append(output_cache[parent_input])
+            input_x, input_y = self.merge(x_inputs, y_input, X, y)
+            if component_class.model_family == ModelFamily.NONE:  # Transformer
+                output_x = component_class.fit_transform(input_x, input_y)
+                output_cache[f"{component_name}.x"] = output_x
+                output_cache[f"{component_name}.y"] = None  # At this point, components don't output transformed y
+            else:  # Estimator
+                component_class.fit(input_x, input_y)
+                output = component_class.predict(input_x)
+                output_cache[component_name] = output
+        self._recompute_order()
+        return self
+
+    def predict(self, X, y):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            objective (Object or string): The objective to use to make predictions
+
+        Returns:
+            pd.Series: Predicted values.
+        """
+        output_cache = {}
+        final_component = None
+        for component_name in list(self._compute_order):
+            final_component = component_name
+            component_class = self.component_dict[component_name][0]
+            x_inputs = []
+            y_input = None
+            for parent_input in self.parents(component_name):
+                if parent_input[-2:] == '.y':
+                    y_input = output_cache[parent_input]
+                else:
+                    x_inputs.append(output_cache[parent_input])
+            input_x, input_y = self.merge(x_inputs, y_input, X, y)
+            if component_class.model_family == ModelFamily.NONE:  # Transformer
+                output_x = component_class.transform(input_x, input_y)
+                output_cache[f"{component_name}.x"] = output_x
+                output_cache[f"{component_name}.y"] = None  # At this point, components don't output transformed y
+            else:  # Estimator
+                output = component_class.predict(input_x)
+                output_cache[component_name] = output
+        final_component_class = self.component_dict[final_component][0]
+        self._recompute_order()
+        if final_component_class.model_family == ModelFamily.NONE:
+            return output_cache[f"{final_component}.x"], output_cache[f"{final_component}.y"]
+        else:
+            return output_cache[final_component]
+
+
+    @staticmethod
+    def merge(x_inputs, y_input, X, y):
+        if len(x_inputs) == 0:
+            return_x = X
+        else:
+            return_x = pd.DataFrame()
+            for x_input in x_inputs:
+                return_x = pd.concat([return_x, x_input], axis=1)
+        return_y = y_input or y
+        return return_x, return_y
 
     def add_node(self, component_name, component_obj, parents=None):
         """Add a node to the component graph.
@@ -139,9 +217,8 @@ class ComponentGraph:
             component_info = self.component_dict[component_name]
         except KeyError:
             raise ValueError(f"Component {component_name} not in the graph")
-        if isinstance(component_info, list):
-            if len(component_info) > 1:
-                return component_info[1:]
+        if len(component_info) > 1:
+            return component_info[1:]
         return []
 
     def graph(self, name=None, graph_format=None):
