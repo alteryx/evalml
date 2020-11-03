@@ -7,6 +7,7 @@ Release Notes
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
+        * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
     * Testing Changes

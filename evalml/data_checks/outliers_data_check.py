@@ -1,5 +1,4 @@
 import pandas as pd
-from sklearn.ensemble import IsolationForest
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
@@ -9,8 +8,7 @@ from evalml.utils.gen_utils import numeric_dtypes
 
 
 class OutliersDataCheck(DataCheck):
-    """Checks if there are any outliers in input data by using an Isolation Forest to obtain the anomaly score
-        of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers."""
+    """Checks if there are any outliers in input data by using IQR to determine score anomalies. Columns with score anomalies are considered to contain outliers."""
 
     def __init__(self, random_state=0):
         """Checks if there are any outliers in the input data.
@@ -21,24 +19,23 @@ class OutliersDataCheck(DataCheck):
         self.random_state = get_random_state(random_state)
 
     def validate(self, X, y=None):
-        """Checks if there are any outliers in a dataframe by using an Isolation Forest to obtain the anomaly score
-        of each index and then using IQR to determine score anomalies. Indices with score anomalies are considered outliers.
+        """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
         Arguments:
             X (pd.DataFrame): Features
             y: Ignored.
 
         Returns:
-            A set of indices that may have outlier data.
+            A set of columns that may have outlier data.
 
         Example:
             >>> df = pd.DataFrame({
-            ...     'x': [1, 2, 3, 40, 5],
-            ...     'y': [6, 7, 8, 990, 10],
+            ...     'x': [1, 2, 3, 4, 5],
+            ...     'y': [6, 7, 8, 9, 10],
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == [DataCheckWarning("Row '3' is likely to have outlier data", "OutliersDataCheck")]
+            >>> assert outliers_check.validate(df) == [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")]
         """
 
         if not isinstance(X, pd.DataFrame):
@@ -56,11 +53,16 @@ class OutliersDataCheck(DataCheck):
             upper_bound = q3 + (k * iqr)
             return (lower_bound, upper_bound)
 
-        clf = IsolationForest(random_state=self.random_state)
-        clf.fit(X)
-        scores = pd.Series(clf.decision_function(X))
-        lower_bound, upper_bound = get_IQR(scores, k=2)
-        outliers = (scores < lower_bound) | (scores > upper_bound)
-        outliers_indices = outliers[outliers].index.values.tolist()
-        warning_msg = "Row '{}' is likely to have outlier data"
-        return [DataCheckWarning(warning_msg.format(row_index), self.name) for row_index in outliers_indices]
+        lower_bound, upper_bound = get_IQR(X)
+        indices = set()
+        # get the columns that fall out of the bounds, which means they contain outliers
+        for idx, bound in enumerate([lower_bound, upper_bound]):
+            cols_in_range = (X >= bound.values) if idx == 0 else (X <= bound.values)
+            cols_in_range = cols_in_range.all()
+            outlier_cols = cols_in_range[~cols_in_range].keys()
+            indices.update(outlier_cols.tolist())
+        # order the columns by how they appear in the dataframe
+        indices = sorted(list(indices), key=lambda x: X.columns.tolist().index(x))
+        warning_msg = "Column '{}' is likely to have outlier data"
+        s = [DataCheckWarning(warning_msg.format(row_index), self.name) for row_index in indices]
+        return s
