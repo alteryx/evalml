@@ -4,7 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
-        * Updated pipelines and components to accept Woodwork DataTables :pr:`1393`
+        * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
     * Fixes
     * Changes
     * Documentation Changes

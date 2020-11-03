@@ -362,9 +362,9 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Arguments:
-            X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
 
-            y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
+            y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.

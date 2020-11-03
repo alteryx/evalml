@@ -26,7 +26,12 @@ from evalml.pipelines.components import (  # noqa: F401
 from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
-from evalml.utils.gen_utils import categorical_dtypes, datetime_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    categorical_dtypes,
+    datetime_dtypes
+)
 
 logger = get_logger(__file__)
 
@@ -87,8 +92,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
    Arguments:
-        X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target data of length [n_samples]
+        X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
+        y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
@@ -99,6 +104,12 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
 
     """
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
+
+    X = _convert_woodwork_types_wrapper(X.to_pandas())
+    y = _convert_woodwork_types_wrapper(y.to_pandas())
+
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
