@@ -4,10 +4,10 @@ import pytest
 from evalml.demos import load_breast_cancer, load_diabetes, load_wine
 
 
-@pytest.mark.parametrize("target_type", ["categorical", "string", "bool"])
+@pytest.mark.parametrize("target_type", ["category", "string", "bool"])
 def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipeline_class):
     X, y = load_wine()
-    if target_type == "categorical":
+    if target_type == "category":
         y = pd.Series(y).astype("category")
     if target_type == "bool":
         X, y = load_breast_cancer()

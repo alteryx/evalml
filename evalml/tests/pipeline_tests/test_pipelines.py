@@ -1203,17 +1203,15 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         X, y = load_wine()
 
     # Update target types as necessary
+    unique_vals = y.unique()
+
     if "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
-    elif "category" in target_type.lower():
-        unique_vals = y.unique()
-        y = y.map({unique_vals[i]: f"{i}" for i in range(len(unique_vals))})
-
-    if "category" in target_type.lower():
+    if target_type == "category":
         y = pd.Categorical(y)
     else:
         y = y.astype(target_type)
