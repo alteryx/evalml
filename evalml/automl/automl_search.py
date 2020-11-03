@@ -370,9 +370,6 @@ class AutoMLSearch:
                 search begins. If "disabled" or None, no data checks will be done.
                 If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
-            feature_types (list, optional): list of feature types, either numerical or categorical.
-                Categorical features will automatically be encoded
-
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
@@ -762,7 +759,7 @@ class AutoMLSearch:
 
             except KeyboardInterrupt:
                 current_pipeline_batch = self._handle_keyboard_interrupt(pipeline, current_pipeline_batch)
-                if current_pipeline_batch == []:
+                if len(current_pipeline_batch) == 0:
                     return current_batch_pipeline_scores
 
         return current_batch_pipeline_scores
