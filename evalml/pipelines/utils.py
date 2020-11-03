@@ -118,9 +118,6 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
     hyperparameters = custom_hyperparameters
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
-
     base_class = _get_pipeline_base_class(problem_type)
 
     class GeneratedPipeline(base_class):
