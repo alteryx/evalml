@@ -1,5 +1,5 @@
 from .transformer import Transformer
-from .encoders import OneHotEncoder
+from .encoders import OneHotEncoder, TargetEncoder
 from .feature_selection import FeatureSelector, RFClassifierSelectFromModel, RFRegressorSelectFromModel
 from .imputers import PerColumnImputer, SimpleImputer, Imputer
 from .scalers import StandardScaler
