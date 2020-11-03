@@ -1,34 +1,49 @@
+from evalml.exceptions import PipelineScoreError
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
 
 
-def silent_error_callback(automl, exception):
+def silent_error_callback(automl, exception, **kwargs):
     """No-op"""
     pass
 
-def log_error_callback(automl, exception):
-    """Logs the exception thrown as an error. Will not throw. This is the default behavior for AutoMLSearch.
-    not sure if defining this here will mess things up"""
-    logger.error(f'AutoMLSearch encountered an exception: {str(exception)}')
 
-
-def raise_error_callback(automl, exception):
+def raise_error_callback(automl, exception, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object. Also logs the exception as an error."""
     logger.error(f'AutoMLSearch raised a fatal exception: {str(exception)}')
     raise exception
 
 
-def log_and_save_error_callback(automl, exception):
+def log_and_save_error_callback(automl, exception, **kwargs):
     """Logs the exception thrown by the AutoMLSearch object as a warning
         and adds the exception to the 'errors' list in AutoMLSearch object results."""
     logger.warning(f'AutoML search encountered an exception: {str(exception)}')
     # automl._results['errors'] = automl._results.get('errors', [])
     # automl._results['errors'].append(exception)
 
-def raise_and_save_error_callback(automl, exception):
+
+def raise_and_save_error_callback(automl, exception, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object, logs it as an error,
         and adds the exception to the 'errors' list in AutoMLSearch object results."""
     logger.error(f'AutoMLSearch raised a fatal exception: {str(exception)}')
     # automl._results['errors'] = [exception]
     raise exception
+
+
+def log_error_callback(automl, exception, **kwargs):
+    """Logs the exception thrown as an error. Will not throw. This is the default behavior for AutoMLSearch."""
+    fold_num = kwargs.get('fold_num')
+    pipeline = kwargs.get('pipeline')
+    if isinstance(exception, PipelineScoreError):
+        logger.info(f"\t\t\tFold {fold_num}: Encountered an error scoring the following objectives: {', '.join(exception.exceptions)}.")
+        logger.info(f"\t\t\tFold {fold_num}: The scores for these objectives will be replaced with nan.")
+        logger.info(f"\t\t\tFold {fold_num}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+        logger.debug(f"\t\t\tFold {fold_num}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+        logger.debug(f"\t\t\tFold {fold_num}: Exception during automl search: {str(exception)}")
+    else:
+        logger.info(f"\t\t\tFold {fold_num}: Encountered an error.")
+        logger.info(f"\t\t\tFold {fold_num}: All scores will be replaced with nan.")
+        logger.info(f"\t\t\tFold {fold_num}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
+        logger.debug(f"\t\t\tFold {fold_num}: Hyperparameters:\n\t{pipeline.hyperparameters}")
+        logger.debug(f"\t\t\tFold {fold_num}: Exception during automl search: {str(exception)}")

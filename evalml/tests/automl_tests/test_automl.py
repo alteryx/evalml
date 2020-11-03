@@ -14,6 +14,13 @@ from evalml.automl import (
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
+from evalml.automl.callbacks import (
+    log_and_save_error_callback,
+    log_error_callback,
+    raise_and_save_error_callback,
+    raise_error_callback,
+    silent_error_callback
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -1621,3 +1628,21 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
                           random_state=expected_random_state, max_iterations=10)
     automl.search(X, y)
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", error_callback=None)
+    # automl.search(X, y)
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    # automl.search(X, y)
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
+    # automl.search(X, y)
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    # automl.search(X, y)
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    # automl.search(X, y)
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
+    # automl.search(X, y)

@@ -16,6 +16,7 @@ from sklearn.model_selection import (
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.callbacks import log_error_callback
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.automl.utils import get_default_primary_search_objective
 from evalml.data_checks import (
@@ -166,7 +167,7 @@ class AutoMLSearch:
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
-        self.error_callback = error_callback
+        self.error_callback = error_callback or log_error_callback
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
@@ -679,22 +680,14 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
+                if self.error_callback is not None:
+                    self.error_callback(e, self, fold_num=i, pipeline=pipeline)
                 if isinstance(e, PipelineScoreError):
-                    logger.info(f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
-                    logger.info(f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan.")
-                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
-                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     nan_scores = {objective: np.nan for objective in e.exceptions}
                     scores = {**nan_scores, **e.scored_successfully}
                     scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
                     score = scores[self.objective.name]
                 else:
-                    logger.info(f"\t\t\tFold {i}: Encountered an error.")
-                    logger.info(f"\t\t\tFold {i}: All scores will be replaced with nan.")
-                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
-                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     score = np.nan
                     scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
