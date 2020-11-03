@@ -1632,17 +1632,42 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback(mock_fit, mock_score, X_y_binary):
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     automl = AutoMLSearch(problem_type="binary", error_callback=None)
-    # automl.search(X, y)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
     automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
-    # automl.search(X, y)
+    automl.search(X, y)
+    assert msg not in caplog.text
+
+    caplog.clear()
     automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
-    # automl.search(X, y)
-    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
-    # automl.search(X, y)
-    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
-    # automl.search(X, y)
-    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
-    # automl.search(X, y)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+        assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
+    automl.search(X, y)
+    assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    for e in automl._results['errors']:
+        assert str(e) == msg
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_and_save_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+        assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+        assert msg in caplog.text
+        for e in automl._results['errors']:
+            assert str(e) == msg
