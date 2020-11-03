@@ -1171,8 +1171,14 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
+    elif "category" in target_type.lower():
+        unique_vals = y.unique()
+        y = y.map({unique_vals[i]: f"{i}" for i in range(len(unique_vals))})
 
-    y = y.astype(target_type)
+    if "category" in target_type.lower():
+        y = pd.Categorical(y)
+    else:
+        y = y.astype(target_type)
     unique_vals = y.unique()
 
     if data_type == 'np':

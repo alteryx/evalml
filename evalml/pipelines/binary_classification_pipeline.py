@@ -23,14 +23,12 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
             pd.Series: Estimated labels
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
         X_t = self.compute_estimator_features(X)
 
         if objective is not None:

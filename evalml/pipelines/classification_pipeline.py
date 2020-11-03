@@ -74,7 +74,7 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:

@@ -282,6 +282,8 @@ def _convert_to_woodwork_structure(data):
     # Convert numpy data structures to pandas data structures
     if isinstance(data, list):
         data = np.array(data)
+    if isinstance(data, pd.api.extensions.ExtensionArray):
+        data = pd.Series(data)
     if (isinstance(data, np.ndarray) and len(data.shape) == 1):
         data = pd.Series(data)
     elif isinstance(data, np.ndarray):
