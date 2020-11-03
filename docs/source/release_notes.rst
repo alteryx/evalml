@@ -6,6 +6,7 @@ Release Notes
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
         * Updated pipelines and components to accept Woodwork DataTables :pr:`1393`
     * Fixes
+        * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
     * Documentation Changes
     * Testing Changes
