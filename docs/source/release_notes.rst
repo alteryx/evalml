@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
         * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
+        * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
