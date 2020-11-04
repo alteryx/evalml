@@ -186,6 +186,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _make_name_unique(name, seen_before):
         """Helper to make the name unique."""
+
+        if name not in seen_before:
+            return name
+
+        # Only modify the name if it has been seen before
         i = 1
         name = f"{name}_{i}"
         while name in seen_before:
@@ -212,9 +217,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
                 # Follow sklearn naming convention but if name has been seen before
                 # then add an int to make it unique
-                proposed_name = f"{col}_{category}"
-                if proposed_name in seen_before:
-                    proposed_name = self._make_name_unique(proposed_name, seen_before)
+                proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
+
                 unique_names.append(proposed_name)
                 seen_before.add(proposed_name)
         return unique_names
