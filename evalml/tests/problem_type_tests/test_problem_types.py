@@ -11,7 +11,9 @@ from evalml.problem_types import (
 
 @pytest.fixture
 def correct_problem_types():
-    correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS, ProblemTypes.BINARY]
+    # Unit tests expect this order
+    correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS,
+                             ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_REGRESSION]
     yield correct_problem_types
 
 
