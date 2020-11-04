@@ -5,7 +5,7 @@ logger = get_logger(__file__)
 
 
 def silent_error_callback(exception, automl, **kwargs):
-    """No-op"""
+    """No-op."""
     pass
 
 
