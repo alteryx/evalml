@@ -1,6 +1,6 @@
 catboost==0.24.2
 cloudpickle==1.6.0
-distributed==2.30.0
+distributed==2.30.1
 lightgbm==3.0.0
 numpy==1.19.4
 pandas==1.1.4
