@@ -229,6 +229,7 @@ regression_best_worst_answer = """Test Pipeline Name
                 Predicted Value: 1
                 Target Value: 2
                 Absolute Difference: 1
+                Index ID: {index_0}
 
                 table goes here
 
@@ -238,6 +239,7 @@ regression_best_worst_answer = """Test Pipeline Name
                 Predicted Value: 2
                 Target Value: 3
                 Absolute Difference: 4
+                Index ID: {index_1}
 
                 table goes here
 
@@ -290,6 +292,7 @@ binary_best_worst_answer = """Test Pipeline Name
                 Predicted Value: malignant
                 Target Value: malignant
                 Cross Entropy: 0.2
+                Index ID: {index_0}
 
                 table goes here
 
@@ -300,6 +303,7 @@ binary_best_worst_answer = """Test Pipeline Name
                 Predicted Value: malignant
                 Target Value: benign
                 Cross Entropy: 0.78
+                Index ID: {index_1}
 
                 table goes here
 
@@ -345,6 +349,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
                 Predicted Value: setosa
                 Target Value: setosa
                 Cross Entropy: 0.15
+                Index ID: {{index_0}}
 
                 {multiclass_table}
 
@@ -355,6 +360,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
                 Predicted Value: versicolor
                 Target Value: versicolor
                 Cross Entropy: 0.34
+                Index ID: {{index_1}}
 
                 {multiclass_table}
 
@@ -426,12 +432,23 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
 
+    def _add_custom_index(answer, index_best, index_worst, output_format):
+
+        if output_format == "text":
+            answer = answer.format(index_0=index_best, index_1=index_worst)
+        else:
+            answer["explanations"][0]["predicted_values"]["index_id"] = index_best
+            answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
+        return answer
+
     if problem_type == ProblemTypes.REGRESSION:
         abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = pd.Series([2, 1])
         y_true = pd.Series([3, 2], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[1],
+                                   index_worst=custom_index[0], output_format=output_format)
     elif problem_type == ProblemTypes.BINARY:
         pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
@@ -440,6 +457,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         y_true = pd.Series(["malignant", "benign"], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[0],
+                                   index_worst=custom_index[1], output_format=output_format)
     else:
         # Multiclass text output is formatted slightly different so need to account for that
         if output_format == "text":
@@ -452,6 +471,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
                                                             "virginica": [0.1, 0.05]})
         pipeline.predict.return_value = ["setosa", "versicolor"]
         y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[0],
+                                   index_worst=custom_index[1], output_format=output_format)
 
     best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
                                                        num_to_explain=1, output_format=output_format)
@@ -514,6 +535,7 @@ regression_custom_metric_answer = """Test Pipeline Name
                 Predicted Value: 1
                 Target Value: 2
                 sum: 3
+                Index ID: 1
 
                 table goes here
 
@@ -523,6 +545,7 @@ regression_custom_metric_answer = """Test Pipeline Name
                 Predicted Value: 2
                 Target Value: 3
                 sum: 5
+                Index ID: 0
 
                 table goes here
 
@@ -533,11 +556,13 @@ regression_custom_metric_answer_dict = {
     "explanations": [
         {"rank": {"prefix": "best", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 1, "target_value": 2,
-                              "error_name": "sum", "error_value": 3},
+                              "error_name": "sum", "error_value": 3,
+                              "index_id": 1},
          "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 2, "target_value": 3,
-                              "error_name": "sum", "error_value": 5},
+                              "error_name": "sum", "error_value": 5,
+                              "index_id": 0},
          "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
