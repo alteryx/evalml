@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import string
 
 from evalml.data_checks.data_check_message import DataCheckWarning
 from evalml.data_checks.outliers_data_check import OutliersDataCheck
@@ -53,3 +54,15 @@ def test_outliers_data_check_input_formats():
                                                      DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
                                                      DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
                                                      DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")]
+
+
+def test_outliers_data_check_string_cols():
+    a = np.arange(10) * 0.01
+    data = np.tile(a, (100, 2))
+    n_cols = 20
+
+    X = pd.DataFrame(data=data, columns=[string.ascii_lowercase[i] for i in range(n_cols)])
+    X.iloc[0, 3] = 1000
+
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(X) == [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck")]

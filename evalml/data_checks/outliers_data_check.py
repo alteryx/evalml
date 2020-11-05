@@ -49,20 +49,12 @@ class OutliersDataCheck(DataCheck):
             q1 = df.quantile(0.25)
             q3 = df.quantile(0.75)
             iqr = q3 - q1
-            lower_bound = q1 - (k * iqr)
-            upper_bound = q3 + (k * iqr)
-            return (lower_bound, upper_bound)
+            lower_bound = pd.Series(q1 - (k * iqr), name='lower_bound')
+            upper_bound = pd.Series(q3 + (k * iqr), name='upper_bound')
+            return pd.concat([lower_bound, upper_bound], axis=1)
 
-        lower_bound, upper_bound = get_IQR(X)
-        indices = set()
-        # get the columns that fall out of the bounds, which means they contain outliers
-        for idx, bound in enumerate([lower_bound, upper_bound]):
-            cols_in_range = (X >= bound.values) if idx == 0 else (X <= bound.values)
-            cols_in_range = cols_in_range.all()
-            outlier_cols = cols_in_range[~cols_in_range].keys()
-            indices.update(outlier_cols.tolist())
-        # order the columns by how they appear in the dataframe
-        indices = sorted(list(indices), key=lambda x: X.columns.tolist().index(x))
+        iqr = get_IQR(X, k=2.0)
+        has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
         warning_msg = "Column '{}' is likely to have outlier data"
-        s = [DataCheckWarning(warning_msg.format(row_index), self.name) for row_index in indices]
-        return s
+        cols = has_outliers.index[has_outliers]
+        return [DataCheckWarning(warning_msg.format(col), self.name) for col in cols]
