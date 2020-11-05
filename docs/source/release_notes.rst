@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
+        * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
@@ -49,6 +50,7 @@ Release Notes
         * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
         * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
         * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
+        * Updated _evaluate_pipelines to consolidate side effects :pr:`1337`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
