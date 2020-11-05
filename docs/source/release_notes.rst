@@ -8,6 +8,7 @@ Release Notes
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
+        * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
     * Testing Changes
@@ -49,7 +50,6 @@ Release Notes
         * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
         * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
         * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
-        * Updated _evaluate_pipelines to consolidate side effects :pr:`1337`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
