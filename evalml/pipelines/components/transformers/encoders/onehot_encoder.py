@@ -199,7 +199,13 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         return name
 
     def get_feature_names(self):
-        """Return feature names for the input features after fitting.
+        """Return feature names for the categorical features after fitting.
+
+        Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
+        an integer will be added at the end of the feature name to distinguish it.
+
+        For example, consider a dataframe with a column called "A" and category "x_y" and another column
+        called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
