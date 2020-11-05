@@ -282,7 +282,7 @@ class _ClassificationPredictedValues(_SectionMaker):
         self.error_name = error_name
         self.predicted_values = y_pred_values
 
-    def make_text(self, index, y_pred, y_true, scores):
+    def make_text(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as text."""
         pred_value = [f"{col_name}: {pred}" for col_name, pred in
                       zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
@@ -292,9 +292,10 @@ class _ClassificationPredictedValues(_SectionMaker):
         return [f"\t\tPredicted Probabilities: {pred_value}\n",
                 f"\t\tPredicted Value: {self.predicted_values[index]}\n",
                 f"\t\tTarget Value: {true_value}\n",
-                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n\n"]
+                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n",
+                f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
 
-    def make_dict(self, index, y_pred, y_true, scores):
+    def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as dictionary."""
         pred_values = dict(zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist()))
 
@@ -302,7 +303,8 @@ class _ClassificationPredictedValues(_SectionMaker):
                 "predicted_value": _make_json_serializable(self.predicted_values[index]),
                 "target_value": _make_json_serializable(y_true.iloc[index]),
                 "error_name": self.error_name,
-                "error_value": _make_json_serializable(scores.iloc[index])}
+                "error_value": _make_json_serializable(scores.iloc[index]),
+                "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
 
 class _RegressionPredictedValues(_SectionMaker):
@@ -312,17 +314,19 @@ class _RegressionPredictedValues(_SectionMaker):
             error_name = "Absolute Difference"
         self.error_name = error_name
 
-    def make_text(self, index, y_pred, y_true, scores):
+    def make_text(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for regression problem best/worst reports formatted as text."""
         return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
                 f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
-                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n\n"]
+                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n",
+                f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
 
-    def make_dict(self, index, y_pred, y_true, scores):
+    def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for regression problem best/worst reports formatted as a dictionary."""
         return {"probabilities": None, "predicted_value": round(y_pred.iloc[index], 3),
                 "target_value": round(y_true.iloc[index], 3), "error_name": self.error_name,
-                "error_value": round(scores.iloc[index], 3)}
+                "error_value": round(scores.iloc[index], 3),
+                "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
 
 class _SHAPTable(_SectionMaker):
@@ -390,7 +394,9 @@ class _ReportMaker:
         for rank, index in enumerate(data.index_list):
             report.extend(self.heading_maker.make_text(rank))
             if self.make_predicted_values_maker:
-                report.extend(self.make_predicted_values_maker.make_text(index, data.y_pred, data.y_true, data.errors))
+                report.extend(self.make_predicted_values_maker.make_text(index, data.y_pred, data.y_true,
+                                                                         data.errors,
+                                                                         pd.Series(data.input_features.index)))
             else:
                 report.extend([""])
             report.extend(self.table_maker.make_text(index, data.pipeline, data.input_features))
@@ -413,7 +419,8 @@ class _ReportMaker:
                 section["rank"] = self.heading_maker.make_dict(rank)
             if self.make_predicted_values_maker:
                 section["predicted_values"] = self.make_predicted_values_maker.make_dict(index, data.y_pred,
-                                                                                         data.y_true, data.errors)
+                                                                                         data.y_true, data.errors,
+                                                                                         pd.Series(data.input_features.index))
             section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
                                                                  data.input_features)["explanations"]
             report.append(section)
