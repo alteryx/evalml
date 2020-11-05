@@ -4,9 +4,11 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
+        * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
+        * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
     * Testing Changes
