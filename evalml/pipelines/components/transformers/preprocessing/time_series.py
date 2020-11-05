@@ -35,6 +35,7 @@ class DelayedFeaturesTransformer(Transformer):
             pd.DataFrame: Transformed X.
         """
         if not isinstance(X, pd.DataFrame):
+            # The user only passed in the target as a Series
             if y is None:
                 X = pd.DataFrame(X, columns=["target"])
             else:
@@ -48,7 +49,7 @@ class DelayedFeaturesTransformer(Transformer):
                         for col in X})
         X.drop(columns=original_columns, inplace=True)
 
-        # Handle cases where the label was not passed
+        # Handle cases where the target was passed in
         if y is not None:
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.max_delay + 1)})
