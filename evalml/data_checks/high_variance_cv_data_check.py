@@ -5,7 +5,7 @@ from .data_check_message import DataCheckWarning
 
 
 class HighVarianceCVDataCheck(DataCheck):
-    """Checks if the variance between folds in cross-validation is higher than an acceptable threshhold."""
+    """Checks if the variance between folds in cross-validation is higher than an acceptable threshold."""
 
     def __init__(self, threshold=0.2):
         """Check if there is higher variance among cross-validation results.
