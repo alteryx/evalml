@@ -18,6 +18,7 @@ class ComponentGraph:
                 self.component_dict[key] = [value]
         self._compute_order = []
         self._recompute_order()
+        print(self.component_dict)
         self.random_state = random_state
 
     def from_list(self, component_list):
@@ -65,48 +66,25 @@ class ComponentGraph:
             self.component_dict[component_name][0] = new_component
         return self
 
-    def fit(self, X, y):
-        """ Fit each component in the component graph
+
+    def compute_final_features(self, X, y=None, fit=False):
+        """Transforms the data by applying all components.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples]
-        """
-        output_cache = {}
-        for component_name in list(self._compute_order):
-            component_class = self.component_dict[component_name][0]
-            x_inputs = []
-            y_input = None
-            for parent_input in self.parents(component_name):
-                if parent_input[-2:] == '.y':
-                    y_input = output_cache[parent_input]
-                else:
-                    x_inputs.append(output_cache[parent_input])
-            input_x, input_y = self.merge(x_inputs, y_input, X, y)
-            if component_class.model_family == ModelFamily.NONE:  # Transformer
-                output_x = component_class.fit_transform(input_x, input_y)
-                output_cache[f"{component_name}.x"] = output_x
-                output_cache[f"{component_name}.y"] = None  # At this point, components don't output transformed y
-            else:  # Estimator
-                component_class.fit(input_x, input_y)
-                output = component_class.predict(input_x)
-                output_cache[component_name] = output
-        self._recompute_order()
-        return self
-
-    def predict(self, X, y):
-        """Make predictions using selected features.
-
-        Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            fit (bool): Whether to fit the estimators as well as transform it. 
+                        Defaults to False.
 
         Returns:
-            pd.Series: Predicted values.
+            pd.DataFrame and/or pd.Series - Output(s) of the final component
         """
         output_cache = {}
         final_component = None
         for component_name in list(self._compute_order):
+            print(f"evaluating {component_name}")
+            # import pdb
+            # pdb.set_trace()
             final_component = component_name
             component_class = self.component_dict[component_name][0]
             x_inputs = []
@@ -118,19 +96,25 @@ class ComponentGraph:
                     x_inputs.append(output_cache[parent_input])
             input_x, input_y = self.merge(x_inputs, y_input, X, y)
             if component_class.model_family == ModelFamily.NONE:  # Transformer
-                output_x = component_class.transform(input_x, input_y)
+                if fit:
+                    output_x = component_class.fit_transform(input_x, input_y)
+                else:
+                    output_x = component_class.transform(input_x, input_y)
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = None  # At this point, components don't output transformed y
             else:  # Estimator
+                if fit:
+                    component_class = component_class.fit(input_x, input_y)
                 output = component_class.predict(input_x)
                 output_cache[component_name] = output
-        final_component_class = self.component_dict[final_component][0]
         self._recompute_order()
+        if fit:
+            return self
+        final_component_class = self.component_dict[final_component][0]
         if final_component_class.model_family == ModelFamily.NONE:
             return output_cache[f"{final_component}.x"], output_cache[f"{final_component}.y"]
         else:
             return output_cache[final_component]
-
 
     @staticmethod
     def merge(x_inputs, y_input, X, y):
@@ -190,6 +174,22 @@ class ComponentGraph:
             return self.component_dict[component_name][0]
         except KeyError:
             raise ValueError(f'Component {component_name} is not in the graph')
+
+    def get_final_component(self):
+        """Retrieves the component that is computed last in the graph, usually the final estimator.
+        
+        Returns:
+            ComponentBase object
+        """
+        compute_list = list(self._compute_order)
+        self._recompute_order()
+        if len(compute_list) == 0:
+            if len(self.component_dict) > 0:
+                if len(self.component_dict) == 1:
+                    return list(self.component_dict.keys())[0]
+                raise ValueError("There are no edges in the graph, no final component to return")
+            return None
+        return compute_list[-1]
 
     def get_estimators(self):
         """Gets a list of all the estimator components within this graph
