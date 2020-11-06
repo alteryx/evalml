@@ -8,11 +8,13 @@ Release Notes
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
+        * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
+        * Tweak codecov.io settings again to avoid flakes :pr:`1413`
 
 **v0.15.0 Oct. 29, 2020**
     * Enhancements
