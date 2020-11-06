@@ -1,9 +1,13 @@
+from unittest.mock import patch
+
+import pandas as pd
 import pytest
 
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     ElasticNetClassifier,
+    Estimator,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -234,3 +238,56 @@ def test_parents(example_graph):
 
     with pytest.raises(ValueError, match='not in the graph'):
         component_graph.parents('Fake component')
+
+
+def test_get_final_component(example_graph):
+    component_graph = ComponentGraph()
+    assert component_graph.get_final_component() is None
+
+    component_graph = ComponentGraph(example_graph)
+    assert component_graph.get_final_component() == 'Logistic Regression'
+
+    component_graph.instantiate({})
+    assert component_graph.get_final_component() == 'Logistic Regression'
+
+    component_graph = ComponentGraph({'Imputer': Imputer})
+    assert component_graph.get_final_component() == 'Imputer'
+
+    component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': [OneHotEncoder, 'Imputer']})
+    assert component_graph.get_final_component() == 'OneHot'
+
+    component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': OneHotEncoder})
+    with pytest.raises(ValueError, match="no final component to return"):
+        component_graph.get_final_component()
+
+
+@patch('evalml.pipelines.components.Transformer.fit_transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_compute_final_features_fit_true(mock_fit_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+    X, y = X_y_binary
+    mock_fit_transform.return_value = pd.DataFrame(X)
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.compute_final_features(X, y, fit=True)
+
+    assert mock_fit_transform.call_count == 3
+    assert mock_fit.call_count == 3
+    assert mock_predict.call_count == 3
+
+
+@patch('evalml.pipelines.components.Transformer.transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_compute_final_features_fit_false(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+    X, y = X_y_binary
+    mock_transform.return_value = pd.DataFrame(X)
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.compute_final_features(X, y, fit=True)
+
+    component_graph.compute_final_features(X, fit=False)
+    assert mock_transform.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
+    assert mock_fit.call_count == 3  # Only called during fit, not predict

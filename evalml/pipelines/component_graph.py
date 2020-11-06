@@ -1,6 +1,6 @@
+import pandas as pd
 import networkx as nx
 from networkx.algorithms.dag import topological_sort
-import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
@@ -66,14 +66,13 @@ class ComponentGraph:
             self.component_dict[component_name][0] = new_component
         return self
 
-
     def compute_final_features(self, X, y=None, fit=False):
         """Transforms the data by applying all components.
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples]
-            fit (bool): Whether to fit the estimators as well as transform it. 
+            fit (bool): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
         Returns:
@@ -82,9 +81,6 @@ class ComponentGraph:
         output_cache = {}
         final_component = None
         for component_name in list(self._compute_order):
-            print(f"evaluating {component_name}")
-            # import pdb
-            # pdb.set_trace()
             final_component = component_name
             component_class = self.component_dict[component_name][0]
             x_inputs = []
@@ -177,7 +173,7 @@ class ComponentGraph:
 
     def get_final_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
-        
+
         Returns:
             ComponentBase object
         """
