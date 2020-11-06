@@ -5,14 +5,27 @@ Release Notes
     * Enhancements
         * Added ability to freeze hyperparameters for AutoMLSearch :pr:`1284`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
+        * The top_k features displayed in ``explain_predictions_*`` functions are now determined by the magnitude of shap values as opposed to the ``top_k`` largest and smallest shap values. :pr:`1374`
+        * Added a problem type for time series regression :pr:`1386`
+        * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
+        * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
     * Fixes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
+        * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
+        * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
+        * Tweak codecov.io settings again to avoid flakes :pr:`1413`
+
+.. warning::
+
+    **Breaking Changes**
+        * The ``top_k`` and ``top_k_features`` parameters in ``explain_predictions_*`` functions now return ``k`` features as opposed to ``2 * k`` features :pr:`1374`
+        * Renamed ``problem_type`` to ``problem_types`` in ``RegressionObjective``, ``BinaryClassificationObjective``, and ``MulticlassClassificationObjective`` :pr:`1319`
 
 **v0.15.0 Oct. 29, 2020**
     * Enhancements
