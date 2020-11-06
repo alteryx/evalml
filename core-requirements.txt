@@ -13,3 +13,4 @@ texttable>=1.6.2
 woodwork>=0.0.3
 featuretools>=0.20.0
 nlp-primitives>=1.1.0
+networkx>=2.5

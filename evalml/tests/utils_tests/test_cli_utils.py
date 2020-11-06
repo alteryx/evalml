@@ -22,7 +22,7 @@ def current_dir():
 
 
 def test_get_core_requirements():
-    assert len(get_core_requirements()) == 15
+    assert len(get_core_requirements()) == 16
 
 
 def test_print_cli_cmd():
