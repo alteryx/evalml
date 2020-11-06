@@ -147,7 +147,7 @@ class AutoMLSearch:
             verbose (boolean): If True, turn verbosity on. Defaults to True.
 
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
-                Defaults to False. If the number of unique pipelines to search over per batch is one, ensembling will not run.
+                If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
