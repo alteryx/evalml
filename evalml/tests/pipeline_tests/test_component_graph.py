@@ -291,3 +291,32 @@ def test_compute_final_features_fit_false(mock_transform, mock_fit, mock_predict
     component_graph.compute_final_features(X, fit=False)
     assert mock_transform.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
     assert mock_fit.call_count == 3  # Only called during fit, not predict
+
+
+@patch('evalml.pipelines.components.Imputer.fit_transform')
+def test_compute_final_features_y_parent(mock_fit_transform, X_y_binary):
+    X, y = X_y_binary
+    graph = {'Imputer': Imputer,
+             'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y'],
+             'Random Forest': [RandomForestClassifier, 'OHE.x']}
+    component_graph = ComponentGraph(graph).instantiate({})
+    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
+
+    component_graph.compute_final_features(X, y, fit=True)
+    mock_fit_transform.assert_called_once()
+
+
+@patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+def test_compute_final_features_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
+    X, y = X_y_binary
+    graph = {'Imputer': Imputer, 'OHE': [OneHotEncoder, 'Imputer.x']}
+    component_graph = ComponentGraph(graph).instantiate({})
+    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
+    mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
+
+    component_graph.compute_final_features(X, y, fit=True)
+    output = component_graph.compute_final_features(X)
+
+    pd.testing.assert_frame_equal(output[0], pd.DataFrame(X))
+    pd.testing.assert_series_equal(output[1], pd.Series(y))

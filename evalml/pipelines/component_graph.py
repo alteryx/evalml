@@ -1,5 +1,5 @@
-import pandas as pd
 import networkx as nx
+import pandas as pd
 from networkx.algorithms.dag import topological_sort
 
 from evalml.model_family import ModelFamily
@@ -18,7 +18,6 @@ class ComponentGraph:
                 self.component_dict[key] = [value]
         self._compute_order = []
         self._recompute_order()
-        print(self.component_dict)
         self.random_state = random_state
 
     def from_list(self, component_list):
@@ -93,11 +92,16 @@ class ComponentGraph:
             input_x, input_y = self.merge(x_inputs, y_input, X, y)
             if component_class.model_family == ModelFamily.NONE:  # Transformer
                 if fit:
-                    output_x = component_class.fit_transform(input_x, input_y)
+                    output = component_class.fit_transform(input_x, input_y)
                 else:
-                    output_x = component_class.transform(input_x, input_y)
+                    output = component_class.transform(input_x, input_y)
+                if isinstance(output, tuple):
+                    output_x, output_y = output[0], output[1]
+                else:
+                    output_x = output
+                    output_y = None
                 output_cache[f"{component_name}.x"] = output_x
-                output_cache[f"{component_name}.y"] = None  # At this point, components don't output transformed y
+                output_cache[f"{component_name}.y"] = output_y
             else:  # Estimator
                 if fit:
                     component_class = component_class.fit(input_x, input_y)
@@ -114,13 +118,15 @@ class ComponentGraph:
 
     @staticmethod
     def merge(x_inputs, y_input, X, y):
+        return_y = y
         if len(x_inputs) == 0:
             return_x = X
         else:
             return_x = pd.DataFrame()
             for x_input in x_inputs:
                 return_x = pd.concat([return_x, x_input], axis=1)
-        return_y = y_input or y
+        if y_input is not None:
+            return_y = y
         return return_x, return_y
 
     def add_node(self, component_name, component_obj, parents=None):
