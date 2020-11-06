@@ -1,6 +1,7 @@
+import string
+
 import numpy as np
 import pandas as pd
-import string
 
 from evalml.data_checks.data_check_message import DataCheckWarning
 from evalml.data_checks.outliers_data_check import OutliersDataCheck
