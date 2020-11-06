@@ -454,7 +454,7 @@ class AutoMLSearch:
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=self.ensembling
+            ensembling=run_ensembling
         )
 
         log_title(logger, "Beginning pipeline search")
