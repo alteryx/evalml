@@ -59,14 +59,16 @@ Note that if you're on Mac, there are a few extra steps you'll want to keep trac
 
 * Be sure to include unit tests for your changes; the unit tests you write will also be run as part of the continuous integration.
 
-* Until your pull request is ready for review, please prefix the title with "[WIP]" to indicate its not yet ready for review. This signals the team to ignore it and allow you to develop. PRs without the "[WIP]" prefix will be treated as ready for review.
-
 * If your changes alter the following please fix them as well:
     * Docstrings - if your changes render docstrings invalid
     * API changes - if you change the API update `docs/source/api_reference.rst`
     * Documentation - run the documentation notebooks locally to ensure everything is logical and works as intended
 
 * Update the "Future Release" section at the top of the release notes (`docs/source/release_notes.rst`) to include an entry for your pull request. Write your entry in past tense, i.e. "added fizzbuzz impl."
+
+* Please create your pull request initially as [a "Draft" PR](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/about-pull-requests#draft-pull-requests). This signals the team to ignore it and to allow you to develop. When the checkin tests are passing and you're ready to get your pull request reviewed and merged, please convert it to a normal PR for review.
+
+* We ask that all contributors sign our contributor license agreement (CLA) the first time they contribute to evalml. The CLA assistant will place a message on your PR; follow the instructions there to sign the CLA.
 
 Add a description of your PR to the subsection that most closely matches your contribution:
     * Enhancements: new features or additions to EvalML.
