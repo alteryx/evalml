@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -163,21 +165,18 @@ def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
     Arguments:
-        element (pipeline instance): The instance of the pipeline to generate string Python code for
+        element (pipeline instance): The instance of the pipeline to generate string Python code
 
     Returns:
         String representation of Python code that can be run separately in order to recreate the pipeline instance.
-        Does not include code for custom component implementation
+        Does not include code for custom component implementation.
     """
     # hold the imports needed and add code to end
     code_strings = []
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
 
-    component_graph_string = ', '.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element.component_graph])
-    import_strings = [com.__class__.__name__ for com in element.component_graph if com.__class__ in all_components()]
-    if import_strings:
-        code_strings.append("from evalml.pipelines.components import (\n\t{}\n)".format(",\n\t".join(import_strings)))
+    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element.component_graph])
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
@@ -189,7 +188,7 @@ def generate_pipeline_code(element):
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
     # create the base string for the pipeline
     base_string = "\nclass {0}({1}):\n" \
-                  "\tcomponent_graph = [{2}]\n" \
+                  "\tcomponent_graph = [\n\t\t{2}\n\t]\n" \
                   "{3}" \
                   "\nparameters = {4}\n" \
                   "pipeline = {0}(parameters)" \
@@ -197,7 +196,7 @@ def generate_pipeline_code(element):
                           element.__class__.__bases__[0].__name__,
                           component_graph_string,
                           pipeline_string,
-                          element.parameters)
+                          json.dumps(element.parameters, indent='\t').replace('null', 'None'))
     code_strings.append(base_string)
     return "\n".join(code_strings)
 
