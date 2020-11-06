@@ -52,6 +52,7 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
+    check_random_state_equality,
     numeric_and_boolean_dtypes
 )
 
@@ -300,11 +301,12 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
         make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
-    imp = Imputer(numeric_impute_strategy='median')
-    est = RandomForestClassifier()
-    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline')
-    components_list = pipeline.component_graph
-    assert components_list == [imp, est]
+    imp = Imputer(numeric_impute_strategy='median', random_state=5)
+    est = RandomForestClassifier(random_state=7)
+    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
+                                             random_state=15)
+    assert [c.__class__ for c in pipeline.component_graph] == [Imputer, RandomForestClassifier]
+    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline.component_graph]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -319,18 +321,22 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
             'n_jobs': -1}
     }
     assert pipeline.parameters == expected_parameters
+    assert check_random_state_equality(pipeline.random_state, np.random.RandomState(15))
 
     class DummyEstimator(Estimator):
         name = "Dummy!"
         model_family = "foo"
         supported_problem_types = [ProblemTypes.BINARY]
         parameters = {'bar': 'baz'}
-    pipeline = make_pipeline_from_components([DummyEstimator()], ProblemTypes.BINARY)
+    random_state = np.random.RandomState(42)
+    pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
     components_list = pipeline.component_graph
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
+    assert check_random_state_equality(components_list[0].random_state, random_state)
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
+    assert check_random_state_equality(pipeline.random_state, random_state)
 
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
