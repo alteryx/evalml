@@ -388,6 +388,11 @@ class AutoMLSearch:
                 X = pd.DataFrame(X)
             X = ww.DataTable(X)
 
+        # categorical conversion
+        for col in X:
+            if X[col].nunique() < 10:
+                X[col].astype('category')
+
         text_column_vals = X.select('natural_language')
         text_columns = list(text_column_vals.to_pandas().columns)
         if len(text_columns) == 0:
