@@ -1,3 +1,11 @@
 coverage:
   round: up
-  precision: 2
+  precision: 1
+  status:
+    project:
+      default:
+        threshold: 1%
+
+codecov:
+  notify:
+    wait_for_ci: true
