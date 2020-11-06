@@ -72,7 +72,7 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_state(mock_stack,
     input_pipelines = [linear_regression_pipeline_class(parameters={}, random_state=3),
                        linear_regression_pipeline_class(parameters={}, random_state=4)]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, random_state=5)
-    estimators_used_in_ensemble = mock_stack.call_args.kwargs['estimators']
+    estimators_used_in_ensemble = mock_stack.call_args[1]['estimators']
     assert check_random_state_equality(clf.random_state, np.random.RandomState(5))
     assert check_random_state_equality(estimators_used_in_ensemble[0][1].pipeline.random_state, np.random.RandomState(3))
     assert check_random_state_equality(estimators_used_in_ensemble[1][1].pipeline.random_state, np.random.RandomState(4))
