@@ -1,6 +1,10 @@
 coverage:
   round: up
   precision: 1
+  status:
+    project:
+      default:
+        threshold: 1%
 
 codecov:
   notify:
