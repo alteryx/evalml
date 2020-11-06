@@ -1,5 +1,5 @@
 coverage:
-  round: down
+  round: up
   precision: 1
 
 codecov:
