@@ -20,7 +20,7 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning
 )
-from evalml.demos import load_fraud, load_wine
+from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
@@ -957,11 +957,9 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_fraud(n_rows=200)
-        if target_type in categorical_dtypes:
-            y = y.astype(target_type)
-        elif "bool" in target_type:
-            y = y.astype("boolean")
+        X, y = load_breast_cancer()
+        if "bool" in target_type:
+            y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
@@ -969,7 +967,6 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in categorical_dtypes:
-        y = y.map({unique_vals[i]: f"{i}" for i in range(len(unique_vals))})
         if target_type == "category":
             y = pd.Categorical(y)
     elif "int" in target_type.lower():
