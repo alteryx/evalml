@@ -250,7 +250,8 @@ class ComponentGraph:
         graph = graphviz.Digraph(name=name, format=graph_format,
                                  graph_attr={'splines': 'ortho'})
         graph.attr(rankdir='LR')
-        for component_name, component_class in self.component_names.items():
+        for component_name, component_info in self.component_dict.items():
+            component_class = component_info[0]
             label = '%s\l' % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
                 parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
@@ -258,7 +259,8 @@ class ComponentGraph:
                                         for key, val in component_class.parameters.items()])  # noqa: W605
                 label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape='record', label=label)
-        graph.edges(self.edges)
+        edges = self._get_edges()
+        graph.edges(edges)
         return graph
 
     def _get_edges(self):
