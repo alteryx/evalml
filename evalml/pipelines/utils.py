@@ -124,7 +124,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     return GeneratedPipeline
 
 
-def make_pipeline_from_components(component_instances, problem_type, custom_name=None):
+def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
     untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
@@ -134,9 +134,10 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
+        random_state (int or np.random.RandomState): Random state used to intialize the pipeline.
 
     Returns:
-        Pipeline instance with component instances and specified estimator
+        Pipeline instance with component instances and specified estimator created from given random state.
 
     Example:
         >>> components = [Imputer(), StandardScaler(), RandomForestClassifier()]
@@ -158,7 +159,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-    return TemplatedPipeline({c.name: c.parameters for c in component_instances})
+    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_state=random_state)
 
 
 def generate_pipeline_code(element):
@@ -201,7 +202,7 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
-def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0):
     """
     Creates a pipeline with a stacked ensemble estimator.
 
@@ -214,6 +215,10 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type):
         Pipeline with appropriate stacked ensemble estimator.
     """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type, custom_name="Stacked Ensemble Classification Pipeline")
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type,
+                                             custom_name="Stacked Ensemble Classification Pipeline",
+                                             random_state=random_state)
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type, custom_name="Stacked Ensemble Regression Pipeline")
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type,
+                                             custom_name="Stacked Ensemble Regression Pipeline",
+                                             random_state=random_state)

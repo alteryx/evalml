@@ -72,8 +72,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline_dict in self._best_pipeline_info.values():
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
-                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params)))
-            ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type)
+                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params),
+                                                      random_state=self.random_state))
+            ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
+                                                       random_state=self.random_state)
             next_batch.append(ensemble)
         else:
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
