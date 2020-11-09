@@ -14,6 +14,13 @@ from evalml.automl import (
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
+from evalml.automl.callbacks import (
+    log_and_save_error_callback,
+    log_error_callback,
+    raise_and_save_error_callback,
+    raise_error_callback,
+    silent_error_callback
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -63,7 +70,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         X, y = X_y_multi
 
     automl.search(X, y)
-    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -935,7 +942,9 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
-    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+    assert automl.results == {'pipeline_results': {},
+                              'search_order': [],
+                              'errors': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search(X, y)
@@ -1625,3 +1634,50 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
                           random_state=expected_random_state, max_iterations=10)
     automl.search(X, y)
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
+    automl = AutoMLSearch(problem_type="binary", error_callback=None)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    automl.search(X, y)
+    assert msg not in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
+    automl.search(X, y)
+    assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    for e in automl._results['errors']:
+        assert str(e) == msg
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_and_save_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 1  # Raises exception at first error
+    for e in automl._results['errors']:
+        assert str(e) == msg
