@@ -62,12 +62,13 @@ def test_returns_digraph_object(test_pipeline):
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_backend_comp_graph(mock_func, test_component_graph):
+def test_backend_comp_graph(test_component_graph):
     graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
-    mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
-    comp = test_component_graph
-    with pytest.raises(RuntimeError):
-        comp.graph('test', 'png')
+    with patch('graphviz.Digraph.pipe') as mock_func:
+        mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+        comp = test_component_graph
+        with pytest.raises(RuntimeError):
+            comp.graph()
 
 
 def test_saving_png_file(tmpdir, test_pipeline):
