@@ -1104,28 +1104,32 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
 all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
 
 
-@pytest.mark.parametrize("objective,pipeline_scores,baseline_score",
+@pytest.mark.parametrize("objective,pipeline_scores,baseline_score,problem_type_value",
                          product(all_objectives + [CostBenefitMatrix],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
-                                 [0.1, np.nan]))
-def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score,
+                                 [0.1, np.nan],
+                                 [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION]))
+def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score, problem_type_value,
                                                   dummy_binary_pipeline_class, dummy_multiclass_pipeline_class,
                                                   dummy_regression_pipeline_class,
                                                   X_y_binary):
+
+    if not objective.is_defined_for_problem_type(problem_type_value):
+        pytest.skip("Skipping because objective is not defined for problem type")
 
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = X_y_binary
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
-                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[objective.problem_type]
+                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[problem_type_value]
     baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
                                ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
                                ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               }[objective.problem_type]
+                               }[problem_type_value]
 
     class DummyPipeline(pipeline_class):
-        problem_type = objective.problem_type
+        problem_type = problem_type_value
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
@@ -1142,11 +1146,11 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     Pipeline2.score = mock_score_2
 
     if objective.name.lower() == "cost benefit matrix":
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
                               additional_objectives=[])
     else:
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
                               additional_objectives=[])
 

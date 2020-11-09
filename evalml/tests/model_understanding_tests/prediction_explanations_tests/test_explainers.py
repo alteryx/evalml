@@ -34,27 +34,25 @@ def test_explain_prediction_value_error(test_features):
 
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
                                =========================================================
-                                 d           40.00          ++++
-                                 a           10.00          +++
-                                 c           30.00          --
-                                 b           20.00          ----""".splitlines()
+                                 d           40.00          +++++
+                                 b           20.00          -----""".splitlines()
 
 explain_prediction_regression_dict_answer = {
     "explanations": [{
-        "feature_names": ["d", "a", "c", "b"],
-        "feature_values": [40, 10, 30, 20],
-        "qualitative_explanation": ["++++", "+++", "--", "----"],
-        "quantitative_explanation": [None, None, None, None],
+        "feature_names": ["d", "b"],
+        "feature_values": [40, 20],
+        "qualitative_explanation": ["+++++", "-----"],
+        "quantitative_explanation": [None, None],
         "class_name": None
     }]
 }
 
 explain_prediction_binary_dict_answer = {
     "explanations": [{
-        "feature_names": ["d", "a", "c", "b"],
-        "feature_values": [40, 10, 30, 20],
-        "qualitative_explanation": ["++++", "+++", "--", "----"],
-        "quantitative_explanation": [None, None, None, None],
+        "feature_names": ["d", "b"],
+        "feature_values": [40, 20],
+        "qualitative_explanation": ["+++++", "-----"],
+        "quantitative_explanation": [None, None],
         "class_name": "class_1"
     }]
 }
@@ -63,10 +61,8 @@ explain_prediction_multiclass_answer = """Class: class_0
 
         Feature Name Feature Value Contribution to Prediction
        =========================================================
-            a           10.00                +
-            b           20.00                +
-            c           30.00                -
-            d           40.00                -
+            a           10.00               +++++
+            c           30.00                ---
 
 
         Class: class_1
@@ -75,36 +71,32 @@ explain_prediction_multiclass_answer = """Class: class_0
        =========================================================
             a           10.00               +++
             b           20.00               ++
-            c           30.00               -
-            d           40.00               --
 
 
         Class: class_2
 
         Feature Name Feature Value Contribution to Prediction
         =========================================================
-            a          10.00            +
-            b          20.00            +
             c          30.00           ---
             d          40.00           ---
             """.splitlines()
 
 explain_prediction_multiclass_dict_answer = {
     "explanations": [
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+", "+", "-", "-"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["a", "c"],
+         "feature_values": [10, 30],
+         "qualitative_explanation": ["+++++", "---"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_0"},
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+++", "++", "-", "--"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["a", "b"],
+         "feature_values": [10, 20],
+         "qualitative_explanation": ["+++", "++"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_1"},
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+", "+", "---", "---"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["c", "d"],
+         "feature_values": [30, 40],
+         "qualitative_explanation": ["---", "---"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_2"},
     ]
 }
@@ -113,36 +105,36 @@ explain_prediction_multiclass_dict_answer = {
 @pytest.mark.parametrize("problem_type,output_format,shap_values,normalized_shap_values,answer",
                          [(ProblemTypes.REGRESSION,
                            "text",
-                           {"a": [1], "b": [-2], "c": [-0.25], "d": [2]},
-                           {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]},
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_prediction_answer),
                           (ProblemTypes.REGRESSION,
                            "dict",
-                           {"a": [1], "b": [-2], "c": [-0.25], "d": [2]},
-                           {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]},
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_prediction_regression_dict_answer
                            ),
                           (ProblemTypes.BINARY,
                            "text",
-                           [{}, {"a": [1], "b": [-2], "c": [-0.25], "d": [2]}],
-                           [{}, {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
                            explain_prediction_answer),
                           (ProblemTypes.BINARY,
                            "dict",
-                           [{}, {"a": [1], "b": [-2], "c": [-0.25], "d": [2]}],
-                           [{}, {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
                            explain_prediction_binary_dict_answer),
                           (ProblemTypes.MULTICLASS,
                            "text",
                            [{}, {}, {}],
-                           [{"a": [0.1], "b": [0.09], "c": [-0.04], "d": [-0.06]},
+                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
                             {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_answer),
                           (ProblemTypes.MULTICLASS,
                            "dict",
                            [{}, {}, {}],
-                           [{"a": [0.1], "b": [0.09], "c": [-0.04], "d": [-0.06]},
+                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
                             {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_dict_answer)

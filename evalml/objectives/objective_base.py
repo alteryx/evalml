@@ -126,3 +126,7 @@ class ObjectiveBase(ABC):
         difference = (baseline_score - score)
         change = difference / baseline_score
         return 100 * (-1) ** (decrease) * np.abs(change)
+
+    @classmethod
+    def is_defined_for_problem_type(cls, problem_type):
+        return problem_type in cls.problem_types

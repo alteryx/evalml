@@ -1,3 +1,5 @@
+import string
+
 import numpy as np
 import pandas as pd
 
@@ -19,16 +21,17 @@ def test_outliers_data_check_warnings():
     data = np.tile(a, (100, 10))
 
     X = pd.DataFrame(data=data)
-    X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[55, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
+    X.iloc[0, 3] = 1000
+    X.iloc[3, 25] = 1000
+    X.iloc[5, 55] = 10000
+    X.iloc[10, 72] = -1000
+    X.iloc[:, 90] = 'string_values'
 
     outliers_check = OutliersDataCheck()
-    assert outliers_check.validate(X) == [DataCheckWarning("Row '3' is likely to have outlier data", "OutliersDataCheck"),
-                                          DataCheckWarning("Row '25' is likely to have outlier data", "OutliersDataCheck"),
-                                          DataCheckWarning("Row '55' is likely to have outlier data", "OutliersDataCheck"),
-                                          DataCheckWarning("Row '72' is likely to have outlier data", "OutliersDataCheck")]
+    assert outliers_check.validate(X) == [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
+                                          DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
+                                          DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
+                                          DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")]
 
 
 def test_outliers_data_check_input_formats():
@@ -42,13 +45,25 @@ def test_outliers_data_check_input_formats():
     data = np.tile(a, (100, 10))
 
     X = pd.DataFrame(data=data)
-    X.iloc[3, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[25, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[55, :] = pd.Series(np.random.randn(100) * 1000)
-    X.iloc[72, :] = pd.Series(np.random.randn(100) * 1000)
+    X.iloc[0, 3] = 1000
+    X.iloc[3, 25] = 1000
+    X.iloc[5, 55] = 10000
+    X.iloc[10, 72] = -1000
 
     outliers_check = OutliersDataCheck()
-    assert outliers_check.validate(X.to_numpy()) == [DataCheckWarning("Row '3' is likely to have outlier data", "OutliersDataCheck"),
-                                                     DataCheckWarning("Row '25' is likely to have outlier data", "OutliersDataCheck"),
-                                                     DataCheckWarning("Row '55' is likely to have outlier data", "OutliersDataCheck"),
-                                                     DataCheckWarning("Row '72' is likely to have outlier data", "OutliersDataCheck")]
+    assert outliers_check.validate(X.to_numpy()) == [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
+                                                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
+                                                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
+                                                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")]
+
+
+def test_outliers_data_check_string_cols():
+    a = np.arange(10) * 0.01
+    data = np.tile(a, (100, 2))
+    n_cols = 20
+
+    X = pd.DataFrame(data=data, columns=[string.ascii_lowercase[i] for i in range(n_cols)])
+    X.iloc[0, 3] = 1000
+
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(X) == [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck")]
