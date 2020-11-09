@@ -15,6 +15,15 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         self.max_delay = max_delay
 
     def fit(self, X, y=None):
+        """Fit a time series regression pipeline.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training targets of length [n_samples]
+
+        Returns:
+            self
+        """
         if y is None:
             assert isinstance(X, pd.Series), "When modeling a single time series, the data must be a series."
         if not isinstance(X, pd.DataFrame):
@@ -33,6 +42,16 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         return self
 
     def predict(self, X, y=None, objective=None):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray, None): The target training targets of length [n_samples]
+            objective (Object or string): The objective to use to make predictions
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         features = self.compute_estimator_features(X, y)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
         if any_values_are_nan(features):
@@ -41,6 +60,16 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             return predictions
 
     def score(self, X, y, objectives):
+        """Evaluate model performance on current and additional objectives.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
+            objectives (list): Non-empty list of objectives to score on
+
+        Returns:
+            dict: Ordered dictionary of objective scores
+        """
         y_predicted = self.predict(X, y)
         if y is None:
             y = X.copy()
