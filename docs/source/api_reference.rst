@@ -105,6 +105,7 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesRegressionPipeline
 
 Classification Pipelines
 ~~~~~~~~~~~~~~~~~~~~~~~~
