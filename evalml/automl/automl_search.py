@@ -133,13 +133,15 @@ class AutoMLSearch:
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
             start_iteration_callback (callable): Function called before each pipeline training iteration.
-                Passed three parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
+                Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
 
             add_result_callback (callable): Function called after each pipeline training iteration.
-                Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
+                Callback function takes three positional parameters:: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             error_callback (callable): Function called when `search()` errors and raises an Exception.
-                Passed two positional parameters: The Exception raised and the AutoMLSearch object. Must accepts kwargs.
+                Callback function takes two positional parameters: the Exception raised and the AutoMLSearch object.
+                Must also accepts kwargs, so AutoMLSearch is able to pass along other appropriate parameters by default.
+                Defaults to None, which will call `log_error_callback`.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
@@ -218,7 +220,8 @@ class AutoMLSearch:
         self.tolerance = tolerance or 0.0
         self._results = {
             'pipeline_results': {},
-            'search_order': []
+            'search_order': [],
+            'errors': []
         }
         self.random_state = get_random_state(random_state)
         self.n_jobs = n_jobs

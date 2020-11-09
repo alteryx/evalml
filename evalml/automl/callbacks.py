@@ -6,7 +6,6 @@ logger = get_logger(__file__)
 
 def silent_error_callback(exception, automl, **kwargs):
     """No-op."""
-    pass
 
 
 def raise_error_callback(exception, automl, **kwargs):
@@ -19,7 +18,6 @@ def log_and_save_error_callback(exception, automl, **kwargs):
     """Logs the exception thrown by the AutoMLSearch object as a warning
         and adds the exception to the 'errors' list in AutoMLSearch object results."""
     logger.warning(f'AutoML search encountered an exception: {str(exception)}')
-    automl._results['errors'] = automl._results.get('errors', [])
     automl._results['errors'].append(exception)
 
 
@@ -27,7 +25,6 @@ def raise_and_save_error_callback(exception, automl, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object, logs it as an error,
         and adds the exception to the 'errors' list in AutoMLSearch object results."""
     logger.error(f'AutoMLSearch raised a fatal exception: {str(exception)}')
-    automl._results['errors'] = automl._results.get('errors', [])
     automl._results['errors'].append(exception)
     raise exception
 

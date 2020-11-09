@@ -1664,6 +1664,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
     for e in automl._results['errors']:
         assert str(e) == msg
 
@@ -1673,5 +1674,6 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
         automl.search(X, y)
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert msg in caplog.text
+    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
     for e in automl._results['errors']:
         assert str(e) == msg
