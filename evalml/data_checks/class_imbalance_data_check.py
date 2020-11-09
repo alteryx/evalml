@@ -29,7 +29,7 @@ class ClassImbalanceDataCheck(DataCheck):
         Ignores nan values in target labels if they appear
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
+            X (pd.DataFrame, pd.Series, np.ndarray, list): Features. Ignored.
             y: Target labels to check for imbalanced data.
 
         Returns:

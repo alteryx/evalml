@@ -204,7 +204,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
 
             y (pd.Series): The target training data of length [n_samples]
 
@@ -217,7 +217,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
@@ -234,7 +234,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series): Target data of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 

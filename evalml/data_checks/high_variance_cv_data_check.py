@@ -23,7 +23,7 @@ class HighVarianceCVDataCheck(DataCheck):
 
         Arguments:
             pipeline_name (str): name of pipeline that produced cv_scores
-            cv_scores (pd.Series, np.array, list): list of scores of each cross-validation fold
+            cv_scores (pd.Series, np.ndarray, list): list of scores of each cross-validation fold
 
         Returns:
             list (DataCheckWarning): list with DataCheckWarnings if imbalance in classes is less than the threshold.

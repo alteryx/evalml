@@ -172,7 +172,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Arguments:
             feature_name (str): the name of any feature provided to one-hot encoder during fit
         Returns:
-            np.array: the unique categories, in the same dtype as they were provided during fit
+            np.ndarray: the unique categories, in the same dtype as they were provided during fit
         """
         try:
             index = self.features_to_encode.index(feature_name)
@@ -184,6 +184,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """Return feature names for the input features after fitting.
 
         Returns:
-            np.array: The feature names after encoding, provided in the same order as input_features.
+            np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
         return self._encoder.get_feature_names(self.features_to_encode)

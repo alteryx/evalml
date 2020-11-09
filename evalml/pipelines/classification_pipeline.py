@@ -28,7 +28,7 @@ class ClassificationPipeline(PipelineBase):
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
 
             y (pd.Series): The target training labels of length [n_samples]
 
@@ -70,7 +70,7 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
@@ -85,7 +85,7 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
@@ -98,7 +98,7 @@ class ClassificationPipeline(PipelineBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
             pd.DataFrame: Probability estimates
@@ -115,7 +115,7 @@ class ClassificationPipeline(PipelineBase):
         """Evaluate model performance on objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
