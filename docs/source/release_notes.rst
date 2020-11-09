@@ -12,6 +12,7 @@ Release Notes
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
     * Fixes
+        * Fixed stacked ensemble input bug and LightGBM warning and bug in AutoMLSearch :pr:`1388`
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
