@@ -175,7 +175,7 @@ class AutoMLSearch:
         self.objective = self._validate_objective(objective)
         if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
-        if self.problem_type != self.objective.problem_type:
+        if not objective.is_defined_for_problem_type(self.problem_type):
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
         if additional_objectives is None:
             additional_objectives = get_core_objectives(self.problem_type)
@@ -558,11 +558,11 @@ class AutoMLSearch:
 
     def _validate_problem_type(self):
         for obj in self.additional_objectives:
-            if obj.problem_type != self.problem_type:
+            if not obj.is_defined_for_problem_type(self.problem_type):
                 raise ValueError("Additional objective {} is not compatible with a {} problem.".format(obj.name, self.problem_type.value))
 
         for pipeline in self.allowed_pipelines or []:
-            if not pipeline.problem_type == self.problem_type:
+            if pipeline.problem_type != self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
     def _add_baseline_pipelines(self, X, y):
@@ -651,13 +651,13 @@ class AutoMLSearch:
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-                if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone(pipeline.random_state)
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if self.objective.problem_type == ProblemTypes.BINARY:
+                if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
                     cv_pipeline.threshold = 0.5
                     if self.optimize_thresholds and self.objective.can_optimize_threshold:
                         logger.debug(f"\t\t\tFold {i}: Optimizing threshold for {self.objective.name}")
@@ -807,7 +807,7 @@ class AutoMLSearch:
         log_subtitle(logger, "Training")
         logger.info("Training for {} problems.".format(pipeline.problem_type))
 
-        if self.optimize_thresholds and self.objective.problem_type == ProblemTypes.BINARY and self.objective.can_optimize_threshold:
+        if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
             logger.info("Objective to optimize binary classification pipeline thresholds for: {}".format(self.objective))
 
         logger.info("Total training time (including CV): %.1f seconds" % pipeline_results["training_time"])
