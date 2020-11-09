@@ -73,6 +73,21 @@ AutoML Algorithm Classes
     IterativeAlgorithm
 
 
+.. currentmodule:: evalml.automl.callbacks
+
+AutoML Callbacks
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    silent_error_callback
+    log_error_callback
+    raise_error_callback
+    log_and_save_error_callback
+    raise_and_save_error_callback
+
+
 .. currentmodule:: evalml.pipelines
 
 Pipelines
