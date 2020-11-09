@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`

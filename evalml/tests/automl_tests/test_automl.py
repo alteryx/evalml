@@ -974,19 +974,15 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
+    unique_vals = y.unique()
 
     # Update target types as necessary
-    if target_type == "category":
-        y = pd.Categorical(y)
-    elif "int" in target_type.lower():
-        unique_vals = y.unique()
+    if "int" in target_type.lower():
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
-        unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     y = y.astype(target_type)
-    unique_vals = y.unique()
 
     if data_type == 'np':
         X = X.to_numpy()
