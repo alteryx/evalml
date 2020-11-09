@@ -209,7 +209,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training data of length [n_samples]
 
         Returns:
             self

@@ -89,8 +89,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
    Arguments:
-        X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
-        y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
+        X (pd.DataFrame, ww.DataTable): The input data of shape [n_samples, n_features]
+        y (pd.Series, ww.DataColumn): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
