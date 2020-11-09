@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 
@@ -78,7 +80,8 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
-def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_classes):
+@patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
+def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_pipeline_classes):
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
@@ -133,6 +136,12 @@ def test_iterative_algorithm_results(ensembling_value, dummy_binary_pipeline_cla
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
             assert pipeline.model_family == ModelFamily.ENSEMBLE
+            assert check_random_state_equality(pipeline.random_state, algo.random_state)
+            stack_args = mock_stack.call_args[1]['estimators']
+            estimators_used_in_ensemble = [args[1] for args in stack_args]
+            random_states_the_same = [check_random_state_equality(estimator.pipeline.random_state, algo.random_state)
+                                      for estimator in estimators_used_in_ensemble]
+            assert all(random_states_the_same)
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])

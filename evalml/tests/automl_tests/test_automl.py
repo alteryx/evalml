@@ -14,6 +14,13 @@ from evalml.automl import (
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
+from evalml.automl.callbacks import (
+    log_and_save_error_callback,
+    log_error_callback,
+    raise_and_save_error_callback,
+    raise_error_callback,
+    silent_error_callback
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -63,7 +70,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         X, y = X_y_multi
 
     automl.search(X, y)
-    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -935,7 +942,9 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
-    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+    assert automl.results == {'pipeline_results': {},
+                              'search_order': [],
+                              'errors': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search(X, y)
@@ -960,24 +969,21 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
-
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
-
+    unique_vals = y.unique()
     # Update target types as necessary
-    if target_type == "category":
-        y = pd.Categorical(y)
+    if target_type in categorical_dtypes:
+        if target_type == "category":
+            y = pd.Categorical(y)
     elif "int" in target_type.lower():
-        unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
-        unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     y = y.astype(target_type)
-    unique_vals = y.unique()
 
     if data_type == 'np':
         X = X.to_numpy()
@@ -1108,28 +1114,32 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
 all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
 
 
-@pytest.mark.parametrize("objective,pipeline_scores,baseline_score",
+@pytest.mark.parametrize("objective,pipeline_scores,baseline_score,problem_type_value",
                          product(all_objectives + [CostBenefitMatrix],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
-                                 [0.1, np.nan]))
-def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score,
+                                 [0.1, np.nan],
+                                 [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION]))
+def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score, problem_type_value,
                                                   dummy_binary_pipeline_class, dummy_multiclass_pipeline_class,
                                                   dummy_regression_pipeline_class,
                                                   X_y_binary):
+
+    if not objective.is_defined_for_problem_type(problem_type_value):
+        pytest.skip("Skipping because objective is not defined for problem type")
 
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = X_y_binary
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
-                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[objective.problem_type]
+                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[problem_type_value]
     baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
                                ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
                                ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               }[objective.problem_type]
+                               }[problem_type_value]
 
     class DummyPipeline(pipeline_class):
-        problem_type = objective.problem_type
+        problem_type = problem_type_value
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
@@ -1146,11 +1156,11 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     Pipeline2.score = mock_score_2
 
     if objective.name.lower() == "cost benefit matrix":
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
                               additional_objectives=[])
     else:
-        automl = AutoMLSearch(problem_type=objective.problem_type, max_iterations=3,
+        automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
                               additional_objectives=[])
 
@@ -1651,3 +1661,50 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
                           random_state=expected_random_state, max_iterations=10)
     automl.search(X, y)
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
+    automl = AutoMLSearch(problem_type="binary", error_callback=None)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    automl.search(X, y)
+    assert msg not in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
+    automl.search(X, y)
+    assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    for e in automl._results['errors']:
+        assert str(e) == msg
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_and_save_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 1  # Raises exception at first error
+    for e in automl._results['errors']:
+        assert str(e) == msg
