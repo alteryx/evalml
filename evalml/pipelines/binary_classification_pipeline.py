@@ -27,7 +27,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         Returns:
             pd.Series: Estimated labels
         """
-        X_t = self.compute_estimator_features(X, y=None)
+        X_t = self.compute_estimator_features(X)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)

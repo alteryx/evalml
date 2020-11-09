@@ -79,7 +79,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels
         """
-        X_t = self.compute_estimator_features(X, y=None)
+        X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
     def predict(self, X, objective=None):
@@ -107,7 +107,7 @@ class ClassificationPipeline(PipelineBase):
             pd.DataFrame: Probability estimates
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
         proba.columns = self._encoder.classes_
