@@ -1,6 +1,4 @@
 
-import pandas as pd
-
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
@@ -19,8 +17,8 @@ class RegressionPipeline(PipelineBase):
         """Build a regression model.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
             self
@@ -39,17 +37,17 @@ class RegressionPipeline(PipelineBase):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): True values of length [n_samples]
+            X (ww.DataTable, pd.DataFrame, or np.array): Data of shape [n_samples, n_features]
+            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y_predicted = self.predict(X)

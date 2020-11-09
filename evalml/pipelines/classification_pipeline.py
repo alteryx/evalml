@@ -33,7 +33,6 @@ class ClassificationPipeline(PipelineBase):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-
             y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
@@ -119,7 +118,7 @@ class ClassificationPipeline(PipelineBase):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): True labels of length [n_samples]
+            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
         Returns:
