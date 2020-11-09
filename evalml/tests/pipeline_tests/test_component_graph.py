@@ -47,6 +47,7 @@ def test_order_x_and_y():
     order = [component_name for component_name, _ in component_graph]
     assert order == ['Imputer', 'OHE', 'Random Forest']
 
+
 def test_from_list():
     component_list = ['Imputer', 'One Hot Encoder', RandomForestClassifier]
 
