@@ -1,5 +1,7 @@
 import copy
+import sys
 import time
+import traceback
 from collections import OrderedDict, defaultdict
 
 import cloudpickle
@@ -139,7 +141,7 @@ class AutoMLSearch:
                 Callback function takes three positional parameters:: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             error_callback (callable): Function called when `search()` errors and raises an Exception.
-                Callback function takes two positional parameters: the Exception raised and the AutoMLSearch object.
+                Callback function takes three positional parameters: the Exception raised, the traceback, and the AutoMLSearch object.
                 Must also accepts kwargs, so AutoMLSearch is able to pass along other appropriate parameters by default.
                 Defaults to None, which will call `log_error_callback`.
 
@@ -684,7 +686,8 @@ class AutoMLSearch:
                 score = scores[self.objective.name]
             except Exception as e:
                 if self.error_callback is not None:
-                    self.error_callback(e, self, fold_num=i, pipeline=pipeline)
+                    self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
+                                        fold_num=i, pipeline=pipeline)
                 if isinstance(e, PipelineScoreError):
                     nan_scores = {objective: np.nan for objective in e.exceptions}
                     scores = {**nan_scores, **e.scored_successfully}

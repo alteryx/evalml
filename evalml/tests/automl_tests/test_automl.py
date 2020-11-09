@@ -70,7 +70,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         X, y = X_y_multi
 
     automl.search(X, y)
-    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -942,7 +942,9 @@ def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
-    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+    assert automl.results == {'pipeline_results': {},
+                              'search_order': [],
+                              'errors': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search(X, y)
@@ -1659,11 +1661,13 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search(X, y)
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
 
     caplog.clear()
     automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
     assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
     for e in automl._results['errors']:
         assert str(e) == msg
@@ -1673,7 +1677,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search(X, y)
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
-    assert msg in caplog.text
-    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 1  # Raises exception at first error
     for e in automl._results['errors']:
         assert str(e) == msg
