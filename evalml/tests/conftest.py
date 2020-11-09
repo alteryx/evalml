@@ -41,6 +41,11 @@ def create_mock_pipeline(estimator, problem_type):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockRegressionPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        class MockTSRegressionPipelineWithOnlyEstimator(RegressionPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
+            component_graph = [estimator]
+        return MockTSRegressionPipelineWithOnlyEstimator
 
 
 @pytest.fixture
@@ -283,7 +288,7 @@ def stackable_regressors():
     stackable_regressors = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
-        if (set(supported_problem_types) == {ProblemTypes.REGRESSION} and
+        if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
             stackable_regressors.append(estimator_class())

@@ -60,6 +60,8 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
                 num_classes = 3
             elif problem_type == ProblemTypes.REGRESSION:
                 X, y = X_y_regression
+            elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+                pytest.skip("Skipping Time Series Regression because not supported in make_pipeline_from_components")
 
             evalml_pipeline = make_pipeline_from_components([estimator()], problem_type)
             scikit_estimator = scikit_learn_wrapped_estimator(evalml_pipeline)

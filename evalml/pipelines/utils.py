@@ -7,6 +7,7 @@ from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
 from .regression_pipeline import RegressionPipeline
+from .time_series import TimeSeriesRegressionPipeline
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
@@ -81,6 +82,8 @@ def _get_pipeline_base_class(problem_type):
         return MulticlassClassificationPipeline
     elif problem_type == ProblemTypes.REGRESSION:
         return RegressionPipeline
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        return TimeSeriesRegressionPipeline
 
 
 def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):

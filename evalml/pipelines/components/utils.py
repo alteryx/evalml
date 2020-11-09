@@ -203,13 +203,13 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 
     """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
     if isinstance(evalml_obj, PipelineBase):
-        if evalml_obj.problem_type == ProblemTypes.REGRESSION:
+        if evalml_obj.problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             return WrappedSKRegressor(evalml_obj)
         elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:
             return WrappedSKClassifier(evalml_obj)
     else:
         # EvalML Estimator
-        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION]:
+        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             return WrappedSKRegressor(evalml_obj)
         elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             return WrappedSKClassifier(evalml_obj)

@@ -179,7 +179,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             logger.info(component_string)
             component.describe(print_name=False)
 
-    def compute_estimator_features(self, X):
+    def compute_estimator_features(self, X, y=None):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
@@ -190,10 +190,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         X_t = X
         for component in self.component_graph[:-1]:
-            X_t = component.transform(X_t)
+            X_t = component.transform(X_t, y)
         return X_t
 
-    def _fit(self, X, y):
+    def _compute_features_during_fit(self, X, y):
         X_t = X
         y_t = y
         for component in self.component_graph[:-1]:
@@ -201,6 +201,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             X_t = component.fit_transform(X_t, y_t)
 
         self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
+
+        return X_t, y_t
+
+    def _fit(self, X, y):
+
+        X_t, y_t = self._compute_features_during_fit(X, y)
+
         self.estimator.fit(X_t, y_t)
 
     @abstractmethod
@@ -228,7 +235,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X_t = self.compute_estimator_features(X)
+        X_t = self.compute_estimator_features(X, y=None)
         return self.estimator.predict(X_t)
 
     @abstractmethod
