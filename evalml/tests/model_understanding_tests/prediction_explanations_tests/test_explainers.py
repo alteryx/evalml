@@ -34,27 +34,25 @@ def test_explain_prediction_value_error(test_features):
 
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
                                =========================================================
-                                 d           40.00          ++++
-                                 a           10.00          +++
-                                 c           30.00          --
-                                 b           20.00          ----""".splitlines()
+                                 d           40.00          +++++
+                                 b           20.00          -----""".splitlines()
 
 explain_prediction_regression_dict_answer = {
     "explanations": [{
-        "feature_names": ["d", "a", "c", "b"],
-        "feature_values": [40, 10, 30, 20],
-        "qualitative_explanation": ["++++", "+++", "--", "----"],
-        "quantitative_explanation": [None, None, None, None],
+        "feature_names": ["d", "b"],
+        "feature_values": [40, 20],
+        "qualitative_explanation": ["+++++", "-----"],
+        "quantitative_explanation": [None, None],
         "class_name": None
     }]
 }
 
 explain_prediction_binary_dict_answer = {
     "explanations": [{
-        "feature_names": ["d", "a", "c", "b"],
-        "feature_values": [40, 10, 30, 20],
-        "qualitative_explanation": ["++++", "+++", "--", "----"],
-        "quantitative_explanation": [None, None, None, None],
+        "feature_names": ["d", "b"],
+        "feature_values": [40, 20],
+        "qualitative_explanation": ["+++++", "-----"],
+        "quantitative_explanation": [None, None],
         "class_name": "class_1"
     }]
 }
@@ -63,10 +61,8 @@ explain_prediction_multiclass_answer = """Class: class_0
 
         Feature Name Feature Value Contribution to Prediction
        =========================================================
-            a           10.00                +
-            b           20.00                +
-            c           30.00                -
-            d           40.00                -
+            a           10.00               +++++
+            c           30.00                ---
 
 
         Class: class_1
@@ -75,36 +71,32 @@ explain_prediction_multiclass_answer = """Class: class_0
        =========================================================
             a           10.00               +++
             b           20.00               ++
-            c           30.00               -
-            d           40.00               --
 
 
         Class: class_2
 
         Feature Name Feature Value Contribution to Prediction
         =========================================================
-            a          10.00            +
-            b          20.00            +
             c          30.00           ---
             d          40.00           ---
             """.splitlines()
 
 explain_prediction_multiclass_dict_answer = {
     "explanations": [
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+", "+", "-", "-"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["a", "c"],
+         "feature_values": [10, 30],
+         "qualitative_explanation": ["+++++", "---"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_0"},
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+++", "++", "-", "--"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["a", "b"],
+         "feature_values": [10, 20],
+         "qualitative_explanation": ["+++", "++"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_1"},
-        {"feature_names": ["a", "b", "c", "d"],
-         "feature_values": [10, 20, 30, 40],
-         "qualitative_explanation": ["+", "+", "---", "---"],
-         "quantitative_explanation": [None] * 4,
+        {"feature_names": ["c", "d"],
+         "feature_values": [30, 40],
+         "qualitative_explanation": ["---", "---"],
+         "quantitative_explanation": [None, None],
          "class_name": "class_2"},
     ]
 }
@@ -113,36 +105,36 @@ explain_prediction_multiclass_dict_answer = {
 @pytest.mark.parametrize("problem_type,output_format,shap_values,normalized_shap_values,answer",
                          [(ProblemTypes.REGRESSION,
                            "text",
-                           {"a": [1], "b": [-2], "c": [-0.25], "d": [2]},
-                           {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]},
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_prediction_answer),
                           (ProblemTypes.REGRESSION,
                            "dict",
-                           {"a": [1], "b": [-2], "c": [-0.25], "d": [2]},
-                           {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]},
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_prediction_regression_dict_answer
                            ),
                           (ProblemTypes.BINARY,
                            "text",
-                           [{}, {"a": [1], "b": [-2], "c": [-0.25], "d": [2]}],
-                           [{}, {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
                            explain_prediction_answer),
                           (ProblemTypes.BINARY,
                            "dict",
-                           [{}, {"a": [1], "b": [-2], "c": [-0.25], "d": [2]}],
-                           [{}, {"a": [0.5], "b": [-0.75], "c": [-0.25], "d": [0.75]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
+                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
                            explain_prediction_binary_dict_answer),
                           (ProblemTypes.MULTICLASS,
                            "text",
                            [{}, {}, {}],
-                           [{"a": [0.1], "b": [0.09], "c": [-0.04], "d": [-0.06]},
+                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
                             {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_answer),
                           (ProblemTypes.MULTICLASS,
                            "dict",
                            [{}, {}, {}],
-                           [{"a": [0.1], "b": [0.09], "c": [-0.04], "d": [-0.06]},
+                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
                             {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_dict_answer)
@@ -229,6 +221,7 @@ regression_best_worst_answer = """Test Pipeline Name
                 Predicted Value: 1
                 Target Value: 2
                 Absolute Difference: 1
+                Index ID: {index_0}
 
                 table goes here
 
@@ -238,6 +231,7 @@ regression_best_worst_answer = """Test Pipeline Name
                 Predicted Value: 2
                 Target Value: 3
                 Absolute Difference: 4
+                Index ID: {index_1}
 
                 table goes here
 
@@ -290,6 +284,7 @@ binary_best_worst_answer = """Test Pipeline Name
                 Predicted Value: malignant
                 Target Value: malignant
                 Cross Entropy: 0.2
+                Index ID: {index_0}
 
                 table goes here
 
@@ -300,6 +295,7 @@ binary_best_worst_answer = """Test Pipeline Name
                 Predicted Value: malignant
                 Target Value: benign
                 Cross Entropy: 0.78
+                Index ID: {index_1}
 
                 table goes here
 
@@ -345,6 +341,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
                 Predicted Value: setosa
                 Target Value: setosa
                 Cross Entropy: 0.15
+                Index ID: {{index_0}}
 
                 {multiclass_table}
 
@@ -355,6 +352,7 @@ multiclass_best_worst_answer = """Test Pipeline Name
                 Predicted Value: versicolor
                 Target Value: versicolor
                 Cross Entropy: 0.34
+                Index ID: {{index_1}}
 
                 {multiclass_table}
 
@@ -426,12 +424,23 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
 
+    def _add_custom_index(answer, index_best, index_worst, output_format):
+
+        if output_format == "text":
+            answer = answer.format(index_0=index_best, index_1=index_worst)
+        else:
+            answer["explanations"][0]["predicted_values"]["index_id"] = index_best
+            answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
+        return answer
+
     if problem_type == ProblemTypes.REGRESSION:
         abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = pd.Series([2, 1])
         y_true = pd.Series([3, 2], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[1],
+                                   index_worst=custom_index[0], output_format=output_format)
     elif problem_type == ProblemTypes.BINARY:
         pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
@@ -440,6 +449,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
         pipeline.predict.return_value = pd.Series(["malignant"] * 2)
         y_true = pd.Series(["malignant", "benign"], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[0],
+                                   index_worst=custom_index[1], output_format=output_format)
     else:
         # Multiclass text output is formatted slightly different so need to account for that
         if output_format == "text":
@@ -452,6 +463,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
                                                             "virginica": [0.1, 0.05]})
         pipeline.predict.return_value = ["setosa", "versicolor"]
         y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
+        answer = _add_custom_index(answer, index_best=custom_index[0],
+                                   index_worst=custom_index[1], output_format=output_format)
 
     best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
                                                        num_to_explain=1, output_format=output_format)
@@ -514,6 +527,7 @@ regression_custom_metric_answer = """Test Pipeline Name
                 Predicted Value: 1
                 Target Value: 2
                 sum: 3
+                Index ID: 1
 
                 table goes here
 
@@ -523,6 +537,7 @@ regression_custom_metric_answer = """Test Pipeline Name
                 Predicted Value: 2
                 Target Value: 3
                 sum: 5
+                Index ID: 0
 
                 table goes here
 
@@ -533,11 +548,13 @@ regression_custom_metric_answer_dict = {
     "explanations": [
         {"rank": {"prefix": "best", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 1, "target_value": 2,
-                              "error_name": "sum", "error_value": 3},
+                              "error_name": "sum", "error_value": 3,
+                              "index_id": 1},
          "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 2, "target_value": 3,
-                              "error_name": "sum", "error_value": 5},
+                              "error_name": "sum", "error_value": 5,
+                              "index_id": 0},
          "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
