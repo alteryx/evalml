@@ -2,6 +2,7 @@ from itertools import product
 
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.demos import load_breast_cancer, load_wine
 
@@ -47,3 +48,13 @@ def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class
 
     pipeline.fit(X, y)
     pd.testing.assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))
+
+
+def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_class):
+    X, y = load_breast_cancer()
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
+    mock_pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    mock_pipeline.fit(X, y)
+    assert not pd.isnull(mock_pipeline.predict(X)).any()
+    assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
