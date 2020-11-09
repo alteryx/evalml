@@ -79,8 +79,6 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
         X_t = self.compute_estimator_features(X, y=None)
         return self.estimator.predict(X_t)
 
