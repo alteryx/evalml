@@ -1,5 +1,7 @@
 import copy
+import sys
 import time
+import traceback
 from collections import OrderedDict, defaultdict
 
 import cloudpickle
@@ -16,6 +18,7 @@ from sklearn.model_selection import (
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.callbacks import log_error_callback
 from evalml.automl.data_splitters import TrainingValidationSplit
 from evalml.automl.utils import get_default_primary_search_objective
 from evalml.data_checks import (
@@ -85,6 +88,7 @@ class AutoMLSearch:
                  allowed_model_families=None,
                  start_iteration_callback=None,
                  add_result_callback=None,
+                 error_callback=None,
                  additional_objectives=None,
                  random_state=0,
                  n_jobs=-1,
@@ -129,15 +133,20 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            data_split (sklearn.model_selection.BaseCrossValidator): data splitting method to use. Defaults to StratifiedKFold.
+            data_split (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
-            tuner_class: the tuner class to use. Defaults to scikit-optimize tuner
+            tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
-            start_iteration_callback (callable): function called before each pipeline training iteration.
-                Passed three parameters: pipeline_class, parameters, and the AutoMLSearch object.
+            start_iteration_callback (callable): Function called before each pipeline training iteration.
+                Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
 
-            add_result_callback (callable): function called after each pipeline training iteration.
-                Passed three parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
+            add_result_callback (callable): Function called after each pipeline training iteration.
+                Callback function takes three positional parameters:: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
+
+            error_callback (callable): Function called when `search()` errors and raises an Exception.
+                Callback function takes three positional parameters: the Exception raised, the traceback, and the AutoMLSearch object.
+                Must also accepts kwargs, so AutoMLSearch is able to pass along other appropriate parameters by default.
+                Defaults to None, which will call `log_error_callback`.
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
@@ -165,6 +174,7 @@ class AutoMLSearch:
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
+        self.error_callback = error_callback or log_error_callback
         self.data_split = data_split
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
@@ -215,7 +225,8 @@ class AutoMLSearch:
         self.tolerance = tolerance or 0.0
         self._results = {
             'pipeline_results': {},
-            'search_order': []
+            'search_order': [],
+            'errors': []
         }
         self.random_state = get_random_state(random_state)
         self.n_jobs = n_jobs
@@ -673,22 +684,15 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
+                if self.error_callback is not None:
+                    self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
+                                        fold_num=i, pipeline=pipeline)
                 if isinstance(e, PipelineScoreError):
-                    logger.info(f"\t\t\tFold {i}: Encountered an error scoring the following objectives: {', '.join(e.exceptions)}.")
-                    logger.info(f"\t\t\tFold {i}: The scores for these objectives will be replaced with nan.")
-                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
-                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     nan_scores = {objective: np.nan for objective in e.exceptions}
                     scores = {**nan_scores, **e.scored_successfully}
                     scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
                     score = scores[self.objective.name]
                 else:
-                    logger.info(f"\t\t\tFold {i}: Encountered an error.")
-                    logger.info(f"\t\t\tFold {i}: All scores will be replaced with nan.")
-                    logger.info(f"\t\t\tFold {i}: Please check {logger.handlers[1].baseFilename} for the current hyperparameters and stack trace.")
-                    logger.debug(f"\t\t\tFold {i}: Hyperparameters:\n\t{pipeline.hyperparameters}")
-                    logger.debug(f"\t\t\tFold {i}: Exception during automl search: {str(e)}")
                     score = np.nan
                     scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
 
