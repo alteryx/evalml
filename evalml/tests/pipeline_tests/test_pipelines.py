@@ -5,6 +5,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
@@ -31,7 +32,6 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
-    RandomForestRegressor,
     RFClassifierSelectFromModel,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
@@ -99,12 +99,17 @@ def test_get_estimators(has_minimal_dependencies):
         get_estimators(problem_type="Not A Valid Problem Type")
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_all_nan_no_categoricals(problem_type):
+def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "num": [1, 2, 3, 4, 5]})
     y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -118,18 +123,24 @@ def test_make_pipeline_all_nan_no_categoricals(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, estimator_class]
             else:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline(problem_type):
+def test_make_pipeline(input_type, problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 0, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -143,6 +154,7 @@ def test_make_pipeline(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -151,12 +163,17 @@ def test_make_pipeline(problem_type):
                 assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_nulls(problem_type):
+def test_make_pipeline_no_nulls(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 1, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -170,6 +187,7 @@ def test_make_pipeline_no_nulls(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -178,12 +196,16 @@ def test_make_pipeline_no_nulls(problem_type):
                 assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_datetimes(problem_type):
+def test_make_pipeline_no_datetimes(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan]})
     y = pd.Series([0, 1, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
@@ -198,6 +220,7 @@ def test_make_pipeline_no_datetimes(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -206,10 +229,14 @@ def test_make_pipeline_no_datetimes(problem_type):
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_column_names(problem_type):
+def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
     y = pd.Series([0, 0, 1])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -223,12 +250,45 @@ def test_make_pipeline_no_column_names(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
             else:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_make_pipeline_text_columns(input_type, problem_type):
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "text": ["string one", "another", "text for a column", "text string", "hello world"]})
+    y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+    estimators = get_estimators(problem_type=problem_type)
+
+    if problem_type == ProblemTypes.BINARY:
+        pipeline_class = BinaryClassificationPipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
+        pipeline_class = MulticlassClassificationPipeline
+    elif problem_type == ProblemTypes.REGRESSION:
+        pipeline_class = RegressionPipeline
+    for estimator_class in estimators:
+        for problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, text_columns=['text'])
+            assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, estimator_class]
+            else:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, estimator_class]
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -253,27 +313,6 @@ def test_make_pipeline_numpy_input(problem_type):
                 assert pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, estimator_class]
             else:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
-
-
-def test_make_pipeline_text_columns():
-    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
-                      "categorical": ["a", "b", "a", "c", "c"],
-                      "text": ["string one", "another", "text for a column", "text string", "hello world"]})
-    y = pd.Series([0, 0, 1, 1, 0])
-    binary_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.BINARY, text_columns=['text'])
-    assert isinstance(binary_pipeline, type(BinaryClassificationPipeline))
-    assert binary_pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert binary_pipeline.custom_hyperparameters is None
-
-    multiclass_pipeline = make_pipeline(X, y, LogisticRegressionClassifier, ProblemTypes.MULTICLASS, text_columns=['text'])
-    assert isinstance(multiclass_pipeline, type(MulticlassClassificationPipeline))
-    assert multiclass_pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    assert multiclass_pipeline.custom_hyperparameters is None
-
-    regression_pipeline = make_pipeline(X, y, RandomForestRegressor, ProblemTypes.REGRESSION, text_columns=['text'])
-    assert isinstance(regression_pipeline, type(RegressionPipeline))
-    assert regression_pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, RandomForestRegressor]
-    assert regression_pipeline.custom_hyperparameters is None
 
 
 def test_make_pipeline_problem_type_mismatch():
@@ -1149,32 +1188,49 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
         X, y = load_breast_cancer()
-        if target_type == "bool":
+        if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
-        if target_type == "bool":
+        if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
 
-    if target_type == "category":
-        y = pd.Categorical(y)
-    elif "int" in target_type:
+    # Update target types as necessary
+    unique_vals = y.unique()
+
+    if "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
-
+    if target_type == "category":
+        y = pd.Categorical(y)
+    else:
+        y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     for pipeline_class in pipeline_classes:
         pipeline = pipeline_class(parameters={})
         pipeline.fit(X, y)

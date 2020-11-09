@@ -4,6 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -270,6 +271,25 @@ def is_all_numeric(df):
         if dtype not in numeric_and_boolean_dtypes:
             return False
     return True
+
+
+def _convert_to_woodwork_structure(data):
+    """
+    Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
+    """
+    if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
+        return data
+    # Convert numpy data structures to pandas data structures
+    if isinstance(data, list):
+        data = np.array(data)
+    if isinstance(data, pd.api.extensions.ExtensionArray) or (isinstance(data, np.ndarray) and len(data.shape) == 1):
+        data = pd.Series(data)
+    elif isinstance(data, np.ndarray):
+        data = pd.DataFrame(data)
+    # Convert pandas data structures to Woodwork data structures
+    if isinstance(data, pd.Series):
+        return ww.DataColumn(data)
+    return ww.DataTable(data)
 
 
 def _convert_woodwork_types_wrapper(pd_data):

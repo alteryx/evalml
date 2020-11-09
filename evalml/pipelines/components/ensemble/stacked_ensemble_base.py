@@ -93,10 +93,6 @@ class StackedEnsembleBase(Estimator):
         Returns:
             self
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        if isinstance(y, pd.Series):
-            y = y.to_numpy()
         self._component_obj.fit(X, y)
         return self
 
@@ -109,8 +105,6 @@ class StackedEnsembleBase(Estimator):
         Returns:
             pd.Series: Predicted values
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
         predictions = self._component_obj.predict(X)
         predictions = pd.Series(predictions)
         return predictions

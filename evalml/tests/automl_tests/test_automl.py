@@ -14,6 +14,13 @@ from evalml.automl import (
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
+from evalml.automl.callbacks import (
+    log_and_save_error_callback,
+    log_error_callback,
+    raise_and_save_error_callback,
+    raise_error_callback,
+    silent_error_callback
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -63,7 +70,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         X, y = X_y_multi
 
     automl.search(X, y)
-    assert automl.results.keys() == {'pipeline_results', 'search_order'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -931,11 +938,13 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_results_getter(mock_fit, mock_score, caplog, X_y_binary):
+def test_results_getter(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
 
-    assert automl.results == {'pipeline_results': {}, 'search_order': []}
+    assert automl.results == {'pipeline_results': {},
+                              'search_order': [],
+                              'errors': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search(X, y)
@@ -960,24 +969,21 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
-
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         X, y = load_wine()
-
+    unique_vals = y.unique()
     # Update target types as necessary
-    if target_type == "category":
-        y = pd.Categorical(y)
+    if target_type in categorical_dtypes:
+        if target_type == "category":
+            y = pd.Categorical(y)
     elif "int" in target_type.lower():
-        unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
-        unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     y = y.astype(target_type)
-    unique_vals = y.unique()
 
     if data_type == 'np':
         X = X.to_numpy()
@@ -1257,9 +1263,9 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
     np.testing.assert_equal(pipeline_results["percent_better_than_baseline_all_objectives"]['F1'], answer)
 
 
-def _get_first_stacked_classifier_no():
+def _get_first_stacked_classifier_no(model_families=None):
     """Gets the number of iterations necessary before the stacked ensemble will be used."""
-    num_classifiers = len(get_estimators(ProblemTypes.BINARY))
+    num_classifiers = len(get_estimators(ProblemTypes.BINARY, model_families=model_families))
     # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
     return 1 + num_classifiers + num_classifiers * 5 + 1
 
@@ -1294,7 +1300,7 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, mock_regression_score,
-                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression, caplog):
+                           max_batches, use_ensembling, problem_type, X_y_binary, X_y_regression):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         automl = AutoMLSearch(problem_type="binary", max_iterations=None,
@@ -1330,6 +1336,36 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     else:
         assert automl.rankings.shape[0] == min(2 + len(automl.allowed_pipelines), n_results)  # add two for baseline and stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock_score, X_y_binary, logistic_regression_binary_pipeline_class, caplog):
+    max_iterations = _get_first_stacked_classifier_no([ModelFamily.RANDOM_FOREST]) + 1
+    # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.RANDOM_FOREST], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    assert "Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
+
+    pipeline_names = automl.rankings['pipeline_name']
+    assert not pipeline_names.str.contains('Ensemble').any()
+
+    caplog.clear()
+    max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL]) + 1
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    pipeline_names = automl.rankings['pipeline_name']
+    assert not pipeline_names.str.contains('Ensemble').any()
+    assert "Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
+
+    # Check that ensembling runs when len(allowed_model_families) == 1 but len(allowed_pipelines) > 1
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    pipeline_names = automl.rankings['pipeline_name']
+    assert pipeline_names.str.contains('Ensemble').any()
+    assert "Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run." not in caplog.text
 
 
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
@@ -1625,3 +1661,50 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
                           random_state=expected_random_state, max_iterations=10)
     automl.search(X, y)
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
+    automl = AutoMLSearch(problem_type="binary", error_callback=None)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=silent_error_callback)
+    automl.search(X, y)
+    assert msg not in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_error_callback)
+    automl.search(X, y)
+    assert msg in caplog.text
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=log_and_save_error_callback)
+    automl.search(X, y)
+    assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    for e in automl._results['errors']:
+        assert str(e) == msg
+
+    caplog.clear()
+    automl = AutoMLSearch(problem_type="binary", error_callback=raise_and_save_error_callback)
+    with pytest.raises(Exception, match="all your model are belong to us"):
+        automl.search(X, y)
+    assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
+    assert "fit" in caplog.text  # Check stack trace logged
+    assert len(automl._results['errors']) == 1  # Raises exception at first error
+    for e in automl._results['errors']:
+        assert str(e) == msg
