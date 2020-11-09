@@ -16,7 +16,7 @@ def ts_data():
     return X, y
 
 
-class DelayedFeaturesTransformer(Transformer):
+class MockDelayedFeatures(Transformer):
     name = "Delayed Features Transformer"
     needs_fitting = False
 
@@ -32,37 +32,25 @@ class DelayedFeaturesTransformer(Transformer):
 
     def transform(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
-            # The user only passed in the target as a Series
-            if y is None:
-                X = pd.DataFrame(X, columns=["target"])
-            else:
-                X = pd.DataFrame(X)
-        if y is not None and not isinstance(y, pd.Series):
-            y = pd.Series(y)
+            X = pd.DataFrame(X)
 
         original_columns = X.columns
-        X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
-                        for t in range(self.max_delay + 1)
-                        for col in X})
-        X.drop(columns=original_columns, inplace=True)
+        X = X.assign(col_with_nans=X.iloc[:, 0].shift(self.max_delay))
 
-        # Handle cases where the target was passed in
-        if y is not None:
-            X = X.assign(**{f"target_delay_{t}": y.shift(t)
-                            for t in range(self.max_delay + 1)})
+        X.drop(columns=original_columns, inplace=True)
 
         return X
 
 
 @pytest.mark.parametrize("pipeline_class", [TimeSeriesRegressionPipeline])
 @pytest.mark.parametrize("components", [["One Hot Encoder"],
-                                        [DelayedFeaturesTransformer, "One Hot Encoder"]])
+                                        [MockDelayedFeatures, "One Hot Encoder"]])
 def test_time_series_pipeline_init(pipeline_class, components):
 
     class Pipeline(pipeline_class):
         component_graph = components + ["Random Forest Regressor"]
 
-    if DelayedFeaturesTransformer not in components:
+    if MockDelayedFeatures not in components:
         pl = Pipeline({}, gap=3, max_delay=5)
         assert "Delayed Features Transformer" not in pl.parameters
     else:
@@ -82,18 +70,13 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
     X, y = ts_data
 
     if include_lagged_features:
-        components = [DelayedFeaturesTransformer, estimator_name]
+        components = [MockDelayedFeatures, estimator_name]
         train_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31-gap}")
         expected_target = np.arange(1 + gap + max_delay, 32)
     else:
         components = [estimator_name]
         train_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
         expected_target = np.arange(1 + gap, 32)
-
-    expected_n_features = {(True, True): max_delay + 1,
-                           (True, False): 1,
-                           (False, True): 2 * (max_delay + 1),
-                           (False, False): 1}[(only_use_y, include_lagged_features)]
 
     class Pipeline(pipeline_class):
         component_graph = components
@@ -109,7 +92,6 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
 
     # NaNs introduced by shifting are dropped
     assert not df_passed_to_estimator.isna().any(axis=1).any()
-    assert df_passed_to_estimator.shape[1] == expected_n_features
     assert not target_passed_to_estimator.isna().any()
 
     # Check the estimator was trained on the expected dates
@@ -135,7 +117,7 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
     mock_regressor_predict.side_effect = mock_predict
 
     if include_lagged_features:
-        components = [DelayedFeaturesTransformer, estimator_name]
+        components = [MockDelayedFeatures, estimator_name]
     else:
         components = [estimator_name]
 
@@ -177,7 +159,7 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
     mock_regressor_predict.side_effect = mock_predict
 
     if include_lagged_features:
-        components = [DelayedFeaturesTransformer, estimator_name]
+        components = [MockDelayedFeatures, estimator_name]
         expected_target = np.arange(1 + gap + max_delay, 32)
         target_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31 - gap}")
     else:
