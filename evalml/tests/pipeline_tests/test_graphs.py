@@ -62,7 +62,6 @@ def test_returns_digraph_object(test_pipeline):
     assert isinstance(graph, graphviz.Digraph)
 
 
-@patch('graphviz.Digraph.pipe')
 def test_backend_comp_graph(mock_func, test_component_graph):
     graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')

@@ -285,8 +285,6 @@ class ComponentGraph:
     def __next__(self):
         try:
             component = next(self._compute_order)
-            if component[-2:] == '.x' or component[-2:] == '.y':
-                component = component[:-2]
             return component, self.component_dict[component][0]
         except StopIteration:
             self._recompute_order()  # Reset the generator
