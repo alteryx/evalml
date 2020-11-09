@@ -316,6 +316,14 @@ def _convert_woodwork_types_wrapper(pd_data):
 
 
 def pad_with_nans(pd_data, num_to_pad):
+    """Pad the beginning num_to_pad rows with nans.
+
+    Arguments:
+        pd_data (pd.DataFrame or pd.Series): Data to pad.
+
+    Returns:
+        pd.DataFrame or pd.Series
+    """
     if isinstance(pd_data, pd.Series):
         padding = pd.Series([None] * num_to_pad)
     else:
@@ -325,6 +333,11 @@ def pad_with_nans(pd_data, num_to_pad):
 
 
 def drop_nan(pd_data_1, pd_data_2):
+    """Drop rows from pd_data_1 and pd_data2 where either pd_data_1 or pd_data_2 are NaN.
+
+    Returns:
+        tuple of pd.DataFrame or pd.Series
+    """
 
     def _not_nan(pd_data):
         if isinstance(pd_data, pd.Series):
@@ -337,4 +350,11 @@ def drop_nan(pd_data_1, pd_data_2):
 
 
 def any_values_are_nan(pd_data):
+    """Determine if any rows have at least one NaN.
+    Args:
+        pd_data (pd.Dataframe or pd.Series): Pandas data to check.
+
+    Returns:
+        pd.Series with bool values. Each value corresponds to if any values in the row are NaN.
+    """
     return pd_data.isna().values.any()
