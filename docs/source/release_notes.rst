@@ -12,7 +12,8 @@ Release Notes
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
     * Fixes
-        * Fixed stacked ensemble input bug and LightGBM warning and bug in AutoMLSearch :pr:`1388`
+        * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
+        * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
@@ -21,6 +22,7 @@ Release Notes
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
+        *  Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`

@@ -124,7 +124,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
@@ -177,7 +177,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:

@@ -93,7 +93,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
     assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert all([p.parameters == (p.__class__)({}).parameters for p in next_batch])
+    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -142,6 +142,47 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             random_states_the_same = [check_random_state_equality(estimator.pipeline.random_state, algo.random_state)
                                       for estimator in estimators_used_in_ensemble]
             assert all(random_states_the_same)
+
+
+@pytest.mark.parametrize("ensembling_value", [True, False])
+def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_regression_binary_pipeline_class):
+    # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
+    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=ensembling_value)
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert algo.allowed_pipelines == [logistic_regression_binary_pipeline_class]
+
+    # initial batch contains one of each pipeline, with default parameters
+    next_batch = algo.next_batch()
+    assert len(next_batch) == 1
+    assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
+    assert algo.pipeline_number == 1
+    assert algo.batch_number == 1
+    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
+    last_batch_number = algo.batch_number
+    last_pipeline_number = algo.pipeline_number
+    all_parameters = []
+    for i in range(1, 5):
+        next_batch = algo.next_batch()
+        assert len(next_batch) == algo.pipelines_per_batch
+        assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
+        assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
+        assert algo.pipeline_number == last_pipeline_number + len(next_batch)
+        last_pipeline_number = algo.pipeline_number
+        assert algo.batch_number == last_batch_number + 1
+        last_batch_number = algo.batch_number
+        print([p.parameters for p in next_batch])
+        all_parameters.extend([p.parameters for p in next_batch])
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline)
+        assert any([p != logistic_regression_binary_pipeline_class.default_parameters for p in all_parameters])
 
 
 def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class):

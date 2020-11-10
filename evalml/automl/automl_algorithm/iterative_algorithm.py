@@ -45,7 +45,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._text_columns = text_columns
         self._first_batch_results = []
         self._best_pipeline_info = {}
-        self.ensembling = ensembling
+        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -65,7 +65,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         # One after training all pipelines one round
         elif (self.ensembling and
-              len(self._first_batch_results) > 1 and
               self._batch_number != 1 and
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []

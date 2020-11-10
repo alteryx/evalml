@@ -26,8 +26,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
     Arguments:
-        y_true (pd.Series or np.array): True binary labels.
-        y_pred (pd.Series or np.array): Predictions from a binary classifier.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -50,7 +50,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (pd.DataFrame or np.array): Confusion matrix to normalize.
+        conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -75,8 +75,8 @@ def precision_recall_curve(y_true, y_pred_proba):
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
-        y_true (pd.Series or np.array): True binary labels.
-        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
@@ -98,8 +98,8 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """Generate and display a precision-recall plot.
 
     Arguments:
-        y_true (pd.Series or np.array): True binary labels.
-        y_pred_proba (pd.Series or np.array): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         title_addition (str or None): If not None, append to plot title. Default None.
 
     Returns:
@@ -131,8 +131,8 @@ def roc_curve(y_true, y_pred_proba):
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
-        y_true (pd.Series or np.array): True labels.
-        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied.
+        y_true (pd.Series or np.ndarray): True labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -177,8 +177,8 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
-        y_true (pd.Series or np.array): True labels.
-        y_pred_proba (pd.Series or np.array): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
+        y_true (pd.Series or np.ndarray): True labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
         custom_class_labels (list or None): If not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
@@ -222,8 +222,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
 
     Arguments:
-        y_true (pd.Series or np.array): True binary labels.
-        y_pred (pd.Series or np.array): Predictions from a binary classifier.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
         title_addition (str or None): if not None, append to plot title. Default None.
 
@@ -415,7 +415,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, np.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
@@ -454,7 +454,7 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame, np.array): The input data used to generate a grid of values
+        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
