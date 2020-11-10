@@ -197,7 +197,7 @@ Transformers are components that take in data as input and output transformed da
     DropNullColumns
     DateTimeFeaturizer
     TextFeaturizer
-    DelayedFeaturesTransformer
+    DelayedFeatureTransformer
 
 Estimators
 ~~~~~~~~~~
