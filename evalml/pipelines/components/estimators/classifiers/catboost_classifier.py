@@ -60,7 +60,7 @@ class CatBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        cat_cols = X.select('category')
+        cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_pandas())
 
         y = _convert_to_woodwork_structure(y)
