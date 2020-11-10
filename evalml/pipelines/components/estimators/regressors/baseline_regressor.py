@@ -57,7 +57,7 @@ class BaselineRegressor(Estimator):
         """Returns importance associated with each feature. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.array (float): an array of zeroes
+            np.ndarray (float): an array of zeroes
 
         """
         return np.zeros(self._num_features)

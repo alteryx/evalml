@@ -46,7 +46,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
             pd.DataFrame: probability estimates
