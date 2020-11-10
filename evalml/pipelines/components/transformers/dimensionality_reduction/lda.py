@@ -8,6 +8,7 @@ from evalml.utils.gen_utils import is_all_numeric
 class LDA(Transformer):
     """Reduces the number of features by using Linear Discriminant Analysis"""
     name = 'Linear Discriminant Analysis Transformer'
+    hyperparameter_ranges = {}
 
     def __init__(self, n_components=None, random_state=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
