@@ -18,9 +18,9 @@ from evalml.problem_types import ProblemTypes
 
 def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
-        assert len(all_components()) == 28
+        assert len(all_components()) == 29
     else:
-        assert len(all_components()) == 33
+        assert len(all_components()) == 34
 
 
 def test_handle_component_class_names():
