@@ -210,7 +210,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
 
 def _rename_column_names_to_numeric(X):
-    """Used in XGBoost classifier and regressor classes to rename column names
+    """Used in LightGBM classifier class and XGBoost classifier and regressor classes to rename column names
         when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
 
     Arguments:
