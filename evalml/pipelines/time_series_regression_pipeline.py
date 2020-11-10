@@ -3,7 +3,13 @@ import pandas as pd
 from evalml.objectives import get_objective
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import any_values_are_nan, drop_nan, pad_with_nans
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    any_values_are_nan,
+    keep_non_nan_rows,
+    pad_with_nans
+)
 
 
 class TimeSeriesRegressionPipeline(RegressionPipeline):
@@ -41,17 +47,18 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        if X is None:
+            X = pd.DataFrame()
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
-        if X.empty:
-            X_t = self._compute_features_during_fit(X=None, y=y)
-        else:
-            y = pd.Series(y)
-            X_t = self._compute_features_during_fit(X, y)
+        y = pd.Series(y)
+        X_t = self._compute_features_during_fit(X, y)
 
         y_shifted = y.shift(-self.gap)
-        X_t, y_shifted = drop_nan(X_t, y_shifted)
+        X_t, y_shifted = keep_non_nan_rows(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
         return self
 
@@ -66,6 +73,13 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         Returns:
             pd.Series: Predicted values.
         """
+        if X is None:
+            X = pd.DataFrame()
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
+
         features = self.compute_estimator_features(X, y)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
         return pad_with_nans(predictions, self.max_delay if any_values_are_nan(features) else 0)
@@ -81,10 +95,16 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         Returns:
             dict: Ordered dictionary of objective scores
         """
+        # Only converting X for the call to _score_all_objectives
+        if X is None:
+            X = pd.DataFrame()
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+
         y_predicted = self.predict(X, y)
         y_shifted = y.shift(-self.gap)
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        y_shifted, y_predicted = drop_nan(y_shifted, y_predicted)
+        y_shifted, y_predicted = keep_non_nan_rows(y_shifted, y_predicted)
         return self._score_all_objectives(X, y_shifted,
                                           y_predicted,
                                           y_pred_proba=None,

@@ -12,7 +12,7 @@ from evalml.utils.gen_utils import (
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
-    drop_nan,
+    keep_non_nan_rows,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
@@ -271,7 +271,7 @@ def test_pad_with_nans(data, num_to_pad, expected):
                             pd.DataFrame({"a": [4.]}, index=pd.Int64Index([1]))]),
                           ])
 def test_drop_nan(data, expected):
-    no_nan_1, no_nan_2 = drop_nan(*data)
+    no_nan_1, no_nan_2 = keep_non_nan_rows(*data)
     _check_equality(no_nan_1, expected[0], check_index_type=False)
     _check_equality(no_nan_2, expected[1], check_index_type=False)
 
