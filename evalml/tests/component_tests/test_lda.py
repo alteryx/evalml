@@ -74,11 +74,6 @@ def test_lda_invalid():
         lda.transform(X)
 
 
-def test_invalid_solver():
-    with pytest.raises(ValueError, match='is not valid'):
-        LDA(solver='fake')
-
-
 def test_n_components():
     X = pd.DataFrame([[3, 0, 1, 6, 5, 10],
                       [1, 3, 1, 3, 11, 4],

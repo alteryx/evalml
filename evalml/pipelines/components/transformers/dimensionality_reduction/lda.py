@@ -8,24 +8,16 @@ from evalml.utils.gen_utils import is_all_numeric
 class LDA(Transformer):
     """Reduces the number of features by using Linear Discriminant Analysis"""
     name = 'Linear Discriminant Analysis Transformer'
-    hyperparameter_ranges = {
-        "solver": ['svd', 'eigen']
-    }
 
-    def __init__(self, solver='svd', n_components=None, random_state=0, **kwargs):
+    def __init__(self, n_components=None, random_state=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
 
         Arguments:
-            solver (string): One of `svd` (singular value decomposition) or `eigen` (eigenvalue decomposition),
-                             the solver to use.
             n_components (int): the number of features to maintain after computationn. Defaults to None.
         """
-        if solver not in self.hyperparameter_ranges['solver']:
-            raise ValueError(f'Solver {solver} is not valid')
-        parameters = {"solver": solver,
-                      "n_components": n_components}
+        parameters = {"n_components": n_components}
         parameters.update(kwargs)
-        lda = SkLDA(solver=solver, n_components=n_components, **kwargs)
+        lda = SkLDA(n_components=n_components, **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=lda,
                          random_state=random_state)
