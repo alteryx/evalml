@@ -22,6 +22,7 @@ Release Notes
         * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
+        *  Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`

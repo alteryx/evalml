@@ -62,7 +62,7 @@ class TextFeaturizer(TextTransformer):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training labels of length [n_samples]
 
         Returns:

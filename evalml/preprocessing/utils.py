@@ -41,7 +41,7 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Arguments:
-        X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+        X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
         y (pd.Series): Target data of length [n_samples]
         regression (bool): If true, do not use stratified split
         test_size (float): Percent of train set to holdout for testing
