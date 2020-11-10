@@ -5,7 +5,7 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delayes input features and target variable for time series problems."""
-    name = "Delayed Features Transformer"
+    name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
 
@@ -69,8 +69,8 @@ class DelayedFeatureTransformer(Transformer):
 
         if self.delay_features and not X.empty:
             X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
-                        for t in range(1, self.max_delay + 1)
-                        for col in X})
+                            for t in range(1, self.max_delay + 1)
+                            for col in X})
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:

@@ -753,7 +753,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
 
 def test_all_transformers_needs_fitting():
     for component_class in _all_transformers() + _all_estimators():
-        if component_class.__name__ in ['DropColumns', 'SelectColumns', 'DelayedFeaturesTransformer']:
+        if component_class.__name__ in ['DropColumns', 'SelectColumns', 'DelayedFeatureTransformer']:
             assert not component_class.needs_fitting
         else:
             assert component_class.needs_fitting
