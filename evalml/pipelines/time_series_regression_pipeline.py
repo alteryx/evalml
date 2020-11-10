@@ -37,7 +37,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         self.max_delay = pipeline_params['max_delay']
         super().__init__(parameters, random_state)
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         """Fit a time series regression pipeline.
 
         Arguments:
@@ -54,7 +54,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         X = _convert_woodwork_types_wrapper(X.to_pandas())
         y = _convert_woodwork_types_wrapper(y.to_pandas())
 
-        y = pd.Series(y)
         X_t = self._compute_features_during_fit(X, y)
 
         y_shifted = y.shift(-self.gap)
