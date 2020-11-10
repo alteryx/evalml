@@ -13,7 +13,10 @@ from evalml.utils import (
     log_subtitle,
     safe_repr
 )
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 logger = get_logger(__file__)
 
 
@@ -89,6 +92,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             self
         """
         try:
+            X = _convert_to_woodwork_structure(X)
+            X = _convert_woodwork_types_wrapper(X.to_pandas())
             self._component_obj.fit(X, y)
             return self
         except AttributeError:
