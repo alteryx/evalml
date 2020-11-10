@@ -13,7 +13,7 @@ class DefaultDataChecks(DataChecks):
     """A collection of basic data checks that is used by AutoML by default.
     Includes:
 
-        - `HighlyNullDataCheck` 
+        - `HighlyNullDataCheck`
         - `IDColumnsDataCheck`
         - `TargetLeakageDataCheck`
         - `InvalidTargetDataCheck`
