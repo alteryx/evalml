@@ -34,31 +34,31 @@ def test_time_series_pipeline_init(pipeline_class, components):
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
-@pytest.mark.parametrize("include_lagged_features", [True, False])
+@pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(1, 2), (2, 2), (7, 3), (2, 4)])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
-                                        estimator_name, gap, max_delay, include_lagged_features, only_use_y, ts_data):
+                                        estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
-    if only_use_y and not include_lagged_features:
+    if only_use_y and not include_delayed_features:
         pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
 
     X, y = ts_data
 
-    if include_lagged_features:
-        components = ["Delayed Feature Transformer", estimator_name]
+    if include_delayed_features:
         train_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31-gap}")
         expected_target = np.arange(1 + gap + max_delay, 32)
     else:
-        components = [estimator_name]
         train_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
         expected_target = np.arange(1 + gap, 32)
 
     class Pipeline(pipeline_class):
-        component_graph = components
+        component_graph = ["Delayed Feature Transformer", estimator_name]
 
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay}},
+    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                   "delay_features": include_delayed_features,
+                                                   "delay_target": include_delayed_features}},
                   gap=gap, max_delay=max_delay)
 
     if only_use_y:
@@ -78,16 +78,16 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
-@pytest.mark.parametrize("include_lagged_features", [True, False])
+@pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(1, 2), (2, 2), (7, 3), (2, 4)])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
-                          estimator_name, gap, max_delay, include_lagged_features, only_use_y, ts_data):
+                          estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
-    if only_use_y and not include_lagged_features:
+    if only_use_y and not include_delayed_features:
         pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
 
     X, y = ts_data
@@ -97,15 +97,13 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
 
     mock_regressor_predict.side_effect = mock_predict
 
-    if include_lagged_features:
-        components = ["Delayed Feature Transformer", estimator_name]
-    else:
-        components = [estimator_name]
-
     class Pipeline(pipeline_class):
-        component_graph = components
+        component_graph = ["Delayed Feature Transformer", estimator_name]
 
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay}}, gap=gap, max_delay=max_delay)
+    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                   "delay_features": include_delayed_features,
+                                                   "delay_target": include_delayed_features}},
+                  gap=gap, max_delay=max_delay)
 
     if only_use_y:
         pl.fit(None, y)
@@ -115,14 +113,14 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
         preds = pl.predict(X, y)
 
     # Check that the predictions have NaNs for the first n_delay dates
-    if include_lagged_features:
+    if include_delayed_features:
         assert np.isnan(preds.values[:max_delay]).all()
     else:
         assert not np.isnan(preds.values).any()
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
-@pytest.mark.parametrize("include_lagged_features", [True, False])
+@pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(1, 2), (2, 2), (7, 3), (2, 4)])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
@@ -130,9 +128,9 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
 @patch("evalml.pipelines.RegressionPipeline._score_all_objectives")
 def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
-                          estimator_name, gap, max_delay, include_lagged_features, only_use_y, ts_data):
+                          estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
-    if only_use_y and not include_lagged_features:
+    if only_use_y and not include_delayed_features:
         pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
 
     X, y = ts_data
@@ -142,19 +140,20 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
 
     mock_regressor_predict.side_effect = mock_predict
 
-    if include_lagged_features:
-        components = ["Delayed Feature Transformer", estimator_name]
+    if include_delayed_features:
         expected_target = np.arange(1 + gap + max_delay, 32)
         target_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31 - gap}")
     else:
-        components = [estimator_name]
         expected_target = np.arange(1 + gap, 32)
         target_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
 
     class Pipeline(pipeline_class):
-        component_graph = components
+        component_graph = ["Delayed Feature Transformer", estimator_name]
 
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay}}, gap=gap, max_delay=max_delay)
+    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                   "delay_features": include_delayed_features,
+                                                   "delay_target": include_delayed_features}},
+                   gap=gap, max_delay=max_delay)
 
     if only_use_y:
         pl.fit(None, y)
