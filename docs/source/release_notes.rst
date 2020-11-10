@@ -12,6 +12,7 @@ Release Notes
         * Added a problem type for time series regression :pr:`1386`
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
+        * Added ``DelayedFeaturesTransformer`` :pr:`1396`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
