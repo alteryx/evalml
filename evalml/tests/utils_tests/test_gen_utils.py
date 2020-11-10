@@ -12,12 +12,12 @@ from evalml.utils.gen_utils import (
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
-    keep_non_nan_rows,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
     import_or_raise,
     jupyter_check,
+    keep_non_nan_rows,
     pad_with_nans
 )
 
