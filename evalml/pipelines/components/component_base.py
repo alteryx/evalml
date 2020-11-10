@@ -95,8 +95,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         try:
             X = _convert_to_woodwork_structure(X)
             X = _convert_woodwork_types_wrapper(X.to_pandas())
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_pandas())
+            if y is not None:
+                y = _convert_to_woodwork_structure(y)
+                y = _convert_woodwork_types_wrapper(y.to_pandas())
             self._component_obj.fit(X, y)
             return self
         except AttributeError:
