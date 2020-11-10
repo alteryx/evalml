@@ -83,28 +83,3 @@ class StackedEnsembleBase(Estimator):
                 'n_jobs': 1,
                 }
 
-    def fit(self, X, y=None):
-        """Fits component to data
-
-        Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
-
-        Returns:
-            self
-        """
-        self._component_obj.fit(X, y)
-        return self
-
-    def predict(self, X):
-        """Make predictions using selected features.
-
-        Arguments:
-            X (pd.DataFrame): Features
-
-        Returns:
-            pd.Series: Predicted values
-        """
-        predictions = self._component_obj.predict(X)
-        predictions = pd.Series(predictions)
-        return predictions

@@ -4,7 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated pipelines and ``make_pipeline`` to accept ``Woodwork`` inputs :pr:`1393`
-        * Updates components to accept ``Woodwork`` inputs :pr:`1423`
+        * Updated components to accept ``Woodwork`` inputs :pr:`1423`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
