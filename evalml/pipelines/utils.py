@@ -7,7 +7,7 @@ from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
 from .regression_pipeline import RegressionPipeline
-from .time_series import TimeSeriesRegressionPipeline
+from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase

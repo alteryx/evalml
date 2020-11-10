@@ -24,13 +24,17 @@ def test_time_series_pipeline_init(pipeline_class, components):
         component_graph = components + ["Random Forest Regressor"]
 
     if "Delayed Feature Transformer" not in components:
-        pl = Pipeline({}, gap=3, max_delay=5)
+        pl = Pipeline({'pipeline': {"gap": 3, "max_delay": 5}})
         assert "Delayed Feature Transformer" not in pl.parameters
     else:
-        parameters = {"Delayed Feature Transformer": {"gap": 3, "max_delay": 5}}
-        pl = Pipeline(parameters, gap=3, max_delay=5)
+        parameters = {"Delayed Feature Transformer": {"gap": 3, "max_delay": 5},
+                      "pipeline": {"gap": 3, "max_delay": 5}}
+        pl = Pipeline(parameters)
         assert pl.parameters['Delayed Feature Transformer'] == {"gap": 3, "max_delay": 5,
                                                                 "delay_features": True, "delay_target": True}
+
+    with pytest.raises(ValueError, match="gap and max_delay parameters cannot be omitted from the parameters dict"):
+        Pipeline({})
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
@@ -58,8 +62,8 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features}},
-                  gap=gap, max_delay=max_delay)
+                                                   "delay_target": include_delayed_features},
+                   "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     if only_use_y:
         pl.fit(None, y)
@@ -102,8 +106,8 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features}},
-                  gap=gap, max_delay=max_delay)
+                                                   "delay_target": include_delayed_features},
+                   "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     if only_use_y:
         pl.fit(None, y)
@@ -152,8 +156,8 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features}},
-                   gap=gap, max_delay=max_delay)
+                                                   "delay_target": include_delayed_features},
+                   "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     if only_use_y:
         pl.fit(None, y)

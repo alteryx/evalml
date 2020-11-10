@@ -46,4 +46,4 @@ from .regression import (
     MeanBaselineRegressionPipeline
 )
 
-from .time_series import TimeSeriesRegressionPipeline
+from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
