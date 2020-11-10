@@ -62,11 +62,6 @@ class DelayedFeatureTransformer(Transformer):
         if y is not None and not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        # If the user only passes in y (None for X will get turned into an empty dataframe)
-        if X.empty and y is None:
-            X = pd.DataFrame(X, columns=["target"])
-            y = None
-
         if self.delay_features and not X.empty:
             X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
                             for t in range(1, self.max_delay + 1)
