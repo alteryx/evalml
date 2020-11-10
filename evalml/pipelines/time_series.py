@@ -24,18 +24,14 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         Returns:
             self
         """
-        if y is None:
-            assert isinstance(X, pd.Series), "When modeling a single time series, the data must be a series."
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
-        if y is None:
-            X_t, _ = self._compute_features_during_fit(X, y=None)
-            y = X.squeeze()
+        if X.empty:
+            X_t, _ = self._compute_features_during_fit(X=None, y=y)
         else:
             y = pd.Series(y)
             X_t, _ = self._compute_features_during_fit(X, y)
-
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_nan(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
