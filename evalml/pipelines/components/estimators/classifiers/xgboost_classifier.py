@@ -1,4 +1,3 @@
-import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -43,20 +42,17 @@ class XGBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
-        if isinstance(X, pd.DataFrame):
-            X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
     def predict(self, X):
         # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
-        if isinstance(X, pd.DataFrame):
-            X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         return predictions
 
     def predict_proba(self, X):
-        if isinstance(X, pd.DataFrame):
-            X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X)
         predictions = super().predict_proba(X)
         return predictions
 

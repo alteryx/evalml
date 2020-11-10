@@ -13,6 +13,7 @@ from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    _rename_column_names_to_numeric,
     categorical_dtypes
 )
 
@@ -75,7 +76,7 @@ class LightGBMClassifier(Estimator):
     def _encode_categories(self, X, fit=False):
         X2 = pd.DataFrame(copy.copy(X))
         # encode each categorical feature as an integer
-        X2.columns = np.arange(len(X2.columns))
+        X2 = _rename_column_names_to_numeric(X2)
         # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
         cat_cols = X2.select_dtypes(categorical_dtypes).columns
         if len(cat_cols) == 0:

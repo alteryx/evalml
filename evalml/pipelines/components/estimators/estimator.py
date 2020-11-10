@@ -32,7 +32,7 @@ class Estimator(ComponentBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
             pd.Series: Predicted values
