@@ -11,12 +11,14 @@ from evalml.problem_types import (
 
 @pytest.fixture
 def correct_problem_types():
-    correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS, ProblemTypes.BINARY]
+    # Unit tests expect this order
+    correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS,
+                             ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_REGRESSION]
     yield correct_problem_types
 
 
 def test_handle_string(correct_problem_types):
-    problem_types = ['regression', ProblemTypes.MULTICLASS, 'binary']
+    problem_types = ['regression', ProblemTypes.MULTICLASS, 'binary', ProblemTypes.TIME_SERIES_REGRESSION]
     for problem_type in zip(problem_types, correct_problem_types):
         assert handle_problem_types(problem_type[0]) == problem_type[1]
 
@@ -119,6 +121,7 @@ def test_all_problem_types():
     expected = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
-        ProblemTypes.REGRESSION
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION
     ]
     assert ProblemTypes.all_problem_types == expected

@@ -3,23 +3,71 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
+        * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
+        * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
+        * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
+        * The top_k features displayed in ``explain_predictions_*`` functions are now determined by the magnitude of shap values as opposed to the ``top_k`` largest and smallest shap values. :pr:`1374`
+        * Added a problem type for time series regression :pr:`1386`
+        * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
+        * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
+        * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
+    * Fixes
+        * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
+        * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
+        * Updated enum classes to show possible enum values as attributes :pr:`1391`
+    * Changes
+        * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
+        * Simplified and cleaned output for Code Generation :pr:`1371`
+        * Reverted changes from :pr:`1337` :pr:`1409`
+    * Documentation Changes
+        * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
+    * Testing Changes
+        * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
+        * Tweak codecov.io settings again to avoid flakes :pr:`1413`
+
+.. warning::
+
+    **Breaking Changes**
+        * The ``top_k`` and ``top_k_features`` parameters in ``explain_predictions_*`` functions now return ``k`` features as opposed to ``2 * k`` features :pr:`1374`
+        * Renamed ``problem_type`` to ``problem_types`` in ``RegressionObjective``, ``BinaryClassificationObjective``, and ``MulticlassClassificationObjective`` :pr:`1319`
+
+**v0.15.0 Oct. 29, 2020**
+    * Enhancements
         * Added stacked ensemble component classes (``StackedEnsembleClassifier``, ``StackedEnsembleRegressor``) :pr:`1134`
+        * Added stacked ensemble components to ``AutoMLSearch`` :pr:`1253`
         * Added ``DecisionTreeClassifier`` and ``DecisionTreeRegressor`` to AutoML :pr:`1255`
         * Added ``graph_prediction_vs_actual`` in ``model_understanding`` for regression problems :pr:`1252`
-        * Added stacked ensemble component classes (StackedEnsembleClassifier, StackedEnsembleRegressor) :pr:`1134`
         * Added parameter to ``OneHotEncoder`` to enable filtering for features to encode for :pr:`1249`
         * Added percent-better-than-baseline for all objectives to automl.results :pr:`1244`
         * Added ``HighVarianceCVDataCheck`` and replaced synonymous warning in ``AutoMLSearch`` :pr:`1254`
         * Added `PCA Transformer` component for dimensionality reduction :pr:`1270`
-        * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
+        * Added ``generate_pipeline_code`` and ``generate_component_code`` to allow for code generation given a pipeline or component instance :pr:`1306`
+        * Added ``PCA Transformer`` component for dimensionality reduction :pr:`1270`
+        * Updated ``AutoMLSearch`` to support ``Woodwork`` data structures :pr:`1299`
+        * Added cv_folds to ``ClassImbalanceDataCheck`` and added this check to ``DefaultDataChecks`` :pr:`1333`
+        * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Added text support to automl search :pr:`1062`
+        * Added ``_pipelines_per_batch`` as a private argument to ``AutoMLSearch`` :pr:`1355`
     * Fixes
         * Fixed ML performance issue with ordered datasets: always shuffle data in automl's default CV splits :pr:`1265`
         * Fixed broken ``evalml info`` CLI command :pr:`1293`
         * Fixed ``boosting type='rf'`` for LightGBM Classifier, as well as ``num_leaves`` error :pr:`1302`
         * Fixed bug in ``explain_predictions_best_worst`` where a custom index in the target variable would cause a ``ValueError`` :pr:`1318`
         * Added stacked ensemble estimators to to ``evalml.pipelines.__init__`` file :pr:`1326`
+        * Fixed bug in OHE where calls to transform were not deterministic if ``top_n`` was less than the number of categories in a column :pr:`1324`
+        * Fixed LightGBM warning messages during AutoMLSearch :pr:`1342`
+        * Fix warnings thrown during AutoMLSearch in ``HighVarianceCVDataCheck`` :pr:`1346`
+        * Fixed bug where TrainingValidationSplit would return invalid location indices for dataframes with a custom index :pr:`1348`
+        * Fixed bug where the AutoMLSearch ``random_state`` was not being passed to the created pipelines :pr:`1321`
     * Changes
         * Allow ``add_to_rankings`` to be called before AutoMLSearch is called :pr:`1250`
+        * Removed Graphviz from test-requirements to add to requirements.txt :pr:`1327`
+        * Removed ``max_pipelines`` parameter from ``AutoMLSearch`` :pr:`1264`
+        * Include editable installs in all install make targets :pr:`1335`
+        * Made pip dependencies `featuretools` and `nlp_primitives` core dependencies :pr:`1062`
+        * Removed `PartOfSpeechCount` from `TextFeaturizer` transform primitives :pr:`1062`
+        * Added warning for ``partial_dependency`` when the feature includes null values :pr:`1352`
     * Documentation Changes
         * Fixed and updated code blocks in Release Notes :pr:`1243`
         * Added DecisionTree estimators to API Reference :pr:`1246`
@@ -30,19 +78,28 @@ Release Notes
         * Removed conda pre-release testing from the release process document :pr:`1282`
         * Updates to contributing guide :pr:`1310`
         * Added Alteryx footer to docs with Twitter and Github link :pr:`1312`
+        * Added documentation for evalml installation for Python 3.6 :pr:`1322`
         * Added documentation changes to make the API Docs easier to understand :pr:`1323`
+        * Fixed documentation for ``feature_importance`` :pr:`1353`
+        * Added tutorial for running `AutoML` with text data :pr:`1357`
+        * Added documentation for woodwork integration with automl search :pr:`1361`
     * Testing Changes
         * Added tests for ``jupyter_check`` to handle IPython :pr:`1256`
         * Cleaned up ``make_pipeline`` tests to test for all estimators :pr:`1257`
         * Added a test to check conda build after merge to main :pr:`1247`
         * Removed code that was lacking codecov for ``__main__.py`` and unnecessary :pr:`1293`
-
+        * Codecov: round coverage up instead of down :pr:`1334`
+        * Add DockerHub credentials to CI testing environment :pr:`1356`
+        * Add DockerHub credentials to conda testing environment :pr:`1363`
 
 .. warning::
 
     **Breaking Changes**
         * Renamed ``LabelLeakageDataCheck`` to ``TargetLeakageDataCheck`` :pr:`1319`
-
+        * ``max_pipelines`` parameter has been removed from ``AutoMLSearch``. Please use ``max_iterations`` instead. :pr:`1264`
+        * ``AutoMLSearch.search()`` will now log a warning if the input is not a ``Woodwork`` data structure (``pandas``, ``numpy``) :pr:`1299`
+        * Make ``max_batches`` argument to ``AutoMLSearch.search`` public :pr:`1320`
+        * Removed unused argument `feature_types` from AutoMLSearch.search :pr:`1062`
 
 **v0.14.1 Sep. 29, 2020**
     * Enhancements

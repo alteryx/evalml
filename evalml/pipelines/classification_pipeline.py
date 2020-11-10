@@ -4,6 +4,10 @@ from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class ClassificationPipeline(PipelineBase):
@@ -28,18 +32,17 @@ class ClassificationPipeline(PipelineBase):
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
-
-            y (pd.Series): The target training labels of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
             self
 
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)
@@ -70,14 +73,12 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
             pd.Series: Estimated labels
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
         X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
@@ -85,12 +86,14 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame, or np.array): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
             pd.Series : Estimated labels
         """
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         predictions = self._predict(X, objective)
         return pd.Series(self._decode_targets(predictions))
 
@@ -98,14 +101,13 @@ class ClassificationPipeline(PipelineBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame or np.array): Data of shape [n_samples, n_features]
 
         Returns:
             pd.DataFrame: Probability estimates
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X = self.compute_estimator_features(X)
         proba = self.estimator.predict_proba(X)
         proba.columns = self._encoder.classes_
@@ -115,17 +117,17 @@ class ClassificationPipeline(PipelineBase):
         """Evaluate model performance on objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): True labels of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)

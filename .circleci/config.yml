@@ -13,6 +13,9 @@ executors:
     working_directory: ~/evalml
     docker:
       - image: circleci/python:<< parameters.python_version >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
         environment:
           OMP_NUM_THREADS: 8
 
@@ -34,7 +37,6 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            make installdeps
             make installdeps-dev
   install_dependencies_core:
     steps:
@@ -57,7 +59,7 @@ commands:
             cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
             python .circleci/conda_config.py "$(python setup.py --version)"
             cd evalml-core-feedstock
-            echo "$DOCKER_HUB_PASS" | docker login -u psalter --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login -u $DOCKERHUB_USERNAME --password-stdin
             export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-comp7)"
             echo "Created container ${DOCKER_CONTAINERID}"
             chmod -R 777 ./
@@ -223,6 +225,9 @@ jobs:
     working_directory: ~/evalml
     docker:
       - image: busybox:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: | # debugging info

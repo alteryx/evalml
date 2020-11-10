@@ -73,6 +73,21 @@ AutoML Algorithm Classes
     IterativeAlgorithm
 
 
+.. currentmodule:: evalml.automl.callbacks
+
+AutoML Callbacks
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+    silent_error_callback
+    log_error_callback
+    raise_error_callback
+    log_and_save_error_callback
+    raise_and_save_error_callback
+
+
 .. currentmodule:: evalml.pipelines
 
 Pipelines
@@ -125,6 +140,7 @@ Pipeline Utils
 
     make_pipeline
     make_pipeline_from_components
+    generate_pipeline_code
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -155,6 +171,7 @@ Component Utils
 
     allowed_model_families
     get_estimators
+    generate_component_code
 
 
 .. currentmodule:: evalml.pipelines.components
@@ -371,17 +388,15 @@ Problem Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ProblemTypes
-
-.. autosummary::
-    :toctree: generated
     :nosignatures:
 
     handle_problem_types
     detect_problem_type
+
+    :template: enum_class.rst
+
+    ProblemTypes
+
 
 
 .. currentmodule:: evalml.model_family
@@ -391,16 +406,13 @@ Model Family
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    ModelFamily
-
-.. autosummary::
-    :toctree: generated
     :nosignatures:
 
     handle_model_family
+
+    :template: enum_class.rst
+
+    ModelFamily
 
 
 .. currentmodule:: evalml.tuners
@@ -467,7 +479,7 @@ Data Check Message Types
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: enum_class.rst
     :nosignatures:
 
     DataCheckMessageType

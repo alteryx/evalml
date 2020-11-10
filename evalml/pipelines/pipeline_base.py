@@ -30,6 +30,10 @@ from evalml.utils import (
     log_title,
     safe_repr
 )
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 logger = get_logger(__file__)
 
@@ -204,9 +208,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (pd.DataFrame or np.array): The input training data of shape [n_samples, n_features]
-
-            y (pd.Series): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training data of length [n_samples]
 
         Returns:
             self
@@ -217,15 +220,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame, or np.array): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
             pd.Series: Predicted values.
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
@@ -234,8 +236,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
-            y (pd.Series): Target data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
@@ -262,7 +264,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         exceptions = OrderedDict()
         for objective in objectives:
             try:
-                if self.problem_type != objective.problem_type:
+                if not objective.is_defined_for_problem_type(self.problem_type):
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
                 scored_successfully.update({objective.name: score})
@@ -319,7 +321,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by feature selection are excluded.
+        """Return importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
             pd.DataFrame including feature names and their corresponding importance

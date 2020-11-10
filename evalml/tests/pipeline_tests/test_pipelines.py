@@ -5,6 +5,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
@@ -35,6 +36,7 @@ from evalml.pipelines.components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TextFeaturizer,
     Transformer
 )
 from evalml.pipelines.components.utils import (
@@ -42,6 +44,7 @@ from evalml.pipelines.components.utils import (
     allowed_model_families
 )
 from evalml.pipelines.utils import (
+    generate_pipeline_code,
     get_estimators,
     make_pipeline,
     make_pipeline_from_components
@@ -49,6 +52,7 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
+    check_random_state_equality,
     numeric_and_boolean_dtypes
 )
 
@@ -95,12 +99,17 @@ def test_get_estimators(has_minimal_dependencies):
         get_estimators(problem_type="Not A Valid Problem Type")
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_all_nan_no_categoricals(problem_type):
+def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "num": [1, 2, 3, 4, 5]})
     y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -114,18 +123,24 @@ def test_make_pipeline_all_nan_no_categoricals(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, estimator_class]
             else:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline(problem_type):
+def test_make_pipeline(input_type, problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 0, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -139,6 +154,7 @@ def test_make_pipeline(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -147,12 +163,17 @@ def test_make_pipeline(problem_type):
                 assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_nulls(problem_type):
+def test_make_pipeline_no_nulls(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 1, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -166,6 +187,7 @@ def test_make_pipeline_no_nulls(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -174,12 +196,16 @@ def test_make_pipeline_no_nulls(problem_type):
                 assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_datetimes(problem_type):
+def test_make_pipeline_no_datetimes(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan]})
     y = pd.Series([0, 1, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
@@ -194,6 +220,7 @@ def test_make_pipeline_no_datetimes(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -202,10 +229,14 @@ def test_make_pipeline_no_datetimes(problem_type):
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
 
 
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_no_column_names(problem_type):
+def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
     y = pd.Series([0, 0, 1])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
     estimators = get_estimators(problem_type=problem_type)
     if problem_type == ProblemTypes.BINARY:
         pipeline_class = BinaryClassificationPipeline
@@ -219,12 +250,45 @@ def test_make_pipeline_no_column_names(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
             else:
                 assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_make_pipeline_text_columns(input_type, problem_type):
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "text": ["string one", "another", "text for a column", "text string", "hello world"]})
+    y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+    estimators = get_estimators(problem_type=problem_type)
+
+    if problem_type == ProblemTypes.BINARY:
+        pipeline_class = BinaryClassificationPipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
+        pipeline_class = MulticlassClassificationPipeline
+    elif problem_type == ProblemTypes.REGRESSION:
+        pipeline_class = RegressionPipeline
+    for estimator_class in estimators:
+        for problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, text_columns=['text'])
+            assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, estimator_class]
+            else:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, estimator_class]
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -276,11 +340,12 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
         make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
-    imp = Imputer(numeric_impute_strategy='median')
-    est = RandomForestClassifier()
-    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline')
-    components_list = pipeline.component_graph
-    assert components_list == [imp, est]
+    imp = Imputer(numeric_impute_strategy='median', random_state=5)
+    est = RandomForestClassifier(random_state=7)
+    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
+                                             random_state=15)
+    assert [c.__class__ for c in pipeline.component_graph] == [Imputer, RandomForestClassifier]
+    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline.component_graph]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -295,18 +360,22 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
             'n_jobs': -1}
     }
     assert pipeline.parameters == expected_parameters
+    assert check_random_state_equality(pipeline.random_state, np.random.RandomState(15))
 
     class DummyEstimator(Estimator):
         name = "Dummy!"
         model_family = "foo"
         supported_problem_types = [ProblemTypes.BINARY]
         parameters = {'bar': 'baz'}
-    pipeline = make_pipeline_from_components([DummyEstimator()], ProblemTypes.BINARY)
+    random_state = np.random.RandomState(42)
+    pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
     components_list = pipeline.component_graph
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
+    assert check_random_state_equality(components_list[0].random_state, random_state)
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
+    assert check_random_state_equality(pipeline.random_state, random_state)
 
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
@@ -1119,32 +1188,49 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes)
-def test_targets_data_types_classification_pipelines(problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+        pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
+
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
         X, y = load_breast_cancer()
-        if target_type == "bool":
+        if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
-        if target_type == "bool":
+        if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
         X, y = load_wine()
 
-    if target_type == "category":
-        y = pd.Categorical(y)
-    elif "int" in target_type:
+    # Update target types as necessary
+    unique_vals = y.unique()
+
+    if "int" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
-    elif "float" in target_type:
+    elif "float" in target_type.lower():
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
-
+    if target_type == "category":
+        y = pd.Categorical(y)
+    else:
+        y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'np':
+        X = X.to_numpy()
+        y = y.to_numpy()
+
+    elif data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     for pipeline_class in pipeline_classes:
         pipeline = pipeline_class(parameters={})
         pipeline.fit(X, y)
@@ -1420,3 +1506,187 @@ def test_pipeline_repr(pipeline_class):
     pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
     assert repr(pipeline_with_nan_parameters) == expected_repr
+
+
+def test_make_pipeline_error():
+    X = pd.DataFrame([[0, 1], [1, 0]])
+    y = pd.Series([1, 0])
+    estimators = get_estimators(problem_type="binary")
+    custom_hyperparameters = [{"Imputer": {"numeric_imput_strategy": ["median"]}}, {"One Hot Encoder": {"value1": ["value2"]}}]
+
+    for estimator in estimators:
+        with pytest.raises(ValueError, match="if custom_hyperparameters provided, must be dictionary"):
+            make_pipeline(X, y, estimator, "binary", custom_hyperparameters)
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_make_pipeline_custom_hyperparameters(problem_type):
+    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
+                      "categorical": ["a", "b", "a", "c", "c"],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    custom_hyperparameters = {'Imputer': {
+        'numeric_impute_strategy': ['median']
+    }}
+
+    y = pd.Series([0, 0, 1, 0, 0])
+    estimators = get_estimators(problem_type=problem_type)
+
+    for estimator_class in estimators:
+        for problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, custom_hyperparameters)
+            assert pipeline.custom_hyperparameters == custom_hyperparameters
+
+            pipeline2 = make_pipeline(X, y, estimator_class, problem_type)
+            assert not pipeline2.custom_hyperparameters
+
+
+def test_generate_code_pipeline_errors():
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockMulticlassPipeline(MulticlassClassificationPipeline):
+        name = "Mock Multiclass Pipeline"
+        component_graph = ['Imputer', 'Random Forest Classifier']
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockBinaryPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockMulticlassPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(MockRegressionPipeline)
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer])
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer, LogisticRegressionClassifier])
+
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code([Imputer(), LogisticRegressionClassifier()])
+
+
+def test_generate_code_pipeline():
+    class MockBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'Random Forest Classifier']
+        custom_hyperparameters = {
+            "Imputer": {
+                "numeric_impute_strategy": "most_frequent"
+            }
+        }
+
+    class MockRegressionPipeline(RegressionPipeline):
+        name = "Mock Regression Pipeline"
+        component_graph = ['Imputer', 'Random Forest Regressor']
+
+    mock_binary_pipeline = MockBinaryPipeline({})
+    expected_code = 'from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline' \
+                    '\n\nclass MockBinaryPipeline(BinaryClassificationPipeline):' \
+                    '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Classifier\'\n\t]' \
+                    '\n\tcustom_hyperparameters = {\'Imputer\': {\'numeric_impute_strategy\': \'most_frequent\'}}\n' \
+                    '\nparameters = {\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": None,\n\t\t"numeric_fill_value": None\n\t},' \
+                    '\n\t"Random Forest Classifier": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}\n' \
+                    'pipeline = MockBinaryPipeline(parameters)'
+    pipeline = generate_pipeline_code(mock_binary_pipeline)
+    assert expected_code == pipeline
+
+    mock_regression_pipeline = MockRegressionPipeline({})
+    expected_code = 'from evalml.pipelines.regression_pipeline import RegressionPipeline' \
+                    '\n\nclass MockRegressionPipeline(RegressionPipeline):' \
+                    '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Regressor\'\n\t]\n\t' \
+                    'name = \'Mock Regression Pipeline\'\n\n' \
+                    'parameters = {\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": None,\n\t\t"numeric_fill_value": None\n\t},' \
+                    '\n\t"Random Forest Regressor": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}' \
+                    '\npipeline = MockRegressionPipeline(parameters)'
+    pipeline = generate_pipeline_code(mock_regression_pipeline)
+    assert pipeline == expected_code
+
+    mock_regression_pipeline_params = MockRegressionPipeline({"Imputer": {"numeric_impute_strategy": "most_frequent"}, "Random Forest Regressor": {"n_estimators": 50}})
+    expected_code_params = 'from evalml.pipelines.regression_pipeline import RegressionPipeline' \
+                           '\n\nclass MockRegressionPipeline(RegressionPipeline):' \
+                           '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Regressor\'\n\t]' \
+                           '\n\tname = \'Mock Regression Pipeline\'' \
+                           '\n\nparameters = {\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "most_frequent",\n\t\t"categorical_fill_value": None,\n\t\t"numeric_fill_value": None\n\t},' \
+                           '\n\t"Random Forest Regressor": {\n\t\t"n_estimators": 50,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}' \
+                           '\npipeline = MockRegressionPipeline(parameters)'
+    pipeline = generate_pipeline_code(mock_regression_pipeline_params)
+    assert pipeline == expected_code_params
+
+
+def test_generate_code_pipeline_custom():
+    class CustomTransformer(Transformer):
+        name = "My Custom Transformer"
+        hyperparameter_ranges = {}
+
+        def __init__(self, random_state=0):
+            parameters = {}
+
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    class CustomEstimator(Estimator):
+        name = "My Custom Estimator"
+        hyperparameter_ranges = {}
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        model_family = ModelFamily.NONE
+
+        def __init__(self, random_state=0):
+            parameters = {}
+
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline with Transformer"
+        component_graph = [CustomTransformer, 'Random Forest Classifier']
+
+    class MockBinaryPipelineEstimator(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline with Estimator"
+        component_graph = ['Imputer', CustomEstimator]
+        custom_hyperparameters = {
+            'Imputer': {
+                'numeric_impute_strategy': 'most_frequent'
+            }
+        }
+
+    class MockAllCustom(BinaryClassificationPipeline):
+        name = "Mock All Custom Pipeline"
+        component_graph = [CustomTransformer, CustomEstimator]
+
+    mockBinaryTransformer = MockBinaryPipelineTransformer({})
+    expected_code = 'from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline' \
+                    '\n\nclass MockBinaryPipelineTransformer(BinaryClassificationPipeline):' \
+                    '\n\tcomponent_graph = [\n\t\tCustomTransformer,\n\t\t\'Random Forest Classifier\'\n\t]' \
+                    '\n\tname = \'Mock Binary Pipeline with Transformer\'' \
+                    '\n\nparameters = {\n\t"Random Forest Classifier": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}' \
+                    '\npipeline = MockBinaryPipelineTransformer(parameters)'
+    pipeline = generate_pipeline_code(mockBinaryTransformer)
+    assert pipeline == expected_code
+
+    mockBinaryPipeline = MockBinaryPipelineEstimator({})
+    expected_code = 'from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline' \
+                    '\n\nclass MockBinaryPipelineEstimator(BinaryClassificationPipeline):' \
+                    '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\tCustomEstimator\n\t]' \
+                    '\n\tcustom_hyperparameters = {\'Imputer\': {\'numeric_impute_strategy\': \'most_frequent\'}}' \
+                    '\n\tname = \'Mock Binary Pipeline with Estimator\'' \
+                    '\n\nparameters = {\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": None,\n\t\t"numeric_fill_value": None\n\t}\n}' \
+                    '\npipeline = MockBinaryPipelineEstimator(parameters)'
+    pipeline = generate_pipeline_code(mockBinaryPipeline)
+    assert pipeline == expected_code
+
+    mockAllCustom = MockAllCustom({})
+    expected_code = "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline" \
+                    "\n\nclass MockAllCustom(BinaryClassificationPipeline):" \
+                    "\n\tcomponent_graph = [\n\t\tCustomTransformer,\n\t\tCustomEstimator\n\t]" \
+                    "\n\tname = 'Mock All Custom Pipeline'\n\nparameters = {}" \
+                    "\npipeline = MockAllCustom(parameters)"
+    pipeline = generate_pipeline_code(mockAllCustom)
+    assert pipeline == expected_code

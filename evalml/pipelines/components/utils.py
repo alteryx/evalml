@@ -2,7 +2,7 @@ import inspect
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
@@ -130,7 +130,6 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             self
         """
-        X, y = check_X_y(X, y)
         self.classes_ = unique_labels(y)
         self.X_ = X
         self.y_ = y
@@ -147,7 +146,6 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             pd.Series: Predicted values
         """
-        X = check_array(X)
         check_is_fitted(self, 'is_fitted_')
         return self.pipeline.predict(X).to_numpy()
 
@@ -185,7 +183,6 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         Returns:
             self
         """
-        X, y = check_X_y(X, y)
         self.pipeline.fit(X, y)
         return self
 
@@ -217,3 +214,33 @@ def scikit_learn_wrapped_estimator(evalml_obj):
         elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             return WrappedSKClassifier(evalml_obj)
     raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")
+
+
+def generate_component_code(element):
+    """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
+
+    Arguments:
+        element (component instance): The instance of the component to generate string Python code for
+
+    Returns:
+        String representation of Python code that can be run separately in order to recreate the component instance.
+        Does not include code for custom component implementation.
+    """
+    # hold the imports needed and add code to end
+    code_strings = []
+    base_string = ""
+
+    if not isinstance(element, ComponentBase):
+        raise ValueError("Element must be a component instance, received {}".format(type(element)))
+
+    if element.__class__ in all_components():
+        code_strings.append("from {} import {}\n".format(element.__class__.__module__, element.__class__.__name__))
+    component_parameters = element.parameters
+    name = element.name[0].lower() + element.name[1:].replace(' ', '')
+    base_string += "{0} = {1}(**{2})" \
+                   .format(name,
+                           element.__class__.__name__,
+                           component_parameters)
+
+    code_strings.append(base_string)
+    return "\n".join(code_strings)

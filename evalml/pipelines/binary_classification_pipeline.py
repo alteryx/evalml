@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
@@ -23,19 +21,17 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame or np.array): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
             pd.Series: Estimated labels
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
         X_t = self.compute_estimator_features(X)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
-            if objective.problem_type != self.problem_type:
+            if not objective.is_defined_for_problem_type(self.problem_type):
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:
