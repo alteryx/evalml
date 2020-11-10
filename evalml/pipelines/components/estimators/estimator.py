@@ -4,6 +4,10 @@ import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import ComponentBase
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class Estimator(ComponentBase):
@@ -34,6 +38,8 @@ class Estimator(ComponentBase):
             pd.Series: Predicted values
         """
         try:
+            X = _convert_to_woodwork_structure(X)
+            X = _convert_woodwork_types_wrapper(X.to_pandas())
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
@@ -51,6 +57,8 @@ class Estimator(ComponentBase):
             pd.DataFrame: Probability estimates
         """
         try:
+            X = _convert_to_woodwork_structure(X)
+            X = _convert_woodwork_types_wrapper(X.to_pandas())
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")

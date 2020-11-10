@@ -10,7 +10,11 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import categorical_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    categorical_dtypes
+)
 
 
 class LightGBMClassifier(Estimator):
@@ -94,6 +98,11 @@ class LightGBMClassifier(Estimator):
         return y1
 
     def fit(self, X, y=None):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
+
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
         return super().fit(X2, y2)

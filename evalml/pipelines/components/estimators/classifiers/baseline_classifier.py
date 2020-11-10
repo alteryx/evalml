@@ -5,6 +5,10 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class BaselineClassifier(Estimator):
@@ -40,11 +44,10 @@ class BaselineClassifier(Estimator):
     def fit(self, X, y=None):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
 
         vals, counts = np.unique(y, return_counts=True)
         self._classes = list(vals)
