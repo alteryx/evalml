@@ -29,7 +29,7 @@ class DelayedFeatureTransformer(Transformer):
         self.delay_target = delay_target
 
         # If 0, start at 1
-        self.start_delay_for_target = gap == 0
+        self.start_delay_for_target = int(gap == 0)
 
         parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
                       "gap": gap}
