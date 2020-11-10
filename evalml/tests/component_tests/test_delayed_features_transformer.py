@@ -15,7 +15,8 @@ def test_delayed_features_transformer_init():
 
     delayed_features = DelayedFeatureTransformer(max_delay=4, delay_features=True, delay_target=False,
                                                  random_state=1)
-    assert delayed_features.parameters == {"max_delay": 4, "delay_features": True, "delay_target": False}
+    assert delayed_features.parameters == {"max_delay": 4, "delay_features": True, "delay_target": False,
+                                           "gap": 1}
 
 
 def test_delayed_feature_extractor_maxdelay3_gap1(delayed_features_data):
@@ -147,4 +148,28 @@ def test_lagged_feature_extractor_delay_target(delay_features, delay_target, del
 
     transformer = DelayedFeatureTransformer(max_delay=3, gap=1,
                                             delay_features=delay_features, delay_target=delay_target)
+    pd.testing.assert_frame_equal(transformer.fit_transform(None, y), answer)
+
+
+@pytest.mark.parametrize("gap", [0, 1, 7])
+def test_target_delay_when_gap_is_0(gap, delayed_features_data):
+    X, y = delayed_features_data
+
+    answer = pd.DataFrame({"feature": X.feature,
+                           "feature_delay_1": X.feature.shift(1),
+                           "target_delay_0": y,
+                           "target_delay_1": y.shift(1)})
+
+    if gap == 0:
+        answer = answer.drop(columns=["target_delay_0"])
+
+    transformer = DelayedFeatureTransformer(max_delay=1, gap=gap)
+    pd.testing.assert_frame_equal(transformer.fit_transform(X, y), answer)
+
+    answer = pd.DataFrame({"target_delay_0": y,
+                           "target_delay_1": y.shift(1)})
+
+    if gap == 0:
+        answer = answer.drop(columns=["target_delay_0"])
+
     pd.testing.assert_frame_equal(transformer.fit_transform(None, y), answer)

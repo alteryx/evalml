@@ -9,7 +9,7 @@ class DelayedFeatureTransformer(Transformer):
     hyperparameter_ranges = {}
     needs_fitting = False
 
-    def __init__(self, max_delay=2, delay_features=True, delay_target=True,
+    def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1,
                  random_state=0, **kwargs):
         """Creates a DelayedFeatureTransformer.
 
@@ -17,13 +17,22 @@ class DelayedFeatureTransformer(Transformer):
             max_delay (int): Maximum number of time units to delay each feature.
             delay_features (bool): Whether to delay the input features.
             delay_target (bool): Whether to delay the target.
+            gap (int): The number of time units between when the features are collected and
+                when the target is collected. For example, if you are predicting the next time step's target, gap=1.
+                This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
+                at 1.
             random_state (int, np.random.RandomState): Seed for the random number generator. There is no randomness
                 in this transformer.
         """
         self.max_delay = max_delay
         self.delay_features = delay_features
         self.delay_target = delay_target
-        parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features}
+
+        # If 0, start at 1
+        self.start_delay_for_target = gap == 0
+
+        parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
+                      "gap": gap}
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_state=random_state)
 
@@ -66,6 +75,6 @@ class DelayedFeatureTransformer(Transformer):
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
-                            for t in range(self.max_delay + 1)})
+                            for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
         return X
