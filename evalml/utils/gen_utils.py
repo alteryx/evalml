@@ -220,7 +220,7 @@ def _rename_column_names_to_numeric(X):
         Transformed X where column names are renamed to numerical values
     """
     X_t = X
-    if isinstance(X, np.array):
+    if isinstance(X, np.ndarray):
         return X_t
     if isinstance(X, ww.DataTable):
         X_t = X_t.to_pandas()
