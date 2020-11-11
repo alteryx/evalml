@@ -2,7 +2,10 @@ import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import datetime_dtypes
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 def _extract_year(col):
     return col.dt.year
@@ -51,8 +54,10 @@ class DateTimeFeaturizer(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
         self._date_time_col_names = X.select_dtypes(include=datetime_dtypes).columns
         return self
 
@@ -66,10 +71,11 @@ class DateTimeFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_pandas())
         X_t = X
-        if not isinstance(X_t, pd.DataFrame):
-            X_t = pd.DataFrame(X_t)
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return X_t

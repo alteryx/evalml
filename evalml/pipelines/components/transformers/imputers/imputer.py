@@ -3,6 +3,10 @@ import pandas as pd
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils.gen_utils import boolean, categorical_dtypes, numeric_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 
 class Imputer(Transformer):
@@ -62,8 +66,8 @@ class Imputer(Transformer):
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         X_copy = X.copy()
@@ -91,8 +95,9 @@ class Imputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
+
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         X_null_dropped.reset_index(inplace=True, drop=True)

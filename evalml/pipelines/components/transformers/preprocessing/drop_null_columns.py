@@ -1,7 +1,10 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 class DropNullColumns(Transformer):
     """Transformer to drop features whose percentage of NaN values exceeds a specified threshold"""
@@ -28,8 +31,8 @@ class DropNullColumns(Transformer):
 
     def fit(self, X, y=None):
         pct_null_threshold = self.parameters["pct_null_threshold"]
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         percent_null = X.isnull().mean()
         if pct_null_threshold == 0.0:
             null_cols = percent_null[percent_null > 0]
@@ -48,7 +51,6 @@ class DropNullColumns(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         return X.drop(columns=self._cols_to_drop, axis=1)

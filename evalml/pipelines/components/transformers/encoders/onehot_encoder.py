@@ -3,10 +3,13 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
-from ..transformer import Transformer
+from evalml.pipelines.components.transformers.transformer import Transformer
 
 from evalml.pipelines.components import ComponentBaseMeta
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 class OneHotEncoderMeta(ComponentBaseMeta):
     """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""
@@ -82,8 +85,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X_t = X
 
         if self.features_to_encode is None:
@@ -138,9 +141,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
 
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":

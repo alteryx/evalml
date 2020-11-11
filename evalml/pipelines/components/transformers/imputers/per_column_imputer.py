@@ -4,7 +4,10 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
 )
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 class PerColumnImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy per column"""
@@ -49,8 +52,8 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -73,8 +76,8 @@ class PerColumnImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():

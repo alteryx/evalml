@@ -3,7 +3,10 @@ import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
-
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+)
 
 class SimpleImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
@@ -41,8 +44,8 @@ class SimpleImputer(Transformer):
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
@@ -61,8 +64,8 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
