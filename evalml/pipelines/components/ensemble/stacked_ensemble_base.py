@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
@@ -82,4 +80,3 @@ class StackedEnsembleBase(Estimator):
                 'cv': None,
                 'n_jobs': 1,
                 }
-

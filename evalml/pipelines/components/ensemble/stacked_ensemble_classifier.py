@@ -1,4 +1,3 @@
-import pandas as pd
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold
 
