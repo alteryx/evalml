@@ -191,7 +191,8 @@ class ComponentGraph:
                     return list(self.component_dict.keys())[0]
                 raise ValueError("There are no edges in the graph, no final component to return")
             return None
-        return compute_list[-1]
+        final_component_name = compute_list[-1]
+        return self.get_component(final_component_name)
 
     def get_estimators(self):
         """Gets a list of all the estimator components within this graph
@@ -275,6 +276,9 @@ class ComponentGraph:
 
     def _recompute_order(self):
         """Regenerated the topologically sorted order of the graph"""
+        if len(self.component_dict) == 1:
+            self._compute_order = self.component_dict.keys()
+            return
         digraph = nx.DiGraph()
         digraph.add_edges_from(self._get_edges())
         self._compute_order = topological_sort(digraph)

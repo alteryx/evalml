@@ -254,16 +254,16 @@ def test_get_final_component(example_graph):
     assert component_graph.get_final_component() is None
 
     component_graph = ComponentGraph(example_graph)
-    assert component_graph.get_final_component() == 'Logistic Regression'
+    assert component_graph.get_final_component() == LogisticRegressionClassifier
 
     component_graph.instantiate({})
-    assert component_graph.get_final_component() == 'Logistic Regression'
+    assert component_graph.get_final_component() == LogisticRegressionClassifier()
 
     component_graph = ComponentGraph({'Imputer': Imputer})
-    assert component_graph.get_final_component() == 'Imputer'
+    assert component_graph.get_final_component() == Imputer
 
     component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': [OneHotEncoder, 'Imputer']})
-    assert component_graph.get_final_component() == 'OneHot'
+    assert component_graph.get_final_component() == OneHotEncoder
 
     component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': OneHotEncoder})
     with pytest.raises(ValueError, match="no final component to return"):
