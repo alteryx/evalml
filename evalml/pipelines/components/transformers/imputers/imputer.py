@@ -67,7 +67,7 @@ class Imputer(Transformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         X_copy = X.copy()
@@ -96,7 +96,7 @@ class Imputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')

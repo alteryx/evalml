@@ -45,9 +45,9 @@ class BaselineClassifier(Estimator):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         vals, counts = np.unique(y, return_counts=True)
         self._classes = list(vals)
@@ -61,7 +61,7 @@ class BaselineClassifier(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             return pd.Series([self._mode] * len(X))
@@ -72,7 +72,7 @@ class BaselineClassifier(Estimator):
 
     def predict_proba(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)

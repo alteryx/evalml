@@ -47,7 +47,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
         list[Transformer]: A list of applicable preprocessing components to use with the estimator
     """
 
-    X_pd = X.to_pandas()
+    X_pd = X.to_dataframe()
     pp_components = []
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:

@@ -53,7 +53,7 @@ class PerColumnImputer(Transformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -77,7 +77,7 @@ class PerColumnImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():

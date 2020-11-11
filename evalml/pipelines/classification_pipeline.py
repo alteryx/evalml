@@ -41,8 +41,8 @@ class ClassificationPipeline(PipelineBase):
         """
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        # X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        # X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)
@@ -93,7 +93,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series : Estimated labels
         """
         # X = _convert_to_woodwork_structure(X)
-        # X = _convert_woodwork_types_wrapper(X.to_pandas())
+        # X = _convert_woodwork_types_wrapper(X.to_dataframe())
         predictions = self._predict(X, objective)
         return pd.Series(self._decode_targets(predictions))
 
@@ -107,7 +107,7 @@ class ClassificationPipeline(PipelineBase):
             pd.DataFrame: Probability estimates
         """
         # X = _convert_to_woodwork_structure(X)
-        # X = _convert_woodwork_types_wrapper(X.to_pandas())
+        # X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X = self.compute_estimator_features(X)
         proba = self.estimator.predict_proba(X)
         proba.columns = self._encoder.classes_
@@ -126,8 +126,8 @@ class ClassificationPipeline(PipelineBase):
         """
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)

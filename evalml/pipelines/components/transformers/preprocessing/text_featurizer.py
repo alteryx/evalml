@@ -74,7 +74,7 @@ class TextFeaturizer(TextTransformer):
         if len(self._all_text_columns) == 0:
             return self
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
@@ -96,7 +96,7 @@ class TextFeaturizer(TextTransformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
 

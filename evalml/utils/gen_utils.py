@@ -222,7 +222,7 @@ def _rename_column_names_to_numeric(X):
     if isinstance(X, np.ndarray):
         return X
     if isinstance(X, ww.DataTable):
-        X = X.to_pandas()
+        X = X.to_dataframe()
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
     X_renamed = X.rename(columns=name_to_col_num, inplace=False)
     if isinstance(X, ww.DataTable):

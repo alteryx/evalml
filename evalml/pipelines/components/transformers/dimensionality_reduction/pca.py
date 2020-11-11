@@ -37,7 +37,7 @@ class PCA(Transformer):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
 
@@ -46,7 +46,7 @@ class PCA(Transformer):
 
     def transform(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
 
@@ -55,7 +55,7 @@ class PCA(Transformer):
 
     def fit_transform(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
 

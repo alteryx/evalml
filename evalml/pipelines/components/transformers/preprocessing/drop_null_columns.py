@@ -32,7 +32,7 @@ class DropNullColumns(Transformer):
     def fit(self, X, y=None):
         pct_null_threshold = self.parameters["pct_null_threshold"]
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         percent_null = X.isnull().mean()
         if pct_null_threshold == 0.0:
             null_cols = percent_null[percent_null > 0]
@@ -52,5 +52,5 @@ class DropNullColumns(Transformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         return X.drop(columns=self._cols_to_drop, axis=1)

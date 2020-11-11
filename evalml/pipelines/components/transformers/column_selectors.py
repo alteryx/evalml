@@ -60,7 +60,7 @@ class ColumnSelector(Transformer):
 
     def transform(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._check_input_for_columns(X)
 
         cols = self.parameters.get("columns") or []

@@ -39,7 +39,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = _convert_to_woodwork_structure(X)
-            X = _convert_woodwork_types_wrapper(X.to_pandas())
+            X = _convert_woodwork_types_wrapper(X.to_dataframe())
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
@@ -58,7 +58,7 @@ class Estimator(ComponentBase):
         """
         try:
             X = _convert_to_woodwork_structure(X)
-            X = _convert_woodwork_types_wrapper(X.to_pandas())
+            X = _convert_woodwork_types_wrapper(X.to_dataframe())
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")

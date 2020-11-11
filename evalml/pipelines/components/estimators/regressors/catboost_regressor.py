@@ -57,10 +57,10 @@ class CatBoostRegressor(Estimator):
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
         cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return model

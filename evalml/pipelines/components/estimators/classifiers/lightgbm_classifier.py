@@ -100,9 +100,9 @@ class LightGBMClassifier(Estimator):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         X2 = self._encode_categories(X, fit=True)
         y2 = self._encode_labels(y)
@@ -110,7 +110,7 @@ class LightGBMClassifier(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X2 = self._encode_categories(X)
         predictions = super().predict(X2)
         if self._label_encoder:
@@ -119,6 +119,6 @@ class LightGBMClassifier(Estimator):
 
     def predict_proba(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X2 = self._encode_categories(X)
         return super().predict_proba(X2)

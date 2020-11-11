@@ -45,7 +45,7 @@ class SimpleImputer(Transformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
@@ -65,7 +65,7 @@ class SimpleImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 

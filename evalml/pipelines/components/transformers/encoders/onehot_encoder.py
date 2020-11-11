@@ -86,7 +86,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
 
         if self.features_to_encode is None:
@@ -142,7 +142,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """
 
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":

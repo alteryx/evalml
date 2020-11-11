@@ -55,7 +55,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # to updateeeeeeee
         self._date_time_col_names = X.select_dtypes(include=datetime_dtypes).columns
         return self
@@ -71,7 +71,7 @@ class DateTimeFeaturizer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
