@@ -73,8 +73,6 @@ class DateTimeFeaturizer(Transformer):
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
         X_t = X
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
