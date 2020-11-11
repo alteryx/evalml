@@ -60,6 +60,8 @@ class BaselineClassifier(Estimator):
         return self
 
     def predict(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             return pd.Series([self._mode] * len(X))
@@ -69,6 +71,8 @@ class BaselineClassifier(Estimator):
             return self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
 
     def predict_proba(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)

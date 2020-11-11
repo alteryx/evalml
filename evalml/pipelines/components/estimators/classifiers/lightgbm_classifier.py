@@ -109,6 +109,8 @@ class LightGBMClassifier(Estimator):
         return super().fit(X2, y2)
 
     def predict(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X2 = self._encode_categories(X)
         predictions = super().predict(X2)
         if self._label_encoder:
@@ -116,5 +118,7 @@ class LightGBMClassifier(Estimator):
         return predictions
 
     def predict_proba(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         X2 = self._encode_categories(X)
         return super().predict_proba(X2)

@@ -55,6 +55,8 @@ class BaselineRegressor(Estimator):
         return self
 
     def predict(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_pandas())
         return pd.Series([self._prediction_value] * len(X))
 
     @property

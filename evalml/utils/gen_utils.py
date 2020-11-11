@@ -221,9 +221,13 @@ def _rename_column_names_to_numeric(X):
     """
     if isinstance(X, np.ndarray):
         return X
-    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
-    return X.rename(columns=name_to_col_num, inplace=False)
-
+    if isinstance(X, ww.DataTable):
+        X = X.to_pandas()
+    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+    X_renamed = X.rename(columns=name_to_col_num, inplace=False)
+    if isinstance(X, ww.DataTable):
+        return ww.DataTable(X_renamed)
+    return X_renamed
 
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
