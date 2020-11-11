@@ -27,7 +27,7 @@ class RegressionPipeline(PipelineBase):
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
         if y.dtype not in numeric_dtypes:
             raise ValueError(f"Regression pipeline cannot handle targets with dtype: {y.dtype}")
         self._fit(X, y)
@@ -47,7 +47,7 @@ class RegressionPipeline(PipelineBase):
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y_predicted = self.predict(X)
