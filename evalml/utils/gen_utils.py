@@ -219,16 +219,11 @@ def _rename_column_names_to_numeric(X):
     Returns:
         Transformed X where column names are renamed to numerical values
     """
-    X_t = X
     if isinstance(X, np.ndarray):
-        return X_t
-    if isinstance(X, ww.DataTable):
-        X_t = X_t.to_pandas()
-    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X_t.columns.values))
-    X_t = X_t.rename(columns=name_to_col_num, inplace=False)
-    if isinstance(X, ww.DataTable):
-        return ww.DataTable(X_t)
-    return X_t
+        return X
+    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
+    return X.rename(columns=name_to_col_num, inplace=False)
+    return X
 
 
 def jupyter_check():
