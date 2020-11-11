@@ -23,7 +23,8 @@ Release Notes
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
-        *  Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
+        * Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
+        * Added section on stacking ensembles in AutoMLSearch documentation :pr:`1425`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
