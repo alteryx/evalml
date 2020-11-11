@@ -402,7 +402,7 @@ class AutoMLSearch:
             X = _convert_to_woodwork_structure(X)
 
         text_column_vals = X.select('natural_language')
-        text_columns = list(text_column_vals.to_pandas().columns)
+        text_columns = list(text_column_vals.to_dataframe().columns)
         if len(text_columns) == 0:
             text_columns = None
 
@@ -410,8 +410,8 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_dataframe())
 
         self._set_data_split(X)
 
