@@ -56,8 +56,6 @@ class DateTimeFeaturizer(Transformer):
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
         self._date_time_col_names = X.select_dtypes(include=datetime_dtypes).columns
         return self
 
