@@ -75,6 +75,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
+        self._pipeline_params = parameters.get("pipeline", {})
 
     @classproperty
     def name(cls):
@@ -309,7 +310,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters
         """
-        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+        component_parameters = {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+        if self._pipeline_params:
+            component_parameters['pipeline'] = self._pipeline_params
+        return component_parameters
 
     @classproperty
     def default_parameters(cls):

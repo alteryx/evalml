@@ -503,4 +503,6 @@ General Utils
     convert_to_seconds
     get_random_state
     get_random_seed
+    pad_with_nans
+    keep_non_nan_rows
 

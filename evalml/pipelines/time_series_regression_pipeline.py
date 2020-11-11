@@ -6,7 +6,6 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    any_values_are_nan,
     keep_non_nan_rows,
     pad_with_nans
 )
@@ -26,13 +25,14 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-                 parameters such as gap and max_delay must be specified as a dictionary with the "pipeline" key.
+                 parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
+                 Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         if "pipeline" not in parameters:
             raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
                              "Please specify them as a dictionary with the key 'pipeline'.")
-        pipeline_params = parameters.pop("pipeline")
+        pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
         super().__init__(parameters, random_state)
@@ -81,7 +81,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
 
         features = self.compute_estimator_features(X, y)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
-        return pad_with_nans(predictions, self.max_delay if any_values_are_nan(features) else 0)
+        return pad_with_nans(predictions, self.max_delay if features.isna().values.any() else 0)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.

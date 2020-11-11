@@ -333,7 +333,11 @@ def pad_with_nans(pd_data, num_to_pad):
 
 
 def keep_non_nan_rows(pd_data_1, pd_data_2):
-    """Keep nows that do not have any NaNs in both pd_data_1 and pd_data_2.
+    """Keep rows that do not have any NaNs in both pd_data_1 and pd_data_2.
+
+    Arguments:
+        pd_data_1 (pd.DataFrame or pd.Series): Data to subset.
+        pd_data_2 (pd.DataFrame or pd.Series): Data to subset.
 
     Returns:
         tuple of pd.DataFrame or pd.Series
@@ -347,14 +351,3 @@ def keep_non_nan_rows(pd_data_1, pd_data_2):
 
     mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
-
-
-def any_values_are_nan(pd_data):
-    """Determine if any rows have at least one NaN.
-    Args:
-        pd_data (pd.Dataframe or pd.Series): Pandas data to check.
-
-    Returns:
-        pd.Series with bool values. Each value corresponds to if any values in the row are NaN.
-    """
-    return pd_data.isna().values.any()

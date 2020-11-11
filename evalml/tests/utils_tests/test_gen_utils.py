@@ -8,7 +8,6 @@ import pytest
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
-    any_values_are_nan,
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
@@ -274,10 +273,3 @@ def test_drop_nan(data, expected):
     no_nan_1, no_nan_2 = keep_non_nan_rows(*data)
     _check_equality(no_nan_1, expected[0], check_index_type=False)
     _check_equality(no_nan_2, expected[1], check_index_type=False)
-
-
-def test_any_values_are_nan():
-    assert not any_values_are_nan(pd.DataFrame({"a": [1, 2, 3]}))
-    assert any_values_are_nan(pd.DataFrame({"feature": [1, None, 3]}))
-    assert not any_values_are_nan(pd.Series([4.52, 3912.2, 989.4]))
-    assert any_values_are_nan(pd.Series([None, None, 4.32]))

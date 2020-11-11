@@ -26,12 +26,16 @@ def test_time_series_pipeline_init(pipeline_class, components):
     if "Delayed Feature Transformer" not in components:
         pl = Pipeline({'pipeline': {"gap": 3, "max_delay": 5}})
         assert "Delayed Feature Transformer" not in pl.parameters
+        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
     else:
         parameters = {"Delayed Feature Transformer": {"gap": 3, "max_delay": 5},
                       "pipeline": {"gap": 3, "max_delay": 5}}
         pl = Pipeline(parameters)
         assert pl.parameters['Delayed Feature Transformer'] == {"gap": 3, "max_delay": 5,
                                                                 "delay_features": True, "delay_target": True}
+        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
+
+    assert Pipeline(parameters=pl.parameters) == pl
 
     with pytest.raises(ValueError, match="gap and max_delay parameters cannot be omitted from the parameters dict"):
         Pipeline({})
