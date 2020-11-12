@@ -12,7 +12,7 @@ class ComponentGraph:
         """ Initializes a component graph for a pipeline as a DAG.Example:
 
         Example:
-            >>> component_dict = {'imputer': [Imputer], ohe': [OneHotEncoder, 'imputer.x'], 'estimator_1': [RandomForestClf, 'ohe.x'], 'estimator_2': [DecisionTreeClf, 'ohe.x'], 'final': [LogisticRegressionClf, 'estimator_1', 'estimator_2']}
+            >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
         self.component_dict = component_dict or {}
