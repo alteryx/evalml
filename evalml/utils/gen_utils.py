@@ -305,8 +305,7 @@ def _convert_woodwork_types_wrapper(pd_data):
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
                                  pd.BooleanDtype: 'bool',
                                  pd.StringDtype: 'object'}
-    if isinstance(pd_data, pd.api.extensions.ExtensionArray):
-        pd_data = pd.Series(pd_data)
+
     if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
         return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.DataFrame):
