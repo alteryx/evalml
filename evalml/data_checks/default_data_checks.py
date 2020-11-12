@@ -11,8 +11,16 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 
 class DefaultDataChecks(DataChecks):
     """A collection of basic data checks that is used by AutoML by default.
-    Includes HighlyNullDataCheck, IDColumnsDataCheck, TargetLeakageDataCheck, InvalidTargetDataCheck, ClassImbalanceDataCheck,
-    and NoVarianceDataCheck."""
+    Includes:
+
+        - `HighlyNullDataCheck`
+        - `IDColumnsDataCheck`
+        - `TargetLeakageDataCheck`
+        - `InvalidTargetDataCheck`
+        - `NoVarianceDataCheck`
+        - `ClassImbalanceDataCheck` (for classification problem types)
+
+    """
 
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
                                    TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]

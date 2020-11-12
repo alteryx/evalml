@@ -52,7 +52,10 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_state
-from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -155,7 +158,8 @@ class AutoMLSearch:
 
             verbose (boolean): If True, turn verbosity on. Defaults to True.
 
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
+            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
+                If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
@@ -370,9 +374,9 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Arguments:
-            X (pd.DataFrame, ww.DataTable): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
 
-            y (pd.Series, ww.DataColumn): the target training data of length [n_samples]
+            y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
@@ -395,23 +399,19 @@ class AutoMLSearch:
         # make everything ww objects
         if not isinstance(X, ww.DataTable):
             logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            if isinstance(X, np.ndarray):
-                X = pd.DataFrame(X)
-            X = ww.DataTable(X)
+            X = _convert_to_woodwork_structure(X)
 
         text_column_vals = X.select('natural_language')
-        text_columns = list(text_column_vals.to_pandas().columns)
+        text_columns = list(text_column_vals.to_dataframe().columns)
         if len(text_columns) == 0:
             text_columns = None
 
         if not isinstance(y, ww.DataColumn):
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            if isinstance(y, np.ndarray) or isinstance(y, list):
-                y = pd.Series(y)
-            y = ww.DataColumn(y)
+            y = _convert_to_woodwork_structure(y)
 
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         self._set_data_split(X)
 
@@ -435,8 +435,14 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            logger.warning("Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run.")
+            run_ensembling = False
+
         if self.max_batches and self.max_iterations is None:
-            if self.ensembling:
+            if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
@@ -458,7 +464,7 @@ class AutoMLSearch:
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=self.ensembling
+            ensembling=run_ensembling
         )
 
         log_title(logger, "Beginning pipeline search")

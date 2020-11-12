@@ -2,7 +2,7 @@ import inspect
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
@@ -124,13 +124,12 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
         """
-        X, y = check_X_y(X, y)
         self.classes_ = unique_labels(y)
         self.X_ = X
         self.y_ = y
@@ -147,7 +146,6 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             pd.Series: Predicted values
         """
-        X = check_array(X)
         check_is_fitted(self, 'is_fitted_')
         return self.pipeline.predict(X).to_numpy()
 
@@ -179,13 +177,12 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
         """
-        X, y = check_X_y(X, y)
         self.pipeline.fit(X, y)
         return self
 

@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
@@ -11,14 +12,20 @@ Release Notes
         * Added a problem type for time series regression :pr:`1386`
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
+        * Added ``DelayedFeaturesTransformer`` :pr:`1396`
     * Fixes
+        * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
+        * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
+        * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
+        * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
+        *  Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`

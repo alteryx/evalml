@@ -87,16 +87,12 @@ class StackedEnsembleBase(Estimator):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.array): the input training data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
-        if isinstance(y, pd.Series):
-            y = y.to_numpy()
         self._component_obj.fit(X, y)
         return self
 
@@ -109,8 +105,6 @@ class StackedEnsembleBase(Estimator):
         Returns:
             pd.Series: Predicted values
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.to_numpy()
         predictions = self._component_obj.predict(X)
         predictions = pd.Series(predictions)
         return predictions

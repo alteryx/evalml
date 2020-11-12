@@ -29,7 +29,7 @@ class ClassImbalanceDataCheck(DataCheck):
         Ignores nan values in target labels if they appear
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.array, list): Features. Ignored.
+            X (pd.DataFrame, pd.Series, np.ndarray, list): Features. Ignored.
             y: Target labels to check for imbalanced data.
 
         Returns:
@@ -49,8 +49,8 @@ class ClassImbalanceDataCheck(DataCheck):
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
-            warning_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            messages.append(DataCheckError(warning_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
+            error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
+            messages.append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
