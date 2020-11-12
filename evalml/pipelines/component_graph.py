@@ -12,11 +12,7 @@ class ComponentGraph:
         """ Initializes a component graph for a pipeline as a DAG.Example:
 
         Example:
-            >>> component_dict = {'imputer': [Imputer],
-                                  'ohe': [OneHotEncoder, 'imputer.x'],
-                                  'estimator_1': [RandomForestClf, 'ohe.x'],
-                                  'estimator_2': [DecisionTreeClf, 'ohe.x'],
-                                  'final': [LogisticRegressionClf, 'estimator_1', 'estimator_2']}
+            >>> component_dict = {'imputer': [Imputer], ohe': [OneHotEncoder, 'imputer.x'], 'estimator_1': [RandomForestClf, 'ohe.x'], 'estimator_2': [DecisionTreeClf, 'ohe.x'], 'final': [LogisticRegressionClf, 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
         self.component_dict = component_dict or {}
@@ -44,7 +40,6 @@ class ComponentGraph:
             if idx != 0:
                 component_dict[component_name].append(f"{handle_component_class(component_list[idx-1]).name}.x")
         return cls(component_dict, random_state=random_state)
-
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be

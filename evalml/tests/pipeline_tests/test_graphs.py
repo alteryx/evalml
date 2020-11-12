@@ -36,7 +36,7 @@ def test_pipeline():
 
 @pytest.fixture
 def test_component_graph():
-    graph = {'Imputer': 'Imputer',
+    graph = {'Imputer': ['Imputer'],
              'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
              'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
              'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
