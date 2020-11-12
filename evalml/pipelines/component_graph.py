@@ -2,40 +2,49 @@ import networkx as nx
 import pandas as pd
 from networkx.algorithms.dag import topological_sort
 
-from evalml.model_family import ModelFamily
-from evalml.pipelines.components import ComponentBase
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import import_or_raise
 
 
 class ComponentGraph:
     def __init__(self, component_dict=None, random_state=0):
-        """ Initializes a component graph for a pipeline as a DAG.
-        """
+        """ Initializes a component graph for a pipeline as a DAG.Example:
+
+        Example:
+            >>> component_dict = {'imputer': [Imputer],
+                                  'ohe': [OneHotEncoder, 'imputer.x'],
+                                  'estimator_1': [RandomForestClf, 'ohe.x'],
+                                  'estimator_2': [DecisionTreeClf, 'ohe.x'],
+                                  'final': [LogisticRegressionClf, 'estimator_1', 'estimator_2']}
+            >>> component_graph = ComponentGraph(component_dict)
+           """
         self.component_dict = component_dict or {}
         for key, value in self.component_dict.items():
             if not isinstance(value, list):
-                self.component_dict[key] = [value]
+                raise ValueError('All component information should be passed in as a list')
         self._compute_order = []
         self._recompute_order()
         self.random_state = random_state
 
-    def from_list(self, component_list):
-        """Constructs a linear graph from a given list
+    @classmethod
+    def from_list(cls, component_list, random_state=0):
+        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its output to the next component
 
         Arguments:
             component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
+        component_dict = {}
         for idx, component in enumerate(component_list):
             component_class = handle_component_class(component)
             component_name = component_class.name
 
-            parent = None
+            component_dict[component_name] = [component_class]
             if idx != 0:
-                parent = [f"{handle_component_class(component_list[idx - 1]).name}.x"]
-            self.add_node(component_name, component_class, parents=parent)
-        return self
+                component_dict[component_name].append(f"{handle_component_class(component_list[idx-1]).name}.x")
+        return cls(component_dict, random_state=random_state)
+
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
@@ -84,13 +93,13 @@ class ComponentGraph:
             component_class = self.component_dict[component_name][0]
             x_inputs = []
             y_input = None
-            for parent_input in self.parents(component_name):
+            for parent_input in self.get_parents(component_name):
                 if parent_input[-2:] == '.y':
                     y_input = output_cache[parent_input]
                 else:
                     x_inputs.append(output_cache[parent_input])
-            input_x, input_y = self.merge(x_inputs, y_input, X, y)
-            if component_class.model_family == ModelFamily.NONE:  # Transformer
+            input_x, input_y = self._merge(x_inputs, y_input, X, y)
+            if isinstance(component_class, Transformer):
                 if fit:
                     output = component_class.fit_transform(input_x, input_y)
                 else:
@@ -111,13 +120,24 @@ class ComponentGraph:
         if fit:
             return self
         final_component_class = self.component_dict[final_component][0]
-        if final_component_class.model_family == ModelFamily.NONE:
+        if isinstance(final_component_class, Transformer):
             return output_cache[f"{final_component}.x"], output_cache[f"{final_component}.y"]
         else:
             return output_cache[final_component]
 
     @staticmethod
-    def merge(x_inputs, y_input, X, y):
+    def _merge(x_inputs, y_input, X, y):
+        """ Combines any/all X and y inputs for a component, including handling defaults
+
+        Arguments:
+            x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
+            y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
+            X (pd.DataFrame): The original X input, to be used if there is no parent X input
+            y (pd.Series): The original y input, to be used if there is no parent y input
+
+        Returns:
+            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
+        """
         return_y = y
         if len(x_inputs) == 0:
             return_x = X
@@ -129,7 +149,7 @@ class ComponentGraph:
             return_y = y
         return return_x, return_y
 
-    def add_node(self, component_name, component_obj, parents=None):
+    def add_node(self, component_name, component_obj, parents=[]):
         """Add a node to the component graph.
 
         Arguments:
@@ -141,11 +161,10 @@ class ComponentGraph:
             raise ValueError('Cannot add a component that already exists')
         self.component_dict[component_name] = [component_obj]
         valid_parents = self.component_dict.keys()
-        if parents:
-            for parent in parents:
-                if parent[:-2] not in valid_parents and parent not in valid_parents:
-                    raise ValueError('Cannot add parent that is not yet in the graph')
-                self.component_dict[component_name].append(parent)
+        for parent in parents:
+            if parent[:-2] not in valid_parents and parent not in valid_parents:
+                raise ValueError('Cannot add parent that is not yet in the graph')
+            self.component_dict[component_name].append(parent)
         self._recompute_order()
         return self
 
@@ -177,7 +196,7 @@ class ComponentGraph:
         except KeyError:
             raise ValueError(f'Component {component_name} is not in the graph')
 
-    def get_final_component(self):
+    def get_last_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
 
         Returns:
@@ -186,13 +205,9 @@ class ComponentGraph:
         compute_list = list(self._compute_order)
         self._recompute_order()
         if len(compute_list) == 0:
-            if len(self.component_dict) > 0:
-                if len(self.component_dict) == 1:
-                    return list(self.component_dict.keys())[0]
-                raise ValueError("There are no edges in the graph, no final component to return")
             return None
-        final_component_name = compute_list[-1]
-        return self.get_component(final_component_name)
+        last_component_name = compute_list[-1]
+        return self.get_component(last_component_name)
 
     def get_estimators(self):
         """Gets a list of all the estimator components within this graph
@@ -203,11 +218,11 @@ class ComponentGraph:
         estimators = []
         for component_info in self.component_dict.values():
             component = component_info[0]
-            if component.model_family is not ModelFamily.NONE:
+            if issubclass(component, Estimator):
                 estimators.append(component)
         return estimators
 
-    def parents(self, component_name):
+    def get_parents(self, component_name):
         """Finds the names of all parent nodes of the given component
 
         Arguments:
@@ -241,7 +256,7 @@ class ComponentGraph:
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To graph entity sets, a graphviz backend is required.\n" +
+                "To visualize component graphs, a graphviz backend is required.\n" +
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
@@ -287,6 +302,11 @@ class ComponentGraph:
         return self
 
     def __next__(self):
+        """ Returns the next component in topologically sorted order of computation
+
+        Returns:
+            str, ComponentBase: The component name and class that come next
+        """
         try:
             component = next(self._compute_order)
             return component, self.component_dict[component][0]

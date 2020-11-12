@@ -17,7 +17,7 @@ from evalml.pipelines.components import (
 
 @pytest.fixture
 def example_graph():
-    graph = {'Imputer': Imputer,
+    graph = {'Imputer': [Imputer],
              'OneHot_RandomForest': [OneHotEncoder, 'Imputer.x'],
              'OneHot_ElasticNet': [OneHotEncoder, 'Imputer.x'],
              'Random Forest': [RandomForestClassifier, 'OneHot_RandomForest.x'],
@@ -40,7 +40,7 @@ def test_init(example_graph):
 
 
 def test_order_x_and_y():
-    graph = {'Imputer': Imputer,
+    graph = {'Imputer': [Imputer],
              'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y'],
              'Random Forest': [RandomForestClassifier, 'OHE.x']}
     component_graph = ComponentGraph(graph).instantiate({})
@@ -51,8 +51,7 @@ def test_order_x_and_y():
 def test_from_list():
     component_list = ['Imputer', 'One Hot Encoder', RandomForestClassifier]
 
-    component_graph = ComponentGraph()
-    component_graph.from_list(component_list)
+    component_graph = ComponentGraph.from_list(component_list)
 
     assert len(component_graph.component_dict) == 3
     assert component_graph.get_component('Imputer') == Imputer
@@ -64,9 +63,8 @@ def test_from_list():
     assert order == expected_order
 
     bad_component_list = ['Imputer', 'Fake Estimator']
-    component_graph = ComponentGraph()
     with pytest.raises(MissingComponentError, match='was not found'):
-        component_graph.from_list(bad_component_list)
+        ComponentGraph.from_list(bad_component_list)
 
 
 def test_instantiate_with_parameters(example_graph):
@@ -111,11 +109,11 @@ def test_instantiate_from_list():
 
 def test_instantiate_mixed():
     component = OneHotEncoder()
-    component_graph = ComponentGraph({'OneHot': component})
+    component_graph = ComponentGraph({'OneHot': [component]})
     component_graph.instantiate({})
     assert isinstance(component_graph.get_component('OneHot'), OneHotEncoder)
 
-    component_graph = ComponentGraph({'Imputer': Imputer(numeric_impute_strategy="most_frequent"), 'OneHot': OneHotEncoder})
+    component_graph = ComponentGraph({'Imputer': [Imputer(numeric_impute_strategy="most_frequent")], 'OneHot': [OneHotEncoder]})
     component_graph.instantiate({'OneHot': {'top_n': 7}})
     assert component_graph.get_component('Imputer').parameters['numeric_impute_strategy'] == 'most_frequent'
     assert component_graph.get_component('OneHot').parameters['top_n'] == 7
@@ -156,8 +154,8 @@ def test_add_node():
     component_graph.add_node('Final', Imputer, parents=['OneHot', 'Random Forest'])
     assert len(component_graph.component_dict) == 3
 
-    assert component_graph.parents('Random Forest') == ['OneHot']
-    assert component_graph.parents('Final') == ['OneHot', 'Random Forest']
+    assert component_graph.get_parents('Random Forest') == ['OneHot']
+    assert component_graph.get_parents('Final') == ['OneHot', 'Random Forest']
 
     order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['OneHot', 'Random Forest', 'Final']
@@ -175,10 +173,10 @@ def test_add_node_invalid():
 
 
 def test_add_edge():
-    component_dict = {'Imputer': Imputer,
-                      'OneHot': OneHotEncoder,
-                      'OneHot_2': OneHotEncoder,
-                      'Random Forest': RandomForestClassifier}
+    component_dict = {'Imputer': [Imputer],
+                      'OneHot': [OneHotEncoder],
+                      'OneHot_2': [OneHotEncoder],
+                      'Random Forest': [RandomForestClassifier]}
     component_graph = ComponentGraph(component_dict)
     order = [comp_name for comp_name, _ in component_graph]
     assert len(component_graph.component_dict) == 4
@@ -188,7 +186,7 @@ def test_add_edge():
     component_graph.add_edge('Imputer', 'OneHot_2')
     order = [comp_name for comp_name, _ in component_graph]
     assert len(order) == 3
-    assert list(component_graph.parents('OneHot')) == ['Imputer']
+    assert list(component_graph.get_parents('OneHot')) == ['Imputer']
 
     component_graph.add_edge('OneHot', 'Random Forest')
     order = [comp_name for comp_name, _ in component_graph]
@@ -196,7 +194,7 @@ def test_add_edge():
     component_graph.add_edge('OneHot_2', 'Random Forest')
     order = [comp_name for comp_name, _ in component_graph]
     assert len(order) == 4
-    assert list(component_graph.parents('Random Forest')) == ['OneHot', 'OneHot_2']
+    assert list(component_graph.get_parents('Random Forest')) == ['OneHot', 'OneHot_2']
 
 
 def test_add_invalid_edge():
@@ -238,36 +236,35 @@ def test_parents(example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
 
-    assert component_graph.parents('Imputer') == []
-    assert component_graph.parents('OneHot_RandomForest') == ['Imputer.x']
-    assert component_graph.parents('OneHot_ElasticNet') == ['Imputer.x']
-    assert component_graph.parents('Random Forest') == ['OneHot_RandomForest.x']
-    assert component_graph.parents('Elastic Net') == ['OneHot_ElasticNet.x']
-    assert component_graph.parents('Logistic Regression') == ['Random Forest', 'Elastic Net']
+    assert component_graph.get_parents('Imputer') == []
+    assert component_graph.get_parents('OneHot_RandomForest') == ['Imputer.x']
+    assert component_graph.get_parents('OneHot_ElasticNet') == ['Imputer.x']
+    assert component_graph.get_parents('Random Forest') == ['OneHot_RandomForest.x']
+    assert component_graph.get_parents('Elastic Net') == ['OneHot_ElasticNet.x']
+    assert component_graph.get_parents('Logistic Regression') == ['Random Forest', 'Elastic Net']
 
     with pytest.raises(ValueError, match='not in the graph'):
-        component_graph.parents('Fake component')
+        component_graph.get_parents('Fake component')
 
 
-def test_get_final_component(example_graph):
+def test_get_last_component(example_graph):
     component_graph = ComponentGraph()
-    assert component_graph.get_final_component() is None
+    assert component_graph.get_last_component() is None
 
     component_graph = ComponentGraph(example_graph)
-    assert component_graph.get_final_component() == LogisticRegressionClassifier
+    assert component_graph.get_last_component() == LogisticRegressionClassifier
 
     component_graph.instantiate({})
-    assert component_graph.get_final_component() == LogisticRegressionClassifier()
+    assert component_graph.get_last_component() == LogisticRegressionClassifier()
 
-    component_graph = ComponentGraph({'Imputer': Imputer})
-    assert component_graph.get_final_component() == Imputer
+    component_graph = ComponentGraph({'Imputer': [Imputer]})
+    assert component_graph.get_last_component() == Imputer
 
-    component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': [OneHotEncoder, 'Imputer']})
-    assert component_graph.get_final_component() == OneHotEncoder
+    component_graph = ComponentGraph({'Imputer': [Imputer], 'OneHot': [OneHotEncoder, 'Imputer']})
+    assert component_graph.get_last_component() == OneHotEncoder
 
-    component_graph = ComponentGraph({'Imputer': Imputer, 'OneHot': OneHotEncoder})
-    with pytest.raises(ValueError, match="no final component to return"):
-        component_graph.get_final_component()
+    component_graph = ComponentGraph({'Imputer': [Imputer], 'OneHot': [OneHotEncoder]})
+    assert component_graph.get_last_component() is None
 
 
 @patch('evalml.pipelines.components.Transformer.fit_transform')
@@ -305,7 +302,7 @@ def test_compute_final_features_fit_false(mock_transform, mock_fit, mock_predict
 @patch('evalml.pipelines.components.Imputer.fit_transform')
 def test_compute_final_features_y_parent(mock_fit_transform, X_y_binary):
     X, y = X_y_binary
-    graph = {'Imputer': Imputer,
+    graph = {'Imputer': [Imputer],
              'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y'],
              'Random Forest': [RandomForestClassifier, 'OHE.x']}
     component_graph = ComponentGraph(graph).instantiate({})
@@ -319,7 +316,7 @@ def test_compute_final_features_y_parent(mock_fit_transform, X_y_binary):
 @patch('evalml.pipelines.components.OneHotEncoder.transform')
 def test_compute_final_features_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
     X, y = X_y_binary
-    graph = {'Imputer': Imputer, 'OHE': [OneHotEncoder, 'Imputer.x']}
+    graph = {'Imputer': [Imputer], 'OHE': [OneHotEncoder, 'Imputer.x']}
     component_graph = ComponentGraph(graph).instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
     mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
@@ -329,3 +326,13 @@ def test_compute_final_features_transformer_end(mock_fit_transform, mock_transfo
 
     pd.testing.assert_frame_equal(output[0], pd.DataFrame(X))
     pd.testing.assert_series_equal(output[1], pd.Series(y))
+
+
+def test_iterator_reset(example_graph):
+    component_graph = ComponentGraph(example_graph)
+    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
+    order = [component_name for component_name, _ in component_graph]
+    order_2 = [component_name for component_name, _ in component_graph]
+
+    assert expected_order == order
+    assert expected_order == order_2
