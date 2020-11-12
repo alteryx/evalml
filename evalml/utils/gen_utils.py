@@ -332,8 +332,8 @@ def pad_with_nans(pd_data, num_to_pad):
     return pd.concat([padding, pd_data], ignore_index=True).infer_objects()
 
 
-def keep_non_nan_rows(pd_data_1, pd_data_2):
-    """Keep rows that do not have any NaNs in both pd_data_1 and pd_data_2.
+def drop_rows_with_nans(pd_data_1, pd_data_2):
+    """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
 
     Arguments:
         pd_data_1 (pd.DataFrame or pd.Series): Data to subset.

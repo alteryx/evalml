@@ -6,7 +6,7 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    keep_non_nan_rows,
+    drop_rows_with_nans,
     pad_with_nans
 )
 
@@ -49,15 +49,21 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         """
         if X is None:
             X = pd.DataFrame()
+
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         X_t = self._compute_features_during_fit(X, y)
+        if X_t.empty:
+            raise RuntimeError("Pipeline computed empty features during call to .fit. This means "
+                               "that either 1) you passed in X=None to fit and don't have a DelayFeatureTransformer "
+                               "in your pipeline or 2) you do have a DelayFeatureTransformer but gap=0 and max_delay=0. "
+                               "Please add a DelayFeatureTransformer or change the values of gap and max_delay")
 
         y_shifted = y.shift(-self.gap)
-        X_t, y_shifted = keep_non_nan_rows(X_t, y_shifted)
+        X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
         return self
 
@@ -81,7 +87,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
 
         features = self.compute_estimator_features(X, y)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
-        return pad_with_nans(predictions, self.max_delay if features.isna().values.any() else 0)
+        return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
@@ -103,7 +109,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y_predicted = self.predict(X, y)
         y_shifted = y.shift(-self.gap)
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        y_shifted, y_predicted = keep_non_nan_rows(y_shifted, y_predicted)
+        y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)
         return self._score_all_objectives(X, y_shifted,
                                           y_predicted,
                                           y_pred_proba=None,

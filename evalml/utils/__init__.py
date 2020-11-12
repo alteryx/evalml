@@ -10,7 +10,7 @@ from .gen_utils import (
     jupyter_check,
     safe_repr,
     _convert_woodwork_types_wrapper,
-    keep_non_nan_rows,
+    drop_rows_with_nans,
     pad_with_nans
 )
 from .cli_utils import print_info, get_evalml_root, get_installed_packages, get_sys_info, print_sys_info, print_deps
