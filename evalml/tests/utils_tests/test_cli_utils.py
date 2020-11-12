@@ -2,6 +2,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+import requirements
 from click.testing import CliRunner
 
 from evalml.__main__ import cli
@@ -13,7 +14,6 @@ from evalml.utils.cli_utils import (
     print_info,
     print_sys_info
 )
-import requirements
 
 
 @pytest.fixture
