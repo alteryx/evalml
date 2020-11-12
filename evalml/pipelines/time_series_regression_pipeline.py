@@ -51,8 +51,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         X_t = self._compute_features_during_fit(X, y)
 
@@ -76,8 +76,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        y = _convert_woodwork_types_wrapper(y.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         features = self.compute_estimator_features(X, y)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
@@ -98,7 +98,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         if X is None:
             X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         y_predicted = self.predict(X, y)
         y_shifted = y.shift(-self.gap)
