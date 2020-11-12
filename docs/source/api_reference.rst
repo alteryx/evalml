@@ -105,6 +105,7 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesRegressionPipeline
 
 Classification Pipelines
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -502,4 +503,6 @@ General Utils
     convert_to_seconds
     get_random_state
     get_random_seed
+    pad_with_nans
+    drop_rows_with_nans
 

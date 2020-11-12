@@ -2,6 +2,7 @@ import inspect
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.pipelines.components import ComponentBase
@@ -10,11 +11,13 @@ from evalml.utils.gen_utils import (
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
+    drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
     import_or_raise,
-    jupyter_check
+    jupyter_check,
+    pad_with_nans
 )
 
 
@@ -235,3 +238,38 @@ def test_jupyter_check(mock_import_or_raise):
     assert not jupyter_check()
     mock_import_or_raise().core.getipython.get_ipython.return_value = None
     assert not jupyter_check()
+
+
+def _check_equality(data, expected, check_index_type=True):
+    if isinstance(data, pd.Series):
+        pd.testing.assert_series_equal(data, expected, check_index_type)
+    else:
+        pd.testing.assert_frame_equal(data, expected, check_index_type)
+
+
+@pytest.mark.parametrize("data,num_to_pad,expected",
+                         [(pd.Series([1, 2, 3]), 1, pd.Series([np.nan, 1, 2, 3])),
+                          (pd.Series([1, 2, 3]), 0, pd.Series([1, 2, 3])),
+                          (pd.Series([1, 2, 3, 4], index=pd.date_range("2020-10-01", "2020-10-04")),
+                           2, pd.Series([np.nan, np.nan, 1, 2, 3, 4])),
+                          (pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]}), 0,
+                           pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]})),
+                          (pd.DataFrame({"a": [4, 5, 6], "b": ["a", "b", "c"]}), 1,
+                           pd.DataFrame({"a": [np.nan, 4, 5, 6], "b": [np.nan, "a", "b", "c"]}))])
+def test_pad_with_nans(data, num_to_pad, expected):
+    padded = pad_with_nans(data, num_to_pad)
+    _check_equality(padded, expected)
+
+
+@pytest.mark.parametrize("data, expected",
+                         [([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [1., 2., 3, None]})],
+                           [pd.Series([1., 2.], index=pd.Int64Index([1, 2])),
+                            pd.DataFrame({"a": [2., 3.]}, index=pd.Int64Index([1, 2]))]),
+                          ([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [3., 4., None, None]})],
+                           [pd.Series([1.], index=pd.Int64Index([1])),
+                            pd.DataFrame({"a": [4.]}, index=pd.Int64Index([1]))]),
+                          ])
+def test_drop_nan(data, expected):
+    no_nan_1, no_nan_2 = drop_rows_with_nans(*data)
+    _check_equality(no_nan_1, expected[0], check_index_type=False)
+    _check_equality(no_nan_2, expected[1], check_index_type=False)

@@ -13,7 +13,7 @@ class LinearRegressor(Estimator):
         'normalize': [True, False]
     }
     model_family = ModelFamily.LINEAR_MODEL
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def __init__(self, fit_intercept=True, normalize=False, n_jobs=-1, random_state=0, **kwargs):
         parameters = {

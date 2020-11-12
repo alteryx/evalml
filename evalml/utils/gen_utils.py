@@ -313,3 +313,41 @@ def _convert_woodwork_types_wrapper(pd_data):
             if type(col.dtype) in nullable_to_numpy_mapping:
                 pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
     return pd_data
+
+
+def pad_with_nans(pd_data, num_to_pad):
+    """Pad the beginning num_to_pad rows with nans.
+
+    Arguments:
+        pd_data (pd.DataFrame or pd.Series): Data to pad.
+
+    Returns:
+        pd.DataFrame or pd.Series
+    """
+    if isinstance(pd_data, pd.Series):
+        padding = pd.Series([None] * num_to_pad)
+    else:
+        padding = pd.DataFrame({col: [None] * num_to_pad
+                                for col in pd_data.columns})
+    return pd.concat([padding, pd_data], ignore_index=True).infer_objects()
+
+
+def drop_rows_with_nans(pd_data_1, pd_data_2):
+    """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
+
+    Arguments:
+        pd_data_1 (pd.DataFrame or pd.Series): Data to subset.
+        pd_data_2 (pd.DataFrame or pd.Series): Data to subset.
+
+    Returns:
+        tuple of pd.DataFrame or pd.Series
+    """
+
+    def _not_nan(pd_data):
+        if isinstance(pd_data, pd.Series):
+            return ~pd_data.isna().values
+        else:
+            return ~pd_data.isna().any(axis=1).values
+
+    mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
+    return pd_data_1.iloc[mask], pd_data_2.iloc[mask]

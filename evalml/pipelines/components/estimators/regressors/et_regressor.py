@@ -15,7 +15,7 @@ class ExtraTreesRegressor(Estimator):
         "max_depth": Integer(4, 10)
     }
     model_family = ModelFamily.EXTRA_TREES
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def __init__(self,
                  n_estimators=100,
