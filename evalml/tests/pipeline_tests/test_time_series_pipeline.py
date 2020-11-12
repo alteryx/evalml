@@ -50,7 +50,7 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
                                         estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
-        pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
+        pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
 
@@ -117,7 +117,7 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
-        pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
+        pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
 
@@ -160,7 +160,7 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
-        pytest.skip("Can't prevent label leakage when only the target is used without lagging.")
+        pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
 
