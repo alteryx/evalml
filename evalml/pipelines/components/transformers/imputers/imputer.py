@@ -2,10 +2,12 @@ import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils.gen_utils import boolean, categorical_dtypes, numeric_dtypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    boolean,
+    categorical_dtypes,
+    numeric_dtypes
 )
 
 

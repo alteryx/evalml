@@ -3,13 +3,13 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
-from evalml.pipelines.components.transformers.transformer import Transformer
-
 from evalml.pipelines.components import ComponentBaseMeta
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
+
 
 class OneHotEncoderMeta(ComponentBaseMeta):
     """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""

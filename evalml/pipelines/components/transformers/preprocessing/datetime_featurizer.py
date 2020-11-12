@@ -1,11 +1,12 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import datetime_dtypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    datetime_dtypes
 )
+
 
 def _extract_year(col):
     return col.dt.year

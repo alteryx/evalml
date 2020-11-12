@@ -229,6 +229,7 @@ def _rename_column_names_to_numeric(X):
         return ww.DataTable(X_renamed)
     return X_renamed
 
+
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
 
@@ -283,21 +284,21 @@ def _convert_to_woodwork_structure(data):
     """
     Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
     """
+    ww_data = data
     if data is None:
         return None
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
-        return data
+        return ww_data
     # Convert numpy data structures to pandas data structures
-    if isinstance(data, list):
-        data = np.array(data)
-    if isinstance(data, pd.api.extensions.ExtensionArray) or (isinstance(data, np.ndarray) and len(data.shape) == 1):
-        data = pd.Series(data)
+    if isinstance(data, list) or isinstance(data, pd.api.extensions.ExtensionArray) or (isinstance(data, np.ndarray) and len(data.shape) == 1):
+        ww_data = pd.Series(data)
     elif isinstance(data, np.ndarray):
-        data = pd.DataFrame(data)
+        ww_data = pd.DataFrame(data)
+
     # Convert pandas data structures to Woodwork data structures
-    if isinstance(data, pd.Series):
-        return ww.DataColumn(data)
-    return ww.DataTable(data)
+    if isinstance(ww_data, pd.Series):
+        return ww.DataColumn(ww_data)
+    return ww.DataTable(ww_data, copy_dataframe=True)
 
 
 def _convert_woodwork_types_wrapper(pd_data):

@@ -5,8 +5,9 @@ from sklearn.impute import SimpleImputer as SkImputer
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
+
 
 class SimpleImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""

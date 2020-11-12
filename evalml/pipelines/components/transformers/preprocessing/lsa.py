@@ -8,8 +8,9 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
+
 
 class LSA(TextTransformer):
     """Transformer to calculate the Latent Semantic Analysis Values of text input"""

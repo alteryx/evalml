@@ -6,8 +6,9 @@ from evalml.pipelines.components.transformers.imputers.simple_imputer import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
+
 
 class PerColumnImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy per column"""

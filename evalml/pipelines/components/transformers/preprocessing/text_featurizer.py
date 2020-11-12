@@ -10,8 +10,9 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
+
 
 class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns."""
