@@ -227,7 +227,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pd.Series: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = self.compute_estimator_features(X)
         return self.estimator.predict(X_t)
 
