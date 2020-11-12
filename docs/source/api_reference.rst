@@ -504,5 +504,5 @@ General Utils
     get_random_state
     get_random_seed
     pad_with_nans
-    keep_non_nan_rows
+    drop_rows_with_nans
 
