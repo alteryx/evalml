@@ -144,33 +144,32 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ = _convert_to_woodwork_structure(X)
+        X_ = _convert_woodwork_types_wrapper(X_.to_dataframe())
         cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":
             for col in cat_cols:
-                if X[col].dtype == 'category' and pd.isna(X[col]).any():
-                    X[col] = X[col].cat.add_categories("nan")
-                    X[col] = X[col].where(pd.isna(X[col]) == False, other='nan')
+                if X_[col].dtype == 'category' and pd.isna(X_[col]).any():
+                    X_[col] = X_[col].cat.add_categories("nan")
+                    X_[col] = X_[col].where(pd.isna(X_[col]) == False, other='nan')
 
-            X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
-        if self.parameters['handle_missing'] == "error" and X.isnull().any().any():
+            X_[cat_cols] = X_[cat_cols].replace(np.nan, "nan")
+        if self.parameters['handle_missing'] == "error" and X_.isnull().any().any():
             raise ValueError("Input contains NaN")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
-        for col in X.columns:
+        for col in X_.columns:
             if col not in cat_cols:
-                X_t = pd.concat([X_t, X[col]], axis=1)
+                X_t = pd.concat([X_t, X_[col]], axis=1)
         # The call to pd.concat above changes the type of the index so we will manually keep it the same.
         if not X_t.empty:
-            X_t.index = X.index
+            X_t.index = X_.index
 
         # Call sklearn's transform on the categorical columns
         if len(cat_cols) > 0:
-            X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray(), index=X.index)
+            X_cat = pd.DataFrame(self._encoder.transform(X_[cat_cols]).toarray(), index=X_.index)
             cat_cols_str = [str(c) for c in cat_cols]
             X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
             X_t = pd.concat([X_t, X_cat], axis=1)

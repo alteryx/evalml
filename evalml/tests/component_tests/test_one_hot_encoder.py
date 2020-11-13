@@ -4,7 +4,11 @@ import pytest
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
-from evalml.utils import get_random_state
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    get_random_state
+)
 
 
 def test_init():
@@ -147,7 +151,6 @@ def test_no_top_n():
                       "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
                       "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
                       "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]})
-
     expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
     for val in X["col_1"]:
         expected_col_names.add("col_1_" + val)
@@ -228,6 +231,10 @@ def test_more_top_n_unique_values():
     encoder = OneHotEncoder(top_n=5, random_state=random_seed)
     encoder.fit(X)
     X_t = encoder.transform(X)
+
+    # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
@@ -260,6 +267,10 @@ def test_more_top_n_unique_values_large():
     encoder = OneHotEncoder(top_n=3, random_state=random_seed)
     encoder.fit(X)
     X_t = encoder.transform(X)
+
+    # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=test_random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
