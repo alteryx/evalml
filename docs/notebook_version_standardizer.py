@@ -12,7 +12,7 @@ def _get_python_version(notebook):
     return version
 
 
-def _standardize_python_version(notebook, desired_version='3.7.4'):
+def _standardize_python_version(notebook, desired_version='3.8.2'):
     with open(notebook, "r") as f:
         source = json.load(f)
         source['metadata']['language_info']['version'] = desired_version
@@ -31,7 +31,7 @@ def _get_ipython_notebooks(docs_source):
     return notebooks
 
 
-def _get_notebooks_with_different_versions(notebooks, desired_version='3.7.4'):
+def _get_notebooks_with_different_versions(notebooks, desired_version='3.8.2'):
     different_versions = []
     for notebook in notebooks:
         version = _get_python_version(notebook)
@@ -40,7 +40,7 @@ def _get_notebooks_with_different_versions(notebooks, desired_version='3.7.4'):
     return different_versions
 
 
-def _standardize_versions(notebooks, desired_version='3.7.4'):
+def _standardize_versions(notebooks, desired_version='3.8.2'):
     for notebook in notebooks:
         _standardize_python_version(notebook, desired_version)
 
@@ -51,18 +51,19 @@ def cli():
 
 
 @cli.command()
-@click.option('--desired-version', default='3.7.4', help='python version that all notebooks should match')
+@click.option('--desired-version', default='3.8.2', help='python version that all notebooks should match')
 def check_versions(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(notebooks, desired_version)
     if different_versions:
         different_versions = ['\t' + notebook for notebook in different_versions]
         different_versions = "\n".join(different_versions)
-        raise SystemExit(f"The following notebooks don't match {desired_version}:\n {different_versions}")
+        raise SystemExit(f"The following notebooks don't match {desired_version}:\n {different_versions}\n"
+                         "Please run make lint-fix to fix this.")
 
 
 @cli.command()
-@click.option('--desired-version', default='3.7.4', help='python version that all notebooks should match')
+@click.option('--desired-version', default='3.8.2', help='python version that all notebooks should match')
 def standardize(desired_version):
     notebooks = _get_ipython_notebooks(DOCS_PATH)
     different_versions = _get_notebooks_with_different_versions(notebooks, desired_version)
