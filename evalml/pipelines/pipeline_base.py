@@ -30,10 +30,6 @@ from evalml.utils import (
     log_title,
     safe_repr
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
 
 logger = get_logger(__file__)
 

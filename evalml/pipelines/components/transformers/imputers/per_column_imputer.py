@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
