@@ -98,7 +98,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in self.features_to_encode:
                 if X_t[col].dtype == 'category' and pd.isna(X_t[col]).any():
                     X_t[col] = X_t[col].cat.add_categories("nan")
-                    X_t[col] = X_t[col].where(pd.isna(X_t[col]) is False, other='nan')
+                    # X_t[col] = X_t[col].where(pd.isna(X_t[col]) == False, other='nan')
+                    X_t[col] = X_t[col].where(pd.isna(X_t[col]).isin([False]), other='nan')
 
             X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
@@ -152,7 +153,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in cat_cols:
                 if X_[col].dtype == 'category' and pd.isna(X_[col]).any():
                     X_[col] = X_[col].cat.add_categories("nan")
-                    X_[col] = X_[col].where(pd.isna(X_[col]) is False, other='nan')
+                    # X_[col] = X_[col].where(not pd.isna(X_[col]), other='nan')
+                    X_[col] = X_[col].where(pd.isna(X_[col]).isin([False]), other='nan')
 
             X_[cat_cols] = X_[cat_cols].replace(np.nan, "nan")
         if self.parameters['handle_missing'] == "error" and X_.isnull().any().any():
