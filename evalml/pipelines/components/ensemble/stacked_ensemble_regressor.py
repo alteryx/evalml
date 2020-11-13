@@ -11,7 +11,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     """Stacked Ensemble Regressor."""
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingRegressor
     _default_final_estimator = LinearRegressor

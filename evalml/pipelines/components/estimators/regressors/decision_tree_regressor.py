@@ -15,7 +15,7 @@ class DecisionTreeRegressor(Estimator):
         "max_depth": Integer(4, 10)
     }
     model_family = ModelFamily.DECISION_TREE
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def __init__(self,
                  criterion="mse",
