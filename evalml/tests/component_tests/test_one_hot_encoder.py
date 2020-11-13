@@ -332,9 +332,9 @@ def test_large_number_of_categories():
 @pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index'])
 def test_data_types(data_type):
     if data_type == 'list':
-        X = ["a", "b", "c"]
+        X = [["a"], ["b"], ["c"]]
     elif data_type == 'np':
-        X = np.array(["a", "b", "c"])
+        X = np.array([["a"], ["b"], ["c"]])
     elif data_type == 'pd_no_index':
         X = pd.DataFrame(["a", "b", "c"])
     elif data_type == 'pd_index':
