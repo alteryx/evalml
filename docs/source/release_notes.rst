@@ -13,6 +13,7 @@ Release Notes
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
         * Added ``DelayedFeaturesTransformer`` :pr:`1396`
         * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
+        * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
