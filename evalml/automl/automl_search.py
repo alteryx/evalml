@@ -96,7 +96,7 @@ class AutoMLSearch:
                  verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
-                 max_batches=None,
+                 max_batches=1,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -111,7 +111,7 @@ class AutoMLSearch:
                 - R2 for regression problems.
 
             max_iterations (int): Maximum number of iterations to search. If max_iterations and
-                max_time is not set, then max_iterations will default to max_iterations of 5.
+                max_time is not set, then max_iterations will default to max_iterations of 7.
 
             max_time (int, str): Maximum time to search for pipelines.
                 This will not start a new pipeline search after the duration
@@ -162,7 +162,7 @@ class AutoMLSearch:
                 If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
-                max_iterations have precedence over stopping the search.
+                max_iterations have precedence over stopping the search. Defaults to 1.
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -213,8 +213,8 @@ class AutoMLSearch:
 
         self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not self.max_batches:
-            self.max_iterations = 5
-            logger.info("Using default limit of max_iterations=5.\n")
+            self.max_iterations = 7
+            logger.info("Using default limit of max_iterations=7.\n")
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
