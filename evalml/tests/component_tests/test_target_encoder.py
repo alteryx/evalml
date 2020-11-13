@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -167,3 +169,18 @@ def test_custom_indices():
     x1, x2, y1, y2 = split_data(X, y, regression=False)
     tp = MyTargetPipeline({})
     tp.fit(x2, y2)
+
+
+@patch('evalml.pipelines.components.transformers.transformer.Transformer.fit')
+def test_pandas_numpy(mock_fit, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X).sample(frac=1)
+
+    encoder = TargetEncoder()
+    X_t = pd.DataFrame(X).reset_index(drop=True, inplace=False)
+
+    encoder.fit(X, y)
+    pd.testing.assert_frame_equal(mock_fit.call_args[0][0], X_t)
+
+    X_numpy = X.to_numpy()
+    encoder.fit(X_numpy, y)

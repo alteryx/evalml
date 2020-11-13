@@ -1,6 +1,10 @@
+import pandas as pd
+
 from ..transformer import Transformer
 
-from evalml.pipelines.components.transformers.encoders.onehot_encoder import OneHotEncoderMeta
+from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
+    OneHotEncoderMeta
+)
 from evalml.utils import import_or_raise
 
 
@@ -48,8 +52,10 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          random_state=random_state)
 
     def fit(self, X, y):
-        X.reset_index(drop=True, inplace=True)
-        y.reset_index(drop=True, inplace=True)
+        if isinstance(X, pd.DataFrame):
+            X.reset_index(drop=True, inplace=True)
+        if isinstance(y, pd.Series):
+            y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
 
     def transform(self, X, y=None):
