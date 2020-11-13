@@ -82,7 +82,7 @@ class DataChecks:
             y (pd.Series): The target data of length [n_samples]
 
         Returns:
-            list (DataCheckMessage): List containing DataCheckMessage objects
+            dict (DataCheckMessage): List containing DataCheckMessage objects
 
         """
         messages = []

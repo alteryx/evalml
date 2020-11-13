@@ -34,7 +34,7 @@ class ClassImbalanceDataCheck(DataCheck):
             y: Target labels to check for imbalanced data.
 
         Returns:
-            list (DataCheckWarning, DataCheckError): list with DataCheckWarnings if imbalance in classes is less than the threshold,
+            dict (DataCheckWarning, DataCheckError): list with DataCheckWarnings if imbalance in classes is less than the threshold,
                                                      and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
         Example:

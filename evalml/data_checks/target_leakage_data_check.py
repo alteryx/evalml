@@ -33,7 +33,7 @@ class TargetLeakageDataCheck(DataCheck):
             y (pd.Series): The target data
 
         Returns:
-            list (DataCheckWarning): List with a DataCheckWarning if target leakage is detected.
+            dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
         Example:
             >>> X = pd.DataFrame({

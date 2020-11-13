@@ -51,7 +51,7 @@ class NoVarianceDataCheck(DataCheck):
             y (pd.Series): The target data.
 
         Returns:
-            list (DataCheckWarning or DataCheckError): List of warnings/errors corresponding to features or target with no variance.
+            dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
         messages = {DataCheckMessageType.WARNING: [],
                     DataCheckMessageType.ERROR: []}

@@ -28,7 +28,7 @@ class HighlyNullDataCheck(DataCheck):
             y: Ignored.
 
         Returns:
-            list (DataCheckWarning): List with a DataCheckWarning if there are any highly-null columns.
+            dict (DataCheckWarning): dict with a DataCheckWarning if there are any highly-null columns.
 
         Example:
             >>> df = pd.DataFrame({

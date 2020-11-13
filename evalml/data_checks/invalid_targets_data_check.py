@@ -25,7 +25,7 @@ class InvalidTargetDataCheck(DataCheck):
             y: Target data to check for invalid values.
 
         Returns:
-            list (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
+            dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
         Example:
             >>> X = pd.DataFrame({})

@@ -30,7 +30,7 @@ class IDColumnsDataCheck(DataCheck):
             threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
 
         Returns:
-            A dictionary of features with column name or index and their probability of being ID columns
+            dict: A dictionary of features with column name or index and their probability of being ID columns
 
         Example:
             >>> df = pd.DataFrame({

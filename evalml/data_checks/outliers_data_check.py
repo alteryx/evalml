@@ -27,7 +27,7 @@ class OutliersDataCheck(DataCheck):
             y: Ignored.
 
         Returns:
-            A set of columns that may have outlier data.
+            dict: A set of columns that may have outlier data.
 
         Example:
             >>> df = pd.DataFrame({
