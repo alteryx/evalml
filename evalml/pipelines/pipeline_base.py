@@ -205,7 +205,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return X_t
 
     def _fit(self, X, y):
-
+        X.reset_index(inplace=True, drop=True)
+        y.reset_index(inplace=True, drop=True)
         X_t = self._compute_features_during_fit(X, y)
 
         self.estimator.fit(X_t, y)
