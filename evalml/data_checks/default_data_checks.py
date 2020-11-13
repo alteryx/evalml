@@ -1,4 +1,5 @@
 from .class_imbalance_data_check import ClassImbalanceDataCheck
+from .data_check_message_type import DataCheckMessageType
 from .data_checks import DataChecks
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck

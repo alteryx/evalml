@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_type import DataCheckMessageType
 
 
 class HighVarianceCVDataCheck(DataCheck):
@@ -33,6 +34,8 @@ class HighVarianceCVDataCheck(DataCheck):
             >>> check = HighVarianceCVDataCheck(threshold=0.10)
             >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == [DataCheckWarning("High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
         """
+        messages = {DataCheckMessageType.WARNING: [],
+                    DataCheckMessageType.ERROR: []}
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
 

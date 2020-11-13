@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_type import DataCheckMessageType
 
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import numeric_dtypes
@@ -37,7 +38,7 @@ class OutliersDataCheck(DataCheck):
             >>> outliers_check = OutliersDataCheck()
             >>> assert outliers_check.validate(df) == [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")]
         """
-
+        messages = {}
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X = X.select_dtypes(include=numeric_dtypes)
@@ -57,4 +58,5 @@ class OutliersDataCheck(DataCheck):
         has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
         warning_msg = "Column '{}' is likely to have outlier data"
         cols = has_outliers.index[has_outliers]
-        return [DataCheckWarning(warning_msg.format(col), self.name) for col in cols]
+        messages[DataCheckMessageType.WARNING] = [DataCheckWarning(warning_msg.format(col), self.name) for col in cols]
+        return messages

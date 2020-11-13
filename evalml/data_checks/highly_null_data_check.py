@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_type import DataCheckMessageType
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -37,6 +38,8 @@ class HighlyNullDataCheck(DataCheck):
             >>> null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
             >>> assert null_check.validate(df) == [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]
         """
+        messages = {DataCheckMessageType.WARNING: [],
+                    DataCheckMessageType.ERROR: []}
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         percent_null = (X.isnull().mean()).to_dict()

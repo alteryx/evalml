@@ -1,6 +1,7 @@
 import inspect
 
 from .data_check import DataCheck
+from .data_check_message_type import DataCheckMessageType
 
 from evalml.exceptions import DataCheckInitError
 

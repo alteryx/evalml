@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_type import DataCheckMessageType
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -40,7 +41,8 @@ class IDColumnsDataCheck(DataCheck):
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
         """
-
+        messages = {DataCheckMessageType.WARNING: [],
+                    DataCheckMessageType.ERROR: []}
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         col_names = [str(col) for col in X.columns.tolist()]

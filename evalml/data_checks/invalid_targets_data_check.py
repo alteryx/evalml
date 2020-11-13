@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
+from .data_check_message_type import DataCheckMessageType
 
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
@@ -34,7 +35,8 @@ class InvalidTargetDataCheck(DataCheck):
         """
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        messages = []
+        messages = {DataCheckMessageType.WARNING: [],
+                    DataCheckMessageType.ERROR: []}
         null_rows = y.isnull()
         if null_rows.any():
             messages.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
