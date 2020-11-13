@@ -1,4 +1,5 @@
 import os
+import pathlib
 from unittest.mock import patch
 
 import pytest
@@ -22,7 +23,7 @@ def current_dir():
 
 
 def get_core_requirements(current_dir):
-    reqs_path = os.path.join(current_dir, '../../../core-requirements.txt')
+    reqs_path = os.path.join(current_dir, pathlib.Path('..', '..', '..', 'core-requirements.txt'))
     lines = open(reqs_path, 'r').readlines()
     lines = [line for line in lines if '-r ' not in line]
     reqs = requirements.parse(''.join(lines))
