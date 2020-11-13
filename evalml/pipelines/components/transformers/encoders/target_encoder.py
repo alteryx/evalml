@@ -1,15 +1,10 @@
 from ..transformer import Transformer
 
-from evalml.pipelines.components import ComponentBaseMeta
+from evalml.pipelines.components.transformers.encoders.onehot_encoder import OneHotEncoderMeta
 from evalml.utils import import_or_raise
 
 
-class TargetEncoderMeta(ComponentBaseMeta):
-    """A version of the ComponentBaseMeta class which includes validation on an additional target-encoder method `categories`"""
-    METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + ['get_feature_names']
-
-
-class TargetEncoder(Transformer, metaclass=TargetEncoderMeta):
+class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """Target encoder to encode categorical data"""
     name = 'Target Encoder'
     hyperparameter_ranges = {}
@@ -26,7 +21,7 @@ class TargetEncoder(Transformer, metaclass=TargetEncoderMeta):
         Arguments:
             cols (list): Columns to encode. If None, all string columns will be encoded, otherwise only the columns provided will be encoded.
                 Defaults to None
-            smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected value has
+            smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected target value has
                 on the resulting target encodings. Must be strictly larger than 0. Defaults to 1.0
             handle_unknown (string): Determines how to handle unknown categories for a feature encountered. Options are 'value', 'error', nd 'return_nan'.
                 Defaults to 'value', which replaces with the target mean
@@ -53,10 +48,15 @@ class TargetEncoder(Transformer, metaclass=TargetEncoderMeta):
                          random_state=random_state)
 
     def fit(self, X, y):
+        X.reset_index(drop=True, inplace=True)
+        y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
 
     def transform(self, X, y=None):
         return super().transform(X, y)
+
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X)
 
     def get_feature_names(self):
         """Return feature names for the input features after fitting.

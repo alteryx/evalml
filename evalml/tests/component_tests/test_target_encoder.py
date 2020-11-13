@@ -4,7 +4,9 @@ import pytest
 from pytest import importorskip
 
 from evalml.exceptions import ComponentNotYetFittedError
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import TargetEncoder
+from evalml.preprocessing import split_data
 
 importorskip('category_encoders', reason='Skipping test because category_encoders not installed')
 
@@ -25,6 +27,12 @@ def test_parameters():
                            "handle_unknown": "value",
                            "handle_missing": "value"}
     assert encoder.parameters == expected_parameters
+
+
+def test_categories():
+    encoder = TargetEncoder()
+    with pytest.raises(AttributeError, match="'TargetEncoder' object has no attribute"):
+        encoder.categories
 
 
 def test_invalid_inputs():
@@ -145,3 +153,17 @@ def test_get_feature_names():
         encoder.get_feature_names()
     encoder.fit(X, y)
     np.testing.assert_array_equal(encoder.get_feature_names(), np.array(['col_1', 'col_2', 'col_3']))
+
+
+def test_custom_indices():
+    # custom regression pipeline
+    class MyTargetPipeline(RegressionPipeline):
+        component_graph = ['Imputer', 'Target Encoder', 'Linear Regressor']
+        custom_name = "Target Pipeline"
+
+    X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
+    y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
+
+    x1, x2, y1, y2 = split_data(X, y, regression=False)
+    tp = MyTargetPipeline({})
+    tp.fit(x2, y2)
