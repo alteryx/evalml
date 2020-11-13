@@ -255,7 +255,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'problem_type': 'binary',
         'objective': 'F1',
         'max_time': 100,
-        'max_iterations': 5,
+        'max_iterations': 7,
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
@@ -478,7 +478,7 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
-    automl = AutoMLSearch(problem_type='binary', max_iterations=5)
+    automl = AutoMLSearch(problem_type='binary', max_iterations=7)
     automl.search(X, y)
     assert automl.data_check_results is None
     mock_fit.assert_called()
@@ -1281,7 +1281,7 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
     automl.search(X, y, data_checks=None)
     # every nth batch a stacked ensemble will be trained
     if max_iterations is None:
-        max_iterations = 5  # Default value for max_iterations
+        max_iterations = 7  # Default value for max_iterations
 
     pipeline_names = automl.rankings['pipeline_name']
     if max_iterations < _get_first_stacked_classifier_no():
@@ -1393,7 +1393,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     # Use the old default when all are None
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary")
     automl.search(X, y, data_checks=None)
-    assert len(automl.results["pipeline_results"]) == 5
+    assert len(automl.results["pipeline_results"]) == 7
 
     # Use max_iterations when both max_iterations and max_batches are set
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", max_batches=10,
@@ -1695,7 +1695,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
-    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    assert len(automl._results['errors']) == 21  # 7 iterations, 3 folds each
     for e in automl._results['errors']:
         assert str(e) == msg
 
