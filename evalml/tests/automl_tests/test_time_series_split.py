@@ -15,7 +15,7 @@ def test_time_series_split_init():
         _ = list(ts_split.split(X=pd.DataFrame(), y=pd.Series([])))
 
 
-@pytest.mark.parametrize("max_delay,gap", [(0, 0), (1, 1), (2, 0), (4, 2)])
+@pytest.mark.parametrize("max_delay,gap", [(0, 0), (1, 0), (2, 0), (0, 3), (1, 1), (4, 2)])
 @pytest.mark.parametrize("X_none,y_none", [(False, False), (True, False), (False, True)])
 def test_time_series_split(max_delay, gap, X_none, y_none):
     X = pd.DataFrame({"features": range(1, 32)})
