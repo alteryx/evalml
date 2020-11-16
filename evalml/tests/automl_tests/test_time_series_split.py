@@ -5,7 +5,6 @@ from evalml.automl.data_splitters import TimeSeriesSplit
 
 
 def test_time_series_split_init():
-    breakpoint()
     ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_folds=5)
     assert ts_split.get_n_splits() == 5
 
