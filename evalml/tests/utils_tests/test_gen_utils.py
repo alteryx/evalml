@@ -8,6 +8,8 @@ import pytest
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
@@ -17,9 +19,7 @@ from evalml.utils.gen_utils import (
     get_random_state,
     import_or_raise,
     jupyter_check,
-    pad_with_nans,
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    pad_with_nans
 )
 
 
@@ -277,9 +277,7 @@ def test_drop_nan(data, expected):
     _check_equality(no_nan_2, expected[1], check_index_type=False)
 
 
-
 def test_convert_woodwork_types_wrapper_with_nan():
     y = _convert_to_woodwork_structure(pd.array([True, False, None], dtype="boolean"))
     y = _convert_woodwork_types_wrapper(y.to_series())
     pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
-
