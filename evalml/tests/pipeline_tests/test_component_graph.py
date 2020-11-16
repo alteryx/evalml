@@ -38,6 +38,10 @@ def test_init(example_graph):
     expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
     assert order == expected_order
 
+    invalid_graph = {'Imputer': [Imputer], 'OHE': OneHotEncoder}
+    with pytest.raises(ValueError, match='All component information should be passed in as a list'):
+        ComponentGraph(invalid_graph)
+
 
 def test_order_x_and_y():
     graph = {'Imputer': [Imputer],
@@ -107,19 +111,14 @@ def test_instantiate_from_list():
     assert component_graph.get_component('One Hot Encoder').parameters['top_n'] == 7
 
 
-def test_instantiate_mixed():
-    component = OneHotEncoder()
-    component_graph = ComponentGraph({'OneHot': [component]})
-    component_graph.instantiate({})
-    assert isinstance(component_graph.get_component('OneHot'), OneHotEncoder)
+def test_invalid_instantiate():
 
     component_graph = ComponentGraph({'Imputer': [Imputer(numeric_impute_strategy="most_frequent")], 'OneHot': [OneHotEncoder]})
-    component_graph.instantiate({'OneHot': {'top_n': 7}})
-    assert component_graph.get_component('Imputer').parameters['numeric_impute_strategy'] == 'most_frequent'
-    assert component_graph.get_component('OneHot').parameters['top_n'] == 7
+    with pytest.raises(ValueError, match='Cannot reinstantiate component'):
+        component_graph.instantiate({})
+    with pytest.raises(ValueError, match='Cannot reinstantiate component'):
+        component_graph.instantiate({'OneHot': {'top_n': 7}})
 
-
-def test_invalid_instantiate():
     graph = {'Imputer': ['Imputer', 'Fake'],
              'Fake': ['Fake Component', 'Estimator'],
              'Estimator': [ElasticNetClassifier]}
@@ -136,12 +135,12 @@ def test_invalid_instantiate():
 
     graph = {'Imputer': [Imputer(numeric_impute_strategy='constant', numeric_fill_value=0)]}
     component_graph = ComponentGraph(graph)
-    with pytest.raises(ValueError, match='component already instantiated'):
+    with pytest.raises(ValueError, match='Cannot reinstantiate component'):
         component_graph.instantiate({'Imputer': {'numeric_fill_value': 1}})
 
     component = OneHotEncoder()
     component_graph = ComponentGraph({'OneHot': [component]})
-    with pytest.raises(ValueError, match='component already instantiated'):
+    with pytest.raises(ValueError, match='Cannot reinstantiate component'):
         component_graph.instantiate({'OneHot': {'top_n': 3}})
 
 

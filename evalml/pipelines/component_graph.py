@@ -53,10 +53,7 @@ class ComponentGraph:
             component_parameters = parameters.get(component_name, {})
             component_class = component_info[0]
             if isinstance(component_class, ComponentBase):
-                if component_parameters != {}:
-                    raise ValueError(f"Attempting to instantiate component {component_name} with parameters {component_parameters} when component already instantiated")
-                else:
-                    continue
+                raise ValueError(f"Cannot reinstantiate component {component_name} that has already been instantiated")
 
             component_class = handle_component_class(component_class)
 
