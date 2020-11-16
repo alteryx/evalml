@@ -1,12 +1,13 @@
 import os
+import pathlib
 from unittest.mock import patch
 
 import pytest
+import requirements
 from click.testing import CliRunner
 
 from evalml.__main__ import cli
 from evalml.utils.cli_utils import (
-    get_core_requirements,
     get_evalml_root,
     get_installed_packages,
     get_sys_info,
@@ -21,8 +22,13 @@ def current_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-def test_get_core_requirements():
-    assert len(get_core_requirements()) == 16
+def get_core_requirements(current_dir):
+    reqs_path = os.path.join(current_dir, pathlib.Path('..', '..', '..', 'core-requirements.txt'))
+    lines = open(reqs_path, 'r').readlines()
+    lines = [line for line in lines if '-r ' not in line]
+    reqs = requirements.parse(''.join(lines))
+    reqs_names = [req.name for req in reqs]
+    return reqs_names
 
 
 def test_print_cli_cmd():
@@ -57,9 +63,9 @@ def test_print_sys_info(caplog):
     assert "SYSTEM INFO" in out
 
 
-def test_print_deps_info(caplog):
-    core_requirements = get_core_requirements()
-    print_deps(core_requirements)
+def test_print_deps_info(caplog, current_dir):
+    core_requirements = get_core_requirements(current_dir)
+    print_deps()
     out = caplog.text
     assert "INSTALLED VERSIONS" in out
     for requirement in core_requirements:
@@ -83,9 +89,9 @@ def test_sys_info_error(mock_uname):
     mock_uname.assert_called()
 
 
-def test_installed_packages():
+def test_installed_packages(current_dir):
     installed_packages = get_installed_packages()
-    core_requirements = get_core_requirements()
+    core_requirements = get_core_requirements(current_dir)
     assert set(core_requirements).issubset(installed_packages.keys())
 
 

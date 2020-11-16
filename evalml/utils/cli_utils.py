@@ -6,22 +6,12 @@ import sys
 
 import pkg_resources
 import psutil
-import requirements
 from psutil._common import bytes2human
 
 import evalml
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-
-
-def get_core_requirements():
-    reqs_path = os.path.join(os.path.dirname(evalml.__file__), '../core-requirements.txt')
-    lines = open(reqs_path, 'r').readlines()
-    lines = [line for line in lines if '-r ' not in line]
-    reqs = requirements.parse(''.join(lines))
-    reqs_names = [req.name for req in reqs]
-    return reqs_names
 
 
 def print_info():
@@ -33,7 +23,7 @@ def print_info():
     logger.info("EvalML version: %s" % evalml.__version__)
     logger.info("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
-    print_deps(get_core_requirements())
+    print_deps()
 
 
 def print_sys_info():
@@ -49,11 +39,8 @@ def print_sys_info():
         logger.info("{title}: {stat}".format(title=title, stat=stat))
 
 
-def print_deps(dependencies):
+def print_deps():
     """Prints the version number of each dependency.
-
-    Arguments:
-        dependencies (list): list of package names to get the version numbers for.
 
     Returns:
         None
@@ -62,12 +49,7 @@ def print_deps(dependencies):
     logger.info("------------------")
     installed_packages = get_installed_packages()
 
-    packages_to_log = []
-    for x in dependencies:
-        # prevents uninstalled deps from being printed
-        if x in installed_packages:
-            packages_to_log.append((x, installed_packages[x]))
-    for package, version in packages_to_log:
+    for package, version in installed_packages.items():
         logger.info("{package}: {version}".format(package=package, version=version))
 
 

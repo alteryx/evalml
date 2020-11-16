@@ -13,6 +13,8 @@ Release Notes
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
         * Added ``DelayedFeaturesTransformer`` :pr:`1396`
+        * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
+        * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
@@ -29,6 +31,8 @@ Release Notes
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
+        * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
+        * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
 
 .. warning::
 

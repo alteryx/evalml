@@ -24,7 +24,7 @@ class CatBoostRegressor(Estimator):
         "max_depth": Integer(4, 10),
     }
     model_family = ModelFamily.CATBOOST
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound

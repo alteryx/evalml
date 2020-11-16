@@ -942,7 +942,7 @@ def test_component_equality_all_components(component_class,
                                            linear_regression_pipeline_class):
     if component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
-    elif component_class.model_family == ModelFamily.ENSEMBLE and component_class.supported_problem_types == [ProblemTypes.REGRESSION]:
+    elif component_class.model_family == ModelFamily.ENSEMBLE and ProblemTypes.REGRESSION in component_class.supported_problem_types:
         component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
     else:
         component = component_class()
