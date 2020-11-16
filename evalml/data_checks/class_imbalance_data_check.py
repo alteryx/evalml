@@ -45,18 +45,21 @@ class ClassImbalanceDataCheck(DataCheck):
         """
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-        messages = []
+        messages = {
+            DataCheckMessageType.WARNING: [],
+            DataCheckMessageType.ERROR: []
+        }
         fold_counts = y.value_counts(normalize=False)
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            messages.append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
+            messages[DataCheckMessageType.ERROR].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            messages.append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
+            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
         return messages
