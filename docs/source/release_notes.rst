@@ -33,6 +33,7 @@ Release Notes
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
         * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
         * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
+        * Use new version of pull request Github Action for dependency check (:pr:`1443`)
 
 .. warning::
 
