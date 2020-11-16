@@ -327,6 +327,29 @@ def test_compute_final_features_transformer_end(mock_fit_transform, mock_transfo
     pd.testing.assert_series_equal(output[1], pd.Series(y))
 
 
+def test_no_instantiate_before_fit(X_y_binary):
+    X, y = X_y_binary
+    graph = {'Imputer': [Imputer],
+             'OHE': [OneHotEncoder, 'Imputer.x'],
+             'Estimator': [RandomForestClassifier, 'OHE.x']}
+    component_graph = ComponentGraph(graph)
+    with pytest.raises(ValueError, match='All components must be instantiated before fitting or predicting'):
+        component_graph.compute_final_features(X, y, fit=True)
+
+
+@patch('evalml.pipelines.components.Imputer.fit_transform')
+def test_multiple_y_parents(mock_fit_transform, X_y_binary):
+    X, y = X_y_binary
+    graph = {'Imputer': [Imputer],
+             'OHE': [OneHotEncoder, 'Imputer.x'],
+             'Estimator': [RandomForestClassifier, 'Imputer.y', 'OHE.y']}
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
+    with pytest.raises(ValueError, match='Cannot have multiple `y` parents for a single component'):
+        component_graph.compute_final_features(X, y, fit=True)
+
+
 def test_iterator_reset(example_graph):
     component_graph = ComponentGraph(example_graph)
     expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']

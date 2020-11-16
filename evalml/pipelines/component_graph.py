@@ -25,7 +25,7 @@ class ComponentGraph:
 
     @classmethod
     def from_list(cls, component_list, random_state=0):
-        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its output to the next component
+        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
         Arguments:
             component_list (list): String names or ComponentBase subclasses in
@@ -83,10 +83,14 @@ class ComponentGraph:
         for component_name in list(self._compute_order):
             final_component = component_name
             component_class = self.component_dict[component_name][0]
+            if not isinstance(component_class, ComponentBase):
+                raise ValueError('All components must be instantiated before fitting or predicting')
             x_inputs = []
             y_input = None
             for parent_input in self.get_parents(component_name):
                 if parent_input[-2:] == '.y':
+                    if y_input is not None:
+                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
                     y_input = output_cache[parent_input]
                 else:
                     x_inputs.append(output_cache[parent_input])
