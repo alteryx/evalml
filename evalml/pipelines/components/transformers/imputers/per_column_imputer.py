@@ -45,8 +45,8 @@ class PerColumnImputer(Transformer):
         """Fits imputers on input data
 
         Arguments:
-            X (pd.DataFrame): Data to fit
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             self
@@ -66,11 +66,11 @@ class PerColumnImputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms input data by imputing missing values
+        """Transforms input data by imputing missing values.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
@@ -92,8 +92,8 @@ class PerColumnImputer(Transformer):
         """Fits imputer and imputes missing values in input data.
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Target data.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             pd.DataFrame: Transformed X

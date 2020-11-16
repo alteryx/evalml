@@ -286,8 +286,6 @@ def _convert_to_woodwork_structure(data):
     Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
     """
     ww_data = data
-    if data is None:
-        return None
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
         return ww_data
     # Convert numpy data structures to pandas data structures

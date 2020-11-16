@@ -39,8 +39,8 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -59,8 +59,8 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
@@ -85,8 +85,8 @@ class SimpleImputer(Transformer):
         """Fits on X and transforms X
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Target data.
+            X (ww.DataTable, pd.DataFrame): Data to fit and transform
+            y (ww.DataColumn, pd.Series, optional): Target data.
 
         Returns:
             pd.DataFrame: Transformed X

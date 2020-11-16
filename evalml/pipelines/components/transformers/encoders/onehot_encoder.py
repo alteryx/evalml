@@ -88,7 +88,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
-
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X_t)
         invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
@@ -98,9 +97,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in self.features_to_encode:
                 if X_t[col].dtype == 'category' and pd.isna(X_t[col]).any():
                     X_t[col] = X_t[col].cat.add_categories("nan")
-                    # X_t[col] = X_t[col].where(pd.isna(X_t[col]) == False, other='nan')
                     X_t[col] = X_t[col].where(pd.isna(X_t[col]).isin([False]), other='nan')
-
             X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
@@ -145,33 +142,32 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        X_ = _convert_to_woodwork_structure(X)
-        X_ = _convert_woodwork_types_wrapper(X_.to_dataframe())
+        X_copy = _convert_to_woodwork_structure(X)
+        X_copy = _convert_woodwork_types_wrapper(X_copy.to_dataframe())
         cat_cols = self.features_to_encode
 
         if self.parameters['handle_missing'] == "as_category":
             for col in cat_cols:
-                if X_[col].dtype == 'category' and pd.isna(X_[col]).any():
-                    X_[col] = X_[col].cat.add_categories("nan")
-                    # X_[col] = X_[col].where(not pd.isna(X_[col]), other='nan')
-                    X_[col] = X_[col].where(pd.isna(X_[col]).isin([False]), other='nan')
+                if X_copy[col].dtype == 'category' and pd.isna(X_copy[col]).any():
+                    X_copy[col] = X_copy[col].cat.add_categories("nan")
+                    X_copy[col] = X_copy[col].where(pd.isna(X_copy[col]).isin([False]), other='nan')
 
-            X_[cat_cols] = X_[cat_cols].replace(np.nan, "nan")
-        if self.parameters['handle_missing'] == "error" and X_.isnull().any().any():
+            X_copy[cat_cols] = X_copy[cat_cols].replace(np.nan, "nan")
+        if self.parameters['handle_missing'] == "error" and X_copy.isnull().any().any():
             raise ValueError("Input contains NaN")
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
-        for col in X_.columns:
+        for col in X_copy.columns:
             if col not in cat_cols:
-                X_t = pd.concat([X_t, X_[col]], axis=1)
+                X_t = pd.concat([X_copy, X_copy[col]], axis=1)
         # The call to pd.concat above changes the type of the index so we will manually keep it the same.
         if not X_t.empty:
-            X_t.index = X_.index
+            X_t.index = X_copy.index
 
         # Call sklearn's transform on the categorical columns
         if len(cat_cols) > 0:
-            X_cat = pd.DataFrame(self._encoder.transform(X_[cat_cols]).toarray(), index=X_.index)
+            X_cat = pd.DataFrame(self._encoder.transform(X_copy[cat_cols]).toarray(), index=X_copy.index)
             cat_cols_str = [str(c) for c in cat_cols]
             X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
             X_t = pd.concat([X_t, X_cat], axis=1)

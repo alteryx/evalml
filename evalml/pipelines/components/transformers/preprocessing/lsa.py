@@ -45,8 +45,8 @@ class LSA(TextTransformer):
         """Transforms data X by applying the LSA pipeline.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
             pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
