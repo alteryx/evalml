@@ -8,10 +8,10 @@ def test_time_series_split_init():
     ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_folds=5)
     assert ts_split.get_n_splits() == 5
 
-    with pytest.raises(ValueError, match="Both X and y cannot be None in TimeSeriesSplit.split"):
+    with pytest.raises(ValueError, match="Both X and y cannot be None or empty in TimeSeriesSplit.split"):
         _ = list(ts_split.split(X=None, y=None))
 
-    with pytest.raises(ValueError, match="Both X and y cannot be None in TimeSeriesSplit.split"):
+    with pytest.raises(ValueError, match="Both X and y cannot be None or empty in TimeSeriesSplit.split"):
         _ = list(ts_split.split(X=pd.DataFrame(), y=pd.Series([])))
 
 
