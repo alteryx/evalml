@@ -38,6 +38,7 @@ class TimeSeriesSplit(BaseCrossValidator):
     def split(self, X, y=None, groups=None):
         """Get the time series splits.
 
+        X and y are assumed to be sorted in ascending time order.
         This method can handle passing in empty or None X and y data but note that X and y cannot be None or empty
         at the same time.
 
@@ -66,8 +67,6 @@ class TimeSeriesSplit(BaseCrossValidator):
             last_test = test[-1]
             first_test = test[0]
             max_test_index = min(last_test + 1 + self.gap, max_index)
-            new_train = np.concatenate([train, np.arange(last_train + 1, last_train + 1 + self.gap)])
-            new_test = np.concatenate([
-                np.arange(first_test - self.max_delay, first_test), test, np.arange(last_test + 1, max_test_index)
-            ])
+            new_train = np.arange(train[0], last_train + 1 + self.gap)
+            new_test = np.arange(first_test - self.max_delay, max_test_index)
             yield new_train, new_test
