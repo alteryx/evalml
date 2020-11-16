@@ -321,8 +321,9 @@ def test_numpy_input():
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert pd.DataFrame(X).equals(X_t)
-
+    # assert pd.DataFrame(X).equals(X_t)
+    pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
+    
 
 def test_large_number_of_categories():
     n_categories = 200000
