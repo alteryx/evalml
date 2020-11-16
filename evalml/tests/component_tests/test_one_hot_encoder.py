@@ -322,7 +322,6 @@ def test_numpy_input():
     encoder.fit(X)
     X_t = encoder.transform(X)
     pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
-    pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=True)
 
 
 def test_large_number_of_categories():

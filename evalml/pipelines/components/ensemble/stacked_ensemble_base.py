@@ -76,7 +76,8 @@ class StackedEnsembleBase(Estimator):
          Returns:
              dict: default parameters for this component.
         """
-        return {'final_estimator': None,
-                'cv': None,
-                'n_jobs': 1,
-                }
+        return {
+            'final_estimator': None,
+            'cv': None,
+            'n_jobs': 1,
+        }

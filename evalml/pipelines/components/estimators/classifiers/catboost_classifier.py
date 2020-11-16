@@ -62,7 +62,6 @@ class CatBoostClassifier(Estimator):
         X = _convert_to_woodwork_structure(X)
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -76,7 +75,6 @@ class CatBoostClassifier(Estimator):
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()
