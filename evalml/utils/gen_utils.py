@@ -316,20 +316,12 @@ def _convert_woodwork_types_wrapper(pd_data):
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
                                  pd.BooleanDtype: 'bool',
                                  pd.StringDtype: 'object'}
-    nullable_to_numpy_mapping_nan = {pd.Int64Dtype: 'float64',
-                                     pd.BooleanDtype: 'object',
-                                     pd.StringDtype: 'object'}
     if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
-        if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)])
         return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
-                if pd.isna(pd_data[col_name]).any():
-                    pd_data[col_name] = pd.Series(pd_data[col_name].to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data[col_name].dtype)])
-                else:
-                    pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
+                pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
     return pd_data
 
 
