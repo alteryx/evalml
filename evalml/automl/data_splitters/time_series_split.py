@@ -51,14 +51,12 @@ class TimeSeriesSplit(BaseCrossValidator):
         """
         # Sklearn splitters always assume a valid X is passed but we need to support the
         # TimeSeriesPipeline convention of being able to pass in empty X dataframes
+        # We'll do this by passing X=y if X is empty
         if self._check_if_empty(X) and self._check_if_empty(y):
             raise ValueError("Both X and y cannot be None or empty in TimeSeriesSplit.split")
         elif self._check_if_empty(X) and not self._check_if_empty(y):
             split_kwargs = dict(X=y, groups=groups)
             max_index = y.shape[0]
-        elif self._check_if_empty(y) and not self._check_if_empty(X):
-            split_kwargs = dict(X=X, groups=groups)
-            max_index = X.shape[0]
         else:
             split_kwargs = dict(X=X, y=y, groups=groups)
             max_index = X.shape[0]
