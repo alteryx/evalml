@@ -312,7 +312,7 @@ def _convert_woodwork_types_wrapper(pd_data):
         pd_data (pd.Series, pd.DataFrame, pd.ExtensionArray): Pandas data structure
 
     Returns:
-        New pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
+        Modified pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
     """
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
                                  pd.BooleanDtype: 'bool',

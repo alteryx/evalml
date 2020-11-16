@@ -74,21 +74,23 @@ class LightGBMClassifier(Estimator):
                          random_state=random_seed)
 
     def _encode_categories(self, X, fit=False):
-        X2 = pd.DataFrame(copy.copy(X))
-        # encode each categorical feature as an integer
-        X2 = _rename_column_names_to_numeric(X2)
+        """Encodes each categorical feature using ordinal encoding."""
+        X_encoded = _convert_to_woodwork_structure(X)
+        cat_cols = list(X.select('category').columns)
+        X_encoded = _rename_column_names_to_numeric(X_encoded)
+        X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
         # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
-        cat_cols = X2.select_dtypes(categorical_dtypes).columns
+        cat_cols = X_encoded.select_dtypes(categorical_dtypes).columns
         if len(cat_cols) == 0:
-            return X2
+            return X_encoded
         if fit:
             self._ordinal_encoder = OrdinalEncoder()
-            encoder_output = self._ordinal_encoder.fit_transform(X2[cat_cols])
+            encoder_output = self._ordinal_encoder.fit_transform(X_encoded[cat_cols])
         else:
-            encoder_output = self._ordinal_encoder.transform(X2[cat_cols])
-        X2[cat_cols] = pd.DataFrame(encoder_output)
-        X2[cat_cols] = X2[cat_cols].astype('category')
-        return X2
+            encoder_output = self._ordinal_encoder.transform(X_encoded[cat_cols])
+        X_encoded[cat_cols] = pd.DataFrame(encoder_output)
+        X_encoded[cat_cols] = X_encoded[cat_cols].astype('category')
+        return X_encoded
 
     def _encode_labels(self, y):
         y1 = pd.Series(y)
@@ -99,8 +101,7 @@ class LightGBMClassifier(Estimator):
         return y1
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
