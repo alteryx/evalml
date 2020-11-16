@@ -83,10 +83,7 @@ class SimpleImputer(Transformer):
         category_cols = X_null_dropped.select_dtypes(include=['category']).columns
         X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
-            if all_bool:
-                return pd.DataFrame(X_t, columns=X_null_dropped.columns, dtype=bool)
-            else:
-                return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         if len(category_cols) > 0:
             X_t[category_cols] = X_t[category_cols].astype('category')
