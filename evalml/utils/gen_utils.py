@@ -219,12 +219,13 @@ def _rename_column_names_to_numeric(X):
     Returns:
         Transformed X where column names are renamed to numerical values
     """
+    X_t = X
     if isinstance(X, np.ndarray):
         return X
     if isinstance(X, ww.DataTable):
-        X = X.to_dataframe()
+        X_t = X.to_dataframe()
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X.rename(columns=name_to_col_num, inplace=False)
+    X_renamed = X_t.rename(columns=name_to_col_num, inplace=False)
     if isinstance(X, ww.DataTable):
         return ww.DataTable(X_renamed)
     return X_renamed

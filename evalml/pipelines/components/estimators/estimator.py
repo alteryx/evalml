@@ -51,7 +51,7 @@ class Estimator(ComponentBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame, or np.ndarray): Features
 
         Returns:
             pd.DataFrame: Probability estimates

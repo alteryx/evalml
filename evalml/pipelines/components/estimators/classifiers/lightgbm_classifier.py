@@ -13,8 +13,7 @@ from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _rename_column_names_to_numeric,
-    categorical_dtypes
+    _rename_column_names_to_numeric
 )
 
 
@@ -76,11 +75,10 @@ class LightGBMClassifier(Estimator):
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
         X_encoded = _convert_to_woodwork_structure(X)
-        cat_cols = list(X.select('category').columns)
         X_encoded = _rename_column_names_to_numeric(X_encoded)
+        cat_cols = list(X_encoded.select('category').columns)
         X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
         # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
-        cat_cols = X_encoded.select_dtypes(categorical_dtypes).columns
         if len(cat_cols) == 0:
             return X_encoded
         if fit:
@@ -93,33 +91,25 @@ class LightGBMClassifier(Estimator):
         return X_encoded
 
     def _encode_labels(self, y):
-        y1 = pd.Series(y)
+        y_encoded = pd.Series(y)
         # change only if dtype isn't int
-        if not is_integer_dtype(y1):
+        if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
-            y1 = pd.Series(self._label_encoder.fit_transform(y1), dtype='int64')
-        return y1
+            y_encoded = pd.Series(self._label_encoder.fit_transform(y_encoded), dtype='int64')
+        return y_encoded
 
     def fit(self, X, y=None):
-
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
-        X2 = self._encode_categories(X, fit=True)
-        y2 = self._encode_labels(y)
-        return super().fit(X2, y2)
+        X_encoded = self._encode_categories(X, fit=True)
+        y_encoded = self._encode_labels(y)
+        return super().fit(X_encoded, y_encoded)
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X2 = self._encode_categories(X)
-        predictions = super().predict(X2)
+        X_encoded = self._encode_categories(X)
+        predictions = super().predict(X_encoded)
         if self._label_encoder:
             predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return predictions
 
     def predict_proba(self, X):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X2 = self._encode_categories(X)
-        return super().predict_proba(X2)
+        X_encoded = self._encode_categories(X)
+        return super().predict_proba(X_encoded)
