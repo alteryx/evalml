@@ -27,7 +27,7 @@ class HighVarianceCVDataCheck(DataCheck):
             cv_scores (pd.Series, np.ndarray, list): list of scores of each cross-validation fold
 
         Returns:
-            dict: list with DataCheckWarnings if imbalance in classes is less than the threshold.
+            dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold.
 
         Example:
             >>> cv_scores = pd.Series([0, 1, 1, 1])
