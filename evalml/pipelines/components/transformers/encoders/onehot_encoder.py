@@ -160,7 +160,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Add the non-categorical columns, untouched
         for col in X_copy.columns:
             if col not in cat_cols:
-                X_t = pd.concat([X_copy, X_copy[col]], axis=1)
+                X_t = pd.concat([X_t, X_copy[col]], axis=1)
         # The call to pd.concat above changes the type of the index so we will manually keep it the same.
         if not X_t.empty:
             X_t.index = X_copy.index
