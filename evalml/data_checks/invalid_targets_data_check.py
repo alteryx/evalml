@@ -37,9 +37,9 @@ class InvalidTargetDataCheck(DataCheck):
             DataCheckMessageType.WARNING: [],
             DataCheckMessageType.ERROR: []
         }
+
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
-
         null_rows = y.isnull()
         if null_rows.any():
             messages[DataCheckMessageType.ERROR].append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))

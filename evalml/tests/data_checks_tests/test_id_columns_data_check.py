@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.data_checks.data_check_message import DataCheckWarning
+from evalml.data_checks.data_check_message import (
+    DataCheckMessageType,
+    DataCheckWarning
+)
 from evalml.data_checks.id_columns_data_check import IDColumnsDataCheck
 
 
@@ -35,15 +38,21 @@ def test_id_columns_warning():
               }
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(X) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
-    assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(X) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
 
 def test_id_columns_strings():
@@ -56,32 +65,50 @@ def test_id_columns_strings():
               }
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(X) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
-    assert id_cols_check.validate(X) == [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                         DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(X) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
 
 def test_id_cols_data_check_input_formats():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert id_cols_check.validate(pd.DataFrame()) == []
+    assert id_cols_check.validate(pd.DataFrame()) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
 
     #  test list
-    assert id_cols_check.validate([1, 2, 3, 4, 5]) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate([1, 2, 3, 4, 5]) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
     #  test pd.Series
-    assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
     #  test 2D list
-    assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                                                                DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
 
     # test np.array
-    assert id_cols_check.validate(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])) == [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-                                                                                          DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+    assert id_cols_check.validate(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck"),
+                                       DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck")],
+        DataCheckMessageType.ERROR: []
+    }
