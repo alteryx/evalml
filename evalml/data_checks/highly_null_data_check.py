@@ -36,19 +36,21 @@ class HighlyNullDataCheck(DataCheck):
             ...    'no_null': [1, 2, 3, 4, 5]
             ... })
             >>> null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
-            >>> assert null_check.validate(df) == [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]
+            >>> assert null_check.validate(df) == {DataCheckMessageType.WARNING: [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]}
         """
-        messages = {DataCheckMessageType.WARNING: [],
-                    DataCheckMessageType.ERROR: []}
+        messages = {
+            DataCheckMessageType.WARNING: [],
+            DataCheckMessageType.ERROR: []
+        }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         percent_null = (X.isnull().mean()).to_dict()
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
-            return [DataCheckWarning(warning_msg.format(col_name), self.name) for col_name in all_null_cols]
+            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(col_name), self.name) for col_name in all_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
-
-            return [DataCheckWarning(warning_msg.format(col_name, self.pct_null_threshold * 100), self.name) for col_name in highly_null_cols]
+            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(col_name, self.pct_null_threshold * 100), self.name) for col_name in highly_null_cols])
+        return messages

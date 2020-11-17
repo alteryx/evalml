@@ -41,15 +41,15 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck"),
-                                                       DataCheckMessageType.WARNING: DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]
+            >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck")],
+                                                       DataCheckMessageType.WARNING: [DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]
         """
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
         messages = {
             DataCheckMessageType.WARNING: [],
             DataCheckMessageType.ERROR: []
         }
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
         fold_counts = y.value_counts(normalize=False)
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()

@@ -53,8 +53,10 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
-        messages = {DataCheckMessageType.WARNING: [],
-                    DataCheckMessageType.ERROR: []}
+        messages = {
+            DataCheckMessageType.WARNING: [],
+            DataCheckMessageType.ERROR: []
+        }
 
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

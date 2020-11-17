@@ -32,14 +32,13 @@ class HighVarianceCVDataCheck(DataCheck):
         Example:
             >>> cv_scores = pd.Series([0, 1, 1, 1])
             >>> check = HighVarianceCVDataCheck(threshold=0.10)
-            >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == [DataCheckWarning("High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]
+            >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == {DataCheckMessageType.WARNING: [DataCheckWarning("High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")]}
         """
         messages = {DataCheckMessageType.WARNING: [],
                     DataCheckMessageType.ERROR: []}
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
 
-        messages = []
         if cv_scores.mean() == 0:
             high_variance_cv = 0
         else:
@@ -47,5 +46,5 @@ class HighVarianceCVDataCheck(DataCheck):
         # if there are items that occur less than the threshold, add them to the list of messages
         if high_variance_cv:
             warning_msg = f"High coefficient of variation (cv >= {self.threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data."
-            messages.append(DataCheckWarning(warning_msg, self.name))
+            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg, self.name))
         return messages
