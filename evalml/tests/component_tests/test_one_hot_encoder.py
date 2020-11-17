@@ -315,7 +315,7 @@ def test_all_numerical_dtype():
     X_t = encoder.transform(X)
     assert X.equals(X_t)
 
- 
+
 def test_numpy_input():
     X = np.array([[2, 0, 1, 0, 0], [3, 2, 5, 1, 3]])
     encoder = OneHotEncoder()

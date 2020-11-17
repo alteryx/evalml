@@ -78,7 +78,6 @@ class LightGBMClassifier(Estimator):
         X_encoded = _rename_column_names_to_numeric(X_encoded)
         cat_cols = list(X_encoded.select('category').columns)
         X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
-        # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
         if len(cat_cols) == 0:
             return X_encoded
         if fit:
