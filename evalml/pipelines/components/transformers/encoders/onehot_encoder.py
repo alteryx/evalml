@@ -97,7 +97,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in self.features_to_encode:
                 if X_t[col].dtype == 'category' and pd.isna(X_t[col]).any():
                     X_t[col] = X_t[col].cat.add_categories("nan")
-                    X_t[col] = X_t[col].where(pd.isna(X_t[col]).isin([False]), other='nan')
+                    X_t[col] = X_t[col].where(~pd.isna(X_t[col]), other='nan')
             X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
         elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
             raise ValueError("Input contains NaN")
@@ -150,8 +150,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in cat_cols:
                 if X_copy[col].dtype == 'category' and pd.isna(X_copy[col]).any():
                     X_copy[col] = X_copy[col].cat.add_categories("nan")
-                    X_copy[col] = X_copy[col].where(pd.isna(X_copy[col]).isin([False]), other='nan')
-
+                    X_copy[col] = X_copy[col].where(~pd.isna(X_copy[col]), other='nan')
             X_copy[cat_cols] = X_copy[cat_cols].replace(np.nan, "nan")
         if self.parameters['handle_missing'] == "error" and X_copy.isnull().any().any():
             raise ValueError("Input contains NaN")
