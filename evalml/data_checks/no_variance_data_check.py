@@ -74,5 +74,5 @@ class NoVarianceDataCheck(DataCheck):
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            messages[message.message_type].append(target_message)
+            messages[target_message.message_type].append(target_message)
         return messages
