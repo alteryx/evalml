@@ -6,6 +6,7 @@ Release Notes
         * Updated pipelines and ``make_pipeline`` to accept ``Woodwork`` inputs :pr:`1393`
         * Updated components to accept ``Woodwork`` inputs :pr:`1423`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
+        * Added ``Target Encoder`` into transformer components :pr:`1401`
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
         * The top_k features displayed in ``explain_predictions_*`` functions are now determined by the magnitude of shap values as opposed to the ``top_k`` largest and smallest shap values. :pr:`1374`
@@ -33,6 +34,7 @@ Release Notes
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
         * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
         * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
+        * Use new version of pull request Github Action for dependency check (:pr:`1443`)
 
 .. warning::
 
