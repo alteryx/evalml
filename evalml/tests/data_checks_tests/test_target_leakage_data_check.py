@@ -51,7 +51,7 @@ def test_target_leakage_data_check_input_formats():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
 
     # test empty pd.DataFrame, empty pd.Series
-    assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
+    assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
 
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()

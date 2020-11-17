@@ -47,7 +47,7 @@ class OutliersDataCheck(DataCheck):
         X = X.select_dtypes(include=numeric_dtypes)
 
         if len(X.columns) == 0:
-            return []
+            return messages
 
         def get_IQR(df, k=2.0):
             q1 = df.quantile(0.25)
