@@ -48,9 +48,9 @@ class HighlyNullDataCheck(DataCheck):
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
-            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(col_name), self.name) for col_name in all_null_cols])
+            messages[DataCheckMessageType.WARNING].extend([DataCheckWarning(warning_msg.format(col_name), self.name) for col_name in all_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
-            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(col_name, self.pct_null_threshold * 100), self.name) for col_name in highly_null_cols])
+            messages[DataCheckMessageType.WARNING].extend([DataCheckWarning(warning_msg.format(col_name, self.pct_null_threshold * 100), self.name) for col_name in highly_null_cols])
         return messages

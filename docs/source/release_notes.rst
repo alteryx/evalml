@@ -22,7 +22,8 @@ Release Notes
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
-        * Reverted changes from :pr:`1337` :pr:`1409`
+        * Reverted changes from :pr:`1337` :pr:`1409``
+        * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1444`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
@@ -36,6 +37,9 @@ Release Notes
     **Breaking Changes**
         * The ``top_k`` and ``top_k_features`` parameters in ``explain_predictions_*`` functions now return ``k`` features as opposed to ``2 * k`` features :pr:`1374`
         * Renamed ``problem_type`` to ``problem_types`` in ``RegressionObjective``, ``BinaryClassificationObjective``, and ``MulticlassClassificationObjective`` :pr:`1319`
+        * Data checks now return a dictionary of warnings and errors instead of a list :pr:`1444`
+
+
 
 **v0.15.0 Oct. 29, 2020**
     * Enhancements
