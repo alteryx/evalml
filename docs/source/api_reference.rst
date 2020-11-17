@@ -189,6 +189,7 @@ Transformers are components that take in data as input and output transformed da
     DropColumns
     SelectColumns
     OneHotEncoder
+    TargetEncoder
     PerColumnImputer
     Imputer
     SimpleImputer
