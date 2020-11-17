@@ -36,7 +36,8 @@ class HighlyNullDataCheck(DataCheck):
             ...    'no_null': [1, 2, 3, 4, 5]
             ... })
             >>> null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
-            >>> assert null_check.validate(df) == {DataCheckMessageType.WARNING: [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]}
+            >>> assert null_check.validate(df) == {DataCheckMessageType.ERROR: [],
+                                                   DataCheckMessageType.WARNING: [DataCheckWarning("Column 'lots_of_null' is 80.0% or more null", "HighlyNullDataCheck")]}
         """
         messages = {
             DataCheckMessageType.WARNING: [],

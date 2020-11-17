@@ -24,9 +24,9 @@ from evalml.automl.callbacks import (
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
+    DataCheckMessageType,
     DataChecks,
-    DataCheckWarning,
-    DataCheckMessageType
+    DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
@@ -349,7 +349,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
         DataCheckMessageType.WARNING: [DataCheckWarning("default data check warning", "DefaultDataChecks")],
         DataCheckMessageType.ERROR: []
     }
-    
+
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
     automl.search(X, y)
     out = caplog.text
@@ -366,7 +366,6 @@ class MockDataCheckErrorAndWarning(DataCheck):
             DataCheckMessageType.WARNING: [],
             DataCheckMessageType.ERROR: [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
         }
-        
 
 
 @pytest.mark.parametrize("data_checks",
@@ -489,7 +488,7 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     automl = AutoMLSearch(problem_type='binary', max_iterations=5)
     automl.search(X, y)
-    assert automl.data_check_results is None
+    assert automl.data_check_results == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
     mock_fit.assert_called()
     mock_score.assert_called()
     assert mock_algo_next_batch.call_count == 1

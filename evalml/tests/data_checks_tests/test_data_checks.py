@@ -6,6 +6,7 @@ from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_check_message import (
     DataCheckError,
+    DataCheckMessageType,
     DataCheckWarning
 )
 from evalml.data_checks.data_checks import AutoMLDataChecks, DataChecks
@@ -17,32 +18,32 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return []
+            return {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return [DataCheckWarning("warning one", self.name)]
+            return {DataCheckMessageType.WARNING: [DataCheckWarning("warning one", self.name)], DataCheckMessageType.ERROR: []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return [DataCheckError("error one", self.name)]
+            return {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [DataCheckError("error one", self.name)]}
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
-            return [DataCheckError("error two", self.name), DataCheckWarning("warning two", self.name)]
+            return {DataCheckMessageType.WARNING: [DataCheckWarning("warning two", self.name)], DataCheckMessageType.ERROR: [DataCheckError("error two", self.name)]}
 
     data_checks_list = [MockDataCheck, MockDataCheckWarning, MockDataCheckError, MockDataCheckErrorAndWarning]
     data_checks = DataChecks(data_checks=data_checks_list)
-    assert data_checks.validate(X, y) == [DataCheckWarning("warning one", "MockDataCheckWarning"),
-                                          DataCheckError("error one", "MockDataCheckError"),
-                                          DataCheckError("error two", "MockDataCheckErrorAndWarning"),
-                                          DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")]
+    assert data_checks.validate(X, y) == {
+        DataCheckMessageType.WARNING: [DataCheckWarning("warning one", "MockDataCheckWarning"), DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")],
+        DataCheckMessageType.ERROR: [DataCheckError("error one", "MockDataCheckError"), DataCheckError("error two", "MockDataCheckErrorAndWarning")]
+        }
 
 
 def test_empty_data_checks(X_y_binary):
     X, y = X_y_binary
     data_checks = EmptyDataChecks()
-    assert data_checks.validate(X, y) == []
+    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
 
 
 messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),

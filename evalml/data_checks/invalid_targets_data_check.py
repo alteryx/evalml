@@ -31,7 +31,8 @@ class InvalidTargetDataCheck(DataCheck):
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary')
-            >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")]}
+            >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")],
+                                                       DataCheckMessageType.WARNING: []}
         """
         messages = {
             DataCheckMessageType.WARNING: [],
