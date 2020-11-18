@@ -1,4 +1,4 @@
-catboost==0.24.2
+catboost==0.24.3
 cloudpickle==1.6.0
 distributed==2.30.1
 lightgbm==3.1.0
