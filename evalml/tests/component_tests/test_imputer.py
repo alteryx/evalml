@@ -191,6 +191,7 @@ def test_imputer_empty_data(data_type):
     elif data_type == 'ww':
         X = ww.DataTable(pd.DataFrame())
         y = ww.DataColumn(pd.Series())
+        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])

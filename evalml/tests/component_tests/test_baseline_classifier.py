@@ -44,7 +44,7 @@ def test_baseline_binary_mode(data_type, X_y_binary):
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
-def test_baseline_binary_random(data_type, X_y_binary):
+def test_baseline_binary_random(X_y_binary):
     X, y = X_y_binary
     values = np.unique(y)
     clf = BaselineClassifier(strategy="random", random_state=0)
