@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import Imputer
@@ -181,12 +182,15 @@ def test_imputer_datetime_input():
     assert_frame_equal(transformed, X, check_dtype=False)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
         expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+    elif data_type == 'ww':
+        X = ww.DataTable(pd.DataFrame())
+        y = ww.DataColumn(pd.Series())
     else:
         X = np.array([[]])
         y = np.array([])

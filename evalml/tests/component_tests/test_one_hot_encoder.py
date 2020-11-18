@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
@@ -340,7 +341,7 @@ def test_large_number_of_categories():
     assert set(expected_col_names) == set(list(X_t.columns))
 
 
-@pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index'])
+@pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index', 'ww'])
 def test_data_types(data_type):
     if data_type == 'list':
         X = [["a"], ["b"], ["c"]]
@@ -350,6 +351,8 @@ def test_data_types(data_type):
         X = pd.DataFrame(["a", "b", "c"])
     elif data_type == 'pd_index':
         X = pd.DataFrame(["a", "b", "c"], columns=['0'])
+    elif data_type == 'ww':
+        X = ww.DataTable(pd.DataFrame(["a", "b", "c"]))
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)

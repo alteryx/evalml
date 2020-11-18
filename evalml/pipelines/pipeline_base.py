@@ -20,6 +20,7 @@ from evalml.exceptions import (
 )
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
+    _convert_to_woodwork_structure,
     check_random_state_equality,
     classproperty,
     get_logger,
@@ -225,6 +226,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.Series: Predicted values.
         """
+        X = _convert_to_woodwork_structure(X)
         X_t = self.compute_estimator_features(X, y=None)
         return self.estimator.predict(X_t)
 

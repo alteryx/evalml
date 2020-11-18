@@ -119,11 +119,8 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)

@@ -41,12 +41,10 @@ class XGBoostRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
     def predict(self, X):
-        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
         X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         return predictions

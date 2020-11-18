@@ -4,12 +4,14 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    _rename_column_names_to_numeric,
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
@@ -277,7 +279,51 @@ def test_drop_nan(data, expected):
     _check_equality(no_nan_2, expected[1], check_index_type=False)
 
 
+def test_rename_column_names_to_numeric():
+    X = np.array([[1, 2], [3, 4]])
+    pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame(X))
+
+    X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
+    pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}))
+
+    X = ww.DataTable(pd.DataFrame({"<>": [1, 2], ">>": [2, 4]}), logical_types={"<>": "categorical", ">>": "categorical"})
+    X_renamed = _rename_column_names_to_numeric(X)
+    X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
+    pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
+    assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
+
+
 def test_convert_woodwork_types_wrapper_with_nan():
     y = _convert_to_woodwork_structure(pd.array([True, False, None], dtype="boolean"))
     y = _convert_woodwork_types_wrapper(y.to_series())
     pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
+
+
+def test_convert_to_woodwork_structure():
+    X_dt = ww.DataTable(pd.DataFrame([[1, 2], [3, 4]]))
+    pd.testing.assert_frame_equal(X_dt.to_dataframe(), _convert_to_woodwork_structure(X_dt).to_dataframe())
+
+    X_dc = ww.DataColumn(pd.Series([1, 2, 3, 4]))
+    pd.testing.assert_series_equal(X_dc.to_series(), _convert_to_woodwork_structure(X_dc).to_series())
+
+    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
+                         1: pd.Series([3, 4], dtype="Int64")})
+    pd.testing.assert_frame_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_dataframe())
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
+    pd.testing.assert_series_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_series())
+
+    X_list = [1, 2, 3, 4]
+    X_expected = ww.DataColumn(pd.Series(X_list))
+    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_list).to_series())
+    assert X_list == [1, 2, 3, 4]
+
+    X_np = np.array([1, 2, 3, 4])
+    X_expected = ww.DataColumn(pd.Series(X_np))
+    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_np).to_series())
+    assert np.array_equal(X_np, np.array([1, 2, 3, 4]))
+
+    X_np = np.array([[1, 2], [3, 4]])
+    X_expected = ww.DataTable(pd.DataFrame(X_np))
+    pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
+    assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))

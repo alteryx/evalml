@@ -224,10 +224,12 @@ def _rename_column_names_to_numeric(X):
         return pd.DataFrame(X)
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()
+        logical_types = X.logical_types
     name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
     X_renamed = X_t.rename(columns=name_to_col_num, inplace=False)
     if isinstance(X, ww.DataTable):
-        return ww.DataTable(X_renamed)
+        renamed_logical_types = dict((name_to_col_num[col], logical_types[col]) for col in logical_types)
+        return ww.DataTable(X_renamed, logical_types=renamed_logical_types)
     return X_renamed
 
 
