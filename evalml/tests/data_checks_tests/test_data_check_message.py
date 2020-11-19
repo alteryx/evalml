@@ -49,7 +49,7 @@ def test_data_check_message_eq(data_check_message):
 def test_data_check_warning_attributes(data_check_warning):
     assert data_check_warning.message == "test warning"
     assert data_check_warning.data_check_name == "test data check warning name"
-    assert data_check_warning.message_type == "warnings"
+    assert data_check_warning.message_type == DataCheckMessageType.WARNING
 
 
 def test_data_check_warning_str(data_check_warning):
@@ -67,7 +67,7 @@ def test_data_check_warning_eq(data_check_warning):
 def test_data_check_error_attributes(data_check_error):
     assert data_check_error.message == "test error"
     assert data_check_error.data_check_name == "test data check error name"
-    assert data_check_error.message_type == "errors"
+    assert data_check_error.message_type == DataCheckMessageType.ERROR
 
 
 def test_data_check_error_str(data_check_error):

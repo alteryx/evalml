@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError, DataCheckWarning
+from .data_check_message_type import DataCheckMessageType
 
 from evalml.utils.logger import get_logger
 
@@ -67,11 +68,17 @@ class NoVarianceDataCheck(DataCheck):
         for name in unique_counts:
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
             if message:
-                messages[message.message_type].append(message)
+                if message.message_type == DataCheckMessageType.ERROR:
+                    messages["errors"].append(message)
+                elif message.message_type == DataCheckMessageType.WARNING:
+                    messages["warnings"].append(message)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            messages[target_message.message_type].append(target_message)
+            if target_message.message_type == DataCheckMessageType.ERROR:
+                messages["errors"].append(target_message)
+            elif target_message.message_type == DataCheckMessageType.WARNING:
+                messages["warnings"].append(target_message)
         return messages
