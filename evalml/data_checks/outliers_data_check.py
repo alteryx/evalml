@@ -36,9 +36,10 @@ class OutliersDataCheck(DataCheck):
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {DataCheckMessageType.WARNING: [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")],\
-                                                       DataCheckMessageType.ERROR: []}
+            >>> results = outliers_check.validate(df)
+            >>> assert results == [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")]
         """
+
         warnings = []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
