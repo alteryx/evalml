@@ -9,7 +9,10 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import categorical_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class CatBoostClassifier(Estimator):
@@ -56,11 +59,11 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-        cat_cols = X.select_dtypes(categorical_dtypes)
+        X = _convert_to_woodwork_structure(X)
+        cat_cols = list(X.select('category').columns)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
@@ -70,6 +73,8 @@ class CatBoostClassifier(Estimator):
         return model
 
     def predict(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()

@@ -1,9 +1,12 @@
 from abc import abstractmethod
 
 import numpy as np
-import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class ColumnSelector(Transformer):
@@ -56,10 +59,8 @@ class ColumnSelector(Transformer):
         return self
 
     def transform(self, X, y=None):
-
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._check_input_for_columns(X)
 
         cols = self.parameters.get("columns") or []
