@@ -33,8 +33,8 @@ class InvalidTargetDataCheck(DataCheck):
             >>> target_check = InvalidTargetDataCheck('binary')
             >>> results = target_check.validate(X, y)
             >>> assert results.errors == [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")]\
-                                                       
         """
+
         errors = []
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
