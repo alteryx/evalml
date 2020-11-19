@@ -17,11 +17,12 @@ jobs:
           make dependenciesfile DEPENDENCY_FILE_PATH=evalml/tests/latest_dependency_versions.txt
           cat evalml/tests/latest_dependency_versions.txt
       - name: Create Pull Request
-        uses: Featurelabs/create-pull-request@v2
+        uses: FeatureLabs/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
           body: "This is an auto-generated PR with dependency updates.
                  Please do not delete the dep-update branch because it's needed by the auto-dependency bot."
           branch: dep-update

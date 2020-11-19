@@ -8,6 +8,10 @@ from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class TextFeaturizer(TextTransformer):
@@ -70,8 +74,8 @@ class TextFeaturizer(TextTransformer):
         """
         if len(self._all_text_columns) == 0:
             return self
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
@@ -92,8 +96,8 @@ class TextFeaturizer(TextTransformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
 

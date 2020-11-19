@@ -1,10 +1,10 @@
-catboost==0.24.2
+catboost==0.24.3
 cloudpickle==1.6.0
 distributed==2.30.1
-lightgbm==3.0.0
+lightgbm==3.1.0
 numpy==1.19.4
 pandas==1.1.4
-pyzmq==19.0.2
+pyzmq==20.0.0
 scikit-learn==0.23.2
 scikit-optimize==0.8.1
 xgboost==1.2.1

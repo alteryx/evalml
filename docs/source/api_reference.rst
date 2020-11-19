@@ -105,6 +105,7 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesRegressionPipeline
 
 Classification Pipelines
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,6 +189,7 @@ Transformers are components that take in data as input and output transformed da
     DropColumns
     SelectColumns
     OneHotEncoder
+    TargetEncoder
     PerColumnImputer
     Imputer
     SimpleImputer
@@ -197,6 +199,7 @@ Transformers are components that take in data as input and output transformed da
     DropNullColumns
     DateTimeFeaturizer
     TextFeaturizer
+    DelayedFeatureTransformer
 
 Estimators
 ~~~~~~~~~~
@@ -501,4 +504,6 @@ General Utils
     convert_to_seconds
     get_random_state
     get_random_seed
+    pad_with_nans
+    drop_rows_with_nans
 

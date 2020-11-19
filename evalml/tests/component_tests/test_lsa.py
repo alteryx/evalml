@@ -152,20 +152,6 @@ def test_int_col_names():
     assert X_t.dtypes.all() == np.float64
 
 
-def test_repeat_col_names():
-    X = pd.DataFrame(data=np.array([['identical string one', 'identical string one'],
-                                    ['second double string', 'second double string'],
-                                    ['copy the third', 'copy the third']]), columns=['col_1', 'col_1'])
-    lsa = LSA(text_columns=['col_1', 'col_1'])
-    lsa.fit(X)
-    expected_col_names = ['LSA(col_1)[0]',
-                          'LSA(col_1)[1]']
-    X_t = lsa.transform(X)
-    np.testing.assert_array_equal(X_t.columns, np.array(expected_col_names))
-    assert len(X_t.columns) == 2
-    assert X_t.dtypes.all() == np.float64
-
-
 def test_lsa_output():
     X = pd.DataFrame(
         {'lsa': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',

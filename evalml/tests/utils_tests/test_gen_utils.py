@@ -2,19 +2,26 @@ import inspect
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    _rename_column_names_to_numeric,
     check_random_state_equality,
     classproperty,
     convert_to_seconds,
+    drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
     get_random_state,
     import_or_raise,
-    jupyter_check
+    jupyter_check,
+    pad_with_nans
 )
 
 
@@ -235,3 +242,152 @@ def test_jupyter_check(mock_import_or_raise):
     assert not jupyter_check()
     mock_import_or_raise().core.getipython.get_ipython.return_value = None
     assert not jupyter_check()
+
+
+def _check_equality(data, expected, check_index_type=True):
+    if isinstance(data, pd.Series):
+        pd.testing.assert_series_equal(data, expected, check_index_type)
+    else:
+        pd.testing.assert_frame_equal(data, expected, check_index_type)
+
+
+@pytest.mark.parametrize("data,num_to_pad,expected",
+                         [(pd.Series([1, 2, 3]), 1, pd.Series([np.nan, 1, 2, 3])),
+                          (pd.Series([1, 2, 3]), 0, pd.Series([1, 2, 3])),
+                          (pd.Series([1, 2, 3, 4], index=pd.date_range("2020-10-01", "2020-10-04")),
+                           2, pd.Series([np.nan, np.nan, 1, 2, 3, 4])),
+                          (pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]}), 0,
+                           pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]})),
+                          (pd.DataFrame({"a": [4, 5, 6], "b": ["a", "b", "c"]}), 1,
+                           pd.DataFrame({"a": [np.nan, 4, 5, 6], "b": [np.nan, "a", "b", "c"]}))])
+def test_pad_with_nans(data, num_to_pad, expected):
+    padded = pad_with_nans(data, num_to_pad)
+    _check_equality(padded, expected)
+
+
+@pytest.mark.parametrize("data, expected",
+                         [([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [1., 2., 3, None]})],
+                           [pd.Series([1., 2.], index=pd.Int64Index([1, 2])),
+                            pd.DataFrame({"a": [2., 3.]}, index=pd.Int64Index([1, 2]))]),
+                          ([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [3., 4., None, None]})],
+                           [pd.Series([1.], index=pd.Int64Index([1])),
+                            pd.DataFrame({"a": [4.]}, index=pd.Int64Index([1]))]),
+                          ])
+def test_drop_nan(data, expected):
+    no_nan_1, no_nan_2 = drop_rows_with_nans(*data)
+    _check_equality(no_nan_1, expected[0], check_index_type=False)
+    _check_equality(no_nan_2, expected[1], check_index_type=False)
+
+
+def test_rename_column_names_to_numeric():
+    X = np.array([[1, 2], [3, 4]])
+    pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame(X))
+
+    X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
+    pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}))
+
+    X = ww.DataTable(pd.DataFrame({"<>": [1, 2], ">>": [2, 4]}), logical_types={"<>": "categorical", ">>": "categorical"})
+    X_renamed = _rename_column_names_to_numeric(X)
+    X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
+    pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
+    assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
+
+
+def test_convert_woodwork_types_wrapper_with_nan():
+    y = _convert_woodwork_types_wrapper(pd.Series([1, 2, None], dtype="Int64"))
+    pd.testing.assert_series_equal(y, pd.Series([1, 2, np.nan], dtype="float64"))
+
+    y = _convert_woodwork_types_wrapper(pd.array([1, 2, None], dtype="Int64"))
+    pd.testing.assert_series_equal(y, pd.Series([1, 2, np.nan], dtype="float64"))
+
+    y = _convert_woodwork_types_wrapper(pd.Series(["a", "b", None], dtype="string"))
+    pd.testing.assert_series_equal(y, pd.Series(["a", "b", np.nan], dtype="object"))
+
+    y = _convert_woodwork_types_wrapper(pd.array(["a", "b", None], dtype="string"))
+    pd.testing.assert_series_equal(y, pd.Series(["a", "b", np.nan], dtype="object"))
+
+    y = _convert_woodwork_types_wrapper(pd.Series([True, False, None], dtype="boolean"))
+    pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
+
+    y = _convert_woodwork_types_wrapper(pd.array([True, False, None], dtype="boolean"))
+    pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
+
+
+def test_convert_woodwork_types_wrapper():
+    y = _convert_woodwork_types_wrapper(pd.Series([1, 2, 3], dtype="Int64"))
+    pd.testing.assert_series_equal(y, pd.Series([1, 2, 3], dtype="int64"))
+
+    y = _convert_woodwork_types_wrapper(pd.array([1, 2, 3], dtype="Int64"))
+    pd.testing.assert_series_equal(y, pd.Series([1, 2, 3], dtype="int64"))
+
+    y = _convert_woodwork_types_wrapper(pd.Series(["a", "b", "a"], dtype="string"))
+    pd.testing.assert_series_equal(y, pd.Series(["a", "b", "a"], dtype="object"))
+
+    y = _convert_woodwork_types_wrapper(pd.array(["a", "b", "a"], dtype="string"))
+    pd.testing.assert_series_equal(y, pd.Series(["a", "b", "a"], dtype="object"))
+
+    y = _convert_woodwork_types_wrapper(pd.Series([True, False, True], dtype="boolean"))
+    pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
+
+    y = _convert_woodwork_types_wrapper(pd.array([True, False, True], dtype="boolean"))
+    pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
+
+
+def test_convert_woodwork_types_wrapper_dataframe():
+    X = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="Int64"),
+                      "Int array": pd.array([1, 2, 3], dtype="Int64"),
+                      "Int series with nan": pd.Series([1, 2, None], dtype="Int64"),
+                      "Int array with nan": pd.array([1, 2, None], dtype="Int64"),
+                      "string series": pd.Series(["a", "b", "a"], dtype="string"),
+                      "string array": pd.array(["a", "b", "a"], dtype="string"),
+                      "string series with nan": pd.Series(["a", "b", None], dtype="string"),
+                      "string array with nan": pd.array(["a", "b", None], dtype="string"),
+                      "boolean series": pd.Series([True, False, True], dtype="boolean"),
+                      "boolean array": pd.array([True, False, True], dtype="boolean"),
+                      "boolean series with nan": pd.Series([True, False, None], dtype="boolean"),
+                      "boolean array with nan": pd.array([True, False, None], dtype="boolean")
+                      })
+    X_expected = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="int64"),
+                               "Int array": pd.array([1, 2, 3], dtype="int64"),
+                               "Int series with nan": pd.Series([1, 2, np.nan], dtype="float64"),
+                               "Int array with nan": pd.array([1, 2, np.nan], dtype="float64"),
+                               "string series": pd.Series(["a", "b", "a"], dtype="object"),
+                               "string array": pd.array(["a", "b", "a"], dtype="object"),
+                               "string series with nan": pd.Series(["a", "b", np.nan], dtype="object"),
+                               "string array with nan": pd.array(["a", "b", np.nan], dtype="object"),
+                               "boolean series": pd.Series([True, False, True], dtype="bool"),
+                               "boolean array": pd.array([True, False, True], dtype="bool"),
+                               "boolean series with nan": pd.Series([True, False, np.nan], dtype="object"),
+                               "boolean array with nan": pd.array([True, False, np.nan], dtype="object")
+                               })
+    pd.testing.assert_frame_equal(X_expected, _convert_woodwork_types_wrapper(X))
+
+
+def test_convert_to_woodwork_structure():
+    X_dt = ww.DataTable(pd.DataFrame([[1, 2], [3, 4]]))
+    pd.testing.assert_frame_equal(X_dt.to_dataframe(), _convert_to_woodwork_structure(X_dt).to_dataframe())
+
+    X_dc = ww.DataColumn(pd.Series([1, 2, 3, 4]))
+    pd.testing.assert_series_equal(X_dc.to_series(), _convert_to_woodwork_structure(X_dc).to_series())
+
+    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
+                         1: pd.Series([3, 4], dtype="Int64")})
+    pd.testing.assert_frame_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_dataframe())
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
+    pd.testing.assert_series_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_series())
+
+    X_list = [1, 2, 3, 4]
+    X_expected = ww.DataColumn(pd.Series(X_list))
+    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_list).to_series())
+    assert X_list == [1, 2, 3, 4]
+
+    X_np = np.array([1, 2, 3, 4])
+    X_expected = ww.DataColumn(pd.Series(X_np))
+    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_np).to_series())
+    assert np.array_equal(X_np, np.array([1, 2, 3, 4]))
+
+    X_np = np.array([[1, 2], [3, 4]])
+    X_expected = ww.DataTable(pd.DataFrame(X_np))
+    pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
+    assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))

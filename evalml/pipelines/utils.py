@@ -7,6 +7,7 @@ from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
 from .regression_pipeline import RegressionPipeline
+from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
@@ -47,7 +48,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
         list[Transformer]: A list of applicable preprocessing components to use with the estimator
     """
 
-    X_pd = X.to_pandas()
+    X_pd = X.to_dataframe()
     pp_components = []
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:
@@ -81,6 +82,8 @@ def _get_pipeline_base_class(problem_type):
         return MulticlassClassificationPipeline
     elif problem_type == ProblemTypes.REGRESSION:
         return RegressionPipeline
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        return TimeSeriesRegressionPipeline
 
 
 def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):

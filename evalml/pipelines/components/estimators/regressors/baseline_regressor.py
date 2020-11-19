@@ -4,6 +4,10 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class BaselineRegressor(Estimator):
@@ -14,7 +18,7 @@ class BaselineRegressor(Estimator):
     name = "Baseline Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def __init__(self, strategy="mean", random_state=0, **kwargs):
         """Baseline regressor that uses a simple strategy to make predictions.
@@ -38,9 +42,10 @@ class BaselineRegressor(Estimator):
     def fit(self, X, y=None):
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.parameters["strategy"] == "mean":
             self._prediction_value = y.mean()
@@ -50,6 +55,8 @@ class BaselineRegressor(Estimator):
         return self
 
     def predict(self, X):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         return pd.Series([self._prediction_value] * len(X))
 
     @property

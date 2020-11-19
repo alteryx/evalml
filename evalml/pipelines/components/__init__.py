@@ -22,9 +22,11 @@ from .estimators import (
 from .transformers import (
     Transformer,
     OneHotEncoder,
+    TargetEncoder,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
+    DelayedFeatureTransformer,
     SimpleImputer,
     Imputer,
     StandardScaler,
