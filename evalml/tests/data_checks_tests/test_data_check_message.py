@@ -3,6 +3,7 @@ import pytest
 from evalml.data_checks.data_check_message import (
     DataCheckError,
     DataCheckMessage,
+    DataCheckMessageType,
     DataCheckWarning
 )
 
