@@ -324,8 +324,8 @@ def _convert_woodwork_types_wrapper(pd_data):
 
     if isinstance(pd_data, pd.api.extensions.ExtensionArray) or (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
         if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)])
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index)
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index)
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
