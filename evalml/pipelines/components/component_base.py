@@ -13,6 +13,10 @@ from evalml.utils import (
     log_subtitle,
     safe_repr
 )
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 logger = get_logger(__file__)
 
@@ -71,7 +75,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Constructs a new component with the same parameters
 
         Arguments:
-            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+            random_state (int, RandomState): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
 
         Returns:
             A new instance of this component with identical parameters
@@ -82,12 +86,17 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
         try:
             self._component_obj.fit(X, y)
             return self
@@ -119,8 +128,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Saves component at file path
 
         Arguments:
-            file_path (str): location to save file
-            pickle_protocol (int): the pickle data stream format.
+            file_path (str): Location to save file
+            pickle_protocol (int): The pickle data stream format.
 
         Returns:
             None
@@ -133,7 +142,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Loads component at file path
 
         Arguments:
-            file_path (str): location to load file
+            file_path (str): Location to load file
 
         Returns:
             ComponentBase object

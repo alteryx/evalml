@@ -6,6 +6,10 @@ from sklearn.pipeline import make_pipeline
 from evalml.pipelines.components.transformers.preprocessing import (
     TextTransformer
 )
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class LSA(TextTransformer):
@@ -28,8 +32,8 @@ class LSA(TextTransformer):
     def fit(self, X, y=None):
         if len(self._all_text_columns) == 0:
             return self
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         text_columns = self._get_text_columns(X)
         corpus = X[text_columns].values.flatten()
         # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
@@ -41,15 +45,15 @@ class LSA(TextTransformer):
         """Transforms data X by applying the LSA pipeline.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
             pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if len(self._all_text_columns) == 0:
             return X
 

@@ -6,7 +6,7 @@ from pandas.testing import assert_frame_equal
 from evalml.pipelines.components import SimpleImputer
 
 
-def test_median():
+def test_simple_imputer_median():
     X = pd.DataFrame([[np.nan, 0, 1, np.nan],
                       [1, 2, 3, 2],
                       [10, 2, np.nan, 2],
@@ -22,7 +22,7 @@ def test_median():
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-def test_mean():
+def test_simple_imputer_mean():
     X = pd.DataFrame([[np.nan, 0, 1, np.nan],
                       [1, 2, 3, 2],
                       [1, 2, 3, 0]])
@@ -35,7 +35,7 @@ def test_mean():
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-def test_constant():
+def test_simple_imputer_constant():
     # test impute strategy is constant and fill value is not specified
     X = pd.DataFrame([[np.nan, 0, 1, np.nan],
                       ["a", 2, np.nan, 3],
@@ -45,11 +45,12 @@ def test_constant():
     X_expected_arr = pd.DataFrame([[3, 0, 1, 3],
                                    ["a", 2, 3, 3],
                                    ["b", 2, 3, 0]])
+    X_expected_arr = X_expected_arr.astype({0: 'category'})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-def test_most_frequent():
+def test_simple_imputer_most_frequent():
     X = pd.DataFrame([[np.nan, 0, 1, np.nan],
                       ["a", 2, np.nan, 3],
                       ["b", 2, 1, 0]])
@@ -58,11 +59,12 @@ def test_most_frequent():
     X_expected_arr = pd.DataFrame([["a", 0, 1, 0],
                                    ["a", 2, 1, 3],
                                    ["b", 2, 1, 0]])
+    X_expected_arr = X_expected_arr.astype({0: 'category'})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-def test_col_with_non_numeric():
+def test_simple_imputer_col_with_non_numeric():
     # test col with all strings
     X = pd.DataFrame([["a", 0, 1, np.nan],
                       ["b", 2, 3, 3],
@@ -86,6 +88,7 @@ def test_col_with_non_numeric():
                                    ["b", 2, 3, 3],
                                    ["a", 2, 3, 1],
                                    ["a", 2, 3, 0]])
+    X_expected_arr = X_expected_arr.astype({0: 'category'})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
@@ -94,11 +97,12 @@ def test_col_with_non_numeric():
                                    ["b", 2, 3, 3],
                                    ["a", 2, 3, 1],
                                    [2, 2, 3, 0]])
+    X_expected_arr = X_expected_arr.astype({0: 'category'})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
 
 
-def test_fit_transform_drop_all_nan_columns():
+def test_simple_imputer_fit_transform_drop_all_nan_columns():
     X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                       "some_nan": [np.nan, 1, 0],
                       "another_col": [0, 1, 2]})
@@ -112,7 +116,7 @@ def test_fit_transform_drop_all_nan_columns():
                                         "another_col": [0, 1, 2]}))
 
 
-def test_transform_drop_all_nan_columns():
+def test_simple_imputer_transform_drop_all_nan_columns():
     X = pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                       "some_nan": [np.nan, 1, 0],
                       "another_col": [0, 1, 2]})
@@ -125,7 +129,7 @@ def test_transform_drop_all_nan_columns():
                                         "another_col": [0, 1, 2]}))
 
 
-def test_transform_drop_all_nan_columns_empty():
+def test_simple_imputer_transform_drop_all_nan_columns_empty():
     X = pd.DataFrame([[np.nan, np.nan, np.nan]])
     transformer = SimpleImputer(impute_strategy='most_frequent')
     assert transformer.fit_transform(X).empty
@@ -137,7 +141,7 @@ def test_transform_drop_all_nan_columns_empty():
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
 
-def test_numpy_input():
+def test_simple_imputer_numpy_input():
     X = np.array([[np.nan, 0, 1, np.nan],
                   [np.nan, 2, 3, 2],
                   [np.nan, 2, 3, 0]])
@@ -171,7 +175,7 @@ def test_simple_imputer_fill_value(data_type):
         fill_value = "fill"
         expected = pd.DataFrame({
             "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
-            "object with nan": ["b", "b", "fill", "c", "fill"],
+            "object with nan": pd.Series(["b", "b", "fill", "c", "fill"], dtype='category'),
         })
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
@@ -226,6 +230,6 @@ def test_simple_imputer_with_none():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", "a"], dtype='category'),
-                             "boolean with None": [True, True, False, True],
-                             "object with None": ["b", "a", "a", "a"]})
+                             "boolean with None": pd.Series([True, True, False, True], dtype='category'),
+                             "object with None": pd.Series(["b", "a", "a", "a"], dtype='category')})
     assert_frame_equal(transformed, expected, check_dtype=False)

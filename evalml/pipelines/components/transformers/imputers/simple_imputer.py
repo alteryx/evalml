@@ -3,6 +3,10 @@ import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class SimpleImputer(Transformer):
@@ -35,14 +39,14 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
@@ -55,14 +59,14 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
@@ -81,8 +85,8 @@ class SimpleImputer(Transformer):
         """Fits on X and transforms X
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Target data.
+            X (ww.DataTable, pd.DataFrame): Data to fit and transform
+            y (ww.DataColumn, pd.Series, optional): Target data.
 
         Returns:
             pd.DataFrame: Transformed X

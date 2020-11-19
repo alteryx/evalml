@@ -210,7 +210,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
 
 def _rename_column_names_to_numeric(X):
-    """Used in XGBoost classifier and regressor classes to rename column names
+    """Used in LightGBM classifier class and XGBoost classifier and regressor classes to rename column names
         when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
 
     Arguments:
@@ -219,8 +219,18 @@ def _rename_column_names_to_numeric(X):
     Returns:
         Transformed X where column names are renamed to numerical values
     """
-    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(X.columns.values))
-    return X.rename(columns=name_to_col_num, inplace=False)
+    X_t = X
+    if isinstance(X, np.ndarray):
+        return pd.DataFrame(X)
+    if isinstance(X, ww.DataTable):
+        X_t = X.to_dataframe()
+        logical_types = X.logical_types
+    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+    X_renamed = X_t.rename(columns=name_to_col_num, inplace=False)
+    if isinstance(X, ww.DataTable):
+        renamed_logical_types = dict((name_to_col_num[col], logical_types[col]) for col in logical_types)
+        return ww.DataTable(X_renamed, logical_types=renamed_logical_types)
+    return X_renamed
 
 
 def jupyter_check():
@@ -277,19 +287,22 @@ def _convert_to_woodwork_structure(data):
     """
     Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
     """
+    ww_data = data
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
-        return data
+        return ww_data
     # Convert numpy data structures to pandas data structures
     if isinstance(data, list):
-        data = np.array(data)
-    if isinstance(data, pd.api.extensions.ExtensionArray) or (isinstance(data, np.ndarray) and len(data.shape) == 1):
-        data = pd.Series(data)
-    elif isinstance(data, np.ndarray):
-        data = pd.DataFrame(data)
+        ww_data = np.array(data)
+
+    if isinstance(ww_data, pd.api.extensions.ExtensionArray) or (isinstance(ww_data, np.ndarray) and len(ww_data.shape) == 1):
+        ww_data = pd.Series(ww_data)
+    elif isinstance(ww_data, np.ndarray):
+        ww_data = pd.DataFrame(ww_data)
+
     # Convert pandas data structures to Woodwork data structures
-    if isinstance(data, pd.Series):
-        return ww.DataColumn(data)
-    return ww.DataTable(data)
+    if isinstance(ww_data, pd.Series):
+        return ww.DataColumn(ww_data)
+    return ww.DataTable(ww_data, copy_dataframe=True)
 
 
 def _convert_woodwork_types_wrapper(pd_data):
@@ -300,18 +313,30 @@ def _convert_woodwork_types_wrapper(pd_data):
         pd_data (pd.Series, pd.DataFrame, pd.ExtensionArray): Pandas data structure
 
     Returns:
-        New pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
+        Modified pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
     """
     nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
                                  pd.BooleanDtype: 'bool',
                                  pd.StringDtype: 'object'}
+    nullable_to_numpy_mapping_nan = {pd.Int64Dtype: 'float64',
+                                     pd.BooleanDtype: 'object',
+                                     pd.StringDtype: 'object'}
 
-    if isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping:
-        return pd_data.astype(nullable_to_numpy_mapping[type(pd_data.dtype)])
+    if isinstance(pd_data, pd.api.extensions.ExtensionArray):
+        if pd.isna(pd_data).any():
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)])
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
+    if (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
+        if pd.isna(pd_data).any():
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index)
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index)
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
-                pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
+                if pd.isna(pd_data[col_name]).any():
+                    pd_data[col_name] = pd.Series(pd_data[col_name].to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data[col_name].dtype)])
+                else:
+                    pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
     return pd_data
 
 
