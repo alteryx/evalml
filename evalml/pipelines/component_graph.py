@@ -288,7 +288,7 @@ class ComponentGraph:
     def _recompute_order(self):
         """Regenerated the topologically sorted order of the graph"""
         if len(self.component_dict) == 1:
-            self._compute_order = self.component_dict.keys()
+            self._compute_order = iter(self.component_dict.keys())
             return
         digraph = nx.DiGraph()
         digraph.add_edges_from(self._get_edges())

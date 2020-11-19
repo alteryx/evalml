@@ -358,3 +358,11 @@ def test_iterator_reset(example_graph):
 
     assert expected_order == order
     assert expected_order == order_2
+
+    component_graph = ComponentGraph({'Imputer': [Imputer]})
+    expected_order = ['Imputer']
+    order = [component_name for component_name, _ in component_graph]
+    order_2 = [component_name for component_name, _ in component_graph]
+
+    assert expected_order == order
+    assert expected_order == order_2
