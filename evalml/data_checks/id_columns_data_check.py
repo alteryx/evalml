@@ -2,7 +2,6 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -39,12 +38,12 @@ class IDColumnsDataCheck(DataCheck):
             ...     'y': [42, 54, 12, 64, 12]
             ... })
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {DataCheckMessageType.ERROR: [],\
-                                                     DataCheckMessageType.WARNING: [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]}
+            >>> assert id_col_check.validate(df) == {"errors": [],\
+                                                     "warnings": [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]}
         """
         messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
+            "warnings": [],
+            "errors": []
         }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -63,5 +62,5 @@ class IDColumnsDataCheck(DataCheck):
 
         id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
-        messages[DataCheckMessageType.WARNING].extend([DataCheckWarning(warning_msg.format(col_name, self.id_threshold * 100), self.name) for col_name in id_cols_above_threshold])
+        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name, self.id_threshold * 100), self.name) for col_name in id_cols_above_threshold])
         return messages

@@ -2,7 +2,6 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError, DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
 
 
 class ClassImbalanceDataCheck(DataCheck):
@@ -41,12 +40,12 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck")],\
-                                                       DataCheckMessageType.WARNING: [DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]}
+            >>> assert target_check.validate(X, y) == {"errors": [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck")],\
+                                                       "warnings": [DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]}
         """
         messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
+            "warnings": [],
+            "errors": []
         }
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
@@ -55,12 +54,12 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            messages[DataCheckMessageType.ERROR].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
+            messages["errors"].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
+            messages["warnings"].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
         return messages

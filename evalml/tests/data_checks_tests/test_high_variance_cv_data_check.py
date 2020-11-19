@@ -2,11 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.data_checks import (
-    DataCheckMessageType,
-    DataCheckWarning,
-    HighVarianceCVDataCheck
-)
+from evalml.data_checks import DataCheckWarning, HighVarianceCVDataCheck
 
 
 def test_high_variance_cv_data_check_invalid_threshold():
@@ -17,26 +13,26 @@ def test_high_variance_cv_data_check_invalid_threshold():
 def test_high_variance_cv_data_check():
     high_variance_cv = HighVarianceCVDataCheck()
 
-    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=[0, 0, 0]) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
-    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=[1, 1, 1]) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
-    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=pd.Series([1, 1, 1])) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
+    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=[0, 0, 0]) == {"warnings": [], "errors": []}
+    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=[1, 1, 1]) == {"warnings": [], "errors": []}
+    assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=pd.Series([1, 1, 1])) == {"warnings": [], "errors": []}
     assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=pd.Series([0, 1, 2, 3])) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
+        "errors": []
     }
 
 
 def test_high_variance_cv_data_check_empty_nan():
     high_variance_cv = HighVarianceCVDataCheck()
     assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=pd.Series([0, 1, np.nan, np.nan])) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
+        "errors": []
     }
 
 
 def test_high_variance_cv_data_check_negative():
     high_variance_cv = HighVarianceCVDataCheck()
     assert high_variance_cv.validate(pipeline_name='LogisticRegressionPipeline', cv_scores=pd.Series([0, -1, -1, -1])) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],
+        "errors": []
     }

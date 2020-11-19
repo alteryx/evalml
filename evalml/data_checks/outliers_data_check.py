@@ -2,7 +2,6 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
 
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import numeric_dtypes
@@ -36,12 +35,12 @@ class OutliersDataCheck(DataCheck):
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {DataCheckMessageType.WARNING: [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")],\
-                                                       DataCheckMessageType.ERROR: []}
+            >>> assert outliers_check.validate(df) == {"warnings": [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")],\
+                                                       "errors": []}
         """
         messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
+            "warnings": [],
+            "errors": []
         }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -62,5 +61,5 @@ class OutliersDataCheck(DataCheck):
         has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
         warning_msg = "Column '{}' is likely to have outlier data"
         cols = has_outliers.index[has_outliers]
-        messages[DataCheckMessageType.WARNING].extend([DataCheckWarning(warning_msg.format(col), self.name) for col in cols])
+        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col), self.name) for col in cols])
         return messages

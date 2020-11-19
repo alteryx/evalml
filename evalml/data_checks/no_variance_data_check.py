@@ -2,7 +2,6 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError, DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
 
 from evalml.utils.logger import get_logger
 
@@ -54,8 +53,8 @@ class NoVarianceDataCheck(DataCheck):
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
         messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
+            "warnings": [],
+            "errors": []
         }
 
         if not isinstance(X, pd.DataFrame):

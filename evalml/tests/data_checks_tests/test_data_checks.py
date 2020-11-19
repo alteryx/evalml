@@ -6,7 +6,6 @@ from evalml.data_checks import DefaultDataChecks, EmptyDataChecks
 from evalml.data_checks.data_check import DataCheck
 from evalml.data_checks.data_check_message import (
     DataCheckError,
-    DataCheckMessageType,
     DataCheckWarning
 )
 from evalml.data_checks.data_checks import AutoMLDataChecks, DataChecks
@@ -18,32 +17,32 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
+            return {"warnings": [], "errors": []}
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {DataCheckMessageType.WARNING: [DataCheckWarning("warning one", self.name)], DataCheckMessageType.ERROR: []}
+            return {"warnings": [DataCheckWarning("warning one", self.name)], "errors": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [DataCheckError("error one", self.name)]}
+            return {"warnings": [], "errors": [DataCheckError("error one", self.name)]}
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
-            return {DataCheckMessageType.WARNING: [DataCheckWarning("warning two", self.name)], DataCheckMessageType.ERROR: [DataCheckError("error two", self.name)]}
+            return {"warnings": [DataCheckWarning("warning two", self.name)], "errors": [DataCheckError("error two", self.name)]}
 
     data_checks_list = [MockDataCheck, MockDataCheckWarning, MockDataCheckError, MockDataCheckErrorAndWarning]
     data_checks = DataChecks(data_checks=data_checks_list)
     assert data_checks.validate(X, y) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("warning one", "MockDataCheckWarning"), DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")],
-        DataCheckMessageType.ERROR: [DataCheckError("error one", "MockDataCheckError"), DataCheckError("error two", "MockDataCheckErrorAndWarning")]
+        "warnings": [DataCheckWarning("warning one", "MockDataCheckWarning"), DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")],
+        "errors": [DataCheckError("error one", "MockDataCheckError"), DataCheckError("error two", "MockDataCheckErrorAndWarning")]
     }
 
 
 def test_empty_data_checks(X_y_binary):
     X, y = X_y_binary
     data_checks = EmptyDataChecks()
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
+    assert data_checks.validate(X, y) == {"warnings": [], "errors": []}
 
 
 messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
@@ -68,21 +67,21 @@ def test_default_data_checks_classification():
     leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "TargetLeakageDataCheck")]
     imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]", "ClassImbalanceDataCheck")]
 
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3] + leakage, DataCheckMessageType.ERROR: messages[3:] + imbalance}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "binary"}})
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3] + leakage, DataCheckMessageType.ERROR: messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:]}
 
     imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]", "ClassImbalanceDataCheck")]
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
     data_checks = DefaultDataChecks("multiclass")
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3], DataCheckMessageType.ERROR: messages[3:] + imbalance}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3], DataCheckMessageType.ERROR: messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
 def test_default_data_checks_regression():
@@ -96,14 +95,14 @@ def test_default_data_checks_regression():
     y2 = pd.Series([5] * 4)
 
     data_checks = DefaultDataChecks("regression")
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3], DataCheckMessageType.ERROR: messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y2) == {DataCheckMessageType.WARNING: messages[:3], DataCheckMessageType.ERROR: messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]}
+    assert data_checks.validate(X, y2) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression"}})
-    assert data_checks.validate(X, y) == {DataCheckMessageType.WARNING: messages[:3], DataCheckMessageType.ERROR: messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
 def test_data_checks_init_from_classes():

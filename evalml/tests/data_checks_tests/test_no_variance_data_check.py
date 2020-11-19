@@ -4,7 +4,6 @@ import pytest
 
 from evalml.data_checks.data_check_message import (
     DataCheckError,
-    DataCheckMessageType,
     DataCheckWarning
 )
 from evalml.data_checks.no_variance_data_check import NoVarianceDataCheck
@@ -29,23 +28,23 @@ labels_0_unique = DataCheckError("Y has 0 unique value.", NAME)
 labels_1_unique = DataCheckError("Y has 1 unique value.", NAME)
 
 
-cases = [(all_distinct_X, all_distinct_y, True, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}),
-         ([1, 2, 3, 4], [1, 2, 3, 2], False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}),
-         (np.arange(12).reshape(4, 3), [1, 2, 3], True, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}),
-         (all_null_X, all_distinct_y, False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [feature_0_unique]}),
-         (all_null_X, [1] * 4, False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [feature_0_unique, labels_1_unique]}),
-         (all_null_X, all_distinct_y, True, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [feature_1_unique]}),
-         (all_distinct_X, all_null_y, True, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [labels_1_unique]}),
-         (all_distinct_X, all_null_y, False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [labels_0_unique]}),
+cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
+         ([1, 2, 3, 4], [1, 2, 3, 2], False, {"warnings": [], "errors": []}),
+         (np.arange(12).reshape(4, 3), [1, 2, 3], True, {"warnings": [], "errors": []}),
+         (all_null_X, all_distinct_y, False, {"warnings": [], "errors": [feature_0_unique]}),
+         (all_null_X, [1] * 4, False, {"warnings": [], "errors": [feature_0_unique, labels_1_unique]}),
+         (all_null_X, all_distinct_y, True, {"warnings": [], "errors": [feature_1_unique]}),
+         (all_distinct_X, all_null_y, True, {"warnings": [], "errors": [labels_1_unique]}),
+         (all_distinct_X, all_null_y, False, {"warnings": [], "errors": [labels_0_unique]}),
          (two_distinct_with_nulls_X, two_distinct_with_nulls_y, True,
-          {DataCheckMessageType.WARNING: [DataCheckWarning("feature has two unique values including nulls. Consider encoding the nulls for "
-                                                           "this column to be useful for machine learning.", NAME),
-                                          DataCheckWarning("Y has two unique values including nulls. Consider encoding the nulls for "
-                                                           "this column to be useful for machine learning.", NAME)],
-           DataCheckMessageType.ERROR: []}
+          {"warnings": [DataCheckWarning("feature has two unique values including nulls. Consider encoding the nulls for "
+                                         "this column to be useful for machine learning.", NAME),
+                        DataCheckWarning("Y has two unique values including nulls. Consider encoding the nulls for "
+                                         "this column to be useful for machine learning.", NAME)],
+           "errors": []}
           ),
-         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [feature_1_unique, labels_1_unique]}),
-         (all_distinct_X, all_null_y_with_name, False, {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: [DataCheckError("Labels has 0 unique value.", NAME)]})
+         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
+         (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError("Labels has 0 unique value.", NAME)]})
          ]
 
 

@@ -1,7 +1,6 @@
 import inspect
 
 from .data_check import DataCheck
-from .data_check_message_type import DataCheckMessageType
 
 from evalml.exceptions import DataCheckInitError
 
@@ -86,13 +85,13 @@ class DataChecks:
 
         """
         messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
+            "warnings": [],
+            "errors": []
         }
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
-            messages[DataCheckMessageType.WARNING].extend(messages_new[DataCheckMessageType.WARNING])
-            messages[DataCheckMessageType.ERROR].extend(messages_new[DataCheckMessageType.ERROR])
+            messages["warnings"].extend(messages_new["warnings"])
+            messages["errors"].extend(messages_new["errors"])
         return messages
 
 

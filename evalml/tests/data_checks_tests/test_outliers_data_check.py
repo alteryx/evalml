@@ -3,10 +3,7 @@ import string
 import numpy as np
 import pandas as pd
 
-from evalml.data_checks.data_check_message import (
-    DataCheckMessageType,
-    DataCheckWarning
-)
+from evalml.data_checks.data_check_message import DataCheckWarning
 from evalml.data_checks.outliers_data_check import OutliersDataCheck
 from evalml.utils import get_random_state
 
@@ -32,11 +29,11 @@ def test_outliers_data_check_warnings():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
+        "errors": []
     }
 
 
@@ -44,7 +41,7 @@ def test_outliers_data_check_input_formats():
     outliers_check = OutliersDataCheck()
 
     # test empty pd.DataFrame
-    assert outliers_check.validate(pd.DataFrame()) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
+    assert outliers_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
 
     # test np.array
     a = np.arange(10) * 0.01
@@ -58,11 +55,11 @@ def test_outliers_data_check_input_formats():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X.to_numpy()) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
-                                       DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
+                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
+        "errors": []
     }
 
 
@@ -76,6 +73,6 @@ def test_outliers_data_check_string_cols():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck")],
-        DataCheckMessageType.ERROR: []
+        "warnings": [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck")],
+        "errors": []
     }
