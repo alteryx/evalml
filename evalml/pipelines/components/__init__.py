@@ -34,7 +34,7 @@ from .transformers import (
     DateTimeFeaturizer,
     SelectColumns,
     TextFeaturizer,
-    LDA,
+    LinearDiscriminantAnalysis,
     LSA,
     PCA
 )

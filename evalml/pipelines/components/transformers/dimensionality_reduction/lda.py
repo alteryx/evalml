@@ -5,7 +5,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import is_all_numeric
 
 
-class LDA(Transformer):
+class LinearDiscriminantAnalysis(Transformer):
     """Reduces the number of features by using Linear Discriminant Analysis"""
     name = 'Linear Discriminant Analysis Transformer'
     hyperparameter_ranges = {}
@@ -14,7 +14,7 @@ class LDA(Transformer):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
 
         Arguments:
-            n_components (int): the number of features to maintain after computationn. Defaults to None.
+            n_components (int): the number of features to maintain after computation. Defaults to None.
         """
         parameters = {"n_components": n_components}
         parameters.update(kwargs)

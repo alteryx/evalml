@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from evalml.pipelines.components import LDA
+from evalml.pipelines.components import LinearDiscriminantAnalysis
 
 
 def test_lda_numeric():
@@ -13,7 +13,7 @@ def test_lda_numeric():
                       [10, 2, 2, 5],
                       [6, 2, 2, 5]])
     y = [0, 1, 0, 1, 1]
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     expected_X_t = pd.DataFrame([[-3.7498560857993817],
                                  [1.984459921694517],
                                  [-3.234411950294312],
@@ -31,7 +31,7 @@ def test_lda_array():
          [10, 2, 2, 5],
          [6, 2, 2, 5]]
     y = [2, 2, 0, 1, 0]
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     expected_X_t = pd.DataFrame([[-0.6412164311777084, 0.5197032695565076],
                                  [0.9499648898073094, -0.6919658287324498],
                                  [0.7364892645407753, 0.884637532109161],
@@ -50,7 +50,7 @@ def test_lda_invalid():
                       [10, 2, 2, np.nan],
                       [None, 2, 2, 5]])
     y = [2, 0, 1, 1, 0]
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     with pytest.raises(ValueError, match="must be all numeric"):
         lda.fit(X, y)
 
@@ -59,7 +59,7 @@ def test_lda_invalid():
                       [10, 2, 1, 6],
                       [10, 2, 2, 23],
                       [0, 2, 2, 5]])
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     with pytest.raises(ValueError, match="must be all numeric"):
         lda.fit_transform(X, y)
 
@@ -68,7 +68,7 @@ def test_lda_invalid():
                          [10, 2, 1, 6],
                          [10, 2, 2, 5],
                          [6, 2, 2, 5]])
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     lda.fit(X_ok, y)
     with pytest.raises(ValueError, match="must be all numeric"):
         lda.transform(X)
@@ -84,10 +84,10 @@ def test_n_components():
                       [12, 11, 1, 1, 3, 3]])
     y = [0, 3, 3, 1, 2, 0, 2]
 
-    lda = LDA(n_components=3)
+    lda = LinearDiscriminantAnalysis(n_components=3)
     X_t = pd.DataFrame(lda.fit_transform(X, y))
     assert X_t.shape[1] == 3
 
-    lda = LDA(n_components=1)
+    lda = LinearDiscriminantAnalysis(n_components=1)
     X_t = pd.DataFrame(lda.fit_transform(X, y))
     assert X_t.shape[1] == 1

@@ -17,7 +17,6 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
-    LDA,
     LSA,
     PCA,
     BaselineClassifier,
@@ -35,6 +34,7 @@ from evalml.pipelines.components import (
     ExtraTreesRegressor,
     Imputer,
     LightGBMClassifier,
+    LinearDiscriminantAnalysis,
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -146,7 +146,7 @@ def test_describe_component():
     text_featurizer = TextFeaturizer()
     lsa = LSA()
     pca = PCA()
-    lda = LDA()
+    lda = LinearDiscriminantAnalysis()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -529,7 +529,7 @@ def test_transformer_transform_output_type(X_y_binary):
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
                 assert isinstance(transform_output.columns, pd.Index)
-            elif isinstance(component, PCA) or isinstance(component, LDA):
+            elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
@@ -543,7 +543,7 @@ def test_transformer_transform_output_type(X_y_binary):
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
                 assert isinstance(transform_output.columns, pd.Index)
-            elif isinstance(component, PCA) or isinstance(component, LDA):
+            elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)

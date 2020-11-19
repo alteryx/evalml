@@ -1,2 +1,2 @@
-from .lda import LDA
+from .lda import LinearDiscriminantAnalysis
 from .pca import PCA
