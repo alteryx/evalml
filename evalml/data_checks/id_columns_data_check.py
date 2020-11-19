@@ -39,9 +39,10 @@ class IDColumnsDataCheck(DataCheck):
             ...     'y': [42, 54, 12, 64, 12]
             ... })
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {DataCheckMessageType.ERROR: [],\
-                                                     DataCheckMessageType.WARNING: [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]}
+            >>> results = id_col_check.validate(df)
+            >>> assert results.warnings == [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]\
         """
+
         warnings = []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
