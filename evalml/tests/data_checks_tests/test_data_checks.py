@@ -21,21 +21,21 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [DataCheckWarning("warning one", self.name)], "errors": []}
+            return {"warnings": [DataCheckWarning("warning one", self.name).to_dict()], "errors": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [DataCheckError("error one", self.name)]}
+            return {"warnings": [], "errors": [DataCheckError("error one", self.name).to_dict()]}
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [DataCheckWarning("warning two", self.name)], "errors": [DataCheckError("error two", self.name)]}
+            return {"warnings": [DataCheckWarning("warning two", self.name).to_dict()], "errors": [DataCheckError("error two", self.name).to_dict()]}
 
     data_checks_list = [MockDataCheck, MockDataCheckWarning, MockDataCheckError, MockDataCheckErrorAndWarning]
     data_checks = DataChecks(data_checks=data_checks_list)
     assert data_checks.validate(X, y) == {
-        "warnings": [DataCheckWarning("warning one", "MockDataCheckWarning"), DataCheckWarning("warning two", "MockDataCheckErrorAndWarning")],
-        "errors": [DataCheckError("error one", "MockDataCheckError"), DataCheckError("error two", "MockDataCheckErrorAndWarning")]
+        "warnings": [DataCheckWarning("warning one", "MockDataCheckWarning").to_dict(), DataCheckWarning("warning two", "MockDataCheckErrorAndWarning").to_dict()],
+        "errors": [DataCheckError("error one", "MockDataCheckError").to_dict(), DataCheckError("error two", "MockDataCheckErrorAndWarning").to_dict()]
     }
 
 
@@ -45,13 +45,13 @@ def test_empty_data_checks(X_y_binary):
     assert data_checks.validate(X, y) == {"warnings": [], "errors": []}
 
 
-messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-            DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck"),
-            DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck"),
-            DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck"),
-            DataCheckError("lots_of_null has 1 unique value.", "NoVarianceDataCheck"),
-            DataCheckError("all_null has 0 unique value.", "NoVarianceDataCheck"),
-            DataCheckError("also_all_null has 0 unique value.", "NoVarianceDataCheck")]
+messages = [DataCheckWarning("Column 'all_null' is 95.0% or more null", "HighlyNullDataCheck").to_dict(),
+            DataCheckWarning("Column 'also_all_null' is 95.0% or more null", "HighlyNullDataCheck").to_dict(),
+            DataCheckWarning("Column 'id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
+            DataCheckError("1 row(s) (20.0%) of target values are null", "InvalidTargetDataCheck").to_dict(),
+            DataCheckError("lots_of_null has 1 unique value.", "NoVarianceDataCheck").to_dict(),
+            DataCheckError("all_null has 0 unique value.", "NoVarianceDataCheck").to_dict(),
+            DataCheckError("also_all_null has 0 unique value.", "NoVarianceDataCheck").to_dict()]
 
 
 def test_default_data_checks_classification():
@@ -64,8 +64,8 @@ def test_default_data_checks_classification():
     y = pd.Series([0, 1, np.nan, 1, 0])
     data_checks = DefaultDataChecks("binary")
 
-    leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "TargetLeakageDataCheck")]
-    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]", "ClassImbalanceDataCheck")]
+    leakage = [DataCheckWarning("Column 'has_label_leakage' is 95.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict()]
+    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]", "ClassImbalanceDataCheck").to_dict()]
 
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:] + imbalance}
 
@@ -73,7 +73,7 @@ def test_default_data_checks_classification():
                              {"InvalidTargetDataCheck": {"problem_type": "binary"}})
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:]}
 
-    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]", "ClassImbalanceDataCheck")]
+    imbalance = [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]", "ClassImbalanceDataCheck").to_dict()]
     # multiclass
     y = pd.Series([0, 1, np.nan, 2, 0])
     data_checks = DefaultDataChecks("multiclass")
@@ -98,7 +98,7 @@ def test_default_data_checks_regression():
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y2) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck")]}
+    assert data_checks.validate(X, y2) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError("Y has 1 unique value.", "NoVarianceDataCheck").to_dict()]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression"}})

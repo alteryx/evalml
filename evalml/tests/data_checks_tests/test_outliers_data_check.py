@@ -29,10 +29,10 @@ def test_outliers_data_check_warnings():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
+        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck").to_dict()],
         "errors": []
     }
 
@@ -55,10 +55,10 @@ def test_outliers_data_check_input_formats():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X.to_numpy()) == {
-        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck"),
-                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck")],
+        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck").to_dict(),
+                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck").to_dict()],
         "errors": []
     }
 
@@ -73,6 +73,6 @@ def test_outliers_data_check_string_cols():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck")],
+        "warnings": [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck").to_dict()],
         "errors": []
     }

@@ -69,16 +69,16 @@ class NoVarianceDataCheck(DataCheck):
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
             if message:
                 if message.message_type == DataCheckMessageType.ERROR:
-                    messages["errors"].append(message)
+                    messages["errors"].append(message.to_dict())
                 elif message.message_type == DataCheckMessageType.WARNING:
-                    messages["warnings"].append(message)
+                    messages["warnings"].append(message.to_dict())
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
             if target_message.message_type == DataCheckMessageType.ERROR:
-                messages["errors"].append(target_message)
+                messages["errors"].append(target_message.to_dict())
             elif target_message.message_type == DataCheckMessageType.WARNING:
-                messages["warnings"].append(target_message)
+                messages["warnings"].append(target_message.to_dict())
         return messages

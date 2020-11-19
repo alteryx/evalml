@@ -54,12 +54,12 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            messages["errors"].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
+            messages["errors"].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name).to_dict())
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            messages["warnings"].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
+            messages["warnings"].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name).to_dict())
         return messages

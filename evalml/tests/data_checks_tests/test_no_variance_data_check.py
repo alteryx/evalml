@@ -22,10 +22,10 @@ two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
 
-feature_0_unique = DataCheckError("feature has 0 unique value.", NAME)
-feature_1_unique = DataCheckError("feature has 1 unique value.", NAME)
-labels_0_unique = DataCheckError("Y has 0 unique value.", NAME)
-labels_1_unique = DataCheckError("Y has 1 unique value.", NAME)
+feature_0_unique = DataCheckError("feature has 0 unique value.", NAME).to_dict()
+feature_1_unique = DataCheckError("feature has 1 unique value.", NAME).to_dict()
+labels_0_unique = DataCheckError("Y has 0 unique value.", NAME).to_dict()
+labels_1_unique = DataCheckError("Y has 1 unique value.", NAME).to_dict()
 
 
 cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
@@ -38,13 +38,13 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
          (all_distinct_X, all_null_y, False, {"warnings": [], "errors": [labels_0_unique]}),
          (two_distinct_with_nulls_X, two_distinct_with_nulls_y, True,
           {"warnings": [DataCheckWarning("feature has two unique values including nulls. Consider encoding the nulls for "
-                                         "this column to be useful for machine learning.", NAME),
+                                         "this column to be useful for machine learning.", NAME).to_dict(),
                         DataCheckWarning("Y has two unique values including nulls. Consider encoding the nulls for "
-                                         "this column to be useful for machine learning.", NAME)],
+                                         "this column to be useful for machine learning.", NAME).to_dict()],
            "errors": []}
           ),
          (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
-         (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError("Labels has 0 unique value.", NAME)]})
+         (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError("Labels has 0 unique value.", NAME).to_dict()]})
          ]
 
 
