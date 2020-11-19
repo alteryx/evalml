@@ -89,8 +89,8 @@ def test_warning_error_eq():
     assert error != warning
 
 
-def test_data_check_message_to_json():
+def test_data_check_message_to_dict():
     error = DataCheckError("test message", "same test name")
-    assert error.to_dict() == {"message": "test message", "level": "error"}
+    assert error.to_dict() == {"message": "test message", "level": "error", "data_check_name": "same test name"}
     warning = DataCheckWarning("test message", "same test name")
-    assert warning.to_dict() == {"message": "test message", "level": "warning"}
+    assert warning.to_dict() == {"message": "test message", "level": "warning", "data_check_name": "same test name"}
