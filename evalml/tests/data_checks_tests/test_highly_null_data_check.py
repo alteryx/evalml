@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.data_checks.data_check_message import (
-    DataCheckMessageType,
-    DataCheckWarning
+from evalml.data_checks import (
+    DataCheckResults,
+    DataCheckWarning,
+    HighlyNullDataCheck
 )
-from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
 
 
 def test_highly_null_data_check_init():
@@ -33,56 +33,35 @@ def test_highly_null_data_check_warnings():
                          'all_null': [None, None, None, None, None],
                          'no_null': [1, 2, 3, 4, 5]})
     no_null_check = HighlyNullDataCheck(pct_null_threshold=0.0)
-    assert no_null_check.validate(data) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'lots_of_null' is more than 0% null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column 'all_null' is more than 0% null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert no_null_check.validate(data) == DataCheckResults(warnings=[DataCheckWarning("Column 'lots_of_null' is more than 0% null", "HighlyNullDataCheck"),
+                                                                      DataCheckWarning("Column 'all_null' is more than 0% null", "HighlyNullDataCheck")])
 
     some_null_check = HighlyNullDataCheck(pct_null_threshold=0.5)
-    assert some_null_check.validate(data) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'lots_of_null' is 50.0% or more null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column 'all_null' is 50.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert some_null_check.validate(data) == DataCheckResults(warnings=[DataCheckWarning("Column 'lots_of_null' is 50.0% or more null", "HighlyNullDataCheck"),
+                                                                        DataCheckWarning("Column 'all_null' is 50.0% or more null", "HighlyNullDataCheck")])
 
     all_null_check = HighlyNullDataCheck(pct_null_threshold=1.0)
-    assert all_null_check.validate(data) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column 'all_null' is 100.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert all_null_check.validate(data) == DataCheckResults(warnings=[DataCheckWarning("Column 'all_null' is 100.0% or more null", "HighlyNullDataCheck")])
 
 
 def test_highly_null_data_check_input_formats():
     highly_null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert highly_null_check.validate(pd.DataFrame()) == {DataCheckMessageType.WARNING: [], DataCheckMessageType.ERROR: []}
+    assert highly_null_check.validate(pd.DataFrame()) == DataCheckResults()
 
     #  test list
-    assert highly_null_check.validate([None, None, None, None, 5]) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert highly_null_check.validate([None, None, None, None, 5]) == DataCheckResults(warnings=[DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck")])
 
     #  test pd.Series
-    assert highly_null_check.validate(pd.Series([None, None, None, None, 5])) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert highly_null_check.validate(pd.Series([None, None, None, None, 5])) == DataCheckResults(warnings=[DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck")])
 
     #  test 2D list
-    assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column '1' is 80.0% or more null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column '2' is 80.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == DataCheckResults(warnings=[DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck"),
+                                                                                                                                DataCheckWarning("Column '1' is 80.0% or more null", "HighlyNullDataCheck"),
+                                                                                                                                DataCheckWarning("Column '2' is 80.0% or more null", "HighlyNullDataCheck")])
 
     # test np.array
-    assert highly_null_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])) == {
-        DataCheckMessageType.WARNING: [DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column '1' is 80.0% or more null", "HighlyNullDataCheck"),
-                                       DataCheckWarning("Column '2' is 80.0% or more null", "HighlyNullDataCheck")],
-        DataCheckMessageType.ERROR: []
-    }
+    assert highly_null_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])) == DataCheckResults(warnings=[DataCheckWarning("Column '0' is 80.0% or more null", "HighlyNullDataCheck"),
+                                                                                                                                          DataCheckWarning("Column '1' is 80.0% or more null", "HighlyNullDataCheck"),
+                                                                                                                                          DataCheckWarning("Column '2' is 80.0% or more null", "HighlyNullDataCheck")])

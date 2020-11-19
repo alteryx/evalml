@@ -3,6 +3,7 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckError, DataCheckWarning
 from .data_check_message_type import DataCheckMessageType
+from .data_check_results import DataCheckResults
 
 from evalml.utils.logger import get_logger
 
@@ -53,11 +54,8 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
-        messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
-        }
-
+        warnings = []
+        errors = []
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
@@ -68,11 +66,17 @@ class NoVarianceDataCheck(DataCheck):
         for name in unique_counts:
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
             if message:
-                messages[message.message_type].append(message)
+                if message.message_type == DataCheckMessageType.ERROR:
+                    errors.append(message)
+                else:
+                    warnings.append(message)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            messages[target_message.message_type].append(target_message)
-        return messages
+            if target_message.message_type == DataCheckMessageType.ERROR:
+                errors.append(target_message)
+            else:
+                warnings.append(target_message)
+        return DataCheckResults(errors=errors, warnings=warnings)

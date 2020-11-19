@@ -2,7 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError, DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
+from .data_check_results import DataCheckResults
 
 
 class ClassImbalanceDataCheck(DataCheck):
@@ -44,10 +44,8 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]", "ClassImbalanceDataCheck")],\
                                                        DataCheckMessageType.WARNING: [DataCheckWarning("The following labels fall below 10% of the target: [0]", "ClassImbalanceDataCheck")]}
         """
-        messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
-        }
+        warnings = []
+        errors = []
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
         fold_counts = y.value_counts(normalize=False)
@@ -55,12 +53,12 @@ class ClassImbalanceDataCheck(DataCheck):
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            messages[DataCheckMessageType.ERROR].append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
+            errors.append(DataCheckError(error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()), self.name))
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
-        return messages
+            warnings.append(DataCheckWarning(warning_msg.format(self.threshold * 100, below_threshold.index.tolist()), self.name))
+        return DataCheckResults(errors=errors, warnings=warnings)

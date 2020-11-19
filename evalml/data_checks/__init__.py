@@ -2,6 +2,7 @@ from .data_check import DataCheck
 from .data_checks import AutoMLDataChecks, DataChecks
 from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckError
 from .data_check_message_type import DataCheckMessageType
+from .data_check_results import DataCheckResults
 from .default_data_checks import DefaultDataChecks
 from .utils import EmptyDataChecks
 from .invalid_targets_data_check import InvalidTargetDataCheck

@@ -2,7 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
-from .data_check_message_type import DataCheckMessageType
+from .data_check_results import DataCheckResults
 
 
 class HighVarianceCVDataCheck(DataCheck):
@@ -35,10 +35,7 @@ class HighVarianceCVDataCheck(DataCheck):
             >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == {DataCheckMessageType.WARNING: [DataCheckWarning("High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "HighVarianceCVDataCheck")],\
                                                                                    DataCheckMessageType.ERROR: []}
         """
-        messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
-        }
+        warnings = []
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
 
@@ -49,5 +46,5 @@ class HighVarianceCVDataCheck(DataCheck):
         # if there are items that occur less than the threshold, add them to the list of messages
         if high_variance_cv:
             warning_msg = f"High coefficient of variation (cv >= {self.threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data."
-            messages[DataCheckMessageType.WARNING].append(DataCheckWarning(warning_msg, self.name))
-        return messages
+            warnings.append(DataCheckWarning(warning_msg, self.name))
+        return DataCheckResults(warnings=warnings)

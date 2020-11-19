@@ -2,7 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
-from .data_check_message_type import DataCheckMessageType
+from .data_check_results import DataCheckResults
 
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
@@ -34,28 +34,24 @@ class InvalidTargetDataCheck(DataCheck):
             >>> assert target_check.validate(X, y) == {DataCheckMessageType.ERROR: [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck")],\
                                                        DataCheckMessageType.WARNING: []}
         """
-        messages = {
-            DataCheckMessageType.WARNING: [],
-            DataCheckMessageType.ERROR: []
-        }
-
+        errors = []
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
         null_rows = y.isnull()
         if null_rows.any():
-            messages[DataCheckMessageType.ERROR].append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
+            errors.append(DataCheckError("{} row(s) ({}%) of target values are null".format(null_rows.sum(), null_rows.mean() * 100), self.name))
         valid_target_types = [dtype for dtype in numeric_and_boolean_dtypes + categorical_dtypes]
         if y.dtype.name not in valid_target_types:
-            messages[DataCheckMessageType.ERROR].append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
+            errors.append(DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)), self.name))
 
         value_counts = y.value_counts()
 
         if self.problem_type == ProblemTypes.BINARY and len(value_counts) != 2:
-            messages[DataCheckMessageType.ERROR].append(DataCheckError("Target does not have two unique values which is not supported for binary classification", self.name))
+            errors.append(DataCheckError("Target does not have two unique values which is not supported for binary classification", self.name))
 
         if len(value_counts) == 2 and y.dtype in numeric_and_boolean_dtypes:
             unique_values = value_counts.index.tolist()
             if set(unique_values) != set([0, 1]):
-                messages[DataCheckMessageType.ERROR].append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])), self.name))
+                errors.append(DataCheckError("Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])), self.name))
 
-        return messages
+        return DataCheckResults(errors=errors)

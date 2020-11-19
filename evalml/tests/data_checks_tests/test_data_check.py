@@ -1,9 +1,10 @@
 import pandas as pd
 import pytest
 
-from evalml.data_checks.data_check import DataCheck
-from evalml.data_checks.data_check_message import (
+from evalml.data_checks import (
+    DataCheck,
     DataCheckError,
+    DataCheckResults,
     DataCheckWarning
 )
 
@@ -12,7 +13,7 @@ from evalml.data_checks.data_check_message import (
 def mock_data_check_class():
     class MockDataCheck(DataCheck):
         def validate(self, X, y=None):
-            return []
+            return DataCheckResults()
     return MockDataCheck
 
 
@@ -28,7 +29,7 @@ def test_data_check_name(mock_data_check_class):
 
 
 def test_empty_data_check_validate(mock_data_check_class):
-    assert mock_data_check_class().validate(pd.DataFrame()) == []
+    assert mock_data_check_class().validate(pd.DataFrame()) == DataCheckResults()
 
 
 def test_data_check_validate_simple(X_y_binary):
@@ -36,10 +37,12 @@ def test_data_check_validate_simple(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y=None):
-            return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+            return DataCheckResults(errors=[DataCheckError("error one", self.name)],
+                                    warnings=[DataCheckWarning("warning one", self.name)])
 
     data_check = MockDataCheck()
-    assert data_check.validate(X, y=y) == [DataCheckError("error one", "MockDataCheck"), DataCheckWarning("warning one", "MockDataCheck")]
+    assert data_check.validate(X, y=y) == DataCheckResults(errors=[DataCheckError("error one", "MockDataCheck")],
+                                                           warnings=[DataCheckWarning("warning one", "MockDataCheck")])
 
 
 def test_data_check_with_param():
@@ -51,11 +54,11 @@ def test_data_check_with_param():
 
         def validate(self, X, y=None):
             if self.num != 10:
-                return [DataCheckError("Expected num == 10", self.name)]
-            return []
+                return DataCheckResults(errors=[DataCheckError("Expected num == 10", self.name)])
+            return DataCheckResults()
 
     data_check = MockDataCheckWithParam(num=10)
-    assert data_check.validate(X, y=None) == []
+    assert data_check.validate(X, y=None) == DataCheckResults()
 
     data_check = MockDataCheckWithParam(num=0)
-    assert data_check.validate(X, y=None) == [DataCheckError("Expected num == 10", "MockDataCheckWithParam")]
+    assert data_check.validate(X, y=None) == DataCheckResults(errors=[DataCheckError("Expected num == 10", "MockDataCheckWithParam")])
