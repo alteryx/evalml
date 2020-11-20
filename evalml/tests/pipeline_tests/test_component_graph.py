@@ -295,8 +295,6 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     assert mock_fit.call_count == 0
     assert mock_predict.call_count == 0
 
-    print('X_t', X_t)
-    print('mock', mock_X_t)
     pd.testing.assert_frame_equal(X_t, mock_X_t)
 
 
