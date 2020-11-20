@@ -261,13 +261,13 @@ def test_get_last_component(example_graph):
 @patch('evalml.pipelines.components.Transformer.fit_transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_compute_final_features_fit_true(mock_fit_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+def test_fit(mock_fit_transform, mock_fit, mock_predict, example_graph, X_y_binary):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
     mock_fit.return_value = Estimator
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
-    component_graph.compute_final_features(X, y, fit=True)
+    component_graph.fit(X, y)
 
     assert mock_fit_transform.call_count == 3
     assert mock_fit.call_count == 3
@@ -277,21 +277,21 @@ def test_compute_final_features_fit_true(mock_fit_transform, mock_fit, mock_pred
 @patch('evalml.pipelines.components.Transformer.transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_compute_final_features_fit_false(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+def test_predict(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
     X, y = X_y_binary
     mock_transform.return_value = pd.DataFrame(X)
     mock_fit.return_value = Estimator
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
-    component_graph.compute_final_features(X, y, fit=True)
+    component_graph.fit(X, y)
 
-    component_graph.compute_final_features(X, fit=False)
+    component_graph.predict(X)
     assert mock_transform.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
-def test_compute_final_features_y_parent(mock_fit_transform, X_y_binary):
+def test_fit_y_parent(mock_fit_transform, X_y_binary):
     X, y = X_y_binary
     graph = {'Imputer': [Imputer],
              'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y'],
@@ -299,21 +299,21 @@ def test_compute_final_features_y_parent(mock_fit_transform, X_y_binary):
     component_graph = ComponentGraph(graph).instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
 
-    component_graph.compute_final_features(X, y, fit=True)
+    component_graph.fit(X, y)
     mock_fit_transform.assert_called_once()
 
 
 @patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
 @patch('evalml.pipelines.components.OneHotEncoder.transform')
-def test_compute_final_features_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
+def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
     X, y = X_y_binary
     graph = {'Imputer': [Imputer], 'OHE': [OneHotEncoder, 'Imputer.x']}
     component_graph = ComponentGraph(graph).instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
     mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
 
-    component_graph.compute_final_features(X, y, fit=True)
-    output = component_graph.compute_final_features(X)
+    component_graph.fit(X, y)
+    output = component_graph.predict(X)
 
     pd.testing.assert_frame_equal(output[0], pd.DataFrame(X))
     pd.testing.assert_series_equal(output[1], pd.Series(y))
@@ -326,7 +326,7 @@ def test_no_instantiate_before_fit(X_y_binary):
              'Estimator': [RandomForestClassifier, 'OHE.x']}
     component_graph = ComponentGraph(graph)
     with pytest.raises(ValueError, match='All components must be instantiated before fitting or predicting'):
-        component_graph.compute_final_features(X, y, fit=True)
+        component_graph.fit(X, y)
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
@@ -339,7 +339,7 @@ def test_multiple_y_parents(mock_fit_transform, X_y_binary):
     component_graph.instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
     with pytest.raises(ValueError, match='Cannot have multiple `y` parents for a single component'):
-        component_graph.compute_final_features(X, y, fit=True)
+        component_graph.fit(X, y)
 
 
 def test_component_graph_order(example_graph):

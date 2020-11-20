@@ -66,10 +66,32 @@ class ComponentGraph:
             self.component_dict[component_name][0] = new_component
         return self
 
-    def compute_final_features(self, X, y=None, fit=False):
-        """Transforms the data by applying all components.
+    def fit(self, X, y):
+        """Build a model
 
         Arguments:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
+        """
+        self._compute_features(self.compute_order, X, y, fit=True)
+        return self
+
+    def predict(self, X):       
+        """Make predictions using selected features.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+
+        Returns:
+            pd.Series: Predicted values.
+        """
+        return self._compute_features(self.compute_order, X)
+
+    def _compute_features(self, component_list, X, y=None, fit=False):
+        """Transforms the data by applying the given components.
+
+        Arguments:
+            component_list (list): The list of component names to compute.
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples]
             fit (bool): Whether to fit the estimators as well as transform it.
@@ -80,7 +102,7 @@ class ComponentGraph:
         """
         output_cache = {}
         final_component = None
-        for component_name in self.compute_order:
+        for component_name in component_list:
             final_component = component_name
             component_class = self.component_dict[component_name][0]
             if not isinstance(component_class, ComponentBase):
@@ -115,7 +137,7 @@ class ComponentGraph:
         self._recompute_order()
         if fit:
             return self
-        final_component_class = self.component_dict[final_component][0]
+        final_component_class = self.get_component(final_component)
         if isinstance(final_component_class, Transformer):
             return output_cache[f"{final_component}.x"], output_cache[f"{final_component}.y"]
         else:
