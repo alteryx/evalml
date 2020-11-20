@@ -86,7 +86,7 @@ class ComponentGraph:
         self._compute_features(self.compute_order[:-1], X, y, fit=True)
         return self
 
-    def predict(self, X):       
+    def predict(self, X):
         """Make predictions using selected features.
 
         Arguments:
@@ -99,7 +99,7 @@ class ComponentGraph:
 
     def transform_features(self, X):
         """ Transform all components save the final one, usually an estimator
-        
+
         Arguments:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
 
