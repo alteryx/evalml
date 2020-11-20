@@ -30,3 +30,15 @@ class DataCheckMessageCode(Enum):
 
     HAS_OUTLIERS = "has_outliers"
     """Message code for when outliers are detected."""
+
+    CLASS_IMBALANCE_BELOW_THRESHOLD = "class_imbalance_below_threshold"
+    """Message code for when balance in classes is less than the threshold."""
+
+    CLASS_IMBALANCE_BELOW_FOLDS = "class_imbalance_below_folds"
+    """Message code for when the number of values for each target is below 2 * number of CV folds."""
+
+    NO_VARIANCE = "no_variance"
+    """Message code for when data has no variance (1 unique value)."""
+
+    NO_VARIANCE_WITH_NULL = "no_variance_with_null"
+    """Message code for when data has one unique value and NaN values."""

@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.data_checks.data_check_message import (
+from evalml.data_checks import (
     DataCheckError,
-    DataCheckWarning
+    DataCheckMessageCode,
+    DataCheckWarning,
+    NoVarianceDataCheck
 )
-from evalml.data_checks.no_variance_data_check import NoVarianceDataCheck
 
 no_variance_data_check_name = NoVarianceDataCheck.name
 
@@ -24,16 +25,16 @@ all_null_y_with_name.name = "Labels"
 
 feature_0_unique = DataCheckError(message="feature has 0 unique value.",
                                   data_check_name=no_variance_data_check_name,
-).to_dict()
+                                  message_code=DataCheckMessageCode.NO_VARIANCE).to_dict()
 feature_1_unique = DataCheckError(message="feature has 1 unique value.",
                                   data_check_name=no_variance_data_check_name,
-).to_dict()
+                                  message_code=DataCheckMessageCode.NO_VARIANCE).to_dict()
 labels_0_unique = DataCheckError(message="Y has 0 unique value.",
                                  data_check_name=no_variance_data_check_name,
-).to_dict()
+                                 message_code=DataCheckMessageCode.NO_VARIANCE).to_dict()
 labels_1_unique = DataCheckError(message="Y has 1 unique value.",
                                  data_check_name=no_variance_data_check_name,
-).to_dict()
+                                 message_code=DataCheckMessageCode.NO_VARIANCE).to_dict()
 
 
 cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
@@ -48,17 +49,17 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
           {"warnings": [DataCheckWarning(message="feature has two unique values including nulls. Consider encoding the nulls for "
                                          "this column to be useful for machine learning.",
                                          data_check_name=no_variance_data_check_name,
-).to_dict(),
-              DataCheckWarning(message="Y has two unique values including nulls. Consider encoding the nulls for "
-                               "this column to be useful for machine learning.",
-                               data_check_name=no_variance_data_check_name,
-).to_dict()],
+                                         message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL).to_dict(),
+                        DataCheckWarning(message="Y has two unique values including nulls. Consider encoding the nulls for "
+                                         "this column to be useful for machine learning.",
+                                         data_check_name=no_variance_data_check_name,
+                                         message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL).to_dict()],
            "errors": []}
     ),
-    (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
-    (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError(message="Labels has 0 unique value.",
-                                                                                             data_check_name=no_variance_data_check_name,
-).to_dict()]})
+         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
+         (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError(message="Labels has 0 unique value.",
+                                                                                                  data_check_name=no_variance_data_check_name,
+                                                                                                  message_code=DataCheckMessageCode.NO_VARIANCE).to_dict()]})
     ]
 
 

@@ -5,6 +5,7 @@ import pytest
 from evalml.data_checks import (
     ClassImbalanceDataCheck,
     DataCheckError,
+    DataCheckMessageCode,
     DataCheckMessageType,
     DataCheckWarning
 )
@@ -36,13 +37,13 @@ def test_class_imbalance_data_check_binary():
     assert class_imbalance_check.validate(X, y=pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 10% of the target: [0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
     assert ClassImbalanceDataCheck(threshold=0.25, num_cv_folds=0).validate(X, y=pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 25% of the target: [0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
@@ -51,6 +52,7 @@ def test_class_imbalance_data_check_binary():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: [0]",
                                   data_check_name=class_imbalance_data_check_name,
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS
 ).to_dict()]
     }
 
@@ -61,14 +63,14 @@ def test_class_imbalance_data_check_binary():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1, 0]",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
     assert class_imbalance_check.validate(X, y=pd.Series(['No', 'No', 'Yes'])) == {
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: ['No', 'Yes']",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
 
@@ -80,14 +82,14 @@ def test_class_imbalance_data_check_multiclass():
     assert class_imbalance_check.validate(X, y=pd.Series([0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 10% of the target: [0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
     assert ClassImbalanceDataCheck(threshold=0.25, num_cv_folds=0).validate(X, y=pd.Series([0, 2, 2, 2, 3, 3, 1, 1, 1, 1])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 25% of the target: [3, 0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
@@ -96,7 +98,7 @@ def test_class_imbalance_data_check_multiclass():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [2, 0]",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
     y = [0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4]
@@ -104,7 +106,7 @@ def test_class_imbalance_data_check_multiclass():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [1, 0]",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
     class_imbalance_check = ClassImbalanceDataCheck()
@@ -112,7 +114,7 @@ def test_class_imbalance_data_check_multiclass():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [3, 2, 1, 0]",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
 
@@ -124,7 +126,7 @@ def test_class_imbalance_empty_and_nan():
     assert ClassImbalanceDataCheck(threshold=0.5, num_cv_folds=0).validate(X, y=pd.Series([np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 2])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 50% of the target: [2.0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
@@ -133,10 +135,10 @@ def test_class_imbalance_empty_and_nan():
     assert ClassImbalanceDataCheck(threshold=0.5, num_cv_folds=1).validate(X, y=pd.Series([np.nan, np.nan, np.nan, np.nan, 1, 1, 1, 1, 2])) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 50% of the target: [2.0]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: [2.0]",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
 
@@ -147,21 +149,21 @@ def test_class_imbalance_nonnumeric():
     assert class_imbalance_check.validate(X, y=[True, False, False, False, False]) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 25% of the target: [True]",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
     assert class_imbalance_check.validate(X, y=["yes", "no", "yes", "yes", "yes"]) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 25% of the target: ['no']",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
     assert ClassImbalanceDataCheck(threshold=0.35, num_cv_folds=0).validate(X, y=["red", "green", "red", "red", "blue", "green", "red", "blue", "green", "red"]) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 35% of the target: ['green', 'blue']",
                                       data_check_name=class_imbalance_data_check_name,
-).to_dict()],
+                                      message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD).to_dict()],
         "errors": []
     }
 
@@ -172,7 +174,7 @@ def test_class_imbalance_nonnumeric():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 2 instances: ['Yes']",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
     assert class_imbalance_check.validate(X, y=pd.Series(["red", "green", "red", "red", "blue", "green", "red", "blue", "green", "red"])) == {"warnings": [], "errors": []}
 
@@ -181,12 +183,12 @@ def test_class_imbalance_nonnumeric():
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: ['No', 'Yes']",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
 
     assert class_imbalance_check.validate(X, y=pd.Series(["red", "green", "red", "red", "blue", "green", "red", "blue", "green", "red"])) == {
         "warnings": [],
         "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: ['red', 'green', 'blue']",
                                   data_check_name=class_imbalance_data_check_name,
-).to_dict()]
+                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS).to_dict()]
     }
