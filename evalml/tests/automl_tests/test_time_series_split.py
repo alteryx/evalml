@@ -5,7 +5,7 @@ from evalml.automl.data_splitters import TimeSeriesSplit
 
 
 def test_time_series_split_init():
-    ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_folds=5)
+    ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_splits=5)
     assert ts_split.get_n_splits() == 5
 
     with pytest.raises(ValueError, match="Both X and y cannot be None or empty in TimeSeriesSplit.split"):
@@ -13,6 +13,15 @@ def test_time_series_split_init():
 
     with pytest.raises(ValueError, match="Both X and y cannot be None or empty in TimeSeriesSplit.split"):
         _ = list(ts_split.split(X=pd.DataFrame(), y=pd.Series([])))
+
+
+def test_time_series_split_n_splits_too_big():
+    splitter = TimeSeriesSplit(gap=7, n_splits=4, max_delay=3)
+    X = pd.DataFrame({"features": range(15)})
+    # Each split would have 15 // 5 = 3 data points. However, this is smaller than the number of data_points required
+    # for max_delay and gap
+    with pytest.raises(ValueError, match="Please use a smaller number of splits or collect more data."):
+        list(splitter.split(X))
 
 
 @pytest.mark.parametrize("max_delay,gap", [(0, 0), (1, 0), (2, 0), (0, 3), (1, 1), (4, 2)])
