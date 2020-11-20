@@ -99,20 +99,24 @@ class ObjectiveBase(ABC):
             y_true = _convert_woodwork_types_wrapper(y_true.to_series())
         if isinstance(y_predicted, ww.DataColumn):
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        if isinstance(y_predicted, ww.DataTable):
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_dataframe())
         if not isinstance(y_true, pd.Series):
             y_true = pd.Series(y_true)
-        if not isinstance(y_predicted, pd.Series):
+        if not isinstance(y_predicted, pd.Series) and len(y_predicted.shape) == 1:
             y_predicted = pd.Series(y_predicted)
+        else:
+            y_predicted = pd.DataFrame(y_predicted)
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
-        if np.isnan(y_true).any() or np.isinf(y_true).any():
-            raise ValueError("y_true contains NaN or infinity")
-        if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
-            raise ValueError("y_predicted contains NaN or infinity")
-        if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
-            raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+        # if np.isnan(y_true).any() or np.isinf(y_true).any():
+        #     raise ValueError("y_true contains NaN or infinity")
+        # if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
+        #     raise ValueError("y_predicted contains NaN or infinity")
+        # if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
+            # raise ValueError("y_predicted contains probability estimates not within [0, 1]")
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):
