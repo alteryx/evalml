@@ -347,8 +347,7 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
     component_graph.fit(X, y)
     output = component_graph.predict(X)
 
-    pd.testing.assert_frame_equal(output[0], pd.DataFrame(X))
-    pd.testing.assert_series_equal(output[1], pd.Series(y))
+    pd.testing.assert_frame_equal(output, pd.DataFrame(X))
 
 
 def test_no_instantiate_before_fit(X_y_binary):

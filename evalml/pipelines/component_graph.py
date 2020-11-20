@@ -119,7 +119,7 @@ class ComponentGraph:
                         Defaults to False.
 
         Returns:
-            pd.DataFrame and/or pd.Series - Output(s) of the final component
+            pd.DataFrame or pd.Series - Output of the last component
         """
         output_cache = {}
         final_component = None
@@ -160,7 +160,7 @@ class ComponentGraph:
             return self
         final_component_class = self.get_component(final_component)
         if isinstance(final_component_class, Transformer):
-            return output_cache[f"{final_component}.x"], output_cache[f"{final_component}.y"]
+            return output_cache[f"{final_component}.x"]
         else:
             return output_cache[final_component]
 
