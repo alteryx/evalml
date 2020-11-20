@@ -89,34 +89,47 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (pd.Series): Predicted values of length [n_samples]
+            y_predicted (pd.Series, pd.DataFrame, ww.DataColumn, or ww.DataTable): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
 
         Returns:
             None
         """
+        is_multidimensional = False
         if isinstance(y_true, ww.DataColumn):
             y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
+
         if isinstance(y_predicted, ww.DataColumn):
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
         if isinstance(y_predicted, ww.DataTable):
+            is_multidimensional = True
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_dataframe())
-        if not isinstance(y_true, pd.Series):
-            y_true = pd.Series(y_true)
         if not isinstance(y_predicted, pd.Series) and len(y_predicted.shape) == 1:
             y_predicted = pd.Series(y_predicted)
         else:
+            is_multidimensional = True
             y_predicted = pd.DataFrame(y_predicted)
+
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
-        # if np.isnan(y_true).any() or np.isinf(y_true).any():
-        #     raise ValueError("y_true contains NaN or infinity")
-        # if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
-        #     raise ValueError("y_predicted contains NaN or infinity")
-        # if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
-            # raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+        if is_multidimensional:
+            if np.isnan(y_true).any().any() or np.isinf(y_true).any().any():
+                raise ValueError("y_true contains NaN or infinity")
+            if np.isnan(y_predicted).any().any() or np.isinf(y_predicted).any().any():
+                raise ValueError("y_predicted contains NaN or infinity")
+            if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]).any():
+                raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+        else:
+            if np.isnan(y_true).any() or np.isinf(y_true).any():
+                raise ValueError("y_true contains NaN or infinity")
+            if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
+                raise ValueError("y_predicted contains NaN or infinity")
+            if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
+                raise ValueError("y_predicted contains probability estimates not within [0, 1]")
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):
