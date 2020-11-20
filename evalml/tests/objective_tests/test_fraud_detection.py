@@ -98,7 +98,6 @@ def test_binary_more_than_two_unique_values():
         fraud_cost.score(y_true, y_predicted)
 
 
-
 def test_fraud_objective_score(X_y_binary):
     X, y = X_y_binary
     fraud_cost = FraudCost(amount_col="value")

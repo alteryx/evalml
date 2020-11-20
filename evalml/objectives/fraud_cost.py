@@ -2,7 +2,9 @@ import pandas as pd
 import woodwork as ww
 
 from .binary_classification_objective import BinaryClassificationObjective
+
 from evalml.utils import _convert_woodwork_types_wrapper
+
 
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud."""

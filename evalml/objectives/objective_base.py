@@ -96,22 +96,23 @@ class ObjectiveBase(ABC):
             None
         """
         is_multidimensional = False
-        if isinstance(y_true, ww.DataColumn):
-            y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-        if not isinstance(y_true, pd.Series):
-            y_true = pd.Series(y_true)
+        # if isinstance(y_true, ww.DataColumn):
+        #     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+        # if not isinstance(y_true, pd.Series):
+        #     y_true = pd.Series(y_true)
 
-        if isinstance(y_predicted, ww.DataColumn):
-            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
-        if isinstance(y_predicted, ww.DataTable):
+        # if isinstance(y_predicted, ww.DataColumn):
+        #     y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        # if isinstance(y_predicted, ww.DataTable):
+        #     is_multidimensional = True
+        #     y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_dataframe())
+        # if not isinstance(y_predicted, pd.Series) and len(y_predicted.shape) == 1:
+        #     y_predicted = pd.Series(y_predicted)
+        # else:
+        #     is_multidimensional = True
+        #     y_predicted = pd.DataFrame(y_predicted)
+        if len(y_predicted) > 1:
             is_multidimensional = True
-            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_dataframe())
-        if not isinstance(y_predicted, pd.Series) and len(y_predicted.shape) == 1:
-            y_predicted = pd.Series(y_predicted)
-        else:
-            is_multidimensional = True
-            y_predicted = pd.DataFrame(y_predicted)
-
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         if len(y_true) == 0:
