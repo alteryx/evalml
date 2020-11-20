@@ -263,8 +263,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         exceptions = OrderedDict()
         for objective in objectives:
             try:
-                # if objective.name == "MCC Binary" or objective.name == "Log Loss Multiclass":
-                    # import pdb; pdb.set_trace()
                 if not objective.is_defined_for_problem_type(self.problem_type):
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)

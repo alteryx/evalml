@@ -33,7 +33,7 @@ def test_fraud_objective_function_amount_col(X_y_binary):
                           fraud_payout_percentage=.75,
                           amount_col="this column does not exist")
     y_predicted = pd.Series([.1, .5, .5])
-    y_true = [True, False, True]
+    y_true = pd.Series([True, False, True])
     with pytest.raises(ValueError, match="`this column does not exist` is not a valid column in X."):
         objective.objective_function(y_true, y_predicted, X)
 
