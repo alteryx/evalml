@@ -327,15 +327,15 @@ def test_automl_empty_data_checks(mock_fit, mock_score):
     automl = AutoMLSearch(problem_type="binary", max_iterations=1)
 
     automl.search(X, y, data_checks=[])
-    assert automl.data_check_results is None
+    assert automl.data_check_results == {"warnings": [], "errors": []}
     mock_fit.assert_called()
     mock_score.assert_called()
 
     automl.search(X, y, data_checks="disabled")
-    assert automl.data_check_results is None
+    assert automl.data_check_results == {"warnings": [], "errors": []}
 
     automl.search(X, y, data_checks=None)
-    assert automl.data_check_results is None
+    assert automl.data_check_results == {"warnings": [], "errors": []}
 
 
 @patch('evalml.data_checks.DefaultDataChecks.validate')
@@ -344,7 +344,11 @@ def test_automl_empty_data_checks(mock_fit, mock_score):
 def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_binary, caplog):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
-    mock_validate.return_value = [DataCheckWarning("default data check warning", "DefaultDataChecks")]
+    mock_validate.return_value = {
+        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks")],
+        "errors": []
+    }
+
     automl = AutoMLSearch(problem_type='binary', max_iterations=1)
     automl.search(X, y)
     out = caplog.text
@@ -357,7 +361,10 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
 
 class MockDataCheckErrorAndWarning(DataCheck):
     def validate(self, X, y):
-        return [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+        return {
+            "warnings": [],
+            "errors": [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+        }
 
 
 @pytest.mark.parametrize("data_checks",
@@ -480,7 +487,7 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     automl = AutoMLSearch(problem_type='binary', max_iterations=5)
     automl.search(X, y)
-    assert automl.data_check_results is None
+    assert automl.data_check_results == {"warnings": [], "errors": []}
     mock_fit.assert_called()
     mock_score.assert_called()
     assert mock_algo_next_batch.call_count == 1

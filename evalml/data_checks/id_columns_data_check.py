@@ -29,7 +29,7 @@ class IDColumnsDataCheck(DataCheck):
             threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
 
         Returns:
-            A dictionary of features with column name or index and their probability of being ID columns
+            dict: A dictionary of features with column name or index and their probability of being ID columns
 
         Example:
             >>> df = pd.DataFrame({
@@ -38,9 +38,13 @@ class IDColumnsDataCheck(DataCheck):
             ...     'y': [42, 54, 12, 64, 12]
             ... })
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == [DataCheckWarning("Column 'df_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck")]
+            >>> assert id_col_check.validate(df) == {"errors": [],\
+                                                     "warnings": [{"message": "Column 'df_id' is 100.0% or more likely to be an ID column", "data_check_name": "IDColumnsDataCheck", "level": "warning"}]}
         """
-
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         col_names = [str(col) for col in X.columns.tolist()]
@@ -58,4 +62,5 @@ class IDColumnsDataCheck(DataCheck):
 
         id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
-        return [DataCheckWarning(warning_msg.format(col_name, self.id_threshold * 100), self.name) for col_name in id_cols_above_threshold]
+        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name, self.id_threshold * 100), self.name).to_dict() for col_name in id_cols_above_threshold])
+        return messages

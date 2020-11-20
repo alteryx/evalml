@@ -26,7 +26,7 @@ class OutliersDataCheck(DataCheck):
             y: Ignored.
 
         Returns:
-            A set of columns that may have outlier data.
+            dict: A set of columns that may have outlier data.
 
         Example:
             >>> df = pd.DataFrame({
@@ -35,15 +35,19 @@ class OutliersDataCheck(DataCheck):
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == [DataCheckWarning("Column 'z' is likely to have outlier data", "OutliersDataCheck")]
+            >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column 'z' is likely to have outlier data", "data_check_name": "OutliersDataCheck", "level": "warning"}],\
+                                                       "errors": []}
         """
-
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         X = X.select_dtypes(include=numeric_dtypes)
 
         if len(X.columns) == 0:
-            return []
+            return messages
 
         def get_IQR(df, k=2.0):
             q1 = df.quantile(0.25)
@@ -57,4 +61,5 @@ class OutliersDataCheck(DataCheck):
         has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
         warning_msg = "Column '{}' is likely to have outlier data"
         cols = has_outliers.index[has_outliers]
-        return [DataCheckWarning(warning_msg.format(col), self.name) for col in cols]
+        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col), self.name).to_dict() for col in cols])
+        return messages
