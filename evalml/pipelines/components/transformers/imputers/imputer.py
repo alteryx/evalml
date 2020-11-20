@@ -104,9 +104,8 @@ class Imputer(Transformer):
 
         X_null_dropped = X.copy()
 
-        all_bool = (X.dtypes == bool).all()
-        if all_bool:
-            X_null_dropped = X_null_dropped.astype('category')
+        if (X.dtypes == bool).all():
+            return X
 
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         X_null_dropped.reset_index(inplace=True, drop=True)
@@ -120,8 +119,5 @@ class Imputer(Transformer):
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
             X_null_dropped[X_categorical.columns] = self._categorical_imputer.transform(X_categorical)
-
-        if all_bool:
-            X_null_dropped = X_null_dropped.astype(bool)
 
         return X_null_dropped

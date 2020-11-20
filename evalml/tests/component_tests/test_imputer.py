@@ -187,11 +187,11 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     elif data_type == 'ww':
         X = ww.DataTable(pd.DataFrame())
         y = ww.DataColumn(pd.Series())
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
@@ -294,23 +294,23 @@ def test_imputer_with_none():
 
 
 def test_imputer_all_bool():
-    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=bool)
+    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
     y = pd.Series([1, 0, 0, 1, 0])
     imputer = Imputer()
     imputer.fit(X, y)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=object)
     X_t = imputer.transform(X)
     assert_frame_equal(X_expected_arr, X_t)
 
     X_multi = pd.DataFrame({
-        "bool with nan": pd.Series([True, np.nan, False, np.nan, False]),
-        "bool no nan": pd.Series([False, False, False, False, True]),
-    }, dtype=bool)
+        "bool with nan": pd.Series([True, np.nan, False, np.nan, False], dtype=object),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+    })
     imputer = Imputer()
     imputer.fit(X_multi, y)
     X_multi_expected_arr = pd.DataFrame({
-        "bool with nan": pd.Series([True, True, False, True, False]),
-        "bool no nan": pd.Series([False, False, False, False, True]),
-    }, dtype=bool)
+        "bool with nan": pd.Series([True, False, False, False, False], dtype=object),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+    })
     X_multi_t = imputer.transform(X_multi)
     assert_frame_equal(X_multi_expected_arr, X_multi_t)
