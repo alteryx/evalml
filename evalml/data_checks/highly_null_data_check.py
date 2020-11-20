@@ -3,7 +3,6 @@ import pandas as pd
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
 from .data_check_message_code import DataCheckMessageCode
-from .data_check_message_type import DataCheckMessageType
 
 
 class HighlyNullDataCheck(DataCheck):

@@ -4,7 +4,6 @@ import pytest
 
 from evalml.data_checks import (
     DataCheckMessageCode,
-    DataCheckMessageType,
     DataCheckWarning,
     IDColumnsDataCheck
 )

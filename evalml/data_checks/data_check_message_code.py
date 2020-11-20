@@ -21,3 +21,9 @@ class DataCheckMessageCode(Enum):
 
     TARGET_BINARY_INVALID_VALUES = "target_binary_invalid_values"
     """Message code for target data for a binary classification problem with numerical values not equal to {0, 1}."""
+
+    HIGH_VARIANCE = "high_variance"
+    """Message code for when high variance is detected for cross-validation."""
+
+    TARGET_LEAKAGE = "target_leakage"
+    """Message code for when target leakage is detected."""

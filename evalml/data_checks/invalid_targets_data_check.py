@@ -64,6 +64,6 @@ class InvalidTargetDataCheck(DataCheck):
             if set(unique_values) != set([0, 1]):
                 messages["errors"].append(DataCheckError(message="Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])),
                                                          data_check_name=self.name,
-                                                         message_code=TARGET_BINARY_INVALID_VALUES).to_dict())
+                                                         message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES).to_dict())
 
         return messages

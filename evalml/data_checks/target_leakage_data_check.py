@@ -63,5 +63,7 @@ class TargetLeakageDataCheck(DataCheck):
 
         highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
-        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name).to_dict() for col_name in highly_corr_cols])
+        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
+                                                      data_check_name=self.name,
+                                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE).to_dict() for col_name in highly_corr_cols])
         return messages
