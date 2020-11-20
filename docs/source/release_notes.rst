@@ -21,6 +21,7 @@ Release Notes
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
         * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
+        * Fixed bug in OHE where column names were not guaranteed to be unique :pr:`1349`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
