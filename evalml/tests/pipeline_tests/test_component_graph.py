@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -277,17 +278,26 @@ def test_fit(mock_fit_transform, mock_fit, mock_predict, example_graph, X_y_bina
 @patch('evalml.pipelines.components.Transformer.fit_transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_fit_features(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
+def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     X, y = X_y_binary
-    mock_fit_transform.return_value = pd.DataFrame(X)
+    component_list = ['Imputer', 'One Hot Encoder', 'Random Forest Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+
+    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_fit_transform.return_value = mock_X_t
     mock_fit.return_value = Estimator
     mock_predict.return_value = pd.Series(y)
-    component_graph = ComponentGraph(example_graph).instantiate({})
-    component_graph.fit_features(X, y)
 
-    assert mock_fit_transform.call_count == 3
-    assert mock_fit.call_count == 2
-    assert mock_predict.call_count == 2
+    X_t = component_graph.fit_features(X, y)
+
+    assert mock_fit_transform.call_count == 2
+    assert mock_fit.call_count == 0
+    assert mock_predict.call_count == 0
+
+    print('X_t', X_t)
+    print('mock', mock_X_t)
+    pd.testing.assert_frame_equal(X_t, mock_X_t)
 
 
 @patch('evalml.pipelines.components.Transformer.transform')

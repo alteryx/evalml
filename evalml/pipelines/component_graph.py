@@ -77,14 +77,15 @@ class ComponentGraph:
         return self
 
     def fit_features(self, X, y):
-        """ Fit all components save the final one, usually an estimator.
+        """ Fit all components save the final one, usually an estimator. Note that this is
+        only useful where the final component has only one parent, otherwise there will be
+        information missing.
 
         Arguments:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (pd.Series): The target training data of length [n_samples]
         """
-        self._compute_features(self.compute_order[:-1], X, y, fit=True)
-        return self
+        return self._compute_features(self.compute_order[:-1], X, y, fit=True)
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -98,7 +99,9 @@ class ComponentGraph:
         return self._compute_features(self.compute_order, X)
 
     def transform_features(self, X):
-        """ Transform all components save the final one, usually an estimator
+        """ Transform all components save the final one, usually an estimator. Note that this
+        is only useful where the final component has only one parent, otherwise there will be
+        information missing.
 
         Arguments:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
@@ -122,10 +125,9 @@ class ComponentGraph:
             pd.DataFrame or pd.Series - Output of the last component
         """
         output_cache = {}
-        final_component = None
+        final_component = component_list[-1]
         for component_name in component_list:
-            final_component = component_name
-            component_class = self.component_dict[component_name][0]
+            component_class = self.get_component(component_name)
             if not isinstance(component_class, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
             x_inputs = []
@@ -150,14 +152,11 @@ class ComponentGraph:
                     output_y = None
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
-            else:  # Estimator
+            else:
                 if fit:
                     component_class = component_class.fit(input_x, input_y)
                 output = component_class.predict(input_x)
                 output_cache[component_name] = output
-        self._recompute_order()
-        if fit:
-            return self
         final_component_class = self.get_component(final_component)
         if isinstance(final_component_class, Transformer):
             return output_cache[f"{final_component}.x"]
